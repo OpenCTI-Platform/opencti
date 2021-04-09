@@ -3,7 +3,7 @@ import { loadFile, upload } from '../database/minio';
 import { pushToConnector } from '../database/rabbitmq';
 import { connectorsForImport } from './connector';
 import { createWork } from './work';
-import { logger } from '../config/conf';
+import { logApp } from '../config/conf';
 import { internalLoadById } from '../database/middleware';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { UnsupportedError } from '../config/errors';
@@ -49,7 +49,7 @@ export const uploadJobImport = async (user, fileId, fileMime, entityId) => {
 };
 
 export const askJobImport = async (user, filename) => {
-  logger.debug(`[JOBS] ask import for file ${filename} by ${user.user_email}`);
+  logApp.debug(`[JOBS] ask import for file ${filename} by ${user.user_email}`);
   const file = await loadFile(filename);
   await uploadJobImport(user, file.id, file.metaData.mimetype, file.metaData.entity_id);
   return file;

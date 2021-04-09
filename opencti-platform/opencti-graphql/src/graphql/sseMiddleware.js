@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import * as bodyParser from 'body-parser';
-import { basePath, logger } from '../config/conf';
+import { basePath, logApp } from '../config/conf';
 import { authenticateUser, STREAMAPI } from '../domain/user';
 import { getStreamRange, createStreamProcessor } from '../database/redis';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -119,7 +119,7 @@ const createSeeMiddleware = (broadcaster) => {
       capabilities: req.capabilities,
       sendEvent: (id, topic, data) => {
         if (req.finished) {
-          logger.warn('[STREAM] Write on an already terminated response', { id: client.userId });
+          logApp.warn('[STREAM] Write on an already terminated response', { id: client.userId });
           return;
         }
         let message = '';
@@ -140,7 +140,7 @@ const createSeeMiddleware = (broadcaster) => {
         try {
           res.end();
         } catch (e) {
-          logger.error('[STREAM] Failing to close client', { clientId: client.userId, error: e });
+          logApp.error('[STREAM] Failing to close client', { clientId: client.userId, error: e });
         }
       },
     };
@@ -161,7 +161,7 @@ const createSeeMiddleware = (broadcaster) => {
     const clients = Object.entries(broadcastClients).length;
     const broadcasterInfo = await broadcaster.info();
     broadcastClient.sendConnected({ ...broadcasterInfo, connectionId: client.id, clients });
-    logger.debug(`[STREAM] Clients connection ${req.userId} (${clients})`);
+    logApp.debug(`[STREAM] Clients connection ${req.userId} (${clients})`);
   };
   return {
     shutdown: () => {

@@ -4,7 +4,7 @@ import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { mergeEntities, patchAttribute } from '../database/middleware';
 import { SYSTEM_USER } from '../domain/user';
 import { generateStandardId } from '../schema/identifier';
-import { logger } from '../config/conf';
+import { logApp } from '../config/conf';
 
 export const up = async (next) => {
   // region find duplicates
@@ -31,7 +31,7 @@ export const up = async (next) => {
   };
   const duplicates = await el.search(query);
   const { buckets } = duplicates.body.aggregations.url.duplicateUri;
-  logger.info(`[MIGRATION] Merging ${buckets.length} URL`);
+  logApp.info(`[MIGRATION] Merging ${buckets.length} URL`);
   // end region
   // For each duplicate, merge all entities into one.
   for (let index = 0; index < buckets.length; index += 1) {
@@ -64,7 +64,7 @@ export const up = async (next) => {
     const sources = elementsToMerge.map((s) => s._source.internal_id);
     // 2. Merge everything else inside the target
     await mergeEntities(SYSTEM_USER, updatedTarget.internal_id, sources);
-    logger.info(
+    logApp.info(
       `[MIGRATION] URL ${updatedTarget.value} merged (${urlsToMerge.length}) -- ${index + 1}/${buckets.length}`
     );
   }

@@ -16,7 +16,7 @@ import {
   listThroughGetFrom,
   fullLoadById,
 } from '../database/middleware';
-import { BUS_TOPICS, logger } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { createWork, workToExportFile } from './work';
@@ -195,7 +195,7 @@ const createIndicatorFromObservable = async (user, input, observable) => {
       await addIndicator(user, indicatorToCreate);
     }
   } catch (err) {
-    logger.info(`[OPENCTI] Cannot create indicator`, { error: err });
+    logApp.info(`[OPENCTI] Cannot create indicator`, { error: err });
   }
 };
 

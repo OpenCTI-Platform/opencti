@@ -12,15 +12,16 @@ import nconf from 'nconf';
 import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
-import { basePath, DEV_MODE, logger } from './config/conf';
+import { basePath, DEV_MODE, logApp, logAudit } from './config/conf';
 import passport from './config/providers';
-import { authenticateUser } from './domain/user';
+import { authenticateUser, userWithOrigin } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
 import { checkSystemDependencies } from './initialization';
 import { getSettings } from './domain/settings';
 import createSeeMiddleware from './graphql/sseMiddleware';
 import initTaxiiApi from './taxiiApi';
 import { initializeSession } from './database/session';
+import { LOGIN_ACTION } from './config/audit';
 
 const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 
@@ -125,10 +126,11 @@ const createApp = async (apolloServer, broadcaster) => {
     const { provider } = req.params;
     passport.authenticate(provider, {}, async (err, token) => {
       if (err || !token) {
+        logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
         return res.redirect(`/dashboard?message=${err?.message}`);
       }
       // noinspection UnnecessaryLocalVariableJS
-      await authenticateUser(req, token.uuid);
+      await authenticateUser(req, { providerToken: token.uuid, provider });
       const { referer } = req.session;
       req.session.referer = null;
       return res.redirect(referer);
@@ -147,7 +149,7 @@ const createApp = async (apolloServer, broadcaster) => {
 
   // Error handling
   app.use((err, req, res, next) => {
-    logger.error(`[EXPRESS] Error http call`, { error: err });
+    logApp.error(`[EXPRESS] Error http call`, { error: err });
     res.redirect('/');
     next();
   });

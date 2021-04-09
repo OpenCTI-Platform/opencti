@@ -1,13 +1,14 @@
 import * as R from 'ramda';
+import { map } from 'ramda';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
-import { map } from 'ramda';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import {
   BUS_TOPICS,
-  logger,
+  logApp,
+  logAudit,
   OPENCTI_DEFAULT_DURATION,
   OPENCTI_ISSUER,
   OPENCTI_SESSION,
@@ -50,6 +51,14 @@ import { elLoadBy } from '../database/elasticSearch';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { now } from '../utils/format';
 import { applicationSession } from '../database/session';
+import {
+  convertRelationToAction, LOGIN_ACTION,
+  LOGOUT_ACTION,
+  ROLE_DELETION,
+  SESSION_CREATION,
+  USER_CREATION,
+  USER_DELETION,
+} from '../config/audit';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -60,10 +69,21 @@ export const ROLE_ADMINISTRATOR = 'Administrator';
 export const SYSTEM_USER = {
   id: OPENCTI_SYSTEM_UUID,
   name: 'SYSTEM',
-  origin: { source: 'internal', user_id: OPENCTI_SYSTEM_UUID },
+  user_email: 'SYSTEM',
+  origin: {},
   roles: [{ name: ROLE_ADMINISTRATOR }],
   capabilities: [{ name: BYPASS }],
   allowed_marking: [],
+};
+
+export const userWithOrigin = (req, user) => {
+  const origin = {
+    ip: req.ip,
+    referer: req.headers.referer,
+    applicant_id: req.headers['opencti-applicant-id'],
+    call_retry_number: req.headers['opencti-retry-number'],
+  };
+  return { ...user, origin };
 };
 
 const extractTokenFromBearer = (authorization) => {
@@ -77,7 +97,7 @@ const extractTokenFromBasicAuth = async (authorization) => {
     const b64auth = authorization.substring(BASIC.length);
     const [username, password] = Buffer.from(b64auth, 'base64').toString().split(':');
     // eslint-disable-next-line no-use-before-define
-    const token = await login(username, password);
+    const { token } = await login(username, password);
     return token?.uuid;
   }
   return null;
@@ -238,7 +258,9 @@ export const findCapabilities = (user, args) => {
 };
 
 export const roleDelete = async (user, roleId) => {
-  return deleteElementById(user, roleId, ENTITY_TYPE_ROLE);
+  const del = await deleteElementById(user, roleId, ENTITY_TYPE_ROLE);
+  logAudit.info(user, ROLE_DELETION, { id: roleId });
+  return del;
 };
 
 export const roleCleanContext = async (user, roleId) => {
@@ -254,9 +276,8 @@ export const roleEditContext = async (user, roleId, input) => {
     notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user)
   );
 };
-// endregion
 
-export const assignRoleToUser = async (user, userId, roleName) => {
+const assignRoleToUser = async (user, userId, roleName) => {
   const generateToId = generateStandardId(ENTITY_TYPE_ROLE, { name: roleName });
   const assignInput = {
     fromId: userId,
@@ -308,6 +329,9 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
     relationship_type: RELATION_MEMBER_OF,
   }));
   await Promise.all(relationGroups.map((relation) => createRelation(user, relation)));
+  // Audit log
+  const groups = defaultGroups.edges.map((g) => ({ id: g.node.id, name: g.node.name }));
+  logAudit.info(user, USER_CREATION, { user: userEmail, roles: userRoles, groups });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, userCreated, user);
 };
 
@@ -316,6 +340,7 @@ export const roleEditField = async (user, roleId, input) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
 
+// TO DELETE ?
 export const roleAddRelation = async (user, roleId, input) => {
   const role = await loadById(user, roleId, ENTITY_TYPE_ROLE);
   if (!role) {
@@ -330,7 +355,7 @@ export const roleAddRelation = async (user, roleId, input) => {
     return relationData;
   });
 };
-
+// TO DELETE ?
 export const roleDeleteRelation = async (user, roleId, toId, relationshipType) => {
   const role = await loadById(user, roleId, ENTITY_TYPE_ROLE);
   if (!role) {
@@ -362,6 +387,7 @@ export const userDelete = async (user, userId) => {
     await deleteElementById(user, userToken.id, ENTITY_TYPE_TOKEN);
   }
   await deleteElementById(user, userId, ENTITY_TYPE_USER);
+  logAudit.info(user, USER_DELETION, { user: userId });
   return userId;
 };
 
@@ -374,10 +400,10 @@ export const userAddRelation = async (user, userId, input) => {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
   }
   const finalInput = R.assoc('fromId', userId, input);
-  return createRelation(user, finalInput).then((relationData) => {
-    notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
+  const relationData = await createRelation(user, finalInput);
+  const operation = convertRelationToAction(input.relationship_type);
+  logAudit.info(user, operation, { from: userId, to: input.toId, type: input.relationship_type });
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, relationData, user);
 };
 
 export const userDeleteRelation = async (user, userId, toId, relationshipType) => {
@@ -389,10 +415,15 @@ export const userDeleteRelation = async (user, userId, toId, relationshipType) =
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
   }
   await deleteRelationsByFromAndTo(user, userId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+  const operation = convertRelationToAction(relationshipType, false);
+  logAudit.info(user, operation, { from: userId, to: toId, type: relationshipType });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user);
 };
 
 export const loginFromProvider = async (email, name) => {
+  if (!email) {
+    throw Error('User email not provided');
+  }
   const user = await elLoadBy(SYSTEM_USER, 'user_email', email, ENTITY_TYPE_USER);
   if (!user) {
     const newUser = { name, user_email: email.toLowerCase(), external: true };
@@ -404,7 +435,7 @@ export const loginFromProvider = async (email, name) => {
   await userEditField(SYSTEM_USER, user.id, inputName);
   const inputExternal = { key: 'external', value: [true] };
   await userEditField(SYSTEM_USER, user.id, inputExternal);
-  return userToken;
+  return { token: userToken, user };
 };
 
 export const login = async (email, password) => {
@@ -416,13 +447,14 @@ export const login = async (email, password) => {
   const match = bcrypt.compareSync(password, dbPassword);
   if (!match) throw AuthenticationFailure();
   // await clearUsersSession(userToken.uuid);
-  return userToken;
+  return { token: userToken, user };
 };
 
 export const logout = async (user, req, res) => {
   await delUserContext(user);
   res.clearCookie(OPENCTI_SESSION);
   req.session.destroy();
+  logAudit.info(user, LOGOUT_ACTION);
   return user.id;
 };
 
@@ -438,7 +470,7 @@ export const userRenewToken = async (user, userId, newToken = generateOpenCTIWeb
   if (currentToken) {
     await deleteElementById(user, currentToken.id, ENTITY_TYPE_TOKEN);
   } else {
-    logger.error(`[INIT] ${userId} user have no token to renew, please report this problem in github`);
+    logApp.error(`[INIT] ${userId} user have no token to renew, please report this problem in github`);
     const detachedToken = await internalGetTokenByUUID(newToken.uuid);
     if (detachedToken) {
       await deleteElementById(user, detachedToken.id, ENTITY_TYPE_TOKEN);
@@ -503,21 +535,25 @@ export const resolveUserById = async (id) => {
 
 // Authentication process
 
-export const authenticateUser = async (req, resolvedTokenUuid = null) => {
+export const authenticateUser = async (req, opts = {}) => {
+  const { providerToken = null, provider = null } = opts;
   const auth = req?.session?.user;
+  let loginProvider = provider;
   if (auth) {
     // User already identified
     return auth;
   }
   // If user not identified, try to extract token from request
-  let tokenUUID = resolvedTokenUuid;
+  let tokenUUID = providerToken;
   // If no specified token, try first the bearer
   if (!tokenUUID) {
     tokenUUID = extractTokenFromBearer(req?.headers.authorization);
+    loginProvider = 'Bearer';
   }
   // If no bearer specified, try with basic auth
   if (!tokenUUID) {
     tokenUUID = await extractTokenFromBasicAuth(req?.headers.authorization);
+    loginProvider = 'BasicAuth';
   }
   // Get user from the token if found
   if (tokenUUID) {
@@ -525,11 +561,12 @@ export const authenticateUser = async (req, resolvedTokenUuid = null) => {
       const user = await resolveUserByToken(tokenUUID);
       if (req && user) {
         // Build the user session with only required fields
+        logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider: loginProvider });
         req.session.user = user;
       }
       return user;
     } catch (err) {
-      logger.error(`[OPENCTI] Authentication error ${tokenUUID}`, { error: err });
+      logApp.error(`[OPENCTI] Authentication error ${tokenUUID}`, { error: err });
     }
   }
   return undefined;

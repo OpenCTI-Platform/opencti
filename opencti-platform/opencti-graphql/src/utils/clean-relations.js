@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { el, ES_IGNORE_THROTTLED } from '../database/elasticSearch';
-import { logger } from '../config/conf';
+import { logApp } from '../config/conf';
 import { ABSTRACT_BASIC_RELATIONSHIP } from '../schema/general';
 import { deleteElementById } from '../database/middleware';
 import { READ_DATA_INDICES, READ_RELATIONSHIPS_INDICES } from '../database/utils';
@@ -87,7 +87,7 @@ const computeMissingRelationsForType = async (relationType) => {
       const findNumber = relationsToTakeCare.length;
       const remainTimeMin = remaining.toFixed(2);
       const message = `[MIGRATION] Scanning ${relationType}: ${counter}/${valTotal} (Found ${findNumber} to clear) -- Estimate remaining ${remainTimeMin} min`;
-      logger.info(message);
+      logApp.info(message);
       lastRun = new Date();
     }
   }
@@ -102,11 +102,11 @@ export const cleanInconsistentRelations = async () => {
   // Fix missing deleted data
   // In case of relation to relation, some deletion was not executed.
   // For each relations of the platform we need to check if the from and the to are available.
-  logger.info('[TOOLS] Starting script to fix missing deletion');
+  logApp.info('[TOOLS] Starting script to fix missing deletion');
   const relations = await getMissingRelations();
   for (let index = 0; index < relations.length; index += 1) {
     const relation = relations[index];
     await deleteElementById(SYSTEM_USER, relation.internal_id, relation.entity_type);
   }
-  logger.info('[TOOLS] Fix missing script migration done');
+  logApp.info('[TOOLS] Fix missing script migration done');
 };

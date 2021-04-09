@@ -4,12 +4,12 @@ import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';
 import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/elasticSearch';
 import { generateStandardId } from '../schema/identifier';
-import { logger } from '../config/conf';
+import { logApp } from '../config/conf';
 import { SYSTEM_USER } from '../domain/user';
 
 export const up = async (next) => {
   const start = new Date().getTime();
-  logger.info(`[MIGRATION] Rewriting standard ids for Attack pattern and Course of action`);
+  logApp.info(`[MIGRATION] Rewriting standard ids for Attack pattern and Course of action`);
   const bulkOperations = [];
   const callback = (attacks) => {
     const op = attacks
@@ -31,10 +31,10 @@ export const up = async (next) => {
   const concurrentUpdate = async (bulk) => {
     await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;
-    logger.info(`[OPENCTI] Rewriting standard ids: ${currentProcessing} / ${bulkOperations.length}`);
+    logApp.info(`[OPENCTI] Rewriting standard ids: ${currentProcessing} / ${bulkOperations.length}`);
   };
   await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
-  logger.info(`[MIGRATION] Rewriting standard ids done in ${new Date() - start} ms`);
+  logApp.info(`[MIGRATION] Rewriting standard ids done in ${new Date() - start} ms`);
   next();
 };
 

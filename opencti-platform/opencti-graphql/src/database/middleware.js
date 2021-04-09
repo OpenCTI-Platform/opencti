@@ -125,7 +125,7 @@ import {
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservable, stixCyberObservableFieldsToBeUpdated } from '../schema/stixCyberObservable';
-import { BUS_TOPICS, logger } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import {
   dayFormat,
   escape,
@@ -843,7 +843,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   if (notFullyResolved) {
     throw UnsupportedError('[OPENCTI] Merging required full resolved inputs');
   }
-  logger.info(`[OPENCTI] Merging ${sourceEntities.map((i) => i.internal_id).join(',')} in ${targetEntity.internal_id}`);
+  logApp.info(`[OPENCTI] Merging ${sourceEntities.map((i) => i.internal_id).join(',')} in ${targetEntity.internal_id}`);
   // Pre-checks
   const sourceIds = R.map((e) => e.internal_id, sourceEntities);
   if (R.includes(targetEntity.internal_id, sourceIds)) {
@@ -956,17 +956,17 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     }
   }
   // Update all impacted relations.
-  logger.info(`[OPENCTI] Merging updating ${updateConnections.length} relations for ${targetEntity.internal_id}`);
+  logApp.info(`[OPENCTI] Merging updating ${updateConnections.length} relations for ${targetEntity.internal_id}`);
   let currentRelsUpdateCount = 0;
   const groupsOfRelsUpdate = R.splitEvery(MAX_SPLIT, updateConnections);
   const concurrentRelsUpdate = async (connsToUpdate) => {
     await elUpdateRelationConnections(connsToUpdate);
     currentRelsUpdateCount += connsToUpdate.length;
-    logger.info(`[OPENCTI] Merging, updating relations ${currentRelsUpdateCount} / ${updateConnections.length}`);
+    logApp.info(`[OPENCTI] Merging, updating relations ${currentRelsUpdateCount} / ${updateConnections.length}`);
   };
   await Promise.map(groupsOfRelsUpdate, concurrentRelsUpdate, { concurrency: ES_MAX_CONCURRENCY });
   // Update all impacted entities
-  logger.info(`[OPENCTI] Merging impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
+  logApp.info(`[OPENCTI] Merging impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
   const updatesByEntity = R.groupBy((i) => i.id, updateEntities);
   const entries = Object.entries(updatesByEntity);
   let currentEntUpdateCount = 0;
@@ -979,7 +979,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   const concurrentEntitiesUpdate = async (entitiesToUpdate) => {
     await elUpdateEntityConnections(entitiesToUpdate);
     currentEntUpdateCount += entitiesToUpdate.length;
-    logger.info(`[OPENCTI] Merging updating bulk entities ${currentEntUpdateCount} / ${updateBulkEntities.length}`);
+    logApp.info(`[OPENCTI] Merging updating bulk entities ${currentEntUpdateCount} / ${updateBulkEntities.length}`);
   };
   await Promise.map(groupsOfEntityUpdate, concurrentEntitiesUpdate, { concurrency: ES_MAX_CONCURRENCY });
   // Take care of multi update
@@ -987,7 +987,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   await Promise.map(
     updateMultiEntities,
     async ([id, values]) => {
-      logger.info(`[OPENCTI] Merging, updating single entity ${id} / ${values.length}`);
+      logApp.info(`[OPENCTI] Merging, updating single entity ${id} / ${values.length}`);
       const changeOperations = values.filter((element) => element.toReplace !== null);
       const addOperations = values.filter((element) => element.toReplace === null);
       // Group all simple add into single operation
@@ -1059,7 +1059,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   if (impactedInputs.length > 0) {
     const updateAsInstance = partialInstanceWithInputs(targetEntity, impactedInputs);
     await elUpdateElement(updateAsInstance);
-    logger.info(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateAsInstance });
+    logApp.info(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateAsInstance });
   }
 };
 const computeParticipants = (entities) => {

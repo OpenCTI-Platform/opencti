@@ -13,7 +13,7 @@ import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_EXPORT_FILE, loadConn
 import { generateWorkId } from '../schema/identifier';
 import { READ_INDEX_HISTORY, isNotEmptyField, INDEX_HISTORY } from '../database/utils';
 import { redisCreateWork, redisDeleteWork, redisGetWork, redisUpdateWorkFigures } from '../database/redis';
-import { logger } from '../config/conf';
+import { logApp } from '../config/conf';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { DatabaseError } from '../config/errors';
 import { now, sinceNowInMinutes } from '../utils/format';
@@ -154,7 +154,7 @@ export const deleteOldCompletedWorks = async (connector, logInfo = false) => {
       }
       if (logInfo) {
         const message = `[WORKS] Deleting old works ${connector.name}: ${counter}/${totalToDelete}`;
-        logger.info(message);
+        logApp.info(message);
       }
     }
   }

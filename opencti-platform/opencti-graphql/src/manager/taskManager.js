@@ -14,7 +14,7 @@ import {
   TASK_TYPE_QUERY,
   updateTask,
 } from '../domain/task';
-import conf, { logger } from '../config/conf';
+import conf, { logApp } from '../config/conf';
 import { resolveUserById, SYSTEM_USER } from '../domain/user';
 import {
   createRelation,
@@ -174,12 +174,12 @@ const executeProcessing = async (user, processingElements) => {
 };
 
 const taskHandler = async () => {
-  logger.debug('[OPENCTI] Running Expiration manager');
+  logApp.debug('[OPENCTI] Running Expiration manager');
   let lock;
   try {
     // Lock the manager
     lock = await lockResource([TASK_MANAGER_KEY]);
-    logger.debug('[OPENCTI] Task manager lock acquired');
+    logApp.debug('[OPENCTI] Task manager lock acquired');
     const task = await findTaskToExecute();
     // region Task checking
     if (!task) {
@@ -189,7 +189,7 @@ const taskHandler = async () => {
     const isQueryTask = task.type === TASK_TYPE_QUERY;
     const isListTask = task.type === TASK_TYPE_LIST;
     if (!isQueryTask && !isListTask) {
-      logger.error(`[OPENCTI] Task manager can't process ${task.type} type`);
+      logApp.error(`[OPENCTI] Task manager can't process ${task.type} type`);
       return;
     }
     // endregion
@@ -220,12 +220,12 @@ const taskHandler = async () => {
   } catch (e) {
     // We dont care about failing to get the lock.
     if (e.name === TYPE_LOCK_ERROR) {
-      logger.debug('[OPENCTI] Task manager already in progress by another API');
+      logApp.debug('[OPENCTI] Task manager already in progress by another API');
     } else {
-      logger.error('[OPENCTI] Task manager fail to execute', { error: e });
+      logApp.error('[OPENCTI] Task manager fail to execute', { error: e });
     }
   } finally {
-    logger.debug('[OPENCTI] Task manager done');
+    logApp.debug('[OPENCTI] Task manager done');
     if (lock) await lock.unlock();
   }
 };

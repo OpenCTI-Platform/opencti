@@ -1,7 +1,7 @@
 import { dissoc, filter, head, includes, isEmpty, isNil } from 'ramda';
 import { stripIgnoredCharacters } from 'graphql';
 import nconf from 'nconf';
-import { logger } from '../config/conf';
+import { logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
 import { getMemoryStatistics } from '../domain/settings';
 import { AUTH_FAILURE, AUTH_REQUIRED, FORBIDDEN_ACCESS, UNSUPPORTED_ERROR } from '../config/errors';
@@ -85,13 +85,13 @@ export default {
           // Authentication problem can be logged in warning (dissoc variables to hide password)
           // If worker is still retrying, this is not yet a problem, can be logged in warning until then.
           if (isRetryableCall || isAuthenticationCall) {
-            logger.warn(API_CALL_MESSAGE, { ...dissoc('variables', callMetaData), error });
+            logApp.warn(API_CALL_MESSAGE, { ...dissoc('variables', callMetaData), error });
           } else {
             // Every other uses cases are logged with error level
-            logger.error(API_CALL_MESSAGE, { ...callMetaData, error });
+            logApp.error(API_CALL_MESSAGE, { ...callMetaData, error });
           }
         } else if (perfLog) {
-          logger.info(API_CALL_MESSAGE, { ...callMetaData, memory: getMemoryStatistics() });
+          logApp.info(API_CALL_MESSAGE, { ...callMetaData, memory: getMemoryStatistics() });
         }
       },
     };

@@ -4,7 +4,7 @@ import https from 'https';
 import http from 'http';
 // noinspection NodeCoreCodingAssistance
 import { readFileSync } from 'fs';
-import conf, { logger } from './config/conf';
+import conf, { logApp } from './config/conf';
 import createApp from './app';
 import createApolloServer from './graphql/graphql';
 import { initBroadcaster } from './graphql/sseMiddleware';
@@ -50,12 +50,12 @@ export const listenServer = async () => {
           taskManager.shutdown();
         });
         httpServer.listen(PORT, () => {
-          logger.info(`[OPENCTI] Servers ready on port ${PORT}`);
+          logApp.info(`[OPENCTI] Servers ready on port ${PORT}`);
           resolve(httpServer);
         });
       });
     } catch (e) {
-      logger.error(`[OPENCTI] Start http server fail`, { error: e });
+      logApp.error(`[OPENCTI] Start http server fail`, { error: e });
       reject(e);
     }
   });
@@ -63,7 +63,7 @@ export const listenServer = async () => {
 export const restartServer = async (httpServer) => {
   return new Promise((resolve, reject) => {
     httpServer.close(() => {
-      logger.info('[OPENCTI] GraphQL server stopped');
+      logApp.info('[OPENCTI] GraphQL server stopped');
       listenServer()
         .then((server) => resolve(server))
         .catch((e) => reject(e));

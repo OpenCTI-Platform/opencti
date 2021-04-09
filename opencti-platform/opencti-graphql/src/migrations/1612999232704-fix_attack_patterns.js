@@ -3,12 +3,12 @@ import { Promise } from 'bluebird';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../schema/stixDomainObject';
 import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/elasticSearch';
-import { logger } from '../config/conf';
+import { logApp } from '../config/conf';
 import { SYSTEM_USER } from '../domain/user';
 
 export const up = async (next) => {
   const start = new Date().getTime();
-  logger.info(`[MIGRATION] Cleaning aliases and STIX IDs of Attack Patterns`);
+  logApp.info(`[MIGRATION] Cleaning aliases and STIX IDs of Attack Patterns`);
   const bulkOperations = [];
   const callback = (attacks) => {
     const op = attacks
@@ -29,10 +29,10 @@ export const up = async (next) => {
   const concurrentUpdate = async (bulk) => {
     await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;
-    logger.info(`[OPENCTI] Cleaning aliases and STIX IDs ${currentProcessing} / ${bulkOperations.length}`);
+    logApp.info(`[OPENCTI] Cleaning aliases and STIX IDs ${currentProcessing} / ${bulkOperations.length}`);
   };
   await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
-  logger.info(`[MIGRATION] Cleaning aliases and STIX IDs of attack patterns done in ${new Date() - start} ms`);
+  logApp.info(`[MIGRATION] Cleaning aliases and STIX IDs of attack patterns done in ${new Date() - start} ms`);
   next();
 };
 

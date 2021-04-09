@@ -5,8 +5,19 @@
       "key": null,
       "crt": null
     },
-    "logs": "./logs",
-    "logs_level": "info",
+    "app_logs": {
+      "logs_level": "info",
+      "logs_files": true,
+      "logs_console": true,
+      "logs_max_files": 7,
+      "logs_directory": "./logs"
+    },
+    "audit_logs": {
+      "logs_files": true,
+      "logs_console": true,
+      "logs_max_files": 7,
+      "logs_directory": "./logs"
+    },
     "request_timeout": 120000,
     "session_timeout": 1200000,
     "session_manager": "shared",
