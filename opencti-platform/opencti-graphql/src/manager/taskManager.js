@@ -41,6 +41,7 @@ const ACTION_TYPE_RELATION = 'RELATION';
 
 const findTaskToExecute = async () => {
   const tasks = await findAll(SYSTEM_USER, {
+    connectionFormat: false,
     orderBy: 'created_at',
     orderMode: 'asc',
     limit: 1,
@@ -211,7 +212,7 @@ const taskHandler = async () => {
     // Get the last element processed and update task_position+ task_processed_number
     const processedNumber = task.task_processed_number + processingElements.length;
     const patch = {
-      task_position: R.last(processingElements).next,
+      task_position: processingElements.length > 0 ? R.last(processingElements).next : null,
       task_processed_number: processedNumber,
       last_execution_date: now(),
       completed: processingElements.length < MAX_TASK_ELEMENTS,
