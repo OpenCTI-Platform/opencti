@@ -36,7 +36,7 @@ import {
   userRenewToken,
   userWithOrigin,
 } from '../domain/user';
-import { BUS_TOPICS, logAudit, logApp } from '../config/conf';
+import { BUS_TOPICS, logApp, logAudit } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
 import { AuthenticationFailure } from '../config/errors';
 import { addRole } from '../domain/grant';
@@ -89,7 +89,7 @@ const userResolvers = {
       let loggedUser;
       for (let index = 0; index < formProviders.length; index += 1) {
         const auth = formProviders[index];
-        const body = { username: input.email, password: input.password };
+        req.body = { username: input.email, password: input.password };
         const { userToken, userProvider } = await new Promise((resolve) => {
           passport.authenticate(auth.provider, {}, (err, authInfo, info) => {
             if (err || info) {
@@ -97,8 +97,8 @@ const userResolvers = {
               const auditUser = userWithOrigin(req, { user_email: input.email });
               logAudit.error(auditUser, LOGIN_ACTION, { provider: auth.provider });
             }
-            resolve({ userToken: authInfo.token, userProvider: auth.provider });
-          })({ body });
+            resolve({ userToken: authInfo?.token, userProvider: auth.provider });
+          })(req);
         });
         // As soon as credential is validated, stop looking for another provider
         if (userToken) {

@@ -5,6 +5,7 @@ build
 dist
 node_modules
 public
+config/ssl
 config/demo.json
 config/development.json
 config/development.json.bak

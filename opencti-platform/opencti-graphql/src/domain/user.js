@@ -52,10 +52,10 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { now } from '../utils/format';
 import { applicationSession } from '../database/session';
 import {
-  convertRelationToAction, LOGIN_ACTION,
+  convertRelationToAction,
+  LOGIN_ACTION,
   LOGOUT_ACTION,
   ROLE_DELETION,
-  SESSION_CREATION,
   USER_CREATION,
   USER_DELETION,
 } from '../config/audit';

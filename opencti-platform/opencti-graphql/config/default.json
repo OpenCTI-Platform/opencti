@@ -3,7 +3,9 @@
     "port": 4000,
     "https_cert": {
       "key": null,
-      "crt": null
+      "crt": null,
+      "ca": [],
+      "reject_unauthorized": true
     },
     "app_logs": {
       "logs_level": "info",

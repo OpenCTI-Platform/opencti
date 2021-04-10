@@ -12,7 +12,7 @@ import { initAdmin, login, loginFromProvider } from '../domain/user';
 import conf, { logApp } from './conf';
 import { ConfigurationError } from './errors';
 
-const empty = R.anyPass([R.isNil, R.isEmpty]);
+export const empty = R.anyPass([R.isNil, R.isEmpty]);
 
 // Admin user initialization
 export const initializeAdminUser = async () => {
@@ -76,6 +76,13 @@ const configRemapping = (config) => {
 
 // Providers definition
 const STRATEGY_LOCAL = 'LocalStrategy';
+export const STRATEGY_CERT = 'ClientCertStrategy';
+const STRATEGY_LDAP = 'LdapStrategy';
+const STRATEGY_OPENID = 'OpenIDConnectStrategy';
+const STRATEGY_FACEBOOK = 'FacebookStrategy';
+const STRATEGY_GOOGLE = 'GoogleStrategy';
+const STRATEGY_GITHUB = 'GithubStrategy';
+const STRATEGY_AUTH0 = 'Auth0Strategy';
 const AUTH_SSO = 'SSO';
 const AUTH_FORM = 'FORM';
 
@@ -99,7 +106,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
   let mappedConfig = configRemapping(config);
   if (config === undefined || !config.disabled) {
     const providerName = config?.label || providerIdent;
-    // Form strategies
+    // FORM Strategies
     if (strategy === STRATEGY_LOCAL) {
       const localStrategy = new LocalStrategy({}, (username, password, done) => {
         logApp.debug(`[LOCAL] Successfully logged`, { username });
@@ -114,7 +121,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       passport.use('local', localStrategy);
       providers.push({ name: providerName, type: AUTH_FORM, strategy, provider: 'local' });
     }
-    if (strategy === 'LdapStrategy') {
+    if (strategy === STRATEGY_LDAP) {
       // eslint-disable-next-line
       const allowSelfSigned = mappedConfig.allow_self_signed || mappedConfig.allow_self_signed === 'true';
       mappedConfig = R.assoc('tlsOptions', { rejectUnauthorized: !allowSelfSigned }, mappedConfig);
@@ -141,7 +148,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       providers.push({ name: providerName, type: AUTH_FORM, strategy, provider: 'ldapauth' });
     }
     // SSO Strategies
-    if (strategy === 'OpenIDConnectStrategy') {
+    if (strategy === STRATEGY_OPENID) {
       // Here we use directly the config and not the mapped one.
       // All config of openid lib use snake case.
       OpenIDIssuer.discover(config.issuer).then((issuer) => {
@@ -157,7 +164,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'oic' });
       });
     }
-    if (strategy === 'FacebookStrategy') {
+    if (strategy === STRATEGY_FACEBOOK) {
       const specificConfig = { profileFields: ['id', 'emails', 'name'], scope: 'email' };
       const facebookOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
       const facebookStrategy = new FacebookStrategy(
@@ -172,7 +179,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       passport.use('facebook', facebookStrategy);
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'facebook' });
     }
-    if (strategy === 'GoogleStrategy') {
+    if (strategy === STRATEGY_GOOGLE) {
       const specificConfig = { scope: 'email' };
       const googleOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
       const googleStrategy = new GoogleStrategy(googleOptions, (req, token, tokenSecret, profile, done) => {
@@ -184,7 +191,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       passport.use(googleStrategy);
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'google' });
     }
-    if (strategy === 'GithubStrategy') {
+    if (strategy === STRATEGY_GITHUB) {
       const specificConfig = { scope: 'user:email' };
       const githubOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
       const githubStrategy = new GithubStrategy(githubOptions, (req, token, tokenSecret, profile, done) => {
@@ -196,7 +203,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       passport.use('github', githubStrategy);
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'github' });
     }
-    if (strategy === 'Auth0Strategy') {
+    if (strategy === STRATEGY_AUTH0) {
       const auth0Options = { passReqToCallback: true, ...mappedConfig };
       const auth0Strategy = new Auth0Strategy(
         auth0Options,
@@ -210,8 +217,15 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       passport.use('auth0', auth0Strategy);
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'auth0' });
     }
+    // CERT Strategies
+    if (strategy === STRATEGY_CERT) {
+      // This strategy is directly handled by express
+      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'cert' });
+    }
   }
 }
 
 export const PROVIDERS = providers;
+export const isStrategyActivated = (strategy) => providers.map((p) => p.strategy).includes(strategy);
+
 export default passport;

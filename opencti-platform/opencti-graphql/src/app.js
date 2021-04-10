@@ -13,8 +13,8 @@ import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
 import { basePath, DEV_MODE, logApp, logAudit } from './config/conf';
-import passport from './config/providers';
-import { authenticateUser, userWithOrigin } from './domain/user';
+import passport, { empty, isStrategyActivated, STRATEGY_CERT } from './config/providers';
+import { authenticateUser, loginFromProvider, userWithOrigin } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
 import { checkSystemDependencies } from './initialization';
 import { getSettings } from './domain/settings';
@@ -111,6 +111,33 @@ const createApp = async (apolloServer, broadcaster) => {
     res.setHeader('Content-type', data.metaData.mimetype);
     const stream = await downloadFile(file);
     stream.pipe(res);
+  });
+
+  // -- Client HTTPS Cert login custom strategy
+  app.get(`${basePath}/auth/cert`, (req, res) => {
+    const isActivated = isStrategyActivated(STRATEGY_CERT);
+    if (!isActivated) {
+      res.redirect(`/dashboard?message=CERT_AUTH_NOT_ACTIVATED`);
+    } else {
+      const cert = req.connection.getPeerCertificate();
+      if (!R.isEmpty(cert) && req.client.authorized) {
+        const { CN, emailAddress } = cert.subject;
+        if (empty(emailAddress)) {
+          res.redirect(`/dashboard?message=MALFORMED_CERTIFICATE`);
+        } else {
+          loginFromProvider(emailAddress, empty(CN) ? emailAddress : CN)
+            .then(async ({ token }) => {
+              await authenticateUser(req, { providerToken: token.uuid, provider: 'cert' });
+              res.redirect(req.headers.referer);
+            })
+            .catch((err) => {
+              res.redirect(`/dashboard?message=${err?.message}`);
+            });
+        }
+      } else {
+        res.redirect(`/dashboard?message=CERT_AUTH_CONFIGURATION_ERROR`);
+      }
+    }
   });
 
   // -- Passport login

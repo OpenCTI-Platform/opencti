@@ -10,11 +10,14 @@ import createApolloServer from './graphql/graphql';
 import { initBroadcaster } from './graphql/sseMiddleware';
 import initExpiredManager from './manager/expiredManager';
 import initTaskManager from './manager/taskManager';
+import { isStrategyActivated, STRATEGY_CERT } from './config/providers';
 
 const PORT = conf.get('app:port');
 const REQ_TIMEOUT = conf.get('app:request_timeout');
 const CERT_KEY_PATH = conf.get('app:https_cert:key');
 const CERT_KEY_CERT = conf.get('app:https_cert:crt');
+const CA_CERTS = conf.get('app:https_cert:ca');
+const rejectUnauthorized = conf.get('app:https_cert:reject_unauthorized');
 const broadcaster = initBroadcaster();
 const expiredManager = initExpiredManager();
 const taskManager = initTaskManager();
@@ -25,7 +28,9 @@ const createHttpServer = async () => {
   if (CERT_KEY_PATH && CERT_KEY_CERT) {
     const key = readFileSync(CERT_KEY_PATH);
     const cert = readFileSync(CERT_KEY_CERT);
-    httpServer = https.createServer({ key, cert }, app);
+    const ca = CA_CERTS.map((path) => readFileSync(path));
+    const requestCert = isStrategyActivated(STRATEGY_CERT);
+    httpServer = https.createServer({ key, cert, requestCert, rejectUnauthorized, ca }, app);
   } else {
     httpServer = http.createServer(app);
   }
