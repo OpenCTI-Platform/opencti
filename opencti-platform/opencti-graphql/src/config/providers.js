@@ -1,5 +1,7 @@
 import * as R from 'ramda';
 import passport from 'passport/lib';
+import GitHub from 'github-api';
+import jwtDecode from 'jwt-decode';
 import FacebookStrategy from 'passport-facebook';
 import GithubStrategy from 'passport-github';
 import LocalStrategy from 'passport-local';
@@ -63,7 +65,7 @@ const configurationMapping = {
 };
 const configRemapping = (config) => {
   if (!config) return config;
-  if (typeof config === 'object') {
+  if (typeof config === 'object' && !Array.isArray(config)) {
     const n = {};
     Object.keys(config).forEach((key) => {
       const remapKey = configurationMapping[key] ? configurationMapping[key] : key;
@@ -132,7 +134,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
         if (!userMail) {
           logApp.warn(`[LDAP] Configuration error, cant map mail and username`, { user, userMail, userName });
-          done(null);
+          done({ message: 'Configuration error, ask your administrator' });
         } else {
           logApp.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
           loginFromProvider(userMail, empty(userName) ? userMail : userName)
@@ -154,11 +156,26 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       OpenIDIssuer.discover(config.issuer).then((issuer) => {
         const { Client } = issuer;
         const client = new Client(config);
-        const options = { client, passReqToCallback: true, params: { scope: 'openid email profile' } };
+        const options = { client, passReqToCallback: true, params: { scope: 'openid roles email profile' } };
+        const roles = mappedConfig.roles || [];
         const openIDStrategy = new OpenIDStrategy(options, (req, tokenset, userinfo, done) => {
           logApp.debug(`[OPENID] Successfully logged`, { userinfo });
-          const { email, name } = userinfo;
-          providerLoginHandler(req, email, name, strategy, done);
+          let authorized = true;
+          if (roles.length > 0) {
+            const decodedUser = jwtDecode(tokenset.access_token);
+            const availableRoles = [
+              ...(decodedUser.roles || []),
+              ...(decodedUser.realm_access?.roles || []),
+              ...(decodedUser.resource_access?.account?.roles || []),
+            ];
+            authorized = roles.some((o) => availableRoles.includes(o));
+          }
+          if (authorized) {
+            const { email, name } = userinfo;
+            providerLoginHandler(req, email, name, strategy, done);
+          } else {
+            done({ message: 'Restricted access, ask your administrator' });
+          }
         });
         passport.use('oic', openIDStrategy);
         providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'oic' });
@@ -180,25 +197,48 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'facebook' });
     }
     if (strategy === STRATEGY_GOOGLE) {
-      const specificConfig = { scope: 'email' };
+      const domains = mappedConfig.domains || [];
+      const specificConfig = { scope: ['email', 'profile'] };
       const googleOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
       const googleStrategy = new GoogleStrategy(googleOptions, (req, token, tokenSecret, profile, done) => {
         logApp.debug(`[GOOGLE] Successfully logged`, { profile });
         const email = R.head(profile.emails).value;
         const name = profile.displayName;
-        providerLoginHandler(req, email, name, strategy, done);
+        let authorized = true;
+        if (domains.length > 0) {
+          const [, domain] = email.split('@');
+          authorized = domains.includes(domain);
+        }
+        if (authorized) {
+          providerLoginHandler(req, email, name, strategy, done);
+        } else {
+          done({ message: 'Restricted access, ask your administrator' });
+        }
       });
-      passport.use(googleStrategy);
+      passport.use('google', googleStrategy);
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'google' });
     }
     if (strategy === STRATEGY_GITHUB) {
-      const specificConfig = { scope: 'user:email' };
-      const githubOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
-      const githubStrategy = new GithubStrategy(githubOptions, (req, token, tokenSecret, profile, done) => {
+      const organizations = mappedConfig.organizations || [];
+      const scope = organizations.length > 0 ? 'user:email,read:org' : 'user:email';
+      const githubOptions = { passReqToCallback: true, ...mappedConfig, scope };
+      const githubStrategy = new GithubStrategy(githubOptions, async (req, token, tokenSecret, profile, done) => {
         logApp.debug(`[GITHUB] Successfully logged`, { profile });
-        const { displayName } = profile;
-        const email = R.head(profile.emails).value;
-        providerLoginHandler(req, email, displayName, strategy, done);
+        let authorized = true;
+        if (organizations.length > 0) {
+          const github = new GitHub({ token });
+          const me = github.getUser();
+          const { data: orgs } = await me.listOrgs();
+          const githubOrgs = orgs.map((o) => o.login);
+          authorized = organizations.some((o) => githubOrgs.includes(o));
+        }
+        if (authorized) {
+          const { displayName } = profile;
+          const email = R.head(profile.emails).value;
+          providerLoginHandler(req, email, displayName, strategy, done);
+        } else {
+          done({ message: 'Restricted access, ask your administrator' });
+        }
       });
       passport.use('github', githubStrategy);
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'github' });

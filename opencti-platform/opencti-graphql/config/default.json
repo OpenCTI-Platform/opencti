@@ -2,9 +2,9 @@
   "app": {
     "port": 4000,
     "https_cert": {
+      "ca": [],
       "key": null,
       "crt": null,
-      "ca": [],
       "reject_unauthorized": true
     },
     "app_logs": {

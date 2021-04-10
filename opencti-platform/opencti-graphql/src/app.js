@@ -25,6 +25,10 @@ import { LOGIN_ACTION } from './config/audit';
 
 const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 
+const setCookieError = (res, message) => {
+  res.cookie('opencti_flash', message || 'Unknown error', { maxAge: 5000, httpOnly: false });
+};
+
 const createApp = async (apolloServer, broadcaster) => {
   const appSessionHandler = initializeSession();
   const limiter = new RateLimit({
@@ -117,13 +121,15 @@ const createApp = async (apolloServer, broadcaster) => {
   app.get(`${basePath}/auth/cert`, (req, res) => {
     const isActivated = isStrategyActivated(STRATEGY_CERT);
     if (!isActivated) {
-      res.redirect(`/dashboard?message=CERT_AUTH_NOT_ACTIVATED`);
+      setCookieError(res, 'Cert authentication is not available');
+      res.redirect(req.headers.referer);
     } else {
       const cert = req.connection.getPeerCertificate();
       if (!R.isEmpty(cert) && req.client.authorized) {
         const { CN, emailAddress } = cert.subject;
         if (empty(emailAddress)) {
-          res.redirect(`/dashboard?message=MALFORMED_CERTIFICATE`);
+          setCookieError(res, 'Client certificate need a correct emailAddress');
+          res.redirect(req.headers.referer);
         } else {
           loginFromProvider(emailAddress, empty(CN) ? emailAddress : CN)
             .then(async ({ token }) => {
@@ -131,11 +137,13 @@ const createApp = async (apolloServer, broadcaster) => {
               res.redirect(req.headers.referer);
             })
             .catch((err) => {
-              res.redirect(`/dashboard?message=${err?.message}`);
+              setCookieError(res, err?.message);
+              res.redirect(req.headers.referer);
             });
         }
       } else {
-        res.redirect(`/dashboard?message=CERT_AUTH_CONFIGURATION_ERROR`);
+        setCookieError(res, 'You must select a correct certificate');
+        res.redirect(req.headers.referer);
       }
     }
   });
@@ -151,14 +159,15 @@ const createApp = async (apolloServer, broadcaster) => {
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
   app.get(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), (req, res, next) => {
     const { provider } = req.params;
+    const { referer } = req.session;
     passport.authenticate(provider, {}, async (err, token) => {
       if (err || !token) {
         logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
-        return res.redirect(`/dashboard?message=${err?.message}`);
+        setCookieError(res, err?.message);
+        return res.redirect(referer);
       }
       // noinspection UnnecessaryLocalVariableJS
       await authenticateUser(req, { providerToken: token.uuid, provider });
-      const { referer } = req.session;
       req.session.referer = null;
       return res.redirect(referer);
     })(req, res, next);
