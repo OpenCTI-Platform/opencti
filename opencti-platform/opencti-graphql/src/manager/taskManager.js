@@ -5,6 +5,7 @@ import { lockResource } from '../database/redis';
 import {
   ACTION_TYPE_ADD,
   ACTION_TYPE_DELETE,
+  ACTION_TYPE_MERGE,
   ACTION_TYPE_REMOVE,
   ACTION_TYPE_REPLACE,
   executeTaskQuery,
@@ -22,6 +23,7 @@ import {
   deleteRelationsByFromAndTo,
   internalLoadById,
   listAllRelations,
+  mergeEntities,
   patchAttribute,
 } from '../database/middleware';
 import { now } from '../utils/format';
@@ -146,6 +148,11 @@ const executeReplace = async (user, context, element) => {
     await patchAttribute(user, element.id, element.entity_type, patch);
   }
 };
+const executeMerge = async (user, context, element) => {
+  const { values } = context;
+  await mergeEntities(user, element.internal_id, values);
+};
+
 const executeProcessing = async (user, processingElements) => {
   const errors = [];
   for (let index = 0; index < processingElements.length; index += 1) {
@@ -165,6 +172,9 @@ const executeProcessing = async (user, processingElements) => {
         }
         if (type === ACTION_TYPE_REPLACE) {
           await executeReplace(user, context, element);
+        }
+        if (type === ACTION_TYPE_MERGE) {
+          await executeMerge(user, context, element);
         }
       }
     } catch (err) {

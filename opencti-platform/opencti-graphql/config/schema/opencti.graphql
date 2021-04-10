@@ -475,14 +475,15 @@ enum TaskActionType {
   ADD
   REMOVE
   REPLACE
+  MERGE
 }
 enum TaskContextType {
   ATTRIBUTE
   RELATION
 }
 type TaskContext {
-  field: String!
-  type: TaskContextType!
+  field: String
+  type: TaskContextType
   values: [String]!
 }
 type TaskAction {
@@ -544,8 +545,8 @@ type TaskConnection {
 }
 
 input TaskContextInput {
-  field: String!
-  type: TaskContextType!
+  field: String
+  type: TaskContextType
   values: [String]!
 }
 input TaskActionInput {
