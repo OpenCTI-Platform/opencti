@@ -54,6 +54,7 @@ class CurationStixDomainObjectLineComponent extends Component {
       onLabelClick,
       onToggleEntity,
       selectedElements,
+      selectAll,
     } = this.props;
     return (
       <ListItem
@@ -61,12 +62,12 @@ class CurationStixDomainObjectLineComponent extends Component {
         divider={true}
         button={true}
         onClick={onToggleEntity.bind(this, node)}
-        selected={node.id in selectedElements}
+        selected={node.id in (selectedElements || {})}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Checkbox
             edge="start"
-            checked={node.id in selectedElements}
+            checked={selectAll || node.id in (selectedElements || {})}
             disableRipple={true}
             onChange={onToggleEntity.bind(this, node)}
           />

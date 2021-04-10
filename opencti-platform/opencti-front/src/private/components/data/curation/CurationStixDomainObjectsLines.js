@@ -30,6 +30,7 @@ class CurationStixDomainObjectsLines extends Component {
       onLabelClick,
       onToggleEntity,
       selectedElements,
+      selectAll,
     } = this.props;
     return (
       <ListLinesContent
@@ -49,6 +50,7 @@ class CurationStixDomainObjectsLines extends Component {
         nbOfRowsToLoad={nbOfRowsToLoad}
         onLabelClick={onLabelClick.bind(this)}
         selectedElements={selectedElements}
+        selectAll={selectAll}
         onToggleEntity={onToggleEntity.bind(this)}
       />
     );
@@ -67,6 +69,7 @@ CurationStixDomainObjectsLines.propTypes = {
   setNumberOfElements: PropTypes.func,
   onToggleEntity: PropTypes.func,
   selectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
 };
 
 export const curationStixDomainObjectsLinesQuery = graphql`

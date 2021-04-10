@@ -1,16 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose,
-  append,
-  filter,
-  propOr,
-  assoc,
-  dissoc,
-  omit,
-  uniqBy,
-  prop,
-} from 'ramda';
+import * as R from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
@@ -42,14 +32,15 @@ class StixCyberObservables extends Component {
       'view-curation',
     );
     this.state = {
-      sortBy: propOr('created_at', 'sortBy', params),
-      orderAsc: propOr(false, 'orderAsc', params),
-      searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('lines', 'view', params),
-      filters: propOr({}, 'filters', params),
-      types: propOr([], 'types', params),
+      sortBy: R.propOr('created_at', 'sortBy', params),
+      orderAsc: R.propOr(false, 'orderAsc', params),
+      searchTerm: R.propOr('', 'searchTerm', params),
+      view: R.propOr('lines', 'view', params),
+      filters: R.propOr({}, 'filters', params),
+      types: R.propOr([], 'types', params),
       numberOfElements: { number: 0, symbol: '' },
-      selectedElements: {},
+      selectedElements: null,
+      selectAll: false,
     };
   }
 
@@ -74,22 +65,22 @@ class StixCyberObservables extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
-  handleResetSelectedElements() {
-    this.setState({ selectedElements: {} });
+  handleClearSelectedElements() {
+    this.setState({ selectedElements: null });
   }
 
   handleToggle(type) {
     if (this.state.types.includes(type)) {
       this.setState(
         {
-          types: filter((t) => t !== type, this.state.types),
+          types: R.filter((t) => t !== type, this.state.types),
         },
         () => this.saveView(),
       );
     } else {
       this.setState(
         {
-          types: append(type, this.state.types),
+          types: R.append(type, this.state.types),
         },
         () => this.saveView(),
       );
@@ -104,9 +95,9 @@ class StixCyberObservables extends Component {
     if (this.state.filters[key] && this.state.filters[key].length > 0) {
       this.setState(
         {
-          filters: assoc(
+          filters: R.assoc(
             key,
-            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            R.uniqBy(R.prop('id'), [{ id, value }, ...this.state.filters[key]]),
             this.state.filters,
           ),
         },
@@ -115,7 +106,7 @@ class StixCyberObservables extends Component {
     } else {
       this.setState(
         {
-          filters: assoc(key, [{ id, value }], this.state.filters),
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
         },
         () => this.saveView(),
       );
@@ -123,7 +114,7 @@ class StixCyberObservables extends Component {
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {
@@ -131,15 +122,28 @@ class StixCyberObservables extends Component {
   }
 
   handleToggleSelectEntity(entity) {
-    if (entity.id in this.state.selectedElements) {
+    const { selectedElements } = this.state;
+    if (entity.id in (selectedElements || {})) {
+      const newSelectedElements = R.omit([entity.id], selectedElements);
       this.setState({
-        selectedElements: omit([entity.id], this.state.selectedElements),
+        selectAll: false,
+        selectedElements: newSelectedElements,
       });
     } else {
+      const newSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        selectedElements || {},
+      );
       this.setState({
-        selectedElements: assoc(entity.id, entity, this.state.selectedElements),
+        selectAll: false,
+        selectedElements: newSelectedElements,
       });
     }
+  }
+
+  handleToggleSelectAll() {
+    this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
   }
 
   renderLines(paginationOptions) {
@@ -150,7 +154,12 @@ class StixCyberObservables extends Component {
       filters,
       numberOfElements,
       selectedElements,
+      selectAll,
     } = this.state;
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original;
+    }
     const dataColumns = {
       entity_type: {
         label: 'Type',
@@ -193,6 +202,8 @@ class StixCyberObservables extends Component {
           handleAddFilter={this.handleAddFilter.bind(this)}
           handleRemoveFilter={this.handleRemoveFilter.bind(this)}
           handleChangeView={this.handleChangeView.bind(this)}
+          handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+          selectAll={selectAll}
           disableCards={true}
           keyword={searchTerm}
           filters={filters}
@@ -218,6 +229,7 @@ class StixCyberObservables extends Component {
                 onLabelClick={this.handleAddFilter.bind(this)}
                 selectedElements={selectedElements}
                 onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                selectAll={selectAll}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
               />
             )}
@@ -226,7 +238,10 @@ class StixCyberObservables extends Component {
         <CurationToolBar
           paginationOptions={paginationOptions}
           selectedElements={selectedElements}
-          handleResetSelectedElements={this.handleResetSelectedElements.bind(
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          filters={filters}
+          handleClearSelectedElements={this.handleClearSelectedElements.bind(
             this,
           )}
         />
@@ -266,7 +281,7 @@ StixCyberObservables.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withRouter,
   withStyles(styles),

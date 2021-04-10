@@ -46,6 +46,9 @@ class ListLinesContent extends Component {
         selection = true;
       }
     }
+    if (this.props.selectAll !== prevProps.selectAll) {
+      selection = true;
+    }
     if (diff.length > 0 || selection) {
       this.listRef.forceUpdateGrid();
     }
@@ -96,6 +99,7 @@ class ListLinesContent extends Component {
       me,
       onLabelClick,
       selectedElements,
+      selectAll,
       onToggleEntity,
       connectionKey,
       isTo,
@@ -122,6 +126,7 @@ class ListLinesContent extends Component {
           me,
           onLabelClick,
           selectedElements,
+          selectAll,
           onToggleEntity,
           connectionKey,
           isTo,
@@ -206,6 +211,7 @@ ListLinesContent.propTypes = {
   onLabelClick: PropTypes.func,
   selectedElements: PropTypes.object,
   onToggleEntity: PropTypes.func,
+  selectAll: PropTypes.bool,
   connectionKey: PropTypes.string,
   isTo: PropTypes.bool,
 };

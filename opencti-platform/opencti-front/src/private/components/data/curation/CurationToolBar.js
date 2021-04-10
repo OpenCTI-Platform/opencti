@@ -1,50 +1,29 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import {
-  compose,
-  values,
-  map,
-  uniq,
-  head,
-  propOr,
-  concat,
-  pluck,
-  flatten,
-  pathOr,
-  tail,
-  filter,
-  includes,
-  isNil,
-} from 'ramda';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableRow from '@material-ui/core/TableRow';
 import IconButton from '@material-ui/core/IconButton';
-import { Close, Delete } from '@material-ui/icons';
-import { Merge } from 'mdi-material-ui';
+import { Delete } from '@material-ui/icons';
 import Drawer from '@material-ui/core/Drawer';
-import { ConnectionHandler } from 'relay-runtime';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import Slide from '@material-ui/core/Slide';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Radio from '@material-ui/core/Radio';
-import Alert from '@material-ui/lab/Alert/Alert';
 import Chip from '@material-ui/core/Chip';
-import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import inject18n from '../../../../components/i18n';
-import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
-import ItemMarking from '../../../../components/ItemMarking';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -58,43 +37,8 @@ const styles = (theme) => ({
     flex: '1 1 100%',
     fontSize: '12px',
   },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  aliases: {
-    margin: '0 7px 7px 0',
+  chipValue: {
+    margin: 0,
   },
 });
 
@@ -103,21 +47,20 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const curationToolBarDeletionMutation = graphql`
-  mutation CurationToolBarDeletionMutation($id: [ID]!) {
-    stixDomainObjectsDelete(id: $id)
+const curationToolBarListTaskAddMutation = graphql`
+  mutation CurationToolBarListTaskAddMutation($input: ListTaskAddInput) {
+    listTaskAdd(input: $input) {
+      id
+      type
+    }
   }
 `;
 
-const curationToolBarMergeMutation = graphql`
-  mutation CurationToolBarMergeMutation(
-    $id: ID!
-    $stixCoreObjectsIds: [String]!
-  ) {
-    stixCoreObjectEdit(id: $id) {
-      merge(stixCoreObjectsIds: $stixCoreObjectsIds) {
-        id
-      }
+const curationToolBarQueryTaskAddMutation = graphql`
+  mutation CurationToolBarQueryTaskAddMutation($input: QueryTaskAddInput) {
+    queryTaskAdd(input: $input) {
+      id
+      type
     }
   }
 `;
@@ -126,12 +69,38 @@ class CurationToolBar extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      displayTask: false,
+      displayAdd: false,
+      displayReplace: false,
       displayMerge: false,
-      displayDelete: false,
-      keptEntityId: null,
-      merging: false,
-      deleting: false,
+      taskType: null,
+      mergeKeptEntityId: null,
+      processing: false,
     };
+  }
+
+  handleOpenTask() {
+    this.setState({ displayTask: true });
+  }
+
+  handleCloseTask() {
+    this.setState({ displayTask: false });
+  }
+
+  handleOpenAdd() {
+    this.setState({ displayAdd: true });
+  }
+
+  handleCloseAdd() {
+    this.setState({ displayAdd: false });
+  }
+
+  handleOpenReplace() {
+    this.setState({ displayReplace: true });
+  }
+
+  handleCloseReplace() {
+    this.setState({ displayReplace: false });
   }
 
   handleOpenMerge() {
@@ -142,126 +111,42 @@ class CurationToolBar extends Component {
     this.setState({ displayMerge: false });
   }
 
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-  }
-
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
-
-  submitDelete() {
-    this.setState({ deleting: true });
-    const stixDomainObjectsIds = Object.keys(this.props.selectedElements);
-    commitMutation({
-      mutation: curationToolBarDeletionMutation,
-      variables: {
-        id: stixDomainObjectsIds,
-      },
-      updater: (store) => {
-        const container = store.getRoot();
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_stixDomainObjects',
-          this.props.paginationOptions,
-        );
-        stixDomainObjectsIds.map((id) => ConnectionHandler.deleteNode(conn, id));
-      },
-      onCompleted: () => {
-        this.setState({ deleting: false });
-        this.props.handleResetSelectedElements();
-        this.handleCloseDelete();
-
-        MESSAGING$.notifySuccess(
-          this.props.t('Successfully deleted selected entities'),
-        );
-      },
+  launchTask(type) {
+    this.setState({ taskType: type }, () => {
+      if (type === 'ADD') {
+        this.handleOpenAdd();
+      } else if (type === 'REPLACE') {
+        this.handleOpenReplace();
+      } else if (type === 'MERGE') {
+        this.handleOpenMerge();
+      } else if (type === 'DELETE') {
+        this.handleOpenTask();
+      }
     });
   }
 
-  handleChangeKeptEntityId(entityId) {
-    this.setState({ keptEntityId: entityId });
-  }
-
-  submitMerge() {
-    this.setState({ merging: true });
-    const { selectedElements } = this.props;
-    const { keptEntityId } = this.state;
-    const stixDomainObjectsIds = Object.keys(selectedElements);
-    const selectedElementsList = values(selectedElements);
-    const keptElement = keptEntityId
-      ? head(filter((n) => n.id === keptEntityId, selectedElementsList))
-      : head(selectedElementsList);
-    const filteredStixDomainObjectsIds = keptEntityId
-      ? filter((n) => n !== keptEntityId, stixDomainObjectsIds)
-      : tail(stixDomainObjectsIds);
-    commitMutation({
-      mutation: curationToolBarMergeMutation,
-      variables: {
-        id: keptElement.id,
-        stixCoreObjectsIds: filteredStixDomainObjectsIds,
-      },
-      updater: (store) => {
-        const container = store.getRoot();
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_stixDomainObjects',
-          this.props.paginationOptions,
-        );
-        filteredStixDomainObjectsIds.map((id) => ConnectionHandler.deleteNode(conn, id));
-      },
-      onCompleted: () => {
-        this.setState({ merging: false });
-        this.props.handleResetSelectedElements();
-        this.handleCloseMerge();
-        MESSAGING$.notifySuccess(
-          this.props.t('Successfully merged selected entities'),
-        );
-      },
-    });
+  submitTask() {
+    const { definedTask } = this.state;
+    console.log(definedTask);
   }
 
   render() {
-    const { t, classes, selectedElements } = this.props;
-    const { keptEntityId } = this.state;
-    const notMergableTypes = ['Indicator', 'Note', 'Opinion', 'Observed-Data'];
-    const numberOfSelectedElements = Object.keys(selectedElements).length;
-    const typesAreDifferent = uniq(map((n) => n.entity_type, values(selectedElements))).length > 1;
-    const typesAreNotMergable = includes(
-      uniq(map((n) => n.entity_type, values(selectedElements)))[0],
-      notMergableTypes,
-    );
-    const selectedElementsList = values(selectedElements);
-    let keptElement = null;
-    let newAliases = [];
-    if (!typesAreNotMergable && !typesAreDifferent) {
-      keptElement = keptEntityId
-        ? head(filter((n) => n.id === keptEntityId, selectedElementsList))
-        : head(selectedElementsList);
-      if (keptElement) {
-        const names = filter(
-          (n) => n !== keptElement.name,
-          pluck('name', selectedElementsList),
-        );
-        const aliases = !isNil(keptElement.aliases)
-          ? filter(
-            (n) => !isNil(n),
-            flatten(pluck('aliases', selectedElementsList)),
-          )
-          : filter(
-            (n) => !isNil(n),
-            flatten(pluck('x_opencti_aliases', selectedElementsList)),
-          );
-        newAliases = filter((n) => n.length > 0, uniq(concat(names, aliases)));
-      }
-    }
+    const {
+      t,
+      n,
+      classes,
+      numberOfSelectedElements,
+      selectAll,
+      filters,
+    } = this.props;
+    const { taskType } = this.state;
+    const isOpen = numberOfSelectedElements > 0;
     return (
       <Drawer
         anchor="bottom"
-        variant="permanent"
+        variant="persistent"
         classes={{ paper: classes.bottomNav }}
+        open={isOpen}
       >
         <Toolbar style={{ minHeight: 54 }}>
           <Typography
@@ -271,28 +156,14 @@ class CurationToolBar extends Component {
           >
             {numberOfSelectedElements} {t('selected')}
           </Typography>
-          <Tooltip title={t('Merge')}>
-            <span>
-              <IconButton
-                aria-label="merge"
-                disabled={
-                  typesAreNotMergable
-                  || typesAreDifferent
-                  || numberOfSelectedElements < 2
-                }
-                onClick={this.handleOpenMerge.bind(this)}
-                color="primary"
-              >
-                <Merge />
-              </IconButton>
-            </span>
-          </Tooltip>
           <Tooltip title={t('Delete')}>
             <span>
               <IconButton
                 aria-label="delete"
-                disabled={numberOfSelectedElements === 0 || this.state.deleting}
-                onClick={this.handleOpenDelete.bind(this)}
+                disabled={
+                  numberOfSelectedElements === 0 || this.state.processing
+                }
+                onClick={this.launchTask.bind(this, 'DELETE')}
                 color="primary"
               >
                 <Delete />
@@ -300,183 +171,110 @@ class CurationToolBar extends Component {
             </span>
           </Tooltip>
         </Toolbar>
-        <Drawer
-          open={this.state.displayMerge}
-          anchor="right"
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseMerge.bind(this)}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleCloseMerge.bind(this)}
-            >
-              <Close fontSize="small" />
-            </IconButton>
-            <Typography variant="h6">{t('Merge entities')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <Typography
-              variant="h4"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t('Selected entities')}
-            </Typography>
-            <List>
-              {selectedElementsList.map((element) => (
-                <ListItem key={element.id} dense={true} divider={true}>
-                  <ListItemIcon>
-                    <ItemIcon type={element.entity_type} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={element.name}
-                    secondary={truncate(element.description, 60)}
-                  />
-                  <div style={{ marginRight: 50 }}>
-                    {pathOr('', ['createdBy', 'name'], element)}
-                  </div>
-                  <div style={{ marginRight: 50 }}>
-                    {pathOr([], ['objectMarking', 'edges'], element).length
-                    > 0 ? (
-                        map(
-                          (markingDefinition) => (
-                          <ItemMarking
-                            key={markingDefinition.node.id}
-                            label={markingDefinition.node.definition}
-                            color={markingDefinition.node.x_opencti_color}
-                            variant="inList"
-                          />
-                          ),
-                          element.objectMarking.edges,
-                        )
-                      ) : (
-                      <ItemMarking label="TLP:WHITE" variant="inList" />
-                      )}
-                  </div>
-                  <ListItemSecondaryAction>
-                    <Radio
-                      checked={
-                        keptEntityId
-                          ? keptEntityId === element.id
-                          : head(selectedElementsList).id === element.id
-                      }
-                      onChange={this.handleChangeKeptEntityId.bind(
-                        this,
-                        element.id,
-                      )}
-                      value="a"
-                      name="radio-button-demo"
-                      inputProps={{ 'aria-label': 'A' }}
-                    />
-                  </ListItemSecondaryAction>
-                </ListItem>
-              ))}
-            </List>
-            <Typography
-              variant="h4"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t('Merged entity')}
-            </Typography>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t('Name')}
-            </Typography>
-            {propOr(null, 'name', keptElement)}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t('Aliases')}
-            </Typography>
-            {newAliases.map((label) => (label.length > 0 ? (
-                <Chip
-                  key={label}
-                  classes={{ root: classes.aliases }}
-                  label={label}
-                />
-            ) : (
-              ''
-            )))}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t('Author')}
-            </Typography>
-            {pathOr('', ['createdBy', 'name'], keptElement)}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t('Marking')}
-            </Typography>
-            {pathOr([], ['markingDefinitions', 'edges'], keptElement).length
-            > 0 ? (
-                map(
-                  (markingDefinition) => (
-                  <ItemMarking
-                    key={markingDefinition.node.id}
-                    label={markingDefinition.node.definition}
-                  />
-                  ),
-                  pathOr([], ['objectMarking', 'edges'], keptElement),
-                )
-              ) : (
-              <ItemMarking label="TLP:WHITE" />
-              )}
-            <Alert severity="warning" style={{ marginTop: 20 }}>
-              {t(
-                'The relations attached to selected entities will be copied to the merged entity.',
-              )}
-            </Alert>
-            <div className={classes.buttons}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={this.submitMerge.bind(this)}
-                classes={{ root: classes.button }}
-                disabled={this.state.merging}
-              >
-                {t('Merge')}
-              </Button>
-            </div>
-          </div>
-        </Drawer>
         <Dialog
-          open={this.state.displayDelete}
+          open={this.state.displayTask}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
+          onClose={this.handleCloseTask.bind(this)}
         >
+          <DialogTitle>{t('Launch a background task')}</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete these entities?')}
+              <TableContainer>
+                <Table>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>{t('Target')}</TableCell>
+                      <TableCell>
+                        {selectAll
+                          ? t('Filtered query')
+                          : t('List of entities')}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>{t('Filters')}</TableCell>
+                      <TableCell>
+                        {selectAll ? (
+                          <div className={classes.filters}>
+                            {R.map((currentFilter) => {
+                              const label = `${truncate(
+                                t(`filter_${currentFilter[0]}`),
+                                20,
+                              )}`;
+                              const values = (
+                                <span>
+                                  {R.map(
+                                    (o) => (
+                                      <span key={o.value}>
+                                        {o.value && o.value.length > 0
+                                          ? truncate(o.value, 15)
+                                          : t('No label')}{' '}
+                                        {R.last(currentFilter[1]).value
+                                          !== o.value && <code>OR</code>}{' '}
+                                      </span>
+                                    ),
+                                    currentFilter[1],
+                                  )}
+                                </span>
+                              );
+                              return (
+                                <span key={currentFilter[0]}>
+                                  <Chip
+                                    classes={{ root: classes.filter }}
+                                    label={
+                                      <div>
+                                        <strong>{label}</strong>: {values}
+                                      </div>
+                                    }
+                                  />
+                                  {R.last(R.toPairs(filters))[0]
+                                    !== currentFilter[0] && (
+                                    <Chip
+                                      classes={{ root: classes.operator }}
+                                      label={t('AND')}
+                                    />
+                                  )}
+                                </span>
+                              );
+                            }, R.toPairs(filters))}
+                          </div>
+                        ) : (
+                          t('List of IDs')
+                        )}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>{t('Number of elements')}</TableCell>
+                      <TableCell>{n(numberOfSelectedElements)}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>{t('Type of task')}</TableCell>
+                      <TableCell>
+                        <Chip
+                          classes={{ root: classes.chipValue }}
+                          label={taskType}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
             </DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button
-              onClick={this.handleCloseDelete.bind(this)}
+              onClick={this.handleCloseTask.bind(this)}
               color="primary"
-              disabled={this.state.deleting}
+              disabled={this.state.processing}
             >
               {t('Cancel')}
             </Button>
             <Button
-              onClick={this.submitDelete.bind(this)}
+              onClick={this.submitTask.bind(this)}
               color="primary"
-              disabled={this.state.deleting}
+              disabled={this.state.processing}
             >
-              {t('Delete')}
+              {t('Launch')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -488,9 +286,11 @@ class CurationToolBar extends Component {
 CurationToolBar.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
-  paginationOptions: PropTypes.object,
+  numberOfSelectedElements: PropTypes.number,
   selectedElements: PropTypes.object,
-  handleResetSelectedElements: PropTypes.func,
+  selectAll: PropTypes.bool,
+  filters: PropTypes.object,
+  handleClearSelectedElements: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(CurationToolBar);
+export default R.compose(inject18n, withStyles(styles))(CurationToolBar);
