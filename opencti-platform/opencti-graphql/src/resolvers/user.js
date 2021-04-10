@@ -89,7 +89,7 @@ const userResolvers = {
       let loggedUser;
       for (let index = 0; index < formProviders.length; index += 1) {
         const auth = formProviders[index];
-        req.body = { username: input.email, password: input.password };
+        const body = { username: input.email, password: input.password };
         const { userToken, userProvider } = await new Promise((resolve) => {
           passport.authenticate(auth.provider, {}, (err, authInfo, info) => {
             if (err || info) {
@@ -98,7 +98,7 @@ const userResolvers = {
               logAudit.error(auditUser, LOGIN_ACTION, { provider: auth.provider });
             }
             resolve({ userToken: authInfo?.token, userProvider: auth.provider });
-          })(req);
+          })({ body });
         });
         // As soon as credential is validated, stop looking for another provider
         if (userToken) {
