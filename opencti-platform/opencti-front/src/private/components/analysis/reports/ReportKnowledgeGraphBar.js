@@ -721,10 +721,7 @@ class ReportKnowledgeGraphBar extends Component {
                     </DialogContentText>
                   </DialogContent>
                   <DialogActions>
-                    <Button
-                      onClick={this.handleCloseRemove.bind(this)}
-                      color="primary"
-                    >
+                    <Button onClick={this.handleCloseRemove.bind(this)}>
                       {t('Cancel')}
                     </Button>
                     <Button

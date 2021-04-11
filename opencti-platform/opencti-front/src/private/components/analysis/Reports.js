@@ -4,6 +4,7 @@ import {
   assoc, compose, dissoc, propOr, uniqBy, prop,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
+import * as R from 'ramda';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -14,6 +15,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import ReportsLines, { reportsLinesQuery } from './reports/ReportsLines';
 import inject18n from '../../../components/i18n';
 import ReportCreation from './reports/ReportCreation';
+import ToolBar from '../data/ToolBar';
 
 class Reports extends Component {
   constructor(props) {
@@ -31,6 +33,8 @@ class Reports extends Component {
       filters: propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
+      selectedElements: null,
+      selectAll: false,
     };
   }
 
@@ -57,6 +61,35 @@ class Reports extends Component {
         this.props.onChangeOpenExports(this.state.openExports);
       }
     });
+  }
+
+  handleToggleSelectEntity(entity) {
+    const { selectedElements } = this.state;
+    if (entity.id in (selectedElements || {})) {
+      const newSelectedElements = R.omit([entity.id], selectedElements);
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    } else {
+      const newSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        selectedElements || {},
+      );
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    }
+  }
+
+  handleToggleSelectAll() {
+    this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
+  }
+
+  handleClearSelectedElements() {
+    this.setState({ selectAll: false, selectedElements: null });
   }
 
   handleAddFilter(key, id, value, event = null) {
@@ -101,6 +134,8 @@ class Reports extends Component {
       filters,
       openExports,
       numberOfElements,
+      selectedElements,
+      selectAll,
     } = this.state;
     const { objectId, authorId } = this.props;
     let exportContext = null;
@@ -109,7 +144,10 @@ class Reports extends Component {
     } else if (authorId) {
       exportContext = `of-entity-${authorId}`;
     }
-
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original;
+    }
     const dataColumns = {
       name: {
         label: 'Title',
@@ -143,49 +181,65 @@ class Reports extends Component {
       },
     };
     return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        handleAddFilter={this.handleAddFilter.bind(this)}
-        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        handleToggleExports={this.handleToggleExports.bind(this)}
-        openExports={openExports}
-        noPadding={typeof this.props.onChangeOpenExports === 'function'}
-        exportEntityType="Report"
-        exportContext={exportContext}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'report_types',
-          'confidence_gt',
-          'x_opencti_report_status',
-          'labelledBy',
-          'createdBy',
-          'markedBy',
-          'published_start_date',
-          'published_end_date',
-        ]}
-      >
-        <QueryRenderer
-          query={reportsLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <ReportsLines
-              data={props}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
+      <div>
+        <ListLines
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={this.handleSort.bind(this)}
+          handleSearch={this.handleSearch.bind(this)}
+          handleAddFilter={this.handleAddFilter.bind(this)}
+          handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+          handleToggleExports={this.handleToggleExports.bind(this)}
+          openExports={openExports}
+          handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+          selectAll={selectAll}
+          noPadding={typeof this.props.onChangeOpenExports === 'function'}
+          exportEntityType="Report"
+          exportContext={exportContext}
+          keyword={searchTerm}
+          filters={filters}
+          paginationOptions={paginationOptions}
+          numberOfElements={numberOfElements}
+          availableFilterKeys={[
+            'report_types',
+            'confidence_gt',
+            'x_opencti_report_status',
+            'labelledBy',
+            'createdBy',
+            'markedBy',
+            'published_start_date',
+            'published_end_date',
+          ]}
+        >
+          <QueryRenderer
+            query={reportsLinesQuery}
+            variables={{ count: 25, ...paginationOptions }}
+            render={({ props }) => (
+              <ReportsLines
+                data={props}
+                paginationOptions={paginationOptions}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                selectedElements={selectedElements}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                selectAll={selectAll}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            )}
+          />
+        </ListLines>
+        <ToolBar
+          selectedElements={selectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          filters={filters}
+          handleClearSelectedElements={this.handleClearSelectedElements.bind(
+            this,
           )}
         />
-      </ListLines>
+      </div>
     );
   }
 

@@ -149,6 +149,31 @@ class ConnectorWorksComponent extends Component {
     const works = pathOr([], ['works', 'edges'], data);
     return (
       <div>
+        {works.length === 0 && (
+          <Paper
+            classes={{ root: classes.paper }}
+            elevation={2}
+            style={{ marginBottom: 20 }}
+          >
+            <div
+              style={{
+                display: 'table',
+                height: '100%',
+                width: '100%',
+              }}
+            >
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {t('No work')}
+              </span>
+            </div>
+          </Paper>
+        )}
         {works.map((workEge) => {
           const work = workEge.node;
           const { tracking } = work;

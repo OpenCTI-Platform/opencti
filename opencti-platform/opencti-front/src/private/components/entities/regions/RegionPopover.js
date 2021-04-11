@@ -147,7 +147,6 @@ class RegionPopover extends Component {
           <DialogActions>
             <Button
               onClick={this.handleCloseDelete.bind(this)}
-              color="primary"
               disabled={this.state.deleting}
             >
               {t('Cancel')}

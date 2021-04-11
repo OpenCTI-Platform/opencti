@@ -481,6 +481,23 @@ enum TaskContextType {
   ATTRIBUTE
   RELATION
 }
+enum TasksOrdering {
+  id
+  type
+  completed
+  created_at
+  last_execution_date
+}
+enum TasksFilter {
+  initiator
+  completed
+}
+input TasksFiltering {
+  key: TasksFilter!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
 type TaskContext {
   field: String
   type: TaskContextType
@@ -7562,7 +7579,15 @@ type Query {
     search: String
   ): TaxiiCollectionConnection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   task(id: String!): Task @auth(for: [KNOWLEDGE])
-  tasks: TaskConnection @auth(for: [KNOWLEDGE])
+  tasks(
+    first: Int
+    after: ID
+    orderBy: TasksOrdering
+    orderMode: OrderingMode
+    filters: [TasksFiltering]
+    filterMode: FilterMode
+    search: String
+  ): TaskConnection @auth(for: [KNOWLEDGE])
 
   ######## STIX OBJECT ENTITIES
 

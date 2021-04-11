@@ -5,14 +5,14 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
-  CurationStixDomainObjectLine,
-  CurationStixDomainObjectLineDummy,
-} from './CurationStixDomainObjectLine';
+  EntitiesStixDomainObjectLine,
+  EntitiesStixDomainObjectLineDummy,
+} from './EntitiesStixDomainObjectLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
 
-class CurationStixDomainObjectsLines extends Component {
+class EntitiesStixDomainObjectsLines extends Component {
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
@@ -44,8 +44,8 @@ class CurationStixDomainObjectsLines extends Component {
           ['stixDomainObjects', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        LineComponent={<CurationStixDomainObjectLine />}
-        DummyLineComponent={<CurationStixDomainObjectLineDummy />}
+        LineComponent={<EntitiesStixDomainObjectLine />}
+        DummyLineComponent={<EntitiesStixDomainObjectLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         onLabelClick={onLabelClick.bind(this)}
@@ -57,7 +57,7 @@ class CurationStixDomainObjectsLines extends Component {
   }
 }
 
-CurationStixDomainObjectsLines.propTypes = {
+EntitiesStixDomainObjectsLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
@@ -72,8 +72,8 @@ CurationStixDomainObjectsLines.propTypes = {
   selectAll: PropTypes.bool,
 };
 
-export const curationStixDomainObjectsLinesQuery = graphql`
-  query CurationStixDomainObjectsLinesPaginationQuery(
+export const entitiesStixDomainObjectsLinesQuery = graphql`
+  query EntitiesStixDomainObjectsLinesPaginationQuery(
     $types: [String]
     $search: String
     $count: Int!
@@ -82,7 +82,7 @@ export const curationStixDomainObjectsLinesQuery = graphql`
     $orderMode: OrderingMode
     $filters: [StixDomainObjectsFiltering]
   ) {
-    ...CurationStixDomainObjectsLines_data
+    ...EntitiesStixDomainObjectsLines_data
       @arguments(
         types: $types
         search: $search
@@ -95,8 +95,8 @@ export const curationStixDomainObjectsLinesQuery = graphql`
   }
 `;
 
-export const curationStixDomainObjectsLinesSearchQuery = graphql`
-  query CurationStixDomainObjectsLinesSearchQuery(
+export const entitiesStixDomainObjectsLinesSearchQuery = graphql`
+  query EntitiesStixDomainObjectsLinesSearchQuery(
     $types: [String]
     $search: String
   ) {
@@ -222,10 +222,10 @@ export const curationStixDomainObjectsLinesSearchQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  CurationStixDomainObjectsLines,
+  EntitiesStixDomainObjectsLines,
   {
     data: graphql`
-      fragment CurationStixDomainObjectsLines_data on Query
+      fragment EntitiesStixDomainObjectsLines_data on Query
       @argumentDefinitions(
         types: { type: "[String]" }
         search: { type: "String" }
@@ -262,7 +262,7 @@ export default createPaginationContainer(
                   }
                 }
               }
-              ...CurationStixDomainObjectLine_node
+              ...EntitiesStixDomainObjectLine_node
             }
           }
           pageInfo {
@@ -296,6 +296,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: curationStixDomainObjectsLinesQuery,
+    query: entitiesStixDomainObjectsLinesQuery,
   },
 );

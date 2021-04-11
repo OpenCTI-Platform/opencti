@@ -260,7 +260,6 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
           <DialogActions>
             <Button
               onClick={this.handleCloseDialog.bind(this)}
-              color="primary"
               disabled={this.state.removing}
             >
               {t('Cancel')}
@@ -286,10 +285,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button
-              onClick={this.handleCloseExternalLink.bind(this)}
-              color="primary"
-            >
+            <Button onClick={this.handleCloseExternalLink.bind(this)}>
               {t('Cancel')}
             </Button>
             <Button

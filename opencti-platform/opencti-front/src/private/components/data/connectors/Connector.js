@@ -25,6 +25,7 @@ import {
 } from '../../../../relay/environment';
 import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
 import { truncate } from '../../../../utils/String';
+import Loader from '../../../../components/Loader';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -304,7 +305,7 @@ class ConnectorComponent extends Component {
                 <ConnectorWorks data={props} options={optionsInProgress} />
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader variant="inElement" />;
           }}
         />
         <Typography variant="h4" gutterBottom={true} style={{ marginTop: 35 }}>
@@ -317,7 +318,7 @@ class ConnectorComponent extends Component {
             if (props) {
               return <ConnectorWorks data={props} options={optionsFinished} />;
             }
-            return <div> &nbsp; </div>;
+            return <Loader variant="inElement" />;
           }}
         />
       </div>

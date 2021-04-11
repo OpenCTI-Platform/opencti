@@ -43,7 +43,7 @@ const styles = (theme) => ({
   },
 });
 
-class CurationStixDomainObjectLineComponent extends Component {
+class EntitiesStixDomainObjectLineComponent extends Component {
   render() {
     const {
       t,
@@ -135,7 +135,7 @@ class CurationStixDomainObjectLineComponent extends Component {
   }
 }
 
-CurationStixDomainObjectLineComponent.propTypes = {
+EntitiesStixDomainObjectLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
@@ -146,11 +146,11 @@ CurationStixDomainObjectLineComponent.propTypes = {
   selectedElements: PropTypes.object,
 };
 
-const CurationStixDomainObjectLineFragment = createFragmentContainer(
-  CurationStixDomainObjectLineComponent,
+const EntitiesStixDomainObjectLineFragment = createFragmentContainer(
+  EntitiesStixDomainObjectLineComponent,
   {
     node: graphql`
-      fragment CurationStixDomainObjectLine_node on StixDomainObject {
+      fragment EntitiesStixDomainObjectLine_node on StixDomainObject {
         id
         entity_type
         created_at
@@ -284,13 +284,12 @@ const CurationStixDomainObjectLineFragment = createFragmentContainer(
     `,
   },
 );
-
-export const CurationStixDomainObjectLine = compose(
+export const EntitiesStixDomainObjectLine = compose(
   inject18n,
   withStyles(styles),
-)(CurationStixDomainObjectLineFragment);
+)(EntitiesStixDomainObjectLineFragment);
 
-class CurationStixDomainObjectLineDummyComponent extends Component {
+class EntitiesStixDomainObjectLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -345,12 +344,12 @@ class CurationStixDomainObjectLineDummyComponent extends Component {
   }
 }
 
-CurationStixDomainObjectLineDummyComponent.propTypes = {
+EntitiesStixDomainObjectLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const CurationStixDomainObjectLineDummy = compose(
+export const EntitiesStixDomainObjectLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(CurationStixDomainObjectLineDummyComponent);
+)(EntitiesStixDomainObjectLineDummyComponent);

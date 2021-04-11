@@ -5,10 +5,10 @@ import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import CurationToolBar from './curation/CurationToolBar';
-import CurationStixDomainObjectsLines, {
-  curationStixDomainObjectsLinesQuery,
-} from './curation/CurationStixDomainObjectsLines';
+import ToolBar from './ToolBar';
+import EntitiesStixDomainObjectsLines, {
+  entitiesStixDomainObjectsLinesQuery,
+} from './entities/EntitiesStixDomainObjectsLines';
 import inject18n from '../../../components/i18n';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -23,13 +23,13 @@ const styles = () => ({
   },
 });
 
-class StixCyberObservables extends Component {
+class Entities extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-curation',
+      'view-stix-domain-objects',
     );
     this.state = {
       sortBy: R.propOr('created_at', 'sortBy', params),
@@ -48,7 +48,7 @@ class StixCyberObservables extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-curation',
+      'view-stix-domain-objects',
       this.state,
     );
   }
@@ -66,7 +66,7 @@ class StixCyberObservables extends Component {
   }
 
   handleClearSelectedElements() {
-    this.setState({ selectedElements: null });
+    this.setState({ selectAll: false, selectedElements: null });
   }
 
   handleToggle(type) {
@@ -155,11 +155,13 @@ class StixCyberObservables extends Component {
       numberOfElements,
       selectedElements,
       selectAll,
+      types,
     } = this.state;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original;
     }
+    const entityTypes = R.map((n) => ({ id: n, value: n }), types);
     const dataColumns = {
       entity_type: {
         label: 'Type',
@@ -218,10 +220,10 @@ class StixCyberObservables extends Component {
           ]}
         >
           <QueryRenderer
-            query={curationStixDomainObjectsLinesQuery}
+            query={entitiesStixDomainObjectsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => (
-              <CurationStixDomainObjectsLines
+              <EntitiesStixDomainObjectsLines
                 data={props}
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
@@ -235,12 +237,15 @@ class StixCyberObservables extends Component {
             )}
           />
         </ListLines>
-        <CurationToolBar
-          paginationOptions={paginationOptions}
+        <ToolBar
           selectedElements={selectedElements}
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
-          filters={filters}
+          filters={
+            entityTypes.length > 0
+              ? R.assoc('entity_type', entityTypes, filters)
+              : filters
+          }
           handleClearSelectedElements={this.handleClearSelectedElements.bind(
             this,
           )}
@@ -274,15 +279,11 @@ class StixCyberObservables extends Component {
   }
 }
 
-StixCyberObservables.propTypes = {
+Entities.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default R.compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(StixCyberObservables);
+export default R.compose(inject18n, withRouter, withStyles(styles))(Entities);

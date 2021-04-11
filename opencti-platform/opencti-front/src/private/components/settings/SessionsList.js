@@ -234,7 +234,6 @@ class SessionsListComponent extends Component {
           <DialogActions>
             <Button
               onClick={this.handleCloseKillSession.bind(this)}
-              color="primary"
               disabled={this.state.killing}
             >
               {t('Cancel')}
