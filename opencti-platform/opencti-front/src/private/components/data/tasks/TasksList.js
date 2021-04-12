@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr, filter } from 'ramda';
+import * as R from 'ramda';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -22,6 +22,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Slide from '@material-ui/core/Slide';
 import { interval } from 'rxjs';
 import { Delete } from 'mdi-material-ui';
+import Chip from '@material-ui/core/Chip';
 import ItemStatus from '../../../../components/ItemStatus';
 import inject18n from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -78,6 +79,17 @@ const styles = () => ({
     borderRadius: 5,
     height: 10,
   },
+  chipValue: {
+    margin: 0,
+  },
+  filter: {
+    margin: '5px 10px 5px 0',
+  },
+  operator: {
+    fontFamily: 'Consolas, monaco, monospace',
+    backgroundColor: 'rgba(64, 193, 255, 0.2)',
+    margin: '5px 10px 5px 0',
+  },
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -85,15 +97,13 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-export const connectorWorksWorkDeletionMutation = graphql`
-  mutation ConnectorWorksWorkDeletionMutation($id: ID!) {
-    workEdit(id: $id) {
-      delete
-    }
+export const tasksListTaskDeletionMutation = graphql`
+  mutation TasksListTaskDeletionMutation($id: ID!) {
+    deleteTask(id: $id)
   }
 `;
 
-class ConnectorWorksComponent extends Component {
+class TasksListComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -131,26 +141,26 @@ class ConnectorWorksComponent extends Component {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  handleDeleteWork(workId) {
+  handleDeleteTask(taskId) {
     commitMutation({
-      mutation: connectorWorksWorkDeletionMutation,
+      mutation: tasksListTaskDeletionMutation,
       variables: {
-        id: workId,
+        id: taskId,
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess('The work has been deleted');
+        MESSAGING$.notifySuccess('The task has been deleted');
       },
     });
   }
 
   render() {
     const {
-      classes, data, t, nsdt,
+      classes, data, t, nsdt, n,
     } = this.props;
-    const works = pathOr([], ['works', 'edges'], data);
+    const tasks = R.pathOr([], ['tasks', 'edges'], data);
     return (
       <div>
-        {works.length === 0 && (
+        {tasks.length === 0 && (
           <Paper
             classes={{ root: classes.paper }}
             elevation={2}
@@ -170,21 +180,31 @@ class ConnectorWorksComponent extends Component {
                   textAlign: 'center',
                 }}
               >
-                {t('No work')}
+                {t('No task')}
               </span>
             </div>
           </Paper>
         )}
-        {works.map((workEge) => {
-          const work = workEge.node;
-          const { tracking } = work;
-          const errors = filter(
-            (n) => !n.message.includes('MissingReferenceError'),
-            work.errors,
-          );
+        {tasks.map((taskEdge) => {
+          const task = taskEdge.node;
+          let status = '';
+          if (task.completed) {
+            status = 'complete';
+          } else if (task.task_processed_number > 0) {
+            status = 'progress';
+          } else {
+            status = 'wait';
+          }
+          let filters = null;
+          let listIds = '';
+          if (task.task_filters) {
+            filters = JSON.parse(task.task_filters);
+          } else if (task.task_ids) {
+            listIds = truncate(R.join(', ', task.task_ids), 60);
+          }
           return (
             <Paper
-              key={work.id}
+              key={task.id}
               classes={{ root: classes.paper }}
               elevation={2}
               style={{ marginBottom: 20 }}
@@ -192,61 +212,134 @@ class ConnectorWorksComponent extends Component {
               <Grid container={true} spacing={3}>
                 <Grid item={true} xs={5}>
                   <Grid container={true} spacing={1}>
-                    <Grid item={true} xs={6}>
+                    <Grid item={true} xs={12}>
                       <Typography variant="h3" gutterBottom={true}>
-                        {t('Name')}
+                        {t('Targeted entities')} ({n(task.task_expected_number)}
+                        )
                       </Typography>
-                      {truncate(work.name, 40)}
+                      {filters ? (
+                        R.map((currentFilter) => {
+                          const label = `${truncate(
+                            t(`filter_${currentFilter[0]}`),
+                            20,
+                          )}`;
+                          const values = (
+                            <span>
+                              {R.map(
+                                (o) => (
+                                  <span key={o.value}>
+                                    {o.value && o.value.length > 0
+                                      ? truncate(o.value, 15)
+                                      : t('No label')}{' '}
+                                    {R.last(currentFilter[1]).value
+                                      !== o.value && <code>OR</code>}{' '}
+                                  </span>
+                                ),
+                                currentFilter[1],
+                              )}
+                            </span>
+                          );
+                          return (
+                            <span key={currentFilter[0]}>
+                              <Chip
+                                classes={{ root: classes.filter }}
+                                label={
+                                  <div>
+                                    <strong>{label}</strong>: {values}
+                                  </div>
+                                }
+                              />
+                              {R.last(R.toPairs(filters))[0]
+                                !== currentFilter[0] && (
+                                <Chip
+                                  classes={{ root: classes.operator }}
+                                  label={t('AND')}
+                                />
+                              )}
+                            </span>
+                          );
+                        }, R.toPairs(filters))
+                      ) : (
+                        <Chip
+                          classes={{ root: classes.filter }}
+                          label={
+                            <div>
+                              <strong>{t('List of entities')}</strong>:{' '}
+                              {listIds}
+                            </div>
+                          }
+                        />
+                      )}
                     </Grid>
-                    <Grid item={true} xs={6}>
+                    <Grid item={true} xs={12}>
                       <Typography variant="h3" gutterBottom={true}>
-                        {t('Status')}
+                        {t('Actions')}
                       </Typography>
-                      <ItemStatus status={work.status} label={t(work.status)} />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
-                      >
-                        {t('Work start time')}
-                      </Typography>
-                      {nsdt(work.received_time)}
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
-                      >
-                        {t('Work end time')}
-                      </Typography>
-                      {work.completed_time ? nsdt(work.completed_time) : '-'}
+                      {R.map(
+                        (action) => (
+                          <div key={task.actions.indexOf(action)}>
+                            <Chip
+                              classes={{ root: classes.operator }}
+                              label={action.type}
+                            />
+                            {action.context && (
+                              <Chip
+                                classes={{ root: classes.filter }}
+                                label={
+                                  <div>
+                                    {action.context.field && (
+                                      <span>
+                                        <strong>
+                                          {action.context?.field || t('N/A')}
+                                        </strong>
+                                        :{' '}
+                                      </span>
+                                    )}
+                                    {truncate(
+                                      R.join(
+                                        ', ',
+                                        action.context?.values || [],
+                                      ),
+                                      80,
+                                    )}
+                                  </div>
+                                }
+                              />
+                            )}
+                          </div>
+                        ),
+                        task.actions,
+                      )}
                     </Grid>
                   </Grid>
                 </Grid>
                 <Grid item={true} xs={5}>
                   <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
+                    <Grid item={true} xs={3}>
                       <Typography variant="h3" gutterBottom={true}>
-                        {t('Operations completed')}
+                        {t('Initiator')}
                       </Typography>
-                      <span className={classes.number}>
-                        {work.status === 'wait'
-                          ? '-'
-                          : tracking?.import_processed_number}
-                      </span>
+                      {task.initiator.name}
                     </Grid>
-                    <Grid item={true} xs={6}>
+                    <Grid item={true} xs={3}>
                       <Typography variant="h3" gutterBottom={true}>
-                        {t('Total number of operations')}
+                        {t('Task start time')}
                       </Typography>
-                      <span className={classes.number}>
-                        {work.status === 'wait'
-                          ? '-'
-                          : tracking?.import_expected_number}
-                      </span>
+                      {nsdt(task.created_at)}
+                    </Grid>
+                    <Grid item={true} xs={3}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {task.completed
+                          ? t('Task end time')
+                          : t('Task last execution time')}
+                      </Typography>
+                      {nsdt(task.last_execution_date)}
+                    </Grid>
+                    <Grid item={true} xs={3}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t('Status')}
+                      </Typography>
+                      <ItemStatus status={status} label={t(status)} />
                     </Grid>
                     <Grid item={true} xs={12}>
                       <Typography variant="h3" gutterBottom={true}>
@@ -256,13 +349,16 @@ class ConnectorWorksComponent extends Component {
                         classes={{ root: classes.progress }}
                         variant="determinate"
                         value={
-                          tracking?.import_expected_number === 0
+                          // eslint-disable-next-line no-nested-ternary
+                          task.task_expected_number === 0
                             ? 0
-                            : Math.round(
-                              (tracking?.import_processed_number
-                                  / tracking?.import_expected_number)
+                            : task.completed
+                              ? 100
+                              : Math.round(
+                                (task.task_processed_number
+                                  / task.task_expected_number)
                                   * 100,
-                            )
+                              )
                         }
                       />
                     </Grid>
@@ -272,15 +368,15 @@ class ConnectorWorksComponent extends Component {
                   style={{ position: 'absolute', right: 10, top: 10 }}
                   variant="contained"
                   color="secondary"
-                  onClick={this.handleOpenErrors.bind(this, errors)}
+                  onClick={this.handleOpenErrors.bind(this, task.errors)}
                   size="small"
                 >
-                  {errors.length} {t('errors')}
+                  {task.errors.length} {t('errors')}
                 </Button>
                 <Button
-                  variant="outlined"
                   style={{ position: 'absolute', right: 10, bottom: 10 }}
-                  onClick={this.handleDeleteWork.bind(this, work.id)}
+                  variant="outlined"
+                  onClick={this.handleDeleteTask.bind(this, task.id)}
                   size="small"
                 >
                   <Delete fontSize="small" />
@@ -370,21 +466,21 @@ class ConnectorWorksComponent extends Component {
   }
 }
 
-ConnectorWorksComponent.propTypes = {
+TasksListComponent.propTypes = {
   data: PropTypes.object,
   options: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export const connectorWorksQuery = graphql`
-  query ConnectorWorksQuery(
+export const tasksListQuery = graphql`
+  query TasksListQuery(
     $count: Int
-    $orderBy: WorksOrdering
+    $orderBy: TasksOrdering
     $orderMode: OrderingMode
-    $filters: [WorksFiltering]
+    $filters: [TasksFiltering]
   ) {
-    ...ConnectorWorks_data
+    ...TasksList_data
       @arguments(
         count: $count
         orderBy: $orderBy
@@ -394,18 +490,18 @@ export const connectorWorksQuery = graphql`
   }
 `;
 
-const ConnectorWorks = createRefetchContainer(
-  ConnectorWorksComponent,
+const TasksList = createRefetchContainer(
+  TasksListComponent,
   {
     data: graphql`
-      fragment ConnectorWorks_data on Query
+      fragment TasksList_data on Query
       @argumentDefinitions(
         count: { type: "Int" }
-        orderBy: { type: "WorksOrdering", defaultValue: timestamp }
+        orderBy: { type: "TasksOrdering", defaultValue: created_at }
         orderMode: { type: "OrderingMode", defaultValue: desc }
-        filters: { type: "[WorksFiltering]" }
+        filters: { type: "[TasksFiltering]" }
       ) {
-        works(
+        tasks(
           first: $count
           orderBy: $orderBy
           orderMode: $orderMode
@@ -414,31 +510,33 @@ const ConnectorWorks = createRefetchContainer(
           edges {
             node {
               id
-              name
-              user {
+              type
+              initiator {
                 name
               }
-              timestamp
-              status
-              event_source_id
-              received_time
-              processed_time
-              completed_time
-              tracking {
-                import_expected_number
-                import_processed_number
+              actions {
+                type
+                context {
+                  field
+                  type
+                  values
+                }
               }
-              messages {
-                timestamp
-                message
-                sequence
-                source
-              }
+              created_at
+              last_execution_date
+              completed
+              task_expected_number
+              task_processed_number
               errors {
+                id
                 timestamp
                 message
-                sequence
-                source
+              }
+              ... on ListTask {
+                task_ids
+              }
+              ... on QueryTask {
+                task_filters
               }
             }
           }
@@ -446,7 +544,7 @@ const ConnectorWorks = createRefetchContainer(
       }
     `,
   },
-  connectorWorksQuery,
+  tasksListQuery,
 );
 
-export default compose(inject18n, withStyles(styles))(ConnectorWorks);
+export default R.compose(inject18n, withStyles(styles))(TasksList);

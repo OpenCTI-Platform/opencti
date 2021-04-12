@@ -26,6 +26,9 @@ class IndicatorsLines extends Component {
       relay,
       onLabelClick,
       paginationOptions,
+      onToggleEntity,
+      selectedElements,
+      selectAll,
     } = this.props;
     return (
       <ListLinesContent
@@ -44,6 +47,9 @@ class IndicatorsLines extends Component {
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         onLabelClick={onLabelClick.bind(this)}
+        selectedElements={selectedElements}
+        selectAll={selectAll}
+        onToggleEntity={onToggleEntity.bind(this)}
         paginationOptions={paginationOptions}
       />
     );
@@ -60,6 +66,9 @@ IndicatorsLines.propTypes = {
   initialLoading: PropTypes.bool,
   onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
 };
 
 export const indicatorsLinesQuery = graphql`

@@ -12,6 +12,7 @@ import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import { truncate } from '../../../../utils/String';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -64,13 +65,19 @@ class EntitiesStixDomainObjectLineComponent extends Component {
         onClick={onToggleEntity.bind(this, node)}
         selected={node.id in (selectedElements || {})}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 40 }}
+        >
           <Checkbox
             edge="start"
             checked={selectAll || node.id in (selectedElements || {})}
             disableRipple={true}
             onChange={onToggleEntity.bind(this, node)}
           />
+        </ListItemIcon>
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -293,9 +300,19 @@ class EntitiesStixDomainObjectLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        style={{ minWidth: 40 }}
+      >
+        <ListItemIcon
+          classes={{ root: classes.itemIconDisabled }}
+          style={{ minWidth: 40 }}
+        >
           <Checkbox edge="start" disabled={true} disableRipple={true} />
+        </ListItemIcon>
+        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+          <ItemIcon />
         </ListItemIcon>
         <ListItemText
           primary={

@@ -63,7 +63,9 @@ class Reports extends Component {
     });
   }
 
-  handleToggleSelectEntity(entity) {
+  handleToggleSelectEntity(entity, event) {
+    event.stopPropagation();
+    event.preventDefault();
     const { selectedElements } = this.state;
     if (entity.id in (selectedElements || {})) {
       const newSelectedElements = R.omit([entity.id], selectedElements);
@@ -201,6 +203,7 @@ class Reports extends Component {
           filters={filters}
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
+          iconExtension={true}
           availableFilterKeys={[
             'report_types',
             'confidence_gt',

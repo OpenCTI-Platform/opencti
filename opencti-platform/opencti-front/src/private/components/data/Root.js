@@ -1,7 +1,8 @@
 import React from 'react';
 import { Switch, Redirect } from 'react-router-dom';
 import Connectors from './Connectors';
-import StixDomainObjects from './Entities';
+import Entities from './Entities';
+import Tasks from './Tasks';
 import Taxii from './Taxii';
 import { BoundaryRoute } from '../Error';
 import RootConnector from './connectors/Root';
@@ -13,11 +14,8 @@ const Root = () => (
       path="/dashboard/data"
       render={() => <Redirect to="/dashboard/data/entities" />}
     />
-    <BoundaryRoute
-      exact
-      path="/dashboard/data/entities"
-      component={StixDomainObjects}
-    />
+    <BoundaryRoute exact path="/dashboard/data/entities" component={Entities} />
+    <BoundaryRoute exact path="/dashboard/data/tasks" component={Tasks} />
     <BoundaryRoute
       exact
       path="/dashboard/data/connectors"

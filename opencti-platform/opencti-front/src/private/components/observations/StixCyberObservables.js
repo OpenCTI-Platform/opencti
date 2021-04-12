@@ -12,6 +12,7 @@ import {
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
+import * as R from 'ramda';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import StixCyberObservablesLines, {
@@ -26,6 +27,7 @@ import {
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import ToolBar from '../data/ToolBar';
 
 const styles = () => ({
   container: {
@@ -50,6 +52,8 @@ class StixCyberObservables extends Component {
       observableTypes: propOr([], 'observableTypes', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
+      selectedElements: null,
+      selectAll: false,
     };
   }
 
@@ -97,6 +101,37 @@ class StixCyberObservables extends Component {
     this.setState({ observableTypes: [] }, () => this.saveView());
   }
 
+  handleToggleSelectEntity(entity, event) {
+    event.stopPropagation();
+    event.preventDefault();
+    const { selectedElements } = this.state;
+    if (entity.id in (selectedElements || {})) {
+      const newSelectedElements = R.omit([entity.id], selectedElements);
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    } else {
+      const newSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        selectedElements || {},
+      );
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    }
+  }
+
+  handleToggleSelectAll() {
+    this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
+  }
+
+  handleClearSelectedElements() {
+    this.setState({ selectAll: false, selectedElements: null });
+  }
+
   handleAddFilter(key, id, value, event = null) {
     if (event) {
       event.stopPropagation();
@@ -139,7 +174,13 @@ class StixCyberObservables extends Component {
       filters,
       openExports,
       numberOfElements,
+      selectedElements,
+      selectAll,
     } = this.state;
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original;
+    }
     const dataColumns = {
       entity_type: {
         label: 'Type',
@@ -167,45 +208,63 @@ class StixCyberObservables extends Component {
       },
     };
     return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        handleAddFilter={this.handleAddFilter.bind(this)}
-        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        handleToggleExports={this.handleToggleExports.bind(this)}
-        openExports={openExports}
-        exportEntityType="Stix-Cyber-Observable"
-        exportContext={null}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'labelledBy',
-          'markedBy',
-          'created_at_start_date',
-          'created_at_end_date',
-          'createdBy',
-        ]}
-      >
-        <QueryRenderer
-          query={stixCyberObservablesLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <StixCyberObservablesLines
-              data={props}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
+      <div>
+        <ListLines
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={this.handleSort.bind(this)}
+          handleSearch={this.handleSearch.bind(this)}
+          handleAddFilter={this.handleAddFilter.bind(this)}
+          handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+          handleToggleExports={this.handleToggleExports.bind(this)}
+          openExports={openExports}
+          handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+          selectAll={selectAll}
+          exportEntityType="Stix-Cyber-Observable"
+          exportContext={null}
+          keyword={searchTerm}
+          filters={filters}
+          iconExtension={true}
+          paginationOptions={paginationOptions}
+          numberOfElements={numberOfElements}
+          availableFilterKeys={[
+            'labelledBy',
+            'markedBy',
+            'created_at_start_date',
+            'created_at_end_date',
+            'createdBy',
+          ]}
+        >
+          <QueryRenderer
+            query={stixCyberObservablesLinesQuery}
+            variables={{ count: 25, ...paginationOptions }}
+            render={({ props }) => (
+              <StixCyberObservablesLines
+                data={props}
+                paginationOptions={paginationOptions}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                selectedElements={selectedElements}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                selectAll={selectAll}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            )}
+          />
+        </ListLines>
+        <ToolBar
+          selectedElements={selectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          filters={filters}
+          handleClearSelectedElements={this.handleClearSelectedElements.bind(
+            this,
           )}
+          withPaddingRight={true}
         />
-      </ListLines>
+      </div>
     );
   }
 

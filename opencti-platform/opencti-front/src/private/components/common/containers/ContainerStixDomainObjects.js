@@ -75,6 +75,10 @@ class ContainerStixDomainObjectsComponent extends Component {
     }
   }
 
+  handleClear() {
+    this.setState({ types: [] }, () => this.saveView());
+  }
+
   setNumberOfElements(numberOfElements) {
     this.setState({ numberOfElements });
   }
@@ -153,6 +157,7 @@ class ContainerStixDomainObjectsComponent extends Component {
         <StixDomainObjectsRightBar
           types={types}
           handleToggle={this.handleToggle.bind(this)}
+          handleClear={this.handleClear.bind(this)}
           openExports={openExports}
         />
       </div>

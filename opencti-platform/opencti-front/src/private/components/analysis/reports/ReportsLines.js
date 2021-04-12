@@ -21,7 +21,13 @@ class ReportsLines extends Component {
 
   render() {
     const {
-      initialLoading, dataColumns, relay, onLabelClick,
+      initialLoading,
+      dataColumns,
+      relay,
+      onLabelClick,
+      onToggleEntity,
+      selectedElements,
+      selectAll,
     } = this.props;
     return (
       <ListLinesContent
@@ -40,6 +46,9 @@ class ReportsLines extends Component {
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         onLabelClick={onLabelClick.bind(this)}
+        selectedElements={selectedElements}
+        selectAll={selectAll}
+        onToggleEntity={onToggleEntity.bind(this)}
       />
     );
   }
@@ -56,6 +65,9 @@ ReportsLines.propTypes = {
   searchTerm: PropTypes.string,
   onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
 };
 
 export const reportsLinesQuery = graphql`

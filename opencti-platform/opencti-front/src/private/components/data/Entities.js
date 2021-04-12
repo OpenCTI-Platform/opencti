@@ -87,6 +87,10 @@ class Entities extends Component {
     }
   }
 
+  handleClear() {
+    this.setState({ types: [] }, () => this.saveView());
+  }
+
   handleAddFilter(key, id, value, event = null) {
     if (event) {
       event.stopPropagation();
@@ -211,6 +215,7 @@ class Entities extends Component {
           filters={filters}
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
+          iconExtension={true}
           availableFilterKeys={[
             'labelledBy',
             'markedBy',
@@ -249,6 +254,7 @@ class Entities extends Component {
           handleClearSelectedElements={this.handleClearSelectedElements.bind(
             this,
           )}
+          withPaddingRight={true}
         />
       </div>
     );
@@ -273,6 +279,7 @@ class Entities extends Component {
         <StixDomainObjectsRightBar
           types={types}
           handleToggle={this.handleToggle.bind(this)}
+          handleClear={this.handleClear.bind(this)}
         />
       </div>
     );

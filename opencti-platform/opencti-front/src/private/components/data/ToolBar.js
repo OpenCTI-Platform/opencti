@@ -68,10 +68,19 @@ import { labelsSearchQuery } from '../settings/LabelsQuery';
 const styles = (theme) => ({
   bottomNav: {
     zIndex: 1000,
+    padding: '0 0 0 180px',
+    backgroundColor: theme.palette.navBottom.background,
+    display: 'flex',
+    height: 50,
+    overflow: 'hidden',
+  },
+  bottomNavWithPadding: {
+    zIndex: 1000,
     padding: '0 230px 0 180px',
     backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     height: 50,
+    overflow: 'hidden',
   },
   drawerPaper: {
     minHeight: '100vh',
@@ -704,6 +713,7 @@ class ToolBar extends Component {
       selectedElements,
       selectAll,
       filters,
+      withPaddingRight,
     } = this.props;
     const {
       actions, keptEntityId, mergingElement, actionsInputs,
@@ -746,7 +756,11 @@ class ToolBar extends Component {
       <Drawer
         anchor="bottom"
         variant="persistent"
-        classes={{ paper: classes.bottomNav }}
+        classes={{
+          paper: withPaddingRight
+            ? classes.bottomNavWithPadding
+            : classes.bottomNav,
+        }}
         open={isOpen}
       >
         <Toolbar style={{ minHeight: 54 }}>
@@ -1245,6 +1259,7 @@ ToolBar.propTypes = {
   selectAll: PropTypes.bool,
   filters: PropTypes.object,
   handleClearSelectedElements: PropTypes.func,
+  withPaddingRight: PropTypes.bool,
 };
 
 export default R.compose(inject18n, withStyles(styles))(ToolBar);
