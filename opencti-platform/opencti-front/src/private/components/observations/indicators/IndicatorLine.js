@@ -160,6 +160,7 @@ const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
   node: graphql`
     fragment IndicatorLine_node on Indicator {
       id
+      entity_type
       name
       pattern_type
       valid_from

@@ -171,7 +171,9 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
   node: graphql`
     fragment ReportLine_node on Report {
       id
+      entity_type
       name
+      description
       published
       x_opencti_report_status
       createdBy {

@@ -56,7 +56,11 @@ const stixCyberObservableContribution = {
     [C.ENTITY_EMAIL_MESSAGE]: [{ src: 'from', dest: 'from_ref' }, { src: 'subject' }, { src: 'body' }],
     [C.ENTITY_HASHED_OBSERVABLE_ARTIFACT]: [{ src: 'hashes' }],
     [C.ENTITY_HASHED_OBSERVABLE_STIX_FILE]: [[{ src: 'hashes' }], [{ src: 'name' }]],
-    [C.ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE]: [{ src: 'hashes' }],
+    [C.ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE]: [
+      [{ src: 'hashes' }],
+      [{ src: 'serial_number' }],
+      [{ src: 'subject' }],
+    ],
     [C.ENTITY_IPV4_ADDR]: [{ src: 'value' }],
     [C.ENTITY_IPV6_ADDR]: [{ src: 'value' }],
     [C.ENTITY_MAC_ADDR]: [{ src: 'value' }],
