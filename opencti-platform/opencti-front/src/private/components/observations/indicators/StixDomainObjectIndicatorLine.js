@@ -11,6 +11,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
 import { ShieldSearch } from 'mdi-material-ui';
+import Checkbox from '@material-ui/core/Checkbox';
 import inject18n from '../../../../components/i18n';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -52,6 +53,9 @@ class StixDomainObjectIndicatorLineComponent extends Component {
       node,
       paginationOptions,
       entityId,
+      onToggleEntity,
+      selectedElements,
+      selectAll,
     } = this.props;
     return (
       <ListItem
@@ -61,6 +65,17 @@ class StixDomainObjectIndicatorLineComponent extends Component {
         component={Link}
         to={`/dashboard/observations/indicators/${node.id}`}
       >
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 40 }}
+          onClick={onToggleEntity.bind(this, node)}
+        >
+          <Checkbox
+            edge="start"
+            checked={selectAll || node.id in (selectedElements || {})}
+            disableRipple={true}
+          />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ShieldSearch />
         </ListItemIcon>
@@ -149,6 +164,7 @@ const StixDomainObjectIndicatorLineFragment = createFragmentContainer(
     node: graphql`
       fragment StixDomainObjectIndicatorLine_node on Indicator {
         id
+        entity_type
         name
         pattern_type
         description
@@ -191,6 +207,12 @@ class StixDomainObjectIndicatorLineDummyComponent extends Component {
     const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
+        <ListItemIcon
+          classes={{ root: classes.itemIconDisabled }}
+          style={{ minWidth: 40 }}
+        >
+          <Checkbox edge="start" disabled={true} disableRipple={true} />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <ShieldSearch />
         </ListItemIcon>

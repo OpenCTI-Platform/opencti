@@ -424,11 +424,7 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleZoomToFit() {
-    if (this.graphObjects.length === 1) {
-      this.graph.current.zoomToFit(400, 300);
-    } else {
-      this.graph.current.zoomToFit(400, 150);
-    }
+    this.graph.current.zoomToFit(400, 150);
   }
 
   handleZoomEnd(zoom) {
@@ -521,7 +517,7 @@ class ReportKnowledgeGraphComponent extends Component {
         ),
       },
       () => {
-        setTimeout(() => this.handleZoomToFit(), 1000);
+        setTimeout(() => this.handleZoomToFit(), 1500);
       },
     );
   }

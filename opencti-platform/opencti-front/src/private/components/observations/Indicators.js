@@ -1,15 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  append,
-  assoc,
-  compose,
-  dissoc,
-  filter,
-  propOr,
-  uniqBy,
-  prop,
-} from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core';
 import * as R from 'ramda';
@@ -44,13 +34,13 @@ class Indicators extends Component {
       'view-indicators',
     );
     this.state = {
-      sortBy: propOr('created', 'sortBy', params),
-      orderAsc: propOr(false, 'orderAsc', params),
-      searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('lines', 'view', params),
-      indicatorTypes: propOr([], 'indicatorTypes', params),
-      observableTypes: propOr([], 'observableTypes', params),
-      filters: propOr({}, 'filters', params),
+      sortBy: R.propOr('created', 'sortBy', params),
+      orderAsc: R.propOr(false, 'orderAsc', params),
+      searchTerm: R.propOr('', 'searchTerm', params),
+      view: R.propOr('lines', 'view', params),
+      indicatorTypes: R.propOr([], 'indicatorTypes', params),
+      observableTypes: R.propOr([], 'observableTypes', params),
+      filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
@@ -83,14 +73,17 @@ class Indicators extends Component {
     if (this.state.indicatorTypes.includes(type)) {
       this.setState(
         {
-          indicatorTypes: filter((t) => t !== type, this.state.indicatorTypes),
+          indicatorTypes: R.filter(
+            (t) => t !== type,
+            this.state.indicatorTypes,
+          ),
         },
         () => this.saveView(),
       );
     } else {
       this.setState(
         {
-          indicatorTypes: append(type, this.state.indicatorTypes),
+          indicatorTypes: R.append(type, this.state.indicatorTypes),
         },
         () => this.saveView(),
       );
@@ -101,7 +94,7 @@ class Indicators extends Component {
     if (this.state.observableTypes.includes(type)) {
       this.setState(
         {
-          observableTypes: filter(
+          observableTypes: R.filter(
             (t) => t !== type,
             this.state.observableTypes,
           ),
@@ -111,7 +104,7 @@ class Indicators extends Component {
     } else {
       this.setState(
         {
-          observableTypes: append(type, this.state.observableTypes),
+          observableTypes: R.append(type, this.state.observableTypes),
         },
         () => this.saveView(),
       );
@@ -161,9 +154,9 @@ class Indicators extends Component {
     if (this.state.filters[key] && this.state.filters[key].length > 0) {
       this.setState(
         {
-          filters: assoc(
+          filters: R.assoc(
             key,
-            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            R.uniqBy(R.prop('id'), [{ id, value }, ...this.state.filters[key]]),
             this.state.filters,
           ),
         },
@@ -172,7 +165,7 @@ class Indicators extends Component {
     } else {
       this.setState(
         {
-          filters: assoc(key, [{ id, value }], this.state.filters),
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
         },
         () => this.saveView(),
       );
@@ -180,7 +173,7 @@ class Indicators extends Component {
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {
@@ -197,10 +190,23 @@ class Indicators extends Component {
       numberOfElements,
       selectedElements,
       selectAll,
+      indicatorTypes,
+      observableTypes,
     } = this.state;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original;
+    }
+    let finalFilters = filters;
+    if (indicatorTypes.length) {
+      finalFilters = R.assoc('pattern_type', indicatorTypes, finalFilters);
+    }
+    if (observableTypes.length) {
+      finalFilters = R.assoc(
+        'x_opencti_main_observable_type',
+        observableTypes,
+        finalFilters,
+      );
     }
     const dataColumns = {
       pattern_type: {
@@ -286,7 +292,7 @@ class Indicators extends Component {
           selectedElements={selectedElements}
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
-          filters={filters}
+          filters={finalFilters}
           handleClearSelectedElements={this.handleClearSelectedElements.bind(
             this,
           )}
@@ -310,13 +316,13 @@ class Indicators extends Component {
     } = this.state;
     let finalFilters = convertFilters(filters);
     if (indicatorTypes.length > 0) {
-      finalFilters = append(
+      finalFilters = R.append(
         { key: 'pattern_type', values: indicatorTypes, operator: 'match' },
         finalFilters,
       );
     }
     if (observableTypes.length > 0) {
-      finalFilters = append(
+      finalFilters = R.append(
         {
           key: 'x_opencti_main_observable_type',
           values: observableTypes,
@@ -364,4 +370,4 @@ Indicators.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(Indicators);
+export default R.compose(inject18n, withRouter, withStyles(styles))(Indicators);

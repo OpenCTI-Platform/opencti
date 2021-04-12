@@ -30,6 +30,9 @@ class StixDomainObjectIndicatorsLines extends Component {
       entityLink,
       entityId,
       paginationOptions,
+      onToggleEntity,
+      selectedElements,
+      selectAll,
     } = this.props;
     return (
       <ListLinesContent
@@ -50,6 +53,9 @@ class StixDomainObjectIndicatorsLines extends Component {
         paginationOptions={paginationOptions}
         entityLink={entityLink}
         entityId={entityId}
+        selectedElements={selectedElements}
+        selectAll={selectAll}
+        onToggleEntity={onToggleEntity.bind(this)}
       />
     );
   }
@@ -66,6 +72,9 @@ StixDomainObjectIndicatorsLines.propTypes = {
   entityLink: PropTypes.string,
   entityId: PropTypes.string,
   setNumberOfElements: PropTypes.func,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
 };
 
 export const stixDomainObjectIndicatorsLinesQuery = graphql`

@@ -10,6 +10,7 @@ import {
   uniqBy,
   prop,
 } from 'ramda';
+import * as R from 'ramda';
 import StixDomainObjectIndicatorsLines, {
   stixDomainObjectIndicatorsLinesQuery,
 } from './StixDomainObjectIndicatorsLines';
@@ -23,6 +24,7 @@ import {
 } from '../../../../utils/ListParameters';
 import IndicatorsRightBar from './IndicatorsRightBar';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import ToolBar from '../../data/ToolBar';
 
 class StixDomainObjectIndicators extends Component {
   constructor(props) {
@@ -42,6 +44,8 @@ class StixDomainObjectIndicators extends Component {
       observableTypes: [],
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
+      selectedElements: null,
+      selectAll: false,
     };
   }
 
@@ -98,6 +102,37 @@ class StixDomainObjectIndicators extends Component {
     this.setState({ observableTypes: [] }, () => this.saveView());
   }
 
+  handleToggleSelectEntity(entity, event) {
+    event.stopPropagation();
+    event.preventDefault();
+    const { selectedElements } = this.state;
+    if (entity.id in (selectedElements || {})) {
+      const newSelectedElements = R.omit([entity.id], selectedElements);
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    } else {
+      const newSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        selectedElements || {},
+      );
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    }
+  }
+
+  handleToggleSelectAll() {
+    this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
+  }
+
+  handleClearSelectedElements() {
+    this.setState({ selectAll: false, selectedElements: null });
+  }
+
   handleAddFilter(key, id, value, event = null) {
     if (event) {
       event.stopPropagation();
@@ -139,9 +174,28 @@ class StixDomainObjectIndicators extends Component {
       searchTerm,
       openExports,
       numberOfElements,
+      selectedElements,
+      selectAll,
       filters,
+      indicatorTypes,
+      observableTypes,
     } = this.state;
     const { stixDomainObjectId, stixDomainObjectLink } = this.props;
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original;
+    }
+    let finalFilters = filters;
+    if (indicatorTypes.length) {
+      finalFilters = R.assoc('pattern_type', indicatorTypes, finalFilters);
+    }
+    if (observableTypes.length) {
+      finalFilters = R.assoc(
+        'x_opencti_main_observable_type',
+        observableTypes,
+        finalFilters,
+      );
+    }
     const dataColumns = {
       pattern_type: {
         label: 'Type',
@@ -180,42 +234,60 @@ class StixDomainObjectIndicators extends Component {
       search: searchTerm,
     };
     return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        handleAddFilter={this.handleAddFilter.bind(this)}
-        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        handleToggleExports={this.handleToggleExports.bind(this)}
-        openExports={openExports}
-        noPadding={typeof this.props.onChangeOpenExports === 'function'}
-        paginationOptions={exportPaginationOptions}
-        exportEntityType="Indicator"
-        filters={filters}
-        exportContext={`of-entity-${stixDomainObjectId}`}
-        keyword={searchTerm}
-        secondaryAction={true}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={['created_start_date', 'created_end_date']}
-      >
-        <QueryRenderer
-          query={stixDomainObjectIndicatorsLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <StixDomainObjectIndicatorsLines
-              data={props}
-              paginationOptions={paginationOptions}
-              entityLink={stixDomainObjectLink}
-              entityId={stixDomainObjectId}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
+      <div>
+        <ListLines
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={this.handleSort.bind(this)}
+          handleSearch={this.handleSearch.bind(this)}
+          handleAddFilter={this.handleAddFilter.bind(this)}
+          handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+          handleToggleExports={this.handleToggleExports.bind(this)}
+          openExports={openExports}
+          handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+          selectAll={selectAll}
+          noPadding={typeof this.props.onChangeOpenExports === 'function'}
+          paginationOptions={exportPaginationOptions}
+          exportEntityType="Indicator"
+          filters={filters}
+          exportContext={`of-entity-${stixDomainObjectId}`}
+          keyword={searchTerm}
+          secondaryAction={true}
+          iconExtension={true}
+          numberOfElements={numberOfElements}
+          availableFilterKeys={['created_start_date', 'created_end_date']}
+        >
+          <QueryRenderer
+            query={stixDomainObjectIndicatorsLinesQuery}
+            variables={{ count: 25, ...paginationOptions }}
+            render={({ props }) => (
+              <StixDomainObjectIndicatorsLines
+                data={props}
+                paginationOptions={paginationOptions}
+                entityLink={stixDomainObjectLink}
+                entityId={stixDomainObjectId}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+                selectedElements={selectedElements}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                selectAll={selectAll}
+              />
+            )}
+          />
+        </ListLines>
+        <ToolBar
+          selectedElements={selectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          filters={finalFilters}
+          handleClearSelectedElements={this.handleClearSelectedElements.bind(
+            this,
           )}
+          withPaddingRight={true}
         />
-      </ListLines>
+      </div>
     );
   }
 

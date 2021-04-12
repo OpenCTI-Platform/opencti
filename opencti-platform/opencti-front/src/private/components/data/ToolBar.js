@@ -67,7 +67,7 @@ import { labelsSearchQuery } from '../settings/LabelsQuery';
 
 const styles = (theme) => ({
   bottomNav: {
-    zIndex: 1000,
+    zIndex: 1100,
     padding: '0 0 0 180px',
     backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
@@ -75,7 +75,7 @@ const styles = (theme) => ({
     overflow: 'hidden',
   },
   bottomNavWithPadding: {
-    zIndex: 1000,
+    zIndex: 1100,
     padding: '0 230px 0 180px',
     backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
@@ -915,9 +915,12 @@ class ToolBar extends Component {
                                   {R.map(
                                     (o) => (
                                       <span key={o.value}>
-                                        {o.value && o.value.length > 0
-                                          ? truncate(o.value, 15)
-                                          : t('No label')}{' '}
+                                        {/* eslint-disable-next-line no-nested-ternary */}
+                                        {typeof o === 'string'
+                                          ? o
+                                          : o.value && o.value.length > 0
+                                            ? truncate(o.value, 15)
+                                            : t('No label')}{' '}
                                         {R.last(currentFilter[1]).value
                                           !== o.value && <code>OR</code>}{' '}
                                       </span>
