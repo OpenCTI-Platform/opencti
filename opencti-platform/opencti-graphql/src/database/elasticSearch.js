@@ -15,7 +15,7 @@ import {
   READ_PLATFORM_INDICES,
   READ_RELATIONSHIPS_INDICES,
 } from './utils';
-import conf, { logger } from '../config/conf';
+import conf, { logApp } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
 import {
   RELATION_CREATED_BY,
@@ -345,7 +345,7 @@ export const elDeleteIndexes = async (indexesToDelete) => {
       return el.indices.delete({ index }).catch((err) => {
         /* istanbul ignore next */
         if (err.meta.body && err.meta.body.error.type !== 'index_not_found_exception') {
-          logger.error(`[ELASTICSEARCH] Delete indices fail`, { error: err });
+          logApp.error(`[ELASTICSEARCH] Delete indices fail`, { error: err });
         }
       });
     })
@@ -485,7 +485,7 @@ export const elCount = (user, indexName, options = {}) => {
       },
     },
   };
-  logger.debug(`[ELASTICSEARCH] countEntities`, { query });
+  logApp.debug(`[ELASTICSEARCH] countEntities`, { query });
   return el
     .count(query)
     .then((data) => {
@@ -547,7 +547,7 @@ export const elAggregationCount = (user, type, aggregationField, start, end, fil
       },
     },
   };
-  logger.debug(`[ELASTICSEARCH] aggregationCount`, { query });
+  logApp.debug(`[ELASTICSEARCH] aggregationCount`, { query });
   return el
     .search(query)
     .then((data) => {
@@ -704,7 +704,7 @@ export const elFindByIds = async (user, ids, opts = {}) => {
         },
       },
     };
-    logger.debug(`[ELASTICSEARCH] elInternalLoadById`, { query });
+    logApp.debug(`[ELASTICSEARCH] elInternalLoadById`, { query });
     const data = await el.search(query).catch((err) => {
       throw DatabaseError('Error loading ids', { error: err, query });
     });
@@ -836,7 +836,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
       },
     },
   };
-  logger.debug(`[ELASTICSEARCH] aggregationRelationsCount`, { query });
+  logApp.debug(`[ELASTICSEARCH] aggregationRelationsCount`, { query });
   return el
     .search(query)
     .then(async (data) => {
@@ -988,7 +988,7 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
       },
     },
   };
-  logger.debug(`[ELASTICSEARCH] histogramCount`, { query });
+  logApp.debug(`[ELASTICSEARCH] histogramCount`, { query });
   return el.search(query).then((data) => {
     const { buckets } = data.body.aggregations.count_over_time;
     const dataToPairs = R.toPairs(buckets);
@@ -1213,7 +1213,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
     track_total_hits: true,
     body,
   };
-  logger.debug(`[ELASTICSEARCH] paginate`, { query });
+  logApp.debug(`[ELASTICSEARCH] paginate`, { query });
   return el
     .search(query)
     .then((data) => {
@@ -1244,7 +1244,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
         )(err.meta.body.error.root_cause);
         // If uncontrolled error, log and propagate
         if (numberOfCauses > invalidMappingCauses.length) {
-          logger.error(`[ELASTICSEARCH] Paginate fail`, { error: err, query });
+          logApp.error(`[ELASTICSEARCH] Paginate fail`, { error: err, query });
           throw err;
         } else {
           return connectionFormat ? buildPagination(0, null, [], 0) : [];
@@ -1355,7 +1355,7 @@ export const elReindex = async (indices) => {
 export const elIndex = async (indexName, documentBody, refresh = true) => {
   const internalId = documentBody.internal_id;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
-  logger.debug(`[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}`, documentBody);
+  logApp.debug(`[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}`, documentBody);
   await el
     .index({
       index: indexName,
@@ -1443,7 +1443,7 @@ export const getRelationsToRemove = async (user, elements) => {
 export const elDeleteInstanceIds = async (instances) => {
   // If nothing to delete, return immediately to prevent elastic to delete everything
   if (instances.length === 0) return Promise.resolve(0);
-  logger.debug(`[ELASTICSEARCH] Deleting ${instances.length} instances`);
+  logApp.debug(`[ELASTICSEARCH] Deleting ${instances.length} instances`);
   const bodyDelete = instances.flatMap((doc) => {
     return [{ delete: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
   });
@@ -1515,7 +1515,7 @@ export const elDeleteElements = async (user, elements) => {
   const concurrentRelsFromTo = async (relsToClean) => {
     await elRemoveRelationConnection(user, relsToClean);
     currentRelationsCount += relsToClean.length;
-    logger.debug(`[OPENCTI] Updating relations for deletion ${currentRelationsCount} / ${relsFromToImpacts.length}`);
+    logApp.debug(`[OPENCTI] Updating relations for deletion ${currentRelationsCount} / ${relsFromToImpacts.length}`);
   };
   await Promise.map(groupsOfRelsFromTo, concurrentRelsFromTo, { concurrency: ES_MAX_CONCURRENCY });
   // Remove all relations
@@ -1524,7 +1524,7 @@ export const elDeleteElements = async (user, elements) => {
   const concurrentDeletions = async (deletions) => {
     await elDeleteInstanceIds(deletions);
     currentRelationsDelete += deletions.length;
-    logger.debug(`[OPENCTI] Deleting related relations ${currentRelationsDelete} / ${relations.length}`);
+    logApp.debug(`[OPENCTI] Deleting related relations ${currentRelationsDelete} / ${relations.length}`);
   };
   await Promise.map(groupsOfDeletions, concurrentDeletions, { concurrency: ES_MAX_CONCURRENCY });
   // Remove the elements

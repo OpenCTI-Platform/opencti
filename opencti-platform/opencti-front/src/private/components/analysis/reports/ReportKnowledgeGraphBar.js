@@ -721,10 +721,7 @@ class ReportKnowledgeGraphBar extends Component {
                     </DialogContentText>
                   </DialogContent>
                   <DialogActions>
-                    <Button
-                      onClick={this.handleCloseRemove.bind(this)}
-                      color="primary"
-                    >
+                    <Button onClick={this.handleCloseRemove.bind(this)}>
                       {t('Cancel')}
                     </Button>
                     <Button
@@ -786,14 +783,13 @@ class ReportKnowledgeGraphBar extends Component {
                 </ResponsiveContainer>
               </div>
               <TimeRange
-                ticksNumber={20}
+                ticksNumber={15}
                 selectedInterval={selectedTimeRangeInterval}
                 timelineInterval={timeRangeInterval}
                 onUpdateCallback={() => null}
                 onChangeCallback={handleTimeRangeChange}
                 formatTick={dateFormat}
                 containerClassName="timerange"
-                step={3 * 3600 * 1000}
               />
             </div>
           </div>

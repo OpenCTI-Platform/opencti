@@ -94,18 +94,20 @@ class SectorEditionOverviewComponent extends Component {
   searchSubsector(event) {
     fetchQuery(sectorsSearchQuery, {
       search: event && event.target.value !== 0 ? event.target.value : '',
-    }).then((data) => {
-      const subSectors = pipe(
-        pathOr([], ['sectors', 'edges']),
-        map((n) => ({ label: n.node.name, value: n.node.id })),
-      )(data);
-      this.setState({
-        subSectors: union(
-          this.state.subSectors,
-          filter((n) => n.value !== this.props.sector.id, subSectors),
-        ),
+    })
+      .toPromise()
+      .then((data) => {
+        const subSectors = pipe(
+          pathOr([], ['sectors', 'edges']),
+          map((n) => ({ label: n.node.name, value: n.node.id })),
+        )(data);
+        this.setState({
+          subSectors: union(
+            this.state.subSectors,
+            filter((n) => n.value !== this.props.sector.id, subSectors),
+          ),
+        });
       });
-    });
   }
 
   handleChangeFocus(name) {

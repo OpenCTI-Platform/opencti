@@ -64,17 +64,19 @@ class CreatedByField extends Component {
       types: ['Individual', 'Organization'],
       search: event && event.target.value !== 0 ? event.target.value : '',
       first: 10,
-    }).then((data) => {
-      const identities = pipe(
-        pathOr([], ['identities', 'edges']),
-        map((n) => ({
-          label: n.node.name,
-          value: n.node.id,
-          type: n.node.entity_type,
-        })),
-      )(data);
-      this.setState({ identities: union(this.state.identities, identities) });
-    });
+    })
+      .toPromise()
+      .then((data) => {
+        const identities = pipe(
+          pathOr([], ['identities', 'edges']),
+          map((n) => ({
+            label: n.node.name,
+            value: n.node.id,
+            type: n.node.entity_type,
+          })),
+        )(data);
+        this.setState({ identities: union(this.state.identities, identities) });
+      });
   }
 
   render() {

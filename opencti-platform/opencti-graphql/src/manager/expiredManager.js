@@ -6,26 +6,25 @@ import { SYSTEM_USER } from '../domain/user';
 import { READ_DATA_INDICES } from '../database/utils';
 import { prepareDate } from '../utils/format';
 import { patchAttribute } from '../database/middleware';
-import conf, { logger } from '../config/conf';
+import conf, { logApp } from '../config/conf';
 
 // Expired manager responsible to monitor expired elements
 // In order to change the revoked attribute to true
 // Each API will start is manager.
-// When manager do it scan it take a lock and periodically renew it until the job is done.
 // If the lock is free, every API as the right to take it.
 const SCHEDULE_TIME = conf.get('expiration_scheduler:interval');
 const EXPIRED_MANAGER_KEY = conf.get('expiration_scheduler:lock_key');
 
 const expireHandler = async () => {
-  logger.debug('[OPENCTI] Running Expiration manager');
+  logApp.debug('[OPENCTI] Running Expiration manager');
   let lock;
   try {
     // Lock the manager
     lock = await lockResource([EXPIRED_MANAGER_KEY]);
-    logger.debug('[OPENCTI] Expiration manager lock acquired');
+    logApp.debug('[OPENCTI] Expiration manager lock acquired');
     // Execute the cleaning
     const callback = async (elements) => {
-      logger.info(`[OPENCTI] Expiration manager will revoke ${elements.length} elements`);
+      logApp.info(`[OPENCTI] Expiration manager will revoke ${elements.length} elements`);
       const concurrentUpdate = async (element) => {
         const patch = { revoked: true };
         await patchAttribute(SYSTEM_USER, element.id, element.entity_type, patch);
@@ -40,9 +39,9 @@ const expireHandler = async () => {
     await elList(SYSTEM_USER, READ_DATA_INDICES, opts);
   } catch (e) {
     // We dont care about failing to get the lock.
-    logger.info('[OPENCTI] Expiration manager already in progress by another API');
+    logApp.info('[OPENCTI] Expiration manager already in progress by another API');
   } finally {
-    logger.debug('[OPENCTI] Expiration manager done');
+    logApp.debug('[OPENCTI] Expiration manager done');
     if (lock) await lock.unlock();
   }
 };

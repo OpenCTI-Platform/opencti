@@ -223,7 +223,6 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
           <DialogActions>
             <Button
               onClick={this.handleCloseDialog.bind(this)}
-              color="primary"
               disabled={this.state.removing}
             >
               {t('Cancel')}

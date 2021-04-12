@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, differenceWith, propOr } from 'ramda';
+import { compose, differenceWith } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer,
@@ -38,13 +38,14 @@ class ListLinesContent extends Component {
       prevProps.dataList,
     );
     let selection = false;
-    if (this.props.selectedElements) {
-      if (
-        Object.keys(this.props.selectedElements).length
-        !== Object.keys(propOr({}, 'selectedElements', prevProps)).length
-      ) {
-        selection = true;
-      }
+    if (
+      Object.keys(this.props.selectedElements || {}).length
+      !== Object.keys(prevProps.selectedElements || {}).length
+    ) {
+      selection = true;
+    }
+    if (this.props.selectAll !== prevProps.selectAll) {
+      selection = true;
     }
     if (diff.length > 0 || selection) {
       this.listRef.forceUpdateGrid();
@@ -96,6 +97,7 @@ class ListLinesContent extends Component {
       me,
       onLabelClick,
       selectedElements,
+      selectAll,
       onToggleEntity,
       connectionKey,
       isTo,
@@ -122,6 +124,7 @@ class ListLinesContent extends Component {
           me,
           onLabelClick,
           selectedElements,
+          selectAll,
           onToggleEntity,
           connectionKey,
           isTo,
@@ -206,6 +209,7 @@ ListLinesContent.propTypes = {
   onLabelClick: PropTypes.func,
   selectedElements: PropTypes.object,
   onToggleEntity: PropTypes.func,
+  selectAll: PropTypes.bool,
   connectionKey: PropTypes.string,
   isTo: PropTypes.bool,
 };

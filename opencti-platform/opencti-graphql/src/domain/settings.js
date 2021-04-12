@@ -5,7 +5,7 @@ import { delEditContext, getRedisVersion, notify, setEditContext } from '../data
 import { elVersion } from '../database/elasticSearch';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { getMinIOVersion } from '../database/minio';
-import { version } from '../../package.json';
+import pjson from '../../package.json';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { SYSTEM_USER } from './user';
 
@@ -14,7 +14,7 @@ export const getMemoryStatistics = () => {
 };
 
 export const getApplicationInfo = () => ({
-  version,
+  version: pjson.version,
   memory: getMemoryStatistics(),
   dependencies: [
     { name: 'Elasticsearch', version: elVersion() },

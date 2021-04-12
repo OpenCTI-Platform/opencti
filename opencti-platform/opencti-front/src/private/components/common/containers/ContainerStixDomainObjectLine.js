@@ -77,7 +77,9 @@ class ContainerStixDomainObjectLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.name}
+                {node.x_mitre_id
+                  ? `[${node.x_mitre_id}] ${node.name}`
+                  : node.name}
               </div>
               <div
                 className={classes.bodyItem}
@@ -144,6 +146,7 @@ const ContainerStixDomainObjectLineFragment = createFragmentContainer(
         created_at
         ... on AttackPattern {
           name
+          x_mitre_id
         }
         ... on Campaign {
           name

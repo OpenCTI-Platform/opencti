@@ -89,7 +89,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.start_time.width }}
               >
-                {nsd(node.stop_time)}
+                {nsd(node.start_time)}
               </div>
               <div
                 className={classes.bodyItem}

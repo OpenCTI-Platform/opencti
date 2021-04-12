@@ -124,72 +124,78 @@ class Filters extends Component {
           types: ['User', 'Organization'],
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
-        }).then((data) => {
-          const createdByEntities = pipe(
-            pathOr([], ['identities', 'edges']),
-            map((n) => ({
-              label: n.node.name,
-              value: n.node.id,
-              type: n.node.entity_type,
-            })),
-          )(data);
-          this.setState({
-            entities: {
-              ...this.state.entities,
-              createdBy: union(
-                createdByEntities,
-                this.state.entities.createdBy,
-              ),
-            },
+        })
+          .toPromise()
+          .then((data) => {
+            const createdByEntities = pipe(
+              pathOr([], ['identities', 'edges']),
+              map((n) => ({
+                label: n.node.name,
+                value: n.node.id,
+                type: n.node.entity_type,
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                createdBy: union(
+                  createdByEntities,
+                  this.state.entities.createdBy,
+                ),
+              },
+            });
           });
-        });
         break;
       case 'markedBy':
         fetchQuery(markingDefinitionsLinesSearchQuery, {
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
-        }).then((data) => {
-          const markedByEntities = pipe(
-            pathOr([], ['markingDefinitions', 'edges']),
-            map((n) => ({
-              label: n.node.definition,
-              value: n.node.id,
-              type: 'Marking-Definition',
-              color: n.node.x_opencti_color,
-            })),
-          )(data);
-          this.setState({
-            entities: {
-              ...this.state.entities,
-              markedBy: union(markedByEntities, this.state.entities.markedBy),
-            },
+        })
+          .toPromise()
+          .then((data) => {
+            const markedByEntities = pipe(
+              pathOr([], ['markingDefinitions', 'edges']),
+              map((n) => ({
+                label: n.node.definition,
+                value: n.node.id,
+                type: 'Marking-Definition',
+                color: n.node.x_opencti_color,
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                markedBy: union(markedByEntities, this.state.entities.markedBy),
+              },
+            });
           });
-        });
         break;
       case 'labelledBy':
         fetchQuery(labelsSearchQuery, {
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
-        }).then((data) => {
-          const labelledByEntities = pipe(
-            pathOr([], ['labels', 'edges']),
-            map((n) => ({
-              label: n.node.value,
-              value: n.node.id,
-              type: 'Label',
-              color: n.node.color,
-            })),
-          )(data);
-          this.setState({
-            entities: {
-              ...this.state.entities,
-              labelledBy: union(
-                labelledByEntities,
-                this.state.entities.labelledBy,
-              ),
-            },
+        })
+          .toPromise()
+          .then((data) => {
+            const labelledByEntities = pipe(
+              pathOr([], ['labels', 'edges']),
+              map((n) => ({
+                label: n.node.value,
+                value: n.node.id,
+                type: 'Label',
+                color: n.node.color,
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                labelledBy: union(
+                  labelledByEntities,
+                  this.state.entities.labelledBy,
+                ),
+              },
+            });
           });
-        });
         break;
       case 'x_opencti_base_score_gt':
         // eslint-disable-next-line no-case-declarations
@@ -234,125 +240,135 @@ class Filters extends Component {
           fieldKey: 'x_opencti_base_severity',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
-        }).then((data) => {
-          const severityEntities = pipe(
-            pathOr([], ['attributes', 'edges']),
-            map((n) => ({
-              label: n.node.value,
-              value: n.node.value,
-              type: 'attribute',
-            })),
-          )(data);
-          this.setState({
-            entities: {
-              ...this.state.entities,
-              x_opencti_base_severity: union(
-                severityEntities,
-                this.state.entities.x_opencti_base_severity,
-              ),
-            },
+        })
+          .toPromise()
+          .then((data) => {
+            const severityEntities = pipe(
+              pathOr([], ['attributes', 'edges']),
+              map((n) => ({
+                label: n.node.value,
+                value: n.node.value,
+                type: 'attribute',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                x_opencti_base_severity: union(
+                  severityEntities,
+                  this.state.entities.x_opencti_base_severity,
+                ),
+              },
+            });
           });
-        });
         break;
       case 'x_opencti_attack_vector':
         fetchQuery(attributesSearchQuery, {
           fieldKey: 'x_opencti_attack_vector',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
-        }).then((data) => {
-          const attackVectorEntities = pipe(
-            pathOr([], ['attributes', 'edges']),
-            map((n) => ({
-              label: n.node.value,
-              value: n.node.value,
-              type: 'attribute',
-            })),
-          )(data);
-          this.setState({
-            entities: {
-              ...this.state.entities,
-              x_opencti_attack_vector: union(
-                attackVectorEntities,
-                this.state.entities.x_opencti_attack_vector,
-              ),
-            },
+        })
+          .toPromise()
+          .then((data) => {
+            const attackVectorEntities = pipe(
+              pathOr([], ['attributes', 'edges']),
+              map((n) => ({
+                label: n.node.value,
+                value: n.node.value,
+                type: 'attribute',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                x_opencti_attack_vector: union(
+                  attackVectorEntities,
+                  this.state.entities.x_opencti_attack_vector,
+                ),
+              },
+            });
           });
-        });
         break;
       case 'x_opencti_report_status':
         fetchQuery(attributesSearchQuery, {
           fieldKey: 'x_opencti_report_status',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
-        }).then((data) => {
-          const reportStatusEntities = pipe(
-            pathOr([], ['attributes', 'edges']),
-            map((n) => ({
-              label: t(`report_status_${n.node.value}`),
-              value: n.node.value,
-              type: 'attribute',
-            })),
-          )(data);
-          this.setState({
-            entities: {
-              ...this.state.entities,
-              x_opencti_report_status: union(
-                reportStatusEntities,
-                this.state.entities.x_opencti_report_status,
-              ),
-            },
+        })
+          .toPromise()
+          .then((data) => {
+            const reportStatusEntities = pipe(
+              pathOr([], ['attributes', 'edges']),
+              map((n) => ({
+                label: t(`report_status_${n.node.value}`),
+                value: n.node.value,
+                type: 'attribute',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                x_opencti_report_status: union(
+                  reportStatusEntities,
+                  this.state.entities.x_opencti_report_status,
+                ),
+              },
+            });
           });
-        });
         break;
       case 'x_opencti_organization_type':
         fetchQuery(attributesSearchQuery, {
           fieldKey: 'x_opencti_organization_type',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
-        }).then((data) => {
-          const organizationTypeEntities = pipe(
-            pathOr([], ['attributes', 'edges']),
-            map((n) => ({
-              label: n.node.value,
-              value: n.node.value,
-              type: 'attribute',
-            })),
-          )(data);
-          this.setState({
-            entities: {
-              ...this.state.entities,
-              x_opencti_organization_type: union(
-                organizationTypeEntities,
-                this.state.entities.x_opencti_organization_type,
-              ),
-            },
+        })
+          .toPromise()
+          .then((data) => {
+            const organizationTypeEntities = pipe(
+              pathOr([], ['attributes', 'edges']),
+              map((n) => ({
+                label: n.node.value,
+                value: n.node.value,
+                type: 'attribute',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                x_opencti_organization_type: union(
+                  organizationTypeEntities,
+                  this.state.entities.x_opencti_organization_type,
+                ),
+              },
+            });
           });
-        });
         break;
       case 'report_types':
         fetchQuery(attributesSearchQuery, {
           key: 'report_types',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
-        }).then((data) => {
-          const reportTypesEntities = pipe(
-            pathOr([], ['attributes', 'edges']),
-            map((n) => ({
-              label: t(n.node.value),
-              value: n.node.value,
-              type: 'attribute',
-            })),
-          )(data);
-          this.setState({
-            entities: {
-              ...this.state.entities,
-              report_types: union(
-                reportTypesEntities,
-                this.state.entities.report_types,
-              ),
-            },
+        })
+          .toPromise()
+          .then((data) => {
+            const reportTypesEntities = pipe(
+              pathOr([], ['attributes', 'edges']),
+              map((n) => ({
+                label: t(n.node.value),
+                value: n.node.value,
+                type: 'attribute',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                report_types: union(
+                  reportTypesEntities,
+                  this.state.entities.report_types,
+                ),
+              },
+            });
           });
-        });
         break;
       case 'entity_type':
         // eslint-disable-next-line no-case-declarations

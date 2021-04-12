@@ -55,14 +55,16 @@ class StixDomainObjectDetectDuplicate extends Component {
           types: this.props.types,
           search: `"${this.props.value}"`,
           count: 10,
-        }).then((data) => {
-          const potentialDuplicates = pathOr(
-            [],
-            ['stixDomainObjects', 'edges'],
-            data,
-          );
-          this.setState({ potentialDuplicates });
-        });
+        })
+          .toPromise()
+          .then((data) => {
+            const potentialDuplicates = pathOr(
+              [],
+              ['stixDomainObjects', 'edges'],
+              data,
+            );
+            this.setState({ potentialDuplicates });
+          });
       } else {
         this.setState({ potentialDuplicates: [] });
       }

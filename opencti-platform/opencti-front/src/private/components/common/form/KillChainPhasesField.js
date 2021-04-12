@@ -40,19 +40,21 @@ class KillChainPhasesField extends Component {
   searchKillChainPhases(event) {
     fetchQuery(killChainPhasesSearchQuery, {
       search: event && event.target.value,
-    }).then((data) => {
-      const killChainPhases = pipe(
-        pathOr([], ['killChainPhases', 'edges']),
-        sortWith([ascend(path(['node', 'x_opencti_order']))]),
-        map((n) => ({
-          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-          value: n.node.id,
-        })),
-      )(data);
-      this.setState({
-        killChainPhases: union(this.state.killChainPhases, killChainPhases),
+    })
+      .toPromise()
+      .then((data) => {
+        const killChainPhases = pipe(
+          pathOr([], ['killChainPhases', 'edges']),
+          sortWith([ascend(path(['node', 'x_opencti_order']))]),
+          map((n) => ({
+            label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+            value: n.node.id,
+          })),
+        )(data);
+        this.setState({
+          killChainPhases: union(this.state.killChainPhases, killChainPhases),
+        });
       });
-    });
   }
 
   render() {

@@ -11,7 +11,7 @@ import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/St
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import CampaignPopover from './CampaignPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixDomainObjectKillChain from '../../common/stix_domain_objects/StixDomainObjectKillChain';
+import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
@@ -99,7 +99,7 @@ class CampaignKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/campaigns/:campaignId/knowledge/attack_patterns"
           render={(routeProps) => (
-            <StixDomainObjectKillChain
+            <StixDomainObjectAttackPatterns
               stixDomainObjectId={campaign.id}
               entityLink={link}
               {...routeProps}

@@ -54,17 +54,19 @@ class ObjectMarkingField extends Component {
   }
 
   searchMarkingDefinitions() {
-    fetchQuery(objectMarkingFieldAllowedMarkingsQuery).then((data) => {
-      const markingDefinitions = pipe(
-        pathOr([], ['me', 'allowed_marking']),
-        map((n) => ({
-          label: n.definition,
-          value: n.id,
-          color: n.x_opencti_color,
-        })),
-      )(data);
-      this.setState({ markingDefinitions });
-    });
+    fetchQuery(objectMarkingFieldAllowedMarkingsQuery)
+      .toPromise()
+      .then((data) => {
+        const markingDefinitions = pipe(
+          pathOr([], ['me', 'allowed_marking']),
+          map((n) => ({
+            label: n.definition,
+            value: n.id,
+            color: n.x_opencti_color,
+          })),
+        )(data);
+        this.setState({ markingDefinitions });
+      });
   }
 
   render() {

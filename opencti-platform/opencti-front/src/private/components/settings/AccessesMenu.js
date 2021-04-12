@@ -62,6 +62,16 @@ class SettingsMenu extends Component {
           >
             <ListItemText primary={t('Groups')} />
           </MenuItem>
+          <MenuItem
+            component={Link}
+            to={'/dashboard/settings/accesses/sessions'}
+            selected={
+              location.pathname === '/dashboard/settings/accesses/sessions'
+            }
+            dense={false}
+          >
+            <ListItemText primary={t('Sessions')} />
+          </MenuItem>
         </MenuList>
       </Drawer>
     );

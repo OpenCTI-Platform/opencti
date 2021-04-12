@@ -118,16 +118,16 @@ class UserHistoryLineComponent extends Component {
         </Avatar>
       );
     }
-    if (eventType === 'delete') {
+    if (eventType === 'update' && eventMesage.includes('changes the')) {
       return (
         <Avatar
           style={{
             marginTop: 5,
-            backgroundColor: red[500],
+            backgroundColor: green[500],
             color: '#ffffff',
           }}
         >
-          <DeleteOutlined />
+          <EditOutlined />
         </Avatar>
       );
     }
@@ -154,6 +154,19 @@ class UserHistoryLineComponent extends Component {
           }}
         >
           <LinkVariantRemove />
+        </Avatar>
+      );
+    }
+    if (eventType === 'delete') {
+      return (
+        <Avatar
+          style={{
+            marginTop: 5,
+            backgroundColor: red[500],
+            color: '#ffffff',
+          }}
+        >
+          <DeleteOutlined />
         </Avatar>
       );
     }

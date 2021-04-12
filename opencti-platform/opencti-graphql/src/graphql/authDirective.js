@@ -1,9 +1,11 @@
 /* eslint-disable no-underscore-dangle,no-param-reassign */
 import { SchemaDirectiveVisitor } from 'graphql-tools';
 import { includes, map, filter } from 'ramda';
-import { defaultFieldResolver } from 'graphql';
+import { defaultFieldResolver, responsePathAsArray } from 'graphql';
 import { AuthRequired, ForbiddenAccess } from '../config/errors';
 import { BYPASS, OPENCTI_ADMIN_UUID } from '../schema/general';
+import { logAudit } from '../config/conf';
+import { ACCESS_CONTROL } from '../config/audit';
 
 export const AUTH_DIRECTIVE = 'auth';
 
@@ -46,8 +48,15 @@ class AuthDirective extends SchemaDirectiveVisitor {
       const matchingCapabilities = filter((r) => includes(checkCapability, r), userCapabilities);
       if (matchingCapabilities.length > 0) availableCapabilities.push(checkCapability);
     }
-    if (availableCapabilities.length === 0) throw ForbiddenAccess();
-    if (requiredAll && availableCapabilities.length !== requiredCapabilities.length) throw ForbiddenAccess();
+    const isAccessForbidden =
+      availableCapabilities.length === 0 ||
+      (requiredAll && availableCapabilities.length !== requiredCapabilities.length);
+    if (isAccessForbidden) {
+      const [, , , info] = args;
+      const executionPath = responsePathAsArray(info.path);
+      logAudit.error(user, ACCESS_CONTROL, { path: executionPath });
+      throw ForbiddenAccess();
+    }
     return func.apply(this, args);
   }
 

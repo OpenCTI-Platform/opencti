@@ -12,17 +12,22 @@ import nconf from 'nconf';
 import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
-import { basePath, DEV_MODE, logger } from './config/conf';
-import passport from './config/providers';
-import { authenticateUser } from './domain/user';
+import { basePath, DEV_MODE, logApp, logAudit } from './config/conf';
+import passport, { empty, isStrategyActivated, STRATEGY_CERT } from './config/providers';
+import { authenticateUser, loginFromProvider, userWithOrigin } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
 import { checkSystemDependencies } from './initialization';
 import { getSettings } from './domain/settings';
 import createSeeMiddleware from './graphql/sseMiddleware';
 import initTaxiiApi from './taxiiApi';
 import { initializeSession } from './database/session';
+import { LOGIN_ACTION } from './config/audit';
 
 const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
+
+const setCookieError = (res, message) => {
+  res.cookie('opencti_flash', message || 'Unknown error', { maxAge: 5000, httpOnly: false });
+};
 
 const createApp = async (apolloServer, broadcaster) => {
   const appSessionHandler = initializeSession();
@@ -112,6 +117,37 @@ const createApp = async (apolloServer, broadcaster) => {
     stream.pipe(res);
   });
 
+  // -- Client HTTPS Cert login custom strategy
+  app.get(`${basePath}/auth/cert`, (req, res) => {
+    const isActivated = isStrategyActivated(STRATEGY_CERT);
+    if (!isActivated) {
+      setCookieError(res, 'Cert authentication is not available');
+      res.redirect(req.headers.referer);
+    } else {
+      const cert = req.connection.getPeerCertificate();
+      if (!R.isEmpty(cert) && req.client.authorized) {
+        const { CN, emailAddress } = cert.subject;
+        if (empty(emailAddress)) {
+          setCookieError(res, 'Client certificate need a correct emailAddress');
+          res.redirect(req.headers.referer);
+        } else {
+          loginFromProvider(emailAddress, empty(CN) ? emailAddress : CN)
+            .then(async ({ token }) => {
+              await authenticateUser(req, { providerToken: token.uuid, provider: 'cert' });
+              res.redirect(req.headers.referer);
+            })
+            .catch((err) => {
+              setCookieError(res, err?.message);
+              res.redirect(req.headers.referer);
+            });
+        }
+      } else {
+        setCookieError(res, 'You must select a correct certificate');
+        res.redirect(req.headers.referer);
+      }
+    }
+  });
+
   // -- Passport login
   app.get(`${basePath}/auth/:provider`, (req, res, next) => {
     const { provider } = req.params;
@@ -123,13 +159,15 @@ const createApp = async (apolloServer, broadcaster) => {
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
   app.get(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), (req, res, next) => {
     const { provider } = req.params;
+    const { referer } = req.session;
     passport.authenticate(provider, {}, async (err, token) => {
       if (err || !token) {
-        return res.redirect(`/dashboard?message=${err?.message}`);
+        logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
+        setCookieError(res, err?.message);
+        return res.redirect(referer);
       }
       // noinspection UnnecessaryLocalVariableJS
-      await authenticateUser(req, token.uuid);
-      const { referer } = req.session;
+      await authenticateUser(req, { providerToken: token.uuid, provider });
       req.session.referer = null;
       return res.redirect(referer);
     })(req, res, next);
@@ -147,7 +185,7 @@ const createApp = async (apolloServer, broadcaster) => {
 
   // Error handling
   app.use((err, req, res, next) => {
-    logger.error(`[EXPRESS] Error http call`, { error: err });
+    logApp.error(`[EXPRESS] Error http call`, { error: err });
     res.redirect('/');
     next();
   });

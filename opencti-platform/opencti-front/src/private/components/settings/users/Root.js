@@ -7,24 +7,15 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
-import User from './User';
+import User, { userQuery } from './User';
 import Loader from '../../../../components/Loader';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
   subscription RootUsersSubscription($id: ID!) {
     user(id: $id) {
       ...User_user
       ...UserEdition_user
-    }
-  }
-`;
-
-const userQuery = graphql`
-  query RootUserQuery($id: String!) {
-    user(id: $id) {
-      id
-      name
-      ...User_user
     }
   }
 `;
@@ -61,18 +52,21 @@ class RootUser extends Component {
           query={userQuery}
           variables={{ id: userId }}
           render={({ props }) => {
-            if (props && props.user) {
-              return (
-                <div>
-                  <Route
-                    exact
-                    path="/dashboard/settings/accesses/users/:userId"
-                    render={(routeProps) => (
-                      <User {...routeProps} user={props.user} />
-                    )}
-                  />
-                </div>
-              );
+            if (props) {
+              if (props.user) {
+                return (
+                  <div>
+                    <Route
+                      exact
+                      path="/dashboard/settings/accesses/users/:userId"
+                      render={(routeProps) => (
+                        <User {...routeProps} user={props.user} />
+                      )}
+                    />
+                  </div>
+                );
+              }
+              return <ErrorNotFound />;
             }
             return <Loader />;
           }}

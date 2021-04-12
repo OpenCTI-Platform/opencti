@@ -5,9 +5,10 @@ import { TextField } from 'formik-material-ui';
 import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
 import { withRouter } from 'react-router-dom';
-import { compose, head } from 'ramda';
+import { compose, head, isEmpty } from 'ramda';
 import * as Yup from 'yup';
 import * as PropTypes from 'prop-types';
+import { useCookies } from 'react-cookie';
 import { commitMutation } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 
@@ -28,8 +29,12 @@ const loginValidation = (t) => Yup.object().shape({
   password: Yup.string().required(t('This field is required')),
 });
 
+const FLASH_COOKIE = 'opencti_flash';
 const LoginForm = (props) => {
   const { classes, t, demo } = props;
+  const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
+  const flashError = cookies[FLASH_COOKIE] || '';
+  removeCookie(FLASH_COOKIE);
   const onSubmit = (values, { setSubmitting, setErrors }) => {
     commitMutation({
       mutation: loginMutation,
@@ -54,10 +59,12 @@ const LoginForm = (props) => {
           email: demo ? 'demo@opencti.io' : '',
           password: demo ? 'demo' : '',
         }}
+        initialTouched={{ email: !isEmpty(flashError) }}
+        initialErrors={{ email: !isEmpty(flashError) ? t(flashError) : '' }}
         validationSchema={loginValidation(t)}
         onSubmit={onSubmit}
       >
-        {({ submitForm, isSubmitting }) => (
+        {({ isSubmitting }) => (
           <Form>
             <Field
               component={TextField}
@@ -74,11 +81,10 @@ const LoginForm = (props) => {
               style={{ marginTop: 20 }}
             />
             <Button
-              variant="contained"
               type="submit"
+              variant="contained"
               color="primary"
               disabled={isSubmitting}
-              onClick={submitForm}
               style={{ marginTop: 30 }}
             >
               {t('Sign in')}

@@ -147,15 +147,17 @@ class UserEditionOverviewComponent extends Component {
   searchRoles(event) {
     fetchQuery(userEditionOverviewRolesSearchQuery, {
       search: event && event.target.value !== 0 ? event.target.value : '',
-    }).then((data) => {
-      const roles = pipe(
-        pathOr([], ['roles', 'edges']),
-        map((n) => ({ label: n.node.name, value: n.node.id })),
-      )(data);
-      this.setState({
-        roles: union(this.state.roles, roles),
+    })
+      .toPromise()
+      .then((data) => {
+        const roles = pipe(
+          pathOr([], ['roles', 'edges']),
+          map((n) => ({ label: n.node.name, value: n.node.id })),
+        )(data);
+        this.setState({
+          roles: union(this.state.roles, roles),
+        });
       });
-    });
   }
 
   handleChangeRole(event, values) {

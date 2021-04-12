@@ -333,16 +333,18 @@ class StixCoreRelationshipCreation extends Component {
       fetchQuery(stixCoreRelationshipCreationQuery, {
         fromId: this.props.from.id,
         toId: this.props.to.id,
-      }).then((data) => {
-        this.setState({
-          step:
-            data.stixCoreRelationships.edges
-            && data.stixCoreRelationships.edges.length > 0
-              ? 1
-              : 2,
-          existingRelations: data.stixCoreRelationships.edges,
+      })
+        .toPromise()
+        .then((data) => {
+          this.setState({
+            step:
+              data.stixCoreRelationships.edges
+              && data.stixCoreRelationships.edges.length > 0
+                ? 1
+                : 2,
+            existingRelations: data.stixCoreRelationships.edges,
+          });
         });
-      });
     }
   }
 

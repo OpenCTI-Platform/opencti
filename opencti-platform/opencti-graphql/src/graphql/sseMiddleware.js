@@ -1,8 +1,7 @@
 import * as R from 'ramda';
-import * as bodyParser from 'body-parser';
-import { basePath, logger } from '../config/conf';
+import { basePath, logApp } from '../config/conf';
 import { authenticateUser, computeAvailableMarkings, STREAMAPI, SYSTEM_USER } from '../domain/user';
-import { createStreamProcessor, getStreamRange } from '../database/redis';
+import { createStreamProcessor } from '../database/redis';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { generateInternalId, generateStandardId, normalizeName } from '../schema/identifier';
 import { BYPASS } from '../schema/general';
@@ -224,7 +223,7 @@ const createSeeMiddleware = (broadcaster) => {
       capabilities: req.capabilities,
       sendEvent: (eventId, topic, data) => {
         if (req.finished) {
-          logger.warn('[STREAM] Write on an already terminated response', { id: channel.userId });
+          logApp.warn('[STREAM] Write on an already terminated response', { id: channel.userId });
           return;
         }
         let message = '';
@@ -245,7 +244,7 @@ const createSeeMiddleware = (broadcaster) => {
         try {
           res.end();
         } catch (e) {
-          logger.error('[STREAM] Failing to close client', { clientId: channel.userId, error: e });
+          logApp.error('[STREAM] Failing to close client', { clientId: channel.userId, error: e });
         }
       },
     };
@@ -326,7 +325,7 @@ const createSeeMiddleware = (broadcaster) => {
       capabilities: req.capabilities,
       sendEvent: (eventId, topic, data) => {
         if (req.finished) {
-          logger.warn('[STREAM] Write on an already terminated response', { id: client.userId });
+          logApp.warn('[STREAM] Write on an already terminated response', { id: client.userId });
           return;
         }
         let message = '';
@@ -347,7 +346,7 @@ const createSeeMiddleware = (broadcaster) => {
         try {
           res.end();
         } catch (e) {
-          logger.error('[STREAM] Failing to close client', { clientId: client.userId, error: e });
+          logApp.error('[STREAM] Failing to close client', { clientId: client.userId, error: e });
         }
       },
     };
@@ -367,7 +366,7 @@ const createSeeMiddleware = (broadcaster) => {
     const clients = Object.entries(broadcastClients).length;
     const broadcasterInfo = await broadcaster.info();
     broadcastClient.sendConnected({ ...broadcasterInfo, connectionId: client.id, clients });
-    logger.debug(`[STREAM] Clients connection ${req.userId} (${clients})`);
+    logApp.debug(`[STREAM] Clients connection ${req.userId} (${clients})`);
     // If live stream, need to send the initial data
     if (!R.isEmpty(streamFilters)) {
       const queryOptions = convertFiltersToQueryOptions(streamFilters, null);

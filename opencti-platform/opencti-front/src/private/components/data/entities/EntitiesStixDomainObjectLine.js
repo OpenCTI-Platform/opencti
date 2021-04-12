@@ -12,6 +12,7 @@ import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import { truncate } from '../../../../utils/String';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -43,7 +44,7 @@ const styles = (theme) => ({
   },
 });
 
-class CurationStixDomainObjectLineComponent extends Component {
+class EntitiesStixDomainObjectLineComponent extends Component {
   render() {
     const {
       t,
@@ -54,6 +55,7 @@ class CurationStixDomainObjectLineComponent extends Component {
       onLabelClick,
       onToggleEntity,
       selectedElements,
+      selectAll,
     } = this.props;
     return (
       <ListItem
@@ -61,15 +63,21 @@ class CurationStixDomainObjectLineComponent extends Component {
         divider={true}
         button={true}
         onClick={onToggleEntity.bind(this, node)}
-        selected={node.id in selectedElements}
+        selected={node.id in (selectedElements || {})}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 40 }}
+        >
           <Checkbox
             edge="start"
-            checked={node.id in selectedElements}
+            checked={selectAll || node.id in (selectedElements || {})}
             disableRipple={true}
             onChange={onToggleEntity.bind(this, node)}
           />
+        </ListItemIcon>
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -134,7 +142,7 @@ class CurationStixDomainObjectLineComponent extends Component {
   }
 }
 
-CurationStixDomainObjectLineComponent.propTypes = {
+EntitiesStixDomainObjectLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
@@ -145,11 +153,11 @@ CurationStixDomainObjectLineComponent.propTypes = {
   selectedElements: PropTypes.object,
 };
 
-const CurationStixDomainObjectLineFragment = createFragmentContainer(
-  CurationStixDomainObjectLineComponent,
+const EntitiesStixDomainObjectLineFragment = createFragmentContainer(
+  EntitiesStixDomainObjectLineComponent,
   {
     node: graphql`
-      fragment CurationStixDomainObjectLine_node on StixDomainObject {
+      fragment EntitiesStixDomainObjectLine_node on StixDomainObject {
         id
         entity_type
         created_at
@@ -283,19 +291,28 @@ const CurationStixDomainObjectLineFragment = createFragmentContainer(
     `,
   },
 );
-
-export const CurationStixDomainObjectLine = compose(
+export const EntitiesStixDomainObjectLine = compose(
   inject18n,
   withStyles(styles),
-)(CurationStixDomainObjectLineFragment);
+)(EntitiesStixDomainObjectLineFragment);
 
-class CurationStixDomainObjectLineDummyComponent extends Component {
+class EntitiesStixDomainObjectLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        style={{ minWidth: 40 }}
+      >
+        <ListItemIcon
+          classes={{ root: classes.itemIconDisabled }}
+          style={{ minWidth: 40 }}
+        >
           <Checkbox edge="start" disabled={true} disableRipple={true} />
+        </ListItemIcon>
+        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+          <ItemIcon />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -344,12 +361,12 @@ class CurationStixDomainObjectLineDummyComponent extends Component {
   }
 }
 
-CurationStixDomainObjectLineDummyComponent.propTypes = {
+EntitiesStixDomainObjectLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const CurationStixDomainObjectLineDummy = compose(
+export const EntitiesStixDomainObjectLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(CurationStixDomainObjectLineDummyComponent);
+)(EntitiesStixDomainObjectLineDummyComponent);

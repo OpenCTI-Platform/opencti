@@ -10,6 +10,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
 import { HexagonOutline } from 'mdi-material-ui';
 import { compose, pathOr, take } from 'ramda';
+import Checkbox from '@material-ui/core/Checkbox';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -47,7 +48,15 @@ const styles = (theme) => ({
 class StixCyberObservableLineComponent extends Component {
   render() {
     const {
-      t, nsdt, classes, dataColumns, node, onLabelClick,
+      t,
+      nsdt,
+      classes,
+      dataColumns,
+      node,
+      onLabelClick,
+      onToggleEntity,
+      selectedElements,
+      selectAll,
     } = this.props;
     return (
       <ListItem
@@ -57,6 +66,17 @@ class StixCyberObservableLineComponent extends Component {
         component={Link}
         to={`/dashboard/observations/observables/${node.id}`}
       >
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 40 }}
+          onClick={onToggleEntity.bind(this, node)}
+        >
+          <Checkbox
+            edge="start"
+            checked={selectAll || node.id in (selectedElements || {})}
+            disableRipple={true}
+          />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <HexagonOutline />
         </ListItemIcon>
@@ -124,6 +144,9 @@ StixCyberObservableLineComponent.propTypes = {
   nsdt: PropTypes.func,
   t: PropTypes.func,
   onLabelClick: PropTypes.func,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
 };
 
 const StixCyberObservableLineFragment = createFragmentContainer(
@@ -168,6 +191,12 @@ class StixCyberObservableLineDummyComponent extends Component {
     const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
+        <ListItemIcon
+          classes={{ root: classes.itemIconDisabled }}
+          style={{ minWidth: 40 }}
+        >
+          <Checkbox edge="start" disabled={true} disableRipple={true} />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <HexagonOutline />
         </ListItemIcon>

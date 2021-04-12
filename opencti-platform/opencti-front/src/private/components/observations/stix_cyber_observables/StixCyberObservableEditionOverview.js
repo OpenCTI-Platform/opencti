@@ -607,6 +607,10 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           serial_number
           signature_algorithm
           issuer
+          subject
+          subject_public_key_algorithm
+          subject_public_key_modulus
+          subject_public_key_exponent
           validity_not_before
           validity_not_after
           hashes {

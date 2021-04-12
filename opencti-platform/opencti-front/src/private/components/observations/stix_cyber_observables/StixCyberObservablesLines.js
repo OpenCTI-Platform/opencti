@@ -24,7 +24,13 @@ class StixCyberObservablesLines extends Component {
 
   render() {
     const {
-      initialLoading, dataColumns, relay, onLabelClick,
+      initialLoading,
+      dataColumns,
+      relay,
+      onLabelClick,
+      onToggleEntity,
+      selectedElements,
+      selectAll,
     } = this.props;
     return (
       <ListLinesContent
@@ -47,6 +53,9 @@ class StixCyberObservablesLines extends Component {
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         onLabelClick={onLabelClick.bind(this)}
+        selectedElements={selectedElements}
+        selectAll={selectAll}
+        onToggleEntity={onToggleEntity.bind(this)}
       />
     );
   }
@@ -62,6 +71,9 @@ StixCyberObservablesLines.propTypes = {
   initialLoading: PropTypes.bool,
   onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
 };
 
 export const stixCyberObservablesLinesSubTypesQuery = graphql`

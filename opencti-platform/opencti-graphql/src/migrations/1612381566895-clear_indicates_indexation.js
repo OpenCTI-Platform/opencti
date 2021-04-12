@@ -3,13 +3,13 @@ import { Promise } from 'bluebird';
 import { READ_DATA_INDICES } from '../database/utils';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/elasticSearch';
-import { logger } from '../config/conf';
+import { logApp } from '../config/conf';
 import { SYSTEM_USER } from '../domain/user';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../schema/general';
 
 export const up = async (next) => {
   const start = new Date().getTime();
-  logger.info(`[MIGRATION] Cleaning indicates for all entities and relationships`);
+  logApp.info(`[MIGRATION] Cleaning indicates for all entities and relationships`);
   const bulkOperations = [];
   const callback = (entities) => {
     const op = entities
@@ -29,10 +29,10 @@ export const up = async (next) => {
   const concurrentUpdate = async (bulk) => {
     await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;
-    logger.info(`[OPENCTI] Cleaning indicates indexation: ${currentProcessing} / ${bulkOperations.length}`);
+    logApp.info(`[OPENCTI] Cleaning indicates indexation: ${currentProcessing} / ${bulkOperations.length}`);
   };
   await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
-  logger.info(`[MIGRATION] Cleaning indicates done in ${new Date() - start} ms`);
+  logApp.info(`[MIGRATION] Cleaning indicates done in ${new Date() - start} ms`);
   next();
 };
 

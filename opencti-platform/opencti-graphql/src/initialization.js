@@ -1,6 +1,6 @@
 // Admin user initialization
 import { ApolloError } from 'apollo-errors';
-import { logger } from './config/conf';
+import { logApp } from './config/conf';
 import { elCreateIndexes, elIndexExists, elIsAlive } from './database/elasticSearch';
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
@@ -28,6 +28,7 @@ export const TAXII_CAPABILITIES = {
   description: 'Access Taxii feed',
   dependencies: [{ name: 'SETCOLLECTIONS', description: 'Manage Taxii collections', attribute_order: 2510 }],
 };
+export const KNOWLEDGE_DELETE = 'KNDELETE';
 const KNOWLEDGE_CAPABILITIES = {
   name: KNOWLEDGE_CAPABILITY,
   description: 'Access knowledge',
@@ -37,7 +38,7 @@ const KNOWLEDGE_CAPABILITIES = {
       name: 'KNUPDATE',
       description: 'Create / Update knowledge',
       attribute_order: 200,
-      dependencies: [{ name: 'KNDELETE', description: 'Delete knowledge', attribute_order: 300 }],
+      dependencies: [{ name: KNOWLEDGE_DELETE, description: 'Delete knowledge', attribute_order: 300 }],
     },
     { name: 'KNUPLOAD', description: 'Upload knowledge files', attribute_order: 400 },
     { name: 'KNASKIMPORT', description: 'Import knowledge', attribute_order: 500 },
@@ -100,19 +101,19 @@ export const CAPABILITIES = [
 export const checkSystemDependencies = async () => {
   // Check if elasticsearch is available
   await elIsAlive();
-  logger.info(`[CHECK] ElasticSearch is alive`);
+  logApp.info(`[CHECK] ElasticSearch is alive`);
   // Check if minio is here
   await isStorageAlive();
-  logger.info(`[CHECK] Minio is alive`);
+  logApp.info(`[CHECK] Minio is alive`);
   // Check if RabbitMQ is here and create the logs exchange/queue
   await rabbitMQIsAlive();
-  logger.info(`[CHECK] RabbitMQ is alive`);
+  logApp.info(`[CHECK] RabbitMQ is alive`);
   // Check if redis is here
   await redisIsAlive();
-  logger.info(`[CHECK] Redis is alive`);
+  logApp.info(`[CHECK] Redis is alive`);
   // Check if Python is available
   await checkPythonStix2();
-  logger.info(`[CHECK] Python3 is available`);
+  logApp.info(`[CHECK] Python3 is available`);
   return true;
 };
 
@@ -125,12 +126,12 @@ const initializeSchema = async () => {
   }
   // Create default indexes
   await elCreateIndexes();
-  logger.info(`[INIT] Elasticsearch indexes loaded`);
+  logApp.info(`[INIT] Elasticsearch indexes loaded`);
   return true;
 };
 
 const initializeMigration = async (testMode = false) => {
-  logger.info('[INIT] Creating migration structure');
+  logApp.info('[INIT] Creating migration structure');
   const time = testMode ? new Date().getTime() : lastAvailableMigrationTime();
   const lastRun = `${time}-init`;
   const migrationStatus = { lastRun };
@@ -224,7 +225,7 @@ export const createBasicRolesAndCapabilities = async () => {
 };
 
 const initializeDefaultValues = async () => {
-  logger.info(`[INIT] Initialization of settings and basic elements`);
+  logApp.info(`[INIT] Initialization of settings and basic elements`);
   // Create default elements
   await addSettings(SYSTEM_USER, {
     platform_title: 'Cyber threat intelligence platform',
@@ -239,7 +240,7 @@ const initializeDefaultValues = async () => {
 
 const initializeData = async () => {
   await initializeDefaultValues();
-  logger.info(`[INIT] Platform default initialized`);
+  logApp.info(`[INIT] Platform default initialized`);
   return true;
 };
 
@@ -259,13 +260,13 @@ const platformInit = async (testMode = false) => {
     await checkSystemDependencies();
     const alreadyExists = await isExistingPlatform();
     if (!alreadyExists) {
-      logger.info(`[INIT] New platform detected, initialization...`);
+      logApp.info(`[INIT] New platform detected, initialization...`);
       await initializeSchema();
       await initializeMigration(testMode);
       await initializeData();
       await initializeAdminUser();
     } else {
-      logger.info('[INIT] Existing platform detected, initialization...');
+      logApp.info('[INIT] Existing platform detected, initialization...');
       // Always reset the admin user
       await initializeAdminUser();
       if (!testMode) {
@@ -276,7 +277,7 @@ const platformInit = async (testMode = false) => {
   } catch (e) {
     const isApolloError = e instanceof ApolloError;
     const error = isApolloError ? e : { name: 'UnknownError', data: { message: e.message, _stack: e.stack } };
-    logger.error(`[OPENCTI] Platform initialization fail`, { error });
+    logApp.error(`[OPENCTI] Platform initialization fail`, { error });
     throw e;
   }
   return true;

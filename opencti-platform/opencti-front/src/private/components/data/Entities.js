@@ -1,24 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose,
-  append,
-  filter,
-  propOr,
-  assoc,
-  dissoc,
-  omit,
-  uniqBy,
-  prop,
-} from 'ramda';
+import * as R from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import CurationToolBar from './curation/CurationToolBar';
-import CurationStixDomainObjectsLines, {
-  curationStixDomainObjectsLinesQuery,
-} from './curation/CurationStixDomainObjectsLines';
+import ToolBar from './ToolBar';
+import EntitiesStixDomainObjectsLines, {
+  entitiesStixDomainObjectsLinesQuery,
+} from './entities/EntitiesStixDomainObjectsLines';
 import inject18n from '../../../components/i18n';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -33,23 +23,24 @@ const styles = () => ({
   },
 });
 
-class StixCyberObservables extends Component {
+class Entities extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-curation',
+      'view-stix-domain-objects',
     );
     this.state = {
-      sortBy: propOr('created_at', 'sortBy', params),
-      orderAsc: propOr(false, 'orderAsc', params),
-      searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('lines', 'view', params),
-      filters: propOr({}, 'filters', params),
-      types: propOr([], 'types', params),
+      sortBy: R.propOr('created_at', 'sortBy', params),
+      orderAsc: R.propOr(false, 'orderAsc', params),
+      searchTerm: R.propOr('', 'searchTerm', params),
+      view: R.propOr('lines', 'view', params),
+      filters: R.propOr({}, 'filters', params),
+      types: R.propOr([], 'types', params),
       numberOfElements: { number: 0, symbol: '' },
-      selectedElements: {},
+      selectedElements: null,
+      selectAll: false,
     };
   }
 
@@ -57,7 +48,7 @@ class StixCyberObservables extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-curation',
+      'view-stix-domain-objects',
       this.state,
     );
   }
@@ -74,26 +65,30 @@ class StixCyberObservables extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
-  handleResetSelectedElements() {
-    this.setState({ selectedElements: {} });
+  handleClearSelectedElements() {
+    this.setState({ selectAll: false, selectedElements: null });
   }
 
   handleToggle(type) {
     if (this.state.types.includes(type)) {
       this.setState(
         {
-          types: filter((t) => t !== type, this.state.types),
+          types: R.filter((t) => t !== type, this.state.types),
         },
         () => this.saveView(),
       );
     } else {
       this.setState(
         {
-          types: append(type, this.state.types),
+          types: R.append(type, this.state.types),
         },
         () => this.saveView(),
       );
     }
+  }
+
+  handleClear() {
+    this.setState({ types: [] }, () => this.saveView());
   }
 
   handleAddFilter(key, id, value, event = null) {
@@ -104,9 +99,9 @@ class StixCyberObservables extends Component {
     if (this.state.filters[key] && this.state.filters[key].length > 0) {
       this.setState(
         {
-          filters: assoc(
+          filters: R.assoc(
             key,
-            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            R.uniqBy(R.prop('id'), [{ id, value }, ...this.state.filters[key]]),
             this.state.filters,
           ),
         },
@@ -115,7 +110,7 @@ class StixCyberObservables extends Component {
     } else {
       this.setState(
         {
-          filters: assoc(key, [{ id, value }], this.state.filters),
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
         },
         () => this.saveView(),
       );
@@ -123,7 +118,7 @@ class StixCyberObservables extends Component {
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {
@@ -131,15 +126,28 @@ class StixCyberObservables extends Component {
   }
 
   handleToggleSelectEntity(entity) {
-    if (entity.id in this.state.selectedElements) {
+    const { selectedElements } = this.state;
+    if (entity.id in (selectedElements || {})) {
+      const newSelectedElements = R.omit([entity.id], selectedElements);
       this.setState({
-        selectedElements: omit([entity.id], this.state.selectedElements),
+        selectAll: false,
+        selectedElements: newSelectedElements,
       });
     } else {
+      const newSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        selectedElements || {},
+      );
       this.setState({
-        selectedElements: assoc(entity.id, entity, this.state.selectedElements),
+        selectAll: false,
+        selectedElements: newSelectedElements,
       });
     }
+  }
+
+  handleToggleSelectAll() {
+    this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
   }
 
   renderLines(paginationOptions) {
@@ -150,7 +158,14 @@ class StixCyberObservables extends Component {
       filters,
       numberOfElements,
       selectedElements,
+      selectAll,
+      types,
     } = this.state;
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original;
+    }
+    const entityTypes = R.map((n) => ({ id: n, value: n }), types);
     const dataColumns = {
       entity_type: {
         label: 'Type',
@@ -193,11 +208,14 @@ class StixCyberObservables extends Component {
           handleAddFilter={this.handleAddFilter.bind(this)}
           handleRemoveFilter={this.handleRemoveFilter.bind(this)}
           handleChangeView={this.handleChangeView.bind(this)}
+          handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+          selectAll={selectAll}
           disableCards={true}
           keyword={searchTerm}
           filters={filters}
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
+          iconExtension={true}
           availableFilterKeys={[
             'labelledBy',
             'markedBy',
@@ -207,10 +225,10 @@ class StixCyberObservables extends Component {
           ]}
         >
           <QueryRenderer
-            query={curationStixDomainObjectsLinesQuery}
+            query={entitiesStixDomainObjectsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => (
-              <CurationStixDomainObjectsLines
+              <EntitiesStixDomainObjectsLines
                 data={props}
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
@@ -218,17 +236,25 @@ class StixCyberObservables extends Component {
                 onLabelClick={this.handleAddFilter.bind(this)}
                 selectedElements={selectedElements}
                 onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                selectAll={selectAll}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
               />
             )}
           />
         </ListLines>
-        <CurationToolBar
-          paginationOptions={paginationOptions}
+        <ToolBar
           selectedElements={selectedElements}
-          handleResetSelectedElements={this.handleResetSelectedElements.bind(
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          filters={
+            entityTypes.length > 0
+              ? R.assoc('entity_type', entityTypes, filters)
+              : filters
+          }
+          handleClearSelectedElements={this.handleClearSelectedElements.bind(
             this,
           )}
+          withPaddingRight={true}
         />
       </div>
     );
@@ -253,21 +279,18 @@ class StixCyberObservables extends Component {
         <StixDomainObjectsRightBar
           types={types}
           handleToggle={this.handleToggle.bind(this)}
+          handleClear={this.handleClear.bind(this)}
         />
       </div>
     );
   }
 }
 
-StixCyberObservables.propTypes = {
+Entities.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(StixCyberObservables);
+export default R.compose(inject18n, withRouter, withStyles(styles))(Entities);

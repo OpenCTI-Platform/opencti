@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, map, sortWith, ascend, descend, prop,
-} from 'ramda';
+import { compose, map } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
@@ -11,17 +9,21 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import {
-  ArrowDropDown,
-  ArrowDropUp,
-  KeyboardArrowRight,
-} from '@material-ui/icons';
+import { Add, KeyboardArrowRight } from '@material-ui/icons';
 import { ShieldSearch } from 'mdi-material-ui';
 import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import inject18n from '../../../../components/i18n';
-import ItemScore from '../../../../components/ItemScore';
+import IconButton from '@material-ui/core/IconButton';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
+import Slide from '@material-ui/core/Slide';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 import ItemPatternType from '../../../../components/ItemPatternType';
+import inject18n from '../../../../components/i18n';
+import { commitMutation } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   paper: {
@@ -60,44 +62,6 @@ const styles = (theme) => ({
   },
 });
 
-const inlineStylesHeaders = {
-  iconSort: {
-    position: 'absolute',
-    margin: '0 0 0 5px',
-    padding: 0,
-    top: '0px',
-  },
-  pattern_type: {
-    float: 'left',
-    width: '15%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  name: {
-    float: 'left',
-    width: '40%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  valid_from: {
-    float: 'left',
-    width: '15%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  valid_until: {
-    float: 'left',
-    width: '15%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  x_opencti_score: {
-    float: 'left',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-};
-
 const inlineStyles = {
   pattern_type: {
     float: 'left',
@@ -109,7 +73,7 @@ const inlineStyles = {
   },
   name: {
     float: 'left',
-    width: '40%',
+    width: '50%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -125,14 +89,6 @@ const inlineStyles = {
   },
   valid_until: {
     float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  x_opencti_score: {
-    float: 'left',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -140,39 +96,61 @@ const inlineStyles = {
   },
 };
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
+const stixCyberObservableIndicatorsPromoteMutation = graphql`
+  mutation StixCyberObservableIndicatorsPromoteMutation($id: ID!) {
+    stixCyberObservableEdit(id: $id) {
+      promote {
+        id
+        ...StixCyberObservableIndicators_stixCyberObservable
+      }
+    }
+  }
+`;
+
 class StixCyberObservableIndicatorsComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { sortBy: 'name', orderAsc: false };
+    this.state = {
+      anchorEl: null,
+      displayPromoteStix: false,
+      promotingStix: false,
+    };
   }
 
-  reverseBy(field) {
-    this.setState({ sortBy: field, orderAsc: !this.state.orderAsc });
+  handleOpen(event) {
+    this.setState({ anchorEl: event.currentTarget });
   }
 
-  SortHeader(field, label, isSortable) {
-    const { t } = this.props;
-    const sortComponent = this.state.orderAsc ? (
-      <ArrowDropDown style={inlineStylesHeaders.iconSort} />
-    ) : (
-      <ArrowDropUp style={inlineStylesHeaders.iconSort} />
-    );
-    if (isSortable) {
-      return (
-        <div
-          style={inlineStylesHeaders[field]}
-          onClick={this.reverseBy.bind(this, field)}
-        >
-          <span>{t(label)}</span>
-          {this.state.sortBy === field ? sortComponent : ''}
-        </div>
-      );
-    }
-    return (
-      <div style={inlineStylesHeaders[field]}>
-        <span>{t(label)}</span>
-      </div>
-    );
+  handleClose() {
+    this.setState({ anchorEl: null });
+  }
+
+  handleOpenPromoteStix() {
+    this.setState({ displayPromoteStix: true });
+    this.handleClose();
+  }
+
+  handleClosePromoteStix() {
+    this.setState({ displayPromoteStix: false });
+  }
+
+  submitPromoteStix() {
+    this.setState({ promotingStix: true });
+    commitMutation({
+      mutation: stixCyberObservableIndicatorsPromoteMutation,
+      variables: {
+        id: this.props.stixCyberObservable.id,
+      },
+      onCompleted: () => {
+        this.setState({ promotingStix: false });
+        this.handleClosePromoteStix();
+      },
+    });
   }
 
   render() {
@@ -180,109 +158,107 @@ class StixCyberObservableIndicatorsComponent extends Component {
       t, fd, classes, stixCyberObservable,
     } = this.props;
     const indicators = map((n) => n.node, stixCyberObservable.indicators.edges);
-    const sort = sortWith(
-      this.state.orderAsc
-        ? [ascend(prop(this.state.sortBy))]
-        : [descend(prop(this.state.sortBy))],
-    );
-    const sortedIndicators = sort(indicators);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Indicators composed with this observable')}
         </Typography>
+        <IconButton
+          color="secondary"
+          aria-label="Label"
+          onClick={this.handleOpen.bind(this)}
+          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+        >
+          <Add fontSize="small" />
+        </IconButton>
+        <Menu
+          anchorEl={this.state.anchorEl}
+          open={Boolean(this.state.anchorEl)}
+          onClose={this.handleClose.bind(this)}
+          style={{ marginTop: 50 }}
+        >
+          <MenuItem onClick={this.handleOpenPromoteStix.bind(this)}>
+            {t('[Promote] Create a STIX indicator')}
+          </MenuItem>
+        </Menu>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
-          <List>
+        <List style={{ marginTop: -10 }}>
+          {indicators.map((indicator) => (
             <ListItem
-              classes={{ root: classes.itemHead }}
-              divider={false}
-              style={{ paddingTop: 0 }}
+              key={indicator.id}
+              classes={{ root: classes.item }}
+              divider={true}
+              button={true}
+              component={Link}
+              to={`/dashboard/observations/indicators/${indicator.id}`}
             >
-              <ListItemIcon>
-                <span
-                  style={{
-                    padding: '0 8px 0 8px',
-                    fontWeight: 700,
-                    fontSize: 12,
-                  }}
-                >
-                  #
-                </span>
+              <ListItemIcon classes={{ root: classes.itemIcon }}>
+                <ShieldSearch />
               </ListItemIcon>
               <ListItemText
                 primary={
                   <div>
-                    {this.SortHeader('pattern_type', 'Pattern type', true)}
-                    {this.SortHeader('name', 'Name', true)}
-                    {this.SortHeader('valid_from', 'Valid from', true)}
-                    {this.SortHeader('valid_until', 'Valid until', true)}
-                    {this.SortHeader('x_opencti_score', 'Score', true)}
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.pattern_type}
+                    >
+                      <ItemPatternType
+                        variant="inList"
+                        label={indicator.pattern_type}
+                      />
+                    </div>
+                    <div className={classes.bodyItem} style={inlineStyles.name}>
+                      {indicator.name}
+                    </div>
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.valid_from}
+                    >
+                      {fd(indicator.valid_from)}
+                    </div>
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.valid_until}
+                    >
+                      {fd(indicator.valid_until)}
+                    </div>
                   </div>
                 }
               />
+              <ListItemIcon classes={{ root: classes.goIcon }}>
+                <KeyboardArrowRight />
+              </ListItemIcon>
             </ListItem>
-            {sortedIndicators.map((indicator) => (
-              <ListItem
-                key={indicator.id}
-                classes={{ root: classes.item }}
-                divider={true}
-                button={true}
-                component={Link}
-                to={`/dashboard/signatures/indicators/${indicator.id}`}
-              >
-                <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  <ShieldSearch />
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.pattern_type}
-                      >
-                        <ItemPatternType
-                          variant="inList"
-                          label={indicator.pattern_type}
-                        />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.name}
-                      >
-                        {indicator.name}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.valid_from}
-                      >
-                        {fd(indicator.valid_from)}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.valid_until}
-                      >
-                        {fd(indicator.valid_until)}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.score}
-                      >
-                        <ItemScore
-                          variant="inList"
-                          score={indicator.x_opencti_score}
-                        />
-                      </div>
-                    </div>
-                  }
-                />
-                <ListItemIcon classes={{ root: classes.goIcon }}>
-                  <KeyboardArrowRight />
-                </ListItemIcon>
-              </ListItem>
-            ))}
-          </List>
-        </Paper>
+          ))}
+        </List>
+        <Dialog
+          open={this.state.displayPromoteStix}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleClosePromoteStix.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to create a STIX Indcator from this observable?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleClosePromoteStix.bind(this)}
+              color="primary"
+              disabled={this.state.promotingStix}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              onClick={this.submitPromoteStix.bind(this)}
+              color="primary"
+              disabled={this.state.promotingStix}
+            >
+              {t('Create')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }

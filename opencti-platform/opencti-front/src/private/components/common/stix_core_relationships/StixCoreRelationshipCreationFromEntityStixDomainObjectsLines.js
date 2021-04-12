@@ -145,7 +145,11 @@ class StixCoreRelationshipCreationFromEntityLinesContainer extends Component {
                           <ItemIcon type={type} />
                         </ListItemIcon>
                         <ListItemText
-                          primary={stixDomainObject.name}
+                          primary={
+                            stixDomainObject.x_mitre_id
+                              ? `[${stixDomainObject.x_mitre_id}] ${stixDomainObject.name}`
+                              : stixDomainObject.name
+                          }
                           secondary={truncate(
                             stixDomainObject.description,
                             100,
@@ -227,6 +231,7 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
               ... on AttackPattern {
                 name
                 description
+                x_mitre_id
               }
               ... on Campaign {
                 name

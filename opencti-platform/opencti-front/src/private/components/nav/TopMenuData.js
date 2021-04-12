@@ -29,6 +29,44 @@ class TopMenuData extends Component {
     const { t, location, classes } = this.props;
     return (
       <div>
+        <Security needs={[KNOWLEDGE]}>
+          <Button
+            component={Link}
+            to="/dashboard/data/entities"
+            variant={
+              location.pathname === '/dashboard/data/entities'
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname === '/dashboard/data/entities'
+                ? 'primary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Entities')}
+          </Button>
+          <Button
+            component={Link}
+            to="/dashboard/data/tasks"
+            variant={
+              location.pathname === '/dashboard/data/tasks'
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname === '/dashboard/data/tasks'
+                ? 'primary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Background tasks')}
+          </Button>
+        </Security>
         <Security needs={[MODULES]}>
           <Button
             component={Link}
@@ -46,27 +84,7 @@ class TopMenuData extends Component {
             }
             classes={{ root: classes.button }}
           >
-            {t('Connectors & workers')}
-          </Button>
-        </Security>
-        <Security needs={[KNOWLEDGE]}>
-          <Button
-            component={Link}
-            to="/dashboard/data/curation"
-            variant={
-              location.pathname === '/dashboard/data/curation'
-                ? 'contained'
-                : 'text'
-            }
-            size="small"
-            color={
-              location.pathname === '/dashboard/data/curation'
-                ? 'primary'
-                : 'inherit'
-            }
-            classes={{ root: classes.button }}
-          >
-            {t('Data curation')}
+            {t('Connectors')}
           </Button>
         </Security>
         <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>

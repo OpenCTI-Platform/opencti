@@ -22,6 +22,7 @@ export const numberFormat = (number, digits = 2) => {
   return {
     number: (number / si[i].value).toFixed(digits).replace(rx, '$1'),
     symbol: si[i].symbol,
+    original: number,
   };
 };
 

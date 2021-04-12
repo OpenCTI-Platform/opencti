@@ -169,7 +169,7 @@ describe('User resolver standard behavior', () => {
     expect(res).not.toBeNull();
     expect(res.data).not.toBeNull();
     expect(res.data.token).toBeDefined();
-    const user = await authenticateUser(null, res.data.token);
+    const user = await authenticateUser(null, { providerToken: res.data.token });
     expect(user.user_email).toBe('user@mail.com');
     userToken = res.data.token;
   });

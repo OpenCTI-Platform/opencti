@@ -19,6 +19,7 @@ import {
 import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
+import Checkbox from '@material-ui/core/Checkbox';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
@@ -73,7 +74,6 @@ const styles = (theme) => ({
     position: 'absolute',
     margin: '0 0 0 5px',
     padding: 0,
-    top: '0px',
   },
   headerItem: {
     float: 'left',
@@ -107,13 +107,19 @@ class ListLines extends Component {
 
   renderHeaderElement(field, label, width, isSortable) {
     const {
-      classes, t, sortBy, orderAsc,
+      classes, t, sortBy, orderAsc, handleToggleSelectAll,
     } = this.props;
     if (isSortable) {
       const orderComponent = orderAsc ? (
-        <ArrowDropDown classes={{ root: classes.sortIcon }} />
+        <ArrowDropDown
+          classes={{ root: classes.sortIcon }}
+          style={{ top: typeof handleToggleSelectAll === 'function' ? 7 : 0 }}
+        />
       ) : (
-        <ArrowDropUp classes={{ root: classes.sortIcon }} />
+        <ArrowDropUp
+          classes={{ root: classes.sortIcon }}
+          style={{ top: typeof handleToggleSelectAll === 'function' ? 7 : 0 }}
+        />
       );
       return (
         <div
@@ -145,6 +151,8 @@ class ListLines extends Component {
       handleAddFilter,
       handleRemoveFilter,
       handleToggleExports,
+      handleToggleSelectAll,
+      selectAll,
       openExports,
       noPadding,
       noBottomPadding,
@@ -160,6 +168,7 @@ class ListLines extends Component {
       numberOfElements,
       availableFilterKeys,
       noHeaders,
+      iconExtension,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -315,17 +324,39 @@ class ListLines extends Component {
               divider={false}
               style={{ paddingTop: 0 }}
             >
-              <ListItemIcon>
-                <span
-                  style={{
-                    padding: '0 8px 0 8px',
-                    fontWeight: 700,
-                    fontSize: 12,
-                  }}
-                >
-                  &nbsp;
-                </span>
+              <ListItemIcon style={{ minWidth: 40 }}>
+                {typeof handleToggleSelectAll === 'function' ? (
+                  <Checkbox
+                    edge="start"
+                    checked={selectAll}
+                    disableRipple={true}
+                    onChange={handleToggleSelectAll.bind(this)}
+                  />
+                ) : (
+                  <span
+                    style={{
+                      padding: '0 8px 0 8px',
+                      fontWeight: 700,
+                      fontSize: 12,
+                    }}
+                  >
+                    &nbsp;
+                  </span>
+                )}
               </ListItemIcon>
+              {iconExtension && (
+                <ListItemIcon>
+                  <span
+                    style={{
+                      padding: '0 8px 0 8px',
+                      fontWeight: 700,
+                      fontSize: 12,
+                    }}
+                  >
+                    &nbsp;
+                  </span>
+                </ListItemIcon>
+              )}
               <ListItemText
                 primary={
                   <div>
@@ -338,10 +369,8 @@ class ListLines extends Component {
                   </div>
                 }
               />
-              {secondaryAction ? (
+              {secondaryAction && (
                 <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
-              ) : (
-                ''
               )}
             </ListItem>
           ) : (
@@ -350,32 +379,28 @@ class ListLines extends Component {
           {children}
         </List>
         {typeof handleToggleExports === 'function'
-        && exportEntityType !== 'Stix-Cyber-Observable' ? (
-          <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-            <StixDomainObjectsExports
-              open={openExports}
-              handleToggle={handleToggleExports.bind(this)}
-              paginationOptions={paginationOptions}
-              exportEntityType={exportEntityType}
-              context={exportContext}
-            />
-          </Security>
-          ) : (
-            ''
-          )}
+          && exportEntityType !== 'Stix-Cyber-Observable' && (
+            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+              <StixDomainObjectsExports
+                open={openExports}
+                handleToggle={handleToggleExports.bind(this)}
+                paginationOptions={paginationOptions}
+                exportEntityType={exportEntityType}
+                context={exportContext}
+              />
+            </Security>
+        )}
         {typeof handleToggleExports === 'function'
-        && exportEntityType === 'Stix-Cyber-Observable' ? (
-          <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-            <StixObservablesExports
-              open={openExports}
-              handleToggle={handleToggleExports.bind(this)}
-              paginationOptions={paginationOptions}
-              context={exportContext}
-            />
-          </Security>
-          ) : (
-            ''
-          )}
+          && exportEntityType === 'Stix-Cyber-Observable' && (
+            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+              <StixObservablesExports
+                open={openExports}
+                handleToggle={handleToggleExports.bind(this)}
+                paginationOptions={paginationOptions}
+                context={exportContext}
+              />
+            </Security>
+        )}
       </div>
     );
   }
@@ -393,6 +418,8 @@ ListLines.propTypes = {
   handleAddFilter: PropTypes.func,
   handleRemoveFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,
+  handleToggleSelectAll: PropTypes.func,
+  selectAll: PropTypes.bool,
   openExports: PropTypes.bool,
   noPadding: PropTypes.bool,
   noBottomPadding: PropTypes.bool,
@@ -410,6 +437,7 @@ ListLines.propTypes = {
   numberOfElements: PropTypes.object,
   availableFilterKeys: PropTypes.array,
   noHeaders: PropTypes.bool,
+  iconExtension: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

@@ -2,40 +2,41 @@ import { filter } from 'ramda';
 import { withFilter } from 'graphql-subscriptions';
 import {
   addUser,
+  authenticateUser,
+  batchGroups,
+  batchRoleCapabilities,
+  batchRoles,
+  fetchSessionTtl,
   findAll,
   findById,
   findCapabilities,
-  findRoles,
   findRoleById,
+  findRoles,
+  findSessions,
+  findUserSessions,
   getCapabilities,
-  batchRoleCapabilities,
-  batchRoles,
+  getMarkings,
+  killSession,
+  killUserSessions,
   logout,
   meEditField,
-  token,
-  roleEditField,
-  roleDelete,
-  userDelete,
-  userEditField,
   roleAddRelation,
-  roleDeleteRelation,
-  userAddRelation,
-  userDeleteRelation,
-  userRenewToken,
-  batchGroups,
-  roleEditContext,
   roleCleanContext,
-  userEditContext,
+  roleDelete,
+  roleDeleteRelation,
+  roleEditContext,
+  roleEditField,
+  token,
+  userAddRelation,
   userCleanContext,
-  getMarkings,
-  authenticateUser,
-  findSessions,
-  fetchSessionTtl,
-  killSession,
-  findUserSessions,
-  killUserSessions,
+  userDelete,
+  userDeleteRelation,
+  userEditContext,
+  userEditField,
+  userRenewToken,
+  userWithOrigin,
 } from '../domain/user';
-import { BUS_TOPICS, logger } from '../config/conf';
+import { BUS_TOPICS, logApp, logAudit } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
 import { AuthenticationFailure } from '../config/errors';
 import { addRole } from '../domain/grant';
@@ -43,6 +44,7 @@ import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { batchLoader } from '../database/middleware';
+import { LOGIN_ACTION } from '../config/audit';
 
 const groupsLoader = batchLoader(batchGroups);
 const rolesLoader = batchLoader(batchRoles);
@@ -82,23 +84,30 @@ const userResolvers = {
       // We need to iterate on each provider to find one that validated the credentials
       const formProviders = filter((p) => p.type === 'FORM', PROVIDERS);
       if (formProviders.length === 0) {
-        logger.error('[AUTH] Cant authenticate without any form providers');
+        logApp.error('[AUTH] Cant authenticate without any form providers');
       }
+      let loggedUser;
       for (let index = 0; index < formProviders.length; index += 1) {
         const auth = formProviders[index];
-        const loginToken = await new Promise((resolve) => {
-          passport.authenticate(auth.provider, {}, (err, tokenAuth, info) => {
+        const body = { username: input.email, password: input.password };
+        const { userToken, userProvider } = await new Promise((resolve) => {
+          passport.authenticate(auth.provider, {}, (err, authInfo, info) => {
             if (err || info) {
-              logger.warn(`[AUTH] ${auth.provider}`, { error: err, info });
+              logApp.warn(`[AUTH] ${auth.provider}`, { error: err, info });
+              const auditUser = userWithOrigin(req, { user_email: input.email });
+              logAudit.error(auditUser, LOGIN_ACTION, { provider: auth.provider });
             }
-            resolve(tokenAuth);
-          })({ body: { username: input.email, password: input.password } });
+            resolve({ userToken: authInfo?.token, userProvider: auth.provider });
+          })({ body });
         });
-        // As soon as credential is validated, set the cookie and return.
-        if (loginToken) {
-          await authenticateUser(req, loginToken.uuid);
-          return loginToken.uuid;
+        // As soon as credential is validated, stop looking for another provider
+        if (userToken) {
+          loggedUser = await authenticateUser(req, { providerToken: userToken.uuid, provider: userProvider });
+          break;
         }
+      }
+      if (loggedUser) {
+        return loggedUser.token_uuid;
       }
       // User cannot be authenticated in any providers
       throw AuthenticationFailure();

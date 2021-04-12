@@ -12,6 +12,7 @@ import {
   DescriptionOutlined,
 } from '@material-ui/icons';
 import { compose, pathOr } from 'ramda';
+import Checkbox from '@material-ui/core/Checkbox';
 import inject18n from '../../../../components/i18n';
 import ItemStatus from '../../../../components/ReportStatus';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -50,7 +51,15 @@ const styles = (theme) => ({
 class ReportLineComponent extends Component {
   render() {
     const {
-      t, fd, classes, node, dataColumns, onLabelClick,
+      t,
+      fd,
+      classes,
+      node,
+      dataColumns,
+      onLabelClick,
+      onToggleEntity,
+      selectedElements,
+      selectAll,
     } = this.props;
     return (
       <ListItem
@@ -60,6 +69,17 @@ class ReportLineComponent extends Component {
         component={Link}
         to={`/dashboard/analysis/reports/${node.id}`}
       >
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 40 }}
+          onClick={onToggleEntity.bind(this, node)}
+        >
+          <Checkbox
+            edge="start"
+            checked={selectAll || node.id in (selectedElements || {})}
+            disableRipple={true}
+          />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <DescriptionOutlined />
         </ListItemIcon>
@@ -142,13 +162,18 @@ ReportLineComponent.propTypes = {
   fd: PropTypes.func,
   t: PropTypes.func,
   onLabelClick: PropTypes.func,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
 };
 
 const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
   node: graphql`
     fragment ReportLine_node on Report {
       id
+      entity_type
       name
+      description
       published
       x_opencti_report_status
       createdBy {
@@ -190,6 +215,12 @@ class ReportLineDummyComponent extends Component {
     const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
+        <ListItemIcon
+          classes={{ root: classes.itemIconDisabled }}
+          style={{ minWidth: 40 }}
+        >
+          <Checkbox edge="start" disabled={true} disableRipple={true} />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <DescriptionOutlined />
         </ListItemIcon>

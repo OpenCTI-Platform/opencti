@@ -5,6 +5,8 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import { Link } from 'react-router-dom';
+import Button from '@material-ui/core/Button';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
@@ -20,8 +22,9 @@ const styles = () => ({
     marginTop: '-13px',
   },
   marking: {
-    float: 'right',
+    float: 'left',
     overflowX: 'hidden',
+    marginLeft: 15,
   },
   aliases: {
     marginRight: 7,
@@ -30,12 +33,26 @@ const styles = () => ({
     margin: '4px 0 0 10px',
     float: 'right',
   },
+  modes: {
+    margin: '-2px 0 0 0',
+    float: 'right',
+  },
+  button: {
+    marginRight: 20,
+  },
 });
 
 class ContainerHeaderComponent extends Component {
   render() {
     const {
-      classes, container, variant, PopoverComponent, fd,
+      classes,
+      container,
+      variant,
+      PopoverComponent,
+      fd,
+      link,
+      modes,
+      t,
     } = this.props;
     return (
       <div>
@@ -55,12 +72,7 @@ class ContainerHeaderComponent extends Component {
             80,
           )}
         </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <div className={classes.popover}>
-            {React.cloneElement(PopoverComponent, { id: container.id })}
-          </div>
-        </Security>
-        {variant !== 'noMarking' ? (
+        {variant !== 'noMarking' && (
           <div className={classes.marking}>
             {pathOr([], ['objectMarking', 'edges'], container).map(
               (markingDefinition) => (
@@ -72,8 +84,38 @@ class ContainerHeaderComponent extends Component {
               ),
             )}
           </div>
-        ) : (
-          ''
+        )}
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <div className={classes.popover}>
+            {React.cloneElement(PopoverComponent, { id: container.id })}
+          </div>
+        </Security>
+        {modes && (
+          <div className={classes.modes}>
+            {modes.map((mode) => (mode.current ? (
+                <Button
+                  key={mode.key}
+                  size="small"
+                  variant="contained"
+                  color="primary"
+                  classes={{ root: classes.button }}
+                >
+                  {t(mode.label)}
+                </Button>
+            ) : (
+                <Button
+                  key={mode.key}
+                  component={Link}
+                  to={`${link}/${mode.key}`}
+                  size="small"
+                  variant="text"
+                  color="inherit"
+                  classes={{ root: classes.button }}
+                >
+                  {t(mode.label)}
+                </Button>
+            )))}
+          </div>
         )}
         <div className="clearfix" />
       </div>
@@ -88,6 +130,8 @@ ContainerHeaderComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  link: PropTypes.string,
+  modes: PropTypes.array,
 };
 
 const ContainerHeader = createFragmentContainer(ContainerHeaderComponent, {

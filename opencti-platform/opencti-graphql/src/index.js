@@ -1,4 +1,4 @@
-import { DEV_MODE, logger } from './config/conf';
+import { DEV_MODE, logApp } from './config/conf';
 import platformInit from './initialization';
 import { listenServer, restartServer } from './httpServer';
 import { redisInitializeClients } from './database/redis';
@@ -14,9 +14,9 @@ if (DEV_MODE && module.hot) {
       try {
         await redisInitializeClients();
         server = await restartServer(server);
-        logger.info('[DEV] Application has been successfully hot swapped');
+        logApp.info('[DEV] Application has been successfully hot swapped');
       } catch (e) {
-        logger.info('[DEV] Error occurred during hot swap. Node is still serving the last valid application!', {
+        logApp.info('[DEV] Error occurred during hot swap. Node is still serving the last valid application!', {
           error: e,
         });
       }
@@ -27,7 +27,7 @@ if (DEV_MODE && module.hot) {
 
 (async () => {
   try {
-    logger.info(`[OPENCTI] Starting platform`);
+    logApp.info(`[OPENCTI] Starting platform`);
     await platformInit();
     server = await listenServer();
   } catch (e) {

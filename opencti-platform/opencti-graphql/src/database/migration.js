@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { MigrationSet } from 'migrate';
 import Migration from 'migrate/lib/migration';
-import { logger } from '../config/conf';
+import { logApp } from '../config/conf';
 import { DatabaseError } from '../config/errors';
 import { RELATION_MIGRATES } from '../schema/internalRelationship';
 import { ENTITY_TYPE_MIGRATION_REFERENCE, ENTITY_TYPE_MIGRATION_STATUS } from '../schema/internalObject';
@@ -46,7 +46,7 @@ const migrationStorage = {
       RELATION_MIGRATES,
       ENTITY_TYPE_MIGRATION_REFERENCE
     );
-    logger.info(`[MIGRATION] Read ${migrations.length} migrations from the database`);
+    logApp.info(`[MIGRATION] Read ${migrations.length} migrations from the database`);
     const migrationStatus = {
       lastRun: migration.lastRun,
       migrations: R.map(
@@ -73,10 +73,10 @@ const migrationStorage = {
       // Attach the reference to the migration status.
       const migrationRel = { fromId: migrationStatus.id, toId: migrationRef.id, relationship_type: RELATION_MIGRATES };
       await createRelation(SYSTEM_USER, migrationRel);
-      logger.info(`[MIGRATION] Saving current configuration, ${mig.title}`);
+      logApp.info(`[MIGRATION] Saving current configuration, ${mig.title}`);
       return fn();
     } catch (err) {
-      logger.error('[MIGRATION] Error saving the migration state');
+      logApp.error('[MIGRATION] Error saving the migration state');
       return fn();
     }
   },
@@ -99,27 +99,27 @@ const applyMigration = () => {
       /** Match the files migrations to the database migrations.
        Plays migrations that does not have matching name / timestamp */
       if (migrationToApply.length > 0) {
-        logger.info(`[MIGRATION] ${migrationToApply.length} migrations will be executed`);
+        logApp.info(`[MIGRATION] ${migrationToApply.length} migrations will be executed`);
       } else {
-        logger.info(`[MIGRATION] Platform already up to date, nothing to migrate`);
+        logApp.info(`[MIGRATION] Platform already up to date, nothing to migrate`);
       }
       for (let index = 0; index < migrationToApply.length; index += 1) {
         const migSet = migrationToApply[index];
         const migration = new Migration(migSet.title, migSet.up, migSet.down);
         const stateMigration = alreadyAppliedMigrations.get(migration.title);
         if (stateMigration) {
-          logger.info(`[MIGRATION] Replaying migration ${migration.title}`);
+          logApp.info(`[MIGRATION] Replaying migration ${migration.title}`);
         }
         set.addMigration(migration);
       }
       // Start the set migration
       set.up((migrationError) => {
         if (migrationError) {
-          logger.error('[MIGRATION] Error during migration');
+          logApp.error('[MIGRATION] Error during migration');
           reject(migrationError);
           return;
         }
-        logger.info('[MIGRATION] Migration process completed');
+        logApp.info('[MIGRATION] Migration process completed');
         resolve();
       });
     });

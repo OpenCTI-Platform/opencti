@@ -37,7 +37,7 @@ class AttackPatternParentAttackPatternsComponent extends Component {
                     <LockPattern color="primary" />
                   </ListItemIcon>
                   <ListItemText
-                    pprimary={`[${parentAttackPattern.x_mitre_id}] ${parentAttackPattern.name}`}
+                    primary={`[${parentAttackPattern.x_mitre_id}] ${parentAttackPattern.name}`}
                   />
                 </ListItem>
               );

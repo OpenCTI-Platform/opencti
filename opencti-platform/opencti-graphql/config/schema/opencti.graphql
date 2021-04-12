@@ -484,6 +484,126 @@ type FileConnection {
   pageInfo: PageInfo!
   edges: [FileEdge]
 }
+
+############## Task
+enum TaskType {
+  QUERY
+  LIST
+}
+type TaskError {
+  id: ID!
+  timestamp: DateTime
+  message: String
+}
+enum TaskActionType {
+  DELETE
+  ADD
+  REMOVE
+  REPLACE
+  MERGE
+}
+enum TaskContextType {
+  ATTRIBUTE
+  RELATION
+}
+enum TasksOrdering {
+  id
+  type
+  completed
+  created_at
+  last_execution_date
+}
+enum TasksFilter {
+  initiator
+  completed
+}
+input TasksFiltering {
+  key: TasksFilter!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+type TaskContext {
+  field: String
+  type: TaskContextType
+  values: [String]!
+}
+type TaskAction {
+  type: TaskActionType
+  context: TaskContext
+}
+
+interface Task {
+  id: ID!
+  type: TaskType
+  initiator: User
+  actions: [TaskAction]
+  created_at: DateTime
+  last_execution_date: DateTime
+  completed: Boolean
+  task_expected_number: Int
+  task_processed_number: Int
+  errors: [TaskError]
+}
+
+type ListTask implements Task {
+  id: ID!
+  type: TaskType
+  initiator: User
+  actions: [TaskAction]
+  created_at: DateTime
+  last_execution_date: DateTime
+  completed: Boolean
+  task_expected_number: Int
+  task_processed_number: Int
+  errors: [TaskError]
+  # ListTask
+  task_ids: [ID!]
+}
+
+type QueryTask implements Task {
+  id: ID!
+  type: TaskType
+  initiator: User
+  actions: [TaskAction]
+  created_at: DateTime
+  last_execution_date: DateTime
+  completed: Boolean
+  task_expected_number: Int
+  task_processed_number: Int
+  errors: [TaskError]
+  # QueryTask
+  task_filters: String!
+}
+
+type TaskConnectionEdge {
+  cursor: String!
+  node: Task!
+}
+
+type TaskConnection {
+  pageInfo: PageInfo!
+  edges: [TaskConnectionEdge]
+}
+
+input TaskContextInput {
+  field: String
+  type: TaskContextType
+  values: [String]!
+}
+input TaskActionInput {
+  type: TaskActionType!
+  context: TaskContextInput
+}
+input ListTaskAddInput {
+  ids: [ID!]
+  actions: [TaskActionInput]!
+}
+input QueryTaskAddInput {
+  filters: String!
+  actions: [TaskActionInput]!
+}
+
 ###### ENTITIES
 
 interface BasicObject {
@@ -1264,6 +1384,7 @@ enum AttackPatternsFilter {
   markedBy
   labelledBy
   mitigatedBy
+  revoked
 }
 input AttackPatternsFiltering {
   key: AttackPatternsFilter!
@@ -7490,6 +7611,16 @@ type Query {
     orderMode: OrderingMode
     search: String
   ): StreamCollectionConnection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  task(id: String!): Task @auth(for: [KNOWLEDGE])
+  tasks(
+    first: Int
+    after: ID
+    orderBy: TasksOrdering
+    orderMode: OrderingMode
+    filters: [TasksFiltering]
+    filterMode: FilterMode
+    search: String
+  ): TaskConnection @auth(for: [KNOWLEDGE])
 
   ######## STIX OBJECT ENTITIES
 
@@ -7997,7 +8128,8 @@ type Query {
     toStix: Boolean
   ): StixCyberObservableConnection @auth(for: [KNOWLEDGE])
   stixCyberObservablesExportFiles(first: Int, context: String): FileConnection
-  stixCyberObservablesNumber(types: [String], authorId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCyberObservablesNumber(types: [String], authorId: String, endDate: DateTime): Number
+    @auth(for: [KNOWLEDGE, EXPLORE])
   stixCyberObservablesTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCyberObservablesDistribution(objectId: String, field: String!, operation: String!): [Distribution]
     @auth(for: [KNOWLEDGE, EXPLORE])
@@ -8562,6 +8694,7 @@ type StixCyberObservableEditMutations {
   relationsAdd(input: StixMetaRelationshipsAddInput): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: String!, relationship_type: String!): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  promote: StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 ######## STIX RELATIONSHIPS
@@ -8609,6 +8742,11 @@ type Mutation {
   workAdd(connectorId: String!, friendlyName: String): Work!
     @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   workEdit(id: ID!): WorkEditMutations @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+
+  ### TASK
+  deleteTask(id: ID!): ID! @auth(for: [KNOWLEDGE_KNUPDATE])
+  listTaskAdd(input: ListTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
+  queryTaskAdd(input: QueryTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## INTERNAL OBJECT ENTITIES
   token(input: UserLoginInput): String

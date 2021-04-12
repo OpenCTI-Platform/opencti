@@ -252,6 +252,7 @@ export const defaultValue = (n, tooltip = false) => {
   if (tooltip) {
     return `${n.x_mitre_id ? `[${n.x_mitre_id}] ` : ''}${
       n.name
+      || n.label
       || n.observable_value
       || n.attribute_abstract
       || n.opinion
@@ -263,6 +264,7 @@ export const defaultValue = (n, tooltip = false) => {
   }
   return `${n.x_mitre_id ? `[${n.x_mitre_id}] ` : ''}${
     n.name
+    || n.label
     || n.observableName
     || n.observable_value
     || n.attribute_abstract

@@ -14,8 +14,9 @@ import {
   updateAttribute,
   batchListThroughGetFrom,
   listThroughGetFrom,
+  fullLoadById,
 } from '../database/middleware';
-import { BUS_TOPICS, logger } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { createWork, workToExportFile } from './work';
@@ -189,12 +190,29 @@ const createIndicatorFromObservable = async (user, input, observable) => {
         objectMarking: input.objectMarking,
         objectLabel: input.objectLabel,
         externalReferences: input.externalReferences,
+        update: true,
       };
       await addIndicator(user, indicatorToCreate);
     }
   } catch (err) {
-    logger.info(`[OPENCTI] Cannot create indicator`, { error: err });
+    logApp.info(`[OPENCTI] Cannot create indicator`, { error: err });
   }
+};
+
+export const promoteObservableToIndicator = async (user, observableId) => {
+  const observable = await fullLoadById(user, observableId);
+  const objectLabel = observable.i_relations_from['object-label']
+    ? observable.i_relations_from['object-label'].map((n) => n.internal_id)
+    : [];
+  const objectMarking = observable.i_relations_from['object-marking']
+    ? observable.i_relations_from['object-marking'].map((n) => n.internal_id)
+    : [];
+  const createdBy =
+    observable.i_relations_from['created-by'] && observable.i_relations_from['created-by'].length > 0
+      ? observable.i_relations_from['created-by'].map((n) => n.internal_id)[0]
+      : [];
+  await createIndicatorFromObservable(user, { objectLabel, objectMarking, createdBy }, observable);
+  return observable;
 };
 
 export const addStixCyberObservable = async (user, input) => {

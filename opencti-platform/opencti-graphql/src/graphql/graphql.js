@@ -4,7 +4,7 @@ import { GraphQLError } from 'graphql';
 import { dissocPath } from 'ramda';
 import createSchema from './schema';
 import { DEV_MODE } from '../config/conf';
-import { authenticateUser } from '../domain/user';
+import { authenticateUser, userWithOrigin } from '../domain/user';
 import { UnknownError, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
@@ -13,13 +13,7 @@ import { applicationSession } from '../database/session';
 const buildContext = (user, req, res) => {
   const workId = req.headers['opencti-work-id'];
   if (user) {
-    const origin = {
-      ip: req.ip,
-      user_id: user.id,
-      applicant_id: req.headers['opencti-applicant-id'],
-      call_retry_number: req.headers['opencti-retry-number'],
-    };
-    return { req, res, user: { ...user, origin }, workId };
+    return { req, res, user: userWithOrigin(req, user), workId };
   }
   return { req, res, user, workId };
 };

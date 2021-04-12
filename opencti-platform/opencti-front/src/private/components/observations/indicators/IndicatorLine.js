@@ -10,6 +10,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
 import { ShieldSearch } from 'mdi-material-ui';
 import { compose, pathOr, take } from 'ramda';
+import Checkbox from '@material-ui/core/Checkbox';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import ItemPatternType from '../../../../components/ItemPatternType';
@@ -48,7 +49,15 @@ const styles = (theme) => ({
 class IndicatorLineComponent extends Component {
   render() {
     const {
-      fd, nsdt, classes, dataColumns, node, onLabelClick,
+      fd,
+      nsdt,
+      classes,
+      dataColumns,
+      node,
+      onLabelClick,
+      onToggleEntity,
+      selectedElements,
+      selectAll,
     } = this.props;
     return (
       <ListItem
@@ -58,6 +67,17 @@ class IndicatorLineComponent extends Component {
         component={Link}
         to={`/dashboard/observations/indicators/${node.id}`}
       >
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 40 }}
+          onClick={onToggleEntity.bind(this, node)}
+        >
+          <Checkbox
+            edge="start"
+            checked={selectAll || node.id in (selectedElements || {})}
+            disableRipple={true}
+          />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ShieldSearch />
         </ListItemIcon>
@@ -131,12 +151,16 @@ IndicatorLineComponent.propTypes = {
   fd: PropTypes.func,
   nsdt: PropTypes.func,
   onLabelClick: PropTypes.func,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
 };
 
 const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
   node: graphql`
     fragment IndicatorLine_node on Indicator {
       id
+      entity_type
       name
       pattern_type
       valid_from
@@ -176,6 +200,12 @@ class IndicatorLineDummyComponent extends Component {
     const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
+        <ListItemIcon
+          classes={{ root: classes.itemIconDisabled }}
+          style={{ minWidth: 40 }}
+        >
+          <Checkbox edge="start" disabled={true} disableRipple={true} />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <ShieldSearch />
         </ListItemIcon>

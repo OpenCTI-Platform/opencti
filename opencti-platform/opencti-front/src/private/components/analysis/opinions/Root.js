@@ -13,6 +13,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import ReportPopover from '../reports/ReportPopover';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
   subscription RootOpinionSubscription($id: ID!) {
@@ -80,53 +81,56 @@ class RootOpinion extends Component {
           query={opinionQuery}
           variables={{ id: opinionId }}
           render={({ props }) => {
-            if (props && props.opinion) {
-              return (
-                <div>
-                  <Route
-                    exact
-                    path="/dashboard/analysis/opinions/:opinionId"
-                    render={(routeProps) => (
-                      <Opinion {...routeProps} opinion={props.opinion} />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/analysis/opinions/:opinionId/files"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <ContainerHeader
-                          container={props.opinion}
-                          PopoverComponent={<ReportPopover />}
-                        />
-                        <FileManager
-                          {...routeProps}
-                          id={opinionId}
-                          connectorsExport={props.connectorsForExport}
-                          connectorsImport={props.connectorsForImport}
-                          entity={props.opinion}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/analysis/opinions/:opinionId/history"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <ContainerHeader
-                          container={props.opinion}
-                          PopoverComponent={<ReportPopover />}
-                        />
-                        <StixCoreObjectHistory
-                          {...routeProps}
-                          stixCoreObjectId={opinionId}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                </div>
-              );
+            if (props) {
+              if (props.opinion) {
+                return (
+                  <div>
+                    <Route
+                      exact
+                      path="/dashboard/analysis/opinions/:opinionId"
+                      render={(routeProps) => (
+                        <Opinion {...routeProps} opinion={props.opinion} />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/analysis/opinions/:opinionId/files"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <ContainerHeader
+                            container={props.opinion}
+                            PopoverComponent={<ReportPopover />}
+                          />
+                          <FileManager
+                            {...routeProps}
+                            id={opinionId}
+                            connectorsExport={props.connectorsForExport}
+                            connectorsImport={props.connectorsForImport}
+                            entity={props.opinion}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/analysis/opinions/:opinionId/history"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <ContainerHeader
+                            container={props.opinion}
+                            PopoverComponent={<ReportPopover />}
+                          />
+                          <StixCoreObjectHistory
+                            {...routeProps}
+                            stixCoreObjectId={opinionId}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                  </div>
+                );
+              }
+              return <ErrorNotFound />;
             }
             return <Loader />;
           }}

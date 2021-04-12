@@ -10,7 +10,7 @@ import EntityStixCoreRelationships from '../../common/stix_core_relationships/En
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ThreatActorPopover from './ThreatActorPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixDomainObjectKillChain from '../../common/stix_domain_objects/StixDomainObjectKillChain';
+import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
@@ -114,7 +114,7 @@ class ThreatActorKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/attack_patterns"
           render={(routeProps) => (
-            <StixDomainObjectKillChain
+            <StixDomainObjectAttackPatterns
               stixDomainObjectId={threatActor.id}
               entityLink={link}
               {...routeProps}

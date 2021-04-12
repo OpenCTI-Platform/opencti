@@ -135,39 +135,94 @@ if (externalConfigurationFile) {
 nconf.file(environment, configurationFile);
 nconf.file('default', resolveEnvFile('default'));
 
-// Setup logger
-const loggerInstance = winston.createLogger({
-  level: nconf.get('app:logs_level'),
-  format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
-  transports: [
+// Setup application logApp
+const appLogLevel = nconf.get('app:app_logs:logs_level');
+const appLogFileTransport = nconf.get('app:app_logs:logs_files');
+const appLogConsoleTransport = nconf.get('app:app_logs:logs_console');
+const appLogTransports = [];
+if (appLogFileTransport) {
+  const dirname = nconf.get('app:app_logs:logs_directory');
+  const maxFiles = nconf.get('app:app_logs:logs_max_files');
+  appLogTransports.push(
     new DailyRotateFile({
       filename: 'error.log',
-      dirname: nconf.get('app:logs'),
+      dirname,
       level: 'error',
-      maxFiles: '30',
-    }),
+      maxFiles,
+    })
+  );
+  appLogTransports.push(
     new DailyRotateFile({
       filename: 'opencti.log',
-      dirname: nconf.get('app:logs'),
-      maxFiles: '30',
-    }),
-    new winston.transports.Console(),
-  ],
+      dirname,
+      maxFiles,
+    })
+  );
+}
+if (appLogConsoleTransport) {
+  appLogTransports.push(new winston.transports.Console());
+}
+const appLogger = winston.createLogger({
+  level: appLogLevel,
+  format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
+  transports: appLogTransports,
+});
+
+// Setup audit log logApp
+const auditLogFileTransport = nconf.get('app:audit_logs:logs_files');
+const auditLogConsoleTransport = nconf.get('app:audit_logs:logs_console');
+const auditLogTransports = [];
+if (auditLogFileTransport) {
+  const dirname = nconf.get('app:audit_logs:logs_directory');
+  const maxFiles = nconf.get('app:audit_logs:logs_max_files');
+  auditLogTransports.push(
+    new DailyRotateFile({
+      filename: 'audit.log',
+      dirname,
+      maxFiles,
+    })
+  );
+}
+if (auditLogConsoleTransport) {
+  auditLogTransports.push(new winston.transports.Console());
+}
+const auditLogger = winston.createLogger({
+  level: 'info',
+  format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
+  transports: auditLogTransports,
 });
 
 // Specific case to fail any test that produce an error log
 if (environment === 'test') {
-  loggerInstance.on('data', (log) => {
+  appLogger.on('data', (log) => {
     if (log.level === 'error') throw Error(log.message);
   });
 }
+const LOG_APP = 'APP';
+const addBasicMetaInformation = (category, meta) => ({ ...meta, category, version: pjson.version });
+export const logApp = {
+  _log: (level, message, meta = {}) => {
+    if (appLogTransports.length > 0) {
+      appLogger.log(level, message, addBasicMetaInformation(LOG_APP, meta));
+    }
+  },
+  debug: (message, meta = {}) => logApp._log('debug', message, meta),
+  info: (message, meta = {}) => logApp._log('info', message, meta),
+  warn: (message, meta = {}) => logApp._log('warn', message, meta),
+  error: (message, meta = {}) => logApp._log('error', message, meta),
+};
 
-const addBasicMetaInformation = (meta) => ({ ...meta, version: pjson.version });
-export const logger = {
-  debug: (message, meta) => loggerInstance.debug(message, addBasicMetaInformation(meta)),
-  info: (message, meta) => loggerInstance.info(message, addBasicMetaInformation(meta)),
-  warn: (message, meta) => loggerInstance.warn(message, addBasicMetaInformation(meta)),
-  error: (message, meta) => loggerInstance.error(message, addBasicMetaInformation(meta)),
+const LOG_AUDIT = 'AUDIT';
+export const logAudit = {
+  _log: (level, user, operation, meta = {}) => {
+    if (auditLogTransports.length > 0) {
+      const metaUser = { email: user.user_email, ...user.origin };
+      const logMeta = isEmpty(meta) ? { auth: metaUser } : { resource: meta, auth: metaUser };
+      auditLogger.log(level, operation, addBasicMetaInformation(LOG_AUDIT, logMeta));
+    }
+  },
+  info: (user, operation, meta = {}) => logAudit._log('info', user, operation, meta),
+  error: (user, operation, meta = {}) => logAudit._log('error', user, operation, meta),
 };
 
 const AppBasePath = nconf.get('app:base_path').trim();

@@ -144,6 +144,8 @@ class Search extends Component {
               'createdBy',
               'confidence_gt',
               'x_opencti_organization_type',
+              'created_start_date',
+              'created_end_date',
               'created_at_start_date',
               'created_at_end_date',
             ]}

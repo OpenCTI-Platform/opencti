@@ -56,6 +56,7 @@ const styles = () => ({
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
+    position: 'relative',
   },
   card: {
     width: '100%',
@@ -149,6 +150,31 @@ class ConnectorWorksComponent extends Component {
     const works = pathOr([], ['works', 'edges'], data);
     return (
       <div>
+        {works.length === 0 && (
+          <Paper
+            classes={{ root: classes.paper }}
+            elevation={2}
+            style={{ marginBottom: 20 }}
+          >
+            <div
+              style={{
+                display: 'table',
+                height: '100%',
+                width: '100%',
+              }}
+            >
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {t('No work')}
+              </span>
+            </div>
+          </Paper>
+        )}
         {works.map((workEge) => {
           const work = workEge.node;
           const { tracking } = work;
@@ -242,38 +268,24 @@ class ConnectorWorksComponent extends Component {
                     </Grid>
                   </Grid>
                 </Grid>
-                <Grid item={true} xs={2}>
-                  <Button
-                    style={{
-                      float: 'right',
-                      margin: '0 0 20px 20px',
-                    }}
-                    variant="outlined"
-                    color="secondary"
-                    onClick={this.handleOpenErrors.bind(this, errors)}
-                    size="small"
-                  >
-                    {errors.length} {t('errors')}
-                  </Button>
-                  <Button
-                    style={{ float: 'right' }}
-                    variant="outlined"
-                    color="primary"
-                    onClick={this.handleOpenMessages.bind(this, work.messages)}
-                    size="small"
-                  >
-                    {work.messages.length} {t('messages')}
-                  </Button>
-                  <div className="clearfix" style={{ height: 30 }} />
-                  <Button
-                    style={{ float: 'right' }}
-                    onClick={this.handleDeleteWork.bind(this, work.id)}
-                    size="small"
-                  >
-                    <Delete fontSize="small" />
-                    &nbsp;&nbsp;{t('Delete')}
-                  </Button>
-                </Grid>
+                <Button
+                  style={{ position: 'absolute', right: 10, top: 10 }}
+                  variant="contained"
+                  color="secondary"
+                  onClick={this.handleOpenErrors.bind(this, errors)}
+                  size="small"
+                >
+                  {errors.length} {t('errors')}
+                </Button>
+                <Button
+                  variant="outlined"
+                  style={{ position: 'absolute', right: 10, bottom: 10 }}
+                  onClick={this.handleDeleteWork.bind(this, work.id)}
+                  size="small"
+                >
+                  <Delete fontSize="small" />
+                  &nbsp;&nbsp;{t('Delete')}
+                </Button>
               </Grid>
             </Paper>
           );

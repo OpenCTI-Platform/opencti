@@ -1,5 +1,7 @@
 import * as R from 'ramda';
 import passport from 'passport/lib';
+import GitHub from 'github-api';
+import jwtDecode from 'jwt-decode';
 import FacebookStrategy from 'passport-facebook';
 import GithubStrategy from 'passport-github';
 import LocalStrategy from 'passport-local';
@@ -9,10 +11,10 @@ import { Strategy as OpenIDStrategy, Issuer as OpenIDIssuer } from 'openid-clien
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
 import { initAdmin, login, loginFromProvider } from '../domain/user';
-import conf, { logger } from './conf';
+import conf, { logApp } from './conf';
 import { ConfigurationError } from './errors';
 
-const empty = R.anyPass([R.isNil, R.isEmpty]);
+export const empty = R.anyPass([R.isNil, R.isEmpty]);
 
 // Admin user initialization
 export const initializeAdminUser = async () => {
@@ -39,7 +41,7 @@ export const initializeAdminUser = async () => {
     // Initialize the admin account
     // noinspection JSIgnoredPromiseFromCall
     await initAdmin(adminEmail, adminPassword, adminToken);
-    logger.info(`[INIT] admin user initialized`);
+    logApp.info(`[INIT] admin user initialized`);
   }
 };
 
@@ -63,7 +65,7 @@ const configurationMapping = {
 };
 const configRemapping = (config) => {
   if (!config) return config;
-  if (typeof config === 'object') {
+  if (typeof config === 'object' && !Array.isArray(config)) {
     const n = {};
     Object.keys(config).forEach((key) => {
       const remapKey = configurationMapping[key] ? configurationMapping[key] : key;
@@ -75,10 +77,28 @@ const configRemapping = (config) => {
 };
 
 // Providers definition
+const STRATEGY_LOCAL = 'LocalStrategy';
+export const STRATEGY_CERT = 'ClientCertStrategy';
+const STRATEGY_LDAP = 'LdapStrategy';
+const STRATEGY_OPENID = 'OpenIDConnectStrategy';
+const STRATEGY_FACEBOOK = 'FacebookStrategy';
+const STRATEGY_GOOGLE = 'GoogleStrategy';
+const STRATEGY_GITHUB = 'GithubStrategy';
+const STRATEGY_AUTH0 = 'Auth0Strategy';
 const AUTH_SSO = 'SSO';
 const AUTH_FORM = 'FORM';
 
 const providers = [];
+const providerLoginHandler = (email, name, done) => {
+  const finalName = empty(name) ? email : name;
+  loginFromProvider(email, finalName)
+    .then(({ token }) => {
+      done(null, token);
+    })
+    .catch((err) => {
+      done(err);
+    });
+};
 const confProviders = conf.get('providers');
 const providerKeys = Object.keys(confProviders);
 for (let i = 0; i < providerKeys.length; i += 1) {
@@ -88,41 +108,40 @@ for (let i = 0; i < providerKeys.length; i += 1) {
   let mappedConfig = configRemapping(config);
   if (config === undefined || !config.disabled) {
     const providerName = config?.label || providerIdent;
-    if (strategy === 'LocalStrategy') {
-      const localStrategy = new LocalStrategy((username, password, done) => {
-        logger.debug(`[LOCAL] Successfully logged`, { username });
+    // FORM Strategies
+    if (strategy === STRATEGY_LOCAL) {
+      const localStrategy = new LocalStrategy({}, (username, password, done) => {
+        logApp.debug(`[LOCAL] Successfully logged`, { username });
         return login(username, password)
           .then((token) => {
             return done(null, token);
           })
           .catch((err) => {
-            logger.warn(`[LOCAL] Login error`, { error: err });
-            done(null, false);
+            done(err);
           });
       });
       passport.use('local', localStrategy);
       providers.push({ name: providerName, type: AUTH_FORM, strategy, provider: 'local' });
     }
-    if (strategy === 'LdapStrategy') {
+    if (strategy === STRATEGY_LDAP) {
       // eslint-disable-next-line
       const allowSelfSigned = mappedConfig.allow_self_signed || mappedConfig.allow_self_signed === 'true';
       mappedConfig = R.assoc('tlsOptions', { rejectUnauthorized: !allowSelfSigned }, mappedConfig);
       const ldapOptions = { server: mappedConfig };
       const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
-        logger.debug(`[LDAP] Successfully logged`, { user });
+        logApp.debug(`[LDAP] Successfully logged`, { user });
         const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
         const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
         if (!userMail) {
-          logger.warn(`[LDAP] Configuration error, cant map mail and username`, { user, userMail, userName });
-          done(null);
+          logApp.warn(`[LDAP] Configuration error, cant map mail and username`, { user, userMail, userName });
+          done({ message: 'Configuration error, ask your administrator' });
         } else {
-          logger.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
+          logApp.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
           loginFromProvider(userMail, empty(userName) ? userMail : userName)
-            .then((token) => {
+            .then(({ token }) => {
               done(null, token);
             })
             .catch((err) => {
-              logger.warn(`[LDAP] Login error`, { error: err });
               done(err);
             });
         }
@@ -130,108 +149,123 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       passport.use('ldapauth', ldapStrategy);
       providers.push({ name: providerName, type: AUTH_FORM, strategy, provider: 'ldapauth' });
     }
-    if (strategy === 'OpenIDConnectStrategy') {
+    // SSO Strategies
+    if (strategy === STRATEGY_OPENID) {
       // Here we use directly the config and not the mapped one.
       // All config of openid lib use snake case.
       OpenIDIssuer.discover(config.issuer).then((issuer) => {
         const { Client } = issuer;
         const client = new Client(config);
-        const options = { client, params: { scope: 'openid email profile' } };
-        const openIDStrategy = new OpenIDStrategy(options, (tokenset, userinfo, done) => {
-          logger.debug(`[OPENID] Successfully logged`, { userinfo });
-          const { email, name } = userinfo;
-          loginFromProvider(email, empty(name) ? email : name)
-            .then((token) => {
-              done(null, token);
-            })
-            .catch((err) => {
-              logger.warn(`[OPENID] Login error`, { error: err });
-              done(err);
-            });
+        const options = { client, passReqToCallback: true, params: { scope: 'openid roles email profile' } };
+        const roles = mappedConfig.roles || [];
+        const openIDStrategy = new OpenIDStrategy(options, (req, tokenset, userinfo, done) => {
+          logApp.debug(`[OPENID] Successfully logged`, { userinfo });
+          let authorized = true;
+          if (roles.length > 0) {
+            const decodedUser = jwtDecode(tokenset.access_token);
+            const availableRoles = [
+              ...(decodedUser.roles || []),
+              ...(decodedUser.realm_access?.roles || []),
+              ...(decodedUser.resource_access?.account?.roles || []),
+            ];
+            authorized = roles.some((o) => availableRoles.includes(o));
+          }
+          if (authorized) {
+            const { email, name } = userinfo;
+            providerLoginHandler(email, name, done);
+          } else {
+            done({ message: 'Restricted access, ask your administrator' });
+          }
         });
         passport.use('oic', openIDStrategy);
         providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'oic' });
       });
     }
-    if (strategy === 'FacebookStrategy') {
+    if (strategy === STRATEGY_FACEBOOK) {
       const specificConfig = { profileFields: ['id', 'emails', 'name'], scope: 'email' };
-      const facebookOptions = { ...mappedConfig, ...specificConfig };
-      const facebookStrategy = new FacebookStrategy(facebookOptions, (accessToken, refreshToken, profile, done) => {
-        const data = profile._json;
-        logger.debug(`[FACEBOOK] Successfully logged`, { profile: data });
-        const name = `${data.last_name} ${data.first_name}`;
-        const { email } = data;
-        loginFromProvider(email, empty(data.first_name) || empty(data.last_name) ? email : name)
-          .then((token) => {
-            done(null, token);
-          })
-          .catch((err) => {
-            logger.warn(`[FACEBOOK] Login error`, { error: err });
-            done(err);
-          });
-      });
+      const facebookOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
+      const facebookStrategy = new FacebookStrategy(
+        facebookOptions,
+        (req, accessToken, refreshToken, profile, done) => {
+          const data = profile._json;
+          logApp.debug(`[FACEBOOK] Successfully logged`, { profile: data });
+          const { email } = data;
+          providerLoginHandler(email, data.first_name, done);
+        }
+      );
       passport.use('facebook', facebookStrategy);
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'facebook' });
     }
-    if (strategy === 'GoogleStrategy') {
-      const specificConfig = { scope: 'email' };
-      const googleOptions = { ...mappedConfig, ...specificConfig };
-      const googleStrategy = new GoogleStrategy(googleOptions, (token, tokenSecret, profile, done) => {
-        logger.debug(`[GOOGLE] Successfully logged`, { profile });
+    if (strategy === STRATEGY_GOOGLE) {
+      const domains = mappedConfig.domains || [];
+      const specificConfig = { scope: ['email', 'profile'] };
+      const googleOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
+      const googleStrategy = new GoogleStrategy(googleOptions, (req, token, tokenSecret, profile, done) => {
+        logApp.debug(`[GOOGLE] Successfully logged`, { profile });
         const email = R.head(profile.emails).value;
-        const name = profile.displayNamel;
-        // let picture = head(profile.photos).value;
-        loginFromProvider(email, empty(name) ? email : name)
-          .then((loggedToken) => {
-            done(null, loggedToken);
-          })
-          .catch((err) => {
-            logger.warn(`[GOOGLE] Login error`, { error: err });
-            done(err);
-          });
+        const name = profile.displayName;
+        let authorized = true;
+        if (domains.length > 0) {
+          const [, domain] = email.split('@');
+          authorized = domains.includes(domain);
+        }
+        if (authorized) {
+          providerLoginHandler(email, name, done);
+        } else {
+          done({ message: 'Restricted access, ask your administrator' });
+        }
       });
-      passport.use(googleStrategy);
+      passport.use('google', googleStrategy);
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'google' });
     }
-    if (strategy === 'GithubStrategy') {
-      const specificConfig = { scope: 'user:email' };
-      const githubOptions = { ...mappedConfig, ...specificConfig };
-      const githubStrategy = new GithubStrategy(githubOptions, (token, tokenSecret, profile, done) => {
-        logger.debug(`[GITHUB] Successfully logged`, { profile });
-        const { displayName } = profile;
-        const email = R.head(profile.emails).value;
-        // let picture = profile.avatar_url;
-        loginFromProvider(email, empty(displayName) ? email : displayName)
-          .then((loggedToken) => {
-            done(null, loggedToken);
-          })
-          .catch((err) => {
-            logger.warn(`[GITHUB] Login error`, { error: err });
-            done(err);
-          });
+    if (strategy === STRATEGY_GITHUB) {
+      const organizations = mappedConfig.organizations || [];
+      const scope = organizations.length > 0 ? 'user:email,read:org' : 'user:email';
+      const githubOptions = { passReqToCallback: true, ...mappedConfig, scope };
+      const githubStrategy = new GithubStrategy(githubOptions, async (req, token, tokenSecret, profile, done) => {
+        logApp.debug(`[GITHUB] Successfully logged`, { profile });
+        let authorized = true;
+        if (organizations.length > 0) {
+          const github = new GitHub({ token });
+          const me = github.getUser();
+          const { data: orgs } = await me.listOrgs();
+          const githubOrgs = orgs.map((o) => o.login);
+          authorized = organizations.some((o) => githubOrgs.includes(o));
+        }
+        if (authorized) {
+          const { displayName } = profile;
+          const email = R.head(profile.emails).value;
+          providerLoginHandler(email, displayName, done);
+        } else {
+          done({ message: 'Restricted access, ask your administrator' });
+        }
       });
       passport.use('github', githubStrategy);
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'github' });
     }
-    if (strategy === 'Auth0Strategy') {
-      const auth0Strategy = new Auth0Strategy(mappedConfig, (accessToken, refreshToken, extraParams, profile, done) => {
-        logger.debug(`[AUTH0] Successfully logged`, { profile });
-        const userName = profile.displayName;
-        const email = R.head(profile.emails).value;
-        loginFromProvider(email, empty(userName) ? email : userName)
-          .then((token) => {
-            done(null, token);
-          })
-          .catch((err) => {
-            logger.warn(`[AUTH0] Login error`, { error: err });
-            done(err);
-          });
-      });
+    if (strategy === STRATEGY_AUTH0) {
+      const auth0Options = { passReqToCallback: true, ...mappedConfig };
+      const auth0Strategy = new Auth0Strategy(
+        auth0Options,
+        (req, accessToken, refreshToken, extraParams, profile, done) => {
+          logApp.debug(`[AUTH0] Successfully logged`, { profile });
+          const userName = profile.displayName;
+          const email = R.head(profile.emails).value;
+          providerLoginHandler(email, userName, done);
+        }
+      );
       passport.use('auth0', auth0Strategy);
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'auth0' });
+    }
+    // CERT Strategies
+    if (strategy === STRATEGY_CERT) {
+      // This strategy is directly handled by express
+      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'cert' });
     }
   }
 }
 
 export const PROVIDERS = providers;
+export const isStrategyActivated = (strategy) => providers.map((p) => p.strategy).includes(strategy);
+
 export default passport;
