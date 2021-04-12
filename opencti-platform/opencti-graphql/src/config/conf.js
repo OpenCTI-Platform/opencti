@@ -212,7 +212,7 @@ const LOG_AUDIT = 'AUDIT';
 export const logAudit = {
   _log: (level, user, operation, meta = {}) => {
     if (auditLogTransports.length > 0) {
-      const metaUser = { id: user.id, email: user.user_email, ...user.origin };
+      const metaUser = { email: user.user_email, ...user.origin };
       const logMeta = isEmpty(meta) ? { auth: metaUser } : { resource: meta, auth: metaUser };
       auditLogger.log(level, operation, addBasicMetaInformation(LOG_AUDIT, logMeta));
     }

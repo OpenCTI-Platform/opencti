@@ -79,6 +79,7 @@ export const SYSTEM_USER = {
 export const userWithOrigin = (req, user) => {
   const origin = {
     ip: req.ip,
+    user_id: user.id,
     referer: req.headers.referer,
     applicant_id: req.headers['opencti-applicant-id'],
     call_retry_number: req.headers['opencti-retry-number'],
