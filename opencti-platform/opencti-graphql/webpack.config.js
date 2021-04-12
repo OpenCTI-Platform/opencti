@@ -66,12 +66,7 @@ module.exports = (env, argv) => {
         OPENCTI_BUILD_DATE: JSON.stringify(buildDate),
       }),
       new CleanWebpackPlugin(),
-      ...addIf(isDev, [
-        new HotModuleReplacementPlugin(),
-        new RunScriptWebpackPlugin({
-          nodeArgs: ['--inspect'],
-        }),
-      ]),
+      ...addIf(isDev, [new HotModuleReplacementPlugin(), new RunScriptWebpackPlugin()]),
     ],
   };
 };
