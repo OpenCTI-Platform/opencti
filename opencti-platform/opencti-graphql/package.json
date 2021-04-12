@@ -124,7 +124,7 @@
     "webpack-node-externals": "2.5.2"
   },
   "resolutions": {
-    "fs-capacitor": "2.0.4",
+    "fs-capacitor": "6.2.0",
     "xmldom": "0.5.0"
   }
 }
