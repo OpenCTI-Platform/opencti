@@ -205,7 +205,8 @@ const taskHandler = async () => {
     }
     // endregion
     // Fetch the user responsible for the task
-    const user = await resolveUserById(task.initiator_id);
+    const rawUser = await resolveUserById(task.initiator_id);
+    const user = { ...rawUser, origin: { user_id: rawUser.id, referer: 'background_task' } };
     let processingElements;
     if (isQueryTask) {
       processingElements = await computeQueryTaskElements(user, task);

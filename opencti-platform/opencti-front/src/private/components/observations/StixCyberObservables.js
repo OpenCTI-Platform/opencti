@@ -186,7 +186,9 @@ class StixCyberObservables extends Component {
     if (observableTypes.length) {
       finalFilters = R.assoc(
         'entity_type',
-        R.map((n) => ({ id: n, value: n }), observableTypes),
+        observableTypes.length > 0
+          ? R.map((n) => ({ id: n, value: n }), observableTypes)
+          : 'Stix-Cyber-Observable',
         finalFilters,
       );
     }

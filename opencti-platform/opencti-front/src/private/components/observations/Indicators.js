@@ -198,6 +198,11 @@ class Indicators extends Component {
       numberOfSelectedElements = numberOfElements.original;
     }
     let finalFilters = filters;
+    finalFilters = R.assoc(
+      'entity_type',
+      { id: 'Indicator', value: 'Indicator' },
+      finalFilters,
+    );
     if (indicatorTypes.length) {
       finalFilters = R.assoc(
         'pattern_type',
