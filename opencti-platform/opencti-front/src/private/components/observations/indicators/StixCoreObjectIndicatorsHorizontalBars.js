@@ -125,7 +125,7 @@ class StixCoreObjectIndicatorsHorizontalBars extends Component {
                     {props.indicatorsDistribution.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={itemColor(entry.entity.name)}
+                        fill={itemColor(entry.label)}
                       />
                     ))}
                   </Bar>
