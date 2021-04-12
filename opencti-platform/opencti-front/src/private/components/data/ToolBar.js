@@ -325,7 +325,11 @@ class ToolBar extends Component {
   handleChangeActionInputValuesReplace(i, event) {
     const { value } = event.target;
     const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc('values', value, actionsInputs[i] || {});
+    actionsInputs[i] = R.assoc(
+      'values',
+      Array.isArray(value) ? value : [value],
+      actionsInputs[i] || {},
+    );
     this.setState({ actionsInputs });
   }
 
@@ -381,7 +385,10 @@ class ToolBar extends Component {
         context: n.context
           ? {
             ...n.context,
-            values: R.map((o) => o.id || o.value, n.context.values),
+            values: R.map(
+              (o) => (typeof o === 'string' ? o : o.id || o.value),
+              n.context.values,
+            ),
           }
           : null,
       }),
@@ -507,17 +514,19 @@ class ToolBar extends Component {
       actionsInputs[i],
     );
     this.setState({ actionsInputs });
-    fetchQuery(objectMarkingFieldAllowedMarkingsQuery).then((data) => {
-      const markingDefinitions = R.pipe(
-        R.pathOr([], ['me', 'allowed_marking']),
-        R.map((n) => ({
-          label: n.definition,
-          value: n.id,
-          color: n.x_opencti_color,
-        })),
-      )(data);
-      this.setState({ markingDefinitions });
-    });
+    fetchQuery(objectMarkingFieldAllowedMarkingsQuery)
+      .toPromise()
+      .then((data) => {
+        const markingDefinitions = R.pipe(
+          R.pathOr([], ['me', 'allowed_marking']),
+          R.map((n) => ({
+            label: n.definition,
+            value: n.id,
+            color: n.x_opencti_color,
+          })),
+        )(data);
+        this.setState({ markingDefinitions });
+      });
   }
 
   searchLabels(i, event, newValue) {
@@ -531,19 +540,21 @@ class ToolBar extends Component {
     this.setState({ actionsInputs });
     fetchQuery(labelsSearchQuery, {
       search: newValue && newValue.length > 0 ? newValue : '',
-    }).then((data) => {
-      const labels = pipe(
-        pathOr([], ['labels', 'edges']),
-        map((n) => ({
-          label: n.node.value,
-          value: n.node.id,
-          color: n.node.color,
-        })),
-      )(data);
-      this.setState({
-        labels: union(this.state.labels, labels),
+    })
+      .toPromise()
+      .then((data) => {
+        const labels = pipe(
+          pathOr([], ['labels', 'edges']),
+          map((n) => ({
+            label: n.node.value,
+            value: n.node.id,
+            color: n.node.color,
+          })),
+        )(data);
+        this.setState({
+          labels: union(this.state.labels, labels),
+        });
       });
-    });
   }
 
   searchIdentities(i, event, newValue) {
@@ -559,17 +570,19 @@ class ToolBar extends Component {
       types: ['Individual', 'Organization'],
       search: newValue && newValue.length > 0 ? newValue : '',
       first: 10,
-    }).then((data) => {
-      const identities = pipe(
-        pathOr([], ['identities', 'edges']),
-        map((n) => ({
-          label: n.node.name,
-          value: n.node.id,
-          type: n.node.entity_type,
-        })),
-      )(data);
-      this.setState({ identities: union(this.state.identities, identities) });
-    });
+    })
+      .toPromise()
+      .then((data) => {
+        const identities = pipe(
+          pathOr([], ['identities', 'edges']),
+          map((n) => ({
+            label: n.node.name,
+            value: n.node.id,
+            type: n.node.entity_type,
+          })),
+        )(data);
+        this.setState({ identities: union(this.state.identities, identities) });
+      });
   }
 
   renderValuesOptions(i) {
@@ -983,7 +996,7 @@ class ToolBar extends Component {
                               R.join(
                                 ', ',
                                 R.map(
-                                  (p) => defaultValue(p),
+                                  (p) => (typeof p === 'string' ? p : defaultValue(p)),
                                   R.pathOr([], ['context', 'values'], o),
                                 ),
                               ),

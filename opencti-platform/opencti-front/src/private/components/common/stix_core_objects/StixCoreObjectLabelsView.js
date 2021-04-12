@@ -128,17 +128,19 @@ const StixCoreObjectLabelsView = (props) => {
     setLabelInput(event && event.target.value !== 0 ? event.target.value : '');
     fetchQuery(labelsSearchQuery, {
       search: event && event.target.value !== 0 ? event.target.value : '',
-    }).then((data) => {
-      const transformLabels = pipe(
-        pathOr([], ['labels', 'edges']),
-        map((n) => ({
-          label: n.node.value,
-          value: n.node.id,
-          color: n.node.color,
-        })),
-      )(data);
-      setStateLabels(union(stateLabels, transformLabels));
-    });
+    })
+      .toPromise()
+      .then((data) => {
+        const transformLabels = pipe(
+          pathOr([], ['labels', 'edges']),
+          map((n) => ({
+            label: n.node.value,
+            value: n.node.id,
+            color: n.node.color,
+          })),
+        )(data);
+        setStateLabels(union(stateLabels, transformLabels));
+      });
   };
 
   const handleCloseAdd = () => setOpenAdd(false);

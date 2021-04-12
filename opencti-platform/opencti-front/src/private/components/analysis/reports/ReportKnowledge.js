@@ -160,7 +160,7 @@ class ReportKnowledgeComponent extends Component {
                     <AttackPatternsMatrix
                       entity={report}
                       attackPatterns={attackPatterns}
-                      searchTerm=''
+                      searchTerm=""
                     />
                   );
                 }

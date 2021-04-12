@@ -46,19 +46,21 @@ class ObjectLabelField extends Component {
     });
     fetchQuery(labelsSearchQuery, {
       search: event && event.target.value !== 0 ? event.target.value : '',
-    }).then((data) => {
-      const labels = pipe(
-        pathOr([], ['labels', 'edges']),
-        map((n) => ({
-          label: n.node.value,
-          value: n.node.id,
-          color: n.node.color,
-        })),
-      )(data);
-      this.setState({
-        labels: union(this.state.labels, labels),
+    })
+      .toPromise()
+      .then((data) => {
+        const labels = pipe(
+          pathOr([], ['labels', 'edges']),
+          map((n) => ({
+            label: n.node.value,
+            value: n.node.id,
+            color: n.node.color,
+          })),
+        )(data);
+        this.setState({
+          labels: union(this.state.labels, labels),
+        });
       });
-    });
   }
 
   render() {

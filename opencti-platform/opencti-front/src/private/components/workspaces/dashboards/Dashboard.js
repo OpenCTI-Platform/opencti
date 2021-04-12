@@ -386,7 +386,7 @@ class DashboardComponent extends Component {
     const relativeDate = R.propOr(null, 'relativeDate', manifest.config);
     return (
       <div className={classes.container}>
-        <WorkspaceHeader workspace={workspace} variant='dashboard' />
+        <WorkspaceHeader workspace={workspace} variant="dashboard" />
         <Drawer
           anchor="bottom"
           variant="permanent"
