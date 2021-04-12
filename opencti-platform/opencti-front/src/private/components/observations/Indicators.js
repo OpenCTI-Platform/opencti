@@ -199,12 +199,16 @@ class Indicators extends Component {
     }
     let finalFilters = filters;
     if (indicatorTypes.length) {
-      finalFilters = R.assoc('pattern_type', indicatorTypes, finalFilters);
+      finalFilters = R.assoc(
+        'pattern_type',
+        R.map((n) => ({ id: n, value: n }), indicatorTypes),
+        finalFilters,
+      );
     }
     if (observableTypes.length) {
       finalFilters = R.assoc(
         'x_opencti_main_observable_type',
-        observableTypes,
+        R.map((n) => ({ id: n, value: n }), observableTypes),
         finalFilters,
       );
     }

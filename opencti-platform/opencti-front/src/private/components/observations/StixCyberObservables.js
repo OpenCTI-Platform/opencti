@@ -184,7 +184,11 @@ class StixCyberObservables extends Component {
     }
     let finalFilters = filters;
     if (observableTypes.length) {
-      finalFilters = R.assoc('entity_type', observableTypes, finalFilters);
+      finalFilters = R.assoc(
+        'entity_type',
+        R.map((n) => ({ id: n, value: n }), observableTypes),
+        finalFilters,
+      );
     }
     const dataColumns = {
       entity_type: {

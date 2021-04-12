@@ -156,6 +156,7 @@ const StixCyberObservableLineFragment = createFragmentContainer(
       fragment StixCyberObservableLine_node on StixCyberObservable {
         id
         entity_type
+        parent_types
         observable_value
         created_at
         objectMarking {

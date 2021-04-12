@@ -385,10 +385,7 @@ class ToolBar extends Component {
         context: n.context
           ? {
             ...n.context,
-            values: R.map(
-              (o) => (typeof o === 'string' ? o : o.id || o.value),
-              n.context.values,
-            ),
+            values: R.map((o) => o.id || o.value, n.context.values),
           }
           : null,
       }),
@@ -734,10 +731,16 @@ class ToolBar extends Component {
     const isOpen = numberOfSelectedElements > 0;
     const typesAreDifferent = R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})))
       .length > 1;
-    const typesAreNotMergable = R.includes(
-      R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})))[0],
-      notMergableTypes,
+    const parentTypes = R.flatten(
+      R.map((o) => o.parent_types, R.values(selectedElements || {})),
     );
+    const typesAreNotMergable = R.includes('Stix-Cyber-Observable', parentTypes)
+      || R.includes(
+        R.uniq(
+          R.map((o) => o.entity_type, R.values(selectedElements || {})),
+        )[0],
+        notMergableTypes,
+      );
     const selectedElementsList = R.values(selectedElements || {});
     let keptElement = null;
     let newAliases = [];
