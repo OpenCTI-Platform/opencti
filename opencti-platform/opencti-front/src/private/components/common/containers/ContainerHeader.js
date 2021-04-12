@@ -22,8 +22,9 @@ const styles = () => ({
     marginTop: '-13px',
   },
   marking: {
-    float: 'right',
+    float: 'left',
     overflowX: 'hidden',
+    marginLeft: 15,
   },
   aliases: {
     marginRight: 7,
@@ -33,8 +34,8 @@ const styles = () => ({
     float: 'right',
   },
   modes: {
-    margin: '-2px 0 0 5px',
-    float: 'left',
+    margin: '-2px 0 0 0',
+    float: 'right',
   },
   button: {
     marginRight: 20,
@@ -71,6 +72,19 @@ class ContainerHeaderComponent extends Component {
             80,
           )}
         </Typography>
+        {variant !== 'noMarking' && (
+          <div className={classes.marking}>
+            {pathOr([], ['objectMarking', 'edges'], container).map(
+              (markingDefinition) => (
+                <ItemMarking
+                  key={markingDefinition.node.id}
+                  label={markingDefinition.node.definition}
+                  color={markingDefinition.node.x_opencti_color}
+                />
+              ),
+            )}
+          </div>
+        )}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <div className={classes.popover}>
             {React.cloneElement(PopoverComponent, { id: container.id })}
@@ -102,21 +116,6 @@ class ContainerHeaderComponent extends Component {
                 </Button>
             )))}
           </div>
-        )}
-        {variant !== 'noMarking' ? (
-          <div className={classes.marking}>
-            {pathOr([], ['objectMarking', 'edges'], container).map(
-              (markingDefinition) => (
-                <ItemMarking
-                  key={markingDefinition.node.id}
-                  label={markingDefinition.node.definition}
-                  color={markingDefinition.node.x_opencti_color}
-                />
-              ),
-            )}
-          </div>
-        ) : (
-          ''
         )}
         <div className="clearfix" />
       </div>

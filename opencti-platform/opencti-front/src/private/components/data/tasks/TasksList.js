@@ -290,16 +290,13 @@ class TasksListComponent extends Component {
                                     {action.context.field && (
                                       <span>
                                         <strong>
-                                          {action.context?.field || t('N/A')}
+                                          {action.context.field || t('N/A')}
                                         </strong>
                                         :{' '}
                                       </span>
                                     )}
                                     {truncate(
-                                      R.join(
-                                        ', ',
-                                        action.context?.values || [],
-                                      ),
+                                      R.join(', ', action.context.values || []),
                                       80,
                                     )}
                                   </div>

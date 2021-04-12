@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
 import { attackPatternsLinesQuery } from './AttackPatternsLines';
 import { computeLevel } from '../../../../utils/Number';
+import AttackPtternsMatrixBar from './AttackPtternsMatrixBar';
 
 const styles = (theme) => ({
   container: {
@@ -14,12 +15,12 @@ const styles = (theme) => ({
     overflow: 'scroll',
     whiteSpace: 'nowrap',
     paddingBottom: 20,
-    minWidth: 'calc(100vw - 245px)',
-    minHeight: 'calc(100vh - 155px)',
-    width: 'calc(100vw - 245px)',
-    height: 'calc(100vh - 155px)',
-    maxWidth: 'calc(100vw - 245px)',
-    maxHeight: 'calc(100vh - 155px)',
+    minWidth: 'calc(100vw - 243px)',
+    minHeight: 'calc(100vh - 205px)',
+    width: 'calc(100vw - 243px)',
+    height: 'calc(100vh - 205px)',
+    maxWidth: 'calc(100vw - 243px)',
+    maxHeight: 'calc(100vh - 205px)',
   },
   containerWithMarginRight: {
     margin: '15px 0 -24px 0',
@@ -27,11 +28,11 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     paddingBottom: 20,
     minWidth: 'calc(100vw - 430px)',
-    minHeight: 'calc(100vh - 180px)',
+    minHeight: 'calc(100vh - 235px)',
     width: 'calc(100vw - 430px)',
-    height: 'calc(100vh - 180px)',
+    height: 'calc(100vh - 235px)',
     maxWidth: 'calc(100vw - 430px)',
-    maxHeight: 'calc(100vh - 180px)',
+    maxHeight: 'calc(100vh - 235px)',
   },
   header: {
     borderBottom: theme.palette.divider,
@@ -87,6 +88,15 @@ const colors = [
 ];
 
 class AttackPatternsMatrixColumnsComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { currentModeOnlyActive: false };
+  }
+
+  handleToggleModeOnlyActive() {
+    this.setState({ currentModeOnlyActive: !this.state.currentModeOnlyActive });
+  }
+
   level(attackPattern, maxNumberOfSameAttackPattern) {
     const { attackPatterns } = this.props;
     const numberOfCorrespondingAttackPatterns = R.filter(
@@ -113,6 +123,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       marginRight,
       searchTerm,
     } = this.props;
+    const { currentModeOnlyActive } = this.state;
     const sortByOrder = R.sortBy(R.prop('x_opencti_order'));
     const sortByName = R.sortBy(R.prop('name'));
     const filterByKeyword = (n) => searchTerm === ''
@@ -163,6 +174,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       })),
       R.filter(filterSubattackPattern),
       R.filter(filterByKeyword),
+      R.filter((o) => (currentModeOnlyActive ? o.level > 0 : o.level >= 0)),
     )(data.attackPatterns.edges);
     const killChainPhases = R.pipe(
       R.map((n) => R.map((o) => o.node, n.node.killChainPhases.edges)),
@@ -187,6 +199,12 @@ class AttackPatternsMatrixColumnsComponent extends Component {
           marginRight ? classes.containerWithMarginRight : classes.container
         }
       >
+        <AttackPtternsMatrixBar
+          currentModeOnlyActive={currentModeOnlyActive}
+          handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
+            this,
+          )}
+        />
         <div className={classes.header}>
           {attackPatternsOfPhases.map((k) => (
             <div key={k.id} className={classes.headerElement}>
