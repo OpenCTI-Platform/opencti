@@ -89,7 +89,7 @@ const AUTH_SSO = 'SSO';
 const AUTH_FORM = 'FORM';
 
 const providers = [];
-const providerLoginHandler = (req, email, name, strategy, done) => {
+const providerLoginHandler = (email, name, done) => {
   const finalName = empty(name) ? email : name;
   loginFromProvider(email, finalName)
     .then(({ token }) => {
@@ -172,7 +172,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           }
           if (authorized) {
             const { email, name } = userinfo;
-            providerLoginHandler(req, email, name, strategy, done);
+            providerLoginHandler(email, name, done);
           } else {
             done({ message: 'Restricted access, ask your administrator' });
           }
@@ -190,7 +190,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const data = profile._json;
           logApp.debug(`[FACEBOOK] Successfully logged`, { profile: data });
           const { email } = data;
-          providerLoginHandler(req, email, data.first_name, strategy, done);
+          providerLoginHandler(email, data.first_name, done);
         }
       );
       passport.use('facebook', facebookStrategy);
@@ -210,7 +210,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           authorized = domains.includes(domain);
         }
         if (authorized) {
-          providerLoginHandler(req, email, name, strategy, done);
+          providerLoginHandler(email, name, done);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
@@ -235,7 +235,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         if (authorized) {
           const { displayName } = profile;
           const email = R.head(profile.emails).value;
-          providerLoginHandler(req, email, displayName, strategy, done);
+          providerLoginHandler(email, displayName, done);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
@@ -251,7 +251,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           logApp.debug(`[AUTH0] Successfully logged`, { profile });
           const userName = profile.displayName;
           const email = R.head(profile.emails).value;
-          providerLoginHandler(req, email, userName, strategy, done);
+          providerLoginHandler(email, userName, done);
         }
       );
       passport.use('auth0', auth0Strategy);
