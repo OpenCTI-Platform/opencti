@@ -36,6 +36,7 @@ import {
   connectorDeletionMutation,
   connectorResetStateMutation,
 } from './Connector';
+import ItemBoolean from '../../../../components/ItemBoolean';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -90,7 +91,13 @@ const inlineStylesHeaders = {
   },
   connector_type: {
     float: 'left',
-    width: '25%',
+    width: '20%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  auto: {
+    float: 'left',
+    width: '20%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -118,7 +125,15 @@ const inlineStyles = {
   },
   connector_type: {
     float: 'left',
-    width: '25%',
+    width: '20%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  auto: {
+    float: 'left',
+    width: '20%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -271,6 +286,7 @@ class ConnectorsStatusComponent extends Component {
                   <div>
                     {this.SortHeader('name', 'Name', true)}
                     {this.SortHeader('connector_type', 'Type', true)}
+                    {this.SortHeader('auto', 'Automatic trigger', true)}
                     {this.SortHeader('messages', 'Messages', true)}
                     {this.SortHeader('updated_at', 'Modified', true)}
                   </div>
@@ -305,11 +321,23 @@ class ConnectorsStatusComponent extends Component {
                         className={classes.bodyItem}
                         style={inlineStyles.connector_type}
                       >
-                        {connector.connector_type === 'INTERNAL_ENRICHMENT'
-                          ? `${t(connector.connector_type)} (${t('auto:')} ${t(
-                            connector.auto.toString(),
-                          )})`
-                          : t(connector.connector_type)}
+                        {t(connector.connector_type)}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.auto}
+                      >
+                        <ItemBoolean
+                          label={connector.auto ? t('Automatic') : t('Manual')}
+                          status={
+                            connector.connector_type
+                              === 'INTERNAL_ENRICHMENT'
+                            || connector.connector_type === 'INTERNAL_IMPORT_FILE'
+                              ? connector.auto
+                              : null
+                          }
+                          variant="inList"
+                        />
                       </div>
                       <div
                         className={classes.bodyItem}

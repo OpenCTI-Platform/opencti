@@ -238,16 +238,21 @@ class ConnectorComponent extends Component {
                   </Typography>
                   <ItemBoolean
                     status={connector.active}
-                    label={connector.active ? t('TRUE') : t('FALSE')}
+                    label={connector.active ? t('Yes') : t('No')}
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Automatic')}
+                    {t('Automatic trigger')}
                   </Typography>
                   <ItemBoolean
-                    status={connector.auto}
-                    label={connector.auto ? t('TRUE') : t('FALSE')}
+                    status={
+                      connector.connector_type === 'INTERNAL_ENRICHMENT'
+                      || connector.connector_type === 'INTERNAL_IMPORT_FILE'
+                        ? connector.auto
+                        : null
+                    }
+                    label={connector.auto ? t('Yes') : t('No')}
                   />
                 </Grid>
                 <Grid item={true} xs={12}>
