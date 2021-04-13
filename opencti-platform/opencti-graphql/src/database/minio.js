@@ -5,6 +5,7 @@ import conf, { logApp } from '../config/conf';
 import { buildPagination } from './utils';
 import { loadExportWorksAsProgressFiles, deleteWorkForFile } from '../domain/work';
 import { sinceNowInMinutes } from '../utils/format';
+import { DatabaseError } from '../config/errors';
 
 const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
@@ -55,7 +56,7 @@ export const downloadFile = (id) => {
   }
 };
 
-export const loadFile = async (filename) => {
+export const loadFile = async (user, filename) => {
   try {
     const stat = await minioClient.statObject(bucketName, filename);
     return {
@@ -69,8 +70,7 @@ export const loadFile = async (filename) => {
       uploadStatus: 'complete',
     };
   } catch (err) {
-    logApp.info(`[OPENCTI] Cannot retrieve file on MinIO`, { error: err });
-    return null;
+    throw DatabaseError('File not found', { user_id: user.id, filename });
   }
 };
 
@@ -79,7 +79,7 @@ const htmlDecode = (str) => {
     return String.fromCharCode(dec);
   });
 };
-const rawFilesListing = (directory) => {
+const rawFilesListing = (user, directory) => {
   return new Promise((resolve, reject) => {
     const files = [];
     const stream = minioClient.listObjectsV2(bucketName, directory);
@@ -98,7 +98,7 @@ const rawFilesListing = (directory) => {
     return Promise.all(
       map((elem) => {
         const filename = htmlDecode(elem.name);
-        return loadFile(filename);
+        return loadFile(user, filename);
       }, files)
     );
   });
@@ -121,7 +121,7 @@ export const upload = async (user, path, file, metadata = {}) => {
 };
 
 export const filesListing = async (user, first, path) => {
-  const files = await rawFilesListing(path);
+  const files = await rawFilesListing(user, path);
   const inExport = await loadExportWorksAsProgressFiles(user, path);
   const allFiles = concat(inExport, files);
   const sortedFiles = sort((a, b) => b.lastModified - a.lastModified, allFiles);

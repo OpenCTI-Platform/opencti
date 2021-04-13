@@ -96,55 +96,67 @@ const createApp = async (apolloServer, broadcaster) => {
   initTaxiiApi(app);
 
   // -- File download
-  app.get(`${basePath}/storage/get/:file(*)`, async (req, res) => {
-    const auth = await authenticateUser(req);
-    if (!auth) res.sendStatus(403);
-    const { file } = req.params;
-    const stream = await downloadFile(file);
-    res.attachment(file);
-    stream.pipe(res);
+  app.get(`${basePath}/storage/get/:file(*)`, async (req, res, next) => {
+    try {
+      const auth = await authenticateUser(req);
+      if (!auth) res.sendStatus(403);
+      const { file } = req.params;
+      const stream = await downloadFile(file);
+      res.attachment(file);
+      stream.pipe(res);
+    } catch (e) {
+      next(e);
+    }
   });
 
   // -- File view
-  app.get(`${basePath}/storage/view/:file(*)`, async (req, res) => {
-    const auth = await authenticateUser(req);
-    if (!auth) res.sendStatus(403);
-    const { file } = req.params;
-    const data = await loadFile(file);
-    res.setHeader('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
-    res.setHeader('Content-type', data.metaData.mimetype);
-    const stream = await downloadFile(file);
-    stream.pipe(res);
+  app.get(`${basePath}/storage/view/:file(*)`, async (req, res, next) => {
+    try {
+      const auth = await authenticateUser(req);
+      if (!auth) res.sendStatus(403);
+      const { file } = req.params;
+      const data = await loadFile(auth, file);
+      res.setHeader('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
+      res.setHeader('Content-type', data.metaData.mimetype);
+      const stream = await downloadFile(file);
+      stream.pipe(res);
+    } catch (e) {
+      next(e);
+    }
   });
 
   // -- Client HTTPS Cert login custom strategy
-  app.get(`${basePath}/auth/cert`, (req, res) => {
-    const isActivated = isStrategyActivated(STRATEGY_CERT);
-    if (!isActivated) {
-      setCookieError(res, 'Cert authentication is not available');
-      res.redirect(req.headers.referer);
-    } else {
-      const cert = req.connection.getPeerCertificate();
-      if (!R.isEmpty(cert) && req.client.authorized) {
-        const { CN, emailAddress } = cert.subject;
-        if (empty(emailAddress)) {
-          setCookieError(res, 'Client certificate need a correct emailAddress');
-          res.redirect(req.headers.referer);
-        } else {
-          loginFromProvider(emailAddress, empty(CN) ? emailAddress : CN)
-            .then(async ({ token }) => {
-              await authenticateUser(req, { providerToken: token.uuid, provider: 'cert' });
-              res.redirect(req.headers.referer);
-            })
-            .catch((err) => {
-              setCookieError(res, err?.message);
-              res.redirect(req.headers.referer);
-            });
-        }
-      } else {
-        setCookieError(res, 'You must select a correct certificate');
+  app.get(`${basePath}/auth/cert`, (req, res, next) => {
+    try {
+      const isActivated = isStrategyActivated(STRATEGY_CERT);
+      if (!isActivated) {
+        setCookieError(res, 'Cert authentication is not available');
         res.redirect(req.headers.referer);
+      } else {
+        const cert = req.connection.getPeerCertificate();
+        if (!R.isEmpty(cert) && req.client.authorized) {
+          const { CN, emailAddress } = cert.subject;
+          if (empty(emailAddress)) {
+            setCookieError(res, 'Client certificate need a correct emailAddress');
+            res.redirect(req.headers.referer);
+          } else {
+            loginFromProvider(emailAddress, empty(CN) ? emailAddress : CN)
+              .then(async ({ token }) => {
+                await authenticateUser(req, { providerToken: token.uuid, provider: 'cert' });
+                res.redirect(req.headers.referer);
+              })
+              .catch((err) => {
+                setCookieError(res, err?.message);
+                res.redirect(req.headers.referer);
+              });
+          }
+        } else {
+          setCookieError(res, 'You must select a correct certificate');
+          res.redirect(req.headers.referer);
+        }
       }
+    } catch (e) {
+      next(e);
     }
   });
 
@@ -185,7 +197,7 @@ const createApp = async (apolloServer, broadcaster) => {
 
   // Error handling
   app.use((err, req, res, next) => {
-    logApp.error(`[EXPRESS] Error http call`, { error: err });
+    logApp.error(`[EXPRESS] Error http call`, { error: err, referer: req.headers.referer });
     res.redirect('/');
     next();
   });

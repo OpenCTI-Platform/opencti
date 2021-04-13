@@ -50,7 +50,7 @@ export const uploadJobImport = async (user, fileId, fileMime, entityId) => {
 
 export const askJobImport = async (user, filename) => {
   logApp.debug(`[JOBS] ask import for file ${filename} by ${user.user_email}`);
-  const file = await loadFile(filename);
+  const file = await loadFile(user, filename);
   await uploadJobImport(user, file.id, file.metaData.mimetype, file.metaData.entity_id);
   return file;
 };
