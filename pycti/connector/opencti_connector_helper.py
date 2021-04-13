@@ -10,6 +10,7 @@ import json
 import time
 import base64
 import os
+import ssl
 
 from typing import Callable, Dict, Optional, Union
 from sseclient import SSEClient
@@ -76,6 +77,7 @@ class ListenQueue(threading.Thread):
         self.helper = helper
         self.callback = callback
         self.host = config["connection"]["host"]
+        self.use_ssl = config["connection"]["use_ssl"]
         self.port = config["connection"]["port"]
         self.user = config["connection"]["user"]
         self.password = config["connection"]["pass"]
@@ -135,9 +137,23 @@ class ListenQueue(threading.Thread):
             try:
                 # Connect the broker
                 self.pika_credentials = pika.PlainCredentials(self.user, self.password)
-                self.pika_parameters = pika.ConnectionParameters(
-                    self.host, self.port, "/", self.pika_credentials
-                )
+                if self.use_ssl:
+                    context = ssl.create_default_context()
+                    ssl_options = pika.SSLOptions(context, self.host)
+                    self.pika_parameters = pika.ConnectionParameters(
+                        host=self.host,
+                        port=self.port,
+                        virtual_host="/",
+                        credentials=self.pika_credentials,
+                        ssl_options=ssl_options,
+                    )
+                else:
+                    self.pika_parameters = pika.ConnectionParameters(
+                        host=self.host,
+                        port=self.port,
+                        virtual_host="/",
+                        credentials=self.pika_credentials,
+                    )
                 self.pika_connection = pika.BlockingConnection(self.pika_parameters)
                 self.channel = self.pika_connection.channel()
                 self.channel.basic_consume(
@@ -531,12 +547,24 @@ class OpenCTIConnectorHelper:
         pika_credentials = pika.PlainCredentials(
             self.config["connection"]["user"], self.config["connection"]["pass"]
         )
-        pika_parameters = pika.ConnectionParameters(
-            self.config["connection"]["host"],
-            self.config["connection"]["port"],
-            "/",
-            pika_credentials,
-        )
+        if self.config["connection"]["use_ssl"]:
+            context = ssl.create_default_context()
+            ssl_options = pika.SSLOptions(context, self.config["connection"]["host"])
+            pika_parameters = pika.ConnectionParameters(
+                host=self.config["connection"]["host"],
+                port=self.config["connection"]["port"],
+                virtual_host="/",
+                credentials=pika_credentials,
+                ssl_options=ssl_options,
+            )
+        else:
+            pika_parameters = pika.ConnectionParameters(
+                host=self.config["connection"]["host"],
+                port=self.config["connection"]["port"],
+                virtual_host="/",
+                credentials=pika_credentials,
+            )
+
         pika_connection = pika.BlockingConnection(pika_parameters)
         channel = pika_connection.channel()
         for sequence, bundle in enumerate(bundles, start=1):
