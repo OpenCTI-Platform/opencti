@@ -83,7 +83,7 @@ const createApp = async (apolloServer, broadcaster) => {
 
   app.use(appSessionHandler.session);
   // app.use(refreshSessionMiddleware);
-  apolloServer.applyMiddleware({ app, cors: false, onHealthCheck, path: `${basePath}/graphql` });
+  apolloServer.applyMiddleware({ app, cors: true, onHealthCheck, path: `${basePath}/graphql` });
   app.use(bodyParser.json({ limit: '100mb' }));
 
   let seeMiddleware;
