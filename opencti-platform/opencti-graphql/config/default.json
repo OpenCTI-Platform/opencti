@@ -73,6 +73,7 @@
   },
   "rabbitmq": {
     "hostname": "localhost",
+    "use_ssl": false,
     "port": 5672,
     "port_management": 15672,
     "management_ssl": false,

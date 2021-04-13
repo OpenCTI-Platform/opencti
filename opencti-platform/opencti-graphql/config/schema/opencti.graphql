@@ -812,6 +812,7 @@ input RegisterConnectorInput {
 }
 type RabbitMQConnection {
   host: String!
+  use_ssl: Boolean!
   port: Int!
   user: String!
   pass: String!
