@@ -917,7 +917,11 @@ class ToolBar extends Component {
                                 <span>
                                   {R.map(
                                     (o) => (
-                                      <span key={o.value}>
+                                      <span
+                                        key={
+                                          typeof o === 'string' ? o : o.value
+                                        }
+                                      >
                                         {/* eslint-disable-next-line no-nested-ternary */}
                                         {typeof o === 'string'
                                           ? o

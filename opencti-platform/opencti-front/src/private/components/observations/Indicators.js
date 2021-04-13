@@ -200,7 +200,7 @@ class Indicators extends Component {
     let finalFilters = filters;
     finalFilters = R.assoc(
       'entity_type',
-      { id: 'Indicator', value: 'Indicator' },
+      [{ id: 'Indicator', value: 'Indicator' }],
       finalFilters,
     );
     if (indicatorTypes.length) {

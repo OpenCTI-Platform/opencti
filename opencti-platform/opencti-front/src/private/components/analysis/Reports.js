@@ -153,7 +153,7 @@ class Reports extends Component {
     let finalFilters = filters;
     finalFilters = R.assoc(
       'entity_type',
-      { id: 'Report', value: 'Report' },
+      [{ id: 'Report', value: 'Report' }],
       finalFilters,
     );
     const dataColumns = {
