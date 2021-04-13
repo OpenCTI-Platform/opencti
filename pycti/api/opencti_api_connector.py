@@ -28,6 +28,7 @@ class OpenCTIApiConnector:
                     config {
                         connection {
                             host
+                            use_ssl
                             port
                             user
                             pass
@@ -82,6 +83,7 @@ class OpenCTIApiConnector:
                     config {
                         connection {
                             host
+                            use_ssl
                             port
                             user
                             pass
