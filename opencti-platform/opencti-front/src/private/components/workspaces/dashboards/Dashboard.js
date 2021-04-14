@@ -45,6 +45,8 @@ import GlobalVictimologyCountries from './GlobalVictimologyCountries';
 import GlobalActivityIntrusionSets from './GlobalActivityIntrusionSets';
 import GlobalActivityMalwares from './GlobalActivityMalwares';
 import GlobalActivityReports from './GlobalActivityReports';
+import GlobalActivityVulnerabilities from './GlobalActivityVulnerabilities';
+import ThreatVulnerabilities from './ThreatVulnerabilities';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -230,6 +232,14 @@ class DashboardComponent extends Component {
             widget={widget}
           />
         );
+      case 'vulnerabilities':
+        return (
+          <GlobalActivityVulnerabilities
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+          />
+        );
       case 'reports':
         return (
           <GlobalActivityReports
@@ -287,6 +297,14 @@ class DashboardComponent extends Component {
       case 'indicators':
         return (
           <ThreatActivityIndicators
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+          />
+        );
+      case 'vulnerabilities':
+        return (
+          <ThreatVulnerabilities
             startDate={startDate}
             endDate={endDate}
             widget={widget}
