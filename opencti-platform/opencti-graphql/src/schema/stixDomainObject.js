@@ -128,6 +128,7 @@ export const stixDomainObjectOptions = {
     markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
     objectContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
+    containedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
     hasExternalReference: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id`,
     indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
   },

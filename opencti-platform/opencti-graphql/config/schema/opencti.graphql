@@ -1145,6 +1145,7 @@ enum StixCoreObjectsFilter {
   labelledBy
   hasExternalReference
   objectContains
+  containedBy
   indicates
   confidence
 }
@@ -1238,6 +1239,7 @@ enum StixDomainObjectsFilter {
   labelledBy
   hasExternalReference
   objectContains
+  containedBy
   indicates
   confidence
   valid_from
@@ -4421,6 +4423,7 @@ enum StixCyberObservablesFilter {
   labelledBy
   relatedTo
   objectContained
+  containedBy
   hasExternalReference
   value
   name

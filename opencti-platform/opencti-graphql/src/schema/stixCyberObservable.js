@@ -89,6 +89,7 @@ export const stixCyberObservableOptions = {
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
     relatedTo: `${REL_INDEX_PREFIX}${RELATION_RELATED_TO}.internal_id`,
     objectContained: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
+    containedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
     hasExternalReference: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id`,
     hashes_MD5: 'hashes.MD5',
     hashes_SHA1: 'hashes.SHA-1',
