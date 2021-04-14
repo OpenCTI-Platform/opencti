@@ -670,6 +670,7 @@ const i18n = {
       'Email address': 'Adresse email',
       name: 'Nom',
       'Threat actor types': "Type d'acteur",
+      'Malware types': 'Type de code malveillant',
       Revoked: 'Révoqué',
       'STIX Version': 'Version STIX',
       Firstname: 'Prénom',
