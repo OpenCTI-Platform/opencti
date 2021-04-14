@@ -69,6 +69,20 @@ class SectorKnowledgeComponent extends Component {
         />
         <Route
           exact
+          path="/dashboard/entities/sectors/:sectorId/knowledge/related"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={sector.id}
+              relationshipTypes={['related-to']}
+              targetStixDomainObjectTypes={['Stix-Domain-Object']}
+              entityLink={link}
+              allDirections={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/entities/sectors/:sectorId/knowledge/organizations"
           render={(routeProps) => (
             <EntityStixCoreRelationships

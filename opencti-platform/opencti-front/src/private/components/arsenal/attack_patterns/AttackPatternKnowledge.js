@@ -63,6 +63,20 @@ class AttackPatternKnowledgeComponent extends Component {
         />
         <Route
           exact
+          path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge/related"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={attackPattern.id}
+              relationshipTypes={['related-to']}
+              targetStixDomainObjectTypes={['Stix-Domain-Object']}
+              entityLink={link}
+              allDirections={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge/threat_actors"
           render={(routeProps) => (
             <EntityStixCoreRelationships

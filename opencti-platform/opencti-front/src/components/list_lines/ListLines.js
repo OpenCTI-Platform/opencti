@@ -324,7 +324,7 @@ class ListLines extends Component {
               divider={false}
               style={{ paddingTop: 0 }}
             >
-              <ListItemIcon style={{ minWidth: 40 }}>
+              <ListItemIcon style={{ minWidth: typeof handleToggleSelectAll === 'function' ? 40 : 50 }}>
                 {typeof handleToggleSelectAll === 'function' ? (
                   <Checkbox
                     edge="start"

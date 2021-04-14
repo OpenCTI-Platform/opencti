@@ -31,10 +31,6 @@ const styles = (theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
   itemIconDisabled: {
     color: theme.palette.grey[700],
   },
@@ -45,7 +41,7 @@ const styles = (theme) => ({
   },
 });
 
-class EntityStixCoreRelationshipLineFromComponent extends Component {
+class EntityStixCoreRelationshipLineAllComponent extends Component {
   render() {
     const {
       nsd,
@@ -54,9 +50,11 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
       dataColumns,
       node,
       paginationOptions,
+      entityId,
       entityLink,
     } = this.props;
-    const restricted = node.to === null;
+    const remoteNode = node.from && node.from.id === entityId ? node.to : node.from;
+    const restricted = node.from === null || node.to === null;
     const link = `${entityLink}/relations/${node.id}`;
     return (
       <ListItem
@@ -68,7 +66,9 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
         disabled={restricted}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={!restricted ? node.to.entity_type : 'restricted'} />
+          <ItemIcon
+            type={!restricted ? remoteNode.entity_type : 'restricted'}
+          />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -83,14 +83,14 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {!restricted ? node.to.name : t('Restricted')}
+                {!restricted ? remoteNode.name : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
                 {!restricted
-                  ? t(`entity_${node.to.entity_type}`)
+                  ? t(`entity_${remoteNode.entity_type}`)
                   : t('Restricted')}
               </div>
               <div
@@ -126,8 +126,9 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
   }
 }
 
-EntityStixCoreRelationshipLineFromComponent.propTypes = {
+EntityStixCoreRelationshipLineAllComponent.propTypes = {
   dataColumns: PropTypes.object,
+  entityId: PropTypes.string,
   entityLink: PropTypes.string,
   paginationOptions: PropTypes.object,
   node: PropTypes.object,
@@ -136,11 +137,11 @@ EntityStixCoreRelationshipLineFromComponent.propTypes = {
   nsd: PropTypes.func,
 };
 
-const EntityStixCoreRelationshipLineFromFragment = createFragmentContainer(
-  EntityStixCoreRelationshipLineFromComponent,
+const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
+  EntityStixCoreRelationshipLineAllComponent,
   {
     node: graphql`
-      fragment EntityStixCoreRelationshipLineFrom_node on StixCoreRelationship {
+      fragment EntityStixCoreRelationshipLineAll_node on StixCoreRelationship {
         id
         entity_type
         parent_types
@@ -149,6 +150,175 @@ const EntityStixCoreRelationshipLineFromFragment = createFragmentContainer(
         start_time
         stop_time
         description
+        from {
+          ... on StixDomainObject {
+            id
+            entity_type
+            parent_types
+            created_at
+            updated_at
+            objectLabel {
+              edges {
+                node {
+                  id
+                  value
+                  color
+                }
+              }
+            }
+          }
+          ... on AttackPattern {
+            name
+            description
+            x_mitre_id
+            killChainPhases {
+              edges {
+                node {
+                  id
+                  phase_name
+                  x_opencti_order
+                }
+              }
+            }
+            objectMarking {
+              edges {
+                node {
+                  id
+                  definition
+                }
+              }
+            }
+            objectLabel {
+              edges {
+                node {
+                  id
+                  value
+                  color
+                }
+              }
+            }
+          }
+          ... on Campaign {
+            name
+            description
+          }
+          ... on CourseOfAction {
+            name
+            description
+          }
+          ... on Individual {
+            name
+            description
+          }
+          ... on Organization {
+            name
+            description
+          }
+          ... on Sector {
+            name
+            description
+          }
+          ... on Indicator {
+            name
+            description
+          }
+          ... on Infrastructure {
+            name
+            description
+          }
+          ... on IntrusionSet {
+            name
+            description
+          }
+          ... on Position {
+            name
+            description
+          }
+          ... on City {
+            name
+            description
+          }
+          ... on Country {
+            name
+            description
+          }
+          ... on Region {
+            name
+            description
+          }
+          ... on Malware {
+            name
+            description
+          }
+          ... on ThreatActor {
+            name
+            description
+          }
+          ... on Tool {
+            name
+            description
+          }
+          ... on Vulnerability {
+            name
+            description
+          }
+          ... on XOpenCTIIncident {
+            name
+            description
+          }
+          ... on StixCyberObservable {
+            id
+            entity_type
+            parent_types
+            observable_value
+            objectMarking {
+              edges {
+                node {
+                  id
+                  definition
+                }
+              }
+            }
+            objectLabel {
+              edges {
+                node {
+                  id
+                  value
+                  color
+                }
+              }
+            }
+          }
+          ... on Indicator {
+            id
+            name
+            pattern_type
+            pattern_version
+            description
+            valid_from
+            valid_until
+            x_opencti_score
+            x_opencti_main_observable_type
+            created
+            objectMarking {
+              edges {
+                node {
+                  id
+                  definition
+                }
+              }
+            }
+            objectLabel {
+              edges {
+                node {
+                  id
+                  value
+                  color
+                }
+              }
+            }
+          }
+        }
         to {
           ... on StixDomainObject {
             id
@@ -332,12 +502,12 @@ const EntityStixCoreRelationshipLineFromFragment = createFragmentContainer(
   },
 );
 
-export const EntityStixCoreRelationshipLineFrom = compose(
+export const EntityStixCoreRelationshipLineAll = compose(
   inject18n,
   withStyles(styles),
-)(EntityStixCoreRelationshipLineFromFragment);
+)(EntityStixCoreRelationshipLineAllFragment);
 
-class EntityStixCoreRelationshipLineFromDummyComponent extends Component {
+class EntityStixCoreRelationshipLineAllDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -395,12 +565,12 @@ class EntityStixCoreRelationshipLineFromDummyComponent extends Component {
   }
 }
 
-EntityStixCoreRelationshipLineFromDummyComponent.propTypes = {
+EntityStixCoreRelationshipLineAllDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const EntityStixCoreRelationshipLineFromDummy = compose(
+export const EntityStixCoreRelationshipLineAllDummy = compose(
   inject18n,
   withStyles(styles),
-)(EntityStixCoreRelationshipLineFromDummyComponent);
+)(EntityStixCoreRelationshipLineAllDummyComponent);

@@ -71,6 +71,20 @@ class CountryKnowledgeComponent extends Component {
         />
         <Route
           exact
+          path="/dashboard/entities/countries/:countryId/knowledge/related"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={country.id}
+              relationshipTypes={['related-to']}
+              targetStixDomainObjectTypes={['Stix-Domain-Object']}
+              entityLink={link}
+              allDirections={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/entities/countries/:countryId/knowledge/cities"
           render={(routeProps) => (
             <EntityStixCoreRelationships

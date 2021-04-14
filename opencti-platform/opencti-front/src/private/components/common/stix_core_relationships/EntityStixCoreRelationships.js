@@ -23,6 +23,9 @@ import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
+import EntityStixCoreRelationshipsLinesAll, {
+  entityStixCoreRelationshipsLinesAllQuery,
+} from './EntityStixCoreRelationshipsLinesAll';
 
 const styles = (theme) => ({
   container: {
@@ -287,7 +290,12 @@ class EntityStixCoreRelationships extends Component {
 
   renderLines(paginationOptions) {
     const { sortBy, orderAsc } = this.state;
-    const { entityLink, isRelationReversed } = this.props;
+    const {
+      entityLink,
+      entityId,
+      isRelationReversed,
+      allDirections,
+    } = this.props;
     const dataColumns = {
       relationship_type: {
         label: 'Relationship type',
@@ -331,12 +339,26 @@ class EntityStixCoreRelationships extends Component {
       >
         <QueryRenderer
           query={
-            isRelationReversed
-              ? entityStixCoreRelationshipsLinesToQuery
-              : entityStixCoreRelationshipsLinesFromQuery
+            // eslint-disable-next-line no-nested-ternary
+            allDirections
+              ? entityStixCoreRelationshipsLinesAllQuery
+              : isRelationReversed
+                ? entityStixCoreRelationshipsLinesToQuery
+                : entityStixCoreRelationshipsLinesFromQuery
           }
           variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (isRelationReversed ? (
+          render={({ props }) =>
+            /* eslint-disable-next-line no-nested-ternary,implicit-arrow-linebreak */
+            (allDirections ? (
+              <EntityStixCoreRelationshipsLinesAll
+                data={props}
+                paginationOptions={paginationOptions}
+                entityLink={entityLink}
+                entityId={entityId}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+              />
+            ) : isRelationReversed ? (
               <EntityStixCoreRelationshipsLinesTo
                 data={props}
                 paginationOptions={paginationOptions}
@@ -344,7 +366,7 @@ class EntityStixCoreRelationships extends Component {
                 dataColumns={dataColumns}
                 initialLoading={props === null}
               />
-          ) : (
+            ) : (
               <EntityStixCoreRelationshipsLinesFrom
                 data={props}
                 paginationOptions={paginationOptions}
@@ -352,7 +374,7 @@ class EntityStixCoreRelationships extends Component {
                 dataColumns={dataColumns}
                 initialLoading={props === null}
               />
-          ))
+            ))
           }
         />
       </ListLines>
@@ -367,6 +389,7 @@ class EntityStixCoreRelationships extends Component {
       role,
       relationshipTypes,
       isRelationReversed,
+      allDirections,
     } = this.props;
     const {
       view,
@@ -384,16 +407,25 @@ class EntityStixCoreRelationships extends Component {
     const selectedTypes = selectedEntityType === 'All'
       ? targetStixDomainObjectTypes
       : selectedEntityType;
+    let relationshipType = 'stix-core-relationship';
+    if (relationshipTypes && relationshipTypes.length === 1) {
+      // eslint-disable-next-line prefer-destructuring
+      relationshipType = relationshipTypes[0];
+    } else if (selectedRelationshipType !== 'All') {
+      relationshipType = selectedEntityType;
+    }
     let paginationOptions = {
-      relationship_type:
-        selectedRelationshipType === 'All'
-          ? 'stix-core-relationship'
-          : selectedRelationshipType,
+      relationship_type: relationshipType,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
-    if (isRelationReversed) {
+    if (allDirections) {
+      paginationOptions = pipe(
+        assoc('elementId', entityId),
+        assoc('elementWithTargetTypes', selectedTypes),
+      )(paginationOptions);
+    } else if (isRelationReversed) {
       paginationOptions = pipe(
         assoc('fromTypes', selectedTypes),
         assoc('toId', entityId),
@@ -436,6 +468,7 @@ EntityStixCoreRelationships.propTypes = {
   history: PropTypes.object,
   exploreLink: PropTypes.string,
   isRelationReversed: PropTypes.bool,
+  allDirections: PropTypes.bool,
   noState: PropTypes.bool,
 };
 

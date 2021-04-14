@@ -70,6 +70,20 @@ class PositionKnowledgeComponent extends Component {
         />
         <Route
           exact
+          path="/dashboard/entities/positions/:positionId/knowledge/related"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={position.id}
+              relationshipTypes={['related-to']}
+              targetStixDomainObjectTypes={['Stix-Domain-Object']}
+              entityLink={link}
+              allDirections={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/entities/positions/:positionId/knowledge/organizations"
           render={(routeProps) => (
             <EntityStixCoreRelationships

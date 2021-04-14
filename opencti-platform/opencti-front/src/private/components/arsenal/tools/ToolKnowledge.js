@@ -70,6 +70,20 @@ class ToolKnowledgeComponent extends Component {
         />
         <Route
           exact
+          path="/dashboard/arsenal/tools/:toolId/knowledge/related"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={tool.id}
+              relationshipTypes={['related-to']}
+              targetStixDomainObjectTypes={['Stix-Domain-Object']}
+              entityLink={link}
+              allDirections={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/arsenal/tools/:toolId/knowledge/threat_actors"
           render={(routeProps) => (
             <EntityStixCoreRelationships

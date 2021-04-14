@@ -8160,6 +8160,7 @@ type Query {
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     elementId: String
+    elementWithTargetTypes: [String]
     fromId: String
     fromRole: String
     fromTypes: [String]

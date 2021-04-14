@@ -258,7 +258,7 @@ const stixCoreRelationshipCreationFromEntityFromMutation = graphql`
     $input: StixCoreRelationshipAddInput!
   ) {
     stixCoreRelationshipAdd(input: $input) {
-      ...EntityStixCoreRelationshipLineFrom_node
+      ...EntityStixCoreRelationshipLineAll_node
     }
   }
 `;
@@ -268,7 +268,7 @@ const stixCoreRelationshipCreationFromEntityToMutation = graphql`
     $input: StixCoreRelationshipAddInput!
   ) {
     stixCoreRelationshipAdd(input: $input) {
-      ...EntityStixCoreRelationshipLineTo_node
+      ...EntityStixCoreRelationshipLineAll_node
     }
   }
 `;
