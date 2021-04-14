@@ -9,12 +9,12 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
 import { ShieldSearch } from 'mdi-material-ui';
-import { compose, pathOr, take } from 'ramda';
+import { compose, pathOr } from 'ramda';
 import Checkbox from '@material-ui/core/Checkbox';
 import inject18n from '../../../../components/i18n';
-import ItemMarking from '../../../../components/ItemMarking';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   item: {
@@ -122,16 +122,15 @@ class IndicatorLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectMarking.width }}
               >
-                {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
-                  (markingDefinition) => (
-                    <ItemMarking
-                      key={markingDefinition.node.id}
-                      variant="inList"
-                      label={markingDefinition.node.definition}
-                      color={markingDefinition.node.x_opencti_color}
-                    />
-                  ),
-                )}
+                <ItemMarkings
+                  markingDefinitions={pathOr(
+                    [],
+                    ['objectMarking', 'edges'],
+                    node,
+                  )}
+                  limit={1}
+                  variant="inList"
+                />
               </div>
             </div>
           }

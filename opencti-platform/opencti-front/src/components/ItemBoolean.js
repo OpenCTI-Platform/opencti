@@ -44,14 +44,14 @@ const inlineStyles = {
 class ItemBoolean extends Component {
   render() {
     const {
-      classes, label, status, variant, t,
+      classes, label, status, variant, t, reverse,
     } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     if (status === true) {
       return (
         <Chip
           classes={{ root: style }}
-          style={inlineStyles.green}
+          style={reverse ? inlineStyles.red : inlineStyles.green}
           label={label}
         />
       );
@@ -66,7 +66,11 @@ class ItemBoolean extends Component {
       );
     }
     return (
-      <Chip classes={{ root: style }} style={inlineStyles.red} label={label} />
+      <Chip
+        classes={{ root: style }}
+        style={reverse ? inlineStyles.green : inlineStyles.red}
+        label={label}
+      />
     );
   }
 }
@@ -76,7 +80,7 @@ ItemBoolean.propTypes = {
   status: PropTypes.bool,
   label: PropTypes.string,
   variant: PropTypes.string,
-  reverse: PropTypes.boolean,
+  reverse: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(ItemBoolean);
