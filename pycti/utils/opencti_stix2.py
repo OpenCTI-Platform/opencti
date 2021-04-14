@@ -1027,13 +1027,13 @@ class OpenCTIStix2:
         if "createdBy" in entity:
             del entity["createdBy"]
             del entity["createdById"]
+        if "observables" in entity:
+            del entity["observables"]
+        if "observablesIds" in entity:
+            del entity["observablesIds"]
 
         entity_copy = entity.copy()
         if no_custom_attributes:
-            if "observables" in entity:
-                del entity["observables"]
-            if "observablesIds" in entity:
-                del entity["observablesIds"]
             if "external_references" in entity:
                 del entity["external_references"]
             for key in entity_copy.keys():
@@ -1426,6 +1426,7 @@ class OpenCTIStix2:
 
         # List
         lister = {
+            "Stix-Domain-Object": self.opencti.stix_domain_object.list,
             "Attack-Pattern": self.opencti.attack_pattern.list,
             "Campaign": self.opencti.campaign.list,
             "Note": self.opencti.note.list,
