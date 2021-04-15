@@ -124,6 +124,7 @@ class Consumer(threading.Thread):
             processing_count = self.processing_count
             if self.processing_count == PROCESSING_COUNT:
                 processing_count = None
+            logging.info("Importing bundle with applicant_id=" + applicant_id)
             self.api.stix2.import_bundle_from_json(
                 content, update, types, processing_count
             )
