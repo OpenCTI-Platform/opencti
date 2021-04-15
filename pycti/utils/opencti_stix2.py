@@ -1134,6 +1134,9 @@ class OpenCTIStix2:
         if "attribute_key" in entity:
             entity["key"] = entity["attribute_key"]
             del entity["attribute_key"]
+        if "attribute_date" in entity:
+            entity["date"] = entity["attribute_date"]
+            del entity["attribute_date"]
 
         result.append(entity)
 
