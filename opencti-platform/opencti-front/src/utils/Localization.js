@@ -578,6 +578,8 @@ const i18n = {
       Launch: 'Lancer',
       'Launch a background task': 'Lancer une tâche de fond',
       'Background tasks': 'Tâches de fond',
+      "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
+        'Vous ciblez plus de 1000 entité avec cette tâche de fond, soyez sûrs de ce que vous faites !',
       Filters: 'Filtres',
       'Number of elements': "Nombre d'éléments",
       'Download this file': 'Télécharger ce fichier',

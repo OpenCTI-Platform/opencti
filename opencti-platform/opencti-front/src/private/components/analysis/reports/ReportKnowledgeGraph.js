@@ -289,7 +289,12 @@ class ReportKnowledgeGraphComponent extends Component {
         this.graph.current.zoom(this.zoom.k, 400);
       } else {
         const currentContext = this;
-        setTimeout(() => currentContext.graph.current.zoomToFit(0, 150), 1200);
+        setTimeout(
+          () => currentContext.graph
+            && currentContext.graph.current
+            && currentContext.graph.current.zoomToFit(0, 150),
+          1200,
+        );
       }
       this.initialized = true;
     }

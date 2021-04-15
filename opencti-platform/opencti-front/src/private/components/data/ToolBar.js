@@ -875,151 +875,154 @@ class ToolBar extends Component {
             </div>
           </DialogTitle>
           <DialogContent>
-            <DialogContentText>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>#</TableCell>
-                      <TableCell>{t('Step')}</TableCell>
-                      <TableCell>{t('Field')}</TableCell>
-                      <TableCell>{t('Values')}</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>
-                        {' '}
-                        <span
-                          style={{
-                            padding: '2px 5px 2px 5px',
-                            marginRight: 5,
-                            color: '#000000',
-                            backgroundColor: ThemeDark.palette.primary.main,
-                          }}
-                        >
-                          1
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Chip label="SCOPE" />
-                      </TableCell>
-                      <TableCell>{t('N/A')}</TableCell>
-                      <TableCell>
-                        {selectAll ? (
-                          <div className={classes.filters}>
-                            {R.map((currentFilter) => {
-                              const label = `${truncate(
-                                t(`filter_${currentFilter[0]}`),
-                                20,
-                              )}`;
-                              const values = (
-                                <span>
-                                  {R.map(
-                                    (o) => (
-                                      <span
-                                        key={
-                                          typeof o === 'string' ? o : o.value
-                                        }
-                                      >
-                                        {/* eslint-disable-next-line no-nested-ternary */}
-                                        {typeof o === 'string'
-                                          ? o
-                                          : o.value && o.value.length > 0
-                                            ? truncate(o.value, 15)
-                                            : t('No label')}{' '}
-                                        {R.last(currentFilter[1]).value
-                                          !== o.value && <code>OR</code>}{' '}
-                                      </span>
-                                    ),
-                                    currentFilter[1],
-                                  )}
-                                </span>
-                              );
-                              return (
-                                <span key={currentFilter[0]}>
-                                  <Chip
-                                    classes={{ root: classes.filter }}
-                                    label={
-                                      <div>
-                                        <strong>{label}</strong>: {values}
-                                      </div>
-                                    }
-                                  />
-                                  {R.last(R.toPairs(filters))[0]
-                                    !== currentFilter[0] && (
-                                    <Chip
-                                      classes={{ root: classes.operator }}
-                                      label={t('AND')}
-                                    />
-                                  )}
-                                </span>
-                              );
-                            }, R.toPairs(filters))}
-                          </div>
-                        ) : (
-                          <span>
-                            {mergingElement
-                              ? truncate(
-                                R.join(', ', [defaultValue(mergingElement)]),
-                                80,
-                              )
-                              : truncate(
-                                R.join(
-                                  ', ',
-                                  R.map(
-                                    (o) => defaultValue(o),
-                                    R.values(selectedElements || {}),
+            {numberOfSelectedElements > 1000 && (
+              <Alert severity="warning">
+                {t(
+                  "You're targeting more than 1000 entities with this background task, be sure of what you're doing!",
+                )}
+              </Alert>
+            )}
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>#</TableCell>
+                    <TableCell>{t('Step')}</TableCell>
+                    <TableCell>{t('Field')}</TableCell>
+                    <TableCell>{t('Values')}</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>
+                      {' '}
+                      <span
+                        style={{
+                          padding: '2px 5px 2px 5px',
+                          marginRight: 5,
+                          color: '#000000',
+                          backgroundColor: ThemeDark.palette.primary.main,
+                        }}
+                      >
+                        1
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Chip label="SCOPE" />
+                    </TableCell>
+                    <TableCell>{t('N/A')}</TableCell>
+                    <TableCell>
+                      {selectAll ? (
+                        <div className={classes.filters}>
+                          {R.map((currentFilter) => {
+                            const label = `${truncate(
+                              t(`filter_${currentFilter[0]}`),
+                              20,
+                            )}`;
+                            const values = (
+                              <span>
+                                {R.map(
+                                  (o) => (
+                                    <span
+                                      key={typeof o === 'string' ? o : o.value}
+                                    >
+                                      {/* eslint-disable-next-line no-nested-ternary */}
+                                      {typeof o === 'string'
+                                        ? o
+                                        : o.value && o.value.length > 0
+                                          ? truncate(o.value, 15)
+                                          : t('No label')}{' '}
+                                      {R.last(currentFilter[1]).value
+                                        !== o.value && <code>OR</code>}{' '}
+                                    </span>
                                   ),
-                                ),
-                                80,
-                              )}
-                          </span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                    {R.map((o) => {
-                      const number = actions.indexOf(o);
-                      return (
-                        <TableRow key={o.type}>
-                          <TableCell>
-                            {' '}
-                            <span
-                              style={{
-                                padding: '2px 5px 2px 5px',
-                                marginRight: 5,
-                                color: '#000000',
-                                backgroundColor: ThemeDark.palette.primary.main,
-                              }}
-                            >
-                              {number + 2}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <Chip label={o.type} />
-                          </TableCell>
-                          <TableCell>
-                            {R.pathOr(t('N/A'), ['context', 'field'], o)}
-                          </TableCell>
-                          <TableCell>
-                            {truncate(
+                                  currentFilter[1],
+                                )}
+                              </span>
+                            );
+                            return (
+                              <span key={currentFilter[0]}>
+                                <Chip
+                                  classes={{ root: classes.filter }}
+                                  label={
+                                    <div>
+                                      <strong>{label}</strong>: {values}
+                                    </div>
+                                  }
+                                />
+                                {R.last(R.toPairs(filters))[0]
+                                  !== currentFilter[0] && (
+                                  <Chip
+                                    classes={{ root: classes.operator }}
+                                    label={t('AND')}
+                                  />
+                                )}
+                              </span>
+                            );
+                          }, R.toPairs(filters))}
+                        </div>
+                      ) : (
+                        <span>
+                          {mergingElement
+                            ? truncate(
+                              R.join(', ', [defaultValue(mergingElement)]),
+                              80,
+                            )
+                            : truncate(
                               R.join(
                                 ', ',
                                 R.map(
-                                  (p) => (typeof p === 'string' ? p : defaultValue(p)),
-                                  R.pathOr([], ['context', 'values'], o),
+                                  (o) => defaultValue(o),
+                                  R.values(selectedElements || {}),
                                 ),
                               ),
                               80,
                             )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    }, actions)}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </DialogContentText>
+                        </span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                  {R.map((o) => {
+                    const number = actions.indexOf(o);
+                    return (
+                      <TableRow key={o.type}>
+                        <TableCell>
+                          {' '}
+                          <span
+                            style={{
+                              padding: '2px 5px 2px 5px',
+                              marginRight: 5,
+                              color: '#000000',
+                              backgroundColor: ThemeDark.palette.primary.main,
+                            }}
+                          >
+                            {number + 2}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Chip label={o.type} />
+                        </TableCell>
+                        <TableCell>
+                          {R.pathOr(t('N/A'), ['context', 'field'], o)}
+                        </TableCell>
+                        <TableCell>
+                          {truncate(
+                            R.join(
+                              ', ',
+                              R.map(
+                                (p) => (typeof p === 'string' ? p : defaultValue(p)),
+                                R.pathOr([], ['context', 'values'], o),
+                              ),
+                            ),
+                            80,
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }, actions)}
+                </TableBody>
+              </Table>
+            </TableContainer>
           </DialogContent>
           <DialogActions>
             <Button
