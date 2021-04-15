@@ -223,6 +223,7 @@ class StixDomainObjectOverview extends Component {
                   <ItemBoolean
                     status={stixDomainObject.revoked}
                     label={stixDomainObject.revoked ? t('Yes') : t('No')}
+                    reverse={true}
                   />
                 </div>
               ) : (
