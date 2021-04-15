@@ -1124,9 +1124,16 @@ class OpenCTIStix2:
             objects_to_get.append(entity["to"]["standard_id"])
         if "to" in entity:
             del entity["to"]
+        # Stix Domain Object
+        if "attribute_abstract" in entity:
+            entity["abstract"] = entity["attribute_abstract"]
+            del entity["attribute_abstract"]
         # Stix Cyber Observable
         if "observable_value" in entity:
             del entity["observable_value"]
+        if "attribute_key" in entity:
+            entity["key"] = entity["attribute_key"]
+            del entity["attribute_key"]
 
         result.append(entity)
 

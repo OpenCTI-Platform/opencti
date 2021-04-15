@@ -941,7 +941,6 @@ class StixCyberObservable:
                     if "number_of_subkeys" in observable_data
                     else None,
                 }
-                print(input_variables)
             elif type == "Windows-Registry-Value-Type":
                 input_variables["WindowsRegistryKeyValueType"] = {
                     "name": observable_data["name"]
