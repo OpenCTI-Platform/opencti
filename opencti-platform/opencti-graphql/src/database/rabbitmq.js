@@ -15,7 +15,7 @@ export const EVENT_TYPE_DELETE = 'delete';
 const amqpUri = () => {
   const host = conf.get('rabbitmq:hostname');
   const port = conf.get('rabbitmq:port');
-  const useSSL = conf.get('rabbitmq:user_ssl');
+  const useSSL = conf.get('rabbitmq:use_ssl');
   return `amqp${useSSL ? 's' : ''}://${host}:${port}`;
 };
 
