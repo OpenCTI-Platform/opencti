@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs';
 import amqp from 'amqplib';
 import axios from 'axios';
 import * as R from 'ramda';
@@ -12,17 +13,22 @@ export const EVENT_TYPE_UPDATE = 'update';
 export const EVENT_TYPE_MERGE = 'merge';
 export const EVENT_TYPE_DELETE = 'delete';
 
+const USESSL = conf.get('rabbitmq:use_ssl');
+
 const amqpUri = () => {
   const host = conf.get('rabbitmq:hostname');
   const port = conf.get('rabbitmq:port');
-  const useSSL = conf.get('rabbitmq:use_ssl');
-  return `amqp${useSSL ? 's' : ''}://${host}:${port}`;
+  return `amqp${USESSL ? 's' : ''}://${host}:${port}`;
 };
 
 const amqpCred = () => {
   const user = conf.get('rabbitmq:username');
   const pass = conf.get('rabbitmq:password');
   return { credentials: amqp.credentials.plain(user, pass) };
+};
+
+const amqpCA = () => {
+  return { ca: conf.get('rabbitmq:ca').map((path) => readFileSync(path)) };
 };
 
 export const config = () => {
@@ -38,7 +44,7 @@ export const config = () => {
 const amqpExecute = (execute) => {
   return new Promise((resolve, reject) => {
     amqp
-      .connect(amqpUri(), amqpCred())
+      .connect(amqpUri(), USESSL ? { ...amqpCred(), ...amqpCA() } : amqpCred())
       .then((connection) => {
         return connection
           .createConfirmChannel()
