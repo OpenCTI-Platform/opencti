@@ -1,4 +1,4 @@
-src/config.yml
-src/__pycache__
-src/logs
-src/*.gql
+.flake8
+.isort.cfg
+mypy.ini
+pylintrc
