@@ -299,7 +299,7 @@ export const computeTimeRangeInterval = (objects) => {
 export const computeTimeRangeValues = (interval, objects) => {
   const elementsDates = R.map(
     (n) => timestamp(defaultDate(n)),
-    R.filter((n) => !n.parent_types.includes('basic-relationship'), objects),
+    R.filter((n) => n.parent_types && !n.parent_types.includes('basic-relationship'), objects),
   );
   const minutes = minutesBetweenDates(interval[0], interval[1]);
   const intervalInMinutes = Math.ceil(minutes / 100);
