@@ -8,7 +8,6 @@ import json
 import logging
 import os
 import random
-import ssl
 import sys
 import threading
 import time
@@ -18,33 +17,11 @@ import pika
 import yaml
 from pika.adapters.blocking_connection import BlockingChannel
 from pycti import OpenCTIApiClient
+from pycti.connector.opencti_connector_helper import create_ssl_context
 from requests.exceptions import RequestException, Timeout
 
 PROCESSING_COUNT: int = 5
 MAX_PROCESSING_COUNT: int = 30
-
-
-def create_ssl_context() -> ssl.SSLContext:
-    # Set strong SSL defaults: require TLSv1.2+
-    # `ssl` uses bitwise operations to specify context `<enum 'Options'>`
-    ssl_context_options: list[int] = [
-        ssl.OP_NO_COMPRESSION,
-        ssl.OP_NO_TICKET,  # pylint: disable=no-member
-        ssl.OP_NO_RENEGOTIATION,  # pylint: disable=no-member
-        ssl.OP_SINGLE_DH_USE,
-        ssl.OP_SINGLE_ECDH_USE,
-        ssl.OP_NO_SSLv3,
-        ssl.OP_NO_TLSv1,
-        ssl.OP_NO_TLSv1_1,
-    ]
-    ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH)
-    ssl_context.options &= ~ssl.OP_ENABLE_MIDDLEBOX_COMPAT  # pylint: disable=no-member
-    ssl_context.verify_mode = ssl.CERT_REQUIRED
-
-    for option in ssl_context_options:
-        ssl_context.options |= option
-
-    return ssl_context
 
 
 class Consumer(threading.Thread):
