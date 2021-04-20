@@ -1,6 +1,6 @@
 requests==2.25.1
 PyYAML==5.4.1
-setuptools==54.2.0
+setuptools==56.0.0
 python-dateutil==2.8.1
 datefinder==0.7.1
 stix2==2.1.0
