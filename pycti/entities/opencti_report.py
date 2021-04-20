@@ -370,7 +370,7 @@ class Report:
         else:
             self.opencti.log(
                 "error",
-                "[opencti_report] Missing parameters: id or entity_id",
+                "[opencti_report] Missing parameters: id or stixObjectOrStixRelationshipId",
             )
 
     """
