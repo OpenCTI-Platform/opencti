@@ -74,6 +74,7 @@
   "rabbitmq": {
     "hostname": "localhost",
     "use_ssl": false,
+    "ca": [],
     "port": 5672,
     "port_management": 15672,
     "management_ssl": false,
