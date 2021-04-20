@@ -13,6 +13,7 @@ import validator from 'validator';
 import { initAdmin, login, loginFromProvider } from '../domain/user';
 import conf, { logApp } from './conf';
 import { ConfigurationError } from './errors';
+import { isNotEmptyField } from '../database/utils';
 
 export const empty = R.anyPass([R.isNil, R.isEmpty]);
 
@@ -89,9 +90,9 @@ const AUTH_SSO = 'SSO';
 const AUTH_FORM = 'FORM';
 
 const providers = [];
-const providerLoginHandler = (email, name, done) => {
+const providerLoginHandler = (email, name, roles, done) => {
   const finalName = empty(name) ? email : name;
-  loginFromProvider(email, finalName)
+  loginFromProvider(email, finalName, roles)
     .then(({ token }) => {
       done(null, token);
     })
@@ -156,23 +157,38 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       OpenIDIssuer.discover(config.issuer).then((issuer) => {
         const { Client } = issuer;
         const client = new Client(config);
-        const options = { client, passReqToCallback: true, params: { scope: 'openid roles email profile' } };
-        const roles = mappedConfig.roles || [];
+        // Roles
+        let additionalScope = '';
+        let rolesPath = [];
+        let rolesMapping = [];
+        const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
+        if (isRoleBaseAccess) {
+          additionalScope += mappedConfig.roles_management.roles_scope || '';
+          rolesPath = mappedConfig.roles_management.roles_path || [];
+          rolesMapping = mappedConfig.roles_management.roles_mapping || [];
+        }
+        const openIdScope = `openid email profile ${additionalScope}`;
+        const options = { client, passReqToCallback: true, params: { scope: openIdScope } };
         const openIDStrategy = new OpenIDStrategy(options, (req, tokenset, userinfo, done) => {
           logApp.debug(`[OPENID] Successfully logged`, { userinfo });
-          let authorized = true;
-          if (roles.length > 0) {
+          let rolesToAssociate = [];
+          if (isRoleBaseAccess) {
             const decodedUser = jwtDecode(tokenset.access_token);
-            const availableRoles = [
-              ...(decodedUser.roles || []),
-              ...(decodedUser.realm_access?.roles || []),
-              ...(decodedUser.resource_access?.account?.roles || []),
-            ];
-            authorized = roles.some((o) => availableRoles.includes(o));
+            const availableRoles = R.flatten(rolesPath.map((path) => R.path(path.split('.'), decodedUser) || []));
+            const rolesMapper = R.mergeAll(
+              rolesMapping.map((r) => {
+                const data = r.split(':');
+                if (data.length !== 2) return {};
+                const [remoteRole, octiRole] = data;
+                return { [remoteRole]: octiRole };
+              })
+            );
+            // Find roles to give to the user
+            rolesToAssociate = availableRoles.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
           }
-          if (authorized) {
+          if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
             const { email, name } = userinfo;
-            providerLoginHandler(email, name, done);
+            providerLoginHandler(email, name, rolesToAssociate, done);
           } else {
             done({ message: 'Restricted access, ask your administrator' });
           }
@@ -190,7 +206,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const data = profile._json;
           logApp.debug(`[FACEBOOK] Successfully logged`, { profile: data });
           const { email } = data;
-          providerLoginHandler(email, data.first_name, done);
+          providerLoginHandler(email, data.first_name, [], done);
         }
       );
       passport.use('facebook', facebookStrategy);
@@ -210,7 +226,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           authorized = domains.includes(domain);
         }
         if (authorized) {
-          providerLoginHandler(email, name, done);
+          providerLoginHandler(email, name, [], done);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
@@ -235,7 +251,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         if (authorized) {
           const { displayName } = profile;
           const email = R.head(profile.emails).value;
-          providerLoginHandler(email, displayName, done);
+          providerLoginHandler(email, displayName, [], done);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
@@ -251,7 +267,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           logApp.debug(`[AUTH0] Successfully logged`, { profile });
           const userName = profile.displayName;
           const email = R.head(profile.emails).value;
-          providerLoginHandler(email, userName, done);
+          providerLoginHandler(email, userName, [], done);
         }
       );
       passport.use('auth0', auth0Strategy);
