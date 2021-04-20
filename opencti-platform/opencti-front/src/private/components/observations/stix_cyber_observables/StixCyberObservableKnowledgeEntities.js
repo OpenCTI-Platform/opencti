@@ -115,8 +115,9 @@ class StixCyberObservableKnowledgeEntities extends Component {
       relationship_type: relationshipType,
     } = this.props;
     const paginationOptions = {
-      fromId: entityId,
+      elementId: entityId,
       relationship_type: relationshipType,
+      toTypes: ['Stix-Domain-Object'],
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
@@ -133,12 +134,21 @@ class StixCyberObservableKnowledgeEntities extends Component {
           isRelationReversed={false}
           paddingRight={true}
           targetStixDomainObjectTypes={[
+            'Indicator',
             'Region',
             'Country',
             'City',
             'Position',
             'Organization',
             'Individual',
+            'Sector',
+            'Threat-Actor',
+            'Intrusion-Set',
+            'Malware',
+            'Tool',
+            'Vulnerability',
+            'Attack-Pattern',
+            'Course-Of-Action',
           ]}
         />
         <div className="clearfix" />

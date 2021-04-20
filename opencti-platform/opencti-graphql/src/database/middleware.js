@@ -346,17 +346,14 @@ const buildRelationsFilter = (relationshipType, args) => {
   const nestedFrom = [];
   if (fromId) {
     nestedFrom.push({ key: 'internal_id', values: [fromId] });
-    if (fromRole) {
-      nestedFrom.push({ key: 'role', values: [fromRole] });
-    } else {
-      nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
-    }
   }
   if (fromTypes && fromTypes.length > 0) {
     nestedFrom.push({ key: 'types', values: fromTypes });
-    if (toRole) {
-      nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
-    }
+  }
+  if (fromRole) {
+    nestedFrom.push({ key: 'role', values: [fromRole] });
+  } else if (fromId || (fromTypes && fromTypes.length > 0)) {
+    nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
   }
   if (nestedFrom.length > 0) {
     finalFilters.push({ key: 'connections', nested: nestedFrom });
@@ -366,17 +363,14 @@ const buildRelationsFilter = (relationshipType, args) => {
   const nestedTo = [];
   if (toId) {
     nestedTo.push({ key: 'internal_id', values: [toId] });
-    if (toRole) {
-      nestedTo.push({ key: 'role', values: [toRole] });
-    } else {
-      nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
-    }
   }
   if (toTypes && toTypes.length > 0) {
     nestedTo.push({ key: 'types', values: toTypes });
-    if (fromRole) {
-      nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
-    }
+  }
+  if (toRole) {
+    nestedTo.push({ key: 'role', values: [toRole] });
+  } else if (toId || (toTypes && toTypes.length > 0)) {
+    nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
   }
   if (nestedTo.length > 0) {
     finalFilters.push({ key: 'connections', nested: nestedTo });

@@ -3,7 +3,7 @@ name: opencti-tests
 
 steps:
 - name: api-tests
-  image: nikolaik/python-nodejs:python3.8-nodejs15-alpine
+  image: nikolaik/python-nodejs:python3.9-nodejs15-alpine
   environment:
     APP__ADMIN__PASSWORD: admin
     APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -27,7 +27,7 @@ steps:
       - opencti-platform/opencti-graphql/coverage
 
 - name: frontend-tests
-  image: nikolaik/python-nodejs:python3.8-nodejs15-alpine
+  image: nikolaik/python-nodejs:python3.9-nodejs15-alpine
   commands: 
   - cd opencti-platform/opencti-front
   - yarn install

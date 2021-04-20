@@ -4,7 +4,7 @@ jobs:
   build_platform:
     working_directory: ~/opencti
     docker:
-      - image: nikolaik/python-nodejs:python3.8-nodejs15
+      - image: nikolaik/python-nodejs:python3.9-nodejs15
     steps:
       - run:
           command: apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y build-essential libffi-dev
@@ -30,7 +30,7 @@ jobs:
   build_platform_musl:
     working_directory: ~/opencti_musl
     docker:
-      - image: nikolaik/python-nodejs:python3.8-nodejs15-alpine
+      - image: nikolaik/python-nodejs:python3.9-nodejs15-alpine
     steps:
       - run:
           command: apk update && apk upgrade && apk --no-cache add git build-base libmagic libffi-dev
