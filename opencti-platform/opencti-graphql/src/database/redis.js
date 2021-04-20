@@ -17,12 +17,16 @@ import { isStixRelationship } from '../schema/stixRelationship';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { buildStixData, convertTypeToStixType, stixDataConverter } from './stix';
-import { DatabaseError, FunctionalError } from '../config/errors';
+import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { MARKING_DEFINITION_STATEMENT } from '../schema/stixMetaObject';
 import { now } from '../utils/format';
 import RedisStore from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
+import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+// For now that fine, need to extract this method.
+// eslint-disable-next-line import/no-cycle
+import { stixLoadById } from './middleware';
 
 const BASE_DATABASE = 0; // works key for tracking / stream
 export const CONTEXT_DATABASE = 1; // locks / user context
@@ -264,10 +268,13 @@ const mapJSToStream = (event) => {
   return cmdArgs;
 };
 const buildEvent = (eventType, user, markings, message, data) => {
+  if (!data.id || !data.x_opencti_id || !data.type) {
+    throw UnsupportedError('Stream event requires id, type and x_opencti_id');
+  }
   const secureMarkings = R.filter((m) => m.definition_type !== MARKING_DEFINITION_STATEMENT, markings || []);
   const eventMarkingIds = R.map((i) => i.standard_id, secureMarkings);
   return {
-    version: '1', // Event version.
+    version: '2', // Event version.
     type: eventType,
     origin: user.origin,
     markings: eventMarkingIds,
@@ -290,13 +297,14 @@ export const storeMergeEvent = async (user, instance, sourceEntities) => {
       type: convertTypeToStixType(instance.entity_type),
       source_ids: R.map((s) => s.standard_id, sourceEntities),
     };
-    const event = buildEvent(EVENT_TYPE_MERGE, user, instance.objectMarking, message, data);
+    const dataEvent = buildStixData(data);
+    const event = buildEvent(EVENT_TYPE_MERGE, user, instance.objectMarking, message, dataEvent);
     return pushToStream(clientBase, event);
   } catch (e) {
     throw DatabaseError('Error in store merge event', { error: e });
   }
 };
-export const storeUpdateEvent = async (user, instance, updateEvents) => {
+export const storeUpdateEvent = async (user, instance, updateEvents, mustRepublished = false) => {
   // updateEvents -> [{ operation, input }]
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     try {
@@ -310,22 +318,23 @@ export const storeUpdateEvent = async (user, instance, updateEvents) => {
       if (isEmptyField(dataUpdate)) {
         return true;
       }
-      // else just continue as usual1
-      const data = {
-        id: instance.standard_id,
-        x_opencti_id: instance.internal_id,
-        type: convertTypeToStixType(instance.entity_type),
-        x_data_update: dataUpdate,
+      // else just continue as usual
+      let data = {
+        standard_id: instance.standard_id,
+        internal_id: instance.internal_id,
+        entity_type: instance.entity_type,
       };
-      if (instance.hashes) {
-        data.hashes = instance.hashes;
+      if (mustRepublished) {
+        data = await stixLoadById(user, instance.internal_id);
       }
+      data = { ...data, x_opencti_patch: dataUpdate };
       // Generate the message
       const operation = updateEvents.length === 1 ? R.head(Object.keys(R.head(updateEvents))) : UPDATE_OPERATION_CHANGE;
       const messageInput = R.mergeAll(updateEvents.map((i) => stixDataConverter(R.head(Object.values(i)))));
       const message = generateLogMessage(operation, instance, messageInput);
       // Build and send the event
-      const event = buildEvent(EVENT_TYPE_UPDATE, user, instance.objectMarking, message, data);
+      const dataEvent = buildStixData(data, { diffMode: !mustRepublished });
+      const event = buildEvent(EVENT_TYPE_UPDATE, user, instance.objectMarking, message, dataEvent);
       return pushToStream(clientBase, event);
     } catch (e) {
       throw DatabaseError('Error in store update event', { error: e });
@@ -343,7 +352,8 @@ export const storeCreateEvent = async (user, instance, input) => {
       if (isStixRelationship(instance.entity_type) && !isCore && !isSighting) {
         const field = relationTypeToInputName(instance.entity_type);
         const inputUpdate = { [field]: input.to };
-        return storeUpdateEvent(user, instance.from, [{ [UPDATE_OPERATION_ADD]: inputUpdate }]);
+        const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
+        return storeUpdateEvent(user, instance.from, [{ [UPDATE_OPERATION_ADD]: inputUpdate }], mustRepublished);
       }
       // Create of an event for
       const identifiers = {
@@ -368,7 +378,7 @@ export const storeDeleteEvent = async (user, instance) => {
   try {
     if (isStixObject(instance.entity_type)) {
       const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
-      const data = stixDataConverter(instance, { diffMode: false });
+      const data = buildStixData(instance, { diffMode: false });
       const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
       return pushToStream(clientBase, event);
     }
@@ -378,11 +388,12 @@ export const storeDeleteEvent = async (user, instance) => {
       if (!isCore && !isSighting) {
         const field = relationTypeToInputName(instance.entity_type);
         const inputUpdate = { [field]: instance.to };
-        return storeUpdateEvent(user, instance.from, [{ [UPDATE_OPERATION_REMOVE]: inputUpdate }]);
+        const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
+        return storeUpdateEvent(user, instance.from, [{ [UPDATE_OPERATION_REMOVE]: inputUpdate }], mustRepublished);
       }
       // for other deletion, just produce a delete event
       const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
-      const data = stixDataConverter(instance, { diffMode: false });
+      const data = buildStixData(instance, { diffMode: false });
       const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
       return pushToStream(clientBase, event);
     }
@@ -408,25 +419,30 @@ const mapStreamToJS = ([id, data]) => {
 const processStreamResult = async (results, callback) => {
   const streamData = R.map((r) => mapStreamToJS(r), results);
   const lastElement = R.last(streamData);
+  // Prepare the elements
+  const processedResults = [];
   for (let index = 0; index < streamData.length; index += 1) {
     const dataElement = streamData[index];
-    const { eventId, type, markings, origin, data, message } = dataElement;
-    const eventData = { markings, origin, data, message, type };
-    await callback(eventId, type, eventData);
+    const { eventId, type, markings, origin, data, message, version } = dataElement;
+    const eventData = { markings, origin, data, message, version };
+    processedResults.push({ id: eventId, topic: type, data: eventData });
   }
+  // Callback the data
+  await callback(processedResults);
   return lastElement.eventId;
 };
 
 let processingLoopPromise;
-const MAX_RANGE_MESSAGES = 2000;
+export const MAX_RANGE_MESSAGES = 2000;
 const WAIT_TIME = 20000;
-export const createStreamProcessor = (callback, start = 'live') => {
+export const createStreamProcessor = (user, callback, start = 'live') => {
+  let client;
   let startEventId;
   let streamListening = true;
   const processInfo = async () => {
     return fetchStreamInfo();
   };
-  const processStep = async (client) => {
+  const processStep = async () => {
     const streamResult = await client.xread(
       'BLOCK',
       WAIT_TIME,
@@ -447,10 +463,8 @@ export const createStreamProcessor = (callback, start = 'live') => {
     }
     return true;
   };
-  const processingLoop = async (client) => {
+  const processingLoop = async () => {
     startEventId = start === 'live' ? '$' : start;
-    // const streamInfo = await processInfo();
-    // startEventId = streamInfo.lastEventId;
     while (streamListening) {
       if (!(await processStep(client))) {
         break;
@@ -460,16 +474,17 @@ export const createStreamProcessor = (callback, start = 'live') => {
   return {
     info: async () => processInfo(),
     start: async () => {
-      const client = await createRedisClient(); // Create client for this processing loop
-      logApp.info('[STREAM] Starting streaming processor');
+      client = await createRedisClient(); // Create client for this processing loop
+      logApp.info(`[STREAM] Starting stream processor for ${user.user_email}`);
       processingLoopPromise = processingLoop(client);
     },
     shutdown: async () => {
-      logApp.info('[STREAM] Shutdown streaming processor');
+      logApp.info(`[STREAM] Shutdown stream processor for ${user.user_email}`);
       streamListening = false;
       if (processingLoopPromise) {
         await processingLoopPromise;
       }
+      await client.disconnect();
     },
   };
 };

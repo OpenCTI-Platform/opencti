@@ -708,6 +708,14 @@ const updatedInputsToData = (inputs) => {
   }, inputs);
   return mergeDeepRightAll(...inputPairs);
 };
+const replacedInputsToData = (inputs) => {
+  const inputPairs = R.map((input) => {
+    const { key, value, previous } = input;
+    const val = R.includes(key, multipleAttributes) ? value : R.head(value);
+    return { [key]: { current: val, previous } };
+  }, inputs);
+  return mergeDeepRightAll(...inputPairs);
+};
 const mergeInstanceWithInputs = (instance, inputs) => {
   const data = updatedInputsToData(inputs);
   return R.mergeRight(instance, data);
@@ -1211,6 +1219,14 @@ const prepareAttributes = (elements) => {
   }, elements);
 };
 
+const getInstanceValue = (key, instance) => {
+  if (key.includes('.')) {
+    const [base, target] = key.split('.');
+    return instance[base]?.[target];
+  }
+  return instance[key];
+};
+
 export const updateAttributeRaw = async (user, instance, inputs, options = {}) => {
   const elements = Array.isArray(inputs) ? inputs : [inputs];
   const updatedInputs = [];
@@ -1223,7 +1239,7 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
     const input = preparedElements[index];
     const ins = await innerUpdateAttribute(user, instance, input, options);
     if (ins.length > 0) {
-      updatedInputs.push(input);
+      updatedInputs.push({ ...input, previous: getInstanceValue(input.key, instance) });
       impactedInputs.push(...ins);
     }
     // If named entity name updated, modify the aliases ids
@@ -1246,7 +1262,7 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
       const revokedInput = { key: REVOKED, value: [untilDateTime < utcDate().toDate()] };
       const revokedIn = await innerUpdateAttribute(user, instance, revokedInput, options);
       if (revokedIn.length > 0) {
-        updatedInputs.push(revokedInput);
+        updatedInputs.push({ ...revokedInput, previous: getInstanceValue(revokedInput.key, instance) });
         impactedInputs.push(...revokedIn);
       }
     }
@@ -1368,7 +1384,10 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     }
     // Only push event in stream if modifications really happens
     if (data.updatedInputs.length > 0) {
-      const updatedData = updatedInputsToData(data.updatedInputs);
+      const updatedData =
+        operation === UPDATE_OPERATION_REPLACE
+          ? replacedInputsToData(data.updatedInputs)
+          : updatedInputsToData(data.updatedInputs);
       await storeUpdateEvent(user, instance, [{ [operation]: updatedData }]);
     }
     // Return updated element after waiting for it.
@@ -1814,22 +1833,8 @@ export const createRelation = async (user, input) => {
     await indexCreatedElement(dataRel);
     // Push the input in the stream
     if (dataRel.type === TRX_CREATION) {
-      // If new marking, redispatch an entity creation
-      if (input.relationship_type === RELATION_OBJECT_MARKING) {
-        const markings = [...(from.objectMarking || []), resolvedInput.to];
-        const inputEvent = R.assoc('objectMarking', markings, from);
-        // In case of relation we need to full reload the from entity to redispatch it.
-        // From and to of the source are required for stream message generation
-        let fromCreation = from;
-        if (from.base_type === BASE_TYPE_RELATION) {
-          fromCreation = await markedLoadById(user, from.internal_id, from.entity_type);
-        }
-        await storeCreateEvent(user, fromCreation, inputEvent);
-      } else {
-        // Else just dispatch the relation creation
-        const relWithConnections = { ...dataRel.element, from, to };
-        await storeCreateEvent(user, relWithConnections, resolvedInput);
-      }
+      const relWithConnections = { ...dataRel.element, from, to };
+      await storeCreateEvent(user, relWithConnections, resolvedInput);
     } else if (dataRel.streamInputs.length > 0) {
       // If upsert with new data
       await storeUpdateEvent(user, dataRel.element, dataRel.streamInputs);

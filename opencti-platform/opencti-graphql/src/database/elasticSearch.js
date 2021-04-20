@@ -1254,17 +1254,18 @@ export const elPaginate = async (user, indexName, options = {}) => {
 };
 export const elList = async (user, indexName, options = {}) => {
   let hasNextPage = true;
+  let continueProcess = true;
   let searchAfter = options.after;
   const listing = [];
   const publish = async (elements) => {
     const { callback } = options;
     if (callback) {
-      await callback(elements);
+      continueProcess = (await callback(elements)) || true;
     } else {
       listing.push(...elements);
     }
   };
-  while (hasNextPage) {
+  while (continueProcess && hasNextPage) {
     // Force options to prevent connection format and manage search after
     const opts = { ...options, first: MAX_SEARCH_SIZE, after: searchAfter, connectionFormat: false };
     const elements = await elPaginate(user, indexName, opts);

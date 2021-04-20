@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { basePath, logApp } from '../config/conf';
 import { authenticateUser, computeAvailableMarkings, STREAMAPI, SYSTEM_USER } from '../domain/user';
-import { createStreamProcessor } from '../database/redis';
+import { createStreamProcessor, MAX_RANGE_MESSAGES } from '../database/redis';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { generateInternalId, generateStandardId, normalizeName } from '../schema/identifier';
 import { BYPASS } from '../schema/general';
@@ -122,31 +122,6 @@ const createHeartbeatProcessor = () => {
   }, KEEP_ALIVE_INTERVAL_MS);
 };
 
-export const initBroadcaster = () => {
-  return createStreamProcessor(async (eventId, topic, data) => {
-    let eventData = data;
-    const now = Date.now() / 1000;
-    // Determine if element need to be resolved
-    const isLiveClientListening = broadcastClients.filter((b) => b.isLiveClient()).length > 0;
-    if (isLiveClientListening) {
-      // Live client need a resolved element
-      // We can load with system user, element will be post filtered
-      const instance = await stixLoadById(SYSTEM_USER, data.internal_id);
-      eventData = { ...instance, ...data };
-    }
-    Object.values(broadcastClients)
-      // Filter is required as the close is asynchronous
-      .filter((c) => now < c.client.expirationTime)
-      .forEach((c) => c.sendEvent(eventId, topic, eventData));
-  });
-};
-
-export const broadcast = (event, data) => {
-  Object.values(broadcastClients).forEach((broadcastClient) => {
-    broadcastClient.sendEvent(event, data);
-  });
-};
-
 const authenticate = async (req, res, next) => {
   const auth = await authenticateUser(req);
   const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;
@@ -162,27 +137,6 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-/*
-const streamHistoryHandler = async (req, res) => {
-  const { userId, body } = req;
-  const { from = '-', size = 200, connectionId } = body;
-  const connectedClient = broadcastClients[connectionId];
-  // Check if connection exist and the client is correctly related
-  if (!connectedClient || connectedClient.client.userId !== userId) {
-    res.status(401).json({ status: 'This stream connection does not exist' });
-  } else {
-    try {
-      const rangeProcessor = (eventId, topic, data) =>
-        connectedClient.sendEvent(eventId, topic, R.assoc('catchup', true, data));
-      const streamRangeResult = await getStreamRange(from, size, rangeProcessor);
-      res.json(streamRangeResult);
-    } catch (e) {
-      res.status(401).json({ status: e.message });
-    }
-  }
-};
- */
-
 const standardIdResolver = async (key, filters) => {
   // noinspection UnnecessaryLocalVariableJS
   const elements = await Promise.all(
@@ -193,6 +147,7 @@ const standardIdResolver = async (key, filters) => {
   );
   return elements;
 };
+
 const analyseFilters = async (req, filters = {}) => {
   const buildFilters = {};
   // If marking filters, we need to compute all possible markings
@@ -211,7 +166,7 @@ const analyseFilters = async (req, filters = {}) => {
   return buildFilters;
 };
 
-const createSeeMiddleware = (broadcaster) => {
+const createSeeMiddleware = () => {
   createHeartbeatProcessor();
   const createSseChannel = (req, res) => {
     const channel = {
@@ -221,6 +176,7 @@ const createSeeMiddleware = (broadcaster) => {
       expirationTime: req.expirationTime,
       allowed_marking: req.allowed_marking,
       capabilities: req.capabilities,
+      connected: () => !req.finished,
       sendEvent: (eventId, topic, data) => {
         if (req.finished) {
           logApp.warn('[STREAM] Write on an already terminated response', { id: channel.userId });
@@ -252,11 +208,21 @@ const createSeeMiddleware = (broadcaster) => {
   };
   const streamHandler = async (req, res) => {
     const startFrom = req.query.from ? req.query.from : '0-0';
-    const { channel, client } = createSseChannel(req, res);
-    const processor = createStreamProcessor(async (eventId, topic, data) => {
-      client.sendEvent(eventId, topic, data);
-    }, startFrom);
-    req.on('close', () => processor.shutdown());
+    const { client } = createSseChannel(req, res);
+    const processor = createStreamProcessor(
+      req.session.user,
+      async (elements) => {
+        for (let index = 0; index < elements.length; index += 1) {
+          const { id: eventId, topic, data } = elements[index];
+          client.sendEvent(eventId, topic, data);
+        }
+      },
+      startFrom
+    );
+    req.on('close', () => {
+      delete broadcastClients[client.id];
+      processor.shutdown();
+    });
     res.writeHead(200, {
       Connection: 'keep-alive',
       'Content-Type': 'text/event-stream; charset=utf-8',
@@ -264,35 +230,173 @@ const createSeeMiddleware = (broadcaster) => {
       'Cache-Control': 'no-cache, no-transform', // no-transform is required for dev proxy
     });
     const broadcasterInfo = await processor.info();
-    channel.sendConnected({ ...broadcasterInfo, connectionId: client.id });
+    client.sendConnected({ ...broadcasterInfo, connectionId: client.id });
     await processor.start();
+    broadcastClients[client.id] = client;
   };
   const filteredStreamHandler = async (req, res) => {
     const { id } = req.params;
     const startFrom = req.query.from;
-    const connectionTime = new Date().getTime();
+    const isDiffMode = !startFrom;
     const collection = await findById(req.session.user, id);
     const streamFilters = JSON.parse(collection.filters);
     const filters = await analyseFilters(req, streamFilters);
     const { channel, client } = createSseChannel(req, res);
-    const processor = createStreamProcessor(async (eventId, topic, data) => {
-      const [time] = eventId.split('-');
-      const isLiveEvent = parseFloat(time) >= connectionTime;
-      console.log(`${eventId} - ${isLiveEvent}`);
-      client.sendEvent(eventId, topic, data, filters);
-    }, startFrom || connectionTime);
+    let diffCacheMessages = [];
+    const processor = createStreamProcessor(
+      req.session.user,
+      async (elements) => {
+        // We need to build all elements that have change during the last call
+        let workingElements = elements;
+        if (isDiffMode && elements.length === MAX_RANGE_MESSAGES) {
+          diffCacheMessages.push(...elements);
+        } else {
+          diffCacheMessages.push(...elements);
+          workingElements = [...diffCacheMessages];
+          // Clear the cache.
+          diffCacheMessages = [];
+        }
+        // Need to compute the diff change
+        const groupedById = R.groupBy((e) => e.data.data.x_opencti_id, workingElements);
+        const entries = Object.entries(groupedById);
+        const cache = {};
+        for (let i = 0; i < entries.length; i += 1) {
+          const [k, v] = entries[i];
+          for (let actionIndex = 0; actionIndex < v.length; actionIndex += 1) {
+            const vElement = v[actionIndex];
+            const { topic, data } = vElement;
+            if (topic === 'create') {
+              cache[k] = { stream_is_creation: true };
+            }
+            if (topic === 'delete') {
+              delete cache[k];
+            }
+            if (topic === 'update') {
+              if (!cache[k] || !cache[k].stream_is_creation) {
+                const update = data.data.x_opencti_patch;
+                if (update?.add) {
+                  const addActionsEntries = Object.entries(update.add);
+                  for (let j = 0; j < addActionsEntries.length; j += 1) {
+                    const [attr, values] = addActionsEntries[j];
+                    let currentValues = cache[k]?.[attr] || [];
+                    for (let cIndex = 0; cIndex < values.length; cIndex += 1) {
+                      const val = values[cIndex];
+                      const isCancellation = currentValues.includes(`-${val}`);
+                      if (isCancellation) {
+                        currentValues = currentValues.filter((c) => c !== `-${val}`);
+                      } else {
+                        currentValues.push(`+${val}`);
+                      }
+                    }
+                    if (currentValues.length > 0) {
+                      if (cache[k]) {
+                        cache[k][attr] = currentValues;
+                        cache[k].x_opencti_patch = [...cache[k].x_opencti_patch, update];
+                      } else {
+                        cache[k] = { [attr]: currentValues };
+                        cache[k].x_opencti_patch = [update];
+                      }
+                    } else if (cache[k]) {
+                      delete cache[k][attr];
+                    }
+                  }
+                }
+                if (update?.remove) {
+                  const delActionsEntries = Object.entries(update.remove);
+                  for (let j = 0; j < delActionsEntries.length; j += 1) {
+                    const [attr, values] = delActionsEntries[j];
+                    let currentValues = cache[k]?.[attr] || [];
+                    for (let cIndex = 0; cIndex < values.length; cIndex += 1) {
+                      const val = values[cIndex];
+                      const isCancellation = currentValues.includes(`+${val}`);
+                      if (isCancellation) {
+                        currentValues = currentValues.filter((c) => c !== `+${val}`);
+                      } else {
+                        currentValues.push(`-${val}`);
+                      }
+                    }
+                    if (currentValues.length > 0) {
+                      if (cache[k]) {
+                        cache[k][attr] = currentValues;
+                        cache[k].x_opencti_patch = [...cache[k].x_opencti_patch, update];
+                      } else {
+                        cache[k] = { [attr]: currentValues };
+                        cache[k].x_opencti_patch = [update];
+                      }
+                    } else if (cache[k]) {
+                      delete cache[k][attr];
+                    }
+                  }
+                }
+                if (update?.replace) {
+                  const replaceActionsEntries = Object.entries(update.replace);
+                  for (let j = 0; j < replaceActionsEntries.length; j += 1) {
+                    const [attr, { current, previous }] = replaceActionsEntries[j];
+                    let currentValues = cache[k]?.[attr] || [];
+                    const valuesCurrent = Array.isArray(current) ? current : [current];
+                    for (let cIndex = 0; cIndex < valuesCurrent.length; cIndex += 1) {
+                      const val = valuesCurrent[cIndex];
+                      const isCancellation = currentValues.includes(`-${val}`);
+                      if (isCancellation) {
+                        currentValues = currentValues.filter((c) => c !== `-${val}`);
+                      } else {
+                        currentValues.push(`+${val}`);
+                      }
+                    }
+                    const valuesPrevious = Array.isArray(previous) ? previous : [previous];
+                    for (let pIndex = 0; pIndex < valuesPrevious.length; pIndex += 1) {
+                      const val = valuesPrevious[pIndex];
+                      const isCancellation = currentValues.includes(`+${val}`);
+                      if (isCancellation) {
+                        currentValues = currentValues.filter((c) => c !== `+${val}`);
+                      } else {
+                        currentValues.push(`-${val}`);
+                      }
+                    }
+                    if (currentValues.length > 0) {
+                      if (cache[k]) {
+                        cache[k][attr] = currentValues;
+                        cache[k].x_opencti_patch = [...cache[k].x_opencti_patch, update];
+                      } else {
+                        cache[k] = { [attr]: currentValues };
+                        cache[k].x_opencti_patch = [update];
+                      }
+                    } else if (cache[k]) {
+                      delete cache[k][attr];
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        for (let index = 0; index < workingElements.length; index += 1) {
+          const { id: eventId, topic, data } = workingElements[index];
+          client.sendEvent(eventId, topic, data, filters);
+        }
+      },
+      startFrom || 1618319261396 // connectionTime
+    );
+    req.on('close', () => {
+      delete broadcastClients[client.id];
+      processor.shutdown();
+    });
     const broadcasterInfo = await processor.info();
-    channel.sendConnected({ ...broadcasterInfo, connectionId: client.id });
+    client.sendConnected({ ...broadcasterInfo, connectionId: client.id });
     // If empty start date, stream all results corresponding to the filters
-    if (R.isEmpty(startFrom)) {
+    if (isDiffMode === false) {
       const queryOptions = convertFiltersToQueryOptions(streamFilters);
       const callback = async (elements) => {
-        for (let index = 0; index < elements.length; index += 1) {
-          const { internal_id: elemId } = elements[index];
-          const instance = await stixLoadById(req.session.user, elemId);
-          const data = stixDataConverter(instance, { diffMode: false });
-          channel.sendEvent(instance.id, 'init', { data });
+        if (channel.connected()) {
+          for (let index = 0; index < elements.length; index += 1) {
+            const { internal_id: elemId } = elements[index];
+            const instance = await stixLoadById(req.session.user, elemId);
+            const data = stixDataConverter(instance, { diffMode: false });
+            channel.sendEvent(instance.id, 'init', { data });
+          }
+          return true;
         }
+        return false;
       };
       queryOptions.minSource = true;
       queryOptions.callback = callback;
@@ -301,103 +405,15 @@ const createSeeMiddleware = (broadcaster) => {
     // After start to stream the live.
     await processor.start();
   };
-  /*
-  const eventsHandler = async (req, res) => {
-    const { id } = req.params;
-    // Could specified a collection
-    const isLiveStream = !R.isEmpty(id) && !R.isNil(id);
-    let streamFilters = {};
-    let clientFilters = {};
-    if (isLiveStream) {
-      const collection = await findById(req.session.user, id);
-      streamFilters = JSON.parse(collection.filters);
-      clientFilters = await analyseFilters(req, streamFilters);
-    }
-    // Create client
-    const client = {
-      id: generateInternalId(),
-      isLiveStream,
-      filters: clientFilters,
-      user: req.session.user,
-      userId: req.userId,
-      expirationTime: req.expirationTime,
-      allowed_marking: req.allowed_marking,
-      capabilities: req.capabilities,
-      sendEvent: (eventId, topic, data) => {
-        if (req.finished) {
-          logApp.warn('[STREAM] Write on an already terminated response', { id: client.userId });
-          return;
-        }
-        let message = '';
-        if (eventId) {
-          message += `id: ${eventId}\n`;
-        }
-        if (topic) {
-          message += `event: ${topic}\n`;
-        }
-        message += 'data: ';
-        message += JSON.stringify(data);
-        message += '\n\n';
-        res.write(message);
-        res.flush();
-      },
-      close: () => {
-        client.expirationTime = 0;
-        try {
-          res.end();
-        } catch (e) {
-          logApp.error('[STREAM] Failing to close client', { clientId: client.userId, error: e });
-        }
-      },
-    };
-    req.on('close', () => {
-      if (client === broadcastClients[client.id]?.client) {
-        delete broadcastClients[client.id];
-      }
-    });
-    res.writeHead(200, {
-      Connection: 'keep-alive',
-      'Content-Type': 'text/event-stream; charset=utf-8',
-      'Access-Control-Allow-Origin': '*',
-      'Cache-Control': 'no-cache, no-transform', // no-transform is required for dev proxy
-    });
-    // Create the new connection
-    const broadcastClient = createBroadcastClient(client);
-    const clients = Object.entries(broadcastClients).length;
-    const broadcasterInfo = await broadcaster.info();
-    broadcastClient.sendConnected({ ...broadcasterInfo, connectionId: client.id, clients });
-    logApp.debug(`[STREAM] Clients connection ${req.userId} (${clients})`);
-    // If live stream, need to send the initial data
-    if (!R.isEmpty(streamFilters)) {
-      const queryOptions = convertFiltersToQueryOptions(streamFilters, null);
-      const callback = async (elements) => {
-        for (let index = 0; index < elements.length; index += 1) {
-          const { internal_id: elemId } = elements[index];
-          const instance = await stixLoadById(req.session.user, elemId);
-          const data = stixDataConverter(instance, { diffMode: false });
-          client.sendEvent(null, 'catchup', { data });
-        }
-      };
-      queryOptions.minSource = true;
-      queryOptions.callback = callback;
-      await elList(req.session.user, READ_DATA_INDICES, queryOptions);
-    }
-    // Register the new client
-    broadcastClients[client.id] = broadcastClient;
-  };
-  */
   return {
     shutdown: () => {
       clearInterval(heartbeat);
       Object.values(broadcastClients).forEach((c) => c.client.close());
-      broadcaster.shutdown();
     },
     applyMiddleware: ({ app }) => {
       app.use(`${basePath}/stream`, authenticate);
       app.get(`${basePath}/stream`, streamHandler);
       app.get(`${basePath}/stream/:id`, filteredStreamHandler);
-      // app.use(`${basePath}/stream/history`, bodyParser.json());
-      // app.post(`${basePath}/stream/history`, streamHistoryHandler);
     },
   };
 };

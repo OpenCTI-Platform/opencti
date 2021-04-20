@@ -205,18 +205,19 @@ export const stixDataConverter = (data, args = {}) => {
   }
   // Add x_ in extension
   // https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_ct36xlv6obo7
-  const dataEntries = Object.entries(filteredData);
-  const opencti = {};
-  for (let attr = 0; attr < dataEntries.length; attr += 1) {
-    const [key, val] = dataEntries[attr];
-    if (key.startsWith('x_opencti_')) {
-      opencti[key.substring('x_opencti_'.length)] = val;
-    }
-  }
-  if (diffMode) {
-    return filteredData;
-  }
-  return { ...filteredData, extensions: { x_opencti: opencti } };
+  // const dataEntries = Object.entries(filteredData);
+  // const openctiExtension = {};
+  // for (let attr = 0; attr < dataEntries.length; attr += 1) {
+  //   const [key, val] = dataEntries[attr];
+  //   if (key.startsWith('x_opencti_')) {
+  //     openctiExtension[key.substring('x_opencti_'.length)] = val;
+  //   }
+  // }
+  // if (R.isEmpty(openctiExtension)) {
+  //   return filteredData;
+  // }
+  // return { ...filteredData, extensions: { x_opencti: openctiExtension } };
+  return filteredData;
 };
 export const buildStixData = (data, args = {}) => {
   const { onlyBase = false } = args;

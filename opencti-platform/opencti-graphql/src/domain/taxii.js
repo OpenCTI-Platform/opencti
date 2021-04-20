@@ -1,14 +1,15 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
-import {elIndex, elPaginate} from '../database/elasticSearch';
-import {INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES} from '../database/utils';
-import {generateInternalId, generateStandardId} from '../schema/identifier';
-import {ENTITY_TYPE_TAXII_COLLECTION} from '../schema/internalObject';
-import {deleteElementById, listEntities, loadById, stixLoadById, updateAttribute} from '../database/middleware';
-import {buildStixData} from '../database/stix';
-import {FunctionalError, ResourceNotFoundError} from '../config/errors';
-import {delEditContext, notify, setEditContext} from '../database/redis';
-import {BUS_TOPICS} from '../config/conf';import { GlobalFilters } from '../utils/filtering';
+import { elIndex, elPaginate } from '../database/elasticSearch';
+import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES } from '../database/utils';
+import { generateInternalId, generateStandardId } from '../schema/identifier';
+import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
+import { deleteElementById, listEntities, loadById, stixLoadById, updateAttribute } from '../database/middleware';
+import { buildStixData } from '../database/stix';
+import { FunctionalError, ResourceNotFoundError } from '../config/errors';
+import { delEditContext, notify, setEditContext } from '../database/redis';
+import { BUS_TOPICS } from '../config/conf';
+import { GlobalFilters } from '../utils/filtering';
 
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 
