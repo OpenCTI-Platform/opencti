@@ -10,7 +10,7 @@ const error = (type, message, data) => {
 
 export const AUTH_FAILURE = 'AuthFailure';
 export const AuthenticationFailure = (reason, data) =>
-  error(AUTH_FAILURE, 'Wrong name or password', {
+  error(AUTH_FAILURE, reason || 'Wrong name or password', {
     category: CATEGORY_TECHNICAL,
     ...data,
   });

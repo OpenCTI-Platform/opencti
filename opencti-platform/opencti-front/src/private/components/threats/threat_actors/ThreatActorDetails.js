@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, propOr } from 'ramda';
+import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -40,12 +40,6 @@ class ThreatActorDetailsComponent extends Component {
     const {
       t, classes, threatActor, fd,
     } = this.props;
-    const secondaryMotivations = threatActor.secondary_motivations
-      ? map(
-        (secondaryMotivation) => t(`motivation_${secondaryMotivation}`),
-        threatActor.secondary_motivations,
-      )
-      : [t('motivation_unknown')];
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -68,13 +62,7 @@ class ThreatActorDetailsComponent extends Component {
               >
                 {t('Sophistication')}
               </Typography>
-              {t(
-                `${
-                  threatActor.sophistication
-                    ? `sophistication_${threatActor.sophistication}`
-                    : 'sophistication_unkown'
-                }`,
-              )}
+              {threatActor.sophistication && t(threatActor.sophistication)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -82,13 +70,7 @@ class ThreatActorDetailsComponent extends Component {
               >
                 {t('Resource level')}
               </Typography>
-              {t(
-                `${
-                  threatActor.resource_level
-                    ? `resource_${threatActor.resource_level}`
-                    : 'resource_unkown'
-                }`,
-              )}
+              {threatActor.resource_level && t(threatActor.resource_level)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -96,32 +78,31 @@ class ThreatActorDetailsComponent extends Component {
               >
                 {t('Goals')}
               </Typography>
-              <List>
-                {(threatActor.goals ? threatActor.goals : [t('Unknown')]).map(
-                  (goal) => (
+              {threatActor.goals && (
+                <List>
+                  {threatActor.goals.map((goal) => (
                     <ListItem key={goal} dense={true} divider={true}>
                       <ListItemIcon>
                         <BullseyeArrow />
                       </ListItemIcon>
                       <ListItemText primary={goal} />
                     </ListItem>
-                  ),
-                )}
-              </List>
+                  ))}
+                </List>
+              )}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Threat actor types')}
               </Typography>
-              {propOr(['-'], 'threat_actor_types', threatActor).map(
-                (threatActorType) => (
+              {threatActor.threat_actor_types
+                && threatActor.threat_actor_types.map((threatActorType) => (
                   <Chip
                     key={threatActorType}
                     classes={{ root: classes.chip }}
                     label={threatActorType}
                   />
-                ),
-              )}
+                ))}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -145,13 +126,8 @@ class ThreatActorDetailsComponent extends Component {
               >
                 {t('Primary motivation')}
               </Typography>
-              {t(
-                `${
-                  threatActor.primary_motivation
-                    ? `motivation_${threatActor.primary_motivation}`
-                    : 'motivation_unpredictable'
-                }`,
-              )}
+              {threatActor.primary_motivation
+                && t(threatActor.primary_motivation)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -159,20 +135,24 @@ class ThreatActorDetailsComponent extends Component {
               >
                 {t('Secondary motivations')}
               </Typography>
-              <List>
-                {secondaryMotivations.map((secondaryMotivation) => (
-                  <ListItem
-                    key={secondaryMotivation}
-                    dense={true}
-                    divider={true}
-                  >
-                    <ListItemIcon>
-                      <ArmFlexOutline />
-                    </ListItemIcon>
-                    <ListItemText primary={secondaryMotivation} />
-                  </ListItem>
-                ))}
-              </List>
+              {threatActor.secondary_motivations && (
+                <List>
+                  {threatActor.secondary_motivations.map(
+                    (secondaryMotivation) => (
+                      <ListItem
+                        key={secondaryMotivation}
+                        dense={true}
+                        divider={true}
+                      >
+                        <ListItemIcon>
+                          <ArmFlexOutline />
+                        </ListItemIcon>
+                        <ListItemText primary={secondaryMotivation} />
+                      </ListItem>
+                    ),
+                  )}
+                </List>
+              )}
             </Grid>
           </Grid>
         </Paper>

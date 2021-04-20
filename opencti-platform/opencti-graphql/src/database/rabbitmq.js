@@ -13,12 +13,12 @@ export const EVENT_TYPE_UPDATE = 'update';
 export const EVENT_TYPE_MERGE = 'merge';
 export const EVENT_TYPE_DELETE = 'delete';
 
-const USESSL = conf.get('rabbitmq:use_ssl');
+const USE_SSL = conf.get('rabbitmq:use_ssl');
 
 const amqpUri = () => {
   const host = conf.get('rabbitmq:hostname');
   const port = conf.get('rabbitmq:port');
-  return `amqp${USESSL ? 's' : ''}://${host}:${port}`;
+  return `amqp${USE_SSL ? 's' : ''}://${host}:${port}`;
 };
 
 const amqpCred = () => {
@@ -44,7 +44,7 @@ export const config = () => {
 const amqpExecute = (execute) => {
   return new Promise((resolve, reject) => {
     amqp
-      .connect(amqpUri(), USESSL ? { ...amqpCred(), ...amqpCA() } : amqpCred())
+      .connect(amqpUri(), USE_SSL ? { ...amqpCred(), ...amqpCA() } : amqpCred())
       .then((connection) => {
         return connection
           .createConfirmChannel()
