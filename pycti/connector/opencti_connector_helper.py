@@ -57,6 +57,32 @@ def get_config_variable(
         return result
 
 
+def create_ssl_context() -> ssl.SSLContext:
+    """Set strong SSL defaults: require TLSv1.2+
+
+    `ssl` uses bitwise operations to specify context `<enum 'Options'>`
+    """
+
+    ssl_context_options: list[int] = [
+        ssl.OP_NO_COMPRESSION,
+        ssl.OP_NO_TICKET,  # pylint: disable=no-member
+        ssl.OP_NO_RENEGOTIATION,  # pylint: disable=no-member
+        ssl.OP_SINGLE_DH_USE,
+        ssl.OP_SINGLE_ECDH_USE,
+        ssl.OP_NO_SSLv3,
+        ssl.OP_NO_TLSv1,
+        ssl.OP_NO_TLSv1_1,
+    ]
+    ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH)
+    ssl_context.options &= ~ssl.OP_ENABLE_MIDDLEBOX_COMPAT  # pylint: disable=no-member
+    ssl_context.verify_mode = ssl.CERT_REQUIRED
+
+    for option in ssl_context_options:
+        ssl_context.options |= option
+
+    return ssl_context
+
+
 class ListenQueue(threading.Thread):
     """Main class for the ListenQueue used in OpenCTIConnectorHelper
 
@@ -137,23 +163,15 @@ class ListenQueue(threading.Thread):
             try:
                 # Connect the broker
                 self.pika_credentials = pika.PlainCredentials(self.user, self.password)
-                if self.use_ssl:
-                    context = ssl.create_default_context()
-                    ssl_options = pika.SSLOptions(context, self.host)
-                    self.pika_parameters = pika.ConnectionParameters(
-                        host=self.host,
-                        port=self.port,
-                        virtual_host="/",
-                        credentials=self.pika_credentials,
-                        ssl_options=ssl_options,
-                    )
-                else:
-                    self.pika_parameters = pika.ConnectionParameters(
-                        host=self.host,
-                        port=self.port,
-                        virtual_host="/",
-                        credentials=self.pika_credentials,
-                    )
+                self.pika_parameters = pika.ConnectionParameters(
+                    host=self.host,
+                    port=self.port,
+                    virtual_host="/",
+                    credentials=self.pika_credentials,
+                    ssl_options=pika.SSLOptions(create_ssl_context(), self.host)
+                    if self.use_ssl
+                    else None
+                )
                 self.pika_connection = pika.BlockingConnection(self.pika_parameters)
                 self.channel = self.pika_connection.channel()
                 self.channel.basic_consume(
@@ -548,7 +566,7 @@ class OpenCTIConnectorHelper:
             self.config["connection"]["user"], self.config["connection"]["pass"]
         )
         if self.config["connection"]["use_ssl"]:
-            context = ssl.create_default_context()
+            context = create_ssl_context()
             ssl_options = pika.SSLOptions(context, self.config["connection"]["host"])
             pika_parameters = pika.ConnectionParameters(
                 host=self.config["connection"]["host"],
