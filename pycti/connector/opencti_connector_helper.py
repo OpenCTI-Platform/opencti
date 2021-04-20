@@ -170,7 +170,7 @@ class ListenQueue(threading.Thread):
                     credentials=self.pika_credentials,
                     ssl_options=pika.SSLOptions(create_ssl_context(), self.host)
                     if self.use_ssl
-                    else None
+                    else None,
                 )
                 self.pika_connection = pika.BlockingConnection(self.pika_parameters)
                 self.channel = self.pika_connection.channel()
