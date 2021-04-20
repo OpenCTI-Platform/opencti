@@ -4,16 +4,16 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
 import {
-  assoc, compose, pick, pipe,
+  assoc, compose, join, pick, pipe, split,
 } from 'ramda';
 import * as Yup from 'yup';
-import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../../components/i18n';
 import DatePickerField from '../../../../components/DatePickerField';
-import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import { dateFormat } from '../../../../utils/Time';
+import OpenVocabField from '../../common/form/OpenVocabField';
+import TextField from '../../../../components/TextField';
 
 const intrusionSetMutationFieldPatch = graphql`
   mutation IntrusionSetEditionDetailsFieldPatchMutation(
@@ -42,16 +42,14 @@ const intrusionSetEditionDetailsFocus = graphql`
 `;
 
 const intrusionSetValidation = (t) => Yup.object().shape({
-  first_seen: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
-  last_seen: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
+  first_seen: Yup.date().typeError(
+    t('The value must be a date (YYYY-MM-DD)'),
+  ),
+  last_seen: Yup.date().typeError(t('The value must be a date (YYYY-MM-DD)')),
   resource_level: Yup.string(),
   primary_motivation: Yup.string(),
-  secondary_motivations: Yup.string(),
-  goal: Yup.string(),
+  secondary_motivations: Yup.array(),
+  goals: Yup.string(),
 });
 
 class IntrusionSetEditionDetailsComponent extends Component {
@@ -68,6 +66,10 @@ class IntrusionSetEditionDetailsComponent extends Component {
   }
 
   handleSubmitField(name, value) {
+    let finalValue = value;
+    if (name === 'goals') {
+      finalValue = split('\n', value);
+    }
     intrusionSetValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -75,7 +77,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
           mutation: intrusionSetMutationFieldPatch,
           variables: {
             id: this.props.intrusionSet.id,
-            input: { key: name, value },
+            input: { key: name, value: finalValue },
           },
         });
       })
@@ -93,15 +95,16 @@ class IntrusionSetEditionDetailsComponent extends Component {
           ? intrusionSet.secondary_motivations
           : [],
       ),
+      assoc('goals', join('\n', intrusionSet.goals ? intrusionSet.goals : [])),
       pick([
         'first_seen',
         'last_seen',
         'resource_level',
         'primary_motivation',
         'secondary_motivations',
+        'goals',
       ]),
     )(intrusionSet);
-
     return (
       <Formik
         enableReinitialize={true}
@@ -136,148 +139,53 @@ class IntrusionSetEditionDetailsComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="last_seen" />
               }
             />
-            <Field
-              component={SelectField}
+            <OpenVocabField
+              label={t('Resource level')}
+              type="attack-resource-level-ov"
               name="resource_level"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
-              label={t('Resource level')}
-              fullWidth={true}
-              containerstyle={{ width: '100%', marginTop: 20 }}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="resource_level"
-                />
-              }
-            >
-              <MenuItem key="none" value="">
-                {t('None')}
-              </MenuItem>
-              <MenuItem key="individual" value="individual">
-                {t('resource_individual')}
-              </MenuItem>
-              <MenuItem key="club" value="club">
-                {t('resource_club')}
-              </MenuItem>
-              <MenuItem key="contest" value="contest">
-                {t('resource_contest')}
-              </MenuItem>
-              <MenuItem key="team" value="team">
-                {t('resource_team')}
-              </MenuItem>
-              <MenuItem key="organization" value="organization">
-                {t('resource_organization')}
-              </MenuItem>
-              <MenuItem key="government" value="government">
-                {t('resource_government')}
-              </MenuItem>
-            </Field>
-            <Field
-              component={SelectField}
+              containerstyle={{ marginTop: 20, width: '100%' }}
+              variant="edit"
+              multiple={false}
+              editContext={context}
+            />
+            <OpenVocabField
+              label={t('Primary motivation')}
+              type="attack-motivation-ov"
               name="primary_motivation"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
-              label={t('Primary motivation')}
-              fullWidth={true}
-              containerstyle={{ width: '100%', marginTop: 20 }}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="primary_motivation"
-                />
-              }
-            >
-              <MenuItem key="none" value="">
-                {t('None')}
-              </MenuItem>
-              <MenuItem key="accidental" value="accidental">
-                {t('motivation_accidental')}
-              </MenuItem>
-              <MenuItem key="coercion" value="coercion">
-                {t('motivation_coercion')}
-              </MenuItem>
-              <MenuItem key="dominance" value="dominance">
-                {t('motivation_dominance')}
-              </MenuItem>
-              <MenuItem key="ideology" value="ideology">
-                {t('motivation_ideology')}
-              </MenuItem>
-              <MenuItem key="notoriety" value="notoriety">
-                {t('motivation_notoriety')}
-              </MenuItem>
-              <MenuItem key="organizational-gain" value="organizational-gain">
-                {t('motivation_organizational-gain')}
-              </MenuItem>
-              <MenuItem key="personal-gain" value="personal-gain">
-                {t('motivation_personal-gain')}
-              </MenuItem>
-              <MenuItem
-                key="personal-satisfaction"
-                value="personal-satisfaction"
-              >
-                {t('motivation_personal-satisfaction')}
-              </MenuItem>
-              <MenuItem key="revenge" value="revenge">
-                {t('motivation_revenge')}
-              </MenuItem>
-              <MenuItem key="unpredictable" value="unpredictable">
-                {t('motivation_unpredictable')}
-              </MenuItem>
-            </Field>
-            <Field
-              component={SelectField}
+              containerstyle={{ marginTop: 20, width: '100%' }}
+              variant="edit"
+              multiple={false}
+              editContext={context}
+            />
+            <OpenVocabField
+              label={t('Secondary motivations')}
+              type="attack-motivation-ov"
               name="secondary_motivations"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
-              label={t('Secondary motivations')}
-              fullWidth={true}
+              containerstyle={{ marginTop: 20, width: '100%' }}
+              variant="edit"
               multiple={true}
-              containerstyle={{ width: '100%', marginTop: 20 }}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="secondary_motivations"
-                />
+              editContext={context}
+            />
+            <Field
+              component={TextField}
+              name="goals"
+              label={t('Goals (1 / line)')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="goals" />
               }
-            >
-              <MenuItem key="none" value="">
-                {t('None')}
-              </MenuItem>
-              <MenuItem key="accidental" value="accidental">
-                {t('motivation_accidental')}
-              </MenuItem>
-              <MenuItem key="coercion" value="coercion">
-                {t('motivation_coercion')}
-              </MenuItem>
-              <MenuItem key="dominance" value="dominance">
-                {t('motivation_dominance')}
-              </MenuItem>
-              <MenuItem key="ideology" value="ideology">
-                {t('motivation_ideology')}
-              </MenuItem>
-              <MenuItem key="notoriety" value="notoriety">
-                {t('motivation_notoriety')}
-              </MenuItem>
-              <MenuItem key="organizational-gain" value="organizational-gain">
-                {t('motivation_organizational-gain')}
-              </MenuItem>
-              <MenuItem key="personal-gain" value="personal-gain">
-                {t('motivation_personal-gain')}
-              </MenuItem>
-              <MenuItem
-                key="personal-satisfaction"
-                value="personal-satisfaction"
-              >
-                {t('motivation_personal-satisfaction')}
-              </MenuItem>
-              <MenuItem key="revenge" value="revenge">
-                {t('motivation_revenge')}
-              </MenuItem>
-              <MenuItem key="unpredictable" value="unpredictable">
-                {t('motivation_unpredictable')}
-              </MenuItem>
-            </Field>
+            />
           </Form>
         )}
       </Formik>
@@ -302,6 +210,7 @@ const IntrusionSetEditionDetails = createFragmentContainer(
         resource_level
         primary_motivation
         secondary_motivations
+        goals
       }
     `,
   },

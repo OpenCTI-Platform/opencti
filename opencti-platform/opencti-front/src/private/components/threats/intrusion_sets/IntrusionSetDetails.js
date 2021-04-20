@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map } from 'ramda';
+import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -40,12 +40,6 @@ class IntrusionSetDetailsComponent extends Component {
     const {
       t, classes, intrusionSet, fd,
     } = this.props;
-    const secondaryMotivations = intrusionSet.secondary_motivations
-      ? map(
-        (secondaryMotivation) => t(`motivation_${secondaryMotivation}`),
-        intrusionSet.secondary_motivations,
-      )
-      : [t('motivation_unknown')];
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -68,13 +62,7 @@ class IntrusionSetDetailsComponent extends Component {
               >
                 {t('Resource level')}
               </Typography>
-              {t(
-                `${
-                  intrusionSet.resource_level
-                    ? `resource_${intrusionSet.resource_level}`
-                    : 'resource_unkown'
-                }`,
-              )}
+              {intrusionSet.resource_level && t(intrusionSet.resource_level)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -82,18 +70,18 @@ class IntrusionSetDetailsComponent extends Component {
               >
                 {t('Goals')}
               </Typography>
-              <List>
-                {intrusionSet.goals
-                  ? intrusionSet.goals
-                  : [t('Unknown')].map((goal) => (
-                      <ListItem key={goal} dense={true} divider={true}>
-                        <ListItemIcon>
-                          <BullseyeArrow />
-                        </ListItemIcon>
-                        <ListItemText primary={goal} />
-                      </ListItem>
+              {intrusionSet.goals && (
+                <List>
+                  {intrusionSet.goals.map((goal) => (
+                    <ListItem key={goal} dense={true} divider={true}>
+                      <ListItemIcon>
+                        <BullseyeArrow />
+                      </ListItemIcon>
+                      <ListItemText primary={goal} />
+                    </ListItem>
                   ))}
-              </List>
+                </List>
+              )}
             </Grid>
             <Grid item={true} xs={6}>
               <IntrusionSetLocations intrusionSet={intrusionSet} />
@@ -120,12 +108,17 @@ class IntrusionSetDetailsComponent extends Component {
               >
                 {t('Primary motivation')}
               </Typography>
-              {t(
-                `${
-                  intrusionSet.primary_motivation
-                    ? `motivation_${intrusionSet.primary_motivation}`
-                    : 'motivation_unpredictable'
-                }`,
+              {intrusionSet.primary_motivation && (
+                <List>
+                  <ListItem dense={true} divider={true}>
+                    <ListItemIcon>
+                      <ArmFlexOutline />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={t(intrusionSet.primary_motivation)}
+                    />
+                  </ListItem>
+                </List>
               )}
               <Typography
                 variant="h3"
@@ -134,20 +127,24 @@ class IntrusionSetDetailsComponent extends Component {
               >
                 {t('Secondary motivations')}
               </Typography>
-              <List>
-                {secondaryMotivations.map((secondaryMotivation) => (
-                  <ListItem
-                    key={secondaryMotivation}
-                    dense={true}
-                    divider={true}
-                  >
-                    <ListItemIcon>
-                      <ArmFlexOutline />
-                    </ListItemIcon>
-                    <ListItemText primary={secondaryMotivation} />
-                  </ListItem>
-                ))}
-              </List>
+              {intrusionSet.secondary_motivations && (
+                <List>
+                  {intrusionSet.secondary_motivations.map(
+                    (secondaryMotivation) => (
+                      <ListItem
+                        key={secondaryMotivation}
+                        dense={true}
+                        divider={true}
+                      >
+                        <ListItemIcon>
+                          <ArmFlexOutline />
+                        </ListItemIcon>
+                        <ListItemText primary={t(secondaryMotivation)} />
+                      </ListItem>
+                    ),
+                  )}
+                </List>
+              )}
             </Grid>
           </Grid>
         </Paper>

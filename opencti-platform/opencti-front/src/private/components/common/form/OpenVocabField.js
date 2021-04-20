@@ -16,6 +16,7 @@ class OpenVocabField extends Component {
       variant,
       onChange,
       onFocus,
+      multiple,
       containerstyle,
       editContext,
     } = this.props;
@@ -29,7 +30,7 @@ class OpenVocabField extends Component {
           onChange={onChange}
           label={label}
           fullWidth={true}
-          multiple={true}
+          multiple={multiple}
           containerstyle={containerstyle}
           helpertext={
             <SubscriptionFocus context={editContext} fieldName={name} />
@@ -49,7 +50,7 @@ class OpenVocabField extends Component {
         name={name}
         label={label}
         fullWidth={true}
-        multiple={true}
+        multiple={multiple}
         containerstyle={containerstyle}
       >
         {openVocabList.map((openVocab) => (
