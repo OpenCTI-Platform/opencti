@@ -5,7 +5,7 @@ import sys
 from setuptools import setup
 from setuptools.command.install import install
 
-VERSION = "4.4.1"
+VERSION = "4.4.2"
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -26,6 +26,7 @@ class VerifyVersionCommand(install):
 setup(
     name="pycti",
     version=VERSION,
+    python_requires='>=3.9.0',
     description="Python API client for OpenCTI.",
     long_description=long_description,
     long_description_content_type="text/markdown",
