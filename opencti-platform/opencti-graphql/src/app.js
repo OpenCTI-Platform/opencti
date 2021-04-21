@@ -133,7 +133,7 @@ const createApp = async (apolloServer, broadcaster) => {
         setCookieError(res, 'Cert authentication is not available');
         res.redirect(req.headers.referer);
       } else {
-        const cert = req.connection.getPeerCertificate();
+        const cert = req.socket.getPeerCertificate();
         if (!R.isEmpty(cert) && req.client.authorized) {
           const { CN, emailAddress } = cert.subject;
           if (empty(emailAddress)) {
