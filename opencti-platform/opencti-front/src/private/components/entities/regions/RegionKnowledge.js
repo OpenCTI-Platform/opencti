@@ -11,7 +11,6 @@ import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDoma
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import RegionPopover from './RegionPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
 const styles = () => ({
   container: {
@@ -30,19 +29,6 @@ class RegionKnowledgeComponent extends Component {
           stixDomainObject={region}
           PopoverComponent={<RegionPopover />}
           variant="noaliases"
-        />
-        <StixCoreObjectKnowledgeBar
-          stixCoreObjectLink={link}
-          availableSections={[
-            'countries',
-            'threat_actors',
-            'intrusion_sets',
-            'campaigns',
-            'incidents',
-            'malwares',
-            'observables',
-            'sightings',
-          ]}
         />
         <Route
           exact

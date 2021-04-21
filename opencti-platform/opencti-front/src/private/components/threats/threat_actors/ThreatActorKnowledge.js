@@ -13,7 +13,6 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 
@@ -33,21 +32,6 @@ class ThreatActorKnowledgeComponent extends Component {
         <StixDomainObjectHeader
           stixDomainObject={threatActor}
           PopoverComponent={<ThreatActorPopover />}
-        />
-        <StixCoreObjectKnowledgeBar
-          stixCoreObjectLink={link}
-          availableSections={[
-            'victimology',
-            'intrusion_sets',
-            'campaigns',
-            'incidents',
-            'malwares',
-            'attack_patterns',
-            'tools',
-            'vulnerabilities',
-            'observables',
-            'sightings',
-          ]}
         />
         <Route
           exact

@@ -20,6 +20,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
@@ -77,9 +78,26 @@ class RootCampaign extends Component {
         params: { campaignId },
       },
     } = this.props;
+    const link = `/dashboard/threats/campaigns/${campaignId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
+        <Route path="/dashboard/threats/campaigns/:campaignId/knowledge">
+          <StixCoreObjectKnowledgeBar
+            stixCoreObjectLink={link}
+            availableSections={[
+              'attribution',
+              'victimology',
+              'incidents',
+              'malwares',
+              'tools',
+              'attack_patterns',
+              'vulnerabilities',
+              'observables',
+              'sightings',
+            ]}
+          />
+        </Route>
         <QueryRenderer
           query={campaignQuery}
           variables={{ id: campaignId }}

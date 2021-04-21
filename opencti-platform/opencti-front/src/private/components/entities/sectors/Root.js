@@ -15,6 +15,8 @@ import FileManager from '../../common/files/FileManager';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -72,91 +74,113 @@ class RootSector extends Component {
         params: { sectorId },
       },
     } = this.props;
+    const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
+        <Route path="/dashboard/entities/sectors/:sectorId/knowledge">
+          <StixCoreObjectKnowledgeBar
+            stixCoreObjectLink={link}
+            availableSections={[
+              'organizations',
+              'threat_actors',
+              'intrusion_sets',
+              'campaigns',
+              'incidents',
+              'malwares',
+              'observables',
+              'sightings',
+            ]}
+          />
+        </Route>
         <QueryRenderer
           query={sectorQuery}
           variables={{ id: sectorId }}
           render={({ props }) => {
-            if (props && props.sector) {
-              return (
-                <div>
-                  <Route
-                    exact
-                    path="/dashboard/entities/sectors/:sectorId"
-                    render={(routeProps) => (
-                      <Sector {...routeProps} sector={props.sector} />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/entities/sectors/:sectorId/knowledge"
-                    render={() => (
-                      <Redirect
-                        to={`/dashboard/entities/sectors/${sectorId}/knowledge/overview`}
-                      />
-                    )}
-                  />
-                  <Route
-                    path="/dashboard/entities/sectors/:sectorId/knowledge"
-                    render={(routeProps) => (
-                      <SectorKnowledge {...routeProps} sector={props.sector} />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/entities/sectors/:sectorId/analysis"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.sector}
-                          PopoverComponent={<SectorPopover />}
+            if (props) {
+              if (props.sector) {
+                return (
+                  <div>
+                    <Route
+                      exact
+                      path="/dashboard/entities/sectors/:sectorId"
+                      render={(routeProps) => (
+                        <Sector {...routeProps} sector={props.sector} />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/entities/sectors/:sectorId/knowledge"
+                      render={() => (
+                        <Redirect
+                          to={`/dashboard/entities/sectors/${sectorId}/knowledge/overview`}
                         />
-                        <StixCoreObjectOrStixCoreRelationshipContainers
+                      )}
+                    />
+                    <Route
+                      path="/dashboard/entities/sectors/:sectorId/knowledge"
+                      render={(routeProps) => (
+                        <SectorKnowledge
                           {...routeProps}
-                          stixCoreObjectOrStixCoreRelationshipId={sectorId}
+                          sector={props.sector}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/entities/sectors/:sectorId/files"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.sector}
-                          PopoverComponent={<SectorPopover />}
-                        />
-                        <FileManager
-                          {...routeProps}
-                          id={sectorId}
-                          connectorsImport={[]}
-                          connectorsExport={props.connectorsForExport}
-                          entity={props.sector}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/entities/sectors/:sectorId/history"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.sector}
-                          PopoverComponent={<SectorPopover />}
-                        />
-                        <StixCoreObjectHistory
-                          {...routeProps}
-                          stixCoreObjectId={sectorId}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                </div>
-              );
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/entities/sectors/:sectorId/analysis"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.sector}
+                            PopoverComponent={<SectorPopover />}
+                          />
+                          <StixCoreObjectOrStixCoreRelationshipContainers
+                            {...routeProps}
+                            stixCoreObjectOrStixCoreRelationshipId={sectorId}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/entities/sectors/:sectorId/files"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.sector}
+                            PopoverComponent={<SectorPopover />}
+                          />
+                          <FileManager
+                            {...routeProps}
+                            id={sectorId}
+                            connectorsImport={[]}
+                            connectorsExport={props.connectorsForExport}
+                            entity={props.sector}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/entities/sectors/:sectorId/history"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.sector}
+                            PopoverComponent={<SectorPopover />}
+                          />
+                          <StixCoreObjectHistory
+                            {...routeProps}
+                            stixCoreObjectId={sectorId}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                  </div>
+                );
+              }
+              return <ErrorNotFound />;
             }
             return <Loader />;
           }}

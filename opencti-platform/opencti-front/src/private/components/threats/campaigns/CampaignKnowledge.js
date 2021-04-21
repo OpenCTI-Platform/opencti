@@ -13,7 +13,6 @@ import CampaignPopover from './CampaignPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 
@@ -33,20 +32,6 @@ class CampaignKnowledgeComponent extends Component {
         <StixDomainObjectHeader
           stixDomainObject={campaign}
           PopoverComponent={<CampaignPopover />}
-        />
-        <StixCoreObjectKnowledgeBar
-          stixCoreObjectLink={link}
-          availableSections={[
-            'attribution',
-            'victimology',
-            'incidents',
-            'malwares',
-            'tools',
-            'attack_patterns',
-            'vulnerabilities',
-            'observables',
-            'sightings',
-          ]}
         />
         <Switch>
           <Route

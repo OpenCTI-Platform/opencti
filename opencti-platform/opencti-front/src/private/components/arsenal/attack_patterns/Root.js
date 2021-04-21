@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter } from 'react-router-dom';
+import {
+  Route, Redirect, withRouter, Switch,
+} from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import {
   QueryRenderer,
@@ -17,6 +19,8 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -74,127 +78,146 @@ class RootAttackPattern extends Component {
         params: { attackPatternId },
       },
     } = this.props;
+    const link = `/dashboard/arsenal/attack_patterns/${attackPatternId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
+        <Route path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge">
+          <StixCoreObjectKnowledgeBar
+            stixCoreObjectLink={link}
+            availableSections={[
+              'threat_actors',
+              'intrusion_sets',
+              'campaigns',
+              'incidents',
+              'tools',
+              'vulnerabilities',
+              'malwares',
+              'sightings',
+            ]}
+          />
+        </Route>
         <QueryRenderer
           query={attackPatternQuery}
           variables={{ id: attackPatternId }}
           render={({ props }) => {
-            if (props && props.attackPattern) {
-              return (
-                <div>
-                  <Route
-                    exact
-                    path="/dashboard/arsenal/attack_patterns/:attackPatternId"
-                    render={(routeProps) => (
-                      <AttackPattern
-                        {...routeProps}
-                        attackPattern={props.attackPattern}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge"
-                    render={() => (
-                      <Redirect
-                        to={`/dashboard/arsenal/attack_patterns/${attackPatternId}/knowledge/overview`}
-                      />
-                    )}
-                  />
-                  <Route
-                    path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge"
-                    render={(routeProps) => (
-                      <AttackPatternKnowledge
-                        {...routeProps}
-                        attackPattern={props.attackPattern}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/arsenal/attack_patterns/:attackPatternId/analysis"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.attackPattern}
-                          PopoverComponent={<AttackPatternPopover />}
-                        />
-                        <StixCoreObjectOrStixCoreRelationshipContainers
+            if (props) {
+              if (props.attackPattern) {
+                return (
+                  <Switch>
+                    <Route
+                      exact
+                      path="/dashboard/arsenal/attack_patterns/:attackPatternId"
+                      render={(routeProps) => (
+                        <AttackPattern
                           {...routeProps}
-                          stixCoreObjectOrStixCoreRelationshipId={
-                            attackPatternId
-                          }
+                          attackPattern={props.attackPattern}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/arsenal/attack_patterns/:attackPatternId/indicators"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.attackPattern}
-                          PopoverComponent={<AttackPatternPopover />}
-                          variant="noaliases"
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge"
+                      render={() => (
+                        <Redirect
+                          to={`/dashboard/arsenal/attack_patterns/${attackPatternId}/knowledge/overview`}
                         />
-                        <StixDomainObjectIndicators
+                      )}
+                    />
+                    <Route
+                      path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge"
+                      render={(routeProps) => (
+                        <AttackPatternKnowledge
                           {...routeProps}
-                          stixDomainObjectId={attackPatternId}
-                          stixDomainObjectLink={`/dashboard/arsenal/attack_patterns/${attackPatternId}/indicators`}
+                          attackPattern={props.attackPattern}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/arsenal/attack_patterns/:attackPatternId/indicators/relations/:relationId"
-                    render={(routeProps) => (
-                      <StixCoreRelationship
-                        entityId={attackPatternId}
-                        {...routeProps}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/arsenal/attack_patterns/:attackPatternId/files"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.attackPattern}
-                          PopoverComponent={<AttackPatternPopover />}
-                        />
-                        <FileManager
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/arsenal/attack_patterns/:attackPatternId/analysis"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.attackPattern}
+                            PopoverComponent={<AttackPatternPopover />}
+                          />
+                          <StixCoreObjectOrStixCoreRelationshipContainers
+                            {...routeProps}
+                            stixCoreObjectOrStixCoreRelationshipId={
+                              attackPatternId
+                            }
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/arsenal/attack_patterns/:attackPatternId/indicators"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.attackPattern}
+                            PopoverComponent={<AttackPatternPopover />}
+                            variant="noaliases"
+                          />
+                          <StixDomainObjectIndicators
+                            {...routeProps}
+                            stixDomainObjectId={attackPatternId}
+                            stixDomainObjectLink={`/dashboard/arsenal/attack_patterns/${attackPatternId}/indicators`}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/arsenal/attack_patterns/:attackPatternId/indicators/relations/:relationId"
+                      render={(routeProps) => (
+                        <StixCoreRelationship
+                          entityId={attackPatternId}
                           {...routeProps}
-                          id={attackPatternId}
-                          connectorsExport={props.connectorsForExport}
-                          connectorsImport={[]}
-                          entity={props.attackPattern}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/arsenal/attack_patterns/:attackPatternId/history"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.attackPattern}
-                          PopoverComponent={<AttackPatternPopover />}
-                        />
-                        <StixCoreObjectHistory
-                          {...routeProps}
-                          stixCoreObjectId={attackPatternId}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                </div>
-              );
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/arsenal/attack_patterns/:attackPatternId/files"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.attackPattern}
+                            PopoverComponent={<AttackPatternPopover />}
+                          />
+                          <FileManager
+                            {...routeProps}
+                            id={attackPatternId}
+                            connectorsExport={props.connectorsForExport}
+                            connectorsImport={[]}
+                            entity={props.attackPattern}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/arsenal/attack_patterns/:attackPatternId/history"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.attackPattern}
+                            PopoverComponent={<AttackPatternPopover />}
+                          />
+                          <StixCoreObjectHistory
+                            {...routeProps}
+                            stixCoreObjectId={attackPatternId}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                  </Switch>
+                );
+              }
+              return <ErrorNotFound />;
             }
             return <Loader />;
           }}
