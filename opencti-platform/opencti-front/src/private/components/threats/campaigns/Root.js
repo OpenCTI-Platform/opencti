@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter } from 'react-router-dom';
+import {
+  Route, Redirect, withRouter, Switch,
+} from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import {
   QueryRenderer,
@@ -85,7 +87,7 @@ class RootCampaign extends Component {
             if (props) {
               if (props.campaign) {
                 return (
-                  <div>
+                  <Switch>
                     <Route
                       exact
                       path="/dashboard/threats/campaigns/:campaignId"
@@ -190,7 +192,7 @@ class RootCampaign extends Component {
                         </React.Fragment>
                       )}
                     />
-                  </div>
+                  </Switch>
                 );
               }
               return <ErrorNotFound />;
