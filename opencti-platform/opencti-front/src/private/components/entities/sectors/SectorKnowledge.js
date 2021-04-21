@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Route, withRouter } from 'react-router-dom';
+import { Route, Switch, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -31,151 +31,153 @@ class SectorKnowledgeComponent extends Component {
           stixDomainObject={sector}
           PopoverComponent={<SectorPopover />}
         />
-        <Route
-          exact
-          path="/dashboard/entities/sectors/:sectorId/knowledge/relations/:relationId"
-          render={(routeProps) => (
-            <StixCoreRelationship
-              entityId={sector.id}
-              paddingRight={true}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/entities/sectors/:sectorId/knowledge/overview"
-          render={(routeProps) => (
-            <StixDomainObjectKnowledge
-              stixDomainObjectId={sector.id}
-              stixDomainObjectType="Sector"
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/entities/sectors/:sectorId/knowledge/related"
-          render={(routeProps) => (
-            <EntityStixCoreRelationships
-              entityId={sector.id}
-              relationshipTypes={['related-to']}
-              targetStixDomainObjectTypes={['Stix-Domain-Object']}
-              entityLink={link}
-              allDirections={true}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/entities/sectors/:sectorId/knowledge/organizations"
-          render={(routeProps) => (
-            <EntityStixCoreRelationships
-              entityId={sector.id}
-              relationshipTypes={['part-of']}
-              targetStixDomainObjectTypes={['Organization']}
-              entityLink={link}
-              isRelationReversed={true}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/entities/sectors/:sectorId/knowledge/threat_actors"
-          render={(routeProps) => (
-            <EntityStixCoreRelationships
-              entityId={sector.id}
-              relationshipTypes={['targets']}
-              targetStixDomainObjectTypes={['Threat-Actor']}
-              entityLink={link}
-              isRelationReversed={true}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/entities/sectors/:sectorId/knowledge/intrusion_sets"
-          render={(routeProps) => (
-            <EntityStixCoreRelationships
-              entityId={sector.id}
-              relationshipTypes={['targets']}
-              targetStixDomainObjectTypes={['Intrusion-Set']}
-              entityLink={link}
-              isRelationReversed={true}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/entities/sectors/:sectorId/knowledge/campaigns"
-          render={(routeProps) => (
-            <EntityStixCoreRelationships
-              entityId={sector.id}
-              relationshipTypes={['targets']}
-              targetStixDomainObjectTypes={['Campaign']}
-              entityLink={link}
-              isRelationReversed={true}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/entities/sectors/:sectorId/knowledge/incidents"
-          render={(routeProps) => (
-            <EntityStixCoreRelationships
-              entityId={sector.id}
-              relationshipTypes={['targets']}
-              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
-              entityLink={link}
-              isRelationReversed={true}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/entities/sectors/:sectorId/knowledge/malwares"
-          render={(routeProps) => (
-            <EntityStixCoreRelationships
-              entityId={sector.id}
-              relationshipTypes={['targets']}
-              targetStixDomainObjectTypes={['Malware']}
-              entityLink={link}
-              isRelationReversed={true}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/entities/sectors/:sectorId/knowledge/observables"
-          render={(routeProps) => (
-            <StixCoreObjectStixCyberObservables
-              stixCoreObjectId={sector.id}
-              stixCoreObjectLink={link}
-              noRightBar={true}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/entities/sectors/:threatActorId/knowledge/sightings"
-          render={(routeProps) => (
-            <EntityStixSightingRelationships
-              entityId={sector.id}
-              entityLink={link}
-              noRightBar={true}
-              isTo={true}
-              {...routeProps}
-            />
-          )}
-        />
+        <Switch>
+          <Route
+            exact
+            path="/dashboard/entities/sectors/:sectorId/knowledge/relations/:relationId"
+            render={(routeProps) => (
+              <StixCoreRelationship
+                entityId={sector.id}
+                paddingRight={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/entities/sectors/:sectorId/knowledge/overview"
+            render={(routeProps) => (
+              <StixDomainObjectKnowledge
+                stixDomainObjectId={sector.id}
+                stixDomainObjectType="Sector"
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/entities/sectors/:sectorId/knowledge/related"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={sector.id}
+                relationshipTypes={['related-to']}
+                targetStixDomainObjectTypes={['Stix-Domain-Object']}
+                entityLink={link}
+                allDirections={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/entities/sectors/:sectorId/knowledge/organizations"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={sector.id}
+                relationshipTypes={['part-of']}
+                targetStixDomainObjectTypes={['Organization']}
+                entityLink={link}
+                isRelationReversed={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/entities/sectors/:sectorId/knowledge/threat_actors"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={sector.id}
+                relationshipTypes={['targets']}
+                targetStixDomainObjectTypes={['Threat-Actor']}
+                entityLink={link}
+                isRelationReversed={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/entities/sectors/:sectorId/knowledge/intrusion_sets"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={sector.id}
+                relationshipTypes={['targets']}
+                targetStixDomainObjectTypes={['Intrusion-Set']}
+                entityLink={link}
+                isRelationReversed={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/entities/sectors/:sectorId/knowledge/campaigns"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={sector.id}
+                relationshipTypes={['targets']}
+                targetStixDomainObjectTypes={['Campaign']}
+                entityLink={link}
+                isRelationReversed={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/entities/sectors/:sectorId/knowledge/incidents"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={sector.id}
+                relationshipTypes={['targets']}
+                targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+                entityLink={link}
+                isRelationReversed={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/entities/sectors/:sectorId/knowledge/malwares"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={sector.id}
+                relationshipTypes={['targets']}
+                targetStixDomainObjectTypes={['Malware']}
+                entityLink={link}
+                isRelationReversed={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/entities/sectors/:sectorId/knowledge/observables"
+            render={(routeProps) => (
+              <StixCoreObjectStixCyberObservables
+                stixCoreObjectId={sector.id}
+                stixCoreObjectLink={link}
+                noRightBar={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/entities/sectors/:threatActorId/knowledge/sightings"
+            render={(routeProps) => (
+              <EntityStixSightingRelationships
+                entityId={sector.id}
+                entityLink={link}
+                noRightBar={true}
+                isTo={true}
+                {...routeProps}
+              />
+            )}
+          />
+        </Switch>
       </div>
     );
   }

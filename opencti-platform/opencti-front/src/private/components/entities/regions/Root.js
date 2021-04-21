@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter } from 'react-router-dom';
+import {
+  Route, Redirect, withRouter, Switch,
+} from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import {
   QueryRenderer,
@@ -99,7 +101,7 @@ class RootRegion extends Component {
             if (props) {
               if (props.region) {
                 return (
-                  <div>
+                  <Switch>
                     <Route
                       exact
                       path="/dashboard/entities/regions/:regionId"
@@ -176,7 +178,7 @@ class RootRegion extends Component {
                         </React.Fragment>
                       )}
                     />
-                  </div>
+                  </Switch>
                 );
               }
               return <ErrorNotFound />;
