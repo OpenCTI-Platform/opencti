@@ -71,7 +71,7 @@ class Consumer(threading.Thread):
             ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
             logging.info("Unable to kill the thread")
 
-    def nack_message(self, channel: BlockingChannel, delivery_tag: str) -> None:
+    def nack_message(self, channel: BlockingChannel, delivery_tag: int) -> None:
         if channel.is_open:
             logging.info("%s", f"Message (delivery_tag={delivery_tag}) rejected")
             channel.basic_nack(delivery_tag)
@@ -81,7 +81,7 @@ class Consumer(threading.Thread):
                 f"Message (delivery_tag={delivery_tag}) NOT rejected (channel closed)",
             )
 
-    def ack_message(self, channel: BlockingChannel, delivery_tag: str) -> None:
+    def ack_message(self, channel: BlockingChannel, delivery_tag: int) -> None:
         if channel.is_open:
             logging.info("%s", f"Message (delivery_tag={delivery_tag}) acknowledged")
             channel.basic_ack(delivery_tag)
@@ -231,8 +231,8 @@ class Consumer(threading.Thread):
 class Worker:
     def __init__(self) -> None:
         self.logs_all_queue: str = "logs_all"
-        self.consumer_threads: dict[str, Any] = {}
-        self.logger_threads: dict[str, Any] = {}
+        self.consumer_threads: Dict[str, Any] = {}
+        self.logger_threads: Dict[str, Any] = {}
 
         # Get configuration
         config_file_path = os.path.join(
