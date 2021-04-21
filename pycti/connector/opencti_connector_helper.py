@@ -12,7 +12,7 @@ import base64
 import os
 import ssl
 
-from typing import Callable, Dict, Optional, Union
+from typing import Callable, Dict, Optional, Union, List
 from sseclient import SSEClient
 from pika.exceptions import UnroutableError, NackError
 from pycti.api.opencti_api_client import OpenCTIApiClient
@@ -63,7 +63,7 @@ def create_ssl_context() -> ssl.SSLContext:
     `ssl` uses bitwise operations to specify context `<enum 'Options'>`
     """
 
-    ssl_context_options: list[int] = [
+    ssl_context_options: List[int] = [
         ssl.OP_NO_COMPRESSION,
         ssl.OP_NO_TICKET,  # pylint: disable=no-member
         ssl.OP_NO_RENEGOTIATION,  # pylint: disable=no-member
