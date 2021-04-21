@@ -11,7 +11,7 @@ import random
 import sys
 import threading
 import time
-from typing import Any, Optional
+from typing import Any, Optional, Dict, List
 
 import pika
 import yaml
@@ -27,7 +27,7 @@ MAX_PROCESSING_COUNT: int = 30
 class Consumer(threading.Thread):
     def __init__(
         self,
-        connector: dict[str, Any],
+        connector: Dict[str, Any],
         opencti_url: str,
         opencti_token: str,
         log_level: str,
@@ -130,7 +130,7 @@ class Consumer(threading.Thread):
         connection: Any,
         channel: BlockingChannel,
         delivery_tag: str,
-        data: dict[str, Any],
+        data: Dict[str, Any],
     ) -> Optional[bool]:
         # Set the API headers
         applicant_id = data["applicant_id"]
@@ -259,8 +259,8 @@ class Worker:
         logging.basicConfig(level=numeric_level)
 
         # Initialize variables
-        self.connectors: list[Any] = []
-        self.queues: list[Any] = []
+        self.connectors: List[Any] = []
+        self.queues: List[Any] = []
 
     # Start the main loop
     def start(self) -> None:
