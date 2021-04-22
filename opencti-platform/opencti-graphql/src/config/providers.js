@@ -275,8 +275,12 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         }
         if (authorized) {
           const { displayName } = profile;
-          const email = R.head(profile.emails).value;
-          providerLoginHandler(email, displayName, [], done);
+          if (!profile.emails || profile.emails.length === 0) {
+            done({ message: 'You need a public email in your github account' });
+          } else {
+            const email = R.head(profile.emails).value;
+            providerLoginHandler(email, displayName, [], done);
+          }
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
