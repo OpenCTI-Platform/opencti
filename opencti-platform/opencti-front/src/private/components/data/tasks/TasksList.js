@@ -289,10 +289,7 @@ class TasksListComponent extends Component {
                                   <div>
                                     {action.context.field && (
                                       <span>
-                                        <strong>
-                                          {action.context.field || t('N/A')}
-                                        </strong>
-                                        :{' '}
+                                        <strong>{action.context.field}</strong>:{' '}
                                       </span>
                                     )}
                                     {truncate(

@@ -176,10 +176,21 @@ class StixCyberObservables extends Component {
       numberOfElements,
       selectedElements,
       selectAll,
+      observableTypes,
     } = this.state;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original;
+    }
+    let finalFilters = filters;
+    if (observableTypes.length) {
+      finalFilters = R.assoc(
+        'entity_type',
+        observableTypes.length > 0
+          ? R.map((n) => ({ id: n, value: n }), observableTypes)
+          : ['Stix-Cyber-Observable'],
+        finalFilters,
+      );
     }
     const dataColumns = {
       entity_type: {
@@ -258,7 +269,7 @@ class StixCyberObservables extends Component {
           selectedElements={selectedElements}
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
-          filters={filters}
+          filters={finalFilters}
           handleClearSelectedElements={this.handleClearSelectedElements.bind(
             this,
           )}

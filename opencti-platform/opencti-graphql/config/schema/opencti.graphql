@@ -837,6 +837,8 @@ input RegisterConnectorInput {
 }
 type RabbitMQConnection {
   host: String!
+  use_ssl: Boolean!
+  ca: [String]
   port: Int!
   user: String!
   pass: String!
@@ -1169,6 +1171,7 @@ enum StixCoreObjectsFilter {
   labelledBy
   hasExternalReference
   objectContains
+  containedBy
   indicates
   confidence
 }
@@ -1262,6 +1265,7 @@ enum StixDomainObjectsFilter {
   labelledBy
   hasExternalReference
   objectContains
+  containedBy
   indicates
   confidence
   valid_from
@@ -4445,6 +4449,7 @@ enum StixCyberObservablesFilter {
   labelledBy
   relatedTo
   objectContained
+  containedBy
   hasExternalReference
   value
   name
@@ -8189,6 +8194,7 @@ type Query {
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     elementId: String
+    elementWithTargetTypes: [String]
     fromId: String
     fromRole: String
     fromTypes: [String]

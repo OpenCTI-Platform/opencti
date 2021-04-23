@@ -1,16 +1,12 @@
-FROM python:3.7.4-alpine3.10
+FROM python:3.9-alpine
 
-# Copy the worker
 COPY src /opt/opencti-worker
 
-# Install Python modules
-# hadolint ignore=DL3003
-RUN apk --no-cache add git build-base libmagic libffi-dev && \
-    cd /opt/opencti-worker && \
-    pip3 install --no-cache-dir -r requirements.txt && \
-    apk del git build-base
+WORKDIR /opt/opencti-worker
 
-# Expose and entrypoint
-COPY entrypoint.sh /
-RUN chmod +x /entrypoint.sh 
-ENTRYPOINT ["/entrypoint.sh"]
+RUN apk --no-cache add git build-base libmagic libffi-dev \
+    && pip3 install --no-cache-dir -r requirements.txt \
+    && apk del git build-base
+
+ENTRYPOINT ["python3"]
+CMD ["worker.py"]

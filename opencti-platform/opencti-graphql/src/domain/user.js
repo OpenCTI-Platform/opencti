@@ -214,7 +214,10 @@ export const findSessions = () => {
   const { store } = applicationSession();
   return new Promise((accept) => {
     store.all((err, result) => {
-      const sessionsPerUser = R.groupBy((s) => s.user.id, result);
+      const sessionsPerUser = R.groupBy(
+        (s) => s.user.id,
+        R.filter((n) => n.user, result)
+      );
       const sessions = Object.entries(sessionsPerUser).map(([k, v]) => {
         return {
           user_id: k,
@@ -432,7 +435,7 @@ export const userDeleteRelation = async (user, userId, toId, relationshipType) =
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user);
 };
 
-export const loginFromProvider = async (email, name) => {
+export const loginFromProvider = async (email, name, providerRoles = []) => {
   if (!email) {
     throw Error('User email not provided');
   }
@@ -441,12 +444,26 @@ export const loginFromProvider = async (email, name) => {
     const newUser = { name, user_email: email.toLowerCase(), external: true };
     return addUser(SYSTEM_USER, newUser).then(() => loginFromProvider(email, name));
   }
-  // update the name
+  // Update the basic information
   const userToken = await loadThroughGetTo(SYSTEM_USER, user.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
   const inputName = { key: 'name', value: [name] };
   await userEditField(SYSTEM_USER, user.id, inputName);
   const inputExternal = { key: 'external', value: [true] };
   await userEditField(SYSTEM_USER, user.id, inputExternal);
+  // Update the roles
+  // If roles are specified here, that overwrite the default assignation
+  if (providerRoles.length > 0) {
+    // 01 - Delete all roles from the user
+    const opts = { paginate: false };
+    const userRoles = await listThroughGetTo(SYSTEM_USER, user.id, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, opts);
+    for (let index = 0; index < userRoles.length; index += 1) {
+      const userRole = userRoles[index];
+      await userDeleteRelation(SYSTEM_USER, user.id, userRole.id, RELATION_HAS_ROLE);
+    }
+    // 02 - Create roles from providers
+    const rolesCreation = R.map((role) => assignRoleToUser(SYSTEM_USER, user.id, role), providerRoles);
+    await Promise.all(rolesCreation);
+  }
   return { token: userToken, user };
 };
 

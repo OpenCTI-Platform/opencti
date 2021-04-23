@@ -70,7 +70,7 @@ describe('Minio file listing', () => {
     expect(user.name).toEqual('Paradise Ransomware');
   });
   it('should load file', async () => {
-    const file = await loadFile(exportFileId);
+    const file = await loadFile(ADMIN_USER, exportFileId);
     expect(file).not.toBeNull();
     expect(file.id).toEqual(exportFileId);
     expect(file.name).toEqual(exportFileName);

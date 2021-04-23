@@ -127,6 +127,12 @@ class ContainerStixDomainObjectsComponent extends Component {
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
+    const exportPaginationOptions = {
+      filters: [{ key: 'containedBy', values: [container.id] }],
+      orderBy: sortBy,
+      orderMode: orderAsc ? 'asc' : 'desc',
+      search: searchTerm,
+    };
     return (
       <div className={classes.container}>
         <ListLines
@@ -135,9 +141,14 @@ class ContainerStixDomainObjectsComponent extends Component {
           dataColumns={dataColumns}
           handleSort={this.handleSort.bind(this)}
           handleSearch={this.handleSearch.bind(this)}
+          handleToggleExports={this.handleToggleExports.bind(this)}
+          exportEntityType="Stix-Domain-Object"
+          openExports={openExports}
+          exportContext={`of-container-${container.id}`}
           keyword={searchTerm}
           secondaryAction={true}
           numberOfElements={numberOfElements}
+          paginationOptions={exportPaginationOptions}
         >
           <QueryRenderer
             query={containerStixDomainObjectsLinesQuery}

@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter } from 'react-router-dom';
+import {
+  Route, Redirect, withRouter, Switch,
+} from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import {
   QueryRenderer,
@@ -15,6 +17,8 @@ import CityPopover from './CityPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
@@ -71,91 +75,110 @@ class RootCity extends Component {
         params: { cityId },
       },
     } = this.props;
+    const link = `/dashboard/entities/cities/${cityId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
+        <Route path="/dashboard/entities/cities/:cityId/knowledge">
+          <StixCoreObjectKnowledgeBar
+            stixCoreObjectLink={link}
+            availableSections={[
+              'organizations',
+              'threat_actors',
+              'intrusion_sets',
+              'campaigns',
+              'incidents',
+              'malwares',
+              'observables',
+              'sightings',
+            ]}
+          />
+        </Route>
         <QueryRenderer
           query={cityQuery}
           variables={{ id: cityId }}
           render={({ props }) => {
-            if (props && props.city) {
-              return (
-                <div>
-                  <Route
-                    exact
-                    path="/dashboard/entities/cities/:cityId"
-                    render={(routeProps) => (
-                      <City {...routeProps} city={props.city} />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/entities/cities/:cityId/knowledge"
-                    render={() => (
-                      <Redirect
-                        to={`/dashboard/entities/cities/${cityId}/knowledge/overview`}
-                      />
-                    )}
-                  />
-                  <Route
-                    path="/dashboard/entities/cities/:cityId/knowledge"
-                    render={(routeProps) => (
-                      <CityKnowledge {...routeProps} city={props.city} />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/entities/cities/:cityId/analysis"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.city}
-                          PopoverComponent={<CityPopover />}
+            if (props) {
+              if (props.city) {
+                return (
+                  <Switch>
+                    <Route
+                      exact
+                      path="/dashboard/entities/cities/:cityId"
+                      render={(routeProps) => (
+                        <City {...routeProps} city={props.city} />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/entities/cities/:cityId/knowledge"
+                      render={() => (
+                        <Redirect
+                          to={`/dashboard/entities/cities/${cityId}/knowledge/overview`}
                         />
-                        <StixCoreObjectOrStixCoreRelationshipContainers
-                          {...routeProps}
-                          stixCoreObjectOrStixCoreRelationshipId={cityId}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/entities/cities/:cityId/files"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.city}
-                          PopoverComponent={<CityPopover />}
-                        />
-                        <FileManager
-                          {...routeProps}
-                          id={cityId}
-                          connectorsImport={[]}
-                          connectorsExport={props.connectorsForExport}
-                          entity={props.city}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/entities/cities/:cityId/history"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.city}
-                          PopoverComponent={<CityPopover />}
-                        />
-                        <StixCoreObjectHistory
-                          {...routeProps}
-                          stixCoreObjectId={cityId}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                </div>
-              );
+                      )}
+                    />
+                    <Route
+                      path="/dashboard/entities/cities/:cityId/knowledge"
+                      render={(routeProps) => (
+                        <CityKnowledge {...routeProps} city={props.city} />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/entities/cities/:cityId/analysis"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.city}
+                            PopoverComponent={<CityPopover />}
+                          />
+                          <StixCoreObjectOrStixCoreRelationshipContainers
+                            {...routeProps}
+                            stixCoreObjectOrStixCoreRelationshipId={cityId}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/entities/cities/:cityId/files"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.city}
+                            PopoverComponent={<CityPopover />}
+                          />
+                          <FileManager
+                            {...routeProps}
+                            id={cityId}
+                            connectorsImport={[]}
+                            connectorsExport={props.connectorsForExport}
+                            entity={props.city}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/entities/cities/:cityId/history"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.city}
+                            PopoverComponent={<CityPopover />}
+                          />
+                          <StixCoreObjectHistory
+                            {...routeProps}
+                            stixCoreObjectId={cityId}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                  </Switch>
+                );
+              }
+              return <ErrorNotFound />;
             }
             return <Loader />;
           }}

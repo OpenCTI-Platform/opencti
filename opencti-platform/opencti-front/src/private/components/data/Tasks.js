@@ -31,7 +31,7 @@ class Tasks extends Component {
     };
     return (
       <div className={classes.container}>
-        <Typography variant="h1" gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('In progress tasks')}
         </Typography>
         <QueryRenderer
@@ -44,7 +44,7 @@ class Tasks extends Component {
             return <Loader variant="inElement" />;
           }}
         />
-        <Typography variant="h1" gutterBottom={true} style={{ marginTop: 35 }}>
+        <Typography variant="h4" gutterBottom={true} style={{ marginTop: 35 }}>
           {t('Completed tasks')}
         </Typography>
         <QueryRenderer

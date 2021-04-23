@@ -150,6 +150,12 @@ class Reports extends Component {
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original;
     }
+    let finalFilters = filters;
+    finalFilters = R.assoc(
+      'entity_type',
+      [{ id: 'Report', value: 'Report' }],
+      finalFilters,
+    );
     const dataColumns = {
       name: {
         label: 'Title',
@@ -237,7 +243,7 @@ class Reports extends Component {
           selectedElements={selectedElements}
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
-          filters={filters}
+          filters={finalFilters}
           handleClearSelectedElements={this.handleClearSelectedElements.bind(
             this,
           )}

@@ -13,6 +13,7 @@ import validator from 'validator';
 import { initAdmin, login, loginFromProvider } from '../domain/user';
 import conf, { logApp } from './conf';
 import { ConfigurationError } from './errors';
+import { isNotEmptyField } from '../database/utils';
 
 export const empty = R.anyPass([R.isNil, R.isEmpty]);
 
@@ -61,6 +62,9 @@ const configurationMapping = {
   username_field: 'usernameField',
   password_field: 'passwordField',
   credentials_lookup: 'credentialsLookup',
+  group_search_base: 'groupSearchBase',
+  group_search_filter: 'groupSearchFilter',
+  group_search_attributes: 'groupSearchAttributes',
   // OpenID Client - everything is already in snake case
 };
 const configRemapping = (config) => {
@@ -89,15 +93,25 @@ const AUTH_SSO = 'SSO';
 const AUTH_FORM = 'FORM';
 
 const providers = [];
-const providerLoginHandler = (email, name, done) => {
+const providerLoginHandler = (email, name, roles, done) => {
   const finalName = empty(name) ? email : name;
-  loginFromProvider(email, finalName)
+  loginFromProvider(email, finalName, roles)
     .then(({ token }) => {
       done(null, token);
     })
     .catch((err) => {
       done(err);
     });
+};
+const genRolesMapper = (elements) => {
+  return R.mergeAll(
+    elements.map((r) => {
+      const data = r.split(':');
+      if (data.length !== 2) return {};
+      const [remoteRole, octiRole] = data;
+      return { [remoteRole]: octiRole };
+    })
+  );
 };
 const confProviders = conf.get('providers');
 const providerKeys = Object.keys(confProviders);
@@ -130,20 +144,39 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const ldapOptions = { server: mappedConfig };
       const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
         logApp.debug(`[LDAP] Successfully logged`, { user });
+        const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
+        let groupsMapping = [];
+        let userGroups = [];
+        if (isRoleBaseAccess) {
+          groupsMapping = mappedConfig.roles_management.groups_mapping || [];
+          userGroups = (user._groups || [])
+            .map((g) => g[mappedConfig.roles_management.group_attribute || 'cn'])
+            .filter((g) => isNotEmptyField(g));
+        }
         const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
         const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
         if (!userMail) {
           logApp.warn(`[LDAP] Configuration error, cant map mail and username`, { user, userMail, userName });
           done({ message: 'Configuration error, ask your administrator' });
         } else {
-          logApp.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
-          loginFromProvider(userMail, empty(userName) ? userMail : userName)
-            .then(({ token }) => {
-              done(null, token);
-            })
-            .catch((err) => {
-              done(err);
-            });
+          let rolesToAssociate = [];
+          // Find roles to give to the user
+          if (isRoleBaseAccess) {
+            const rolesMapper = genRolesMapper(groupsMapping);
+            rolesToAssociate = userGroups.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
+          }
+          if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
+            logApp.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
+            loginFromProvider(userMail, empty(userName) ? userMail : userName, rolesToAssociate)
+              .then((info) => {
+                done(null, info);
+              })
+              .catch((err) => {
+                done(err);
+              });
+          } else {
+            done({ message: 'Restricted access, ask your administrator' });
+          }
         }
       });
       passport.use('ldapauth', ldapStrategy);
@@ -156,23 +189,31 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       OpenIDIssuer.discover(config.issuer).then((issuer) => {
         const { Client } = issuer;
         const client = new Client(config);
-        const options = { client, passReqToCallback: true, params: { scope: 'openid roles email profile' } };
-        const roles = mappedConfig.roles || [];
+        // Roles
+        let additionalScope = '';
+        let rolesPath = [];
+        let rolesMapping = [];
+        const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
+        if (isRoleBaseAccess) {
+          additionalScope += mappedConfig.roles_management.roles_scope || '';
+          rolesPath = mappedConfig.roles_management.roles_path || [];
+          rolesMapping = mappedConfig.roles_management.roles_mapping || [];
+        }
+        const openIdScope = `openid email profile ${additionalScope}`;
+        const options = { client, passReqToCallback: true, params: { scope: openIdScope } };
         const openIDStrategy = new OpenIDStrategy(options, (req, tokenset, userinfo, done) => {
           logApp.debug(`[OPENID] Successfully logged`, { userinfo });
-          let authorized = true;
-          if (roles.length > 0) {
+          let rolesToAssociate = [];
+          if (isRoleBaseAccess) {
             const decodedUser = jwtDecode(tokenset.access_token);
-            const availableRoles = [
-              ...(decodedUser.roles || []),
-              ...(decodedUser.realm_access?.roles || []),
-              ...(decodedUser.resource_access?.account?.roles || []),
-            ];
-            authorized = roles.some((o) => availableRoles.includes(o));
+            const availableRoles = R.flatten(rolesPath.map((path) => R.path(path.split('.'), decodedUser) || []));
+            const rolesMapper = genRolesMapper(rolesMapping);
+            // Find roles to give to the user
+            rolesToAssociate = availableRoles.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
           }
-          if (authorized) {
+          if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
             const { email, name } = userinfo;
-            providerLoginHandler(email, name, done);
+            providerLoginHandler(email, name, rolesToAssociate, done);
           } else {
             done({ message: 'Restricted access, ask your administrator' });
           }
@@ -190,7 +231,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const data = profile._json;
           logApp.debug(`[FACEBOOK] Successfully logged`, { profile: data });
           const { email } = data;
-          providerLoginHandler(email, data.first_name, done);
+          providerLoginHandler(email, data.first_name, [], done);
         }
       );
       passport.use('facebook', facebookStrategy);
@@ -210,7 +251,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           authorized = domains.includes(domain);
         }
         if (authorized) {
-          providerLoginHandler(email, name, done);
+          providerLoginHandler(email, name, [], done);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
@@ -234,8 +275,12 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         }
         if (authorized) {
           const { displayName } = profile;
-          const email = R.head(profile.emails).value;
-          providerLoginHandler(email, displayName, done);
+          if (!profile.emails || profile.emails.length === 0) {
+            done({ message: 'You need a public email in your github account' });
+          } else {
+            const email = R.head(profile.emails).value;
+            providerLoginHandler(email, displayName, [], done);
+          }
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
@@ -251,7 +296,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           logApp.debug(`[AUTH0] Successfully logged`, { profile });
           const userName = profile.displayName;
           const email = R.head(profile.emails).value;
-          providerLoginHandler(email, userName, done);
+          providerLoginHandler(email, userName, [], done);
         }
       );
       passport.use('auth0', auth0Strategy);

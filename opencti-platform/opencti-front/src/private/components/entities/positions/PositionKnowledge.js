@@ -11,7 +11,6 @@ import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDoma
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import PositionPopover from './PositionPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 
@@ -33,19 +32,6 @@ class PositionKnowledgeComponent extends Component {
           PopoverComponent={<PositionPopover />}
           variant="noaliases"
         />
-        <StixCoreObjectKnowledgeBar
-          stixCoreObjectLink={link}
-          availableSections={[
-            'organizations',
-            'threat_actors',
-            'intrusion_sets',
-            'campaigns',
-            'incidents',
-            'malwares',
-            'observables',
-            'sightings',
-          ]}
-        />
         <Route
           exact
           path="/dashboard/entities/positions/:positionId/knowledge/relations/:relationId"
@@ -64,6 +50,20 @@ class PositionKnowledgeComponent extends Component {
             <StixDomainObjectKnowledge
               stixDomainObjectId={position.id}
               stixDomainObjectType="Position"
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/positions/:positionId/knowledge/related"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={position.id}
+              relationshipTypes={['related-to']}
+              targetStixDomainObjectTypes={['Stix-Domain-Object']}
+              entityLink={link}
+              allDirections={true}
               {...routeProps}
             />
           )}

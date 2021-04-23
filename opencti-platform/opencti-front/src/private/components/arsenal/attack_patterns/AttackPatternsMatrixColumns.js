@@ -8,6 +8,7 @@ import inject18n from '../../../../components/i18n';
 import { attackPatternsLinesQuery } from './AttackPatternsLines';
 import { computeLevel } from '../../../../utils/Number';
 import AttackPtternsMatrixBar from './AttackPtternsMatrixBar';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   container: {
@@ -90,11 +91,19 @@ const colors = [
 class AttackPatternsMatrixColumnsComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { currentModeOnlyActive: false };
+    this.state = {
+      currentModeOnlyActive: false,
+      currentKillChain: 'mitre-attack',
+    };
   }
 
   handleToggleModeOnlyActive() {
     this.setState({ currentModeOnlyActive: !this.state.currentModeOnlyActive });
+  }
+
+  handleChangeKillChain(event) {
+    const { value } = event.target;
+    this.setState({ currentKillChain: value });
   }
 
   level(attackPattern, maxNumberOfSameAttackPattern) {
@@ -123,7 +132,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       marginRight,
       searchTerm,
     } = this.props;
-    const { currentModeOnlyActive } = this.state;
+    const { currentModeOnlyActive, currentKillChain } = this.state;
     const sortByOrder = R.sortBy(R.prop('x_opencti_order'));
     const sortByName = R.sortBy(R.prop('name'));
     const filterByKeyword = (n) => searchTerm === ''
@@ -180,9 +189,17 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       R.map((n) => R.map((o) => o.node, n.node.killChainPhases.edges)),
       R.flatten,
       R.uniq,
-      R.filter((n) => n.kill_chain_name === 'mitre-attack'),
+      R.filter((n) => n.kill_chain_name === currentKillChain),
       sortByOrder,
     )(data.attackPatterns.edges);
+    const killChains = R.uniq([
+      'mitre-attack',
+      ...R.pipe(
+        R.map((n) => R.map((o) => o.node, n.node.killChainPhases.edges)),
+        R.flatten,
+        R.map((n) => n.kill_chain_name),
+      )(data.attackPatterns.edges),
+    ]);
     const attackPatternsOfPhases = R.map(
       (n) => ({
         ...n,
@@ -204,11 +221,14 @@ class AttackPatternsMatrixColumnsComponent extends Component {
           handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
             this,
           )}
+          currentKillChain={currentKillChain}
+          handleChangeKillChain={this.handleChangeKillChain.bind(this)}
+          killChains={killChains}
         />
         <div className={classes.header}>
           {attackPatternsOfPhases.map((k) => (
             <div key={k.id} className={classes.headerElement}>
-              <div className={classes.title}>{k.phase_name}</div>
+              <div className={classes.title}>{truncate(k.phase_name, 18)}</div>
               <span className={classes.subtitle}>{`${
                 k.attackPatterns.length
               } ${t('techniques')}`}</span>

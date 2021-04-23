@@ -249,7 +249,11 @@ class Entities extends Component {
           filters={
             entityTypes.length > 0
               ? R.assoc('entity_type', entityTypes, filters)
-              : filters
+              : R.assoc(
+                'entity_type',
+                [{ id: 'Stix-Domain-Object', value: 'Stix-Domain-Object' }],
+                filters,
+              )
           }
           handleClearSelectedElements={this.handleClearSelectedElements.bind(
             this,

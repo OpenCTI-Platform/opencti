@@ -65,6 +65,10 @@ const buildQueryFilters = (rawFilters, taskPosition) => {
       }
     }
   }
+  // Avoid empty type which will target internal objects and relationships as well
+  if (types.length === 0) {
+    types.push('Stix-Domain-Object');
+  }
   return {
     types,
     first: MAX_TASK_ELEMENTS,

@@ -69,6 +69,20 @@ class InfrastructureKnowledgeComponent extends Component {
         />
         <Route
           exact
+          path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/related"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={infrastructure.id}
+              relationshipTypes={['related-to']}
+              targetStixDomainObjectTypes={['Stix-Domain-Object']}
+              entityLink={link}
+              allDirections={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/observables"
           render={(routeProps) => (
             <StixCoreObjectStixCyberObservables

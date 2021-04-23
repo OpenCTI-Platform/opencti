@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { assoc, compose, map } from 'ramda';
+import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import {
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
@@ -39,11 +39,6 @@ const stixCoreObjectIndicatorsDonutDistributionQuery = graphql`
     ) {
       label
       value
-      entity {
-        ... on Identity {
-          name
-        }
-      }
     }
   }
 `;
@@ -135,13 +130,7 @@ class StixCoreObjectIndicatorsDonut extends Component {
             && props.indicatorsDistribution
             && props.indicatorsDistribution.length > 0
           ) {
-            let data = props.indicatorsDistribution;
-            if (field && field.includes('internal_id')) {
-              data = map(
-                (n) => assoc('label', n.entity.name, n),
-                props.indicatorsDistribution,
-              );
-            }
+            const data = props.indicatorsDistribution;
             return (
               <ResponsiveContainer height="100%" width="100%">
                 <PieChart

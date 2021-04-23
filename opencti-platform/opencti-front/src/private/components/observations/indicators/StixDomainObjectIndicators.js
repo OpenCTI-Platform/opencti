@@ -1,15 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  append,
-  assoc,
-  dissoc,
-  filter,
-  map,
-  propOr,
-  uniqBy,
-  prop,
-} from 'ramda';
+import * as R from 'ramda';
 import StixDomainObjectIndicatorsLines, {
   stixDomainObjectIndicatorsLinesQuery,
 } from './StixDomainObjectIndicatorsLines';
@@ -23,6 +14,7 @@ import {
 } from '../../../../utils/ListParameters';
 import IndicatorsRightBar from './IndicatorsRightBar';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import ToolBar from '../../data/ToolBar';
 
 class StixDomainObjectIndicators extends Component {
   constructor(props) {
@@ -33,15 +25,17 @@ class StixDomainObjectIndicators extends Component {
       `view-indicators-${props.stixDomainObjectId}`,
     );
     this.state = {
-      sortBy: propOr('created_at', 'sortBy', params),
-      orderAsc: propOr(false, 'orderAsc', params),
-      searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('lines', 'view', params),
-      filters: propOr({}, 'filters', params),
+      sortBy: R.propOr('created_at', 'sortBy', params),
+      orderAsc: R.propOr(false, 'orderAsc', params),
+      searchTerm: R.propOr('', 'searchTerm', params),
+      view: R.propOr('lines', 'view', params),
+      filters: R.propOr({}, 'filters', params),
       indicatorTypes: [],
       observableTypes: [],
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
+      selectedElements: null,
+      selectAll: false,
     };
   }
 
@@ -73,11 +67,11 @@ class StixDomainObjectIndicators extends Component {
   handleToggleIndicatorType(type) {
     if (this.state.indicatorTypes.includes(type)) {
       this.setState({
-        indicatorTypes: filter((t) => t !== type, this.state.indicatorTypes),
+        indicatorTypes: R.filter((t) => t !== type, this.state.indicatorTypes),
       });
     } else {
       this.setState({
-        indicatorTypes: append(type, this.state.indicatorTypes),
+        indicatorTypes: R.append(type, this.state.indicatorTypes),
       });
     }
   }
@@ -85,17 +79,51 @@ class StixDomainObjectIndicators extends Component {
   handleToggleObservableType(type) {
     if (this.state.observableTypes.includes(type)) {
       this.setState({
-        observableTypes: filter((t) => t !== type, this.state.observableTypes),
+        observableTypes: R.filter(
+          (t) => t !== type,
+          this.state.observableTypes,
+        ),
       });
     } else {
       this.setState({
-        observableTypes: append(type, this.state.observableTypes),
+        observableTypes: R.append(type, this.state.observableTypes),
       });
     }
   }
 
   handleClearObservableTypes() {
     this.setState({ observableTypes: [] }, () => this.saveView());
+  }
+
+  handleToggleSelectEntity(entity, event) {
+    event.stopPropagation();
+    event.preventDefault();
+    const { selectedElements } = this.state;
+    if (entity.id in (selectedElements || {})) {
+      const newSelectedElements = R.omit([entity.id], selectedElements);
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    } else {
+      const newSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        selectedElements || {},
+      );
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    }
+  }
+
+  handleToggleSelectAll() {
+    this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
+  }
+
+  handleClearSelectedElements() {
+    this.setState({ selectAll: false, selectedElements: null });
   }
 
   handleAddFilter(key, id, value, event = null) {
@@ -106,9 +134,9 @@ class StixDomainObjectIndicators extends Component {
     if (this.state.filters[key] && this.state.filters[key].length > 0) {
       this.setState(
         {
-          filters: assoc(
+          filters: R.assoc(
             key,
-            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            R.uniqBy(R.prop('id'), [{ id, value }, ...this.state.filters[key]]),
             this.state.filters,
           ),
         },
@@ -117,7 +145,7 @@ class StixDomainObjectIndicators extends Component {
     } else {
       this.setState(
         {
-          filters: assoc(key, [{ id, value }], this.state.filters),
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
         },
         () => this.saveView(),
       );
@@ -125,7 +153,7 @@ class StixDomainObjectIndicators extends Component {
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {
@@ -139,9 +167,37 @@ class StixDomainObjectIndicators extends Component {
       searchTerm,
       openExports,
       numberOfElements,
+      selectedElements,
+      selectAll,
       filters,
+      indicatorTypes,
+      observableTypes,
     } = this.state;
     const { stixDomainObjectId, stixDomainObjectLink } = this.props;
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original;
+    }
+    let finalFilters = filters;
+    finalFilters = R.assoc(
+      'indicates',
+      [{ id: stixDomainObjectId, value: stixDomainObjectId }],
+      finalFilters,
+    );
+    if (indicatorTypes.length) {
+      finalFilters = R.assoc(
+        'pattern_type',
+        R.map((n) => ({ id: n, value: n }), indicatorTypes),
+        finalFilters,
+      );
+    }
+    if (observableTypes.length) {
+      finalFilters = R.assoc(
+        'x_opencti_main_observable_type',
+        R.map((n) => ({ id: n, value: n }), observableTypes),
+        finalFilters,
+      );
+    }
     const dataColumns = {
       pattern_type: {
         label: 'Type',
@@ -180,42 +236,60 @@ class StixDomainObjectIndicators extends Component {
       search: searchTerm,
     };
     return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        handleAddFilter={this.handleAddFilter.bind(this)}
-        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        handleToggleExports={this.handleToggleExports.bind(this)}
-        openExports={openExports}
-        noPadding={typeof this.props.onChangeOpenExports === 'function'}
-        paginationOptions={exportPaginationOptions}
-        exportEntityType="Indicator"
-        filters={filters}
-        exportContext={`of-entity-${stixDomainObjectId}`}
-        keyword={searchTerm}
-        secondaryAction={true}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={['created_start_date', 'created_end_date']}
-      >
-        <QueryRenderer
-          query={stixDomainObjectIndicatorsLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <StixDomainObjectIndicatorsLines
-              data={props}
-              paginationOptions={paginationOptions}
-              entityLink={stixDomainObjectLink}
-              entityId={stixDomainObjectId}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
+      <div>
+        <ListLines
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={this.handleSort.bind(this)}
+          handleSearch={this.handleSearch.bind(this)}
+          handleAddFilter={this.handleAddFilter.bind(this)}
+          handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+          handleToggleExports={this.handleToggleExports.bind(this)}
+          openExports={openExports}
+          handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+          selectAll={selectAll}
+          noPadding={typeof this.props.onChangeOpenExports === 'function'}
+          paginationOptions={exportPaginationOptions}
+          exportEntityType="Indicator"
+          filters={filters}
+          exportContext={`of-entity-${stixDomainObjectId}`}
+          keyword={searchTerm}
+          secondaryAction={true}
+          iconExtension={true}
+          numberOfElements={numberOfElements}
+          availableFilterKeys={['created_start_date', 'created_end_date']}
+        >
+          <QueryRenderer
+            query={stixDomainObjectIndicatorsLinesQuery}
+            variables={{ count: 25, ...paginationOptions }}
+            render={({ props }) => (
+              <StixDomainObjectIndicatorsLines
+                data={props}
+                paginationOptions={paginationOptions}
+                entityLink={stixDomainObjectLink}
+                entityId={stixDomainObjectId}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+                selectedElements={selectedElements}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                selectAll={selectAll}
+              />
+            )}
+          />
+        </ListLines>
+        <ToolBar
+          selectedElements={selectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          filters={finalFilters}
+          handleClearSelectedElements={this.handleClearSelectedElements.bind(
+            this,
           )}
+          withPaddingRight={true}
         />
-      </ListLines>
+      </div>
     );
   }
 
@@ -232,22 +306,22 @@ class StixDomainObjectIndicators extends Component {
       openExports,
     } = this.state;
     let finalFilters = convertFilters(filters);
-    finalFilters = append(
+    finalFilters = R.append(
       { key: 'indicates', values: [stixDomainObjectId] },
       finalFilters,
     );
     if (indicatorTypes.length > 0) {
-      finalFilters = append(
+      finalFilters = R.append(
         { key: 'pattern_type', values: indicatorTypes },
         finalFilters,
       );
     }
     if (observableTypes.length > 0) {
-      finalFilters = append(
+      finalFilters = R.append(
         {
           key: 'x_opencti_main_observable_type',
           operator: 'match',
-          values: map(
+          values: R.map(
             (type) => type.toLowerCase().replace(/\*/g, ''),
             observableTypes,
           ),

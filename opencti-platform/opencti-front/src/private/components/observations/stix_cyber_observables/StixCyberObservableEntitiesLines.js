@@ -88,8 +88,9 @@ StixCyberObservableEntitiesLines.propTypes = {
 
 export const stixCyberObservableEntitiesLinesQuery = graphql`
   query StixCyberObservableEntitiesLinesPaginationQuery(
-    $fromId: String
+    $elementId: String
     $relationship_type: String
+    $toTypes: [String]
     $startTimeStart: DateTime
     $startTimeStop: DateTime
     $stopTimeStart: DateTime
@@ -103,8 +104,9 @@ export const stixCyberObservableEntitiesLinesQuery = graphql`
   ) {
     ...StixCyberObservableEntitiesLines_data
       @arguments(
-        fromId: $fromId
+        elementId: $elementId
         relationship_type: $relationship_type
+        toTypes: $toTypes
         startTimeStart: $startTimeStart
         startTimeStop: $startTimeStop
         stopTimeStart: $stopTimeStart
@@ -125,8 +127,9 @@ export default createPaginationContainer(
     data: graphql`
       fragment StixCyberObservableEntitiesLines_data on Query
       @argumentDefinitions(
-        fromId: { type: "String" }
+        elementId: { type: "String" }
         relationship_type: { type: "String" }
+        toTypes: { type: "[String]" }
         startTimeStart: { type: "DateTime" }
         startTimeStop: { type: "DateTime" }
         stopTimeStart: { type: "DateTime" }
@@ -142,8 +145,9 @@ export default createPaginationContainer(
         orderMode: { type: "OrderingMode" }
       ) {
         stixCoreRelationships(
-          fromId: $fromId
+          elementId: $elementId
           relationship_type: $relationship_type
+          toTypes: $toTypes
           startTimeStart: $startTimeStart
           startTimeStop: $startTimeStop
           stopTimeStart: $stopTimeStart
@@ -182,7 +186,7 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        fromId: fragmentVariables.fromId,
+        elementId: fragmentVariables.elementId,
         toTypes: fragmentVariables.toTypes,
         relationship_type: fragmentVariables.relationship_type,
         startTimeStart: fragmentVariables.startTimeStart,

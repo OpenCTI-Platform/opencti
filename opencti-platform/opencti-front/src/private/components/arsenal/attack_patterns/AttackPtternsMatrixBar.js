@@ -7,6 +7,10 @@ import Tooltip from '@material-ui/core/Tooltip';
 import { FilterListOutlined } from '@material-ui/icons';
 import Drawer from '@material-ui/core/Drawer';
 import Slide from '@material-ui/core/Slide';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
@@ -35,7 +39,10 @@ class AttackPtternsMatrixBar extends Component {
       t,
       classes,
       currentModeOnlyActive,
+      currentKillChain,
+      handleChangeKillChain,
       handleToggleModeOnlyActive,
+      killChains,
     } = this.props;
     return (
       <Drawer
@@ -61,11 +68,25 @@ class AttackPtternsMatrixBar extends Component {
             <div
               style={{
                 float: 'left',
-                marginLeft: 185,
+                marginLeft: 200,
                 height: '100%',
                 display: 'flex',
               }}
             >
+              <FormControl style={{ margin: '5px 15px 0 0' }}>
+                <InputLabel>{t('Kill chain')}</InputLabel>
+                <Select
+                  value={currentKillChain}
+                  onChange={handleChangeKillChain.bind(this)}
+                  style={{ marginTop: 10 }}
+                >
+                  {killChains.map((killChainName) => (
+                    <MenuItem key={killChainName} value={killChainName}>
+                      {killChainName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
               <Tooltip
                 title={
                   currentModeOnlyActive
@@ -95,6 +116,9 @@ AttackPtternsMatrixBar.propTypes = {
   t: PropTypes.func,
   currentModeOnlyActive: PropTypes.bool,
   handleToggleModeOnlyActive: PropTypes.func,
+  currentKillChain: PropTypes.string,
+  handleChangeKillChain: PropTypes.func,
+  killChains: PropTypes.array,
 };
 
 export default R.compose(inject18n, withStyles(styles))(AttackPtternsMatrixBar);

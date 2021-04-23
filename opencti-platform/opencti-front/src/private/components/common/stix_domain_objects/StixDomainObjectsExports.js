@@ -20,7 +20,7 @@ const styles = (theme) => ({
     width: 310,
     padding: '0 0 20px 0',
     overflowX: 'hidden',
-    zIndex: 0,
+    zIndex: 1100,
     backgroundColor: theme.palette.navAlt.background,
   },
   toolbar: theme.mixins.toolbar,

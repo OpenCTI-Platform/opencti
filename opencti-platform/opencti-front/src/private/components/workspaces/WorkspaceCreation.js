@@ -198,7 +198,6 @@ class WorkspaceCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      type="submit"
                       color="primary"
                       onClick={submitForm}
                       disabled={isSubmitting}

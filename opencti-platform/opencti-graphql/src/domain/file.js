@@ -8,14 +8,14 @@ import { internalLoadById } from '../database/middleware';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { UnsupportedError } from '../config/errors';
 
-export const uploadJobImport = async (user, fileId, fileMime, entityId) => {
+export const uploadJobImport = async (user, fileId, fileMime, entityId, manual = false) => {
   let isImportInContainer = false;
   if (entityId) {
     const entity = await internalLoadById(user, entityId);
     isImportInContainer = isStixDomainObjectContainer(entity.entity_type);
     if (!isImportInContainer) throw UnsupportedError('Cant importing on none container entity');
   }
-  const connectors = await connectorsForImport(user, fileMime, true);
+  const connectors = await connectorsForImport(user, fileMime, true, !manual);
   if (connectors.length > 0) {
     // Create job and send ask to broker
     const createConnectorWork = async (connector) => {
@@ -50,8 +50,8 @@ export const uploadJobImport = async (user, fileId, fileMime, entityId) => {
 
 export const askJobImport = async (user, filename) => {
   logApp.debug(`[JOBS] ask import for file ${filename} by ${user.user_email}`);
-  const file = await loadFile(filename);
-  await uploadJobImport(user, file.id, file.metaData.mimetype, file.metaData.entity_id);
+  const file = await loadFile(user, filename);
+  await uploadJobImport(user, file.id, file.metaData.mimetype, file.metaData.entity_id, true);
   return file;
 };
 

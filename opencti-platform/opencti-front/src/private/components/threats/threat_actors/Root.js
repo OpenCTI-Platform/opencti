@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter } from 'react-router-dom';
+import {
+  Route, Redirect, withRouter, Switch,
+} from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import {
   QueryRenderer,
@@ -18,6 +20,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
 const subscription = graphql`
   subscription RootThreatActorSubscription($id: ID!) {
@@ -75,9 +78,27 @@ class RootThreatActor extends Component {
         params: { threatActorId },
       },
     } = this.props;
+    const link = `/dashboard/threats/threat_actors/${threatActorId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
+        <Route path="/dashboard/threats/threat_actors/:threatActorId/knowledge">
+          <StixCoreObjectKnowledgeBar
+            stixCoreObjectLink={link}
+            availableSections={[
+              'victimology',
+              'intrusion_sets',
+              'campaigns',
+              'incidents',
+              'malwares',
+              'attack_patterns',
+              'tools',
+              'vulnerabilities',
+              'observables',
+              'sightings',
+            ]}
+          />
+        </Route>
         <QueryRenderer
           query={threatActorQuery}
           variables={{ id: threatActorId }}
@@ -85,7 +106,7 @@ class RootThreatActor extends Component {
             if (props) {
               if (props.threatActor) {
                 return (
-                  <div>
+                  <Switch>
                     <Route
                       exact
                       path="/dashboard/threats/threat_actors/:threatActorId"
@@ -195,7 +216,7 @@ class RootThreatActor extends Component {
                         </React.Fragment>
                       )}
                     />
-                  </div>
+                  </Switch>
                 );
               }
               return <ErrorNotFound />;

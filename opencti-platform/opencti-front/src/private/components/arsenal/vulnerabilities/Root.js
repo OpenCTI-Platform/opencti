@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter } from 'react-router-dom';
+import {
+  Route, Redirect, withRouter, Switch,
+} from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import {
   QueryRenderer,
@@ -16,6 +18,8 @@ import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
   subscription RootVulnerabilitySubscription($id: ID!) {
@@ -73,117 +77,137 @@ class RootVulnerability extends Component {
         params: { vulnerabilityId },
       },
     } = this.props;
+    const link = `/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
+        <Route path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/knowledge">
+          <StixCoreObjectKnowledgeBar
+            stixCoreObjectLink={link}
+            availableSections={[
+              'threat_actors',
+              'intrusion_sets',
+              'campaigns',
+              'incidents',
+              'malwares',
+              'tools',
+              'attack_patterns',
+              'observables',
+              'sightings',
+            ]}
+          />
+        </Route>
         <QueryRenderer
           query={vulnerabilityQuery}
           variables={{ id: vulnerabilityId }}
           render={({ props }) => {
-            if (props && props.vulnerability) {
-              return (
-                <div>
-                  <Route
-                    exact
-                    path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId"
-                    render={(routeProps) => (
-                      <Vulnerability
-                        {...routeProps}
-                        vulnerability={props.vulnerability}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/knowledge"
-                    render={() => (
-                      <Redirect
-                        to={`/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge/overview`}
-                      />
-                    )}
-                  />
-                  <Route
-                    path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/knowledge"
-                    render={(routeProps) => (
-                      <VulnerabilityKnowledge
-                        {...routeProps}
-                        vulnerability={props.vulnerability}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/analysis"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.vulnerability}
-                          PopoverComponent={<VulnerabilityPopover />}
-                        />
-                        <StixCoreObjectOrStixCoreRelationshipContainers
+            if (props) {
+              if (props.vulnerability) {
+                return (
+                  <Switch>
+                    <Route
+                      exact
+                      path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId"
+                      render={(routeProps) => (
+                        <Vulnerability
                           {...routeProps}
-                          stixCoreObjectOrStixCoreRelationshipId={
-                            vulnerabilityId
-                          }
+                          vulnerability={props.vulnerability}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/indicators"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.vulnerability}
-                          PopoverComponent={<VulnerabilityPopover />}
-                          variant="noaliases"
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/knowledge"
+                      render={() => (
+                        <Redirect
+                          to={`/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge/overview`}
                         />
-                        <StixDomainObjectIndicators
+                      )}
+                    />
+                    <Route
+                      path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/knowledge"
+                      render={(routeProps) => (
+                        <VulnerabilityKnowledge
                           {...routeProps}
-                          stixDomainObjectId={vulnerabilityId}
-                          stixDomainObjectLink={`/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/indicators`}
+                          vulnerability={props.vulnerability}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/files"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.vulnerability}
-                          PopoverComponent={<VulnerabilityPopover />}
-                        />
-                        <FileManager
-                          {...routeProps}
-                          id={vulnerabilityId}
-                          connectorsImport={[]}
-                          connectorsExport={props.connectorsForExport}
-                          entity={props.vulnerability}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/history"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.vulnerability}
-                          PopoverComponent={<VulnerabilityPopover />}
-                        />
-                        <StixCoreObjectHistory
-                          {...routeProps}
-                          stixCoreObjectId={vulnerabilityId}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                </div>
-              );
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/analysis"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.vulnerability}
+                            PopoverComponent={<VulnerabilityPopover />}
+                          />
+                          <StixCoreObjectOrStixCoreRelationshipContainers
+                            {...routeProps}
+                            stixCoreObjectOrStixCoreRelationshipId={
+                              vulnerabilityId
+                            }
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/indicators"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.vulnerability}
+                            PopoverComponent={<VulnerabilityPopover />}
+                            variant="noaliases"
+                          />
+                          <StixDomainObjectIndicators
+                            {...routeProps}
+                            stixDomainObjectId={vulnerabilityId}
+                            stixDomainObjectLink={`/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/indicators`}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/files"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.vulnerability}
+                            PopoverComponent={<VulnerabilityPopover />}
+                          />
+                          <FileManager
+                            {...routeProps}
+                            id={vulnerabilityId}
+                            connectorsImport={[]}
+                            connectorsExport={props.connectorsForExport}
+                            entity={props.vulnerability}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/history"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.vulnerability}
+                            PopoverComponent={<VulnerabilityPopover />}
+                          />
+                          <StixCoreObjectHistory
+                            {...routeProps}
+                            stixCoreObjectId={vulnerabilityId}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                  </Switch>
+                );
+              }
+              return <ErrorNotFound />;
             }
             return <Loader />;
           }}

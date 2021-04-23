@@ -102,7 +102,7 @@ class ContainerStixCyberObservablesComponent extends Component {
       },
       observable_value: {
         label: 'Value',
-        width: '35%',
+        width: '45%',
         isSortable: true,
       },
       createdBy: {
@@ -126,6 +126,12 @@ class ContainerStixCyberObservablesComponent extends Component {
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
+    const exportPaginationOptions = {
+      filters: [{ key: 'containedBy', values: [container.id] }],
+      orderBy: sortBy,
+      orderMode: orderAsc ? 'asc' : 'desc',
+      search: searchTerm,
+    };
     return (
       <div className={classes.container}>
         <ListLines
@@ -136,6 +142,11 @@ class ContainerStixCyberObservablesComponent extends Component {
           handleSearch={this.handleSearch.bind(this)}
           secondaryAction={true}
           numberOfElements={numberOfElements}
+          handleToggleExports={this.handleToggleExports.bind(this)}
+          exportEntityType="Stix-Cyber-Observable"
+          openExports={openExports}
+          exportContext={`of-container-${container.id}`}
+          paginationOptions={exportPaginationOptions}
         >
           <QueryRenderer
             query={containerStixCyberObservablesLinesQuery}

@@ -1,4 +1,6 @@
+*.iml
 .DS_Store
 .idea
-*.iml
+.mypy_cache
+.venv
 venv

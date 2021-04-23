@@ -18,6 +18,7 @@ import {
   DomainOutlined,
   FlagOutlined,
   GroupOutlined,
+  LinkOutlined,
 } from '@material-ui/icons';
 import {
   Gauge,
@@ -81,6 +82,18 @@ class StixCoreObjectKnowledgeBar extends Component {
               <Gauge />
             </ListItemIcon>
             <ListItemText primary={t('Overview')} />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`${stixCoreObjectLink}/related`}
+            selected={location.pathname === `${stixCoreObjectLink}/related`}
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon style={{ minWidth: 35 }}>
+              <LinkOutlined />
+            </ListItemIcon>
+            <ListItemText primary={t('Related entities')} />
           </MenuItem>
           {includes('cities', availableSections) ? (
             <MenuItem

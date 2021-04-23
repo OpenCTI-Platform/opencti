@@ -750,7 +750,12 @@ class InvestigationGraphComponent extends Component {
         this.graph.current.zoom(this.zoom.k, 400);
       } else {
         const currentContext = this;
-        setTimeout(() => currentContext.graph.current.zoomToFit(0, 150), 1200);
+        setTimeout(
+          () => currentContext.graph
+            && currentContext.graph.current
+            && currentContext.graph.current.zoomToFit(0, 150),
+          1200,
+        );
       }
       this.initialized = true;
     }
@@ -890,11 +895,7 @@ class InvestigationGraphComponent extends Component {
   }
 
   handleZoomToFit() {
-    if (this.graphObjects.length === 1) {
-      this.graph.current.zoomToFit(400, 300);
-    } else {
-      this.graph.current.zoomToFit(400, 150);
-    }
+    this.graph.current.zoomToFit(400, 150);
   }
 
   handleZoomEnd(zoom) {
@@ -987,7 +988,7 @@ class InvestigationGraphComponent extends Component {
         ),
       },
       () => {
-        setTimeout(() => this.handleZoomToFit(), 1000);
+        setTimeout(() => this.handleZoomToFit(), 1500);
       },
     );
   }

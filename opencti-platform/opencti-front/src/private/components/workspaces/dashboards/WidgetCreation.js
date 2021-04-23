@@ -87,6 +87,7 @@ const visualizationTypesMapping = {
   countries: [MAP, HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE],
   'intrusion-sets': [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE],
   malwares: [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE],
+  vulnerabilities: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, TIMELINE],
   campaigns: [AREA, TIMELINE, VERTICAL_BAR],
   indicators: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA],
   reports: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA],
@@ -357,6 +358,24 @@ class WidgetCreation extends Component {
         <Grid item={true} xs="4">
           <Card elevation={3} className={classes.card2}>
             <CardActionArea
+              onClick={this.handleSelectDataType.bind(this, 'vulnerabilities')}
+              style={{ height: '100%' }}
+            >
+              <CardContent>
+                <Typography gutterBottom variant="h1" style={{ fontSize: 16 }}>
+                  {t('Activity - Vulnerabilities')}
+                </Typography>
+                <br />
+                <Typography variant="body1">
+                  {t('Based on ingested data')}
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+        <Grid item={true} xs="4">
+          <Card elevation={3} className={classes.card2}>
+            <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'reports')}
               style={{ height: '100%' }}
             >
@@ -431,6 +450,24 @@ class WidgetCreation extends Component {
                 <br />
                 <Typography variant="body1">
                   {t('Targeted countries')}
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+        <Grid item={true} xs="4">
+          <Card elevation={3} className={classes.card2}>
+            <CardActionArea
+              onClick={this.handleSelectDataType.bind(this, 'vulnerabilities')}
+              style={{ height: '100%' }}
+            >
+              <CardContent>
+                <Typography gutterBottom variant="h1" style={{ fontSize: 16 }}>
+                  {t('Vulnerabilities')}
+                </Typography>
+                <br />
+                <Typography variant="body1">
+                  {t('Targeted vulnerabilities')}
                 </Typography>
               </CardContent>
             </CardActionArea>

@@ -4,7 +4,7 @@ jobs:
   build_platform:
     working_directory: ~/opencti
     docker:
-      - image: nikolaik/python-nodejs:python3.8-nodejs15
+      - image: nikolaik/python-nodejs:python3.9-nodejs15
     steps:
       - run:
           command: apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y build-essential libffi-dev
@@ -30,7 +30,7 @@ jobs:
   build_platform_musl:
     working_directory: ~/opencti_musl
     docker:
-      - image: nikolaik/python-nodejs:python3.8-nodejs15-alpine
+      - image: nikolaik/python-nodejs:python3.9-nodejs15-alpine
     steps:
       - run:
           command: apk update && apk upgrade && apk --no-cache add git build-base libmagic libffi-dev
@@ -56,7 +56,7 @@ jobs:
   package_rolling:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:15.11.0-stretch
+      - image: circleci/node:15-stretch
     steps:
       - attach_workspace:
           at: ~/
@@ -79,7 +79,7 @@ jobs:
   package_rolling_musl:
     working_directory: ~/opencti_musl
     docker:
-      - image: circleci/node:15.11.0-stretch
+      - image: circleci/node:15-stretch
     steps:
       - attach_workspace:
           at: ~/
@@ -102,7 +102,7 @@ jobs:
   deploy_demo:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:15.11.0-stretch
+      - image: circleci/node:15-stretch
     steps:
       - attach_workspace:
           at: ~/
@@ -139,7 +139,7 @@ jobs:
   deploy_reference:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:15.11.0-stretch
+      - image: circleci/node:15-stretch
     steps:
       - attach_workspace:
           at: ~/
@@ -173,6 +173,80 @@ jobs:
           working_directory: ~/opencti/deploy
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
+  deploy_testing:
+    working_directory: ~/opencti
+    docker:
+      - image: circleci/node:15-stretch
+    steps:
+      - attach_workspace:
+          at: ~/
+      - add_ssh_keys
+      - run: ssh-keyscan -H opencti.io >> ~/.ssh/known_hosts
+      - run: sudo apt-get update -qq && sudo apt install rsync
+      - run: mkdir deploy
+      - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git clone ssh://opencti-MNdnBVNb@opencti.io:/~/opencti-MNdnBVNb.git .
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git submodule init && git submodule update --remote          
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-platform/opencti-graphql/public/
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/build/ ./opencti-platform/opencti-graphql/build/
+      - run:  
+          working_directory: ~/opencti/deploy 
+          command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/          
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git add -A
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
+          
+  deploy_club:
+    working_directory: ~/opencti
+    docker:
+      - image: circleci/node:15-stretch
+    steps:
+      - attach_workspace:
+          at: ~/
+      - add_ssh_keys
+      - run: ssh-keyscan -H opencti.io >> ~/.ssh/known_hosts
+      - run: sudo apt-get update -qq && sudo apt install rsync
+      - run: mkdir deploy
+      - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git clone ssh://opencti-Lb8xQHh9@opencti.io:/~/opencti-Lb8xQHh9.git .
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git submodule init && git submodule update --remote          
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-platform/opencti-graphql/public/
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/build/ ./opencti-platform/opencti-graphql/build/
+      - run:  
+          working_directory: ~/opencti/deploy 
+          command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/          
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git add -A
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master          
+          
   docker_build:
     working_directory: ~/opencti
     docker:
@@ -253,7 +327,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - master                
       - deploy_reference:
           requires:
             - build_platform
@@ -261,6 +335,20 @@ workflows:
             branches:
               only:
                 - master
+      - deploy_testing:
+          requires:
+            - build_platform
+          filters:
+            branches:
+              only:
+                - master
+      - deploy_club:
+          requires:
+            - build_platform
+          filters:
+            branches:
+              only:
+                - master                                
       - docker_build_rolling:
           requires:
             - build_platform  

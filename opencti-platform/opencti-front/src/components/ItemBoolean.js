@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
+import { compose } from 'ramda';
+import inject18n from './i18n';
 
 const styles = () => ({
   chip: {
@@ -11,7 +13,7 @@ const styles = () => ({
     marginRight: 7,
     textTransform: 'uppercase',
     borderRadius: '0',
-    width: 80,
+    width: 120,
   },
   chipInList: {
     fontSize: 12,
@@ -20,7 +22,7 @@ const styles = () => ({
     float: 'left',
     textTransform: 'uppercase',
     borderRadius: '0',
-    width: 80,
+    width: 120,
   },
 });
 
@@ -33,25 +35,42 @@ const inlineStyles = {
     backgroundColor: 'rgba(244, 67, 54, 0.08)',
     color: '#f44336',
   },
+  blue: {
+    backgroundColor: 'rgba(92, 123, 245, 0.08)',
+    color: '#5c7bf5',
+  },
 };
 
 class ItemBoolean extends Component {
   render() {
     const {
-      classes, label, status, variant,
+      classes, label, status, variant, t, reverse,
     } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     if (status === true) {
       return (
         <Chip
           classes={{ root: style }}
-          style={inlineStyles.green}
+          style={reverse ? inlineStyles.red : inlineStyles.green}
           label={label}
         />
       );
     }
+    if (status === null) {
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.blue}
+          label={t('Not applicable')}
+        />
+      );
+    }
     return (
-      <Chip classes={{ root: style }} style={inlineStyles.red} label={label} />
+      <Chip
+        classes={{ root: style }}
+        style={reverse ? inlineStyles.green : inlineStyles.red}
+        label={label}
+      />
     );
   }
 }
@@ -61,6 +80,7 @@ ItemBoolean.propTypes = {
   status: PropTypes.bool,
   label: PropTypes.string,
   variant: PropTypes.string,
+  reverse: PropTypes.bool,
 };
 
-export default withStyles(styles)(ItemBoolean);
+export default compose(inject18n, withStyles(styles))(ItemBoolean);
