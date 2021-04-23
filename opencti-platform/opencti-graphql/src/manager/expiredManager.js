@@ -7,6 +7,7 @@ import { READ_DATA_INDICES } from '../database/utils';
 import { prepareDate } from '../utils/format';
 import { patchAttribute } from '../database/middleware';
 import conf, { logApp } from '../config/conf';
+import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 
 // Expired manager responsible to monitor expired elements
 // In order to change the revoked attribute to true
@@ -27,6 +28,10 @@ const expireHandler = async () => {
       logApp.info(`[OPENCTI] Expiration manager will revoke ${elements.length} elements`);
       const concurrentUpdate = async (element) => {
         const patch = { revoked: true };
+        // For indicator, we also need to force x_opencti_detection to false
+        if (element.entity_type === ENTITY_TYPE_INDICATOR) {
+          patch.x_opencti_detection = false;
+        }
         await patchAttribute(SYSTEM_USER, element.id, element.entity_type, patch);
       };
       await Promise.map(elements, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
