@@ -25,17 +25,21 @@ export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
 export const granted = (me, capabilities, matchAll = false) => {
   const userCapabilities = map((c) => c.name, me.capabilities);
   if (userCapabilities.includes(BYPASS)) return true;
-  const availableCapabilities = [];
+  let numberOfAvailableCapabilities = 0;
   for (let index = 0; index < capabilities.length; index += 1) {
     const checkCapability = capabilities[index];
     const matchingCapabilities = filter(
       (r) => includes(checkCapability, r),
       userCapabilities,
     );
-    if (matchingCapabilities.length > 0) availableCapabilities.push(checkCapability);
+    if (matchingCapabilities.length > 0) {
+      numberOfAvailableCapabilities += 1;
+    }
   }
-  if (matchAll) return availableCapabilities.length === capabilities.length;
-  return availableCapabilities.length > 0;
+  if (matchAll) {
+    return numberOfAvailableCapabilities === capabilities.length;
+  }
+  return numberOfAvailableCapabilities > 0;
 };
 
 const Security = ({
