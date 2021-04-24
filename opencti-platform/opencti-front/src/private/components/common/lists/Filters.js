@@ -485,6 +485,7 @@ class Filters extends Component {
       availableFilterKeys,
       currentFilters,
       variant,
+      noDirectFilters,
     } = this.props;
     const { entities, keyword, inputValues } = this.state;
     return (
@@ -502,7 +503,7 @@ class Filters extends Component {
           </Grid>
         )}
         {R.filter(
-          (n) => !R.includes(n, directFilters),
+          (n) => noDirectFilters || !R.includes(n, directFilters),
           availableFilterKeys,
         ).map((filterKey) => {
           const currentValue = currentFilters[filterKey]
@@ -575,7 +576,7 @@ class Filters extends Component {
 
   renderListFilters() {
     const {
-      t, classes, availableFilterKeys, currentFilters,
+      t, classes, availableFilterKeys, noDirectFilters,
     } = this.props;
     const {
       open, anchorEl, entities, inputValues,
@@ -618,8 +619,11 @@ class Filters extends Component {
         >
           {this.renderFilters()}
         </Popover>
-        {R.filter((n) => R.includes(n, directFilters), availableFilterKeys).map(
-          (filterKey) => (
+        {!noDirectFilters
+          && R.filter(
+            (n) => R.includes(n, directFilters),
+            availableFilterKeys,
+          ).map((filterKey) => (
             <Autocomplete
               key={filterKey}
               className={classes.autocomplete}
@@ -653,8 +657,7 @@ class Filters extends Component {
                 </React.Fragment>
               )}
             />
-          ),
-        )}
+          ))}
         <div className="clearfix" />
       </div>
     );
@@ -800,6 +803,7 @@ Filters.propTypes = {
   currentFilters: PropTypes.object,
   variant: PropTypes.string,
   disabled: PropTypes.bool,
+  noDirectFilters: PropTypes.bool,
 };
 
 export default R.compose(inject18n, withRouter, withStyles(styles))(Filters);

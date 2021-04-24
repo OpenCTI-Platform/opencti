@@ -54,7 +54,7 @@ const styles = (theme) => ({
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
-    padding: '20px 20px 20px 60px',
+    padding: '20px 0px 20px 60px',
   },
   closeButton: {
     position: 'absolute',
@@ -68,6 +68,9 @@ const styles = (theme) => ({
   },
   container: {
     padding: '10px 20px 20px 20px',
+  },
+  title: {
+    float: 'left',
   },
   filters: {
     float: 'left',
@@ -190,7 +193,26 @@ const TaxiiCollectionCreation = (props) => {
           >
             <Close fontSize="small" />
           </IconButton>
-          <Typography variant="h6">{t('Create a TAXII collection')}</Typography>
+          <Typography variant="h6" classes={{ root: classes.title }}>
+            {t('Create a TAXII collection')}
+          </Typography>
+          <div style={{ float: 'right', margin: '10px 0 0 0' }}>
+            <Filters
+              variant="text"
+              availableFilterKeys={[
+                'entity_type',
+                'markedBy',
+                'labelledBy',
+                'createdBy',
+                'x_opencti_score_gt',
+                'x_opencti_detection',
+                'confidence_gt',
+              ]}
+              currentFilters={[]}
+              handleAddFilter={handleAddFilter}
+              noDirectFilters={true}
+            />
+          </div>
         </div>
         <div className={classes.container}>
           <Formik
@@ -218,17 +240,6 @@ const TaxiiCollectionCreation = (props) => {
                   style={{ marginTop: 20 }}
                 />
                 <div style={{ marginTop: 35 }}>
-                  <Filters
-                    variant="text"
-                    availableFilterKeys={[
-                      'entity_type',
-                      'markedBy',
-                      'labelledBy',
-                      'createdBy',
-                    ]}
-                    currentFilters={[]}
-                    handleAddFilter={handleAddFilter}
-                  />
                   <div className={classes.filters}>
                     {map((currentFilter) => {
                       const label = `${truncate(
