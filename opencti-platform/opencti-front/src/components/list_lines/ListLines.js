@@ -25,7 +25,7 @@ import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
 import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
-import StixObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
+import StixCyberObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
 import { truncate } from '../../utils/String';
 
 const styles = (theme) => ({
@@ -179,7 +179,7 @@ class ListLines extends Component {
     return (
       <div className={className}>
         <div className={classes.parameters}>
-          {typeof handleSearch === 'function' ? (
+          {typeof handleSearch === 'function' && (
             <div style={{ float: 'left', marginRight: 20 }}>
               <SearchInput
                 variant="small"
@@ -187,24 +187,16 @@ class ListLines extends Component {
                 keyword={keyword}
               />
             </div>
-          ) : (
-            ''
           )}
-          {availableFilterKeys && availableFilterKeys.length > 0 ? (
+          {availableFilterKeys && availableFilterKeys.length > 0 && (
             <Filters
               availableFilterKeys={availableFilterKeys}
               handleAddFilter={handleAddFilter}
               currentFilters={filters}
             />
-          ) : (
-            ''
           )}
           {(!availableFilterKeys || availableFilterKeys.length === 0)
-          && !noHeaders ? (
-            <div style={{ height: 38 }}> &nbsp; </div>
-            ) : (
-              ''
-            )}
+            && !noHeaders && <div style={{ height: 38 }}> &nbsp; </div>}
           <div className={classes.filters}>
             {map((currentFilter) => {
               const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
@@ -250,15 +242,13 @@ class ListLines extends Component {
         </div>
         <div className={classes.views}>
           <div style={{ float: 'right', marginTop: -20 }}>
-            {numberOfElements ? (
+            {numberOfElements && (
               <div style={{ float: 'left', padding: '15px 5px 0 0' }}>
                 <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
                 {t('entitie(s)')}
               </div>
-            ) : (
-              ''
             )}
-            {typeof handleChangeView === 'function' && !disableCards ? (
+            {typeof handleChangeView === 'function' && !disableCards && (
               <Tooltip title={t('Cards view')}>
                 <IconButton
                   color="primary"
@@ -267,10 +257,8 @@ class ListLines extends Component {
                   <DashboardOutlined />
                 </IconButton>
               </Tooltip>
-            ) : (
-              ''
             )}
-            {typeof handleChangeView === 'function' ? (
+            {typeof handleChangeView === 'function' && (
               <Tooltip title={t('Lines view')}>
                 <IconButton
                   color="secondary"
@@ -279,10 +267,8 @@ class ListLines extends Component {
                   <TableChartOutlined />
                 </IconButton>
               </Tooltip>
-            ) : (
-              ''
             )}
-            {typeof handleChangeView === 'function' && enableDuplicates ? (
+            {typeof handleChangeView === 'function' && enableDuplicates && (
               <Tooltip title={t('Detect duplicates')}>
                 <IconButton
                   color="secondary"
@@ -291,11 +277,9 @@ class ListLines extends Component {
                   <TableChartOutlined />
                 </IconButton>
               </Tooltip>
-            ) : (
-              ''
             )}
             <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              {typeof handleToggleExports === 'function' ? (
+              {typeof handleToggleExports === 'function' && (
                 <Tooltip title={t('Exports panel')}>
                   <IconButton
                     color={openExports ? 'secondary' : 'primary'}
@@ -304,8 +288,6 @@ class ListLines extends Component {
                     <FileExportOutline />
                   </IconButton>
                 </Tooltip>
-              ) : (
-                ''
               )}
             </Security>
           </div>
@@ -324,7 +306,12 @@ class ListLines extends Component {
               divider={false}
               style={{ paddingTop: 0 }}
             >
-              <ListItemIcon style={{ minWidth: typeof handleToggleSelectAll === 'function' ? 40 : 50 }}>
+              <ListItemIcon
+                style={{
+                  minWidth:
+                    typeof handleToggleSelectAll === 'function' ? 40 : 50,
+                }}
+              >
                 {typeof handleToggleSelectAll === 'function' ? (
                   <Checkbox
                     edge="start"
@@ -393,7 +380,7 @@ class ListLines extends Component {
         {typeof handleToggleExports === 'function'
           && exportEntityType === 'Stix-Cyber-Observable' && (
             <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              <StixObservablesExports
+              <StixCyberObservablesExports
                 open={openExports}
                 handleToggle={handleToggleExports.bind(this)}
                 paginationOptions={paginationOptions}

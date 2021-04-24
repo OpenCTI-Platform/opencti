@@ -4,4 +4,4 @@ elasticsearch==7.12.0
 plyara==2.1.1
 parsuricata==0.1.1
 sigmatools==0.19.1
-dataclasses
+dataclasses==0.8
