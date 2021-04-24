@@ -248,7 +248,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-report-${this.props.report.id}-knowledge`,
+      `view-report-${this.props.report.id}-knowledge-correlation`,
     );
     this.zoom = R.propOr(null, 'zoom', params);
     this.graphObjects = R.map((n) => n.node, props.report.objects.edges);
@@ -318,7 +318,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-report-${this.props.report.id}-knowledge`,
+      `view-report-${this.props.report.id}-knowledge-correlation`,
       { zoom: this.zoom, ...this.state },
     );
     if (refreshGraphData) {
