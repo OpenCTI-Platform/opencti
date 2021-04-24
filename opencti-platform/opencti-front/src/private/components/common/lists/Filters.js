@@ -1,22 +1,5 @@
 import React, { Component } from 'react';
-import {
-  compose,
-  pathOr,
-  pipe,
-  map,
-  union,
-  filter,
-  includes,
-  toPairs,
-  assoc,
-  dissoc,
-  last,
-  isEmpty,
-  uniqBy,
-  prop,
-  sortWith,
-  ascend,
-} from 'ramda';
+import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import { KeyboardDatePicker } from '@material-ui/pickers';
@@ -28,6 +11,8 @@ import { FilterListOutlined } from '@material-ui/icons';
 import * as PropTypes from 'prop-types';
 import Tooltip from '@material-ui/core/Tooltip';
 import { ToyBrickSearchOutline } from 'mdi-material-ui';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import Dialog from '@material-ui/core/Dialog';
@@ -84,7 +69,7 @@ const styles = (theme) => ({
   },
 });
 
-const directFilters = ['report_types'];
+const directFilters = ['report_types', 'x_opencti_detection'];
 
 class Filters extends Component {
   constructor(props) {
@@ -111,7 +96,7 @@ class Filters extends Component {
     const { t } = this.props;
     if (event && event.target.value !== 0) {
       this.setState({
-        inputValues: assoc(
+        inputValues: R.assoc(
           filterKey,
           event.target.value,
           this.state.inputValues,
@@ -127,9 +112,9 @@ class Filters extends Component {
         })
           .toPromise()
           .then((data) => {
-            const createdByEntities = pipe(
-              pathOr([], ['identities', 'edges']),
-              map((n) => ({
+            const createdByEntities = R.pipe(
+              R.pathOr([], ['identities', 'edges']),
+              R.map((n) => ({
                 label: n.node.name,
                 value: n.node.id,
                 type: n.node.entity_type,
@@ -138,7 +123,7 @@ class Filters extends Component {
             this.setState({
               entities: {
                 ...this.state.entities,
-                createdBy: union(
+                createdBy: R.union(
                   createdByEntities,
                   this.state.entities.createdBy,
                 ),
@@ -153,9 +138,9 @@ class Filters extends Component {
         })
           .toPromise()
           .then((data) => {
-            const markedByEntities = pipe(
-              pathOr([], ['markingDefinitions', 'edges']),
-              map((n) => ({
+            const markedByEntities = R.pipe(
+              R.pathOr([], ['markingDefinitions', 'edges']),
+              R.map((n) => ({
                 label: n.node.definition,
                 value: n.node.id,
                 type: 'Marking-Definition',
@@ -165,7 +150,10 @@ class Filters extends Component {
             this.setState({
               entities: {
                 ...this.state.entities,
-                markedBy: union(markedByEntities, this.state.entities.markedBy),
+                markedBy: R.union(
+                  markedByEntities,
+                  this.state.entities.markedBy,
+                ),
               },
             });
           });
@@ -177,9 +165,9 @@ class Filters extends Component {
         })
           .toPromise()
           .then((data) => {
-            const labelledByEntities = pipe(
-              pathOr([], ['labels', 'edges']),
-              map((n) => ({
+            const labelledByEntities = R.pipe(
+              R.pathOr([], ['labels', 'edges']),
+              R.map((n) => ({
                 label: n.node.value,
                 value: n.node.id,
                 type: 'Label',
@@ -189,7 +177,7 @@ class Filters extends Component {
             this.setState({
               entities: {
                 ...this.state.entities,
-                labelledBy: union(
+                labelledBy: R.union(
                   labelledByEntities,
                   this.state.entities.labelledBy,
                 ),
@@ -199,8 +187,8 @@ class Filters extends Component {
         break;
       case 'x_opencti_base_score_gt':
         // eslint-disable-next-line no-case-declarations
-        const baseScoreEntities = pipe(
-          map((n) => ({
+        const baseScoreEntities = R.pipe(
+          R.map((n) => ({
             label: n,
             value: n,
             type: 'attribute',
@@ -209,7 +197,7 @@ class Filters extends Component {
         this.setState({
           entities: {
             ...this.state.entities,
-            x_opencti_base_score_gt: union(
+            x_opencti_base_score_gt: R.union(
               baseScoreEntities,
               this.state.entities.x_opencti_base_score_gt,
             ),
@@ -218,8 +206,8 @@ class Filters extends Component {
         break;
       case 'confidence_gt':
         // eslint-disable-next-line no-case-declarations
-        const confidenceEntities = pipe(
-          map((n) => ({
+        const confidenceEntities = R.pipe(
+          R.map((n) => ({
             label: t(`confidence_${n.toString()}`),
             value: n,
             type: 'attribute',
@@ -228,9 +216,47 @@ class Filters extends Component {
         this.setState({
           entities: {
             ...this.state.entities,
-            confidence_gt: union(
+            confidence_gt: R.union(
               confidenceEntities,
               this.state.entities.confidence_gt,
+            ),
+          },
+        });
+        break;
+      case 'x_opencti_score_gt':
+        // eslint-disable-next-line no-case-declarations
+        const scoreEntities = R.pipe(
+          R.map((n) => ({
+            label: n,
+            value: n,
+            type: 'attribute',
+          })),
+        )(['0', '15', '50', '75', '85']);
+        this.setState({
+          entities: {
+            ...this.state.entities,
+            x_opencti_score_gt: R.union(
+              scoreEntities,
+              this.state.entities.x_opencti_score_gt,
+            ),
+          },
+        });
+        break;
+      case 'x_opencti_detection':
+        // eslint-disable-next-line no-case-declarations
+        const detectionEntities = R.pipe(
+          R.map((n) => ({
+            label: t(n),
+            value: n,
+            type: 'attribute',
+          })),
+        )(['true', 'false']);
+        this.setState({
+          entities: {
+            ...this.state.entities,
+            x_opencti_detection: R.union(
+              detectionEntities,
+              this.state.entities.x_opencti_detection,
             ),
           },
         });
@@ -243,9 +269,9 @@ class Filters extends Component {
         })
           .toPromise()
           .then((data) => {
-            const severityEntities = pipe(
-              pathOr([], ['attributes', 'edges']),
-              map((n) => ({
+            const severityEntities = R.pipe(
+              R.pathOr([], ['attributes', 'edges']),
+              R.map((n) => ({
                 label: n.node.value,
                 value: n.node.value,
                 type: 'attribute',
@@ -254,7 +280,7 @@ class Filters extends Component {
             this.setState({
               entities: {
                 ...this.state.entities,
-                x_opencti_base_severity: union(
+                x_opencti_base_severity: R.union(
                   severityEntities,
                   this.state.entities.x_opencti_base_severity,
                 ),
@@ -270,9 +296,9 @@ class Filters extends Component {
         })
           .toPromise()
           .then((data) => {
-            const attackVectorEntities = pipe(
-              pathOr([], ['attributes', 'edges']),
-              map((n) => ({
+            const attackVectorEntities = R.pipe(
+              R.pathOr([], ['attributes', 'edges']),
+              R.map((n) => ({
                 label: n.node.value,
                 value: n.node.value,
                 type: 'attribute',
@@ -281,7 +307,7 @@ class Filters extends Component {
             this.setState({
               entities: {
                 ...this.state.entities,
-                x_opencti_attack_vector: union(
+                x_opencti_attack_vector: R.union(
                   attackVectorEntities,
                   this.state.entities.x_opencti_attack_vector,
                 ),
@@ -297,9 +323,9 @@ class Filters extends Component {
         })
           .toPromise()
           .then((data) => {
-            const reportStatusEntities = pipe(
-              pathOr([], ['attributes', 'edges']),
-              map((n) => ({
+            const reportStatusEntities = R.pipe(
+              R.pathOr([], ['attributes', 'edges']),
+              R.map((n) => ({
                 label: t(`report_status_${n.node.value}`),
                 value: n.node.value,
                 type: 'attribute',
@@ -308,7 +334,7 @@ class Filters extends Component {
             this.setState({
               entities: {
                 ...this.state.entities,
-                x_opencti_report_status: union(
+                x_opencti_report_status: R.union(
                   reportStatusEntities,
                   this.state.entities.x_opencti_report_status,
                 ),
@@ -324,9 +350,9 @@ class Filters extends Component {
         })
           .toPromise()
           .then((data) => {
-            const organizationTypeEntities = pipe(
-              pathOr([], ['attributes', 'edges']),
-              map((n) => ({
+            const organizationTypeEntities = R.pipe(
+              R.pathOr([], ['attributes', 'edges']),
+              R.map((n) => ({
                 label: n.node.value,
                 value: n.node.value,
                 type: 'attribute',
@@ -335,7 +361,7 @@ class Filters extends Component {
             this.setState({
               entities: {
                 ...this.state.entities,
-                x_opencti_organization_type: union(
+                x_opencti_organization_type: R.union(
                   organizationTypeEntities,
                   this.state.entities.x_opencti_organization_type,
                 ),
@@ -351,9 +377,9 @@ class Filters extends Component {
         })
           .toPromise()
           .then((data) => {
-            const reportTypesEntities = pipe(
-              pathOr([], ['attributes', 'edges']),
-              map((n) => ({
+            const reportTypesEntities = R.pipe(
+              R.pathOr([], ['attributes', 'edges']),
+              R.map((n) => ({
                 label: t(n.node.value),
                 value: n.node.value,
                 type: 'attribute',
@@ -362,7 +388,7 @@ class Filters extends Component {
             this.setState({
               entities: {
                 ...this.state.entities,
-                report_types: union(
+                report_types: R.union(
                   reportTypesEntities,
                   this.state.entities.report_types,
                 ),
@@ -372,8 +398,8 @@ class Filters extends Component {
         break;
       case 'entity_type':
         // eslint-disable-next-line no-case-declarations
-        const entitiesTypes = pipe(
-          map((n) => ({
+        const entitiesTypes = R.pipe(
+          R.map((n) => ({
             label: t(
               n.toString()[0] === n.toString()[0].toUpperCase()
                 ? `entity_${n.toString()}`
@@ -382,7 +408,7 @@ class Filters extends Component {
             value: n,
             type: n,
           })),
-          sortWith([ascend(prop('label'))]),
+          R.sortWith([R.ascend(R.prop('label'))]),
         )([
           'Attack-Pattern',
           'Campaign',
@@ -416,12 +442,15 @@ class Filters extends Component {
         this.setState({
           entities: {
             ...this.state.entities,
-            entity_type: union(entitiesTypes, this.state.entities.entity_type),
+            entity_type: R.union(
+              entitiesTypes,
+              this.state.entities.entity_type,
+            ),
           },
         });
         break;
       default:
-        this.setState({ entities: union(this.state.entities, []) });
+        this.setState({ entities: R.union(this.state.entities, []) });
     }
   }
 
@@ -472,80 +501,82 @@ class Filters extends Component {
             />
           </Grid>
         )}
-        {filter((n) => !includes(n, directFilters), availableFilterKeys).map(
-          (filterKey) => {
-            const currentValue = currentFilters[filterKey]
-              ? currentFilters[filterKey][0]
-              : null;
-            if (
-              filterKey.endsWith('start_date')
-              || filterKey.endsWith('end_date')
-            ) {
-              return (
-                <Grid key={filterKey} item={true} xs={6}>
-                  <KeyboardDatePicker
-                    label={t(`filter_${filterKey}`)}
-                    value={currentValue ? currentValue.id : null}
-                    variant="inline"
-                    disableToolbar={false}
-                    autoOk={true}
-                    allowKeyboardControl={true}
-                    format="YYYY-MM-DD"
-                    inputVariant="outlined"
-                    size="small"
-                    fullWidth={variant === 'dialog'}
-                    onChange={this.handleChangeDate.bind(this, filterKey)}
-                  />
-                </Grid>
-              );
-            }
+        {R.filter(
+          (n) => !R.includes(n, directFilters),
+          availableFilterKeys,
+        ).map((filterKey) => {
+          const currentValue = currentFilters[filterKey]
+            ? currentFilters[filterKey][0]
+            : null;
+          if (
+            filterKey.endsWith('start_date')
+            || filterKey.endsWith('end_date')
+          ) {
             return (
               <Grid key={filterKey} item={true} xs={6}>
-                <Autocomplete
-                  selectOnFocus={true}
-                  openOnFocus={true}
-                  autoSelect={false}
-                  autoHighlight={true}
-                  getOptionLabel={(option) => (option.label ? option.label : '')
-                  }
-                  noOptionsText={t('No available options')}
-                  options={entities[filterKey] ? entities[filterKey] : []}
-                  onInputChange={this.searchEntities.bind(this, filterKey)}
-                  inputValue={inputValues[filterKey] || ''}
-                  onChange={this.handleChange.bind(this, filterKey)}
-                  getOptionSelected={(option, value) => option.value === value}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label={t(`filter_${filterKey}`)}
-                      variant="outlined"
-                      size="small"
-                      fullWidth={true}
-                      onFocus={this.searchEntities.bind(this, filterKey)}
-                    />
-                  )}
-                  renderOption={(option) => (
-                    <React.Fragment>
-                      <div
-                        className={classes.icon}
-                        style={{ color: option.color }}
-                      >
-                        <ItemIcon type={option.type} />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
-                    </React.Fragment>
-                  )}
+                <KeyboardDatePicker
+                  label={t(`filter_${filterKey}`)}
+                  value={currentValue ? currentValue.id : null}
+                  variant="inline"
+                  disableToolbar={false}
+                  autoOk={true}
+                  allowKeyboardControl={true}
+                  format="YYYY-MM-DD"
+                  inputVariant="outlined"
+                  size="small"
+                  fullWidth={variant === 'dialog'}
+                  onChange={this.handleChangeDate.bind(this, filterKey)}
                 />
               </Grid>
             );
-          },
-        )}
+          }
+          return (
+            <Grid key={filterKey} item={true} xs={6}>
+              <Autocomplete
+                selectOnFocus={true}
+                openOnFocus={true}
+                autoSelect={false}
+                autoHighlight={true}
+                getOptionLabel={(option) => (option.label ? option.label : '')}
+                noOptionsText={t('No available options')}
+                options={entities[filterKey] ? entities[filterKey] : []}
+                onInputChange={this.searchEntities.bind(this, filterKey)}
+                inputValue={inputValues[filterKey] || ''}
+                onChange={this.handleChange.bind(this, filterKey)}
+                getOptionSelected={(option, value) => option.value === value}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={t(`filter_${filterKey}`)}
+                    variant="outlined"
+                    size="small"
+                    fullWidth={true}
+                    onFocus={this.searchEntities.bind(this, filterKey)}
+                  />
+                )}
+                renderOption={(option) => (
+                  <React.Fragment>
+                    <div
+                      className={classes.icon}
+                      style={{ color: option.color }}
+                    >
+                      <ItemIcon type={option.type} />
+                    </div>
+                    <div className={classes.text}>{option.label}</div>
+                  </React.Fragment>
+                )}
+              />
+            </Grid>
+          );
+        })}
       </Grid>
     );
   }
 
   renderListFilters() {
-    const { t, classes, availableFilterKeys } = this.props;
+    const {
+      t, classes, availableFilterKeys, currentFilters,
+    } = this.props;
     const {
       open, anchorEl, entities, inputValues,
     } = this.state;
@@ -587,7 +618,7 @@ class Filters extends Component {
         >
           {this.renderFilters()}
         </Popover>
-        {filter((n) => includes(n, directFilters), availableFilterKeys).map(
+        {R.filter((n) => R.includes(n, directFilters), availableFilterKeys).map(
           (filterKey) => (
             <Autocomplete
               key={filterKey}
@@ -636,21 +667,21 @@ class Filters extends Component {
     }
     if (this.state.filters[key] && this.state.filters[key].length > 0) {
       this.setState({
-        filters: assoc(
+        filters: R.assoc(
           key,
-          uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+          R.uniqBy(R.prop('id'), [{ id, value }, ...this.state.filters[key]]),
           this.state.filters,
         ),
       });
     } else {
       this.setState({
-        filters: assoc(key, [{ id, value }], this.state.filters),
+        filters: R.assoc(key, [{ id, value }], this.state.filters),
       });
     }
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) });
+    this.setState({ filters: R.dissoc(key, this.state.filters) });
   }
 
   handleSearch() {
@@ -684,20 +715,20 @@ class Filters extends Component {
         >
           <DialogTitle>{t('Advanced search')}</DialogTitle>
           <DialogContent>
-            {filters && !isEmpty(filters) && (
+            {filters && !R.isEmpty(filters) && (
               <div className={classes.filtersDialog}>
-                {map((currentFilter) => {
+                {R.map((currentFilter) => {
                   const label = `${truncate(
                     t(`filter_${currentFilter[0]}`),
                     20,
                   )}`;
                   const values = (
                     <span>
-                      {map(
+                      {R.map(
                         (n) => (
                           <span key={n.value}>
                             {truncate(n.value, 15)}{' '}
-                            {last(currentFilter[1]).value !== n.value && (
+                            {R.last(currentFilter[1]).value !== n.value && (
                               <code>OR</code>
                             )}
                           </span>
@@ -707,9 +738,8 @@ class Filters extends Component {
                     </span>
                   );
                   return (
-                    <span>
+                    <span key={currentFilter[0]}>
                       <Chip
-                        key={currentFilter[0]}
                         classes={{ root: classes.filter }}
                         label={
                           <div>
@@ -721,7 +751,7 @@ class Filters extends Component {
                           currentFilter[0],
                         )}
                       />
-                      {last(toPairs(filters))[0] !== currentFilter[0] && (
+                      {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
                         <Chip
                           classes={{ root: classes.operator }}
                           label={t('AND')}
@@ -729,7 +759,7 @@ class Filters extends Component {
                       )}
                     </span>
                   );
-                }, toPairs(filters))}
+                }, R.toPairs(filters))}
               </div>
             )}
             {this.renderFilters()}
@@ -772,4 +802,4 @@ Filters.propTypes = {
   disabled: PropTypes.bool,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(Filters);
+export default R.compose(inject18n, withRouter, withStyles(styles))(Filters);

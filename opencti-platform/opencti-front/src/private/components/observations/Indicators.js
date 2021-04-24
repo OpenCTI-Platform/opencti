@@ -276,7 +276,9 @@ class Indicators extends Component {
             'created_end_date',
             'valid_from_start_date',
             'valid_until_end_date',
+            'x_opencti_score_gt',
             'createdBy',
+            'x_opencti_detection',
           ]}
         >
           <QueryRenderer
