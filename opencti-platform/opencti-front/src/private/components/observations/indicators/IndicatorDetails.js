@@ -12,11 +12,13 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import { Launch, SettingsApplications } from '@material-ui/icons';
 import ListItemText from '@material-ui/core/ListItemText';
+import Chip from '@material-ui/core/Chip';
 import inject18n from '../../../../components/i18n';
 import ItemScore from '../../../../components/ItemScore';
 import IndicatorObservables from './IndicatorObservables';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ExpandablePre from '../../../../components/ExpandablePre';
+import ItemBoolean from '../../../../components/ItemBoolean';
 
 const styles = () => ({
   paper: {
@@ -25,6 +27,15 @@ const styles = () => ({
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
+  },
+  chip: {
+    fontSize: 12,
+    lineHeight: '12px',
+    backgroundColor: 'rgba(0, 150, 136, 0.3)',
+    color: '#ffffff',
+    textTransform: 'uppercase',
+    borderRadius: '0',
+    margin: '0 5px 5px 0',
   },
 });
 
@@ -48,15 +59,18 @@ class IndicatorDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Valid from')}
               </Typography>
-              {fld(indicator.valid_from)}
+              <Chip
+                classes={{ root: classes.chip }}
+                label={fld(indicator.valid_from)}
+              />
               <Typography
                 variant="h3"
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
-                {t('Valid until')}
+                {t('Score')}
               </Typography>
-              {fld(indicator.valid_until)}
+              <ItemScore score={indicator.x_opencti_score} />
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -68,9 +82,23 @@ class IndicatorDetailsComponent extends Component {
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
-                {t('Score')}
+                {t('Valid until')}
               </Typography>
-              <ItemScore score={indicator.x_opencti_score} />
+              <Chip
+                classes={{ root: classes.chip }}
+                label={fld(indicator.valid_until)}
+              />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Detection')}
+              </Typography>
+              <ItemBoolean
+                label={indicator.x_opencti_detection ? t('Yes') : t('No')}
+                status={indicator.x_opencti_detection}
+              />
               <Typography
                 variant="h3"
                 gutterBottom={true}
