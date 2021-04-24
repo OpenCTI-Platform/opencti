@@ -11,8 +11,6 @@ import { FilterListOutlined } from '@material-ui/icons';
 import * as PropTypes from 'prop-types';
 import Tooltip from '@material-ui/core/Tooltip';
 import { ToyBrickSearchOutline } from 'mdi-material-ui';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import Dialog from '@material-ui/core/Dialog';
