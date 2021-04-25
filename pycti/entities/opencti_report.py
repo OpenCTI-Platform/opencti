@@ -337,6 +337,9 @@ class Report:
 
     """
         Check if a report already contains a thing (Stix Object or Stix Relationship)
+        
+        :param id: the id of the Report
+        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
         :return Boolean
     """
 
@@ -446,7 +449,7 @@ class Report:
         Add a Stix-Entity object to Report object (object_refs)
 
         :param id: the id of the Report
-        :param entity_id: the id of the Stix-Entity
+        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
         :return Boolean
     """
 
@@ -486,7 +489,7 @@ class Report:
             return True
         else:
             self.opencti.log(
-                "error", "[opencti_report] Missing parameters: id and entity_id"
+                "error", "[opencti_report] Missing parameters: id and stixObjectOrStixRelationshipId"
             )
             return False
 
@@ -494,7 +497,7 @@ class Report:
         Remove a Stix-Entity object to Report object (object_refs)
 
         :param id: the id of the Report
-        :param entity_id: the id of the Stix-Entity
+        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
         :return Boolean
     """
 
@@ -532,7 +535,7 @@ class Report:
             return True
         else:
             self.opencti.log(
-                "error", "[opencti_report] Missing parameters: id and entity_id"
+                "error", "[opencti_report] Missing parameters: id and stixObjectOrStixRelationshipId"
             )
             return False
 
