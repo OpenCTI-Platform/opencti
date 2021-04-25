@@ -293,7 +293,7 @@ const StixSightingRelationshipCreationFromRelationStixDomainObjectsLines = creat
                 name
                 description
               }
-              ... on XOpenCTIIncident {
+              ... on Incident {
                 name
                 description
               }

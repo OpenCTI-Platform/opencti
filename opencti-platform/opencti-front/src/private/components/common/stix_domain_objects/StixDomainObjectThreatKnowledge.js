@@ -126,7 +126,7 @@ class StixDomainObjectThreatKnowledge extends Component {
     if (viewType === 'timeline') {
       toTypes = [
         'Campaign',
-        'X-OpenCTI-Incident',
+        'Incident',
         'Malware',
         'Tool',
         'Vulnerability',

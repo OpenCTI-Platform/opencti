@@ -37,7 +37,7 @@ const styles = (theme) => ({
   },
 });
 
-class TopMenuXOpenCTIIncident extends Component {
+class TopMenuIncident extends Component {
   render() {
     const {
       t,
@@ -171,7 +171,7 @@ class TopMenuXOpenCTIIncident extends Component {
   }
 }
 
-TopMenuXOpenCTIIncident.propTypes = {
+TopMenuIncident.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   match: PropTypes.object,
@@ -183,4 +183,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(TopMenuXOpenCTIIncident);
+)(TopMenuIncident);

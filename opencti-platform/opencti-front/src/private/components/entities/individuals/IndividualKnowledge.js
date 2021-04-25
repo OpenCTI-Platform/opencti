@@ -204,7 +204,7 @@ class IndividualKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipTypes={['targets']}
-              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+              targetStixDomainObjectTypes={['Incident']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}

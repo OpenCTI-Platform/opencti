@@ -259,7 +259,7 @@ const stixCoreRelationshipCreationFromRelationQuery = graphql`
         ... on Vulnerability {
           name
         }
-        ... on XOpenCTIIncident {
+        ... on Incident {
           name
         }
         ... on StixCyberObservable {
@@ -326,7 +326,7 @@ const stixCoreRelationshipCreationFromRelationQuery = graphql`
         ... on Vulnerability {
           name
         }
-        ... on XOpenCTIIncident {
+        ... on Incident {
           name
         }
         ... on StixCyberObservable {

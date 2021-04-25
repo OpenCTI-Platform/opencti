@@ -302,7 +302,7 @@ const StixDomainObjectAddObjectRefsLines = createPaginationContainer(
                 name
                 description
               }
-              ... on XOpenCTIIncident {
+              ... on Incident {
                 name
                 description
               }

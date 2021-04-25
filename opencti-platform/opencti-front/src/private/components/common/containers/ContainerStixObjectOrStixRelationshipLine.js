@@ -235,7 +235,7 @@ const ContainerStixObjectOrStixRelationshipLineFragment = createFragmentContaine
         ... on Vulnerability {
           name
         }
-        ... on XOpenCTIIncident {
+        ... on Incident {
           name
         }
         ... on StixCyberObservable {
@@ -307,7 +307,7 @@ const ContainerStixObjectOrStixRelationshipLineFragment = createFragmentContaine
             ... on Vulnerability {
               name
             }
-            ... on XOpenCTIIncident {
+            ... on Incident {
               name
             }
           }
@@ -371,7 +371,7 @@ const ContainerStixObjectOrStixRelationshipLineFragment = createFragmentContaine
             ... on Vulnerability {
               name
             }
-            ... on XOpenCTIIncident {
+            ... on Incident {
               name
             }
           }

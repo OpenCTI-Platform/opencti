@@ -429,7 +429,7 @@ class Filters extends Component {
           'Threat-Actor',
           'Tool',
           'Vulnerability',
-          'X-OpenCTI-Incident',
+          'Incident',
           'Stix-Cyber-Observable',
           'Stix-Core-Relationship',
           'indicates',

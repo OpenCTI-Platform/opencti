@@ -40,25 +40,22 @@ const styles = (theme) => ({
   },
 });
 
-const XOpenCTIIncidentMutationFieldPatch = graphql`
-  mutation XOpenCTIIncidentEditionDetailsFieldPatchMutation(
+const IncidentMutationFieldPatch = graphql`
+  mutation IncidentEditionDetailsFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
-    xOpenCTIIncidentEdit(id: $id) {
+    incidentEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...XOpenCTIIncidentEditionDetails_xOpenCTIIncident
+        ...IncidentEditionDetails_incident
       }
     }
   }
 `;
 
-const XOpenCTIIncidentEditionDetailsFocus = graphql`
-  mutation XOpenCTIIncidentEditionDetailsFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
-    xOpenCTIIncidentEdit(id: $id) {
+const IncidentEditionDetailsFocus = graphql`
+  mutation IncidentEditionDetailsFocusMutation($id: ID!, $input: EditContext!) {
+    incidentEdit(id: $id) {
       contextPatch(input: $input) {
         id
       }
@@ -66,7 +63,7 @@ const XOpenCTIIncidentEditionDetailsFocus = graphql`
   }
 `;
 
-const XOpenCTIIncidentValidation = (t) => Yup.object().shape({
+const IncidentValidation = (t) => Yup.object().shape({
   first_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
@@ -76,12 +73,12 @@ const XOpenCTIIncidentValidation = (t) => Yup.object().shape({
   objective: Yup.string(),
 });
 
-class XOpenCTIIncidentEditionDetailsComponent extends Component {
+class IncidentEditionDetailsComponent extends Component {
   handleChangeFocus(name) {
     commitMutation({
-      mutation: XOpenCTIIncidentEditionDetailsFocus,
+      mutation: IncidentEditionDetailsFocus,
       variables: {
-        id: this.props.xOpenCTIIncident.id,
+        id: this.props.incident.id,
         input: {
           focusOn: name,
         },
@@ -90,13 +87,13 @@ class XOpenCTIIncidentEditionDetailsComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    XOpenCTIIncidentValidation(this.props.t)
+    IncidentValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
-          mutation: XOpenCTIIncidentMutationFieldPatch,
+          mutation: IncidentMutationFieldPatch,
           variables: {
-            id: this.props.xOpenCTIIncident.id,
+            id: this.props.incident.id,
             input: { key: name, value },
           },
         });
@@ -105,18 +102,18 @@ class XOpenCTIIncidentEditionDetailsComponent extends Component {
   }
 
   render() {
-    const { t, xOpenCTIIncident, context } = this.props;
+    const { t, incident, context } = this.props;
     const initialValues = pipe(
-      assoc('first_seen', dateFormat(xOpenCTIIncident.first_seen)),
-      assoc('last_seen', dateFormat(xOpenCTIIncident.last_seen)),
+      assoc('first_seen', dateFormat(incident.first_seen)),
+      assoc('last_seen', dateFormat(incident.last_seen)),
       pick(['first_seen', 'last_seen', 'objective']),
-    )(xOpenCTIIncident);
+    )(incident);
 
     return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={XOpenCTIIncidentValidation(t)}
+        validationSchema={IncidentValidation(t)}
         onSubmit={() => true}
       >
         {() => (
@@ -167,19 +164,19 @@ class XOpenCTIIncidentEditionDetailsComponent extends Component {
   }
 }
 
-XOpenCTIIncidentEditionDetailsComponent.propTypes = {
+IncidentEditionDetailsComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  xOpenCTIIncident: PropTypes.object,
+  incident: PropTypes.object,
   context: PropTypes.array,
 };
 
-const XOpenCTIXOpenCTIIncidentEditionDetails = createFragmentContainer(
-  XOpenCTIIncidentEditionDetailsComponent,
+const IncidentEditionDetails = createFragmentContainer(
+  IncidentEditionDetailsComponent,
   {
-    xOpenCTIIncident: graphql`
-      fragment XOpenCTIIncidentEditionDetails_xOpenCTIIncident on XOpenCTIIncident {
+    incident: graphql`
+      fragment IncidentEditionDetails_incident on Incident {
         id
         first_seen
         last_seen
@@ -192,4 +189,4 @@ const XOpenCTIXOpenCTIIncidentEditionDetails = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(XOpenCTIXOpenCTIIncidentEditionDetails);
+)(IncidentEditionDetails);

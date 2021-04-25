@@ -118,7 +118,7 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <Application style={style} fontSize={fontSize} role="img" />;
     case 'Vulnerability':
       return <BugReportOutlined style={style} fontSize={fontSize} role="img" />;
-    case 'X-OpenCTI-Incident':
+    case 'Incident':
       return <Fire style={style} fontSize={fontSize} role="img" />;
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':

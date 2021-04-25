@@ -297,7 +297,7 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                 name
                 description
               }
-              ... on XOpenCTIIncident {
+              ... on Incident {
                 name
                 description
               }

@@ -3,16 +3,16 @@ import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
 import { elLoadByIds } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
-  query XOpenCTIIncidents(
+  query Incidents(
     $first: Int
     $after: ID
-    $orderBy: XOpenCTIIncidentsOrdering
+    $orderBy: IncidentsOrdering
     $orderMode: OrderingMode
-    $filters: [XOpenCTIIncidentsFiltering]
+    $filters: [IncidentsFiltering]
     $filterMode: FilterMode
     $search: String
   ) {
-    xOpenCTIIncidents(
+    incidents(
       first: $first
       after: $after
       orderBy: $orderBy
@@ -33,7 +33,7 @@ const LIST_QUERY = gql`
 `;
 
 const TIMESERIES_QUERY = gql`
-  query XOpenCTIIncidentsTimeSeries(
+  query IncidentsTimeSeries(
     $objectId: String
     $field: String!
     $operation: StatsOperation!
@@ -42,7 +42,7 @@ const TIMESERIES_QUERY = gql`
     $interval: String!
     $relationship_type: String
   ) {
-    xOpenCTIIncidentsTimeSeries(
+    incidentsTimeSeries(
       objectId: $objectId
       field: $field
       operation: $operation
@@ -58,8 +58,8 @@ const TIMESERIES_QUERY = gql`
 `;
 
 const READ_QUERY = gql`
-  query XOpenCTIIncident($id: String!) {
-    xOpenCTIIncident(id: $id) {
+  query Incident($id: String!) {
+    incident(id: $id) {
       id
       standard_id
       name
@@ -69,56 +69,56 @@ const READ_QUERY = gql`
   }
 `;
 
-describe('XOpenCTIIncident resolver standard behavior', () => {
-  let xOpenCTIIncidentInternalId;
-  const xOpenCTIIncidentStixId = 'x-opencti-incident--1cbc610d-9f6b-4937-a404-2bec7f261ae5';
-  it('should XOpenCTIIncident created', async () => {
+describe('Incident resolver standard behavior', () => {
+  let incidentInternalId;
+  const incidentStixId = 'x-opencti-incident--1cbc610d-9f6b-4937-a404-2bec7f261ae5';
+  it('should Incident created', async () => {
     const CREATE_QUERY = gql`
-      mutation XOpenCTIIncidentAdd($input: XOpenCTIIncidentAddInput) {
-        xOpenCTIIncidentAdd(input: $input) {
+      mutation IncidentAdd($input: IncidentAddInput) {
+        incidentAdd(input: $input) {
           id
           name
           description
         }
       }
     `;
-    // Create the XOpenCTIIncident
+    // Create the Incident
     const X_OPENCTI_INCIDENT_TO_CREATE = {
       input: {
-        name: 'XOpenCTIIncident',
-        stix_id: xOpenCTIIncidentStixId,
-        description: 'XOpenCTIIncident description',
+        name: 'Incident',
+        stix_id: incidentStixId,
+        description: 'Incident description',
         first_seen: '2020-03-24T10:51:20+00:00',
         last_seen: '2020-03-24T10:51:20+00:00',
       },
     };
-    const xOpenCTIIncident = await queryAsAdmin({
+    const incident = await queryAsAdmin({
       query: CREATE_QUERY,
       variables: X_OPENCTI_INCIDENT_TO_CREATE,
     });
-    expect(xOpenCTIIncident).not.toBeNull();
-    expect(xOpenCTIIncident.data.xOpenCTIIncidentAdd).not.toBeNull();
-    expect(xOpenCTIIncident.data.xOpenCTIIncidentAdd.name).toEqual('XOpenCTIIncident');
-    xOpenCTIIncidentInternalId = xOpenCTIIncident.data.xOpenCTIIncidentAdd.id;
+    expect(incident).not.toBeNull();
+    expect(incident.data.incidentAdd).not.toBeNull();
+    expect(incident.data.incidentAdd.name).toEqual('Incident');
+    incidentInternalId = incident.data.incidentAdd.id;
   });
-  it('should XOpenCTIIncident loaded by internal id', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: xOpenCTIIncidentInternalId } });
+  it('should Incident loaded by internal id', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: incidentInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.xOpenCTIIncident).not.toBeNull();
-    expect(queryResult.data.xOpenCTIIncident.id).toEqual(xOpenCTIIncidentInternalId);
-    expect(queryResult.data.xOpenCTIIncident.toStix.length).toBeGreaterThan(5);
+    expect(queryResult.data.incident).not.toBeNull();
+    expect(queryResult.data.incident.id).toEqual(incidentInternalId);
+    expect(queryResult.data.incident.toStix.length).toBeGreaterThan(5);
   });
-  it('should XOpenCTIIncident loaded by stix id', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: xOpenCTIIncidentInternalId } });
+  it('should Incident loaded by stix id', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: incidentInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.xOpenCTIIncident).not.toBeNull();
-    expect(queryResult.data.xOpenCTIIncident.id).toEqual(xOpenCTIIncidentInternalId);
+    expect(queryResult.data.incident).not.toBeNull();
+    expect(queryResult.data.incident.id).toEqual(incidentInternalId);
   });
-  it('should list XOpenCTIIncidents', async () => {
+  it('should list Incidents', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.xOpenCTIIncidents.edges.length).toEqual(2);
+    expect(queryResult.data.incidents.edges.length).toEqual(2);
   });
-  it('should timeseries XOpenCTIIncidents', async () => {
+  it('should timeseries Incidents', async () => {
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
@@ -129,10 +129,10 @@ describe('XOpenCTIIncident resolver standard behavior', () => {
         interval: 'month',
       },
     });
-    expect(queryResult.data.xOpenCTIIncidentsTimeSeries.length).toEqual(13);
-    expect(queryResult.data.xOpenCTIIncidentsTimeSeries[2].value).toEqual(1);
+    expect(queryResult.data.incidentsTimeSeries.length).toEqual(13);
+    expect(queryResult.data.incidentsTimeSeries[2].value).toEqual(1);
   });
-  it("should timeseries of an entity's XOpenCTIIncidents", async () => {
+  it("should timeseries of an entity's Incidents", async () => {
     const campaign = await elLoadByIds(ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
@@ -146,13 +146,13 @@ describe('XOpenCTIIncident resolver standard behavior', () => {
         relationship_type: 'attributed-to',
       },
     });
-    expect(queryResult.data.xOpenCTIIncidentsTimeSeries.length).toEqual(13);
-    expect(queryResult.data.xOpenCTIIncidentsTimeSeries[1].value).toEqual(1);
+    expect(queryResult.data.incidentsTimeSeries.length).toEqual(13);
+    expect(queryResult.data.incidentsTimeSeries[1].value).toEqual(1);
   });
-  it('should update XOpenCTIIncident', async () => {
+  it('should update Incident', async () => {
     const UPDATE_QUERY = gql`
-      mutation XOpenCTIIncidentEdit($id: ID!, $input: EditInput!) {
-        xOpenCTIIncidentEdit(id: $id) {
+      mutation IncidentEdit($id: ID!, $input: EditInput!) {
+        incidentEdit(id: $id) {
           fieldPatch(input: $input) {
             id
             name
@@ -162,14 +162,14 @@ describe('XOpenCTIIncident resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: xOpenCTIIncidentInternalId, input: { key: 'name', value: ['XOpenCTIIncident - test'] } },
+      variables: { id: incidentInternalId, input: { key: 'name', value: ['Incident - test'] } },
     });
-    expect(queryResult.data.xOpenCTIIncidentEdit.fieldPatch.name).toEqual('XOpenCTIIncident - test');
+    expect(queryResult.data.incidentEdit.fieldPatch.name).toEqual('Incident - test');
   });
-  it('should context patch XOpenCTIIncident', async () => {
+  it('should context patch Incident', async () => {
     const CONTEXT_PATCH_QUERY = gql`
-      mutation XOpenCTIIncidentEdit($id: ID!, $input: EditContext) {
-        xOpenCTIIncidentEdit(id: $id) {
+      mutation IncidentEdit($id: ID!, $input: EditContext) {
+        incidentEdit(id: $id) {
           contextPatch(input: $input) {
             id
           }
@@ -178,14 +178,14 @@ describe('XOpenCTIIncident resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: xOpenCTIIncidentInternalId, input: { focusOn: 'description' } },
+      variables: { id: incidentInternalId, input: { focusOn: 'description' } },
     });
-    expect(queryResult.data.xOpenCTIIncidentEdit.contextPatch.id).toEqual(xOpenCTIIncidentInternalId);
+    expect(queryResult.data.incidentEdit.contextPatch.id).toEqual(incidentInternalId);
   });
-  it('should context clean XOpenCTIIncident', async () => {
+  it('should context clean Incident', async () => {
     const CONTEXT_PATCH_QUERY = gql`
-      mutation XOpenCTIIncidentEdit($id: ID!) {
-        xOpenCTIIncidentEdit(id: $id) {
+      mutation IncidentEdit($id: ID!) {
+        incidentEdit(id: $id) {
           contextClean {
             id
           }
@@ -194,18 +194,18 @@ describe('XOpenCTIIncident resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: xOpenCTIIncidentInternalId },
+      variables: { id: incidentInternalId },
     });
-    expect(queryResult.data.xOpenCTIIncidentEdit.contextClean.id).toEqual(xOpenCTIIncidentInternalId);
+    expect(queryResult.data.incidentEdit.contextClean.id).toEqual(incidentInternalId);
   });
-  it('should add relation in XOpenCTIIncident', async () => {
+  it('should add relation in Incident', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation XOpenCTIIncidentEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
-        xOpenCTIIncidentEdit(id: $id) {
+      mutation IncidentEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+        incidentEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
-              ... on XOpenCTIIncident {
+              ... on Incident {
                 objectMarking {
                   edges {
                     node {
@@ -222,19 +222,19 @@ describe('XOpenCTIIncident resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: RELATION_ADD_QUERY,
       variables: {
-        id: xOpenCTIIncidentInternalId,
+        id: incidentInternalId,
         input: {
           toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
           relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.xOpenCTIIncidentEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.incidentEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
   });
-  it('should delete relation in XOpenCTIIncident', async () => {
+  it('should delete relation in Incident', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation XOpenCTIIncidentEdit($id: ID!, $toId: String!, $relationship_type: String!) {
-        xOpenCTIIncidentEdit(id: $id) {
+      mutation IncidentEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+        incidentEdit(id: $id) {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             objectMarking {
@@ -251,29 +251,29 @@ describe('XOpenCTIIncident resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: RELATION_DELETE_QUERY,
       variables: {
-        id: xOpenCTIIncidentInternalId,
+        id: incidentInternalId,
         toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.xOpenCTIIncidentEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.incidentEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
-  it('should XOpenCTIIncident deleted', async () => {
+  it('should Incident deleted', async () => {
     const DELETE_QUERY = gql`
-      mutation XOpenCTIIncidentDelete($id: ID!) {
-        xOpenCTIIncidentEdit(id: $id) {
+      mutation IncidentDelete($id: ID!) {
+        incidentEdit(id: $id) {
           delete
         }
       }
     `;
-    // Delete the XOpenCTIIncident
+    // Delete the Incident
     await queryAsAdmin({
       query: DELETE_QUERY,
-      variables: { id: xOpenCTIIncidentInternalId },
+      variables: { id: incidentInternalId },
     });
     // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: xOpenCTIIncidentInternalId } });
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: incidentInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.xOpenCTIIncident).toBeNull();
+    expect(queryResult.data.incident).toBeNull();
   });
 });

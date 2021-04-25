@@ -130,7 +130,7 @@ class RegionKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={region.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+                targetStixDomainObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}

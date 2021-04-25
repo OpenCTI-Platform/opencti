@@ -43,7 +43,7 @@ const styles = (theme) => ({
   },
 });
 
-class XOpenCTIIncidentLineComponent extends Component {
+class IncidentLineComponent extends Component {
   render() {
     const {
       fd, classes, dataColumns, node, onLabelClick,
@@ -101,7 +101,7 @@ class XOpenCTIIncidentLineComponent extends Component {
   }
 }
 
-XOpenCTIIncidentLineComponent.propTypes = {
+IncidentLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
@@ -109,43 +109,40 @@ XOpenCTIIncidentLineComponent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
-const XOpenCTIIncidentLineFragment = createFragmentContainer(
-  XOpenCTIIncidentLineComponent,
-  {
-    node: graphql`
-      fragment XOpenCTIIncidentLine_node on XOpenCTIIncident {
-        id
-        name
-        created
-        modified
-        objectMarking {
-          edges {
-            node {
-              id
-              definition
-            }
-          }
-        }
-        objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
+const IncidentLineFragment = createFragmentContainer(IncidentLineComponent, {
+  node: graphql`
+    fragment IncidentLine_node on Incident {
+      id
+      name
+      created
+      modified
+      objectMarking {
+        edges {
+          node {
+            id
+            definition
           }
         }
       }
-    `,
-  },
-);
+      objectLabel {
+        edges {
+          node {
+            id
+            value
+            color
+          }
+        }
+      }
+    }
+  `,
+});
 
-export const XOpenCTIIncidentLine = compose(
+export const IncidentLine = compose(
   inject18n,
   withStyles(styles),
-)(XOpenCTIIncidentLineFragment);
+)(IncidentLineFragment);
 
-class XOpenCTIIncidentLineDummyComponent extends Component {
+class IncidentLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -191,12 +188,12 @@ class XOpenCTIIncidentLineDummyComponent extends Component {
   }
 }
 
-XOpenCTIIncidentLineDummyComponent.propTypes = {
+IncidentLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const XOpenCTIIncidentLineDummy = compose(
+export const IncidentLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(XOpenCTIIncidentLineDummyComponent);
+)(IncidentLineDummyComponent);

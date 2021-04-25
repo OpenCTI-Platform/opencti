@@ -274,7 +274,7 @@ const EntityStixSightingRelationshipLineFragment = createFragmentContainer(
             name
             description
           }
-          ... on XOpenCTIIncident {
+          ... on Incident {
             name
             description
           }
