@@ -428,18 +428,29 @@ class ReportKnowledgeCorrelationComponent extends Component {
 
   handleToggleCreateBy(createdByRef) {
     const { createdBy } = this.state;
-    if (createdBy.includes(createdByRef)) {
-      this.setState(
-        {
-          createdBy: R.filter((t) => t !== createdByRef, createdBy),
-        },
-        () => this.saveParameters(true),
-      );
-    } else {
-      this.setState(
-        { createdBy: R.append(createdByRef, createdBy) }, () => this.saveParameters(true),
-      );
-    }
+    const filterAdjust = {
+      markedBy: this.state.markedBy,
+      createdBy: ((createdBy.includes(createdByRef))
+        ? R.filter((t) => t !== createdByRef, createdBy)
+        : R.append(
+          createdByRef,
+          createdBy,
+        )
+      ),
+      stixCoreObjectsTypes: this.state.stixCoreObjectsTypes,
+    };
+    this.setState(
+      {
+        createdBy: filterAdjust.createdBy,
+        graphData: buildCorrelationData(
+          this.graphObjects,
+          decodeGraphData(this.props.report.x_opencti_graph_data),
+          this.props.t,
+          filterAdjust,
+        ),
+      },
+      () => this.saveParameters(false),
+    );
   }
 
   handleZoomToFit() {
@@ -811,7 +822,22 @@ class ReportKnowledgeCorrelationComponent extends Component {
     );
     const createdBy = R.uniqBy(
       R.prop('id'),
-      R.map((n) => n.createdBy, this.graphData.nodes),
+      R.concat(
+        R.pipe(
+          R.filter((m) => m.node.createdBy),
+          R.map((m) => m.node.createdBy),
+          R.flatten,
+          R.filter((m) => m.id),
+        )(report.objects.edges),
+        R.pipe(
+          R.filter((m) => m.node.reports),
+          R.map((m) => m.node.reports.edges),
+          R.flatten,
+          R.map((m) => m.node.createdBy),
+          R.flatten,
+          R.filter((m) => m.id),
+        )(report.objects.edges),
+      ),
     );
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     const timeRangeValues = computeTimeRangeValues(
