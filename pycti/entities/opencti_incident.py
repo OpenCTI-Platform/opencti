@@ -3,7 +3,7 @@
 import json
 
 
-class XOpenCTIIncident:
+class Incident:
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
@@ -127,8 +127,8 @@ class XOpenCTIIncident:
         )
         query = (
             """
-            query XOpenCTIIncidents($filters: [XOpenCTIIncidentsFiltering], $search: String, $first: Int, $after: ID, $orderBy: XOpenCTIIncidentsOrdering, $orderMode: OrderingMode) {
-                xOpenCTIIncidents(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+            query Incidents($filters: [IncidentsFiltering], $search: String, $first: Int, $after: ID, $orderBy: IncidentsOrdering, $orderMode: OrderingMode) {
+                incidents(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
                             """
@@ -159,7 +159,7 @@ class XOpenCTIIncident:
             },
         )
         return self.opencti.process_multiple(
-            result["data"]["xOpenCTIIncidents"], with_pagination
+            result["data"]["incidents"], with_pagination
         )
 
     """
@@ -178,8 +178,8 @@ class XOpenCTIIncident:
             self.opencti.log("info", "Reading Incident {" + id + "}.")
             query = (
                 """
-                query XOpenCTIIncident($id: String!) {
-                    xOpenCTIIncident(id: $id) {
+                query Incident($id: String!) {
+                    incident(id: $id) {
                         """
                 + (
                     custom_attributes
@@ -192,9 +192,7 @@ class XOpenCTIIncident:
              """
             )
             result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(
-                result["data"]["xOpenCTIIncident"]
-            )
+            return self.opencti.process_multiple_fields(result["data"]["incident"])
         elif filters is not None:
             result = self.list(filters=filters)
             if len(result) > 0:
@@ -236,8 +234,8 @@ class XOpenCTIIncident:
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Incident {" + name + "}.")
             query = """
-                mutation XOpenCTIIncidentAdd($input: XOpenCTIIncidentAddInput) {
-                    xOpenCTIIncidentAdd(input: $input) {
+                mutation IncidentAdd($input: IncidentAddInput) {
+                    incidentAdd(input: $input) {
                         id
                         standard_id
                         entity_type
@@ -269,9 +267,7 @@ class XOpenCTIIncident:
                     }
                 },
             )
-            return self.opencti.process_multiple_fields(
-                result["data"]["xOpenCTIIncidentAdd"]
-            )
+            return self.opencti.process_multiple_fields(result["data"]["incidentAdd"])
         else:
             self.opencti.log("error", "Missing parameters: name and description")
 

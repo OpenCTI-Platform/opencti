@@ -32,6 +32,7 @@ PATTERN_MAPPING = {
     "User-Account": ["acount_login"],
     "Windows-Registry-Key": ["key"],
     "Windows-Registry-Value-Type": ["name"],
+    "X-OpenCTI-Hostname": ["value"],
 }
 
 
@@ -93,7 +94,7 @@ class SimpleObservable:
 
 
 @CustomObject(
-    "x-opencti-incident",
+    "incident",
     [
         ("name", properties.StringProperty(required=True)),
         ("description", properties.StringProperty()),
@@ -117,5 +118,5 @@ class SimpleObservable:
         ),
     ],
 )
-class StixXOpenCTIIncident:
+class StixIncident:
     pass

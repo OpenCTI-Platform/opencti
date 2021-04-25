@@ -34,7 +34,7 @@ from pycti.entities.opencti_threat_actor import ThreatActor
 from pycti.entities.opencti_intrusion_set import IntrusionSet
 from pycti.entities.opencti_infrastructure import Infrastructure
 from pycti.entities.opencti_campaign import Campaign
-from pycti.entities.opencti_x_opencti_incident import XOpenCTIIncident
+from pycti.entities.opencti_incident import Incident
 from pycti.entities.opencti_malware import Malware
 from pycti.entities.opencti_tool import Tool
 from pycti.entities.opencti_vulnerability import Vulnerability
@@ -127,7 +127,7 @@ class OpenCTIApiClient:
         self.intrusion_set = IntrusionSet(self)
         self.infrastructure = Infrastructure(self)
         self.campaign = Campaign(self)
-        self.x_opencti_incident = XOpenCTIIncident(self)
+        self.incident = Incident(self)
         self.malware = Malware(self)
         self.tool = Tool(self)
         self.vulnerability = Vulnerability(self)
