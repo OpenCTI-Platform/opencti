@@ -69,13 +69,11 @@ def create_ssl_context() -> ssl.SSLContext:
         ssl.OP_NO_RENEGOTIATION,  # pylint: disable=no-member
         ssl.OP_SINGLE_DH_USE,
         ssl.OP_SINGLE_ECDH_USE,
-        ssl.OP_NO_SSLv3,
-        ssl.OP_NO_TLSv1,
-        ssl.OP_NO_TLSv1_1,
     ]
     ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH)
     ssl_context.options &= ~ssl.OP_ENABLE_MIDDLEBOX_COMPAT  # pylint: disable=no-member
     ssl_context.verify_mode = ssl.CERT_REQUIRED
+    ssl_context.minimum_version = ssl.TLSVersion.TLSv1_2
 
     for option in ssl_context_options:
         ssl_context.options |= option
