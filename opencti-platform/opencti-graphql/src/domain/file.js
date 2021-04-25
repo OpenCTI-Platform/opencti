@@ -4,17 +4,8 @@ import { pushToConnector } from '../database/rabbitmq';
 import { connectorsForImport } from './connector';
 import { createWork } from './work';
 import { logApp } from '../config/conf';
-import { internalLoadById } from '../database/middleware';
-import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
-import { UnsupportedError } from '../config/errors';
 
 export const uploadJobImport = async (user, fileId, fileMime, entityId, manual = false) => {
-  let isImportInContainer = false;
-  if (entityId) {
-    const entity = await internalLoadById(user, entityId);
-    isImportInContainer = isStixDomainObjectContainer(entity.entity_type);
-    if (!isImportInContainer) throw UnsupportedError('Cant importing on none container entity');
-  }
   const connectors = await connectorsForImport(user, fileMime, true, !manual);
   if (connectors.length > 0) {
     // Create job and send ask to broker
@@ -35,7 +26,7 @@ export const uploadJobImport = async (user, fileId, fileMime, entityId, manual =
           file_id: fileId,
           file_mime: fileMime,
           file_fetch: `/storage/get/${fileId}`, // Path to get the file
-          container_id: isImportInContainer ? entityId : null, // Can be report, Note, ...
+          entity_id: entityId, // Context of the upload
         },
       };
     };
