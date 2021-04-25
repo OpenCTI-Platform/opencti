@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { lstatSync, readFileSync } from 'fs';
 import amqp from 'amqplib';
 import axios from 'axios';
 import * as R from 'ramda';
@@ -14,6 +14,17 @@ export const EVENT_TYPE_MERGE = 'merge';
 export const EVENT_TYPE_DELETE = 'delete';
 
 const USE_SSL = conf.get('rabbitmq:use_ssl');
+const RABBITMQ_CA = conf.get('rabbitmq:ca').map((path) => readFileSync(path));
+
+// https://golang.org/src/crypto/x509/root_linux.go
+const LINUX_CERTFILES = [
+  '/etc/ssl/certs/ca-certificates.crt', // Debian/Ubuntu/Gentoo etc.
+  '/etc/pki/tls/certs/ca-bundle.crt', // Fedora/RHEL 6
+  '/etc/ssl/ca-bundle.pem', // OpenSUSE
+  '/etc/pki/tls/cacert.pem', // OpenELEC
+  '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem', // CentOS/RHEL 7
+  '/etc/ssl/cert.pem',
+];
 
 const amqpUri = () => {
   const host = conf.get('rabbitmq:hostname');
@@ -28,7 +39,23 @@ const amqpCred = () => {
 };
 
 const amqpCA = () => {
-  return { ca: conf.get('rabbitmq:ca').map((path) => readFileSync(path)) };
+  if (RABBITMQ_CA.length) {
+    return { ca: RABBITMQ_CA };
+  } else {
+    for (const cert of LINUX_CERTFILES) {
+      try {
+        if (lstatSync(cert).isFile()) {
+          return { ca: [readFileSync(cert)] };
+        }
+      } catch (err) {
+        if (err.code === 'ENOENT') {
+          continue;
+        } else {
+          throw err;
+        }
+      }
+    }
+  }
 };
 
 export const config = () => {
