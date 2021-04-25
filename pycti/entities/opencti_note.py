@@ -164,7 +164,7 @@ class Note:
                         ... on Vulnerability {
                             name
                         }
-                        ... on XOpenCTIIncident {
+                        ... on Incident {
                             name
                         }                
                         ... on StixCoreRelationship {

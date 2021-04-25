@@ -30,7 +30,7 @@ from .entities.opencti_threat_actor import ThreatActor
 from .entities.opencti_intrusion_set import IntrusionSet
 from .entities.opencti_infrastructure import Infrastructure
 from .entities.opencti_campaign import Campaign
-from .entities.opencti_x_opencti_incident import XOpenCTIIncident
+from .entities.opencti_incident import Incident
 from .entities.opencti_malware import Malware
 from .entities.opencti_tool import Tool
 from .entities.opencti_vulnerability import Vulnerability
@@ -48,7 +48,7 @@ from .utils.opencti_stix2_update import OpenCTIStix2Update
 from .utils.opencti_stix2_utils import (
     OpenCTIStix2Utils,
     SimpleObservable,
-    StixXOpenCTIIncident,
+    StixIncident,
 )
 from .utils.constants import StixCyberObservableTypes
 
@@ -76,7 +76,7 @@ __all__ = [
     "IntrusionSet",
     "Infrastructure",
     "Campaign",
-    "XOpenCTIIncident",
+    "Incident",
     "Malware",
     "Tool",
     "Vulnerability",
@@ -93,5 +93,5 @@ __all__ = [
     "OpenCTIStix2Utils",
     "StixCyberObservableTypes",
     "SimpleObservable",
-    "StixXOpenCTIIncident",
+    "StixIncident",
 ]
