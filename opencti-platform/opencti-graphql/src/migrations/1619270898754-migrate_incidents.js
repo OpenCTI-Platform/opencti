@@ -30,7 +30,7 @@ export const up = async (next) => {
     bulkOperations.push(...op);
   };
   // Old type
-  const opts = { types: ['X-OpenCTI-Incident'], callback };
+  const opts = { types: ['Incident'], callback };
   await elList(SYSTEM_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
   // Apply operations.
   let currentProcessing = 0;

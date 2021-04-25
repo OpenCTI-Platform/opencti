@@ -71,7 +71,7 @@ const READ_QUERY = gql`
 
 describe('Incident resolver standard behavior', () => {
   let incidentInternalId;
-  const incidentStixId = 'x-opencti-incident--1cbc610d-9f6b-4937-a404-2bec7f261ae5';
+  const incidentStixId = 'incident--1cbc610d-9f6b-4937-a404-2bec7f261ae5';
   it('should Incident created', async () => {
     const CREATE_QUERY = gql`
       mutation IncidentAdd($input: IncidentAddInput) {
@@ -83,7 +83,7 @@ describe('Incident resolver standard behavior', () => {
       }
     `;
     // Create the Incident
-    const X_OPENCTI_INCIDENT_TO_CREATE = {
+    const INCIDENT_TO_CREATE = {
       input: {
         name: 'Incident',
         stix_id: incidentStixId,
@@ -94,7 +94,7 @@ describe('Incident resolver standard behavior', () => {
     };
     const incident = await queryAsAdmin({
       query: CREATE_QUERY,
-      variables: X_OPENCTI_INCIDENT_TO_CREATE,
+      variables: INCIDENT_TO_CREATE,
     });
     expect(incident).not.toBeNull();
     expect(incident.data.incidentAdd).not.toBeNull();
