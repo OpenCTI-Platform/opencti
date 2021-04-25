@@ -1,8 +1,8 @@
-import { lstatSync, readFileSync } from 'fs';
+import { readFileSync } from 'fs';
 import amqp from 'amqplib';
 import axios from 'axios';
 import * as R from 'ramda';
-import conf from '../config/conf';
+import conf, { configureCA } from '../config/conf';
 import { DatabaseError } from '../config/errors';
 
 export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
@@ -16,16 +16,6 @@ export const EVENT_TYPE_DELETE = 'delete';
 const USE_SSL = conf.get('rabbitmq:use_ssl');
 const RABBITMQ_CA = conf.get('rabbitmq:ca').map((path) => readFileSync(path));
 
-// https://golang.org/src/crypto/x509/root_linux.go
-const LINUX_CERTFILES = [
-  '/etc/ssl/certs/ca-certificates.crt', // Debian/Ubuntu/Gentoo etc.
-  '/etc/pki/tls/certs/ca-bundle.crt', // Fedora/RHEL 6
-  '/etc/ssl/ca-bundle.pem', // OpenSUSE
-  '/etc/pki/tls/cacert.pem', // OpenELEC
-  '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem', // CentOS/RHEL 7
-  '/etc/ssl/cert.pem',
-];
-
 const amqpUri = () => {
   const host = conf.get('rabbitmq:hostname');
   const port = conf.get('rabbitmq:port');
@@ -36,26 +26,6 @@ const amqpCred = () => {
   const user = conf.get('rabbitmq:username');
   const pass = conf.get('rabbitmq:password');
   return { credentials: amqp.credentials.plain(user, pass) };
-};
-
-const amqpCA = () => {
-  if (RABBITMQ_CA.length) {
-    return { ca: RABBITMQ_CA };
-  } else {
-    for (const cert of LINUX_CERTFILES) {
-      try {
-        if (lstatSync(cert).isFile()) {
-          return { ca: [readFileSync(cert)] };
-        }
-      } catch (err) {
-        if (err.code === 'ENOENT') {
-          continue;
-        } else {
-          throw err;
-        }
-      }
-    }
-  }
 };
 
 export const config = () => {
@@ -71,7 +41,7 @@ export const config = () => {
 const amqpExecute = (execute) => {
   return new Promise((resolve, reject) => {
     amqp
-      .connect(amqpUri(), USE_SSL ? { ...amqpCred(), ...amqpCA() } : amqpCred())
+      .connect(amqpUri(), USE_SSL ? { ...amqpCred(), ...configureCA(RABBITMQ_CA) } : amqpCred())
       .then((connection) => {
         return connection
           .createConfirmChannel()

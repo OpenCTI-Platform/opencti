@@ -1,3 +1,4 @@
+import { lstatSync, readFileSync } from 'fs';
 import nconf from 'nconf';
 import winston, { format } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
@@ -15,6 +16,16 @@ import {
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 
 const pjson = require('../../package.json');
+
+// https://golang.org/src/crypto/x509/root_linux.go
+const LINUX_CERTFILES = [
+  '/etc/ssl/certs/ca-certificates.crt', // Debian/Ubuntu/Gentoo etc.
+  '/etc/pki/tls/certs/ca-bundle.crt', // Fedora/RHEL 6
+  '/etc/ssl/ca-bundle.pem', // OpenSUSE
+  '/etc/pki/tls/cacert.pem', // OpenELEC
+  '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem', // CentOS/RHEL 7
+  '/etc/ssl/cert.pem',
+];
 
 const DEFAULT_ENV = 'production';
 export const OPENCTI_SESSION = 'opencti_session';
@@ -224,5 +235,25 @@ export const logAudit = {
 const AppBasePath = nconf.get('app:base_path').trim();
 const contextPath = isEmpty(AppBasePath) || AppBasePath === '/' ? '' : AppBasePath;
 export const basePath = isEmpty(AppBasePath) || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
+
+export const configureCA = (certificates) => {
+  if (certificates.length) {
+    return { ca: certificates };
+  } else {
+    for (const cert of LINUX_CERTFILES) {
+      try {
+        if (lstatSync(cert).isFile()) {
+          return { ca: [readFileSync(cert)] };
+        }
+      } catch (err) {
+        if (err.code === 'ENOENT') {
+          continue;
+        } else {
+          throw err;
+        }
+      }
+    }
+  }
+};
 
 export default nconf;
