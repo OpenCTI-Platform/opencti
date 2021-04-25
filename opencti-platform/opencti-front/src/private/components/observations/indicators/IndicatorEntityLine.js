@@ -257,7 +257,7 @@ const IndicatorEntityLineFragment = createFragmentContainer(
             name
             description
           }
-          ... on XOpenCTIIncident {
+          ... on Incident {
             name
             description
           }
@@ -317,7 +317,7 @@ const IndicatorEntityLineFragment = createFragmentContainer(
               ... on Vulnerability {
                 name
               }
-              ... on XOpenCTIIncident {
+              ... on Incident {
                 name
               }
               ... on StixCyberObservable {
@@ -376,7 +376,7 @@ const IndicatorEntityLineFragment = createFragmentContainer(
               ... on Vulnerability {
                 name
               }
-              ... on XOpenCTIIncident {
+              ... on Incident {
                 name
               }
               ... on StixCyberObservable {

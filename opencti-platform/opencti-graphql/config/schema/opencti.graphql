@@ -4288,8 +4288,8 @@ input VulnerabilityAddInput {
   update: Boolean
 }
 
-############## XOpenCTIIncident
-enum XOpenCTIIncidentsOrdering {
+############## Incident
+enum IncidentsOrdering {
   name
   first_seen
   last_seen
@@ -4298,7 +4298,7 @@ enum XOpenCTIIncidentsOrdering {
   created_at
   updated_at
 }
-enum XOpenCTIIncidentsFilter {
+enum IncidentsFilter {
   name
   aliases
   created
@@ -4308,21 +4308,21 @@ enum XOpenCTIIncidentsFilter {
   markedBy
   labelledBy
 }
-input XOpenCTIIncidentsFiltering {
-  key: XOpenCTIIncidentsFilter!
+input IncidentsFiltering {
+  key: IncidentsFilter!
   values: [String]
   operator: String
   filterMode: FilterMode
 }
-type XOpenCTIIncidentConnection {
+type IncidentConnection {
   pageInfo: PageInfo!
-  edges: [XOpenCTIIncidentEdge]
+  edges: [IncidentEdge]
 }
-type XOpenCTIIncidentEdge {
+type IncidentEdge {
   cursor: String!
-  node: XOpenCTIIncident!
+  node: Incident!
 }
-type XOpenCTIIncident implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -4369,7 +4369,7 @@ type XOpenCTIIncident implements BasicObject & StixObject & StixCoreObject & Sti
   lang: String
   created: DateTime
   modified: DateTime
-  # XOpenCTIIncident
+  # Incident
   name: String!
   description: String
   aliases: [String]
@@ -4383,7 +4383,7 @@ type XOpenCTIIncident implements BasicObject & StixObject & StixCoreObject & Sti
   toStix: String
   editContext: [EditUserContext]
 }
-input XOpenCTIIncidentAddInput {
+input IncidentAddInput {
   stix_id: String
   name: String! @constraint(minLength: 2)
   description: String!
@@ -7004,7 +7004,7 @@ union StixObjectOrStixRelationship =
   | ThreatActor
   | Tool
   | Vulnerability
-  | XOpenCTIIncident ## Six Cyber Observables
+  | Incident ## Six Cyber Observables
   | AutonomousSystem
   | Directory
   | DomainName
@@ -7059,7 +7059,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | ThreatActor
   | Tool
   | Vulnerability
-  | XOpenCTIIncident ## Six Cyber Observables
+  | Incident ## Six Cyber Observables
   | AutonomousSystem
   | Directory
   | DomainName
@@ -8064,18 +8064,18 @@ type Query {
     search: String
     toStix: Boolean
   ): VulnerabilityConnection @auth(for: [KNOWLEDGE])
-  xOpenCTIIncident(id: String): XOpenCTIIncident @auth(for: [KNOWLEDGE])
-  xOpenCTIIncidents(
+  incident(id: String): Incident @auth(for: [KNOWLEDGE])
+  incidents(
     first: Int
     after: ID
-    orderBy: XOpenCTIIncidentsOrdering
+    orderBy: IncidentsOrdering
     orderMode: OrderingMode
-    filters: [XOpenCTIIncidentsFiltering]
+    filters: [IncidentsFiltering]
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): XOpenCTIIncidentConnection @auth(for: [KNOWLEDGE])
-  xOpenCTIIncidentsTimeSeries(
+  ): IncidentConnection @auth(for: [KNOWLEDGE])
+  incidentsTimeSeries(
     objectId: String
     field: String!
     operation: StatsOperation!
@@ -8642,13 +8642,13 @@ type VulnerabilityEditMutations {
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: String!, relationship_type: String!): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
 }
-type XOpenCTIIncidentEditMutations {
+type IncidentEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: EditInput, operation: EditOperation): XOpenCTIIncident @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): XOpenCTIIncident @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: XOpenCTIIncident @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: EditInput, operation: EditOperation): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Incident @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): XOpenCTIIncident @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 ######## STIX CYBER OBSERVABLE ENTITIES
@@ -8828,8 +8828,8 @@ type Mutation {
   toolEdit(id: ID!): ToolEditMutations
   vulnerabilityAdd(input: VulnerabilityAddInput): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
-  xOpenCTIIncidentAdd(input: XOpenCTIIncidentAddInput): XOpenCTIIncident @auth(for: [KNOWLEDGE_KNUPDATE])
-  xOpenCTIIncidentEdit(id: ID!): XOpenCTIIncidentEditMutations
+  incidentAdd(input: IncidentAddInput): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
+  incidentEdit(id: ID!): IncidentEditMutations
 
   ######## STIX CYBER OBSERVABLE ENTITIES
   stixCyberObservableAdd(

@@ -3,66 +3,71 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
-import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
-import {
-  XOpenCTIIncidentCard,
-  XOpenCTIIncidentCardDummy,
-} from './XOpenCTIIncidentCard';
+import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import { IncidentLine, IncidentLineDummy } from './IncidentLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfCardsToLoad = 50;
+const nbOfRowsToLoad = 50;
 
-class XOpenCTIIncidentsCards extends Component {
+class IncidentsLines extends Component {
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
       this.props,
-      'xOpenCTIIncidents',
+      'incidents',
       this.props.setNumberOfElements.bind(this),
     );
   }
 
   render() {
-    const { initialLoading, relay, onLabelClick } = this.props;
+    const {
+      initialLoading, dataColumns, relay, onLabelClick,
+    } = this.props;
     return (
-      <ListCardsContent
+      <ListLinesContent
         initialLoading={initialLoading}
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['xOpenCTIIncidents', 'edges'], this.props.data)}
+        dataList={pathOr([], ['incidents', 'edges'], this.props.data)}
         globalCount={pathOr(
-          nbOfCardsToLoad,
-          ['xOpenCTIIncidents', 'pageInfo', 'globalCount'],
+          nbOfRowsToLoad,
+          ['incidents', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        CardComponent={<XOpenCTIIncidentCard />}
-        DummyCardComponent={<XOpenCTIIncidentCardDummy />}
-        nbOfCardsToLoad={nbOfCardsToLoad}
+        LineComponent={<IncidentLine />}
+        DummyLineComponent={<IncidentLineDummy />}
+        dataColumns={dataColumns}
+        nbOfRowsToLoad={nbOfRowsToLoad}
         onLabelClick={onLabelClick.bind(this)}
       />
     );
   }
 }
 
-XOpenCTIIncidentsCards.propTypes = {
+IncidentsLines.propTypes = {
+  classes: PropTypes.object,
+  paginationOptions: PropTypes.object,
+  dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
+  incidents: PropTypes.object,
   initialLoading: PropTypes.bool,
+  searchTerm: PropTypes.string,
   onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 
-export const xOpenCTIIncidentsCardsQuery = graphql`
-  query XOpenCTIIncidentsCardsPaginationQuery(
+export const incidentsLinesQuery = graphql`
+  query IncidentsLinesPaginationQuery(
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: XOpenCTIIncidentsOrdering
+    $orderBy: IncidentsOrdering
     $orderMode: OrderingMode
-    $filters: [XOpenCTIIncidentsFiltering]
+    $filters: [IncidentsFiltering]
   ) {
-    ...XOpenCTIIncidentsCards_data
+    ...IncidentsLines_data
       @arguments(
         search: $search
         count: $count
@@ -75,32 +80,32 @@ export const xOpenCTIIncidentsCardsQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  XOpenCTIIncidentsCards,
+  IncidentsLines,
   {
     data: graphql`
-      fragment XOpenCTIIncidentsCards_data on Query
+      fragment IncidentsLines_data on Query
       @argumentDefinitions(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        orderBy: { type: "XOpenCTIIncidentsOrdering", defaultValue: name }
+        orderBy: { type: "IncidentsOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[XOpenCTIIncidentsFiltering]" }
+        filters: { type: "[IncidentsFiltering]" }
       ) {
-        xOpenCTIIncidents(
+        incidents(
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_xOpenCTIIncidents") {
+        ) @connection(key: "Pagination_incidents") {
           edges {
             node {
               id
               name
               description
-              ...XOpenCTIIncidentCard_node
+              ...IncidentLine_node
             }
           }
           pageInfo {
@@ -115,7 +120,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.xOpenCTIIncidents;
+      return props.data && props.data.incidents;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -133,6 +138,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: xOpenCTIIncidentsCardsQuery,
+    query: incidentsLinesQuery,
   },
 );

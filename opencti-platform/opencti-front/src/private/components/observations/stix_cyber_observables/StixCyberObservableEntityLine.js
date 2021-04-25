@@ -274,7 +274,7 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
             name
             description
           }
-          ... on XOpenCTIIncident {
+          ... on Incident {
             name
             description
           }
@@ -359,7 +359,7 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
                 name
                 description
               }
-              ... on XOpenCTIIncident {
+              ... on Incident {
                 name
                 description
               }
@@ -444,7 +444,7 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
                 name
                 description
               }
-              ... on XOpenCTIIncident {
+              ... on Incident {
                 name
                 description
               }
@@ -531,7 +531,7 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
             name
             description
           }
-          ... on XOpenCTIIncident {
+          ... on Incident {
             name
             description
           }
@@ -616,7 +616,7 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
                 name
                 description
               }
-              ... on XOpenCTIIncident {
+              ... on Incident {
                 name
                 description
               }
@@ -701,7 +701,7 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
                 name
                 description
               }
-              ... on XOpenCTIIncident {
+              ... on Incident {
                 name
                 description
               }

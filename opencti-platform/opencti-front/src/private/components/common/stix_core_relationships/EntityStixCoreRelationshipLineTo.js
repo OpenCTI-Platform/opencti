@@ -252,7 +252,7 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
             name
             description
           }
-          ... on XOpenCTIIncident {
+          ... on Incident {
             name
             description
           }

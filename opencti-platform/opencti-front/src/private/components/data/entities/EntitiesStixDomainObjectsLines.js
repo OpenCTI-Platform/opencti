@@ -205,7 +205,7 @@ export const entitiesStixDomainObjectsLinesSearchQuery = graphql`
             name
             description
           }
-          ... on XOpenCTIIncident {
+          ... on Incident {
             name
             aliases
             description

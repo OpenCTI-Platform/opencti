@@ -269,7 +269,7 @@ const StixSightingRelationshipLineFragment = createFragmentContainer(
             name
             description
           }
-          ... on XOpenCTIIncident {
+          ... on Incident {
             name
             description
           }

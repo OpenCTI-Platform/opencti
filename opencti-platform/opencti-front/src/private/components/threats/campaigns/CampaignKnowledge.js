@@ -155,7 +155,7 @@ class CampaignKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['attributed-to']}
-                targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+                targetStixDomainObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}

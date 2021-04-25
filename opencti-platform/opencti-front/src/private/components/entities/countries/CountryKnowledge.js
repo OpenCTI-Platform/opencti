@@ -146,7 +146,7 @@ class CountryKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={country.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+                targetStixDomainObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}

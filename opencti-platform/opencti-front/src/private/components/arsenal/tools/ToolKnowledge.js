@@ -159,7 +159,7 @@ class ToolKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={tool.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+                targetStixDomainObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}

@@ -190,7 +190,7 @@ const stixDomainObjectCreationMutation = graphql`
         name
         description
       }
-      ... on XOpenCTIIncident {
+      ... on Incident {
         name
         description
       }
@@ -362,9 +362,9 @@ class StixDomainObjectCreation extends Component {
           )}
         {targetStixDomainObjectTypes === undefined
         || targetStixDomainObjectTypes.some(
-          (r) => ['Stix-Domain-Object', 'X-OpenCTI-Incident'].indexOf(r) >= 0,
+          (r) => ['Stix-Domain-Object', 'Incident'].indexOf(r) >= 0,
         ) ? (
-          <MenuItem value="X-OpenCTI-Incident">{t('Incident')}</MenuItem>
+          <MenuItem value="Incident">{t('Incident')}</MenuItem>
           ) : (
             ''
           )}

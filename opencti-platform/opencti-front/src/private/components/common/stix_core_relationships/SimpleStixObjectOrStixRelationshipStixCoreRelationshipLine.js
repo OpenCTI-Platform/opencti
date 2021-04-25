@@ -264,7 +264,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
             name
             description
           }
-          ... on XOpenCTIIncident {
+          ... on Incident {
             name
             description
           }
@@ -441,7 +441,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
             name
             description
           }
-          ... on XOpenCTIIncident {
+          ... on Incident {
             name
             description
           }

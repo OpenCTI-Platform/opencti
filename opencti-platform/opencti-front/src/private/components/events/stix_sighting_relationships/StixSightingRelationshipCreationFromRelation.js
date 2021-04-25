@@ -246,7 +246,7 @@ const stixSightingRelationshipCreationFromRelationQuery = graphql`
         ... on Vulnerability {
           name
         }
-        ... on XOpenCTIIncident {
+        ... on Incident {
           name
         }
         ... on StixCyberObservable {
@@ -313,7 +313,7 @@ const stixSightingRelationshipCreationFromRelationQuery = graphql`
         ... on Vulnerability {
           name
         }
-        ... on XOpenCTIIncident {
+        ... on Incident {
           name
         }
         ... on StixCyberObservable {

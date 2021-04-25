@@ -65,15 +65,15 @@ const styles = (theme) => ({
   },
 });
 
-const XOpenCTIIncidentMutation = graphql`
-  mutation XOpenCTIIncidentCreationMutation($input: XOpenCTIIncidentAddInput!) {
-    xOpenCTIIncidentAdd(input: $input) {
-      ...XOpenCTIIncidentLine_node
+const IncidentMutation = graphql`
+  mutation IncidentCreationMutation($input: IncidentAddInput!) {
+    incidentAdd(input: $input) {
+      ...IncidentLine_node
     }
   }
 `;
 
-const XOpenCTIIncidentValidation = (t) => Yup.object().shape({
+const IncidentValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
@@ -81,7 +81,7 @@ const XOpenCTIIncidentValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-class XOpenCTIXOpenCTIIncidentCreation extends Component {
+class IncidentCreation extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -102,16 +102,16 @@ class XOpenCTIXOpenCTIIncidentCreation extends Component {
       assoc('objectLabel', pluck('value', values.objectLabel)),
     )(values);
     commitMutation({
-      mutation: XOpenCTIIncidentMutation,
+      mutation: IncidentMutation,
       variables: {
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('xOpenCTIIncidentAdd');
+        const payload = store.getRootField('incidentAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node');
         const conn = ConnectionHandler.getConnection(
           store.get(store.getRoot().getDataID()),
-          'Pagination_xOpenCTIIncidents',
+          'Pagination_incidents',
           this.props.paginationOptions,
         );
         ConnectionHandler.insertEdgeBefore(conn, newEdge);
@@ -166,7 +166,7 @@ class XOpenCTIXOpenCTIIncidentCreation extends Component {
                 objectMarking: [],
                 objectLabel: [],
               }}
-              validationSchema={XOpenCTIIncidentValidation(t)}
+              validationSchema={IncidentValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
             >
@@ -183,7 +183,7 @@ class XOpenCTIXOpenCTIIncidentCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
-                    detectDuplicate={['XOpenCTIIncident']}
+                    detectDuplicate={['Incident']}
                   />
                   <Field
                     component={MarkDownField}
@@ -238,7 +238,7 @@ class XOpenCTIXOpenCTIIncidentCreation extends Component {
   }
 }
 
-XOpenCTIXOpenCTIIncidentCreation.propTypes = {
+IncidentCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -248,4 +248,4 @@ XOpenCTIXOpenCTIIncidentCreation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(XOpenCTIXOpenCTIIncidentCreation);
+)(IncidentCreation);

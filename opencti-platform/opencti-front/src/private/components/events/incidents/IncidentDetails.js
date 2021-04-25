@@ -21,10 +21,10 @@ const styles = () => ({
   },
 });
 
-class XOpenCTIIncidentDetailsComponent extends Component {
+class IncidentDetailsComponent extends Component {
   render() {
     const {
-      fld, t, classes, xOpenCTIIncident,
+      fld, t, classes, incident,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -37,16 +37,13 @@ class XOpenCTIIncidentDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Description')}
               </Typography>
-              <ExpandableMarkdown
-                source={xOpenCTIIncident.description}
-                limit={400}
-              />
+              <ExpandableMarkdown source={incident.description} limit={400} />
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('First seen')}
               </Typography>
-              {fld(xOpenCTIIncident.first_seen)}
+              {fld(incident.first_seen)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -54,7 +51,7 @@ class XOpenCTIIncidentDetailsComponent extends Component {
               >
                 {t('Last seen')}
               </Typography>
-              {fld(xOpenCTIIncident.last_seen)}
+              {fld(incident.last_seen)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -62,14 +59,11 @@ class XOpenCTIIncidentDetailsComponent extends Component {
               >
                 {t('Objective')}
               </Typography>
-              <ExpandableMarkdown
-                source={xOpenCTIIncident.objective}
-                limit={100}
-              />
+              <ExpandableMarkdown source={incident.objective} limit={100} />
             </Grid>
           </Grid>
           <EntityStixCoreRelationshipsDonut
-            entityId={xOpenCTIIncident.id}
+            entityId={incident.id}
             toTypes={['Stix-Cyber-Observable']}
             relationshipType="related-to"
             field="entity_type"
@@ -83,29 +77,23 @@ class XOpenCTIIncidentDetailsComponent extends Component {
   }
 }
 
-XOpenCTIIncidentDetailsComponent.propTypes = {
-  xOpenCTIIncident: PropTypes.object,
+IncidentDetailsComponent.propTypes = {
+  incident: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const XOpenCTIXOpenCTIIncidentDetails = createFragmentContainer(
-  XOpenCTIIncidentDetailsComponent,
-  {
-    xOpenCTIIncident: graphql`
-      fragment XOpenCTIIncidentDetails_xOpenCTIIncident on XOpenCTIIncident {
-        id
-        first_seen
-        last_seen
-        objective
-        description
-      }
-    `,
-  },
-);
+const IncidentDetails = createFragmentContainer(IncidentDetailsComponent, {
+  incident: graphql`
+    fragment IncidentDetails_incident on Incident {
+      id
+      first_seen
+      last_seen
+      objective
+      description
+    }
+  `,
+});
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(XOpenCTIXOpenCTIIncidentDetails);
+export default compose(inject18n, withStyles(styles))(IncidentDetails);

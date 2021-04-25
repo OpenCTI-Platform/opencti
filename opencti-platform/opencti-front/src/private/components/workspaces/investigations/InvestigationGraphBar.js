@@ -775,7 +775,7 @@ class InvestigationGraphBar extends Component {
                               'Threat-Actor',
                               'Tool',
                               'Vulnerability',
-                              'X-OpenCTI-Incident',
+                              'Incident',
                               'Stix-Cyber-Observable',
                               'Domain-Name',
                               'IPv4-Addr',

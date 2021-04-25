@@ -28,7 +28,7 @@ import TopMenuNote from './TopMenuNote';
 import TopMenuOpinion from './TopMenuOpinion';
 import TopMenuExternalReference from './TopMenuExternalReference';
 import TopMenuEvents from './TopMenuEvents';
-import TopMenuXOpenCTIIncident from './TopMenuXOpenCTIIncident';
+import TopMenuIncident from './TopMenuIncident';
 import TopMenuObservedData from './TopMenuObservedData';
 import TopMenuStixRelationshipSighting from './TopMenuStixRelationshipSighting';
 import TopMenuObservations from './TopMenuObservations';
@@ -185,7 +185,7 @@ const TopBar = ({
             <TopMenuEvents />
           )}
           {location.pathname.includes('/dashboard/events/incidents/') && (
-            <TopMenuXOpenCTIIncident />
+            <TopMenuIncident />
           )}
           {location.pathname.includes('/dashboard/events/observed_data/') && (
             <TopMenuObservedData />

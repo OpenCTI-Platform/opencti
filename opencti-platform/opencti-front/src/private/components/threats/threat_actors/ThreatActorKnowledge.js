@@ -165,7 +165,7 @@ class ThreatActorKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={threatActor.id}
               relationshipTypes={['attributed-to']}
-              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+              targetStixDomainObjectTypes={['Incident']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}

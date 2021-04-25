@@ -239,7 +239,7 @@ class OrganizationKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={organization.id}
               relationshipTypes={['targets']}
-              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+              targetStixDomainObjectTypes={['Incident']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}

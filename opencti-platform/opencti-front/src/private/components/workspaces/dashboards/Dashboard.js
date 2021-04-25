@@ -377,7 +377,7 @@ class DashboardComponent extends Component {
             widget={widget}
           />
         );
-      case 'indidents':
+      case 'incidents':
         return (
           <EntityActivityIncidents
             startDate={startDate}
