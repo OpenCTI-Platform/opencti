@@ -272,10 +272,10 @@
     },
     {
       "id": "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
-      "type": "x-opencti-incident",
+      "type": "incident",
       "spec_version": "2.1",
       "name": "A new incident",
-      "labels": ["x-opencti-incident"],
+      "labels": ["incident"],
       "description": "A test incident",
       "first_seen": "2020-02-27T08:45:47.779Z",
       "last_seen": "2020-02-27T08:45:47.779Z",

@@ -163,11 +163,11 @@ class Incident:
         )
 
     """
-        Read a X-OpenCTI-Incident object
+        Read a Incident object
         
-        :param id: the id of the X-OpenCTI-Incident
+        :param id: the id of the Incident
         :param filters: the filters to apply if no id provided
-        :return X-OpenCTI-Incident object
+        :return Incident object
     """
 
     def read(self, **kwargs):
@@ -272,10 +272,10 @@ class Incident:
             self.opencti.log("error", "Missing parameters: name and description")
 
     """
-        Import a X-OpenCTI-Incident object from a STIX2 object
+        Import a Incident object from a STIX2 object
 
-        :param stixObject: the Stix-Object X-OpenCTI-Incident
-        :return X-OpenCTI-Incident object
+        :param stixObject: the Stix-Object Incident
+        :return Incident object
     """
 
     def import_from_stix2(self, **kwargs):
