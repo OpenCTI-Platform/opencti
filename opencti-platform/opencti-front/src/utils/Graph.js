@@ -320,7 +320,69 @@ export const computeTimeRangeValues = (interval, objects) => {
   );
 };
 
-export const buildCorrelationData = (objects, graphData) => {
+export const applyNodeFilters = (
+  nodesData,
+  stixCoreObjectsTypes = [],
+  markedBy = [],
+  createdBy = [],
+  excludedStixCoreObjectsTypes = [],
+  interval = [],
+) => {
+  const nodes = R.pipe(
+    R.filter(
+      (n) => excludedStixCoreObjectsTypes.length === 0
+        || !R.includes(n.entity_type, excludedStixCoreObjectsTypes),
+    ),
+    R.filter(
+      (n) => stixCoreObjectsTypes.length === 0
+        || R.includes(n.entity_type, stixCoreObjectsTypes),
+    ),
+    R.filter(
+      (n) => markedBy.length === 0
+        || !n.objectMarking
+        || R.any((m) => R.includes(m.node.id, markedBy), n.objectMarking.edges),
+    ),
+    R.filter(
+      (n) => createdBy.length === 0 || R.includes(n.createdBy.id, createdBy),
+    ),
+    R.filter(
+      (n) => interval.length === 0
+        || isNone(n.defaultDate)
+        || (n.defaultDate >= interval[0] && n.defaultDate <= interval[1]),
+    ),
+  )(nodesData);
+  return nodes;
+};
+
+export const applyFilters = (
+  graphData,
+  stixCoreObjectsTypes = [],
+  markedBy = [],
+  createdBy = [],
+  excludedStixCoreObjectsTypes = [],
+  interval = [],
+) => {
+  const nodes = applyNodeFilters(
+    graphData.nodes,
+    stixCoreObjectsTypes,
+    markedBy,
+    createdBy,
+    excludedStixCoreObjectsTypes,
+    interval,
+  );
+  const nodeIds = R.map((n) => n.id, nodes);
+  const links = R.pipe(
+    R.filter(
+      (n) => R.includes(n.source_id, nodeIds) && R.includes(n.target_id, nodeIds),
+    ),
+  )(graphData.links);
+  return {
+    nodes,
+    links,
+  };
+};
+
+export const buildCorrelationData = (objects, graphData, t, filterAdjust) => {
   const thisReportLinkNodes = R.pipe(
     R.filter(
       (n) => n.reports && n.parent_types && n.reports.edges.length > 1,
@@ -522,48 +584,6 @@ export const buildGraphData = (objects, graphData, t) => {
     R.flatten,
   )(objects);
   const links = R.concat(normalLinks, nestedLinks);
-  return {
-    nodes,
-    links,
-  };
-};
-
-export const applyFilters = (
-  graphData,
-  stixCoreObjectsTypes = [],
-  markedBy = [],
-  createdBy = [],
-  excludedStixCoreObjectsTypes = [],
-  interval = [],
-) => {
-  const nodes = R.pipe(
-    R.filter(
-      (n) => excludedStixCoreObjectsTypes.length === 0
-        || !R.includes(n.entity_type, excludedStixCoreObjectsTypes),
-    ),
-    R.filter(
-      (n) => stixCoreObjectsTypes.length === 0
-        || R.includes(n.entity_type, stixCoreObjectsTypes),
-    ),
-    R.filter(
-      (n) => markedBy.length === 0
-        || R.any((m) => R.includes(m.id, markedBy), n.markedBy),
-    ),
-    R.filter(
-      (n) => createdBy.length === 0 || R.includes(n.createdBy.id, createdBy),
-    ),
-    R.filter(
-      (n) => interval.length === 0
-        || isNone(n.defaultDate)
-        || (n.defaultDate >= interval[0] && n.defaultDate <= interval[1]),
-    ),
-  )(graphData.nodes);
-  const nodeIds = R.map((n) => n.id, nodes);
-  const links = R.pipe(
-    R.filter(
-      (n) => R.includes(n.source_id, nodeIds) && R.includes(n.target_id, nodeIds),
-    ),
-  )(graphData.links);
   return {
     nodes,
     links,
