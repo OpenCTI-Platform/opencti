@@ -489,7 +489,8 @@ class Report:
             return True
         else:
             self.opencti.log(
-                "error", "[opencti_report] Missing parameters: id and stixObjectOrStixRelationshipId"
+                "error",
+                "[opencti_report] Missing parameters: id and stixObjectOrStixRelationshipId",
             )
             return False
 
@@ -535,7 +536,8 @@ class Report:
             return True
         else:
             self.opencti.log(
-                "error", "[opencti_report] Missing parameters: id and stixObjectOrStixRelationshipId"
+                "error",
+                "[opencti_report] Missing parameters: id and stixObjectOrStixRelationshipId",
             )
             return False
 
