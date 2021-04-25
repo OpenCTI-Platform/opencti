@@ -14,7 +14,6 @@ import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import {
-  applyFilters,
   buildCorrelationData,
   computeTimeRangeInterval,
   computeTimeRangeValues,
@@ -36,8 +35,6 @@ import {
   reportKnowledgeCorrelationMutationRelationDeleteMutation,
 } from './ReportKnowledgeCorrelationQuery';
 import { stixCoreRelationshipEditionDeleteMutation } from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
-
-const ignoredStixCoreObjectsTypes = ['Report', 'Note', 'Opinion'];
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -252,12 +249,10 @@ class ReportKnowledgeCorrelationComponent extends Component {
     );
     this.zoom = R.propOr(null, 'zoom', params);
     this.graphObjects = R.map((n) => n.node, props.report.objects.edges);
-    this.graphData = buildCorrelationData(
-      this.graphObjects,
-      decodeGraphData(props.report.x_opencti_graph_data),
-      props.t,
+    const stixCoreObjectsTypes = R.filter(
+      (t) => typeof (t) !== 'undefined' && t !== '',
+      R.propOr([], 'stixCoreObjectsTypes', params),
     );
-    const stixCoreObjectsTypes = R.propOr([], 'stixCoreObjectsTypes', params);
     const markedBy = R.propOr([], 'markedBy', params);
     const createdBy = R.propOr([], 'createdBy', params);
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
@@ -269,16 +264,22 @@ class ReportKnowledgeCorrelationComponent extends Component {
       stixCoreObjectsTypes,
       markedBy,
       createdBy,
-      graphData: this.graphData, /* applyFilters(
-        this.graphData,
-        stixCoreObjectsTypes,
-        markedBy,
-        createdBy,
-        ignoredStixCoreObjectsTypes,
-      ), */
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
     };
+    const filterAdjust = {
+      markedBy,
+      createdBy,
+      stixCoreObjectsTypes,
+      excludedStixCoreObjectsTypes: [],
+    };
+    this.graphData = buildCorrelationData(
+      this.graphObjects,
+      decodeGraphData(props.report.x_opencti_graph_data),
+      props.t,
+      filterAdjust,
+    );
+    this.state.graphData = { ...this.graphData };
   }
 
   initialize() {
@@ -323,13 +324,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
     );
     if (refreshGraphData) {
       this.setState({
-        graphData: applyFilters(
-          this.graphData,
-          this.state.stixCoreObjectsTypes,
-          this.state.markedBy,
-          this.state.createdBy,
-          ignoredStixCoreObjectsTypes,
-        ),
+        graphData: { ...this.graphData },
       });
     }
   }
@@ -379,37 +374,56 @@ class ReportKnowledgeCorrelationComponent extends Component {
 
   handleToggleStixCoreObjectType(type) {
     const { stixCoreObjectsTypes } = this.state;
-    if (stixCoreObjectsTypes.includes(type)) {
-      this.setState(
-        {
-          stixCoreObjectsTypes: R.filter(
-            (t) => t !== type,
-            stixCoreObjectsTypes,
-          ),
-        },
-        () => this.saveParameters(true),
-      );
-    } else {
-      this.setState(
-        { stixCoreObjectsTypes: R.append(type, stixCoreObjectsTypes) },
-        () => this.saveParameters(true),
-      );
-    }
+    const filterAdjust = {
+      markedBy: this.state.markedBy,
+      createdBy: this.state.createdBy,
+      stixCoreObjectsTypes: ((stixCoreObjectsTypes.includes(type))
+        ? R.filter((t) => t !== type, stixCoreObjectsTypes)
+        : R.append(
+          type,
+          stixCoreObjectsTypes,
+        )
+      ),
+    };
+    this.setState(
+      {
+        stixCoreObjectsTypes: filterAdjust.stixCoreObjectsTypes,
+        graphData: buildCorrelationData(
+          this.graphObjects,
+          decodeGraphData(this.props.report.x_opencti_graph_data),
+          this.props.t,
+          filterAdjust,
+        ),
+      },
+      () => this.saveParameters(false),
+    );
   }
 
   handleToggleMarkedBy(markingDefinition) {
     const { markedBy } = this.state;
-    if (markedBy.includes(markingDefinition)) {
-      this.setState(
-        {
-          markedBy: R.filter((t) => t !== markingDefinition, markedBy),
-        },
-        () => this.saveParameters(true),
-      );
-    } else {
-      // eslint-disable-next-line max-len
-      this.setState({ markedBy: R.append(markingDefinition, markedBy) }, () => this.saveParameters(true));
-    }
+    const filterAdjust = {
+      markedBy: ((this.state.markedBy.includes(markingDefinition))
+        ? R.filter((t) => t !== markingDefinition, markedBy)
+        : R.append(
+          markingDefinition,
+          markedBy,
+        )
+      ),
+      createdBy: this.state.createdBy,
+      stixCoreObjectsTypes: this.state.stixCoreObjectsTypes,
+    };
+    this.setState(
+      {
+        markedBy: filterAdjust.markedBy,
+        graphData: buildCorrelationData(
+          this.graphObjects,
+          decodeGraphData(this.props.report.x_opencti_graph_data),
+          this.props.t,
+          filterAdjust,
+        ),
+      },
+      () => this.saveParameters(false),
+    );
   }
 
   handleToggleCreateBy(createdByRef) {
@@ -505,6 +519,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
       this.graphObjects,
       decodeGraphData(this.props.report.x_opencti_graph_data),
       this.props.t,
+      this.state,
     );
     const selectedTimeRangeInterval = computeTimeRangeInterval(
       this.graphObjects,
@@ -512,14 +527,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
     this.setState(
       {
         selectedTimeRangeInterval,
-        graphData: applyFilters(
-          this.graphData,
-          this.state.stixCoreObjectsTypes,
-          this.state.markedBy,
-          this.state.createdBy,
-          ignoredStixCoreObjectsTypes,
-          selectedTimeRangeInterval,
-        ),
+        graphData: { ...this.graphData },
       },
       () => {
         setTimeout(() => this.handleZoomToFit(), 1500);
@@ -544,20 +552,14 @@ class ReportKnowledgeCorrelationComponent extends Component {
           this.graphObjects,
           decodeGraphData(this.props.report.x_opencti_graph_data),
           this.props.t,
+          this.state,
         );
         const selectedTimeRangeInterval = computeTimeRangeInterval(
           this.graphObjects,
         );
         this.setState({
           selectedTimeRangeInterval,
-          graphData: applyFilters(
-            this.graphData,
-            this.state.stixCoreObjectsTypes,
-            this.state.markedBy,
-            this.state.createdBy,
-            ignoredStixCoreObjectsTypes,
-            selectedTimeRangeInterval,
-          ),
+          graphData: { ...this.graphData },
         });
       },
     });
@@ -578,6 +580,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
       this.graphObjects,
       decodeGraphData(this.props.report.x_opencti_graph_data),
       this.props.t,
+      this.state,
     );
     R.forEach((n) => {
       commitMutation({
@@ -590,14 +593,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
       });
     }, relationshipsToRemove);
     this.setState({
-      graphData: applyFilters(
-        this.graphData,
-        this.state.stixCoreObjectsTypes,
-        this.state.markedBy,
-        this.state.createdBy,
-        ignoredStixCoreObjectsTypes,
-        this.state.selectedTimeRangeInterval,
-      ),
+      graphData: { ...this.graphData },
     });
   }
 
@@ -675,16 +671,10 @@ class ReportKnowledgeCorrelationComponent extends Component {
       this.graphObjects,
       decodeGraphData(this.props.report.x_opencti_graph_data),
       this.props.t,
+      this.state,
     );
     this.setState({
-      graphData: applyFilters(
-        this.graphData,
-        this.state.stixCoreObjectsTypes,
-        this.state.markedBy,
-        this.state.createdBy,
-        ignoredStixCoreObjectsTypes,
-        this.state.selectedTimeRangeInterval,
-      ),
+      graphData: { ...this.graphData },
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
     });
@@ -706,16 +696,10 @@ class ReportKnowledgeCorrelationComponent extends Component {
             this.graphObjects,
             decodeGraphData(this.props.report.x_opencti_graph_data),
             this.props.t,
+            this.state,
           );
           this.setState({
-            graphData: applyFilters(
-              this.graphData,
-              this.state.stixCoreObjectsTypes,
-              this.state.markedBy,
-              this.state.createdBy,
-              ignoredStixCoreObjectsTypes,
-              this.state.selectedTimeRangeInterval,
-            ),
+            graphData: { ...this.graphData },
           });
         });
     }, 1500);
@@ -737,16 +721,10 @@ class ReportKnowledgeCorrelationComponent extends Component {
             this.graphObjects,
             decodeGraphData(this.props.report.x_opencti_graph_data),
             this.props.t,
+            this.state,
           );
           this.setState({
-            graphData: applyFilters(
-              this.graphData,
-              this.state.stixCoreObjectsTypes,
-              this.state.markedBy,
-              this.state.createdBy,
-              ignoredStixCoreObjectsTypes,
-              this.state.selectedTimeRangeInterval,
-            ),
+            graphData: { ...this.graphData },
           });
         });
     }, 1500);
@@ -770,17 +748,10 @@ class ReportKnowledgeCorrelationComponent extends Component {
   }
 
   handleResetLayout() {
-    this.graphData = buildCorrelationData(this.graphObjects, {}, this.props.t);
+    this.graphData = buildCorrelationData(this.graphObjects, {}, this.props.t, this.state);
     this.setState(
       {
-        graphData: applyFilters(
-          this.graphData,
-          this.state.stixCoreObjectsTypes,
-          this.state.markedBy,
-          this.state.createdBy,
-          ignoredStixCoreObjectsTypes,
-          this.state.selectedTimeRangeInterval,
-        ),
+        graphData: { ...this.graphData },
       },
       () => {
         this.handleDragEnd();
@@ -794,14 +765,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
   handleTimeRangeChange(selectedTimeRangeInterval) {
     this.setState({
       selectedTimeRangeInterval,
-      graphData: applyFilters(
-        this.graphData,
-        this.state.stixCoreObjectsTypes,
-        this.state.markedBy,
-        this.state.createdBy,
-        [],
-        selectedTimeRangeInterval,
-      ),
+      graphData: { ...this.graphData },
     });
   }
 
@@ -822,12 +786,28 @@ class ReportKnowledgeCorrelationComponent extends Component {
     } = this.state;
     const width = window.innerWidth - 210;
     const height = window.innerHeight - 180;
-    const stixCoreObjectsTypes = R.uniq(
-      R.map((n) => n.entity_type, this.graphData.nodes),
+    const stixCoreObjectsTypes = R.filter(
+      (t) => typeof (t) !== 'undefined' && t !== '',
+      R.uniq(R.map((e) => e.node.entity_type, report.objects.edges)),
     );
     const markedBy = R.uniqBy(
       R.prop('id'),
-      R.flatten(R.map((n) => n.markedBy, this.graphData.nodes)),
+      R.concat(
+        R.pipe(
+          R.filter((m) => m.node.objectMarking),
+          R.map((m) => m.node.objectMarking.edges),
+          R.flatten,
+          R.map((m) => m.node),
+        )(report.objects.edges),
+        R.pipe(
+          R.filter((m) => m.node.reports),
+          R.map((m) => m.node.reports.edges),
+          R.flatten,
+          R.map((m) => m.node.objectMarking.edges),
+          R.flatten,
+          R.map((m) => m.node),
+        )(report.objects.edges),
+      ),
     );
     const createdBy = R.uniqBy(
       R.prop('id'),

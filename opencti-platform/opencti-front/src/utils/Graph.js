@@ -387,32 +387,46 @@ export const buildCorrelationData = (objects, graphData, t, filterAdjust) => {
     R.filter(
       (n) => n.reports && n.parent_types && n.reports.edges.length > 1,
     ),
-  )(objects);
-  const relatedReportNodes = R.pipe(
-    R.map((n) => n.reports.edges),
-    R.flatten,
-    R.map((n) => n.node),
-    R.uniqBy((n) => n.id),
-  )(thisReportLinkNodes);
+  )(applyNodeFilters(
+    R.filter((o) => o && o.id && o.entity_type && o.reports, objects),
+    filterAdjust.stixCoreObjectsTypes,
+    filterAdjust.markedBy,
+    filterAdjust.createdBy,
+    [],
+    filterAdjust.selectedTimeRangeInterval,
+  ));
+  const relatedReportNodes = applyNodeFilters(
+    R.pipe(
+      R.map((n) => n.reports.edges),
+      R.flatten,
+      R.map((n) => n.node),
+      R.uniqBy(R.prop('id')),
+    )(thisReportLinkNodes),
+    [],
+    filterAdjust.markedBy,
+    filterAdjust.createdBy,
+    [],
+    filterAdjust.selectedTimeRangeInterval,
+  );
 
   const links = R.pipe(
     R.map((n) => R.map((e) => ({
-      id: R.concat(n.id, '-', e.node.id),
+      id: R.concat(n.id, '-', e.id),
       parent_types: ['basic-relationship'],
       entity_type: 'basic-relationship',
       relationship_type: 'reported-in',
       source: n.id,
-      target: e.node.id,
+      target: e.id,
       label: '',
       name: '',
       source_id: n.id,
-      target_id: e.node.id,
+      target_id: e.id,
       from: n.id,
       to: n.id,
       start_time: '',
       stop_time: '',
       defaultDate: jsDate(defaultDate(n)),
-    }), n.reports.edges)),
+    }), relatedReportNodes)),
     R.flatten,
   )(thisReportLinkNodes);
   const combinedNodes = R.concat(thisReportLinkNodes, relatedReportNodes);
