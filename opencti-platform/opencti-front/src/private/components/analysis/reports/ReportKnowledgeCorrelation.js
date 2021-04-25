@@ -255,7 +255,15 @@ class ReportKnowledgeCorrelationComponent extends Component {
     );
     const markedBy = R.propOr([], 'markedBy', params);
     const createdBy = R.propOr([], 'createdBy', params);
-    const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
+    const timeRangeInterval = computeTimeRangeInterval(R.uniqBy(
+      R.prop('id'),
+      R.pipe(
+        R.filter((n) => n.node.reports),
+        R.map((n) => n.node.reports.edges),
+        R.flatten,
+        R.map((n) => n.node),
+      )(props.report.objects.edges),
+    ));
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
       modeFixed: R.propOr(false, 'modeFixed', params),
@@ -272,6 +280,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
       createdBy,
       stixCoreObjectsTypes,
       excludedStixCoreObjectsTypes: [],
+      selectedTimeRangeInterval: timeRangeInterval,
     };
     this.graphData = buildCorrelationData(
       this.graphObjects,
@@ -384,6 +393,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
           stixCoreObjectsTypes,
         )
       ),
+      selectedTimeRangeInterval: this.state.selectedTimeRangeInterval,
     };
     this.setState(
       {
@@ -411,6 +421,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
       ),
       createdBy: this.state.createdBy,
       stixCoreObjectsTypes: this.state.stixCoreObjectsTypes,
+      selectedTimeRangeInterval: this.state.selectedTimeRangeInterval,
     };
     this.setState(
       {
@@ -438,6 +449,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
         )
       ),
       stixCoreObjectsTypes: this.state.stixCoreObjectsTypes,
+      selectedTimeRangeInterval: this.state.selectedTimeRangeInterval,
     };
     this.setState(
       {
@@ -774,10 +786,24 @@ class ReportKnowledgeCorrelationComponent extends Component {
   }
 
   handleTimeRangeChange(selectedTimeRangeInterval) {
-    this.setState({
+    const filterAdjust = {
       selectedTimeRangeInterval,
-      graphData: { ...this.graphData },
-    });
+      markedBy: this.state.markedBy,
+      createdBy: this.state.createdBy,
+      stixCoreObjectsTypes: this.state.stixCoreObjectsTypes,
+    };
+    this.setState(
+      {
+        selectedTimeRangeInterval: filterAdjust.selectedTimeRangeInterval,
+        graphData: buildCorrelationData(
+          this.graphObjects,
+          decodeGraphData(this.props.report.x_opencti_graph_data),
+          this.props.t,
+          filterAdjust,
+        ),
+      },
+      () => this.saveParameters(false),
+    );
   }
 
   render() {
@@ -839,10 +865,19 @@ class ReportKnowledgeCorrelationComponent extends Component {
         )(report.objects.edges),
       ),
     );
-    const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
+    const timeRangeNodes = R.uniqBy(
+      R.prop('id'),
+      R.pipe(
+        R.filter((n) => n.node.reports),
+        R.map((n) => n.node.reports.edges),
+        R.flatten,
+        R.map((n) => n.node),
+      )(report.objects.edges),
+    );
+    const timeRangeInterval = computeTimeRangeInterval(timeRangeNodes);
     const timeRangeValues = computeTimeRangeValues(
       timeRangeInterval,
-      this.graphObjects,
+      timeRangeNodes,
     );
     return (
       <div>

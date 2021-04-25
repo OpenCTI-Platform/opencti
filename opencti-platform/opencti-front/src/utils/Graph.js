@@ -401,6 +401,7 @@ export const buildCorrelationData = (objects, graphData, t, filterAdjust) => {
       R.flatten,
       R.map((n) => n.node),
       R.uniqBy(R.prop('id')),
+      R.map((n) => (n.defaultDate ? { ...n } : { ...n, defaultDate: jsDate(defaultDate(n)) })),
     )(thisReportLinkNodes),
     [],
     filterAdjust.markedBy,
