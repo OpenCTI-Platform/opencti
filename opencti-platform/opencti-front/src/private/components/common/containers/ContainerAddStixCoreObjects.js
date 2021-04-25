@@ -37,6 +37,15 @@ const styles = (theme) => ({
     right: 30,
     zIndex: 1100,
   },
+  createButtonExports: {
+    position: 'fixed',
+    bottom: 30,
+    right: 590,
+    transition: theme.transitions.create('right', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+  },
   createButtonWithPadding: {
     position: 'fixed',
     bottom: 30,
@@ -338,7 +347,12 @@ class ContainerAddStixCoreObjects extends Component {
 
   render() {
     const {
-      t, classes, withPadding, simple, knowledgeGraph,
+      t,
+      classes,
+      withPadding,
+      simple,
+      knowledgeGraph,
+      openExports,
     } = this.props;
     const paginationOptions = this.getPaginationOptions();
     return (
@@ -369,9 +383,12 @@ class ContainerAddStixCoreObjects extends Component {
             color="secondary"
             aria-label="Add"
             className={
-              withPadding
-                ? classes.createButtonWithPadding
-                : classes.createButton
+              // eslint-disable-next-line no-nested-ternary
+              openExports
+                ? classes.createButtonExports
+                : withPadding
+                  ? classes.createButtonWithPadding
+                  : classes.createButton
             }
           >
             <Add />
@@ -437,6 +454,7 @@ ContainerAddStixCoreObjects.propTypes = {
   onTypesChange: PropTypes.func,
   onAdd: PropTypes.func,
   onDelete: PropTypes.func,
+  openExports: PropTypes.bool,
 };
 
 export default compose(

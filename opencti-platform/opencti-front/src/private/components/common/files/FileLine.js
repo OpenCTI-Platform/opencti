@@ -119,7 +119,9 @@ class FileLineComponent extends Component {
     const isOutdated = isProgress && lastModifiedSinceMin > 1;
     const isImportActive = () => connectors && filter((x) => x.data.active, connectors).length > 0;
     const fileName = file.name;
-    const toolTip = [...messages, ...errors].map((s) => s.message).join(', ');
+    const toolTip = directDownload
+      ? fileName
+      : [...messages, ...errors].map((s) => s.message).join(', ');
     return (
       <div>
         <ListItem
@@ -152,7 +154,7 @@ class FileLineComponent extends Component {
             />
           </Tooltip>
           <ListItemSecondaryAction style={{ right: 0 }}>
-            {!disableImport ? (
+            {!disableImport && (
               <Tooltip title={t('Launch an import of this file')}>
                 <span>
                   <IconButton
@@ -165,10 +167,8 @@ class FileLineComponent extends Component {
                   </IconButton>
                 </span>
               </Tooltip>
-            ) : (
-              ''
             )}
-            {!directDownload && !isFail ? (
+            {!directDownload && !isFail && (
               <Tooltip title={t('Download this file')}>
                 <span>
                   <IconButton
@@ -181,8 +181,6 @@ class FileLineComponent extends Component {
                   </IconButton>
                 </span>
               </Tooltip>
-            ) : (
-              ''
             )}
             {isFail || isOutdated ? (
               <Tooltip title={t('Delete this file')}>

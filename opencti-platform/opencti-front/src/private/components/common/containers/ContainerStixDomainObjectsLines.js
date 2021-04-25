@@ -32,8 +32,8 @@ class ContainerStixDomainObjectsLines extends Component {
       relay,
       container,
       paginationOptions,
+      openExports,
     } = this.props;
-
     return (
       <div>
         <ListLinesContent
@@ -69,6 +69,7 @@ class ContainerStixDomainObjectsLines extends Component {
             withPadding={true}
             targetStixCoreObjectTypes={['Stix-Domain-Object']}
             onTypesChange={this.props.onTypesChange}
+            openExports={openExports}
           />
         </Security>
       </div>
@@ -86,6 +87,7 @@ ContainerStixDomainObjectsLines.propTypes = {
   searchTerm: PropTypes.string,
   setNumberOfElements: PropTypes.func,
   onTypesChange: PropTypes.func,
+  openExports: PropTypes.bool,
 };
 
 export const containerStixDomainObjectsLinesQuery = graphql`

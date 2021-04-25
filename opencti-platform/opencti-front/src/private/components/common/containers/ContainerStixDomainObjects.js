@@ -161,6 +161,7 @@ class ContainerStixDomainObjectsComponent extends Component {
                 initialLoading={props === null}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
                 onTypesChange={this.handleToggle.bind(this)}
+                openExports={openExports}
               />
             )}
           />
