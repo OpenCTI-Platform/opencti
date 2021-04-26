@@ -54,6 +54,8 @@
   },
   "redis": {
     "hostname": "localhost",
+    "use_ssl": false,
+    "ca": [],
     "port": 6379,
     "trimming": 0
   },
