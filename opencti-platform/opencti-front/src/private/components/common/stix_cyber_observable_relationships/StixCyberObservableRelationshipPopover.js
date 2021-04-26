@@ -92,7 +92,7 @@ class StixCyberObservableRelationshipPopover extends Component {
     commitMutation({
       mutation: stixCyberObservableRelationshipPopoverDeletionMutation,
       variables: {
-        id: this.props.stixCyberObservableRelationId,
+        id: this.props.stixCyberObservableRelationshipId,
       },
       updater: (store) => {
         const container = store.getRoot();

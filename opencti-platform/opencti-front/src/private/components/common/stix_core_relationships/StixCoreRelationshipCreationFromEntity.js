@@ -643,6 +643,17 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                 </div>
                 <div className={classes.middle} style={{ paddingTop: 25 }}>
                   <ArrowRightAlt fontSize="large" />
+                  <br />
+                  {typeof this.props.handleReverseRelation === 'function' && (
+                    <Button
+                      variant="outlined"
+                      onClick={this.props.handleReverseRelation.bind(this)}
+                      color="secondary"
+                      size="small"
+                    >
+                      {t('Reverse')}
+                    </Button>
+                  )}
                 </div>
                 <div
                   className={classes.item}
@@ -876,6 +887,7 @@ StixCoreRelationshipCreationFromEntity.propTypes = {
   openExports: PropTypes.bool,
   connectionKey: PropTypes.string,
   connectionIsFrom: PropTypes.bool,
+  handleReverseRelation: PropTypes.func,
 };
 
 export default compose(

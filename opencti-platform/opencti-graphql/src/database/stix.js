@@ -63,7 +63,7 @@ import {
   RELATION_USES,
 } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
+import { isStixCyberObservableRelationship, RELATION_LINKED } from '../schema/stixCyberObservableRelationship';
 import { isMultipleAttribute } from '../schema/fieldDataAdapter';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 
@@ -485,6 +485,10 @@ export const stixCoreRelationshipsMapping = {
   'IPv6-Addr_Country': ['located-at'],
   'IPv6-Addr_City': ['located-at'],
   'IPv6-Addr_Position': ['located-at'],
+  'Artifact_IPv4-Addr': ['communicates-with'],
+  'Artifact_IPv6-Addr': ['communicates-with'],
+  'StixFile_IPv4-Addr': ['communicates-with'],
+  'StixFile_IPv6-Addr': ['communicates-with'],
   targets_Region: ['located-at'],
   targets_Country: ['located-at'],
   targets_City: ['located-at'],
@@ -517,6 +521,7 @@ export const checkStixCoreRelationshipMapping = (fromType, toType, relationshipT
 export const stixCyberObservableRelationshipsMapping = {
   Directory_Directory: ['contains'],
   Directory_StixFile: ['contains'],
+  Directory_Artifact: ['contains'],
   'Email-Addr_User-Account': ['belongs-to'],
   'Email-Message_Email-Addr': ['from', 'sender', 'to', 'bcc'],
   'Email-Message_Email-Mime-Part-Type': ['body-multipart'],
@@ -537,5 +542,8 @@ export const stixCyberObservableRelationshipsMapping = {
 };
 
 export const checkStixCyberObservableRelationshipMapping = (fromType, toType, relationshipType) => {
+  if (relationshipType === RELATION_LINKED || relationshipType === RELATION_LINKED) {
+    return true;
+  }
   return !!R.includes(relationshipType, stixCyberObservableRelationshipsMapping[`${fromType}_${toType}`] || []);
 };

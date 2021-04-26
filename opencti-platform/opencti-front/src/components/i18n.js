@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { injectIntl } from 'react-intl';
 import moment from 'moment-timezone';
-import { numberFormat } from '../utils/Number';
+import { bytesFormat, numberFormat } from '../utils/Number';
 
 export const isNone = (date) => {
   if (!date) return true;
@@ -20,6 +20,9 @@ const inject18n = (WrappedComponent) => {
       const translate = (message) => this.props.intl.formatMessage({ id: message });
       const formatNumber = (number) => `${this.props.intl.formatNumber(numberFormat(number).number)}${
         numberFormat(number).symbol
+      }`;
+      const formatBytes = (number) => `${this.props.intl.formatNumber(bytesFormat(number).number)}${
+        bytesFormat(number).symbol
       }`;
       const longDate = (date) => {
         if (isNone(date)) {
@@ -113,6 +116,7 @@ const inject18n = (WrappedComponent) => {
           {...this.props}
           {...{ t: translate }}
           {...{ n: formatNumber }}
+          {...{ b: formatBytes }}
           {...{ fld: longDate }}
           {...{ fldt: longDateTime }}
           {...{ fsd: shortDate }}

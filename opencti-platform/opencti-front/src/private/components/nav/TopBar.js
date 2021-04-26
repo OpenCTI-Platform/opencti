@@ -35,6 +35,7 @@ import TopMenuObservations from './TopMenuObservations';
 import TopMenuIndicator from './TopMenuIndicator';
 import TopMenuInfrastructure from './TopMenuInfrastructure';
 import TopMenuStixCyberObservable from './TopMenuStixCyberObservable';
+import TopMenuArtifact from './TopMenuArtifact';
 import TopMenuThreats from './TopMenuThreats';
 import TopMenuThreatActor from './TopMenuThreatActor';
 import TopMenuIntrusionSet from './TopMenuIntrusionSet';
@@ -206,6 +207,9 @@ const TopBar = ({
           {location.pathname.includes(
             '/dashboard/observations/observables/',
           ) && <TopMenuStixCyberObservable />}
+          {location.pathname.includes('/dashboard/observations/artifacts/') && (
+            <TopMenuArtifact />
+          )}
           {(location.pathname === '/dashboard/threats'
             || location.pathname.match('/dashboard/threats/[a-z_]+$')) && (
             <TopMenuThreats />

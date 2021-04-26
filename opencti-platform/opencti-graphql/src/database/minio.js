@@ -1,11 +1,13 @@
 import * as Minio from 'minio';
 import { assoc, concat, map, sort } from 'ramda';
 import querystring from 'querystring';
-import conf, { logApp } from '../config/conf';
+import conf, { logApp, logAudit } from '../config/conf';
 import { buildPagination } from './utils';
 import { loadExportWorksAsProgressFiles, deleteWorkForFile } from '../domain/work';
 import { sinceNowInMinutes } from '../utils/format';
 import { DatabaseError } from '../config/errors';
+import { userWithOrigin } from '../domain/user';
+import { LOGIN_ACTION, UPLOAD_ACTION } from '../config/audit';
 
 const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
@@ -106,6 +108,7 @@ const rawFilesListing = (user, directory) => {
 
 export const upload = async (user, path, file, metadata = {}) => {
   const { createReadStream, filename, mimetype, encoding } = await file;
+  logAudit.info(user, UPLOAD_ACTION, { path, filename, metadata });
   const escapeName = querystring.escape(filename);
   const internalMeta = { filename: escapeName, mimetype, encoding };
   const fileMeta = { ...metadata, ...internalMeta };
@@ -127,6 +130,13 @@ export const filesListing = async (user, first, path) => {
   const sortedFiles = sort((a, b) => b.lastModified - a.lastModified, allFiles);
   const fileNodes = map((f) => ({ node: f }), sortedFiles);
   return buildPagination(first, null, fileNodes, allFiles.length);
+};
+
+export const deleteAllFiles = async (user, path) => {
+  const files = await rawFilesListing(user, path);
+  const inExport = await loadExportWorksAsProgressFiles(user, path);
+  const allFiles = concat(inExport, files);
+  return Promise.all(allFiles.map((file) => deleteFile(user, file.id)));
 };
 
 export const getMinIOVersion = () => {

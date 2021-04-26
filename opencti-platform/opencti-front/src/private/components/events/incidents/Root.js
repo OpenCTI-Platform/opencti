@@ -18,6 +18,7 @@ import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -75,9 +76,24 @@ class RootIncident extends Component {
         params: { incidentId },
       },
     } = this.props;
+    const link = `/dashboard/events/incidents/${incidentId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
+        <Route path="/dashboard/events/incidents/:incidentId/knowledge">
+          <StixCoreObjectKnowledgeBar
+            stixCoreObjectLink={link}
+            availableSections={[
+              'attribution',
+              'victimology',
+              'attack_patterns',
+              'malwares',
+              'tools',
+              'vulnerabilities',
+              'observables',
+            ]}
+          />
+        </Route>
         <QueryRenderer
           query={IncidentQuery}
           variables={{ id: incidentId }}

@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  map, keys, groupBy, assoc, compose, pipe, filter,
+  map, keys, groupBy, assoc, compose,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Accordion from '@material-ui/core/Accordion';
@@ -18,7 +18,6 @@ import { ExpandMore } from '@material-ui/icons';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-import { resolveStixCyberObservableRelationshipsTypes } from '../../../../utils/Relation';
 
 const styles = (theme) => ({
   container: {
@@ -74,17 +73,12 @@ class StixCyberObservableRelationshipCreationFromEntityLinesContainer extends Co
 
   render() {
     const {
-      t, classes, data, handleSelect, entityType,
+      t, classes, data, handleSelect,
     } = this.props;
-    const stixCyberObservablesNodes = pipe(
-      map((n) => n.node),
-      filter(
-        (n) => resolveStixCyberObservableRelationshipsTypes(
-          entityType,
-          n.entity_type,
-        ).length > 0,
-      ),
-    )(data.stixCyberObservables.edges);
+    const stixCyberObservablesNodes = map(
+      (n) => n.node,
+      data.stixCyberObservables.edges,
+    );
     const byType = groupBy(
       (stixCyberObservable) => stixCyberObservable.entity_type,
     );

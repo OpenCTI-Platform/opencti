@@ -8,16 +8,16 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import StixCyberObservable from './StixCyberObservable';
-import StixCyberObservableKnowledge from './StixCyberObservableKnowledge';
+import StixCyberObservable from '../stix_cyber_observables/StixCyberObservable';
+import StixCyberObservableKnowledge from '../stix_cyber_observables/StixCyberObservableKnowledge';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixCyberObservableHeader from './StixCyberObservableHeader';
+import StixCyberObservableHeader from '../stix_cyber_observables/StixCyberObservableHeader';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
-  subscription RootStixCyberObservableSubscription($id: ID!) {
+  subscription RootArtifactSubscription($id: ID!) {
     stixCyberObservable(id: $id) {
       ...StixCyberObservable_stixCyberObservable
       ...StixCyberObservableEditionContainer_stixCyberObservable
@@ -26,8 +26,8 @@ const subscription = graphql`
   }
 `;
 
-const stixCyberObservableQuery = graphql`
-  query RootStixCyberObservableQuery($id: String!) {
+const rootArtifactQuery = graphql`
+  query RootArtifactQuery($id: String!) {
     stixCyberObservable(id: $id) {
       id
       standard_id
@@ -38,12 +38,13 @@ const stixCyberObservableQuery = graphql`
       ...StixCyberObservableKnowledge_stixCyberObservable
     }
     connectorsForImport {
+      ...StixCyberObservableKnowledge_connectorsForImport
       ...StixCyberObservableEnrichment_connectorsForImport
     }
   }
 `;
 
-class RootStixCyberObservable extends Component {
+class RootArtifact extends Component {
   componentDidMount() {
     const {
       match: {
@@ -68,12 +69,12 @@ class RootStixCyberObservable extends Component {
         params: { observableId },
       },
     } = this.props;
-    const link = `/dashboard/observations/observables/${observableId}/knowledge`;
+    const link = `/dashboard/observations/artifacts/${observableId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
         <QueryRenderer
-          query={stixCyberObservableQuery}
+          query={rootArtifactQuery}
           variables={{ id: observableId, relationship_type: 'indicates' }}
           render={({ props }) => {
             if (props) {
@@ -82,31 +83,35 @@ class RootStixCyberObservable extends Component {
                   <div>
                     <Route
                       exact
-                      path="/dashboard/observations/observables/:observableId"
+                      path="/dashboard/observations/artifacts/:observableId"
                       render={(routeProps) => (
                         <StixCyberObservable
                           {...routeProps}
                           stixCyberObservable={props.stixCyberObservable}
+                          isArtifact={true}
                         />
                       )}
                     />
                     <Route
                       exact
-                      path="/dashboard/observations/observables/:observableId/knowledge"
+                      path="/dashboard/observations/artifacts/:observableId/knowledge"
                       render={(routeProps) => (
                         <StixCyberObservableKnowledge
                           {...routeProps}
                           stixCyberObservable={props.stixCyberObservable}
+                          connectorsForImport={props.connectorsForImport}
+                          isArtifact={true}
                         />
                       )}
                     />
                     <Route
                       exact
-                      path="/dashboard/observations/observables/:observableId/sightings"
+                      path="/dashboard/observations/artifacts/:observableId/sightings"
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixCyberObservableHeader
                             stixCyberObservable={props.stixCyberObservable}
+                            isArtifact={true}
                           />
                           <EntityStixSightingRelationships
                             {...routeProps}
@@ -129,11 +134,12 @@ class RootStixCyberObservable extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/observations/observables/:observableId/history"
+                      path="/dashboard/observations/artifacts/:observableId/history"
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixCyberObservableHeader
                             stixCyberObservable={props.stixCyberObservable}
+                            isArtifact={true}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}
@@ -144,7 +150,7 @@ class RootStixCyberObservable extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/observations/observables/:observableId/knowledge/relations/:relationId"
+                      path="/dashboard/observations/artifacts/:observableId/knowledge/relations/:relationId"
                       render={(routeProps) => (
                         <StixCoreRelationship
                           entityId={observableId}
@@ -165,10 +171,10 @@ class RootStixCyberObservable extends Component {
   }
 }
 
-RootStixCyberObservable.propTypes = {
+RootArtifact.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
   me: PropTypes.object,
 };
 
-export default withRouter(RootStixCyberObservable);
+export default withRouter(RootArtifact);

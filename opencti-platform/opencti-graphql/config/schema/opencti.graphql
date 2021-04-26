@@ -4426,6 +4426,7 @@ enum StixCyberObservablesFilter {
   objectContained
   containedBy
   hasExternalReference
+  sightedBy
   value
   name
   confidence
@@ -5203,7 +5204,9 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   url: String
   encryption_algorithm: String
   decryption_key: String
+  x_opencti_additional_names: [String]
   # Technical
+  importFiles(first: Int): FileConnection
   creator: User
   toStix: String
   editContext: [EditUserContext]
@@ -5217,6 +5220,7 @@ input ArtifactAddInput {
   url: String
   encryption_algorithm: String
   decryption_key: String
+  x_opencti_additional_names: [String]
 }
 type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
   id: ID! # internal_id
@@ -8135,6 +8139,7 @@ type Query {
     toRole: String
     toTypes: [String]
     relationship_type: String
+    relationshipTypes: [String]
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -8885,6 +8890,13 @@ type Mutation {
     filterMode: FilterMode
   ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCyberObservablesExportPush(file: Upload!, listFilters: String): Boolean
+  artifactImport(
+    file: Upload!
+    x_opencti_description: String
+    createdBy: String
+    objectMarking: [String]
+    objectLabel: [String]
+  ): Artifact
 
   ######## STIX RELATIONSHIPS
 

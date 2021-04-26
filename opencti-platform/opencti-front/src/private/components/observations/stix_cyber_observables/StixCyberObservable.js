@@ -28,10 +28,13 @@ const styles = () => ({
 
 class StixCyberObservableComponent extends Component {
   render() {
-    const { classes, stixCyberObservable } = this.props;
+    const { classes, stixCyberObservable, isArtifact } = this.props;
     return (
       <div className={classes.container}>
-        <StixCyberObservableHeader stixCyberObservable={stixCyberObservable} />
+        <StixCyberObservableHeader
+          stixCyberObservable={stixCyberObservable}
+          isArtifact={isArtifact}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -100,6 +103,7 @@ StixCyberObservableComponent.propTypes = {
   stixCyberObservable: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  isArtifact: PropTypes.bool,
 };
 
 const StixCyberObservable = createFragmentContainer(

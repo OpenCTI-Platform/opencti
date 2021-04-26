@@ -26,6 +26,20 @@ export const numberFormat = (number, digits = 2) => {
   };
 };
 
+export const bytesFormat = (number, digits = 2) => {
+  const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  if (number === 0) return '0 Byte';
+  // eslint-disable-next-line radix
+  const i = parseInt(Math.floor(Math.log(number) / Math.log(1024)));
+  return {
+    // eslint-disable-next-line no-restricted-properties
+    number: (number / Math.pow(1024, i)).toFixed(digits).replace(rx, '$1'),
+    symbol: sizes[i],
+    original: number,
+  };
+};
+
 export const setNumberOfElements = (
   prevProps,
   props,

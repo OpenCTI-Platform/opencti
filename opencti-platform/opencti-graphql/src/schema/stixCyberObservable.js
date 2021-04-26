@@ -13,6 +13,7 @@ import {
   RELATION_OBJECT_MARKING,
 } from './stixMetaRelationship';
 import { RELATION_RELATED_TO } from './stixCoreRelationship';
+import { STIX_SIGHTING_RELATIONSHIP } from "./stixSightingRelationship";
 
 export const ENTITY_AUTONOMOUS_SYSTEM = 'Autonomous-System';
 export const ENTITY_DIRECTORY = 'Directory';
@@ -91,6 +92,7 @@ export const stixCyberObservableOptions = {
     objectContained: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
     containedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
     hasExternalReference: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id`,
+    sightedBy: `${REL_INDEX_PREFIX}${STIX_SIGHTING_RELATIONSHIP}.internal_id`,
     hashes_MD5: 'hashes.MD5',
     hashes_SHA1: 'hashes.SHA-1',
     hashes_SHA256: 'hashes.SHA-256',
@@ -124,10 +126,12 @@ export const stixCyberObservableFieldsToBeUpdated = {
     'x_opencti_description',
     'x_opencti_score',
     'hashes',
+    'mime_type',
     'payload_bin',
     'url',
     'encryption_algorithm',
     'decryption_key',
+    'x_opencti_additional_names',
   ],
   [ENTITY_HASHED_OBSERVABLE_STIX_FILE]: [
     'x_opencti_description',
@@ -377,6 +381,7 @@ export const stixCyberObservablesAttributes = {
     'url',
     'encryption_algorithm',
     'decryption_key',
+    'x_opencti_additional_names',
   ],
   [ENTITY_HASHED_OBSERVABLE_STIX_FILE]: [
     'internal_id',

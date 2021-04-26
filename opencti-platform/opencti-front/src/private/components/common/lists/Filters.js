@@ -26,6 +26,7 @@ import { attributesSearchQuery } from '../../settings/AttributesQuery';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
+import { stixDomainObjectsLinesSearchQuery } from '../stix_domain_objects/StixDomainObjectsLines';
 
 const styles = (theme) => ({
   filters: {
@@ -67,7 +68,7 @@ const styles = (theme) => ({
   },
 });
 
-const directFilters = ['report_types', 'x_opencti_detection'];
+const directFilters = ['report_types', 'x_opencti_detection', 'sightedBy'];
 
 class Filters extends Component {
   constructor(props) {
@@ -104,7 +105,7 @@ class Filters extends Component {
     switch (filterKey) {
       case 'createdBy':
         fetchQuery(identityCreationIdentitiesSearchQuery, {
-          types: ['User', 'Organization'],
+          types: ['Organization', 'Individual'],
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
@@ -124,6 +125,40 @@ class Filters extends Component {
                 createdBy: R.union(
                   createdByEntities,
                   this.state.entities.createdBy,
+                ),
+              },
+            });
+          });
+        break;
+      case 'sightedBy':
+        fetchQuery(stixDomainObjectsLinesSearchQuery, {
+          types: [
+            'Sector',
+            'Organization',
+            'Individual',
+            'Region',
+            'Country',
+            'City',
+          ],
+          search: event && event.target.value !== 0 ? event.target.value : '',
+          count: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            const sightedByEntities = R.pipe(
+              R.pathOr([], ['stixDomainObjects', 'edges']),
+              R.map((n) => ({
+                label: n.node.name,
+                value: n.node.id,
+                type: n.node.entity_type,
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                sightedBy: R.union(
+                  sightedByEntities,
+                  this.state.entities.sightedBy,
                 ),
               },
             });

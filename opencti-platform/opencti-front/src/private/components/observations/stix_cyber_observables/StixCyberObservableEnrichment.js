@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react';
 import { interval } from 'rxjs';
-import {
-  pipe, propOr, compose, filter, map,
-} from 'ramda';
+import * as R from 'ramda';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -80,7 +78,12 @@ const styles = (theme) => ({
 
 const StixCyberObservableEnrichment = (props) => {
   const {
-    stixCyberObservable, relay, classes, t, nsdt,
+    stixCyberObservable,
+    connectorsForImport,
+    relay,
+    classes,
+    t,
+    nsdt,
   } = props;
   const { id } = stixCyberObservable;
   const askEnrich = (connectorId) => {
@@ -108,17 +111,29 @@ const StixCyberObservableEnrichment = (props) => {
       subscription.unsubscribe();
     };
   });
+  const file = stixCyberObservable.importFiles
+    && stixCyberObservable.importFiles.edges.length > 0
+    ? stixCyberObservable.importFiles.edges[0].node
+    : null;
+  const connectors = file && file.metaData
+    ? R.filter(
+      (n) => R.includes(file.metaData.mimetype, n.connector_scope)
+            || n.connector_scope.length === 0,
+      connectorsForImport,
+    )
+    : [];
+  const allConnectors = R.sortBy(R.prop('name'), [...stixCyberObservable.connectors, ...connectors]);
   return (
     <Paper classes={{ root: classes.paper }} elevation={2}>
       <List>
-        {stixCyberObservable.connectors.length > 0 ? (
-          stixCyberObservable.connectors.map((connector) => {
-            const jobs = pipe(
-              propOr([], 'jobs'),
-              filter((n) => n.connector && n.connector.id === connector.id),
+        {allConnectors.length > 0 ? (
+          allConnectors.map((connector) => {
+            const jobs = R.pipe(
+              R.propOr([], 'jobs'),
+              R.filter((n) => n.connector && n.connector.id === connector.id),
             )(stixCyberObservable);
             // eslint-disable-next-line max-len
-            const isRefreshing = filter((node) => node.status !== 'complete', jobs).length > 0;
+            const isRefreshing = R.filter((node) => node.status !== 'complete', jobs).length > 0;
             return (
               <div key={connector.id}>
                 <ListItem
@@ -162,9 +177,9 @@ const StixCyberObservableEnrichment = (props) => {
                     const messageToDisplay = (
                       <div>
                         {work.messages.length > 0
-                          ? map(
+                          ? R.map(
                             (message) => (
-                                <div>
+                                <div key={message.message}>
                                   [${nsdt(message.timestamp)}] {message.message}
                                 </div>
                             ),
@@ -260,13 +275,37 @@ const StixCyberObservableEnrichmentFragment = createRefetchContainer(
           active
           updated_at
         }
+        ... on Artifact {
+          importFiles {
+            edges {
+              node {
+                id
+                name
+                size
+                metaData {
+                  mimetype
+                }
+              }
+            }
+          }
+        }
+      }
+    `,
+    connectorsForImport: graphql`
+      fragment StixCyberObservableEnrichment_connectorsForImport on Connector
+      @relay(plural: true) {
+        id
+        name
+        active
+        connector_scope
+        updated_at
       }
     `,
   },
   StixCyberObservableEnrichmentQuery,
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixCyberObservableEnrichmentFragment);

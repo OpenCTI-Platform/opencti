@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { createHash } from 'crypto';
 import { assoc, dissoc, map, pipe, filter, values } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
@@ -53,6 +54,7 @@ import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { apiAttributeToComplexFormat } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
 import { escape } from '../utils/format';
+import { uploadJobImport } from './file';
 
 export const findById = (user, stixCyberObservableId) => {
   return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -108,6 +110,19 @@ export const batchIndicators = (user, stixCyberObservableIds) => {
   return batchListThroughGetFrom(user, stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
 };
 
+export const hashValue = (stixCyberObservable) => {
+  if (stixCyberObservable.hashes && stixCyberObservable.hashes['SHA-256']) {
+    return stixCyberObservable.hashes['SHA-256'];
+  }
+  if (stixCyberObservable.hashes && stixCyberObservable.hashes['SHA-1']) {
+    return stixCyberObservable.hashes['SHA-1'];
+  }
+  if (stixCyberObservable.hashes && stixCyberObservable.hashes.MS5) {
+    return stixCyberObservable.hashes.MS5;
+  }
+  return null;
+};
+
 export const observableValue = (stixCyberObservable) => {
   switch (stixCyberObservable.entity_type) {
     case ENTITY_AUTONOMOUS_SYSTEM:
@@ -117,20 +132,11 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_EMAIL_MESSAGE:
       return stixCyberObservable.body || stixCyberObservable.subject;
     case ENTITY_HASHED_OBSERVABLE_ARTIFACT:
-      if (values(stixCyberObservable.hashes).length > 0) {
-        return values(stixCyberObservable.hashes)[0];
-      }
-      return stixCyberObservable.payload_bin || 'Unknown';
+      return hashValue(stixCyberObservable) || stixCyberObservable.payload_bin || 'Unknown';
     case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
-      if (values(stixCyberObservable.hashes).length > 0) {
-        return values(stixCyberObservable.hashes)[0];
-      }
-      return stixCyberObservable.name || 'Unknown';
+      return hashValue(stixCyberObservable) || stixCyberObservable.name || 'Unknown';
     case ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE:
-      if (values(stixCyberObservable.hashes).length > 0) {
-        return values(stixCyberObservable.hashes)[0];
-      }
-      return stixCyberObservable.subject || stixCyberObservable.issuer || 'Unknown';
+      return hashValue(stixCyberObservable) || stixCyberObservable.subject || stixCyberObservable.issuer || 'Unknown';
     case ENTITY_MUTEX:
       return stixCyberObservable.name || 'Unknown';
     case ENTITY_NETWORK_TRAFFIC:
@@ -152,7 +158,7 @@ export const observableValue = (stixCyberObservable) => {
 
 const createIndicatorFromObservable = async (user, input, observable) => {
   try {
-    const entityType = observable.entity_type;
+    let entityType = observable.entity_type;
     let key = entityType;
     if (isStixCyberObservableHashedObservable(entityType)) {
       if (observable.hashes) {
@@ -173,6 +179,10 @@ const createIndicatorFromObservable = async (user, input, observable) => {
     const indicatorName = observableValue(observable);
     if (key.includes('StixFile')) {
       key = key.replace('StixFile', 'File');
+    }
+    if (key.includes('Artifact')) {
+      key = key.replace('Artifact', 'File');
+      entityType = 'StixFile';
     }
     const pattern = await createStixPattern(key, indicatorName);
     if (pattern) {
@@ -201,14 +211,18 @@ const createIndicatorFromObservable = async (user, input, observable) => {
 
 export const promoteObservableToIndicator = async (user, observableId) => {
   const observable = await fullLoadById(user, observableId);
-  const objectLabel = observable.i_relations_from['object-label']
-    ? observable.i_relations_from['object-label'].map((n) => n.internal_id)
-    : [];
-  const objectMarking = observable.i_relations_from['object-marking']
-    ? observable.i_relations_from['object-marking'].map((n) => n.internal_id)
-    : [];
+  const objectLabel =
+    observable.i_relations_from && observable.i_relations_from['object-label']
+      ? observable.i_relations_from['object-label'].map((n) => n.internal_id)
+      : [];
+  const objectMarking =
+    observable.i_relations_from && observable.i_relations_from['object-marking']
+      ? observable.i_relations_from['object-marking'].map((n) => n.internal_id)
+      : [];
   const createdBy =
-    observable.i_relations_from['created-by'] && observable.i_relations_from['created-by'].length > 0
+    observable.i_relations_from &&
+    observable.i_relations_from['created-by'] &&
+    observable.i_relations_from['created-by'].length > 0
       ? observable.i_relations_from['created-by'].map((n) => n.internal_id)[0]
       : [];
   await createIndicatorFromObservable(user, { objectLabel, objectMarking, createdBy }, observable);
@@ -388,4 +402,38 @@ export const stixCyberObservableDistributionByEntity = async (user, args) => {
   const { objectId } = args;
   const filters = [{ isRelation: true, type: args.relationship_type, value: objectId }];
   return distributionEntities(user, ABSTRACT_STIX_CYBER_OBSERVABLE, filters, args);
+};
+
+const checksumFile = async (hashName, stream) => {
+  return new Promise((resolve, reject) => {
+    const hash = createHash(hashName);
+    stream.on('error', (err) => reject(err));
+    stream.on('data', (chunk) => hash.update(chunk));
+    stream.on('end', () => resolve(hash.digest('hex')));
+  });
+};
+
+export const artifactImport = async (user, args) => {
+  const { file, x_opencti_description: description, createdBy, objectMarking, objectLabel } = args;
+  const { createReadStream, filename, mimetype } = await file;
+  const artifactData = {
+    type: 'Artifact',
+    Artifact: {
+      x_opencti_description: description || 'Artifact uploaded',
+      x_opencti_additional_names: [filename],
+      mime_type: mimetype,
+      hashes: [
+        { algorithm: 'MD5', hash: await checksumFile('md5', createReadStream()) },
+        { algorithm: 'SHA-1', hash: await checksumFile('sha1', createReadStream()) },
+        { algorithm: 'SHA-256', hash: await checksumFile('sha256', createReadStream()) },
+      ],
+    },
+    createdBy,
+    objectMarking,
+    objectLabel,
+  };
+  const artifact = await addStixCyberObservable(user, artifactData);
+  const up = await upload(user, `import/${artifact.entity_type}/${artifact.id}`, file);
+  await uploadJobImport(user, up.id, up.metaData.mimetype, up.metaData.entity_id);
+  return artifact;
 };

@@ -112,7 +112,11 @@ class IndicatorObservablesComponent extends Component {
               divider={true}
               button={true}
               component={Link}
-              to={`/dashboard/observations/observables/${observableEdge.node.id}`}
+              to={`/dashboard/observations/${
+                observableEdge.node.entity_type === 'Artifact'
+                  ? 'artifacts'
+                  : 'observables'
+              }/${observableEdge.node.id}`}
             >
               <ListItemIcon classes={{ root: classes.itemIcon }}>
                 <ItemIcon type={observableEdge.node.entity_type} />

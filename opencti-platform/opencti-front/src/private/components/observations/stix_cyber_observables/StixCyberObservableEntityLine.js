@@ -15,6 +15,7 @@ import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
+import { defaultValue } from '../../../../utils/Graph';
 
 const styles = (theme) => ({
   item: {
@@ -124,10 +125,10 @@ class StixCyberObservableEntityLineComponent extends Component {
                 {!restricted
                   ? targetEntity.entity_type === 'stix_relation'
                     || targetEntity.entity_type === 'stix-relation'
-                    ? `${targetEntity.from.name} ${String.fromCharCode(8594)} ${
-                      targetEntity.to.name
-                    }`
-                    : targetEntity.name
+                    ? `${targetEntity.from.name} ${String.fromCharCode(
+                      8594,
+                    )} ${defaultValue(targetEntity.to)}`
+                    : defaultValue(targetEntity)
                   : t('Restricted')}
               </div>
               {!displayRelation && (
@@ -278,6 +279,9 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
             name
             description
           }
+          ... on StixCyberObservable {
+            observable_value
+          }
           ... on StixCoreRelationship {
             from {
               ... on BasicObject {
@@ -363,6 +367,9 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
                 name
                 description
               }
+              ... on StixCyberObservable {
+                observable_value
+              }
             }
             to {
               ... on BasicObject {
@@ -447,6 +454,9 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
               ... on Incident {
                 name
                 description
+              }
+              ... on StixCyberObservable {
+                observable_value
               }
             }
           }
@@ -535,6 +545,9 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
             name
             description
           }
+          ... on StixCyberObservable {
+            observable_value
+          }
           ... on StixCoreRelationship {
             from {
               ... on BasicObject {
@@ -620,6 +633,9 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
                 name
                 description
               }
+              ... on StixCyberObservable {
+                observable_value
+              }
             }
             to {
               ... on BasicObject {
@@ -704,6 +720,9 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
               ... on Incident {
                 name
                 description
+              }
+              ... on StixCyberObservable {
+                observable_value
               }
             }
           }

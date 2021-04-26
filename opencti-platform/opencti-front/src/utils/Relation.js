@@ -156,6 +156,12 @@ const relationsTypesMapping = {
   'IPv6-Addr_Country': ['located-at'],
   'IPv6-Addr_City': ['located-at'],
   'IPv6-Addr_Position': ['located-at'],
+  'IPv4-Addr_Organization': ['belongs-to'],
+  'IPv4-Addr_Individual': ['belongs-to'],
+  'Artifact_IPv4-Addr': ['communicates-with'],
+  'Artifact_IPv6-Addr': ['communicates-with'],
+  'StixFile_IPv4-Addr': ['communicates-with'],
+  'StixFile_IPv6-Addr': ['communicates-with'],
   targets_City: ['located-at'],
   targets_Country: ['located-at'],
   targets_Region: ['located-at'],
@@ -165,6 +171,7 @@ const relationsTypesMapping = {
 const stixCyberObservableRelationshipTypesMapping = {
   Directory_Directory: ['contains'],
   Directory_StixFile: ['contains'],
+  Directory_Artifact: ['contains'],
   'Email-Addr_User-Account': ['belongs-to'],
   'Email-Message_Email-Addr': ['from', 'sender', 'to', 'bcc'],
   'Email-Message_Email-Mime-Part-Type': ['body-multipart'],
@@ -200,7 +207,7 @@ export const resolveStixCyberObservableRelationshipsTypes = (
   toType,
 ) => (stixCyberObservableRelationshipTypesMapping[`${fromType}_${toType}`]
   ? stixCyberObservableRelationshipTypesMapping[`${fromType}_${toType}`]
-  : []);
+  : ['x_opencti_linked-to']);
 
 export const resolveTargetTypes = (fromType) => pipe(
   keys,
@@ -208,10 +215,20 @@ export const resolveTargetTypes = (fromType) => pipe(
   map((n) => split('_', n)[1]),
 )(relationsTypesMapping);
 
-export const resolveStixCyberObservableRelationshipsTargetTypes = (fromType) => pipe(
-  keys,
-  filter((n) => n.includes(fromType)),
-  map((n) => split('_', n)[1]),
-)(stixCyberObservableRelationshipTypesMapping);
+export const resolveStixCyberObservableRelationshipsTargetTypes = (
+  fromType,
+) => {
+  const toTypes = pipe(
+    keys,
+    filter((n) => n.includes(fromType)),
+    map((n) => split('_', n)[1]),
+  )(stixCyberObservableRelationshipTypesMapping);
+  const fromTypes = pipe(
+    keys,
+    filter((n) => n.includes(fromType)),
+    map((n) => split('_', n)[0]),
+  )(stixCyberObservableRelationshipTypesMapping);
+  return { fromTypes, toTypes };
+};
 
 export const hasKillChainPhase = (type) => includes(type, ['uses', 'exploits', 'drops', 'indicates']);

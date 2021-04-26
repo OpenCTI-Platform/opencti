@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
-import {
-  compose, map, pipe, head, assoc,
-} from 'ramda';
+import * as R from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -326,17 +324,23 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
   }
 
   handleClose() {
-    this.setState({ step: 0, targetEntity: null, open: false });
+    this.setState({
+      search: '', step: 0, targetEntity: null, open: false,
+    });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
-    const fromEntityId = this.props.entityId;
-    const toEntityId = this.state.targetEntity.id;
-    const finalValues = pipe(
-      assoc('fromId', fromEntityId),
-      assoc('toId', toEntityId),
-      assoc('start_time', parse(values.start_time).format()),
-      assoc('stop_time', parse(values.stop_time).format()),
+  onSubmit(isRelationReversed, values, { setSubmitting, resetForm }) {
+    const fromEntityId = isRelationReversed
+      ? this.state.targetEntity.id
+      : this.props.entityId;
+    const toEntityId = isRelationReversed
+      ? this.props.entityId
+      : this.state.targetEntity.id;
+    const finalValues = R.pipe(
+      R.assoc('fromId', fromEntityId),
+      R.assoc('toId', toEntityId),
+      R.assoc('start_time', parse(values.start_time).format()),
+      R.assoc('stop_time', parse(values.stop_time).format()),
     )(values);
     commitMutation({
       mutation: stixCyberObservableRelationshipCreationFromEntityMutation,
@@ -380,12 +384,14 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
   renderSelectEntity() {
     const { search } = this.state;
     const { classes, t, entityType } = this.props;
-    const types = resolveStixCyberObservableRelationshipsTargetTypes(
-      entityType,
-    );
+    const {
+      fromTypes,
+      toTypes,
+    } = resolveStixCyberObservableRelationshipsTargetTypes(entityType);
+    const allTypes = R.uniq([...fromTypes, ...toTypes]);
     const paginationOptions = {
       search,
-      types,
+      types: allTypes,
       orderBy: search.length > 0 ? null : 'created_at',
       orderMode: search.length > 0 ? null : 'desc',
     };
@@ -452,7 +458,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
             inputValue={this.state.search}
             paginationKey="Pagination_stixCyberObservables"
             paginationOptions={paginationOptions}
-            targetStixDomainObjectTypes={types}
+            targetStixDomainObjectTypes={allTypes}
           />
         </div>
       </div>
@@ -460,17 +466,30 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
   }
 
   renderForm(sourceEntity) {
-    const { t, classes } = this.props;
+    const { t, classes, entityType } = this.props;
     const { targetEntity } = this.state;
-    const fromEntity = sourceEntity;
-    const toEntity = targetEntity;
+    const {
+      fromTypes,
+      toTypes,
+    } = resolveStixCyberObservableRelationshipsTargetTypes(entityType);
+    let fromEntity = sourceEntity;
+    let toEntity = targetEntity;
+    let isRelationReversed = false;
+    if (
+      !toTypes.includes(toEntity.entity_type)
+      && fromTypes.includes(toEntity.entity_type)
+    ) {
+      fromEntity = targetEntity;
+      toEntity = sourceEntity;
+      isRelationReversed = true;
+    }
     const relationshipTypes = resolveStixCyberObservableRelationshipsTypes(
       fromEntity.entity_type,
       toEntity.entity_type,
     );
-    const defaultRelationshipType = head(relationshipTypes)
-      ? head(relationshipTypes)
-      : 'linked';
+    const defaultRelationshipType = R.head(relationshipTypes)
+      ? R.head(relationshipTypes)
+      : 'linked-to';
     const initialValues = {
       relationship_type: defaultRelationshipType,
       start_time: dayStartDate(),
@@ -481,7 +500,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={stixCyberObservableRelationshipValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
+        onSubmit={this.onSubmit.bind(this, isRelationReversed)}
         onReset={this.handleClose.bind(this)}
       >
         {({ submitForm, handleReset, isSubmitting }) => (
@@ -575,7 +594,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
                 fullWidth={true}
                 containerstyle={{ marginTop: 20, width: '100%' }}
               >
-                {map(
+                {R.map(
                   (type) => (
                     <MenuItem key={type} value={type}>
                       {type}
@@ -715,7 +734,7 @@ StixCyberObservableRelationshipCreationFromEntity.propTypes = {
   variant: PropTypes.string,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixCyberObservableRelationshipCreationFromEntity);

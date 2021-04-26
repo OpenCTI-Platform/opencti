@@ -8,7 +8,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
-import { HexagonOutline } from 'mdi-material-ui';
+import { ArchiveOutline } from 'mdi-material-ui';
 import { compose, pathOr } from 'ramda';
 import Checkbox from '@material-ui/core/Checkbox';
 import inject18n from '../../../../components/i18n';
@@ -45,10 +45,10 @@ const styles = (theme) => ({
   },
 });
 
-class StixCyberObservableLineComponent extends Component {
+class ArtifactLineComponent extends Component {
   render() {
     const {
-      t,
+      b,
       nsdt,
       classes,
       dataColumns,
@@ -58,15 +58,16 @@ class StixCyberObservableLineComponent extends Component {
       selectedElements,
       selectAll,
     } = this.props;
+    const file = node.importFiles.edges.length > 0
+      ? node.importFiles.edges[0].node
+      : { name: 'N/A', mime_type: 'N/A', size: 0 };
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         button={true}
         component={Link}
-        to={`/dashboard/observations/${
-          node.entity_type === 'Artifact' ? 'artifacts' : 'observables'
-        }/${node.id}`}
+        to={`/dashboard/observations/artifacts/${node.id}`}
       >
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
@@ -80,22 +81,34 @@ class StixCyberObservableLineComponent extends Component {
           />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <HexagonOutline />
+          <ArchiveOutline />
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
-              >
-                {t(`entity_${node.entity_type}`)}
-              </div>
-              <div
-                className={classes.bodyItem}
                 style={{ width: dataColumns.observable_value.width }}
               >
                 {node.observable_value}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.file_name.width }}
+              >
+                {file.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.file_mime_type.width }}
+              >
+                <code>{file.metaData.mimetype}</code>
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.file_size.width }}
+              >
+                {b(file.size)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -138,7 +151,7 @@ class StixCyberObservableLineComponent extends Component {
   }
 }
 
-StixCyberObservableLineComponent.propTypes = {
+ArtifactLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
@@ -150,45 +163,54 @@ StixCyberObservableLineComponent.propTypes = {
   selectAll: PropTypes.bool,
 };
 
-const StixCyberObservableLineFragment = createFragmentContainer(
-  StixCyberObservableLineComponent,
-  {
-    node: graphql`
-      fragment StixCyberObservableLine_node on StixCyberObservable {
-        id
-        entity_type
-        parent_types
-        observable_value
-        created_at
-        objectMarking {
-          edges {
-            node {
-              id
-              definition
-              x_opencti_color
-            }
+const ArtifactLineFragment = createFragmentContainer(ArtifactLineComponent, {
+  node: graphql`
+    fragment ArtifactLine_node on Artifact {
+      id
+      entity_type
+      parent_types
+      observable_value
+      created_at
+      objectMarking {
+        edges {
+          node {
+            id
+            definition
+            x_opencti_color
           }
         }
-        objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
+      }
+      objectLabel {
+        edges {
+          node {
+            id
+            value
+            color
+          }
+        }
+      }
+      importFiles {
+        edges {
+          node {
+            id
+            name
+            size
+            metaData {
+              mimetype
             }
           }
         }
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
-export const StixCyberObservableLine = compose(
+export const ArtifactLine = compose(
   inject18n,
   withStyles(styles),
-)(StixCyberObservableLineFragment);
+)(ArtifactLineFragment);
 
-class StixCyberObservableLineDummyComponent extends Component {
+class ArtifactLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -200,22 +222,34 @@ class StixCyberObservableLineDummyComponent extends Component {
           <Checkbox edge="start" disabled={true} disableRipple={true} />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <HexagonOutline />
+          <ArchiveOutline />
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
-              >
-                <div className="fakeItem" style={{ width: '80%' }} />
-              </div>
-              <div
-                className={classes.bodyItem}
                 style={{ width: dataColumns.observable_value.width }}
               >
                 <div className="fakeItem" style={{ width: '70%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.file_name.width }}
+              >
+                <div className="fakeItem" style={{ width: '60%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.file_mime_type.width }}
+              >
+                <div className="fakeItem" style={{ width: '90%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.file_size.width }}
+              >
+                <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
@@ -246,12 +280,12 @@ class StixCyberObservableLineDummyComponent extends Component {
   }
 }
 
-StixCyberObservableLineDummyComponent.propTypes = {
+ArtifactLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const StixCyberObservableLineDummy = compose(
+export const ArtifactLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(StixCyberObservableLineDummyComponent);
+)(ArtifactLineDummyComponent);

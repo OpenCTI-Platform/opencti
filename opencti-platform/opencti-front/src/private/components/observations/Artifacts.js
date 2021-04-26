@@ -1,26 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose,
-  append,
-  filter,
-  propOr,
-  assoc,
-  dissoc,
-  uniqBy,
-  prop,
+  compose, propOr, assoc, dissoc, uniqBy, prop,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
 import * as R from 'ramda';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import StixCyberObservablesLines, {
-  stixCyberObservablesLinesQuery,
-} from './stix_cyber_observables/StixCyberObservablesLines';
 import inject18n from '../../../components/i18n';
-import StixCyberObservableCreation from './stix_cyber_observables/StixCyberObservableCreation';
-import StixCyberObservablesRightBar from './stix_cyber_observables/StixCyberObservablesRightBar';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
@@ -28,12 +15,10 @@ import {
 } from '../../../utils/ListParameters';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import ToolBar from '../data/ToolBar';
-
-const styles = () => ({
-  container: {
-    paddingRight: 250,
-  },
-});
+import ArtifactsLines, {
+  artifactsLinesQuery,
+} from './artifacts/ArtifactsLines';
+import ArtifactCreation from './artifacts/ArtifactCreation';
 
 class StixCyberObservables extends Component {
   constructor(props) {
@@ -41,7 +26,7 @@ class StixCyberObservables extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-stix_cyber_observables',
+      'view-artifacts',
     );
     this.state = {
       sortBy: propOr('created_at', 'sortBy', params),
@@ -49,7 +34,6 @@ class StixCyberObservables extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       filters: propOr({}, 'filters', params),
-      observableTypes: propOr([], 'observableTypes', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
@@ -61,7 +45,7 @@ class StixCyberObservables extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-stix_cyber_observables',
+      'view-artifacts',
       this.state,
     );
   }
@@ -76,29 +60,6 @@ class StixCyberObservables extends Component {
 
   handleToggleExports() {
     this.setState({ openExports: !this.state.openExports });
-  }
-
-  handleToggle(type) {
-    if (this.state.observableTypes.includes(type)) {
-      this.setState(
-        {
-          observableTypes: filter(
-            (t) => t !== type,
-            this.state.observableTypes,
-          ),
-        },
-        () => this.saveView(),
-      );
-    } else {
-      this.setState(
-        { observableTypes: append(type, this.state.observableTypes) },
-        () => this.saveView(),
-      );
-    }
-  }
-
-  handleClear() {
-    this.setState({ observableTypes: [] }, () => this.saveView());
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -176,7 +137,6 @@ class StixCyberObservables extends Component {
       numberOfElements,
       selectedElements,
       selectAll,
-      observableTypes,
     } = this.state;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
@@ -185,30 +145,38 @@ class StixCyberObservables extends Component {
     let finalFilters = filters;
     finalFilters = R.assoc(
       'entity_type',
-      observableTypes.length > 0
-        ? R.map((n) => ({ id: n, value: n }), observableTypes)
-        : [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }],
+      [{ id: 'Artifact', value: 'Artifact' }],
       finalFilters,
     );
     const dataColumns = {
-      entity_type: {
-        label: 'Type',
-        width: '15%',
-        isSortable: true,
-      },
       observable_value: {
         label: 'Value',
-        width: '30%',
+        width: '15%',
+        isSortable: false,
+      },
+      file_name: {
+        label: 'File name',
+        width: '20%',
+        isSortable: false,
+      },
+      file_mime_type: {
+        label: 'Mime/Type',
+        width: '15%',
+        isSortable: false,
+      },
+      file_size: {
+        label: 'File size',
+        width: '10%',
         isSortable: false,
       },
       objectLabel: {
         label: 'Labels',
-        width: '20%',
+        width: '15%',
         isSortable: false,
       },
       created_at: {
         label: 'Creation date',
-        width: '18%',
+        width: '15%',
         isSortable: true,
       },
       objectMarking: {
@@ -230,7 +198,7 @@ class StixCyberObservables extends Component {
           openExports={openExports}
           handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
           selectAll={selectAll}
-          exportEntityType="Stix-Cyber-Observable"
+          exportEntityType="Artifact"
           exportContext={null}
           keyword={searchTerm}
           filters={filters}
@@ -243,14 +211,13 @@ class StixCyberObservables extends Component {
             'created_at_start_date',
             'created_at_end_date',
             'createdBy',
-            'sightedBy',
           ]}
         >
           <QueryRenderer
-            query={stixCyberObservablesLinesQuery}
+            query={artifactsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => (
-              <StixCyberObservablesLines
+              <ArtifactsLines
                 data={props}
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
@@ -279,10 +246,8 @@ class StixCyberObservables extends Component {
   }
 
   render() {
-    const { classes } = this.props;
     const {
       view,
-      observableTypes,
       sortBy,
       orderAsc,
       searchTerm,
@@ -291,28 +256,22 @@ class StixCyberObservables extends Component {
     } = this.state;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
-      types: observableTypes.length > 0 ? observableTypes : null,
+      types: ['Artifact'],
       search: searchTerm,
       filters: finalFilters,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div className={classes.container}>
+      <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixCyberObservableCreation
+          <ArtifactCreation
             paginationKey="Pagination_stixCyberObservables"
             paginationOptions={paginationOptions}
             openExports={openExports}
           />
         </Security>
-        <StixCyberObservablesRightBar
-          types={observableTypes}
-          handleToggle={this.handleToggle.bind(this)}
-          handleClear={this.handleClear.bind(this)}
-          openExports={openExports}
-        />
       </div>
     );
   }
@@ -325,8 +284,4 @@ StixCyberObservables.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(StixCyberObservables);
+export default compose(inject18n, withRouter)(StixCyberObservables);

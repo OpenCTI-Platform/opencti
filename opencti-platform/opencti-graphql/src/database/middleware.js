@@ -140,6 +140,7 @@ import {
   yearFormat,
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
+import { deleteAllFiles } from './minio';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -288,6 +289,7 @@ const buildRelationsFilter = (relationshipType, args) => {
     fromTypes = [],
     toTypes = [],
     elementWithTargetTypes = [],
+    relationshipTypes = [],
   } = args;
   const {
     startTimeStart,
@@ -387,7 +389,10 @@ const buildRelationsFilter = (relationshipType, args) => {
   if (startDate) finalFilters.push({ key: 'created_at', values: [startDate], operator: 'gt' });
   if (endDate) finalFilters.push({ key: 'created_at', values: [endDate], operator: 'lt' });
   if (confidences && confidences.length > 0) finalFilters.push({ key: 'confidence', values: confidences });
-  return R.pipe(R.assoc('types', [relationToGet]), R.assoc('filters', finalFilters))(args);
+  return R.pipe(
+    R.assoc('types', relationshipTypes.length > 0 ? relationshipTypes : [relationToGet]),
+    R.assoc('filters', finalFilters)
+  )(args);
 };
 const buildThingsFilter = (thingsTypes, args) => {
   return R.assoc('types', thingsTypes, args);
@@ -2050,6 +2055,7 @@ export const deleteElementById = async (user, elementId, type) => {
   try {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
+    await deleteAllFiles(user, `import/${element.entity_type}/${element.internal_id}`);
     await elDeleteElements(user, [element]);
     await storeDeleteEvent(user, element);
     // Temporary stored the deleted elements to prevent concurrent problem at creation

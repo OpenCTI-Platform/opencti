@@ -13,7 +13,6 @@ import IncidentPopover from './IncidentPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 
 const styles = () => ({
@@ -32,18 +31,6 @@ class IncidentKnowledgeComponent extends Component {
         <StixDomainObjectHeader
           stixDomainObject={incident}
           PopoverComponent={<IncidentPopover />}
-        />
-        <StixCoreObjectKnowledgeBar
-          stixCoreObjectLink={link}
-          availableSections={[
-            'attribution',
-            'victimology',
-            'attack_patterns',
-            'malwares',
-            'tools',
-            'vulnerabilities',
-            'observables',
-          ]}
         />
         <Route
           exact

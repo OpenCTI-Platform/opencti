@@ -4,10 +4,12 @@ import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import StixCyberObservables from './StixCyberObservables';
 import RootStixCyberObservable from './stix_cyber_observables/Root';
+import Artifacts from './Artifacts';
 import Indicators from './Indicators';
 import RootIndicator from './indicators/Root';
 import Infrastructures from './Infrastructures';
 import RootInfrastructure from './infrastructures/Root';
+import RootArtifact from './artifacts/Root';
 
 class Root extends Component {
   render() {
@@ -29,6 +31,15 @@ class Root extends Component {
           render={(routeProps) => (
             <RootStixCyberObservable {...routeProps} me={me} />
           )}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/observations/artifacts"
+          component={Artifacts}
+        />
+        <BoundaryRoute
+          path="/dashboard/observations/artifacts/:observableId"
+          render={(routeProps) => <RootArtifact {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
