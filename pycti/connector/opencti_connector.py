@@ -40,14 +40,19 @@ class OpenCTIConnector:
         connector_type: str,
         scope: str,
         auto: bool,
+        only_contextual: bool,
     ):
         self.id = connector_id
         self.name = connector_name
         self.type = ConnectorType(connector_type)
         if self.type is None:
             raise ValueError("Invalid connector type: " + connector_type)
-        self.scope = scope.split(",")
+        if scope and len(scope) > 0:
+            self.scope = scope.split(",")
+        else:
+            self.scope = []
         self.auto = auto
+        self.only_contextual = only_contextual
 
     def to_input(self) -> dict:
         """connector input to use in API query
@@ -62,5 +67,6 @@ class OpenCTIConnector:
                 "type": self.type.name,
                 "scope": self.scope,
                 "auto": self.auto,
+                "only_contextual": self.only_contextual,
             }
         }

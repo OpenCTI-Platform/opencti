@@ -340,6 +340,13 @@ class OpenCTIConnectorHelper:
         self.connect_auto = get_config_variable(
             "CONNECTOR_AUTO", ["connector", "auto"], config, False, False
         )
+        self.connect_only_contextual = get_config_variable(
+            "CONNECTOR_ONLY_CONTEXTUAL",
+            ["connector", "only_contextual"],
+            config,
+            False,
+            False,
+        )
         self.log_level = get_config_variable(
             "CONNECTOR_LOG_LEVEL", ["connector", "log_level"], config
         )
@@ -361,6 +368,7 @@ class OpenCTIConnectorHelper:
             self.connect_type,
             self.connect_scope,
             self.connect_auto,
+            self.connect_only_contextual,
         )
         connector_configuration = self.api.connector.register(self.connector)
         logging.info("Connector registered with ID:" + self.connect_id)
