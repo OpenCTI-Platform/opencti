@@ -1,23 +1,19 @@
 # coding: utf-8
 
-import os
-import json
-import uuid
 import base64
 import datetime
+import json
+import os
+import uuid
 from typing import List
 
 import datefinder
 import dateutil.parser
 import pytz
 
+from pycti.utils.constants import IdentityTypes, LocationTypes, StixCyberObservableTypes
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from pycti.utils.opencti_stix2_update import OpenCTIStix2Update
-from pycti.utils.constants import (
-    IdentityTypes,
-    LocationTypes,
-    StixCyberObservableTypes,
-)
 
 datefinder.ValueError = ValueError, OverflowError
 utc = pytz.UTC

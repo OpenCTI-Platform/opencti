@@ -1,8 +1,6 @@
 # coding: utf-8
 
-from pycti.utils.constants import (
-    StixCyberObservableTypes,
-)
+from pycti.utils.constants import StixCyberObservableTypes
 
 
 class OpenCTIStix2Update:

@@ -1,7 +1,6 @@
 import json
 import logging
-
-from typing import Dict, Any
+from typing import Any, Dict
 
 from pycti.connector.opencti_connector import OpenCTIConnector
 

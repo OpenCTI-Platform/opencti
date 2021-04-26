@@ -1,11 +1,12 @@
 # coding: utf-8
 
 import json
-from dateutil.parser import parse
-from pycti import OpenCTIApiClient
-from stix2 import TLP_WHITE, TLP_GREEN
 
 import pytest
+from dateutil.parser import parse
+from stix2 import TLP_GREEN, TLP_WHITE
+
+from pycti import OpenCTIApiClient
 
 
 @pytest.fixture
