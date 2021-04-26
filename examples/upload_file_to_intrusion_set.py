@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import datetime
+
 from pycti import OpenCTIApiClient
 
 # Variables

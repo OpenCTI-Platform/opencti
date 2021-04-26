@@ -1,50 +1,49 @@
 # coding: utf-8
 
+import datetime
 import io
+import json
+import logging
+from typing import Union
+
 import magic
 import requests
 import urllib3
-import json
-import logging
-import datetime
-
-from typing import Union
 
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
 from pycti.api.opencti_api_work import OpenCTIApiWork
-from pycti.utils.opencti_stix2 import OpenCTIStix2
-
-from pycti.entities.opencti_label import Label
-from pycti.entities.opencti_marking_definition import MarkingDefinition
-from pycti.entities.opencti_external_reference import ExternalReference
-from pycti.entities.opencti_kill_chain_phase import KillChainPhase
-from pycti.entities.opencti_stix_object_or_stix_relationship import (
-    StixObjectOrStixRelationship,
-)
-from pycti.entities.opencti_stix_domain_object import StixDomainObject
-from pycti.entities.opencti_stix_cyber_observable import StixCyberObservable
-from pycti.entities.opencti_stix_core_relationship import StixCoreRelationship
-from pycti.entities.opencti_stix_sighting_relationship import StixSightingRelationship
-from pycti.entities.opencti_stix_cyber_observable_relationship import (
-    StixCyberObservableRelationship,
-)
-from pycti.entities.opencti_identity import Identity
-from pycti.entities.opencti_location import Location
-from pycti.entities.opencti_threat_actor import ThreatActor
-from pycti.entities.opencti_intrusion_set import IntrusionSet
-from pycti.entities.opencti_infrastructure import Infrastructure
-from pycti.entities.opencti_campaign import Campaign
-from pycti.entities.opencti_incident import Incident
-from pycti.entities.opencti_malware import Malware
-from pycti.entities.opencti_tool import Tool
-from pycti.entities.opencti_vulnerability import Vulnerability
 from pycti.entities.opencti_attack_pattern import AttackPattern
+from pycti.entities.opencti_campaign import Campaign
 from pycti.entities.opencti_course_of_action import CourseOfAction
-from pycti.entities.opencti_report import Report
+from pycti.entities.opencti_external_reference import ExternalReference
+from pycti.entities.opencti_identity import Identity
+from pycti.entities.opencti_incident import Incident
+from pycti.entities.opencti_indicator import Indicator
+from pycti.entities.opencti_infrastructure import Infrastructure
+from pycti.entities.opencti_intrusion_set import IntrusionSet
+from pycti.entities.opencti_kill_chain_phase import KillChainPhase
+from pycti.entities.opencti_label import Label
+from pycti.entities.opencti_location import Location
+from pycti.entities.opencti_malware import Malware
+from pycti.entities.opencti_marking_definition import MarkingDefinition
 from pycti.entities.opencti_note import Note
 from pycti.entities.opencti_observed_data import ObservedData
 from pycti.entities.opencti_opinion import Opinion
-from pycti.entities.opencti_indicator import Indicator
+from pycti.entities.opencti_report import Report
+from pycti.entities.opencti_stix_core_relationship import StixCoreRelationship
+from pycti.entities.opencti_stix_cyber_observable import StixCyberObservable
+from pycti.entities.opencti_stix_cyber_observable_relationship import (
+    StixCyberObservableRelationship,
+)
+from pycti.entities.opencti_stix_domain_object import StixDomainObject
+from pycti.entities.opencti_stix_object_or_stix_relationship import (
+    StixObjectOrStixRelationship,
+)
+from pycti.entities.opencti_stix_sighting_relationship import StixSightingRelationship
+from pycti.entities.opencti_threat_actor import ThreatActor
+from pycti.entities.opencti_tool import Tool
+from pycti.entities.opencti_vulnerability import Vulnerability
+from pycti.utils.opencti_stix2 import OpenCTIStix2
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 

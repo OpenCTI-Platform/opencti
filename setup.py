@@ -2,6 +2,7 @@
 # coding: utf-8
 import os
 import sys
+
 from setuptools import setup
 from setuptools.command.install import install
 

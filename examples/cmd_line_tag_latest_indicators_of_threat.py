@@ -2,6 +2,7 @@
 import argparse
 
 from dateutil.parser import parse
+
 from pycti import OpenCTIApiClient
 
 # Variables

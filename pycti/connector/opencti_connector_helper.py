@@ -1,20 +1,20 @@
+import base64
 import datetime
-import threading
+import json
+import logging
+import os
 import queue
+import ssl
+import threading
+import time
 import uuid
-import requests
+from typing import Callable, Dict, List, Optional, Union
 
 import pika
-import logging
-import json
-import time
-import base64
-import os
-import ssl
-
-from typing import Callable, Dict, Optional, Union, List
+import requests
+from pika.exceptions import NackError, UnroutableError
 from sseclient import SSEClient
-from pika.exceptions import UnroutableError, NackError
+
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter

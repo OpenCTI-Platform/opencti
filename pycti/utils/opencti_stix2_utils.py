@@ -1,11 +1,12 @@
 import uuid
+
 from stix2 import (
-    ObjectPath,
-    EqualityComparisonExpression,
-    ObservationExpression,
-    CustomObservable,
     CustomObject,
+    CustomObservable,
+    EqualityComparisonExpression,
     ExternalReference,
+    ObjectPath,
+    ObservationExpression,
     properties,
 )
 
