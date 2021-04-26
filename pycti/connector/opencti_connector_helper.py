@@ -387,6 +387,9 @@ class OpenCTIConnectorHelper:
     def get_name(self):
         return self.connect_name
 
+    def get_only_contextual(self):
+        return self.connect_only_contextual
+
     def set_state(self, state) -> None:
         """sets the connector state
 
