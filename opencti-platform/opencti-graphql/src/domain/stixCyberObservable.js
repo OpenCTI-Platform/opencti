@@ -113,7 +113,9 @@ export const batchIndicators = (user, stixCyberObservableIds) => {
 export const hashValue = (stixCyberObservable) => {
   if (stixCyberObservable.hashes) {
     for (const algo of ['SHA-256', 'SHA-1', 'MD5']) {
-      return stixCyberObservable.hashes[algo];
+      if (stixCyberObservable.hashes[algo]) {
+        return stixCyberObservable.hashes[algo];
+      }
     }
   }
   return null;
