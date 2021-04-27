@@ -55,6 +55,7 @@ export const internalObjectsAttributes = {
     'platform_email',
     'platform_url',
     'platform_language',
+    'platform_login_message',
     'created_at',
     'i_created_at_day',
     'i_created_at_month',

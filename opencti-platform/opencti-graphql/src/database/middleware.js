@@ -115,6 +115,7 @@ import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
@@ -1247,6 +1248,14 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
       if (revokedIn.length > 0) {
         updatedInputs.push(revokedInput);
         impactedInputs.push(...revokedIn);
+      }
+      if (instance.entity_type === ENTITY_TYPE_INDICATOR && untilDateTime <= utcDate().toDate()) {
+        const detectionInput = { key: 'x_opencti_detection', value: [false] };
+        const detectionIn = await innerUpdateAttribute(user, instance, detectionInput, options);
+        if (detectionIn.length > 0) {
+          updatedInputs.push(detectionInput);
+          impactedInputs.push(...detectionIn);
+        }
       }
     }
     // If input impact aliases (aliases or x_opencti_aliases), regenerate internal ids

@@ -60,7 +60,7 @@ class ArtifactLineComponent extends Component {
     } = this.props;
     const file = node.importFiles.edges.length > 0
       ? node.importFiles.edges[0].node
-      : { name: 'N/A', mime_type: 'N/A', size: 0 };
+      : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
     return (
       <ListItem
         classes={{ root: classes.item }}

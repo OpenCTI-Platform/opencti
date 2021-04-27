@@ -615,6 +615,7 @@ type Settings implements InternalObject & BasicObject {
   platform_language: String
   platform_demo: Boolean
   platform_map_tile_server: String
+  platform_login_message: String
   created_at: DateTime!
   updated_at: DateTime!
   # Technical
