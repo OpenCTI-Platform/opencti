@@ -545,6 +545,8 @@ class StixCoreRelationship:
                         stixCoreRelationshipEdit(id: $id) {
                             fieldPatch(input: $input) {
                                 id
+                                standard_id
+                                entity_type
                             }
                         }
                     }

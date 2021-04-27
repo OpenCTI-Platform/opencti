@@ -587,6 +587,8 @@ class StixDomainObject:
                         stixDomainObjectEdit(id: $id) {
                             fieldPatch(input: $input, operation: $operation) {
                                 id
+                                standard_id
+                                entity_type
                             }
                         }
                     }
