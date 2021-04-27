@@ -43,6 +43,7 @@ const styles = () => ({
   },
   title: {
     float: 'left',
+    marginRight: 30,
     textTransform: 'uppercase',
   },
   popover: {
@@ -178,6 +179,10 @@ class ConnectorComponent extends Component {
           >
             {connector.name}
           </Typography>
+          <ItemBoolean
+            status={connector.active}
+            label={connector.active ? t('Active') : t('Inactive')}
+          />
           <div className={classes.popover}>
             <Security needs={[MODULES_MODMANAGE]}>
               <Tooltip title={t('Reset the connector state')}>
@@ -234,11 +239,11 @@ class ConnectorComponent extends Component {
                 </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Active')}
+                    {t('Only contextual')}
                   </Typography>
                   <ItemBoolean
-                    status={connector.active}
-                    label={connector.active ? t('Yes') : t('No')}
+                    status={connector.only_contextual}
+                    label={connector.only_contextual ? t('Yes') : t('No')}
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
@@ -356,6 +361,7 @@ const Connector = createRefetchContainer(
         name
         active
         auto
+        only_contextual
         connector_type
         connector_scope
         connector_state

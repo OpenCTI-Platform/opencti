@@ -6,8 +6,7 @@ import { buildPagination } from './utils';
 import { loadExportWorksAsProgressFiles, deleteWorkForFile } from '../domain/work';
 import { sinceNowInMinutes } from '../utils/format';
 import { DatabaseError } from '../config/errors';
-import { userWithOrigin } from '../domain/user';
-import { LOGIN_ACTION, UPLOAD_ACTION } from '../config/audit';
+import { UPLOAD_ACTION } from '../config/audit';
 
 const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';

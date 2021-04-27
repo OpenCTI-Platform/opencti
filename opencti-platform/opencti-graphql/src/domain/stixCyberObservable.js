@@ -431,7 +431,7 @@ export const artifactImport = async (user, args) => {
     objectLabel,
   };
   const artifact = await addStixCyberObservable(user, artifactData);
-  const up = await upload(user, `import/${artifact.entity_type}/${artifact.id}`, file);
+  const up = await upload(user, `import/${artifact.entity_type}/${artifact.id}`, file, { entity_id: artifact.id });
   await uploadJobImport(user, up.id, up.metaData.mimetype, up.metaData.entity_id);
   return artifact;
 };

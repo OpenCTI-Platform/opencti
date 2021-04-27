@@ -28,6 +28,7 @@ const styles = () => ({
 const FileImportViewerBase = ({
   entity,
   disableImport,
+  handleOpenImport,
   connectors,
   relay,
   t,
@@ -75,6 +76,7 @@ const FileImportViewerBase = ({
                     connectors={
                       connectors && connectors[file.node.metaData.mimetype]
                     }
+                    handleOpenImport={handleOpenImport}
                   />
                 ))}
               </List>

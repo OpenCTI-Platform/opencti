@@ -142,6 +142,7 @@ export const internalObjectsAttributes = {
     'name',
     'active',
     'auto',
+    'only_contextual',
     'connector_type',
     'connector_scope',
     'connector_state',

@@ -54,25 +54,7 @@ const FileLineAskDeleteMutation = graphql`
   }
 `;
 
-const FileLineImportAskJobMutation = graphql`
-  mutation FileLineImportAskJobMutation($fileName: ID!) {
-    askJobImport(fileName: $fileName) {
-      ...FileLine_file
-    }
-  }
-`;
-
 class FileLineComponent extends Component {
-  askForImportJob() {
-    commitMutation({
-      mutation: FileLineImportAskJobMutation,
-      variables: { fileName: this.props.file.id },
-      onCompleted: () => {
-        MESSAGING$.notifySuccess('Import successfully asked');
-      },
-    });
-  }
-
   executeRemove(mutation, variables) {
     commitMutation({
       mutation,
@@ -111,6 +93,7 @@ class FileLineComponent extends Component {
       dense,
       disableImport,
       directDownload,
+      handleOpenImport,
     } = this.props;
     const { lastModifiedSinceMin, uploadStatus, metaData } = file;
     const { messages, errors } = metaData;
@@ -159,7 +142,7 @@ class FileLineComponent extends Component {
                 <span>
                   <IconButton
                     disabled={isProgress || !isImportActive()}
-                    onClick={this.askForImportJob.bind(this)}
+                    onClick={handleOpenImport.bind(this, file)}
                     aria-haspopup="true"
                     color="primary"
                   >
@@ -223,6 +206,7 @@ FileLineComponent.propTypes = {
   dense: PropTypes.bool,
   disableImport: PropTypes.bool,
   directDownload: PropTypes.bool,
+  handleOpenImport: PropTypes.func,
 };
 
 const FileLine = createFragmentContainer(FileLineComponent, {

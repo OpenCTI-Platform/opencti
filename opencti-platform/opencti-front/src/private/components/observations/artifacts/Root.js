@@ -39,7 +39,6 @@ const rootArtifactQuery = graphql`
     }
     connectorsForImport {
       ...StixCyberObservableKnowledge_connectorsForImport
-      ...StixCyberObservableEnrichment_connectorsForImport
     }
   }
 `;

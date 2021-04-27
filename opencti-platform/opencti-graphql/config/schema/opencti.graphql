@@ -809,6 +809,7 @@ input RegisterConnectorInput {
   type: ConnectorType!
   scope: [String!]
   auto: Boolean
+  only_contextual: Boolean
 }
 type RabbitMQConnection {
   host: String!
@@ -834,6 +835,7 @@ type Connector implements BasicObject & InternalObject {
   name: String!
   active: Boolean
   auto: Boolean
+  only_contextual: Boolean
   connector_type: String
   connector_scope: [String!]
   connector_state: String
@@ -8709,7 +8711,7 @@ type Mutation {
   ###### INTERNAL
   deleteImport(fileName: String): Boolean @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadImport(file: Upload!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  askJobImport(fileName: ID!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  askJobImport(fileName: ID!, connectorId: String): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
 
   ### WORK
   workAdd(connectorId: String!, friendlyName: String): Work!

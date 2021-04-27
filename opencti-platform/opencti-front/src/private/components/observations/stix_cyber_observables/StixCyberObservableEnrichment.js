@@ -22,21 +22,24 @@ import List from '@material-ui/core/List';
 import Paper from '@material-ui/core/Paper';
 import { v4 as uuid } from 'uuid';
 import { FIVE_SECONDS } from '../../../../utils/Time';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import Security, { KNOWLEDGE_KNENRICHMENT } from '../../../../utils/Security';
 
 const interval$ = interval(FIVE_SECONDS);
 
-const StixCyberObservableEnrichmentQuery = graphql`
+const stixCyberObservableEnrichmentQuery = graphql`
   query StixCyberObservableEnrichmentQuery($id: String!) {
     stixCyberObservable(id: $id) {
       ...StixCyberObservableEnrichment_stixCyberObservable
     }
+    connectorsForImport {
+      ...StixCyberObservableEnrichment_connectorsForImport
+    }
   }
 `;
 
-const StixCyberObservableEnrichmentDeleteMutation = graphql`
+const stixCyberObservableEnrichmentDeleteMutation = graphql`
   mutation StixCyberObservableEnrichmentDeleteMutation($workId: ID!) {
     workEdit(id: $workId) {
       delete
@@ -44,12 +47,23 @@ const StixCyberObservableEnrichmentDeleteMutation = graphql`
   }
 `;
 
-const StixCyberObservableEnrichmentAskEnrich = graphql`
+const stixCyberObservableEnrichmentAskEnrich = graphql`
   mutation StixCyberObservableEnrichmentMutation($id: ID!, $connectorId: ID!) {
     stixCyberObservableEdit(id: $id) {
       askEnrichment(connectorId: $connectorId) {
         id
       }
+    }
+  }
+`;
+
+const stixCyberObservableEnrichmentAskJob = graphql`
+  mutation StixCyberObservableEnrichmentAskJobMutation(
+    $fileName: ID!
+    $connectorId: String
+  ) {
+    askJobImport(fileName: $fileName, connectorId: $connectorId) {
+      id
     }
   }
 `;
@@ -86,16 +100,29 @@ const StixCyberObservableEnrichment = (props) => {
     nsdt,
   } = props;
   const { id } = stixCyberObservable;
+  const file = stixCyberObservable.importFiles
+    && stixCyberObservable.importFiles.edges.length > 0
+    ? stixCyberObservable.importFiles.edges[0].node
+    : null;
+  const askJob = (connectorId) => {
+    commitMutation({
+      mutation: stixCyberObservableEnrichmentAskJob,
+      variables: { fileName: file.id, connectorId },
+      onCompleted: () => {
+        MESSAGING$.notifySuccess('Import successfully asked');
+      },
+    });
+  };
   const askEnrich = (connectorId) => {
     commitMutation({
-      mutation: StixCyberObservableEnrichmentAskEnrich,
+      mutation: stixCyberObservableEnrichmentAskEnrich,
       variables: { id, connectorId },
       onCompleted: () => relay.refetch({ id, entityType: stixCyberObservable.entity_type }),
     });
   };
   const deleteWork = (workId) => {
     commitMutation({
-      mutation: StixCyberObservableEnrichmentDeleteMutation,
+      mutation: stixCyberObservableEnrichmentDeleteMutation,
       variables: { workId },
       onCompleted: () => relay.refetch({ id, entityType: stixCyberObservable.entity_type }),
     });
@@ -111,10 +138,6 @@ const StixCyberObservableEnrichment = (props) => {
       subscription.unsubscribe();
     };
   });
-  const file = stixCyberObservable.importFiles
-    && stixCyberObservable.importFiles.edges.length > 0
-    ? stixCyberObservable.importFiles.edges[0].node
-    : null;
   const connectors = file && file.metaData
     ? R.filter(
       (n) => R.includes(file.metaData.mimetype, n.connector_scope)
@@ -122,16 +145,24 @@ const StixCyberObservableEnrichment = (props) => {
       connectorsForImport,
     )
     : [];
-  const allConnectors = R.sortBy(R.prop('name'), [...stixCyberObservable.connectors, ...connectors]);
+  const allConnectors = R.sortBy(R.prop('name'), [
+    ...stixCyberObservable.connectors,
+    ...connectors,
+  ]);
   return (
     <Paper classes={{ root: classes.paper }} elevation={2}>
       <List>
         {allConnectors.length > 0 ? (
           allConnectors.map((connector) => {
-            const jobs = R.pipe(
-              R.propOr([], 'jobs'),
-              R.filter((n) => n.connector && n.connector.id === connector.id),
-            )(stixCyberObservable);
+            const jobs = connector.connector_type === 'INTERNAL_IMPORT_FILE'
+              ? R.filter(
+                (n) => n.connector.id === connector.id,
+                R.propOr([], 'works', file),
+              )
+              : R.filter(
+                (n) => n.connector && n.connector.id === connector.id,
+                R.propOr([], 'jobs', stixCyberObservable),
+              );
             // eslint-disable-next-line max-len
             const isRefreshing = R.filter((node) => node.status !== 'complete', jobs).length > 0;
             return (
@@ -164,7 +195,10 @@ const StixCyberObservableEnrichment = (props) => {
                       >
                         <IconButton
                           disabled={!connector.active || isRefreshing}
-                          onClick={() => askEnrich(connector.id)}
+                          onClick={() => (connector.connector_type === 'INTERNAL_IMPORT_FILE'
+                            ? askJob(connector.id)
+                            : askEnrich(connector.id))
+                          }
                         >
                           <Refresh />
                         </IconButton>
@@ -174,16 +208,21 @@ const StixCyberObservableEnrichment = (props) => {
                 </ListItem>
                 <List component="div" disablePadding={true}>
                   {jobs.map((work) => {
+                    const isFail = work.errors.length > 0;
+                    const messages = R.sortBy(R.prop('timestamp'), [
+                      ...work.messages,
+                      ...work.errors,
+                    ]);
                     const messageToDisplay = (
                       <div>
-                        {work.messages.length > 0
+                        {messages.length > 0
                           ? R.map(
                             (message) => (
                                 <div key={message.message}>
-                                  [${nsdt(message.timestamp)}] {message.message}
+                                  [{nsdt(message.timestamp)}] {message.message}
                                 </div>
                             ),
-                            work.messages,
+                            messages,
                           )
                           : t(work.status)}
                       </div>
@@ -201,8 +240,7 @@ const StixCyberObservableEnrichment = (props) => {
                           classes={{ root: classes.nested }}
                         >
                           <ListItemIcon>
-                            {(work.status === 'error'
-                              || work.status === 'partial') && (
+                            {isFail && (
                               <Warning
                                 style={{
                                   fontSize: 15,
@@ -210,7 +248,7 @@ const StixCyberObservableEnrichment = (props) => {
                                 }}
                               />
                             )}
-                            {work.status === 'complete' && (
+                            {!isFail && work.status === 'complete' && (
                               <CheckCircle
                                 style={{
                                   fontSize: 15,
@@ -218,7 +256,7 @@ const StixCyberObservableEnrichment = (props) => {
                                 }}
                               />
                             )}
-                            {(work.status === 'wait'
+                            {((!isFail && work.status === 'wait')
                               || work.status === 'progress') && (
                               <CircularProgress
                                 size={20}
@@ -267,10 +305,15 @@ const StixCyberObservableEnrichmentFragment = createRefetchContainer(
             timestamp
             message
           }
+          errors {
+            timestamp
+            message
+          }
           status
         }
         connectors(onlyAlive: false) {
           id
+          connector_type
           name
           active
           updated_at
@@ -285,6 +328,31 @@ const StixCyberObservableEnrichmentFragment = createRefetchContainer(
                 metaData {
                   mimetype
                 }
+                works {
+                  id
+                  connector {
+                    id
+                    name
+                  }
+                  user {
+                    name
+                  }
+                  received_time
+                  tracking {
+                    import_expected_number
+                    import_processed_number
+                  }
+                  messages {
+                    timestamp
+                    message
+                  }
+                  errors {
+                    timestamp
+                    message
+                  }
+                  status
+                  timestamp
+                }
               }
             }
           }
@@ -296,13 +364,14 @@ const StixCyberObservableEnrichmentFragment = createRefetchContainer(
       @relay(plural: true) {
         id
         name
+        connector_type
         active
         connector_scope
         updated_at
       }
     `,
   },
-  StixCyberObservableEnrichmentQuery,
+  stixCyberObservableEnrichmentQuery,
 );
 
 export default R.compose(

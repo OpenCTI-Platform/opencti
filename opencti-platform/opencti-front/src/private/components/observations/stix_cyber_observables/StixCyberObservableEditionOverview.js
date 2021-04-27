@@ -575,6 +575,7 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           body
         }
         ... on Artifact {
+          x_opencti_additional_names
           mime_type
           payload_bin
           url
