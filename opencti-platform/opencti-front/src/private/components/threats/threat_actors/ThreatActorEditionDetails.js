@@ -194,7 +194,7 @@ class ThreatActorEditionDetailsComponent extends Component {
                   onChange={this.handleSubmitField.bind(this)}
                   label={t('Sophistication')}
                   fullWidth={true}
-                  containerstyle={{ width: '100%' }}
+                  containerstyle={{ width: '100%', marginTop: 20 }}
                   helpertext={
                     <SubscriptionFocus
                       context={context}

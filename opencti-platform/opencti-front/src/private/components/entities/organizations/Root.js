@@ -4,6 +4,7 @@ import {
   Route, Redirect, withRouter, Switch,
 } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
+import { propOr } from 'ramda';
 import {
   QueryRenderer,
   requestSubscription,
@@ -18,6 +19,11 @@ import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import OrganizationAnalysis from './OrganizationAnalysis';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -50,6 +56,41 @@ const organizationQuery = graphql`
 `;
 
 class RootOrganization extends Component {
+  constructor(props) {
+    super(props);
+    const {
+      match: {
+        params: { organizationId },
+      },
+    } = props;
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      `view-organization-${organizationId}`,
+    );
+    this.state = {
+      viewAs: propOr('knowledge', 'viewAs', params),
+    };
+  }
+
+  saveView() {
+    const {
+      match: {
+        params: { organizationId },
+      },
+    } = this.props;
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      `view-organization-${organizationId}`,
+      this.state,
+    );
+  }
+
+  handleChangeViewAs(event) {
+    this.setState({ viewAs: event.target.value }, () => this.saveView());
+  }
+
   componentDidMount() {
     const {
       match: {
@@ -74,9 +115,33 @@ class RootOrganization extends Component {
         params: { organizationId },
       },
     } = this.props;
+    const { viewAs } = this.state;
+    const link = `/dashboard/entities/organizations/${organizationId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
+        <Route path="/dashboard/entities/organizations/:organizationId/knowledge">
+          {viewAs === 'knowledge' && (
+            <StixCoreObjectKnowledgeBar
+              stixCoreObjectLink={link}
+              availableSections={[
+                'organizations',
+                'individuals',
+                'locations',
+                'sectors',
+                'threat_actors',
+                'intrusion_sets',
+                'campaigns',
+                'incidents',
+                'malwares',
+                'attack_patterns',
+                'tools',
+                'observables',
+                'sightings',
+              ]}
+            />
+          )}
+        </Route>
         <QueryRenderer
           query={organizationQuery}
           variables={{ id: organizationId }}
@@ -92,6 +157,8 @@ class RootOrganization extends Component {
                         <Organization
                           {...routeProps}
                           organization={props.organization}
+                          viewAs={viewAs}
+                          onViewAs={this.handleChangeViewAs.bind(this)}
                         />
                       )}
                     />
@@ -110,6 +177,8 @@ class RootOrganization extends Component {
                         <OrganizationKnowledge
                           {...routeProps}
                           organization={props.organization}
+                          viewAs={viewAs}
+                          onViewAs={this.handleChangeViewAs.bind(this)}
                         />
                       )}
                     />
@@ -120,6 +189,8 @@ class RootOrganization extends Component {
                         <OrganizationAnalysis
                           {...routeProps}
                           organization={props.organization}
+                          viewAs={viewAs}
+                          onViewAs={this.handleChangeViewAs.bind(this)}
                         />
                       )}
                     />
@@ -131,6 +202,7 @@ class RootOrganization extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.organization}
                             PopoverComponent={<OrganizationPopover />}
+                            onViewAs={this.handleChangeViewAs.bind(this)}
                           />
                           <FileManager
                             {...routeProps}

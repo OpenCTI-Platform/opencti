@@ -1592,6 +1592,8 @@ input CampaignAddInput {
 
 ############## Containers
 enum ContainersOrdering {
+  name
+  published
   created
   modified
   created_at

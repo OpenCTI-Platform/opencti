@@ -4,6 +4,7 @@ import {
   Route, Redirect, withRouter, Switch,
 } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
+import { propOr } from 'ramda';
 import {
   QueryRenderer,
   requestSubscription,
@@ -18,6 +19,11 @@ import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import IndividualAnalysis from './IndividualAnalysis';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
@@ -50,6 +56,42 @@ const individualQuery = graphql`
 `;
 
 class RootIndividual extends Component {
+  constructor(props) {
+    super(props);
+    const {
+      match: {
+        params: { individualId },
+      },
+    } = props;
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      `view-individual-${individualId}`,
+    );
+    this.state = {
+      viewAs: propOr('knowledge', 'viewAs', params),
+    };
+  }
+
+  saveView() {
+    const {
+      match: {
+        params: { individualId },
+      },
+    } = this.props;
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      `view-individual-${individualId}`,
+      this.state,
+      true,
+    );
+  }
+
+  handleChangeViewAs(event) {
+    this.setState({ viewAs: event.target.value }, () => this.saveView());
+  }
+
   componentDidMount() {
     const {
       match: {
@@ -74,9 +116,29 @@ class RootIndividual extends Component {
         params: { individualId },
       },
     } = this.props;
+    const { viewAs } = this.state;
+    const link = `/dashboard/entities/individuals/${individualId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
+        <Route path="/dashboard/entities/individuals/:individualId/knowledge">
+          {viewAs === 'knowledge' && (
+            <StixCoreObjectKnowledgeBar
+              stixCoreObjectLink={link}
+              availableSections={[
+                'individuals',
+                'individuals',
+                'threat_actors',
+                'intrusion_sets',
+                'campaigns',
+                'incidents',
+                'malwares',
+                'observables',
+                'sightings',
+              ]}
+            />
+          )}
+        </Route>
         <QueryRenderer
           query={individualQuery}
           variables={{ id: individualId }}
@@ -92,6 +154,8 @@ class RootIndividual extends Component {
                         <Individual
                           {...routeProps}
                           individual={props.individual}
+                          viewAs={viewAs}
+                          onViewAs={this.handleChangeViewAs.bind(this)}
                         />
                       )}
                     />
@@ -110,6 +174,8 @@ class RootIndividual extends Component {
                         <IndividualKnowledge
                           {...routeProps}
                           individual={props.individual}
+                          viewAs={viewAs}
+                          onViewAs={this.handleChangeViewAs.bind(this)}
                         />
                       )}
                     />
@@ -120,6 +186,8 @@ class RootIndividual extends Component {
                         <IndividualAnalysis
                           {...routeProps}
                           individual={props.individual}
+                          viewAs={viewAs}
+                          onViewAs={this.handleChangeViewAs.bind(this)}
                         />
                       )}
                     />
@@ -131,6 +199,7 @@ class RootIndividual extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.individual}
                             PopoverComponent={<IndividualPopover />}
+                            onViewAs={this.handleChangeViewAs.bind(this)}
                           />
                           <FileManager
                             {...routeProps}

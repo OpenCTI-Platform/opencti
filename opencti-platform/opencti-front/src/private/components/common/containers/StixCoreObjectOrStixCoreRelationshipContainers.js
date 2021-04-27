@@ -132,7 +132,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       name: {
         label: 'Title',
         width: '30%',
-        isSortable: false,
+        isSortable: true,
       },
       createdBy: {
         label: 'Author',
