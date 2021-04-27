@@ -135,9 +135,18 @@ class StixCyberObservable:
                 encryption_algorithm
                 decryption_key
                 hashes {
-                  algorithm
-                  hash
-                }           
+                    algorithm
+                    hash
+                }
+                importFiles {
+                    edges {
+                        node {
+                            id
+                            name
+                            size
+                        }
+                    }
+                }                
             }        
             ... on StixFile {
                 extensions

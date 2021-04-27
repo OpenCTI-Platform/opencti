@@ -148,7 +148,6 @@ class ListenQueue(threading.Thread):
             )
             message = self.callback(json_data["event"])
             self.helper.api.work.to_processed(work_id, message)
-
         except Exception as e:
             logging.exception("Error in message processing, reporting error to API")
             try:
