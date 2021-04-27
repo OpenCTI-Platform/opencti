@@ -58,7 +58,7 @@ class CourseOfActionComponent extends Component {
           <Grid item={true} xs={6}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={courseOfAction.id}
-              stixObjectOrStixRelationshipLink={`/dashboard/arsenal/attack_patterns/${courseOfAction.id}/knowledge`}
+              stixObjectOrStixRelationshipLink={`/dashboard/arsenal/courses_of_action/${courseOfAction.id}`}
             />
           </Grid>
           <Grid item={true} xs={6}>
