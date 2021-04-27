@@ -94,6 +94,7 @@ class RootCampaign extends Component {
               'attack_patterns',
               'vulnerabilities',
               'observables',
+              'infrastructures',
               'sightings',
             ]}
           />

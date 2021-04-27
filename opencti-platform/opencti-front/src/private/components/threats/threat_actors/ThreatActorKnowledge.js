@@ -186,6 +186,20 @@ class ThreatActorKnowledgeComponent extends Component {
         />
         <Route
           exact
+          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/infrastructures"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={threatActor.id}
+              relationshipTypes={['uses', 'compromises']}
+              targetStixDomainObjectTypes={['Infrastructure']}
+              entityLink={link}
+              isRelationReversed={false}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/sightings"
           render={(routeProps) => (
             <EntityStixSightingRelationships

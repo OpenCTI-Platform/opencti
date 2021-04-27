@@ -34,6 +34,7 @@ import {
   ShieldSearch,
   SourceFork,
   CityVariantOutline,
+  ServerNetwork,
 } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
@@ -470,7 +471,7 @@ class StixCoreObjectKnowledgeBar extends Component {
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <BugReportOutlined />
+                  <ServerNetwork />
                 </ListItemIcon>
                 <ListItemText primary={t('Infrastructures')} />
               </MenuItem>

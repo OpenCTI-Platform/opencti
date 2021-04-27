@@ -176,6 +176,20 @@ class CampaignKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/threats/campaigns/:campaignId/knowledge/infrastructures"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={campaign.id}
+                relationshipTypes={['uses', 'compromises']}
+                targetStixDomainObjectTypes={['Infrastructure']}
+                entityLink={link}
+                isRelationReversed={false}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/threats/campaigns/:campaignId/knowledge/sightings"
             render={(routeProps) => (
               <EntityStixSightingRelationships

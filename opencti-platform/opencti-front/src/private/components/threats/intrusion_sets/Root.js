@@ -95,6 +95,7 @@ class RootIntrusionSet extends Component {
               'tools',
               'vulnerabilities',
               'observables',
+              'infrastructures',
               'sightings',
               'observed_data',
             ]}
