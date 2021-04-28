@@ -126,7 +126,7 @@ export const addStixDomainObject = async (user, stixDomainObject) => {
     data = assoc('identity_class', identityClass, data);
   }
   if (isStixDomainObjectLocation(innerType)) {
-    data = assoc('x_opencti_location_type', innerType.toLowerCase(), data);
+    data = assoc('x_opencti_location_type', innerType, data);
   }
   const created = await createEntity(user, dissoc('type', data), innerType);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
