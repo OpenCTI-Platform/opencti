@@ -19,15 +19,15 @@ import {
   createEntity,
   createRelation,
   deleteElementById,
-  deleteRelationsByFromAndTo,
+  deleteRelationsByFromAndTo, internalLoadById,
   listEntities,
   listThroughGetFrom,
   listThroughGetTo,
   loadById,
   loadThroughGetTo,
   patchAttribute,
-  updateAttribute,
-} from '../database/middleware';
+  updateAttribute
+} from "../database/middleware";
 import {
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,
@@ -384,6 +384,13 @@ export const userEditField = async (user, userId, input) => {
   const userToEdit = await patchAttribute(user, userId, ENTITY_TYPE_USER, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToEdit, user);
 };
+
+export const bookmarkItem = async(user, id, type) => {
+  const currentBookmarks = user.bookmarks ? user.bookmarks : [];
+  const newBookmarks = R.append({id, type}, currentBookmarks);
+  await patchAttribute(user, user.id, ENTITY_TYPE_USER, { bookmark: newBookmarks });
+  return loadById(user, id, type);
+}
 
 export const meEditField = (user, userId, input) => {
   return userEditField(user, userId, input);

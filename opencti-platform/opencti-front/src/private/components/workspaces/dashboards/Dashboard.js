@@ -555,6 +555,7 @@ const Dashboard = createFragmentContainer(DashboardComponent, {
   workspace: graphql`
     fragment Dashboard_workspace on Workspace {
       id
+      type
       name
       description
       manifest

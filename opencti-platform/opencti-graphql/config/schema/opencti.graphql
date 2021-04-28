@@ -702,6 +702,8 @@ type User implements BasicObject & InternalObject {
   lastname: String
   language: String
   external: Boolean
+  bookmarks(type: String): [StixDomainObject]
+  dashboard: String
   roles: [Role]!
   capabilities: [Capability]!
   groups: GroupConnection
@@ -8734,6 +8736,7 @@ type Mutation {
   userAdd(input: UserAddInput): User @auth(for: [SETTINGS_SETACCESSES])
   userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES])
   meEdit(input: EditInput, operation: EditOperation): User @auth
+  bookmark(id: String, type: String): StixDomainObject @auth(for: [KNOWLEDGE])
   logout: ID @auth
   roleAdd(input: RoleAddInput): Role @auth(for: [SETTINGS_SETACCESSES])
   sessionKill(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])

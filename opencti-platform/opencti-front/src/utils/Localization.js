@@ -149,6 +149,7 @@ const i18n = {
       'Base URL': 'URL de base',
       Language: 'Langue',
       Automatic: 'Automatique',
+      Manual: 'Manuel',
       'Automatic trigger': 'Déclenchement automatique',
       'Only contextual': 'Seulement contextuel',
       'Not aplicable': 'Non applicable',
@@ -587,6 +588,8 @@ const i18n = {
       'Launch an import of this file': 'Lancer un import de ce fichier',
       Launch: 'Lancer',
       'Launch a background task': 'Lancer une tâche de fond',
+      Initiator: 'Initiateur',
+      'Targeted entities': 'Entités ciblées',
       'Background tasks': 'Tâches de fond',
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
         'Vous ciblez plus de 1000 entités avec cette tâche de fond, soyez sûrs de ce que vous faites !',

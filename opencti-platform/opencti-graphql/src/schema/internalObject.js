@@ -104,6 +104,8 @@ export const internalObjectsAttributes = {
     'lastname',
     'language',
     'external',
+    'dashboard',
+    'bookmarks',
     'created_at',
     'i_created_at_day',
     'i_created_at_month',

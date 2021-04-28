@@ -325,7 +325,10 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
 
   handleClose() {
     this.setState({
-      search: '', step: 0, targetEntity: null, open: false,
+      search: '',
+      step: 0,
+      targetEntity: null,
+      open: false,
     });
   }
 
@@ -597,7 +600,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
                 {R.map(
                   (type) => (
                     <MenuItem key={type} value={type}>
-                      {type}
+                      {t(`relationship_${type}`)}
                     </MenuItem>
                   ),
                   relationshipTypes,

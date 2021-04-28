@@ -1,4 +1,4 @@
-import { filter } from 'ramda';
+import * as R from 'ramda';
 import { withFilter } from 'graphql-subscriptions';
 import {
   addUser,
@@ -35,6 +35,7 @@ import {
   userEditField,
   userRenewToken,
   userWithOrigin,
+  bookmarkItem,
 } from '../domain/user';
 import { BUS_TOPICS, logApp, logAudit } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
@@ -43,7 +44,7 @@ import { addRole } from '../domain/grant';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { batchLoader } from '../database/middleware';
+import { batchLoader, loadById } from '../database/middleware';
 import { LOGIN_ACTION } from '../config/audit';
 
 const groupsLoader = batchLoader(batchGroups);
@@ -68,6 +69,13 @@ const userResolvers = {
     token: (current, _, { user }) => token(user, current.id),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
+    bookmarks: (current, { type }, { user }) => {
+      const bookmarks = type ? R.filter((n) => n.type === type, current.bookmarks) : current.bookmarks;
+      return Promise.all(
+        R.map((n) => loadById(user, n.id, n.type)),
+        bookmarks
+      );
+    },
   },
   UserSession: {
     user: (session, _, { user }) => findById(user, session.user_id),
@@ -82,7 +90,7 @@ const userResolvers = {
   Mutation: {
     token: async (_, { input }, { req }) => {
       // We need to iterate on each provider to find one that validated the credentials
-      const formProviders = filter((p) => p.type === 'FORM', PROVIDERS);
+      const formProviders = R.filter((p) => p.type === 'FORM', PROVIDERS);
       if (formProviders.length === 0) {
         logApp.error('[AUTH] Cant authenticate without any form providers');
       }
@@ -137,6 +145,7 @@ const userResolvers = {
     }),
     meEdit: (_, { input }, { user }) => meEditField(user, user.id, input),
     userAdd: (_, { input }, { user }) => addUser(user, input),
+    bookmark: (_, { id, type }, { user }) => bookmarkItem(user, id, type),
   },
   Subscription: {
     user: {
