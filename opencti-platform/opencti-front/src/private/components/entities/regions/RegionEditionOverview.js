@@ -56,6 +56,7 @@ const regionMutationFieldPatch = graphql`
     regionEdit(id: $id) {
       fieldPatch(input: $input) {
         ...RegionEditionOverview_region
+        ...Region_region
       }
     }
   }

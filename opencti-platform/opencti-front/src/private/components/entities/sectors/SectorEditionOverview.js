@@ -33,6 +33,7 @@ const sectorMutationFieldPatch = graphql`
     sectorEdit(id: $id) {
       fieldPatch(input: $input) {
         ...SectorEditionOverview_sector
+        ...Sector_sector
       }
     }
   }

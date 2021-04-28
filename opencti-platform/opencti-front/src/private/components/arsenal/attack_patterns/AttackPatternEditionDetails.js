@@ -48,6 +48,7 @@ const attackPatternMutationFieldPatch = graphql`
     attackPatternEdit(id: $id) {
       fieldPatch(input: $input) {
         ...AttackPatternEditionDetails_attackPattern
+        ...AttackPattern_attackPattern
       }
     }
   }

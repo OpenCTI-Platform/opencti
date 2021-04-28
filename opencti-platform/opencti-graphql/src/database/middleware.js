@@ -105,7 +105,9 @@ import {
   dateAttributes,
   dictAttributes,
   isDictionaryAttribute,
+  isModifiedObject,
   isMultipleAttribute,
+  isUpdatedAtObject,
   multipleAttributes,
   numericAttributes,
   statsDateAttributes,
@@ -1167,12 +1169,15 @@ const innerUpdateAttribute = async (user, instance, rawInput, options = {}) => {
     updatedInputs.push(yearInput);
     updateOperations.push(innerUpdateAttribute(user, instance, yearInput));
   }
-  // Update modified / updated_at
-  if (isStixDomainObject(instance.entity_type) && key !== 'modified' && key !== 'updated_at') {
-    const today = now();
+  const today = now();
+  // Update updated_at
+  if (isUpdatedAtObject(instance.entity_type) && key !== 'modified' && key !== 'updated_at') {
     const updatedAtInput = { key: 'updated_at', value: [today] };
     updatedInputs.push(updatedAtInput);
     updateOperations.push(innerUpdateAttribute(user, instance, updatedAtInput));
+  }
+  // Update modified
+  if (isModifiedObject(instance.entity_type) && key !== 'modified' && key !== 'updated_at') {
     const modifiedAtInput = { key: 'modified', value: [today] };
     updatedInputs.push(modifiedAtInput);
     updateOperations.push(innerUpdateAttribute(user, instance, modifiedAtInput));

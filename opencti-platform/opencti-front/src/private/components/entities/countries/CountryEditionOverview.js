@@ -56,6 +56,7 @@ const countryMutationFieldPatch = graphql`
     countryEdit(id: $id) {
       fieldPatch(input: $input) {
         ...CountryEditionOverview_country
+        ...Country_country
       }
     }
   }

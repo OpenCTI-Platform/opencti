@@ -56,6 +56,7 @@ const positionMutationFieldPatch = graphql`
     positionEdit(id: $id) {
       fieldPatch(input: $input) {
         ...PositionEditionOverview_position
+        ...Position_position
       }
     }
   }

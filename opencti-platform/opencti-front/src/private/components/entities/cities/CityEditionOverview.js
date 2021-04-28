@@ -53,6 +53,7 @@ const cityMutationFieldPatch = graphql`
     cityEdit(id: $id) {
       fieldPatch(input: $input) {
         ...CityEditionOverview_city
+        ...City_city
       }
     }
   }
