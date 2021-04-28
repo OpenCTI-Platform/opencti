@@ -90,6 +90,7 @@ import {
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import {
+  isStixSingleMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
@@ -208,11 +209,10 @@ const batchListThrough = async (user, sources, sourceSide, relationType, targetE
   };
   const filters = [directionInternalIdFilter, oppositeTypeFilter];
   // Resolve all relations
-  const relations = await elPaginate(user, READ_RELATIONSHIPS_INDICES, {
-    first: 5000,
-    connectionFormat: false,
+  const relations = await elList(user, READ_RELATIONSHIPS_INDICES, {
     filters,
     types: [relationType],
+    connectionFormat: false,
   });
   // For each relation resolved the target entity
   const targets = await elFindByIds(user, R.uniq(relations.map((s) => s[`${opposite}Id`])));
@@ -483,21 +483,31 @@ const loadElementDependencies = async (user, element, args = {}) => {
   }
   return data;
 };
-const loadByIdWithDependencies = async (user, id, type, args = {}) => {
-  const element = await internalLoadById(user, id, { type });
-  if (!element) return null;
-  // eslint-disable-next-line no-use-before-define
+export const loadAnyWithDependencies = async (user, element, args = {}) => {
   const depsPromise = loadElementDependencies(user, element, args);
   const isRelation = element.base_type === BASE_TYPE_RELATION;
   if (isRelation) {
     const relOpts = { onlyMarking: true, fullResolve: false };
+    // eslint-disable-next-line no-use-before-define
     const fromPromise = loadByIdWithDependencies(user, element.fromId, element.fromType, relOpts);
+    // eslint-disable-next-line no-use-before-define
     const toPromise = loadByIdWithDependencies(user, element.toId, element.toType, relOpts);
     const [from, to, deps] = await Promise.all([fromPromise, toPromise, depsPromise]);
     return R.mergeRight(element, { from, to, ...deps });
   }
   const deps = await depsPromise;
   return R.mergeRight(element, { ...deps });
+};
+export const loadByIdWithDependencies = async (user, id, type, args = {}) => {
+  const element = await internalLoadById(user, id, { type });
+  if (!element) return null;
+  return loadAnyWithDependencies(user, element, args);
+};
+export const loadByQueryWithDependencies = async (user, query, args) => {
+  const elements = await elPaginate(user, query.index, query.opts);
+  const element = elements.length === 1 ? R.head(elements) : undefined;
+  if (!element) return null;
+  return loadAnyWithDependencies(user, element, args);
 };
 // Dangerous call because get everything related. (Limited to merging)
 export const fullLoadById = async (user, id, type = null) => {
@@ -511,6 +521,14 @@ export const markedLoadById = async (user, id, type = null) => {
 // Get element with every elements connected element -> rel -> to
 export const stixLoadById = async (user, id, type = null) => {
   return loadByIdWithDependencies(user, id, type, {
+    dependencyType: ABSTRACT_STIX_META_RELATIONSHIP,
+    onlyMarking: false,
+    fullResolve: false,
+    minSource: false,
+  });
+};
+export const stixLoadByQuery = async (user, query) => {
+  return loadByQueryWithDependencies(user, query, {
     dependencyType: ABSTRACT_STIX_META_RELATIONSHIP,
     onlyMarking: false,
     fullResolve: false,
@@ -1642,6 +1660,17 @@ const createRelationRaw = async (user, input) => {
   // 01. Generate the ID
   const internalId = generateInternalId();
   const standardId = generateStandardId(relationshipType, input);
+  // Meta single relation check
+  if (isStixSingleMetaRelationship(relationshipType)) {
+    // If relation already exist, we fail
+    const rels = await listRelations(user, relationshipType, { fromId: from.internal_id, connectionFormat: false });
+    if (rels.length > 0) {
+      throw UnsupportedError('Relation cant be created (single cardinality)', {
+        relationshipType,
+        fromId: from.internal_id,
+      });
+    }
+  }
   // region 02. Check existing relationship
   const listingArgs = { fromId: from.internal_id, toId: to.internal_id };
   if (isStixCoreRelationship(relationshipType)) {
@@ -1828,7 +1857,7 @@ export const createRelation = async (user, input) => {
     // Push the input in the stream
     if (dataRel.type === TRX_CREATION) {
       const relWithConnections = { ...dataRel.element, from, to };
-      await storeCreateEvent(user, relWithConnections, resolvedInput);
+      await storeCreateEvent(user, relWithConnections, resolvedInput, stixLoadById);
     } else if (dataRel.streamInputs.length > 0) {
       // If upsert with new data
       await storeUpdateEvent(user, dataRel.element, dataRel.streamInputs);
@@ -2021,7 +2050,7 @@ export const createEntity = async (user, input, type) => {
     await indexCreatedElement(dataEntity);
     // Push the input in the stream
     if (dataEntity.type === TRX_CREATION) {
-      await storeCreateEvent(user, dataEntity.element, resolvedInput);
+      await storeCreateEvent(user, dataEntity.element, resolvedInput, stixLoadById);
     } else if (dataEntity.streamInputs.length > 0) {
       // If upsert with new data
       await storeUpdateEvent(user, dataEntity.element, dataEntity.streamInputs);
@@ -2056,7 +2085,7 @@ export const deleteElementById = async (user, elementId, type) => {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
     await elDeleteElements(user, [element]);
-    await storeDeleteEvent(user, element);
+    await storeDeleteEvent(user, element, stixLoadById);
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(participantIds);
   } catch (err) {

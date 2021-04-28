@@ -1,17 +1,22 @@
 import * as R from 'ramda';
 import { basePath, logApp } from '../config/conf';
-import { authenticateUser, computeAvailableMarkings, STREAMAPI, SYSTEM_USER } from '../domain/user';
+import { authenticateUser, STREAMAPI } from '../domain/user';
 import { createStreamProcessor, MAX_RANGE_MESSAGES } from '../database/redis';
-import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { generateInternalId, generateStandardId, normalizeName } from '../schema/identifier';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { generateInternalId } from '../schema/identifier';
 import { BYPASS } from '../schema/general';
 import { findById } from '../domain/stream';
-import { EVENT_TYPE_UPDATE } from '../database/rabbitmq';
-import { internalLoadById, stixLoadById } from '../database/middleware';
+import { EVENT_TYPE_CATCH, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/rabbitmq';
+import { stixLoadById } from '../database/middleware';
 import { convertFiltersToQueryOptions } from '../domain/taxii';
 import { elList } from '../database/elasticSearch';
-import { READ_DATA_INDICES } from '../database/utils';
-import { stixDataConverter } from '../database/stix';
+import {
+  READ_DATA_INDICES,
+  UPDATE_OPERATION_ADD,
+  UPDATE_OPERATION_REMOVE,
+  UPDATE_OPERATION_REPLACE,
+} from '../database/utils';
+import { buildStixData, stixDataConverter } from '../database/stix';
 
 let heartbeat;
 const KEEP_ALIVE_INTERVAL_MS = 20000;
@@ -21,48 +26,175 @@ const MARKING_FILTER = 'markedBy';
 const LABEL_FILTER = 'labelledBy';
 const CREATOR_FILTER = 'createdBy';
 const TYPE_FILTER = 'entity_type';
-const isEventMatchFilters = (event, filters) => {
+
+const EVENT_ADD = 'add';
+const EVENT_DEL = 'del';
+const EVENT_REP = 'replace';
+const cleanCancelledAction = (eventsDifferential) => {
+  const remaining = [];
+  // for (let diffIndex = 0; diffIndex < eventsDifferential.length; diffIndex += 1) {
+  const data = eventsDifferential[0];
+  const { action, key, val } = data;
+  const reverseAction = action === EVENT_ADD ? EVENT_DEL : EVENT_ADD;
+  // Looking for reverse actions in the next steps
+  let findReversedActionIndex = -1;
+  const differentialTable = [];
+  for (let nextActions = 1; nextActions < eventsDifferential.length; nextActions += 1) {
+    const nextElem = eventsDifferential[nextActions];
+    const isReversed = nextElem.action === reverseAction && nextElem.key === key && nextElem.val === val;
+    if (isReversed && findReversedActionIndex === -1) {
+      findReversedActionIndex = nextActions;
+    } else {
+      differentialTable.push(nextElem);
+    }
+  }
+  // Find the reverse action
+  if (findReversedActionIndex === -1) {
+    // If no reverse action, keep the action and check the rest of the table.
+    remaining.push(data);
+  }
+  if (differentialTable.length > 0) {
+    remaining.push(...cleanCancelledAction(differentialTable));
+  }
+  return remaining;
+};
+const computeAggregatePatch = (events) => {
+  const eventsDifferential = [];
+  const updateEvents = events.filter((e) => e.topic === EVENT_TYPE_UPDATE);
+  for (let index = 0; index < updateEvents.length; index += 1) {
+    const updateEvent = updateEvents[index];
+    const action = updateEvent.data.data.x_opencti_patch;
+    if (action?.add) {
+      const addActionsEntries = Object.entries(action.add);
+      for (let addIndex = 0; addIndex < addActionsEntries.length; addIndex += 1) {
+        const [key, values] = addActionsEntries[addIndex];
+        const vals = values.map((v) => ({ action: EVENT_ADD, key, val: v.value, src: EVENT_ADD, patch: action })); // `${ADD}${ACTION_SPLIT}${key}${v}`);
+        eventsDifferential.push(...vals);
+      }
+    }
+    if (action?.remove) {
+      const delActionsEntries = Object.entries(action.remove);
+      for (let delIndex = 0; delIndex < delActionsEntries.length; delIndex += 1) {
+        const [key, values] = delActionsEntries[delIndex];
+        const vals = values.map((v) => ({ action: EVENT_DEL, key, val: v.value, src: EVENT_DEL, patch: action })); // `${DEL}${ACTION_SPLIT}${key}${v}`);
+        eventsDifferential.push(...vals);
+      }
+    }
+    if (action?.replace) {
+      const replaceActionsEntries = Object.entries(action.replace);
+      for (let replaceIndex = 0; replaceIndex < replaceActionsEntries.length; replaceIndex += 1) {
+        const [key, values] = replaceActionsEntries[replaceIndex];
+        const { current, previous } = values;
+        if (Array.isArray(current)) {
+          const deleted = previous.filter((f) => !current.includes(f));
+          eventsDifferential.push(
+            ...deleted.map((v) => ({ action: EVENT_DEL, key, val: v, src: EVENT_REP, patch: action }))
+          );
+          const added = current.filter((f) => !previous.includes(f));
+          eventsDifferential.push(
+            ...added.map((v) => ({ action: EVENT_ADD, key, val: v, src: EVENT_REP, patch: action }))
+          );
+        } else {
+          eventsDifferential.push({ action: EVENT_DEL, key, val: previous, src: EVENT_REP, patch: action });
+          eventsDifferential.push({ action: EVENT_ADD, key, val: current, src: EVENT_REP, patch: action });
+        }
+      }
+    }
+  }
+  // Compute the final diff
+  if (eventsDifferential.length === 0) return {};
+  const impactFullActions = cleanCancelledAction(eventsDifferential);
+  if (impactFullActions.length === 0) {
+    // Finally nothing happens :)
+    return undefined;
+  }
+  // Now we need to recompute the actions diff from impacts
+  const patchElements = [];
+  const actionsPerKey = R.groupBy((e) => e.key, impactFullActions);
+  const keyEntries = Object.entries(actionsPerKey);
+  for (let keyIndex = 0; keyIndex < keyEntries.length; keyIndex += 1) {
+    const [, vals] = keyEntries[keyIndex];
+    const diff = R.mergeAll(vals.map((v) => v.patch));
+    patchElements.push(diff);
+  }
+  const mergeDeepAll = R.unapply(R.reduce(R.mergeDeepRight, {}));
+  return mergeDeepAll(...patchElements);
+};
+const isElementEvolved = (openctiId, events) => {
+  // 01. Handle create/delete differential
+  // - (CREATION) Create => YES
+  // - (RECREATION) Delete - Create = Not possible because x_opencti_id will be different
+  // - (DELETION) Delete => YES
+  // - (INSTANT DELETION) Create - Delete = NO
+  const creationEvents = events.filter((e) => e.topic === EVENT_TYPE_CREATE);
+  const isCreatedElement = creationEvents.length > 0;
+  const deletionEvents = events.filter((e) => e.topic === EVENT_TYPE_DELETE);
+  const isDeleteElement = deletionEvents.length > 0;
+  // If created but deleted in the same time frame, considering nothing happen
+  if (isCreatedElement && isDeleteElement) {
+    return undefined;
+  }
+  const eventId = R.last(events).id;
+  // If is a creation or a deletion, considering as an evolution
+  const patch = computeAggregatePatch(events);
+  if (isCreatedElement) {
+    return { id: openctiId, eventId, topic: EVENT_TYPE_CREATE, patch };
+  }
+  if (isDeleteElement) {
+    const content = R.head(deletionEvents).data.data;
+    return { id: openctiId, eventId, topic: EVENT_TYPE_DELETE, content, patch };
+  }
+  // 02. Handle update differential
+  // In this case, we only take care about element evolution
+  return { id: openctiId, eventId, topic: EVENT_TYPE_UPDATE, patch };
+};
+export const computeEventsDiff = (elements) => {
+  // Need to compute the diff change
+  const groupedById = R.groupBy((e) => e.data.data.x_opencti_id, elements);
+  const entries = Object.entries(groupedById);
+  const retainElements = [];
+  for (let i = 0; i < entries.length; i += 1) {
+    const [k, v] = entries[i];
+    const isElementEvolve = isElementEvolved(k, v);
+    if (isElementEvolve) {
+      retainElements.push(isElementEvolve);
+    }
+  }
+  return R.sort((a, b) => {
+    const [timeA] = a.id.split('-');
+    const [timeB] = b.id.split('-');
+    return parseInt(timeA, 10) - parseInt(timeB, 10);
+  }, retainElements);
+};
+export const isInstanceMatchFilters = (instance, filters) => {
   // User is granted but we still need to apply filters if needed
   const filterEntries = Object.entries(filters);
-  if (filterEntries.length > 0) {
-    return true;
-  }
   for (let index = 0; index < filterEntries.length; index += 1) {
     const [type, values] = filterEntries[index];
     // --- Directly accessible in the event
     // Markings filtering
     if (type === MARKING_FILTER) {
       // event must have one of this marking
-      const markingIds = values.map((v) => v.standard_id);
-      const found = event.markings.length === 0 || event.markings.some((r) => markingIds.includes(r));
+      const markingIds = (instance.object_marking_refs || []).map((l) => l.x_opencti_internal_id);
+      const found = values.map((v) => v.id).some((r) => markingIds.includes(r));
       if (!found) return false;
     }
     // --- Depending of the data
     // Entity type filtering
-    const { data } = event;
     if (type === TYPE_FILTER) {
-      const found = values.map((v) => v.id.toLowerCase()).includes(data.type);
+      const dataType = instance.identity_class || instance.type;
+      const found = values.map((v) => v.id.toLowerCase()).includes(dataType);
       if (!found) return false;
     }
     // Creator filtering
     if (type === CREATOR_FILTER) {
-      let dataCreator = data.created_by_ref;
-      if (event.type === EVENT_TYPE_UPDATE) {
-        dataCreator = data.x_data_update.add?.created_by_ref || data.x_data_update.remove?.created_by_ref;
-      }
-      const found = values.map((v) => v.id).includes(dataCreator);
+      const creatorIds = (instance.created_by_ref || []).map((l) => l.x_opencti_internal_id);
+      const found = values.map((v) => v.id).some((r) => creatorIds.includes(r));
       if (!found) return false;
     }
     // Labels filtering
     if (type === LABEL_FILTER) {
-      const dataLabels = [];
-      if (event.type === EVENT_TYPE_UPDATE) {
-        dataLabels.push(...(data.x_data_update.add?.labels || []));
-        dataLabels.push(...(data.x_data_update.remove?.labels || []));
-      } else {
-        dataLabels.push(...(data.labels || []));
-      }
-      const labelsIds = dataLabels.map((l) => generateStandardId(ENTITY_TYPE_LABEL, { value: normalizeName(l) }));
+      const labelsIds = (instance.labels || []).map((l) => l.x_opencti_internal_id);
       const found = values.map((v) => v.id).some((r) => labelsIds.includes(r));
       if (!found) return false;
     }
@@ -70,27 +202,55 @@ const isEventMatchFilters = (event, filters) => {
   return true;
 };
 
+// Concept here is to recreate the instance before is change
+// Basically reverting the patch.
+export const rebuildInstanceBeforePatch = (stixWithInternalRefs, patch) => {
+  const rebuild = { ...stixWithInternalRefs };
+  const patchEntries = Object.entries(patch);
+  for (let index = 0; index < patchEntries.length; index += 1) {
+    const [type, actionPatch] = patchEntries[index];
+    const elementEntries = Object.entries(actionPatch);
+    for (let elemIndex = 0; elemIndex < elementEntries.length; elemIndex += 1) {
+      const [key, changes] = elementEntries[elemIndex];
+      if (type === UPDATE_OPERATION_REPLACE) {
+        const { previous } = changes;
+        rebuild[key] = previous;
+      }
+      if (type === UPDATE_OPERATION_ADD) {
+        const ids = changes.map((c) => c.x_opencti_internal_id);
+        rebuild[key] = (rebuild[key] || []).filter((e) => !ids.includes(e.x_opencti_internal_id));
+      }
+      if (type === UPDATE_OPERATION_REMOVE) {
+        const ops = rebuild[key] || [];
+        ops.push(...changes);
+        rebuild[key] = ops;
+      }
+    }
+  }
+  return rebuild;
+};
+
+const isEventGranted = (event, user) => {
+  const { data } = event;
+  // Granted if:
+  // - Event concern directly a marking definition
+  // - Event has no specified markings
+  // - User have all event markings
+  // - User have the bypass capabilities
+  const clientMarkings = R.map((m) => m.standard_id, user.allowed_marking);
+  const isMarkingObject = data.type === ENTITY_TYPE_MARKING_DEFINITION.toLowerCase();
+  const isUserHaveAccess = event.markings.length === 0 || event.markings.every((m) => clientMarkings.includes(m));
+  const isBypass = R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
+  const isGrantedForData = isMarkingObject || isUserHaveAccess;
+  return isBypass || isGrantedForData;
+};
+
 const createBroadcastClient = (client) => {
-  const broadcastClient = {
+  return {
     client,
     isLiveClient: () => client.isLiveStream,
-    sendEvent: (eventId, topic, event, filters = {}) => {
-      const { data } = event;
-      const clientMarkings = R.map((m) => m.standard_id, client.allowed_marking);
-      const isMarkingObject = data.type === ENTITY_TYPE_MARKING_DEFINITION.toLowerCase();
-      const isUserHaveAccess = event.markings.length === 0 || event.markings.every((m) => clientMarkings.includes(m));
-      const isBypass = R.find((s) => s.name === BYPASS, client.capabilities || []) !== undefined;
-      // Granted if:
-      // - Event concern directly a marking definition
-      // - Event has no specified markings
-      // - User have all event markings
-      // - User have the bypass capabilities
-      const isGrantedForData = isMarkingObject || isUserHaveAccess;
-      if (isBypass) {
-        // If use have bypass, always push the event
-        client.sendEvent(eventId, topic, event);
-      } else if (isGrantedForData && isEventMatchFilters(event, filters)) {
-        // Else if user granted and data is not filtered
+    sendEvent: (eventId, topic, event) => {
+      if (isEventGranted(event, client)) {
         client.sendEvent(eventId, topic, event);
       }
       return true;
@@ -100,10 +260,8 @@ const createBroadcastClient = (client) => {
     },
     sendConnected: (streamInfo) => {
       client.sendEvent(undefined, 'connected', streamInfo);
-      broadcastClient.sendHeartbeat();
     },
   };
-  return broadcastClient;
 };
 
 const createHeartbeatProcessor = () => {
@@ -137,37 +295,22 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-const standardIdResolver = async (key, filters) => {
-  // noinspection UnnecessaryLocalVariableJS
-  const elements = await Promise.all(
-    filters[key].map(async (f) => {
-      const standardId = await internalLoadById(SYSTEM_USER, f.id).then((e) => e.standard_id);
-      return { id: standardId, value: f.value };
-    })
-  );
-  return elements;
-};
-
-const analyseFilters = async (req, filters = {}) => {
-  const buildFilters = {};
-  // If marking filters, we need to compute all possible markings
-  if (filters[MARKING_FILTER]) {
-    const all = req.session.user.all_marking;
-    buildFilters[MARKING_FILTER] = computeAvailableMarkings(filters[MARKING_FILTER], all);
-  }
-  // If label filters, we need to resolve the standard ids
-  if (filters[LABEL_FILTER]) {
-    buildFilters[MARKING_FILTER] = await standardIdResolver(LABEL_FILTER, filters);
-  }
-  // If creator filters, we need to resolve the standard ids
-  if (filters[CREATOR_FILTER]) {
-    buildFilters[CREATOR_FILTER] = await standardIdResolver(CREATOR_FILTER, filters);
-  }
-  return buildFilters;
-};
-
 const createSeeMiddleware = () => {
   createHeartbeatProcessor();
+  const initBroadcasting = async (req, res, client, processor) => {
+    const broadcasterInfo = await processor.info();
+    req.on('close', () => {
+      delete broadcastClients[client.id];
+      processor.shutdown();
+    });
+    res.writeHead(200, {
+      Connection: 'keep-alive',
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': 'no-cache, no-transform', // no-transform is required for dev proxy
+    });
+    client.sendConnected({ ...broadcasterInfo, connectionId: client.id });
+  };
   const createSseChannel = (req, res) => {
     const channel = {
       id: generateInternalId(),
@@ -206,204 +349,134 @@ const createSeeMiddleware = () => {
     };
     return { channel, client: createBroadcastClient(channel) };
   };
-  const streamHandler = async (req, res) => {
-    const startFrom = req.query.from ? req.query.from : '0-0';
+  const genericStreamHandler = async (req, res) => {
     const { client } = createSseChannel(req, res);
-    const processor = createStreamProcessor(
-      req.session.user,
-      async (elements) => {
-        for (let index = 0; index < elements.length; index += 1) {
-          const { id: eventId, topic, data } = elements[index];
-          client.sendEvent(eventId, topic, data);
-        }
-      },
-      startFrom
-    );
-    req.on('close', () => {
-      delete broadcastClients[client.id];
-      processor.shutdown();
+    const processor = createStreamProcessor(req.session.user, async (elements) => {
+      for (let index = 0; index < elements.length; index += 1) {
+        const { id: eventId, topic, data } = elements[index];
+        client.sendEvent(eventId, topic, data);
+      }
     });
-    res.writeHead(200, {
-      Connection: 'keep-alive',
-      'Content-Type': 'text/event-stream; charset=utf-8',
-      'Access-Control-Allow-Origin': '*',
-      'Cache-Control': 'no-cache, no-transform', // no-transform is required for dev proxy
-    });
-    const broadcasterInfo = await processor.info();
-    client.sendConnected({ ...broadcasterInfo, connectionId: client.id });
-    await processor.start();
-    broadcastClients[client.id] = client;
+    try {
+      await initBroadcasting(req, res, client, processor);
+      await processor.start(req.query.from);
+      broadcastClients[client.id] = client;
+    } catch (err) {
+      res.status(500);
+      res.json({ error: 'Error accessing stream (empty stream or redis client connection problem)' });
+    }
   };
   const filteredStreamHandler = async (req, res) => {
     const { id } = req.params;
     const startFrom = req.query.from;
-    const isDiffMode = !startFrom;
     const collection = await findById(req.session.user, id);
     const streamFilters = JSON.parse(collection.filters);
-    const filters = await analyseFilters(req, streamFilters);
+    // If markings in filter not accessible for the user, throw an error and prevent connection?
+    // Because the stream will always be empty for him...
+    // TODO @JRI
     const { channel, client } = createSseChannel(req, res);
-    let diffCacheMessages = [];
-    const processor = createStreamProcessor(
-      req.session.user,
-      async (elements) => {
-        // We need to build all elements that have change during the last call
-        let workingElements = elements;
-        if (isDiffMode && elements.length === MAX_RANGE_MESSAGES) {
-          diffCacheMessages.push(...elements);
-        } else {
-          diffCacheMessages.push(...elements);
-          workingElements = [...diffCacheMessages];
-          // Clear the cache.
-          diffCacheMessages = [];
+    let processingMessages = [];
+    const buildProcessingMessages = (user, elements) => {
+      for (let messageIndex = 0; messageIndex < elements.length; messageIndex += 1) {
+        const element = elements[messageIndex];
+        const { data } = element.data;
+        const isGranted = isEventGranted(element.data, user);
+        // Pre filter for entity_type if needed
+        const filterTypes = streamFilters?.entity_type || [];
+        const instanceType = data.identity_class || data.type;
+        const isValid = filterTypes.length === 0 || filterTypes.map((v) => v.id.toLowerCase()).includes(instanceType);
+        if (isGranted && isValid) {
+          processingMessages.push(element);
         }
-        // Need to compute the diff change
-        const groupedById = R.groupBy((e) => e.data.data.x_opencti_id, workingElements);
-        const entries = Object.entries(groupedById);
-        const cache = {};
-        for (let i = 0; i < entries.length; i += 1) {
-          const [k, v] = entries[i];
-          for (let actionIndex = 0; actionIndex < v.length; actionIndex += 1) {
-            const vElement = v[actionIndex];
-            const { topic, data } = vElement;
-            if (topic === 'create') {
-              cache[k] = { stream_is_creation: true };
-            }
-            if (topic === 'delete') {
-              delete cache[k];
-            }
-            if (topic === 'update') {
-              if (!cache[k] || !cache[k].stream_is_creation) {
-                const update = data.data.x_opencti_patch;
-                if (update?.add) {
-                  const addActionsEntries = Object.entries(update.add);
-                  for (let j = 0; j < addActionsEntries.length; j += 1) {
-                    const [attr, values] = addActionsEntries[j];
-                    let currentValues = cache[k]?.[attr] || [];
-                    for (let cIndex = 0; cIndex < values.length; cIndex += 1) {
-                      const val = values[cIndex];
-                      const isCancellation = currentValues.includes(`-${val}`);
-                      if (isCancellation) {
-                        currentValues = currentValues.filter((c) => c !== `-${val}`);
-                      } else {
-                        currentValues.push(`+${val}`);
-                      }
-                    }
-                    if (currentValues.length > 0) {
-                      if (cache[k]) {
-                        cache[k][attr] = currentValues;
-                        cache[k].x_opencti_patch = [...cache[k].x_opencti_patch, update];
-                      } else {
-                        cache[k] = { [attr]: currentValues };
-                        cache[k].x_opencti_patch = [update];
-                      }
-                    } else if (cache[k]) {
-                      delete cache[k][attr];
-                    }
-                  }
-                }
-                if (update?.remove) {
-                  const delActionsEntries = Object.entries(update.remove);
-                  for (let j = 0; j < delActionsEntries.length; j += 1) {
-                    const [attr, values] = delActionsEntries[j];
-                    let currentValues = cache[k]?.[attr] || [];
-                    for (let cIndex = 0; cIndex < values.length; cIndex += 1) {
-                      const val = values[cIndex];
-                      const isCancellation = currentValues.includes(`+${val}`);
-                      if (isCancellation) {
-                        currentValues = currentValues.filter((c) => c !== `+${val}`);
-                      } else {
-                        currentValues.push(`-${val}`);
-                      }
-                    }
-                    if (currentValues.length > 0) {
-                      if (cache[k]) {
-                        cache[k][attr] = currentValues;
-                        cache[k].x_opencti_patch = [...cache[k].x_opencti_patch, update];
-                      } else {
-                        cache[k] = { [attr]: currentValues };
-                        cache[k].x_opencti_patch = [update];
-                      }
-                    } else if (cache[k]) {
-                      delete cache[k][attr];
-                    }
-                  }
-                }
-                if (update?.replace) {
-                  const replaceActionsEntries = Object.entries(update.replace);
-                  for (let j = 0; j < replaceActionsEntries.length; j += 1) {
-                    const [attr, { current, previous }] = replaceActionsEntries[j];
-                    let currentValues = cache[k]?.[attr] || [];
-                    const valuesCurrent = Array.isArray(current) ? current : [current];
-                    for (let cIndex = 0; cIndex < valuesCurrent.length; cIndex += 1) {
-                      const val = valuesCurrent[cIndex];
-                      const isCancellation = currentValues.includes(`-${val}`);
-                      if (isCancellation) {
-                        currentValues = currentValues.filter((c) => c !== `-${val}`);
-                      } else {
-                        currentValues.push(`+${val}`);
-                      }
-                    }
-                    const valuesPrevious = Array.isArray(previous) ? previous : [previous];
-                    for (let pIndex = 0; pIndex < valuesPrevious.length; pIndex += 1) {
-                      const val = valuesPrevious[pIndex];
-                      const isCancellation = currentValues.includes(`+${val}`);
-                      if (isCancellation) {
-                        currentValues = currentValues.filter((c) => c !== `+${val}`);
-                      } else {
-                        currentValues.push(`-${val}`);
-                      }
-                    }
-                    if (currentValues.length > 0) {
-                      if (cache[k]) {
-                        cache[k][attr] = currentValues;
-                        cache[k].x_opencti_patch = [...cache[k].x_opencti_patch, update];
-                      } else {
-                        cache[k] = { [attr]: currentValues };
-                        cache[k].x_opencti_patch = [update];
-                      }
-                    } else if (cache[k]) {
-                      delete cache[k][attr];
-                    }
-                  }
-                }
-              }
+      }
+      return startFrom && elements.length < MAX_RANGE_MESSAGES;
+    };
+    const processor = createStreamProcessor(req.session.user, async (elements) => {
+      // We need to build all elements that have change during the last call
+      const isCompleted = buildProcessingMessages(req.session.user, elements);
+      if (!isCompleted || processingMessages.length === 0) return;
+      // Need to compute the diff change
+      const diffElements = computeEventsDiff(processingMessages);
+      for (let index = 0; index < diffElements.length; index += 1) {
+        const { id: diffId, eventId, topic, content, patch } = diffElements[index];
+        if (topic === EVENT_TYPE_CREATE) {
+          const currentInstance = await stixLoadById(req.session.user, diffId);
+          // Could be null because of user markings restriction
+          if (currentInstance) {
+            const createdInstance = buildStixData(currentInstance, { patchGeneration: true });
+            const isMatchFilters = isInstanceMatchFilters(createdInstance, streamFilters);
+            if (isMatchFilters) {
+              const data = stixDataConverter(currentInstance);
+              data.x_opencti_patch = patch;
+              const markings = data.object_marking_refs || [];
+              client.sendEvent(eventId, EVENT_TYPE_CREATE, { data, markings });
             }
           }
         }
-        for (let index = 0; index < workingElements.length; index += 1) {
-          const { id: eventId, topic, data } = workingElements[index];
-          client.sendEvent(eventId, topic, data, filters);
+        if (topic === EVENT_TYPE_DELETE) {
+          const data = content;
+          const markings = data.object_marking_refs || [];
+          data.x_opencti_patch = patch;
+          client.sendEvent(eventId, EVENT_TYPE_DELETE, { data, markings });
         }
-      },
-      startFrom || 1618319261396 // connectionTime
-    );
-    req.on('close', () => {
-      delete broadcastClients[client.id];
-      processor.shutdown();
+        if (topic === EVENT_TYPE_UPDATE) {
+          const currentInstance = await stixLoadById(req.session.user, diffId);
+          // Could be null because of markings restriction
+          if (currentInstance) {
+            const current = buildStixData(currentInstance, { patchGeneration: true });
+            const beforePatch = rebuildInstanceBeforePatch(current, patch);
+            const isBeforePatchVisible = isInstanceMatchFilters(beforePatch, streamFilters);
+            const isCurrentVisible = isInstanceMatchFilters(current, streamFilters);
+            const data = stixDataConverter(currentInstance);
+            const markings = data.object_marking_refs || [];
+            data.x_opencti_patch = patch;
+            // If updatedInstance pass the filtering but not initialInstance -> creation event
+            if (isCurrentVisible && !isBeforePatchVisible) {
+              client.sendEvent(eventId, EVENT_TYPE_CREATE, { data, markings });
+            }
+            // If initialInstance pass the filtering but not updatedInstance -> deletion event
+            if (isBeforePatchVisible && !isCurrentVisible) {
+              client.sendEvent(eventId, EVENT_TYPE_DELETE, { data, markings });
+            }
+            if (isBeforePatchVisible && isCurrentVisible) {
+              client.sendEvent(eventId, topic, { data, markings });
+            }
+          }
+        }
+      }
+      // Clear the cache.
+      processingMessages = [];
     });
-    const broadcasterInfo = await processor.info();
-    client.sendConnected({ ...broadcasterInfo, connectionId: client.id });
-    // If empty start date, stream all results corresponding to the filters
-    if (isDiffMode === false) {
-      const queryOptions = convertFiltersToQueryOptions(streamFilters);
-      const callback = async (elements) => {
-        if (channel.connected()) {
-          for (let index = 0; index < elements.length; index += 1) {
-            const { internal_id: elemId } = elements[index];
-            const instance = await stixLoadById(req.session.user, elemId);
-            const data = stixDataConverter(instance, { diffMode: false });
-            channel.sendEvent(instance.id, 'init', { data });
+    try {
+      await initBroadcasting(req, res, client, processor);
+      // If empty start date, stream all results corresponding to the filters
+      if (!startFrom) {
+        const queryOptions = convertFiltersToQueryOptions(streamFilters);
+        const callback = async (elements) => {
+          if (channel.connected()) {
+            for (let index = 0; index < elements.length; index += 1) {
+              const { internal_id: elemId } = elements[index];
+              const instance = await stixLoadById(req.session.user, elemId);
+              const data = stixDataConverter(instance);
+              const markings = data.object_marking_refs || [];
+              channel.sendEvent(undefined, EVENT_TYPE_CREATE, { data, markings });
+            }
           }
-          return true;
-        }
-        return false;
-      };
-      queryOptions.minSource = true;
-      queryOptions.callback = callback;
-      await elList(req.session.user, READ_DATA_INDICES, queryOptions);
+        };
+        queryOptions.minSource = true;
+        queryOptions.callback = callback;
+        await elList(req.session.user, READ_DATA_INDICES, queryOptions);
+        // We need to sent a special event to mark the end of init with the current timestamp
+        const catchId = `${new Date().getTime()}-0`;
+        channel.sendEvent(catchId, EVENT_TYPE_CATCH, { message: 'Catchup done' });
+      }
+      // After start to stream the live.
+      await processor.start(startFrom);
+      broadcastClients[client.id] = client;
+    } catch (e) {
+      res.status(500);
+      res.json({ error: 'Error accessing stream (empty stream or redis client connection problem)' });
     }
-    // After start to stream the live.
-    await processor.start();
   };
   return {
     shutdown: () => {
@@ -412,7 +485,7 @@ const createSeeMiddleware = () => {
     },
     applyMiddleware: ({ app }) => {
       app.use(`${basePath}/stream`, authenticate);
-      app.get(`${basePath}/stream`, streamHandler);
+      app.get(`${basePath}/stream`, genericStreamHandler);
       app.get(`${basePath}/stream/:id`, filteredStreamHandler);
     },
   };

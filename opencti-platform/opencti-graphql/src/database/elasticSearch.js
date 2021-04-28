@@ -1013,7 +1013,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
   mustnot.push(...markingRestrictions.must_not);
   if (ids.length > 0) {
     const idsTermsPerType = [];
-    const elementTypes = [ID_STANDARD, IDS_STIX];
+    const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
     for (let i = 0; i < ids.length; i += 1) {
       const id = ids[i];
       for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {

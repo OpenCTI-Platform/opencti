@@ -24,9 +24,6 @@ import { now } from '../utils/format';
 import RedisStore from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
 import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
-// For now that fine, need to extract this method.
-// eslint-disable-next-line import/no-cycle
-import { stixLoadById } from './middleware';
 
 const BASE_DATABASE = 0; // works key for tracking / stream
 export const CONTEXT_DATABASE = 1; // locks / user context
@@ -304,18 +301,18 @@ export const storeMergeEvent = async (user, instance, sourceEntities) => {
     throw DatabaseError('Error in store merge event', { error: e });
   }
 };
-export const storeUpdateEvent = async (user, instance, updateEvents, mustRepublished = false) => {
+export const storeUpdateEvent = async (user, instance, updateEvents) => {
   // updateEvents -> [{ operation, input }]
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     try {
       const convertedInputs = updateEvents.map((i) => {
         const [k, v] = R.head(Object.entries(i));
-        const convert = stixDataConverter(v);
+        const convert = stixDataConverter(v, { patchGeneration: true });
         return isNotEmptyField(convert) ? { [k]: convert } : null;
       });
-      const dataUpdate = R.mergeAll(convertedInputs);
+      const dataPatch = R.mergeAll(convertedInputs);
       // dataUpdate can be empty
-      if (isEmptyField(dataUpdate)) {
+      if (isEmptyField(dataPatch)) {
         return true;
       }
       // else just continue as usual
@@ -324,16 +321,13 @@ export const storeUpdateEvent = async (user, instance, updateEvents, mustRepubli
         internal_id: instance.internal_id,
         entity_type: instance.entity_type,
       };
-      if (mustRepublished) {
-        data = await stixLoadById(user, instance.internal_id);
-      }
-      data = { ...data, x_opencti_patch: dataUpdate };
+      data = { ...data, x_opencti_patch: dataPatch };
       // Generate the message
       const operation = updateEvents.length === 1 ? R.head(Object.keys(R.head(updateEvents))) : UPDATE_OPERATION_CHANGE;
       const messageInput = R.mergeAll(updateEvents.map((i) => stixDataConverter(R.head(Object.values(i)))));
       const message = generateLogMessage(operation, instance, messageInput);
       // Build and send the event
-      const dataEvent = buildStixData(data, { diffMode: !mustRepublished });
+      const dataEvent = buildStixData(data);
       const event = buildEvent(EVENT_TYPE_UPDATE, user, instance.objectMarking, message, dataEvent);
       return pushToStream(clientBase, event);
     } catch (e) {
@@ -342,7 +336,7 @@ export const storeUpdateEvent = async (user, instance, updateEvents, mustRepubli
   }
   return true;
 };
-export const storeCreateEvent = async (user, instance, input) => {
+export const storeCreateEvent = async (user, instance, input, stixLoader) => {
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     try {
       // If relationship but not stix core
@@ -353,7 +347,11 @@ export const storeCreateEvent = async (user, instance, input) => {
         const field = relationTypeToInputName(instance.entity_type);
         const inputUpdate = { [field]: input.to };
         const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
-        return storeUpdateEvent(user, instance.from, [{ [UPDATE_OPERATION_ADD]: inputUpdate }], mustRepublished);
+        let publishedInstance = instance.from;
+        if (mustRepublished) {
+          publishedInstance = await stixLoader(user, instance.from.internal_id);
+        }
+        return storeUpdateEvent(user, publishedInstance, [{ [UPDATE_OPERATION_ADD]: inputUpdate }]);
       }
       // Create of an event for
       const identifiers = {
@@ -374,7 +372,7 @@ export const storeCreateEvent = async (user, instance, input) => {
   }
   return true;
 };
-export const storeDeleteEvent = async (user, instance) => {
+export const storeDeleteEvent = async (user, instance, stixLoader) => {
   try {
     if (isStixObject(instance.entity_type)) {
       const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
@@ -389,7 +387,11 @@ export const storeDeleteEvent = async (user, instance) => {
         const field = relationTypeToInputName(instance.entity_type);
         const inputUpdate = { [field]: instance.to };
         const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
-        return storeUpdateEvent(user, instance.from, [{ [UPDATE_OPERATION_REMOVE]: inputUpdate }], mustRepublished);
+        let publishedInstance = instance.from;
+        if (mustRepublished) {
+          publishedInstance = await stixLoader(user, instance.from.internal_id);
+        }
+        return storeUpdateEvent(user, publishedInstance, [{ [UPDATE_OPERATION_REMOVE]: inputUpdate }]);
       }
       // for other deletion, just produce a delete event
       const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
@@ -434,8 +436,8 @@ const processStreamResult = async (results, callback) => {
 
 let processingLoopPromise;
 export const MAX_RANGE_MESSAGES = 2000;
-const WAIT_TIME = 20000;
-export const createStreamProcessor = (user, callback, start = 'live') => {
+const WAIT_TIME = 1000;
+export const createStreamProcessor = (user, callback) => {
   let client;
   let startEventId;
   let streamListening = true;
@@ -464,7 +466,6 @@ export const createStreamProcessor = (user, callback, start = 'live') => {
     return true;
   };
   const processingLoop = async () => {
-    startEventId = start === 'live' ? '$' : start;
     while (streamListening) {
       if (!(await processStep(client))) {
         break;
@@ -473,7 +474,8 @@ export const createStreamProcessor = (user, callback, start = 'live') => {
   };
   return {
     info: async () => processInfo(),
-    start: async () => {
+    start: async (start = 'live') => {
+      startEventId = start === 'live' ? '$' : start;
       client = await createRedisClient(); // Create client for this processing loop
       logApp.info(`[STREAM] Starting stream processor for ${user.user_email}`);
       processingLoopPromise = processingLoop(client);

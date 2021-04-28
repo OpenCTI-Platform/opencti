@@ -527,11 +527,13 @@ const buildSessionUser = (user, tokenUUID = null) => {
     capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
     allowed_marking: user.allowed_marking.map((m) => ({
       id: m.id,
+      standard_id: m.standard_id,
       internal_id: m.internal_id,
       definition_type: m.definition_type,
     })),
     all_marking: user.all_marking.map((m) => ({
       id: m.id,
+      standard_id: m.standard_id,
       internal_id: m.internal_id,
       definition_type: m.definition_type,
     })),
