@@ -98,6 +98,7 @@ const stixCoreRelationshipMutationFieldPatch = graphql`
     stixCoreRelationshipEdit(id: $id) {
       fieldPatch(input: $input) {
         ...StixCoreRelationshipEditionOverview_stixCoreRelationship
+        ...StixCoreRelationshipOverview_stixCoreRelationship
       }
     }
   }
