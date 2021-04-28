@@ -25,7 +25,7 @@ class ThreatVictimologyAll extends Component {
         if (mapReload) return <div />;
         return (
           <GlobalVictimologyMap
-            title={`${t('Victimology')} - ${t('Global')}`}
+            title={`${t('Victimology')} - ${t('Countries')}`}
             startDate={startDate}
             endDate={endDate}
             variant="inLine"

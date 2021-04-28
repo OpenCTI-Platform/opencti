@@ -19,6 +19,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Fab from '@material-ui/core/Fab';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
+import Alert from '@material-ui/lab/Alert';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -421,6 +422,18 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.containerList}>
+          {search.length === 0 && (
+            <Alert
+              severity="info"
+              variant="outlined"
+              style={{ margin: '15px 15px 0 15px' }}
+              classes={{ message: classes.info }}
+            >
+              {t(
+                'This panel shows by default the latest created entities, use the search to find more.',
+              )}
+            </Alert>
+          )}
           <QueryRenderer
             query={stixCyberObservableRelationshipCreationFromEntityLinesQuery}
             variables={{ count: 25, ...paginationOptions }}

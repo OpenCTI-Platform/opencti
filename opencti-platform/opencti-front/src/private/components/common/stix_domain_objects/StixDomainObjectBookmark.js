@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { Link } from 'react-router-dom';
-import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
-import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
@@ -11,25 +10,67 @@ import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
-import { DiamondOutline } from 'mdi-material-ui';
+import { Public, StarBorderOutlined } from '@material-ui/icons';
 import IconButton from '@material-ui/core/IconButton';
-import { StarBorderOutlined } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
-import {
-  addBookmark,
-  deleteBookMark,
-} from '../../common/stix_domain_objects/StixDomainObjectBookmark';
+import { resolveLink } from '../../../../utils/Entity';
+import { commitMutation } from '../../../../relay/environment';
+import { deleteNode, insertNode } from '../../../../utils/Store';
+import ItemIcon from '../../../../components/ItemIcon';
+
+const stixDomainObjectBookmarkCreateMutation = graphql`
+  mutation StixDomainObjectBookmarkreateMutation($id: ID!, $type: String!) {
+    bookmarkAdd(id: $id, type: $type) {
+      id
+      ...StixDomainObjectBookmark_node
+    }
+  }
+`;
+
+const stixDomainObjectBookmarkRemoveMutation = graphql`
+  mutation StixDomainObjectBookmarkRemoveMutation($id: ID!) {
+    bookmarkDelete(id: $id)
+  }
+`;
+
+export const addBookmark = (id, type, event = null) => {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  commitMutation({
+    mutation: stixDomainObjectBookmarkCreateMutation,
+    variables: { id, type },
+    updater: (store) => insertNode(
+      store,
+      'Pagination_bookmarks',
+      { types: [type] },
+      'bookmarkAdd',
+    ),
+  });
+};
+
+export const deleteBookMark = (id, type, event = null) => {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  commitMutation({
+    mutation: stixDomainObjectBookmarkRemoveMutation,
+    variables: { id },
+    updater: (store) => deleteNode(store, 'Pagination_bookmarks', { types: [type] }, id),
+  });
+};
 
 const styles = (theme) => ({
   card: {
     width: '100%',
-    height: 170,
+    height: 70,
     borderRadius: 6,
   },
   cardDummy: {
     width: '100%',
-    height: 170,
+    height: 70,
     color: theme.palette.grey[700],
     borderRadius: 6,
   },
@@ -88,86 +129,123 @@ const styles = (theme) => ({
   },
 });
 
-class IntrusionSetCardComponent extends Component {
+class StixDomainObjectBookmarkComponent extends Component {
   render() {
     const {
-      t, fsd, classes, node, bookmarksIds, onLabelClick,
+      t, fsd, classes, node,
     } = this.props;
+    const link = resolveLink(node.entity_type);
     return (
       <Card classes={{ root: classes.card }} raised={true}>
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/dashboard/threats/intrusion_sets/${node.id}`}
+          to={`${link}/${node.id}`}
         >
           <CardHeader
             classes={{ root: classes.header }}
             avatar={
-              <Avatar className={classes.avatar}>{node.name.charAt(0)}</Avatar>
+              <Avatar className={classes.avatar}>
+                <ItemIcon type={node.entity_type} />
+              </Avatar>
             }
             title={node.name}
             subheader={`${t('Updated the')} ${fsd(node.modified)}`}
             action={
               <IconButton
                 size="small"
-                onClick={
-                  bookmarksIds.includes(node.id)
-                    ? deleteBookMark.bind(this, node.id, 'Intrusion-Set')
-                    : addBookmark.bind(this, node.id, 'Intrusion-Set')
-                }
-                color={bookmarksIds.includes(node.id) ? 'secondary' : 'primary'}
+                onClick={deleteBookMark.bind(this, node.id, node.entity_type)}
+                color="secondary"
                 style={{ marginTop: 10 }}
               >
                 <StarBorderOutlined />
               </IconButton>
             }
           />
-          <CardContent className={classes.content}>
-            <div className={classes.description}>
-              <Markdown
-                source={node.description}
-                disallowedTypes={['link', 'linkReference']}
-                unwrapDisallowed={true}
-              />
-            </div>
-            <div className={classes.objectLabel}>
-              <StixCoreObjectLabels
-                labels={node.objectLabel}
-                onClick={onLabelClick.bind(this)}
-              />
-            </div>
-          </CardContent>
         </CardActionArea>
       </Card>
     );
   }
 }
 
-IntrusionSetCardComponent.propTypes = {
+StixDomainObjectBookmarkComponent.propTypes = {
   node: PropTypes.object,
-  bookmarksIds: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
   onLabelClick: PropTypes.func,
 };
 
-const IntrusionSetCardFragment = createFragmentContainer(
-  IntrusionSetCardComponent,
+const StixDomainObjectBookmarkFragment = createFragmentContainer(
+  StixDomainObjectBookmarkComponent,
   {
     node: graphql`
-      fragment IntrusionSetCard_node on IntrusionSet {
+      fragment StixDomainObjectBookmark_node on StixDomainObject {
         id
-        name
-        description
-        created
-        modified
-        objectMarking {
-          edges {
-            node {
-              id
-              definition
-            }
+        entity_type
+        parent_types
+        created_at
+        updated_at
+        ... on AttackPattern {
+          name
+          x_mitre_id
+        }
+        ... on Campaign {
+          name
+        }
+        ... on CourseOfAction {
+          name
+        }
+        ... on Individual {
+          name
+        }
+        ... on Organization {
+          name
+        }
+        ... on Sector {
+          name
+        }
+        ... on Indicator {
+          name
+        }
+        ... on Infrastructure {
+          name
+        }
+        ... on IntrusionSet {
+          name
+        }
+        ... on Position {
+          name
+        }
+        ... on City {
+          name
+        }
+        ... on Country {
+          name
+        }
+        ... on Region {
+          name
+        }
+        ... on Malware {
+          name
+        }
+        ... on ThreatActor {
+          name
+        }
+        ... on Tool {
+          name
+        }
+        ... on Vulnerability {
+          name
+        }
+        ... on Incident {
+          name
+        }
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
           }
         }
         objectLabel {
@@ -179,21 +257,30 @@ const IntrusionSetCardFragment = createFragmentContainer(
             }
           }
         }
+        objectMarking {
+          edges {
+            node {
+              id
+              definition
+              x_opencti_color
+            }
+          }
+        }
       }
     `,
   },
 );
 
-export const IntrusionSetCard = compose(
+export const StixDomainObjectBookmark = R.compose(
   inject18n,
   withStyles(styles),
-)(IntrusionSetCardFragment);
+)(StixDomainObjectBookmarkFragment);
 
-class IntrusionSetCardDummyComponent extends Component {
+class StixDomainObjectBookmarkDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <Card classes={{ root: classes.cardDummy }} raised={true}>
+      <Card classes={{ root: classes.Dummy }} raised={true}>
         <CardActionArea classes={{ root: classes.area }}>
           <CardHeader
             classes={{ root: classes.header }}
@@ -211,7 +298,7 @@ class IntrusionSetCardDummyComponent extends Component {
                 style={{ width: '70%' }}
               />
             }
-            action={<DiamondOutline className={classes.icon} />}
+            action={<Public className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.contentDummy }}>
             <div className="fakeItem" style={{ width: '90%' }} />
@@ -224,11 +311,11 @@ class IntrusionSetCardDummyComponent extends Component {
   }
 }
 
-IntrusionSetCardDummyComponent.propTypes = {
+StixDomainObjectBookmarkDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const IntrusionSetCardDummy = compose(
+export const StixDomainObjectBookmarkDummy = R.compose(
   inject18n,
   withStyles(styles),
-)(IntrusionSetCardDummyComponent);
+)(StixDomainObjectBookmarkDummyComponent);

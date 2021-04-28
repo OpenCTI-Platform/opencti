@@ -47,11 +47,7 @@ class GlobalVictimologyMap extends Component {
             limit: 20,
           }}
           render={({ props }) => {
-            if (
-              props
-              && props.stixCoreRelationshipsDistribution
-              && props.stixCoreRelationshipsDistribution.length > 0
-            ) {
+            if (props && props.stixCoreRelationshipsDistribution) {
               const values = pluck(
                 'value',
                 props.stixCoreRelationshipsDistribution,

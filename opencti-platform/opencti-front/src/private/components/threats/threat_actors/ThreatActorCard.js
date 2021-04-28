@@ -10,10 +10,15 @@ import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
+import IconButton from '@material-ui/core/IconButton';
 import Avatar from '@material-ui/core/Avatar';
-import { Public } from '@material-ui/icons';
+import { Public, StarBorderOutlined } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import {
+  addBookmark,
+  deleteBookMark,
+} from '../../common/stix_domain_objects/StixDomainObjectBookmark';
 
 const styles = (theme) => ({
   card: {
@@ -32,11 +37,6 @@ const styles = (theme) => ({
   },
   avatarDisabled: {
     backgroundColor: theme.palette.grey[600],
-  },
-  icon: {
-    margin: '10px 20px 0 0',
-    fontSize: 40,
-    color: '#242d30',
   },
   area: {
     width: '100%',
@@ -85,7 +85,7 @@ const styles = (theme) => ({
 class ThreatActorCardComponent extends Component {
   render() {
     const {
-      t, fsd, classes, node, onLabelClick,
+      t, fsd, classes, node, bookmarksIds, onLabelClick,
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
@@ -101,7 +101,20 @@ class ThreatActorCardComponent extends Component {
             }
             title={node.name}
             subheader={`${t('Updated the')} ${fsd(node.modified)}`}
-            action={<Public className={classes.icon} />}
+            action={
+              <IconButton
+                size="small"
+                onClick={
+                  bookmarksIds.includes(node.id)
+                    ? deleteBookMark.bind(this, node.id, 'Threat-Actor')
+                    : addBookmark.bind(this, node.id, 'Threat-Actor')
+                }
+                color={bookmarksIds.includes(node.id) ? 'secondary' : 'primary'}
+                style={{ marginTop: 10 }}
+              >
+                <StarBorderOutlined />
+              </IconButton>
+            }
           />
           <CardContent className={classes.content}>
             <div className={classes.description}>
@@ -126,10 +139,12 @@ class ThreatActorCardComponent extends Component {
 
 ThreatActorCardComponent.propTypes = {
   node: PropTypes.object,
+  bookmarksIds: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
   onLabelClick: PropTypes.func,
+  onBookmarkClick: PropTypes.func,
 };
 
 const ThreatActorCardFragment = createFragmentContainer(

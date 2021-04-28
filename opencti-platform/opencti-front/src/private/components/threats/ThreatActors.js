@@ -152,6 +152,7 @@ class ThreatActors extends Component {
           render={({ props }) => (
             <ThreatActorsCards
               data={props}
+              extra={props}
               paginationOptions={paginationOptions}
               initialLoading={props === null}
               onLabelClick={this.handleAddFilter.bind(this)}

@@ -206,7 +206,7 @@ class RootCampaign extends Component {
                           />
                           <StixCoreObjectHistory
                             {...routeProps}
-                            entityId={campaignId}
+                            stixCoreObjectId={campaignId}
                           />
                         </React.Fragment>
                       )}

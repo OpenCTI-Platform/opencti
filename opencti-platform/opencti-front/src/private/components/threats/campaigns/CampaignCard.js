@@ -12,8 +12,14 @@ import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
 import { ChessKnight } from 'mdi-material-ui';
+import IconButton from '@material-ui/core/IconButton';
+import { StarBorderOutlined } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import {
+  addBookmark,
+  deleteBookMark,
+} from '../../common/stix_domain_objects/StixDomainObjectBookmark';
 
 const styles = (theme) => ({
   card: {
@@ -85,7 +91,7 @@ const styles = (theme) => ({
 class CampaignCardComponent extends Component {
   render() {
     const {
-      t, fsd, classes, node, onLabelClick,
+      t, fsd, classes, node, bookmarksIds, onLabelClick,
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
@@ -101,7 +107,20 @@ class CampaignCardComponent extends Component {
             }
             title={node.name}
             subheader={`${t('Updated the')} ${fsd(node.modified)}`}
-            action={<ChessKnight className={classes.icon} />}
+            action={
+              <IconButton
+                size="small"
+                onClick={
+                  bookmarksIds.includes(node.id)
+                    ? deleteBookMark.bind(this, node.id, 'Campaign')
+                    : addBookmark.bind(this, node.id, 'Campaign')
+                }
+                color={bookmarksIds.includes(node.id) ? 'secondary' : 'primary'}
+                style={{ marginTop: 10 }}
+              >
+                <StarBorderOutlined />
+              </IconButton>
+            }
           />
           <CardContent className={classes.content}>
             <div className={classes.description}>
@@ -126,6 +145,7 @@ class CampaignCardComponent extends Component {
 
 CampaignCardComponent.propTypes = {
   node: PropTypes.object,
+  bookmarksIds: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,

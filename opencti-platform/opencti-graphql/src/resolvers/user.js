@@ -35,7 +35,9 @@ import {
   userEditField,
   userRenewToken,
   userWithOrigin,
-  bookmarkItem,
+  bookmarks,
+  addBookmark,
+  deleteBookmark,
 } from '../domain/user';
 import { BUS_TOPICS, logApp, logAudit } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
@@ -44,7 +46,7 @@ import { addRole } from '../domain/grant';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { batchLoader, loadById } from '../database/middleware';
+import { batchLoader } from '../database/middleware';
 import { LOGIN_ACTION } from '../config/audit';
 
 const groupsLoader = batchLoader(batchGroups);
@@ -60,6 +62,7 @@ const userResolvers = {
     sessions: () => findSessions(),
     capabilities: (_, args, { user }) => findCapabilities(user, args),
     me: (_, args, { user }) => findById(user, user.id),
+    bookmarks: (_, { types }, { user }) => bookmarks(user, types),
   },
   User: {
     groups: (current, _, { user }) => groupsLoader.load(current.id, user),
@@ -69,13 +72,6 @@ const userResolvers = {
     token: (current, _, { user }) => token(user, current.id),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
-    bookmarks: (current, { type }, { user }) => {
-      const bookmarks = type ? R.filter((n) => n.type === type, current.bookmarks) : current.bookmarks;
-      return Promise.all(
-        R.map((n) => loadById(user, n.id, n.type)),
-        bookmarks
-      );
-    },
   },
   UserSession: {
     user: (session, _, { user }) => findById(user, session.user_id),
@@ -145,7 +141,8 @@ const userResolvers = {
     }),
     meEdit: (_, { input }, { user }) => meEditField(user, user.id, input),
     userAdd: (_, { input }, { user }) => addUser(user, input),
-    bookmark: (_, { id, type }, { user }) => bookmarkItem(user, id, type),
+    bookmarkAdd: (_, { id, type }, { user }) => addBookmark(user, id, type),
+    bookmarkDelete: (_, { id }, { user }) => deleteBookmark(user, id),
   },
   Subscription: {
     user: {

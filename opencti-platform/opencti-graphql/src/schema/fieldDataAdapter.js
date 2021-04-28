@@ -33,6 +33,7 @@ export const multipleAttributes = [
   'external_references',
   'kill_chain_phases',
   'tags',
+  'bookmarks',
 ];
 export const statsDateAttributes = [
   'created_at',
