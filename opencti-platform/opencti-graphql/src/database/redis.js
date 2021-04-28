@@ -467,7 +467,7 @@ export const createStreamProcessor = (user, callback) => {
   };
   const processingLoop = async () => {
     while (streamListening) {
-      if (!(await processStep(client))) {
+      if (!(await processStep())) {
         break;
       }
     }
@@ -478,7 +478,7 @@ export const createStreamProcessor = (user, callback) => {
       startEventId = start === 'live' ? '$' : start;
       client = await createRedisClient(); // Create client for this processing loop
       logApp.info(`[STREAM] Starting stream processor for ${user.user_email}`);
-      processingLoopPromise = processingLoop(client);
+      processingLoopPromise = processingLoop();
     },
     shutdown: async () => {
       logApp.info(`[STREAM] Shutdown stream processor for ${user.user_email}`);
