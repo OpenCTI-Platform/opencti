@@ -179,7 +179,7 @@ const styles = (theme) => ({
   },
 });
 
-const notMergableTypes = ['Indicator', 'Note', 'Opinion', 'Observed-Data'];
+const notMergableTypes = ['Indicator', 'Note', 'Opinion'];
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -730,16 +730,10 @@ class ToolBar extends Component {
     const isOpen = numberOfSelectedElements > 0;
     const typesAreDifferent = R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})))
       .length > 1;
-    const parentTypes = R.flatten(
-      R.map((o) => o.parent_types, R.values(selectedElements || {})),
+    const typesAreNotMergable = R.includes(
+      R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})))[0],
+      notMergableTypes,
     );
-    const typesAreNotMergable = R.includes('Stix-Cyber-Observable', parentTypes)
-      || R.includes(
-        R.uniq(
-          R.map((o) => o.entity_type, R.values(selectedElements || {})),
-        )[0],
-        notMergableTypes,
-      );
     const selectedElementsList = R.values(selectedElements || {});
     let keptElement = null;
     let newAliases = [];
@@ -1154,8 +1148,13 @@ class ToolBar extends Component {
                     <ItemIcon type={element.entity_type} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={element.name}
-                    secondary={truncate(element.description, 60)}
+                    primary={defaultValue(element)}
+                    secondary={truncate(
+                      element.description
+                        || element.x_opencti_description
+                        || '',
+                      60,
+                    )}
                   />
                   <div style={{ marginRight: 50 }}>
                     {R.pathOr('', ['createdBy', 'name'], element)}
@@ -1208,7 +1207,7 @@ class ToolBar extends Component {
             >
               {t('Name')}
             </Typography>
-            {R.propOr(null, 'name', keptElement)}
+            {defaultValue(keptElement)}
             <Typography
               variant="h3"
               gutterBottom={true}
