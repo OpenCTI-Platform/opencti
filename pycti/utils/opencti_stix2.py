@@ -917,6 +917,10 @@ class OpenCTIStix2:
                 entity["region"] = entity["name"]
             entity["entity_type"] = "Location"
 
+        # Files
+        if entity["entity_type"] == "StixFile":
+            entity["entity_type"] = "File"
+
         # Indicators
         if "pattern" in entity and "x-opencti-hostname" in entity["pattern"]:
             entity["pattern"] = entity["pattern"].replace(
@@ -967,6 +971,9 @@ class OpenCTIStix2:
         if "externalReferences" in entity:
             del entity["externalReferences"]
             del entity["externalReferencesIds"]
+        if "indicators" in entity:
+            del entity["indicators"]
+            del entity["indicatorsIds"]
         if "hashes" in entity:
             hashes = entity["hashes"]
             entity["hashes"] = {}
@@ -1025,7 +1032,6 @@ class OpenCTIStix2:
             del entity["createdById"]
         if "observables" in entity:
             del entity["observables"]
-        if "observablesIds" in entity:
             del entity["observablesIds"]
 
         entity_copy = entity.copy()
@@ -1463,7 +1469,6 @@ class OpenCTIStix2:
             types=types,
             getAll=True,
         )
-
         if entities_list is not None:
             uuids = []
             for entity in entities_list:
@@ -1477,7 +1482,6 @@ class OpenCTIStix2:
                     for x in entity_bundle_filtered:
                         uuids.append(x["id"])
                     bundle["objects"] = bundle["objects"] + entity_bundle_filtered
-
         return bundle
 
     def import_bundle(self, stix_bundle, update=False, types=None) -> List:
