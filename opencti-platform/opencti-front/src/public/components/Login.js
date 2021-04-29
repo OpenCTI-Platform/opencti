@@ -8,6 +8,7 @@ import {
   Google, KeyOutline, Facebook, Github,
 } from 'mdi-material-ui';
 import Markdown from 'react-markdown';
+import Paper from '@material-ui/core/Paper';
 import { APP_BASE_PATH, QueryRenderer } from '../../relay/environment';
 import { ConnectedIntlProvider } from '../../components/AppIntlProvider';
 import logo from '../../resources/images/logo_opencti.png';
@@ -62,11 +63,10 @@ const styles = (theme) => ({
     marginRight: theme.spacing(1),
     fontSize: 20,
   },
-  message: {
+  paper: {
     marginBottom: 20,
     padding: 5,
     textAlign: 'center',
-    backgroundColor: theme.palette.background.nav,
   },
 });
 
@@ -161,9 +161,9 @@ const Login = ({ classes }) => {
               <div className={classes.container} style={{ marginTop }}>
                 <img src={logo} alt="logo" className={classes.logo} />
                 {loginMessage && loginMessage.length > 0 && (
-                  <div className={classes.message}>
+                  <Paper classes={{ root: classes.paper }} elevation={2}>
                     <Markdown source={loginMessage} />
-                  </div>
+                  </Paper>
                 )}
                 {isAuthForm && (
                   <LoginForm
