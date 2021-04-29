@@ -224,6 +224,7 @@ export const decodeGraphData = (encodedGraphData) => {
 };
 
 export const defaultDate = (n) => {
+  if (!n) return '';
   if (!isNone(n.start_time)) {
     return n.start_time;
   }
@@ -249,6 +250,7 @@ export const defaultDate = (n) => {
 };
 
 export const defaultValue = (n, tooltip = false) => {
+  if (!n) return '';
   if (tooltip) {
     return `${n.x_mitre_id ? `[${n.x_mitre_id}] ` : ''}${
       n.name
