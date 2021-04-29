@@ -1461,7 +1461,7 @@ input AttackPatternAddInput {
   x_mitre_platforms: [String]
   x_mitre_permissions_required: [String]
   x_mitre_detection: String
-  x_mitre_id: String! @constraint(minLength: 1)
+  x_mitre_id: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
