@@ -162,7 +162,7 @@ const stixEntityContribution = {
     [D.ENTITY_TYPE_THREAT_ACTOR]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_TOOL]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_VULNERABILITY]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_X_OPENCTI_INCIDENT]: [{ src: NAME_FIELD }],
+    [D.ENTITY_TYPE_INCIDENT]: [{ src: NAME_FIELD }],
     // Stix Meta
     [M.ENTITY_TYPE_MARKING_DEFINITION]: [{ src: 'definition' }, { src: 'definition_type' }],
     [M.ENTITY_TYPE_LABEL]: [{ src: 'value' }],

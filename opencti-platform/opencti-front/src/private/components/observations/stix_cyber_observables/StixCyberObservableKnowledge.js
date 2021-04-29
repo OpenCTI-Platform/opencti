@@ -20,7 +20,9 @@ const styles = () => ({
 });
 
 const StixCyberObservableKnowledge = (props) => {
-  const { stixCyberObservable, classes, t } = props;
+  const {
+    stixCyberObservable, connectorsForImport, classes, t,
+  } = props;
   return (
     <div className={classes.container}>
       <StixCyberObservableHeader stixCyberObservable={stixCyberObservable} />
@@ -29,17 +31,18 @@ const StixCyberObservableKnowledge = (props) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={9}>
+        <Grid item={true} xs={8}>
           <StixCyberObservableKnowledgeEntities
             entityId={stixCyberObservable.id}
           />
         </Grid>
-        <Grid item={true} xs={3}>
+        <Grid item={true} xs={4}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Enrichment connectors')}
           </Typography>
           <StixCyberObservableEnrichment
             stixCyberObservable={stixCyberObservable}
+            connectorsForImport={connectorsForImport}
           />
         </Grid>
       </Grid>
@@ -56,6 +59,13 @@ const StixCyberObservableKnowledgeFragment = createFragmentContainer(
         entity_type
         ...StixCyberObservableEnrichment_stixCyberObservable
         ...StixCyberObservableHeader_stixCyberObservable
+      }
+    `,
+    connectorsForImport: graphql`
+      fragment StixCyberObservableKnowledge_connectorsForImport on Connector
+      @relay(plural: true) {
+        id
+        ...StixCyberObservableEnrichment_connectorsForImport
       }
     `,
   },

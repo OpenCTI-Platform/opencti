@@ -9,13 +9,15 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
+import { GetAppOutlined } from '@material-ui/icons';
+import Button from '@material-ui/core/Button';
 import inject18n from '../../../../components/i18n';
 import StixCyberObservableLinks, {
   stixCyberObservableLinksQuery,
 } from './StixCyberObservableLinks';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { ignoredAttributes } from './StixCyberObservableCreation';
-import { QueryRenderer } from '../../../../relay/environment';
+import { APP_BASE_PATH, QueryRenderer } from '../../../../relay/environment';
 import StixCyberObservableIndicators from './StixCyberObservableIndicators';
 
 const styles = () => ({
@@ -30,7 +32,9 @@ const styles = () => ({
 
 class StixCyberObservableDetailsComponent extends Component {
   render() {
-    const { t, classes, stixCyberObservable } = this.props;
+    const {
+      t, b, classes, stixCyberObservable,
+    } = this.props;
     const observableAttributes = pipe(
       dissoc('id'),
       dissoc('entity_type'),
@@ -47,6 +51,10 @@ class StixCyberObservableDetailsComponent extends Component {
       orderBy: 'created_at',
       orderMode: 'desc',
     };
+    const file = stixCyberObservable.importFiles
+      && stixCyberObservable.importFiles.edges.length > 0
+      ? stixCyberObservable.importFiles.edges[0].node
+      : null;
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -54,6 +62,22 @@ class StixCyberObservableDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3} style={{ marginBottom: 10 }}>
+            {file && (
+              <Grid item={true} xs={6}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('File')}
+                </Typography>
+                <Button
+                  href={`${APP_BASE_PATH}/storage/get/${file.id}`}
+                  variant="outlined"
+                  color="secondary"
+                  size="small"
+                  startIcon={<GetAppOutlined />}
+                >
+                  {t('Download')} ({b(file.size)})
+                </Button>
+              </Grid>
+            )}
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Description')}
@@ -120,6 +144,7 @@ StixCyberObservableDetailsComponent.propTypes = {
   stixCyberObservable: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  isArtifact: PropTypes.bool,
 };
 
 const StixCyberObservableDetails = createFragmentContainer(
@@ -161,6 +186,7 @@ const StixCyberObservableDetails = createFragmentContainer(
           body
         }
         ... on Artifact {
+          x_opencti_additional_names
           mime_type
           payload_bin
           url
@@ -169,6 +195,18 @@ const StixCyberObservableDetails = createFragmentContainer(
           hashes {
             algorithm
             hash
+          }
+          importFiles {
+            edges {
+              node {
+                id
+                name
+                size
+                metaData {
+                  mimetype
+                }
+              }
+            }
           }
         }
         ... on StixFile {

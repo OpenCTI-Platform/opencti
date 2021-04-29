@@ -54,6 +54,7 @@ const toolMutationFieldPatch = graphql`
     toolEdit(id: $id) {
       fieldPatch(input: $input) {
         ...ToolEditionOverview_tool
+        ...Tool_tool
       }
     }
   }

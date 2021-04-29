@@ -26,7 +26,9 @@ const styles = () => ({
 
 class StixCyberObservableHeaderComponent extends Component {
   render() {
-    const { classes, variant, stixCyberObservable } = this.props;
+    const {
+      classes, variant, stixCyberObservable, isArtifact,
+    } = this.props;
     return (
       <div>
         <Typography
@@ -39,6 +41,7 @@ class StixCyberObservableHeaderComponent extends Component {
         <div className={classes.popover}>
           <StixCyberObservablePopover
             stixCyberObservableId={stixCyberObservable.id}
+            isArtifact={isArtifact}
           />
         </div>
         {variant !== 'noMarking' ? (
@@ -66,6 +69,7 @@ StixCyberObservableHeaderComponent.propTypes = {
   stixCyberObservable: PropTypes.object,
   variant: PropTypes.string,
   classes: PropTypes.object,
+  isArtifact: PropTypes.bool,
 };
 
 const StixCyberObservableHeader = createFragmentContainer(

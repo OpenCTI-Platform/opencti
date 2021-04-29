@@ -94,6 +94,7 @@ class RootCampaign extends Component {
               'attack_patterns',
               'vulnerabilities',
               'observables',
+              'infrastructures',
               'sightings',
             ]}
           />
@@ -205,7 +206,7 @@ class RootCampaign extends Component {
                           />
                           <StixCoreObjectHistory
                             {...routeProps}
-                            entityId={campaignId}
+                            stixCoreObjectId={campaignId}
                           />
                         </React.Fragment>
                       )}

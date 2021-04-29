@@ -162,7 +162,7 @@ const reportKnowledgeGraphStixCoreObjectQuery = graphql`
       ... on Vulnerability {
         name
       }
-      ... on XOpenCTIIncident {
+      ... on Incident {
         name
         first_seen
         last_seen
@@ -1166,7 +1166,7 @@ const ReportKnowledgeGraph = createFragmentContainer(
               ... on Vulnerability {
                 name
               }
-              ... on XOpenCTIIncident {
+              ... on Incident {
                 name
                 first_seen
                 last_seen

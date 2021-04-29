@@ -56,6 +56,7 @@ const individualMutationFieldPatch = graphql`
     individualEdit(id: $id) {
       fieldPatch(input: $input) {
         ...IndividualEditionOverview_individual
+        ...Individual_individual
       }
     }
   }

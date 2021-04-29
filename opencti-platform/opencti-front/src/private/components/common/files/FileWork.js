@@ -18,12 +18,16 @@ import {
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   nested: {
     paddingLeft: theme.spacing(4),
+  },
+  tooltip: {
+    maxWidth: 600,
   },
 });
 
@@ -40,6 +44,14 @@ const FileWorkComponent = (props) => {
     commitMutation({
       mutation: fileWorkDeleteMutation,
       variables: { workId },
+      optimisticUpdater: (store) => {
+        const fileStore = store.get(workId);
+        fileStore.setValue('deleting', 'status');
+      },
+      updater: (store) => {
+        const fileStore = store.get(workId);
+        fileStore.setValue('deleting', 'status');
+      },
     });
   };
   const {
@@ -52,7 +64,24 @@ const FileWorkComponent = (props) => {
     <List component="div" disablePadding={true}>
       {works
         && works.map((work) => {
-          const message = work.messages.map((s) => s.message).join('\r\n');
+          const messages = R.sortBy(R.prop('timestamp'), [
+            ...work.messages,
+            ...work.errors,
+          ]);
+          const messageToDisplay = (
+            <div>
+              {messages.length > 0
+                ? R.map(
+                  (message) => (
+                      <div key={message.message}>
+                        [{nsdt(message.timestamp)}] {message.message}
+                      </div>
+                  ),
+                  messages,
+                )
+                : t(work.status)}
+            </div>
+          );
           const numberOfError = work.errors.length;
           const secondaryLabel = `${nsdt(work.timestamp)} `;
           const { tracking } = work;
@@ -75,12 +104,17 @@ const FileWorkComponent = (props) => {
             )}${statusText}`;
           };
           return (
-            <Tooltip title={message} key={uuid()}>
+            <Tooltip
+              title={messageToDisplay}
+              key={uuid()}
+              classes={{ tooltip: classes.tooltip }}
+            >
               <ListItem
                 dense={true}
                 button={true}
                 divider={true}
                 classes={{ root: classes.nested }}
+                disabled={work.status === 'deleting'}
               >
                 <ListItemIcon>
                   {work.status === 'complete' && numberOfError === 0 && (
@@ -93,7 +127,9 @@ const FileWorkComponent = (props) => {
                       style={{ fontSize: 15, color: '#f44336' }}
                     />
                   )}
-                  {(work.status === 'progress' || work.status === 'wait') && (
+                  {(work.status === 'progress'
+                    || work.status === 'wait'
+                    || work.status === 'deleting') && (
                     <CircularProgress
                       size={20}
                       thickness={2}
@@ -109,6 +145,7 @@ const FileWorkComponent = (props) => {
                   <IconButton
                     color="primary"
                     onClick={() => deleteWork(work.id)}
+                    disabled={work.status === 'deleting'}
                   >
                     <DeleteOutlined />
                   </IconButton>

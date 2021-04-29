@@ -132,7 +132,7 @@ class CityKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={city.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+                targetStixDomainObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}

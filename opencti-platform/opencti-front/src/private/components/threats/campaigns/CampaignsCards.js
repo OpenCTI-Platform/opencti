@@ -6,10 +6,19 @@ import { pathOr } from 'ramda';
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
 import { CampaignCard, CampaignCardDummy } from './CampaignCard';
 import { setNumberOfElements } from '../../../../utils/Number';
+import { QueryRenderer } from '../../../../relay/environment';
+import StixDomainObjectBookmarks, {
+  stixDomainObjectBookmarksQuery,
+} from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
 
 const nbOfCardsToLoad = 50;
 
 class CampaignsCards extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { bookmarks: [] };
+  }
+
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
@@ -19,24 +28,43 @@ class CampaignsCards extends Component {
     );
   }
 
+  handleSetBookmarkList(bookmarks) {
+    this.setState({ bookmarks });
+  }
+
   render() {
     const { initialLoading, relay, onLabelClick } = this.props;
+    const { bookmarks } = this.state;
     return (
-      <ListCardsContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
-        hasMore={relay.hasMore.bind(this)}
-        isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['campaigns', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfCardsToLoad,
-          ['campaigns', 'pageInfo', 'globalCount'],
-          this.props.data,
+      <QueryRenderer
+        query={stixDomainObjectBookmarksQuery}
+        variables={{ types: ['Campaign'] }}
+        render={({ props }) => (
+          <div>
+            <StixDomainObjectBookmarks
+              data={props}
+              onLabelClick={onLabelClick.bind(this)}
+              setBookmarkList={this.handleSetBookmarkList.bind(this)}
+            />
+            <ListCardsContent
+              initialLoading={initialLoading}
+              loadMore={relay.loadMore.bind(this)}
+              hasMore={relay.hasMore.bind(this)}
+              isLoading={relay.isLoading.bind(this)}
+              dataList={pathOr([], ['campaigns', 'edges'], this.props.data)}
+              globalCount={pathOr(
+                nbOfCardsToLoad,
+                ['campaigns', 'pageInfo', 'globalCount'],
+                this.props.data,
+              )}
+              CardComponent={<CampaignCard />}
+              DummyCardComponent={<CampaignCardDummy />}
+              nbOfCardsToLoad={nbOfCardsToLoad}
+              onLabelClick={onLabelClick.bind(this)}
+              bookmarkList={bookmarks}
+            />
+          </div>
         )}
-        CardComponent={<CampaignCard />}
-        DummyCardComponent={<CampaignCardDummy />}
-        nbOfCardsToLoad={nbOfCardsToLoad}
-        onLabelClick={onLabelClick.bind(this)}
       />
     );
   }

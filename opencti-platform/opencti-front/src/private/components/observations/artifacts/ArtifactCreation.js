@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
+import { SimpleFileUpload } from 'formik-material-ui';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -9,14 +10,13 @@ import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose, pipe, pluck, assoc,
+  compose, pluck, evolve, path,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
-import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -38,6 +38,19 @@ const styles = (theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
+    transition: theme.transitions.create('right', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  createButtonExports: {
+    position: 'fixed',
+    bottom: 30,
+    right: 310,
+    transition: theme.transitions.create('right', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
   },
   buttons: {
     marginTop: 20,
@@ -65,23 +78,42 @@ const styles = (theme) => ({
   },
 });
 
-const XOpenCTIIncidentMutation = graphql`
-  mutation XOpenCTIIncidentCreationMutation($input: XOpenCTIIncidentAddInput!) {
-    xOpenCTIIncidentAdd(input: $input) {
-      ...XOpenCTIIncidentLine_node
+const artifactMutation = graphql`
+  mutation ArtifactCreationMutation(
+    $file: Upload!
+    $x_opencti_description: String
+    $createdBy: String
+    $objectMarking: [String]
+    $objectLabel: [String]
+  ) {
+    artifactImport(
+      file: $file
+      x_opencti_description: $x_opencti_description
+      createdBy: $createdBy
+      objectMarking: $objectMarking
+      objectLabel: $objectLabel
+    ) {
+      ...ArtifactLine_node
     }
   }
 `;
 
-const XOpenCTIIncidentValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
+const artifactValidation = (t) => Yup.object().shape({
+  file: Yup.mixed().required(t('This field is required')),
+  x_opencti_description: Yup.string(),
 });
 
-class XOpenCTIXOpenCTIIncidentCreation extends Component {
+const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
+  const userProxy = store.get(userId);
+  const conn = ConnectionHandler.getConnection(
+    userProxy,
+    'Pagination_stixCyberObservables',
+    paginationOptions,
+  );
+  ConnectionHandler.insertEdgeBefore(conn, newEdge);
+};
+
+class ArtifactCreation extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -96,25 +128,30 @@ class XOpenCTIXOpenCTIIncidentCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = pipe(
-      assoc('createdBy', values.createdBy.value),
-      assoc('objectMarking', pluck('value', values.objectMarking)),
-      assoc('objectLabel', pluck('value', values.objectLabel)),
-    )(values);
+    const adaptedValues = evolve(
+      {
+        createdBy: path(['value']),
+        objectMarking: pluck('value'),
+        objectLabel: pluck('value'),
+      },
+      values,
+    );
     commitMutation({
-      mutation: XOpenCTIIncidentMutation,
+      mutation: artifactMutation,
       variables: {
-        input: finalValues,
+        file: values.file,
+        ...adaptedValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('xOpenCTIIncidentAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node');
-        const conn = ConnectionHandler.getConnection(
-          store.get(store.getRoot().getDataID()),
-          'Pagination_xOpenCTIIncidents',
+        const payload = store.getRootField('artifactImport');
+        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
+        const container = store.getRoot();
+        sharedUpdater(
+          store,
+          container.getDataID(),
           this.props.paginationOptions,
+          newEdge,
         );
-        ConnectionHandler.insertEdgeBefore(conn, newEdge);
       },
       setSubmitting,
       onCompleted: () => {
@@ -130,14 +167,16 @@ class XOpenCTIXOpenCTIIncidentCreation extends Component {
   }
 
   render() {
-    const { t, classes } = this.props;
+    const { t, classes, openExports } = this.props;
     return (
       <div>
         <Fab
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Add"
-          className={classes.createButton}
+          className={
+            openExports ? classes.createButtonExports : classes.createButton
+          }
         >
           <Add />
         </Fab>
@@ -155,18 +194,18 @@ class XOpenCTIXOpenCTIIncidentCreation extends Component {
             >
               <Close fontSize="small" />
             </IconButton>
-            <Typography variant="h6">{t('Create an incident')}</Typography>
+            <Typography variant="h6">{t('Create an artifact')}</Typography>
           </div>
           <div className={classes.container}>
             <Formik
               initialValues={{
-                name: '',
-                description: '',
+                x_opencti_description: '',
+                file: '',
                 createdBy: '',
                 objectMarking: [],
                 objectLabel: [],
               }}
-              validationSchema={XOpenCTIIncidentValidation(t)}
+              validationSchema={artifactValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
             >
@@ -179,15 +218,14 @@ class XOpenCTIXOpenCTIIncidentCreation extends Component {
               }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
-                    component={TextField}
-                    name="name"
-                    label={t('Name')}
+                    component={SimpleFileUpload}
+                    name="file"
+                    label={t('File')}
                     fullWidth={true}
-                    detectDuplicate={['XOpenCTIIncident']}
                   />
                   <Field
                     component={MarkDownField}
-                    name="description"
+                    name="x_opencti_description"
                     label={t('Description')}
                     fullWidth={true}
                     multiline={true}
@@ -238,14 +276,15 @@ class XOpenCTIXOpenCTIIncidentCreation extends Component {
   }
 }
 
-XOpenCTIXOpenCTIIncidentCreation.propTypes = {
+ArtifactCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  openExports: PropTypes.bool,
 };
 
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(XOpenCTIXOpenCTIIncidentCreation);
+)(ArtifactCreation);

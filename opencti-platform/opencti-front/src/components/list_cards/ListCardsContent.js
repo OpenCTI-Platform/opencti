@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, differenceWith } from 'ramda';
+import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer,
@@ -39,12 +39,17 @@ class ListCardsContent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const diff = differenceWith(
+    const diff = R.symmetricDifferenceWith(
       (x, y) => x.node.id === y.node.id,
       this.props.dataList,
       prevProps.dataList,
     );
-    if (diff.length > 0) {
+    const diffBookmark = R.symmetricDifferenceWith(
+      (x, y) => x.node.id === y.node.id,
+      this.props.bookmarkList || [],
+      prevProps.bookmarkList || [],
+    );
+    if (diff.length > 0 || diffBookmark.length > 0) {
       this.gridRef.forceUpdate();
     }
   }
@@ -102,11 +107,13 @@ class ListCardsContent extends Component {
     const {
       classes,
       dataList,
+      bookmarkList,
       CardComponent,
       DummyCardComponent,
       initialLoading,
       onLabelClick,
     } = this.props;
+    const bookmarksIds = R.map((n) => n.node.id, bookmarkList || []);
     const index = rowIndex * numberOfCardsPerLine + columnIndex;
     const className = classes.defaultCard;
     if (initialLoading || !this._isCellLoaded({ index })) {
@@ -129,6 +136,7 @@ class ListCardsContent extends Component {
       <div className={className} key={key} style={style}>
         {React.cloneElement(CardComponent, {
           node,
+          bookmarksIds,
           onLabelClick,
         })}
       </div>
@@ -142,6 +150,7 @@ class ListCardsContent extends Component {
       initialLoading,
       isLoading,
       nbOfCardsToLoad,
+      rowHeight,
     } = this.props;
     const nbLineForCards = Math.ceil(dataList.length / numberOfCardsPerLine);
     const nbOfLinesToLoad = Math.ceil(nbOfCardsToLoad / numberOfCardsPerLine);
@@ -184,7 +193,7 @@ class ListCardsContent extends Component {
                               onScroll={onChildScroll}
                               columnWidth={columnWidth}
                               columnCount={numberOfCardsPerLine}
-                              rowHeight={195}
+                              rowHeight={rowHeight || 195}
                               overscanColumnCount={numberOfCardsPerLine}
                               overscanRowCount={2}
                               rowCount={rowCount}
@@ -217,12 +226,14 @@ ListCardsContent.propTypes = {
   hasMore: PropTypes.func,
   isLoading: PropTypes.func,
   dataList: PropTypes.array,
+  bookmarkList: PropTypes.array,
   globalCount: PropTypes.number,
   CardComponent: PropTypes.object,
   DummyCardComponent: PropTypes.object,
   nbOfCardsToLoad: PropTypes.number,
   width: PropTypes.number,
+  rowHeight: PropTypes.number,
   onLabelClick: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(ListCardsContent);
+export default R.compose(inject18n, withStyles(styles))(ListCardsContent);

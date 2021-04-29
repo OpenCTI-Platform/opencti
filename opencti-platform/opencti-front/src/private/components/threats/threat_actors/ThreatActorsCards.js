@@ -6,10 +6,19 @@ import { pathOr } from 'ramda';
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
 import { ThreatActorCard, ThreatActorCardDummy } from './ThreatActorCard';
 import { setNumberOfElements } from '../../../../utils/Number';
+import StixDomainObjectBookmarks, {
+  stixDomainObjectBookmarksQuery,
+} from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
+import { QueryRenderer } from '../../../../relay/environment';
 
 const nbOfCardsToLoad = 50;
 
 class ThreatActorsCards extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { bookmarks: [] };
+  }
+
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
@@ -19,24 +28,43 @@ class ThreatActorsCards extends Component {
     );
   }
 
+  handleSetBookmarkList(bookmarks) {
+    this.setState({ bookmarks });
+  }
+
   render() {
     const { initialLoading, relay, onLabelClick } = this.props;
+    const { bookmarks } = this.state;
     return (
-      <ListCardsContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
-        hasMore={relay.hasMore.bind(this)}
-        isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['threatActors', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfCardsToLoad,
-          ['threatActors', 'pageInfo', 'globalCount'],
-          this.props.data,
+      <QueryRenderer
+        query={stixDomainObjectBookmarksQuery}
+        variables={{ types: ['Threat-Actor'] }}
+        render={({ props }) => (
+          <div>
+            <StixDomainObjectBookmarks
+              data={props}
+              onLabelClick={onLabelClick.bind(this)}
+              setBookmarkList={this.handleSetBookmarkList.bind(this)}
+            />
+            <ListCardsContent
+              initialLoading={initialLoading}
+              loadMore={relay.loadMore.bind(this)}
+              hasMore={relay.hasMore.bind(this)}
+              isLoading={relay.isLoading.bind(this)}
+              dataList={pathOr([], ['threatActors', 'edges'], this.props.data)}
+              globalCount={pathOr(
+                nbOfCardsToLoad,
+                ['threatActors', 'pageInfo', 'globalCount'],
+                this.props.data,
+              )}
+              CardComponent={<ThreatActorCard />}
+              DummyCardComponent={<ThreatActorCardDummy />}
+              nbOfCardsToLoad={nbOfCardsToLoad}
+              onLabelClick={onLabelClick.bind(this)}
+              bookmarkList={bookmarks}
+            />
+          </div>
         )}
-        CardComponent={<ThreatActorCard />}
-        DummyCardComponent={<ThreatActorCardDummy />}
-        nbOfCardsToLoad={nbOfCardsToLoad}
-        onLabelClick={onLabelClick.bind(this)}
       />
     );
   }
@@ -44,6 +72,7 @@ class ThreatActorsCards extends Component {
 
 ThreatActorsCards.propTypes = {
   data: PropTypes.object,
+  extra: PropTypes.object,
   connectorsExport: PropTypes.array,
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,

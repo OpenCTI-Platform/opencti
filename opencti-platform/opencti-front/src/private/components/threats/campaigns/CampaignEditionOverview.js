@@ -57,6 +57,7 @@ const campaignMutationFieldPatch = graphql`
     campaignEdit(id: $id) {
       fieldPatch(input: $input) {
         ...CampaignEditionOverview_campaign
+        ...Campaign_campaign
       }
     }
   }

@@ -53,6 +53,7 @@ export const noteMutationFieldPatch = graphql`
     noteEdit(id: $id) {
       fieldPatch(input: $input) {
         ...NoteEditionOverview_note
+        ...Note_note
       }
     }
   }

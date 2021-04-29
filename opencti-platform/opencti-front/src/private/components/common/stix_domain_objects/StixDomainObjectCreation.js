@@ -190,7 +190,7 @@ const stixDomainObjectCreationMutation = graphql`
         name
         description
       }
-      ... on XOpenCTIIncident {
+      ... on Incident {
         name
         description
       }
@@ -313,125 +313,73 @@ class StixDomainObjectCreation extends Component {
         containerstyle={{ width: '100%' }}
       >
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.some(
-          (r) => ['Stix-Domain-Object', 'Organization', 'Identity'].indexOf(r) >= 0,
-        ) ? (
-          <MenuItem value="Organization">{t('Organization')}</MenuItem>
-          ) : (
-            ''
-          )}
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Organization', 'Identity'].indexOf(r) >= 0,
+          ) && <MenuItem value="Organization">{t('Organization')}</MenuItem>)}
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.some(
-          (r) => ['Stix-Domain-Object', 'Sector', 'Identity'].indexOf(r) >= 0,
-        ) ? (
-          <MenuItem value="Sector">{t('Sector')}</MenuItem>
-          ) : (
-            ''
-          )}
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Sector', 'Identity'].indexOf(r) >= 0,
+          ) && <MenuItem value="Sector">{t('Sector')}</MenuItem>)}
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.some(
-          (r) => ['Stix-Domain-Object', 'Individual', 'Identity'].indexOf(r) >= 0,
-        ) ? (
-          <MenuItem value="Individual">{t('Individual')}</MenuItem>
-          ) : (
-            ''
-          )}
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Individual', 'Identity'].indexOf(r) >= 0,
+          ) && <MenuItem value="Individual">{t('Individual')}</MenuItem>)}
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.some(
-          (r) => ['Stix-Domain-Object', 'Threat-Actor'].indexOf(r) >= 0,
-        ) ? (
-          <MenuItem value="Threat-Actor">{t('Threat actor')}</MenuItem>
-          ) : (
-            ''
-          )}
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Threat-Actor'].indexOf(r) >= 0,
+          ) && <MenuItem value="Threat-Actor">{t('Threat actor')}</MenuItem>)}
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.some(
-          (r) => ['Stix-Domain-Object', 'Intrusion-Set'].indexOf(r) >= 0,
-        ) ? (
-          <MenuItem value="Intrusion-Set">{t('Intrusion set')}</MenuItem>
-          ) : (
-            ''
-          )}
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Intrusion-Set'].indexOf(r) >= 0,
+          ) && <MenuItem value="Intrusion-Set">{t('Intrusion set')}</MenuItem>)}
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.some(
-          (r) => ['Stix-Domain-Object', 'Campaign'].indexOf(r) >= 0,
-        ) ? (
-          <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
-          ) : (
-            ''
-          )}
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Campaign'].indexOf(r) >= 0,
+          ) && <MenuItem value="Campaign">{t('Campaign')}</MenuItem>)}
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.some(
-          (r) => ['Stix-Domain-Object', 'X-OpenCTI-Incident'].indexOf(r) >= 0,
-        ) ? (
-          <MenuItem value="X-OpenCTI-Incident">{t('Incident')}</MenuItem>
-          ) : (
-            ''
-          )}
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Incident'].indexOf(r) >= 0,
+          ) && <MenuItem value="Incident">{t('Incident')}</MenuItem>)}
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.some(
-          (r) => ['Stix-Domain-Object', 'Malware'].indexOf(r) >= 0,
-        ) ? (
-          <MenuItem value="Malware">{t('Malware')}</MenuItem>
-          ) : (
-            ''
-          )}
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Malware'].indexOf(r) >= 0,
+          ) && <MenuItem value="Malware">{t('Malware')}</MenuItem>)}
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.some(
-          (r) => ['Stix-Domain-Object', 'Tool'].indexOf(r) >= 0,
-        ) ? (
-          <MenuItem value="Tool">{t('Tool')}</MenuItem>
-          ) : (
-            ''
-          )}
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Tool'].indexOf(r) >= 0,
+          ) && <MenuItem value="Tool">{t('Tool')}</MenuItem>)}
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.some(
-          (r) => ['Stix-Domain-Object', 'Vulnerability'].indexOf(r) >= 0,
-        ) ? (
-          <MenuItem value="Vulnerability">{t('Vulnerability')}</MenuItem>
-          ) : (
-            ''
-          )}
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Vulnerability'].indexOf(r) >= 0,
+          ) && <MenuItem value="Vulnerability">{t('Vulnerability')}</MenuItem>)}
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.some(
-          (r) => ['Stix-Domain-Object', 'Attack-Pattern'].indexOf(r) >= 0,
-        ) ? (
-          <MenuItem value="Attack-Pattern">{t('Attack pattern')}</MenuItem>
-          ) : (
-            ''
-          )}
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Infrastructure'].indexOf(r) >= 0,
+          ) && (
+            <MenuItem value="Infrastructure">{t('Infrastructure')}</MenuItem>
+          ))}
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.some(
-          (r) => ['Stix-Domain-Object', 'Indicator'].indexOf(r) >= 0,
-        ) ? (
-          <MenuItem value="Indicator">{t('Indicator')}</MenuItem>
-          ) : (
-            ''
-          )}
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Attack-Pattern'].indexOf(r) >= 0,
+          ) && (
+            <MenuItem value="Attack-Pattern">{t('Attack pattern')}</MenuItem>
+          ))}
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.some(
-          (r) => ['Stix-Domain-Object', 'Location', 'City'].indexOf(r) >= 0,
-        ) ? (
-          <MenuItem value="City">{t('City')}</MenuItem>
-          ) : (
-            ''
-          )}
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Indicator'].indexOf(r) >= 0,
+          ) && <MenuItem value="Indicator">{t('Indicator')}</MenuItem>)}
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.some(
-          (r) => ['Stix-Domain-Object', 'Location', 'Country'].indexOf(r) >= 0,
-        ) ? (
-          <MenuItem value="Country">{t('Country')}</MenuItem>
-          ) : (
-            ''
-          )}
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Location', 'City'].indexOf(r) >= 0,
+          ) && <MenuItem value="City">{t('City')}</MenuItem>)}
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.some(
-          (r) => ['Stix-Domain-Object', 'Location', 'Region'].indexOf(r) >= 0,
-        ) ? (
-          <MenuItem value="Region">{t('Region')}</MenuItem>
-          ) : (
-            ''
-          )}
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Location', 'Country'].indexOf(r) >= 0,
+          ) && <MenuItem value="Country">{t('Country')}</MenuItem>)}
+        {targetStixDomainObjectTypes === undefined
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Location', 'Region'].indexOf(r) >= 0,
+          ) && <MenuItem value="Region">{t('Region')}</MenuItem>)}
       </Field>
     );
   }

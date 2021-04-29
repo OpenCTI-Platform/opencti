@@ -63,7 +63,7 @@ import {
   RELATION_USES,
 } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
+import { isStixCyberObservableRelationship, RELATION_LINKED } from '../schema/stixCyberObservableRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { isEmptyField } from './utils';
 
@@ -477,21 +477,21 @@ export const stixCoreRelationshipsMapping = {
   Tool_Country: ['targets'],
   Tool_City: ['targets'],
   Tool_Position: ['targets'],
-  'X-OpenCTI-Incident_Intrusion-Set': ['attributed-to'],
-  'X-OpenCTI-Incident_Threat-Actor': ['attributed-to'],
-  'X-OpenCTI-Incident_Campaign': ['attributed-to'],
-  'X-OpenCTI-Incident_Infrastructure': ['compromises', 'uses'],
-  'X-OpenCTI-Incident_Region': ['originates-from', 'targets'],
-  'X-OpenCTI-Incident_Country': ['originates-from', 'targets'],
-  'X-OpenCTI-Incident_City': ['originates-from', 'targets'],
-  'X-OpenCTI-Incident_Position': ['originates-from', 'targets'],
-  'X-OpenCTI-Incident_Sector': ['targets'],
-  'X-OpenCTI-Incident_Organization': ['targets'],
-  'X-OpenCTI-Incident_Individual': ['targets'],
-  'X-OpenCTI-Incident_Vulnerability': ['targets'],
-  'X-OpenCTI-Incident_Attack-Pattern': ['uses'],
-  'X-OpenCTI-Incident_Malware': ['uses'],
-  'X-OpenCTI-Incident_Tool': ['uses'],
+  'Incident_Intrusion-Set': ['attributed-to'],
+  'Incident_Threat-Actor': ['attributed-to'],
+  Incident_Campaign: ['attributed-to'],
+  Incident_Infrastructure: ['compromises', 'uses'],
+  Incident_Region: ['originates-from', 'targets'],
+  Incident_Country: ['originates-from', 'targets'],
+  Incident_City: ['originates-from', 'targets'],
+  Incident_Position: ['originates-from', 'targets'],
+  Incident_Sector: ['targets'],
+  Incident_Organization: ['targets'],
+  Incident_Individual: ['targets'],
+  Incident_Vulnerability: ['targets'],
+  'Incident_Attack-Pattern': ['uses'],
+  Incident_Malware: ['uses'],
+  Incident_Tool: ['uses'],
   Region_Region: ['located-at'],
   Country_Region: ['located-at'],
   City_Country: ['located-at'],
@@ -504,6 +504,34 @@ export const stixCoreRelationshipsMapping = {
   'IPv6-Addr_Country': ['located-at'],
   'IPv6-Addr_City': ['located-at'],
   'IPv6-Addr_Position': ['located-at'],
+  'Artifact_IPv4-Addr': ['communicates-with'],
+  'Artifact_IPv6-Addr': ['communicates-with'],
+  'Artifact_Domain-Name': ['communicates-with'],
+  'StixFile_IPv4-Addr': ['communicates-with'],
+  'StixFile_IPv6-Addr': ['communicates-with'],
+  'StixFile_Domain-Name': ['communicates-with'],
+  'Url_IPv4-Addr': ['communicates-with'],
+  'Url_IPv6-Addr': ['communicates-with'],
+  'Url_Domain-Name': ['communicates-with'],
+  'Domain-Name_IPv4-Addr': ['communicates-with'],
+  'Domain-Name_IPv6-Addr': ['communicates-with'],
+  'Domain-Name_Domain-Name': ['communicates-with'],
+  'X-OpenCTI-Hostname_IPv4-Addr': ['communicates-with'],
+  'X-OpenCTI-Hostname_IPv6-Addr': ['communicates-with'],
+  'X-OpenCTI-Hostname_Domain-Name': ['communicates-with'],
+  'Artifact_Attack-Pattern': ['uses'],
+  'StixFile_Attack-Pattern': ['uses'],
+  'Url_Attack-Pattern': ['uses'],
+  'Domain-Name_Attack-Pattern': ['uses'],
+  'X-OpenCTI-Hostname_Attack-Pattern': ['uses'],
+  StixFile_StixFile: ['drops'],
+  StixFile_Artifact: ['drops'],
+  Artifact_StixFile: ['drops'],
+  Artifact_Artifact: ['drops'],
+  Url_StixFile: ['drops'],
+  Url_Artifact: ['drops'],
+  'X-OpenCTI-Hostname_StixFile': ['drops'],
+  'X-OpenCTI-Hostname_Artifact': ['drops'],
   targets_Region: ['located-at'],
   targets_Country: ['located-at'],
   targets_City: ['located-at'],
@@ -536,6 +564,7 @@ export const checkStixCoreRelationshipMapping = (fromType, toType, relationshipT
 export const stixCyberObservableRelationshipsMapping = {
   Directory_Directory: ['contains'],
   Directory_StixFile: ['contains'],
+  Directory_Artifact: ['contains'],
   'Email-Addr_User-Account': ['belongs-to'],
   'Email-Message_Email-Addr': ['from', 'sender', 'to', 'bcc'],
   'Email-Message_Email-Mime-Part-Type': ['body-multipart'],
@@ -556,5 +585,8 @@ export const stixCyberObservableRelationshipsMapping = {
 };
 
 export const checkStixCyberObservableRelationshipMapping = (fromType, toType, relationshipType) => {
+  if (relationshipType === RELATION_LINKED || relationshipType === RELATION_LINKED) {
+    return true;
+  }
   return !!R.includes(relationshipType, stixCyberObservableRelationshipsMapping[`${fromType}_${toType}`] || []);
 };

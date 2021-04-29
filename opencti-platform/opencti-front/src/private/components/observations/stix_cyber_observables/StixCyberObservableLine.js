@@ -64,7 +64,9 @@ class StixCyberObservableLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
-        to={`/dashboard/observations/observables/${node.id}`}
+        to={`/dashboard/observations/${
+          node.entity_type === 'Artifact' ? 'artifacts' : 'observables'
+        }/${node.id}`}
       >
         <ListItemIcon
           classes={{ root: classes.itemIcon }}

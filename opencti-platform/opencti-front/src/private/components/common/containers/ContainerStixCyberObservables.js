@@ -102,7 +102,7 @@ class ContainerStixCyberObservablesComponent extends Component {
       },
       observable_value: {
         label: 'Value',
-        width: '45%',
+        width: '40%',
         isSortable: true,
       },
       createdBy: {
@@ -159,6 +159,7 @@ class ContainerStixCyberObservablesComponent extends Component {
                 initialLoading={props === null}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
                 onTypesChange={this.handleToggle.bind(this)}
+                openExports={openExports}
               />
             )}
           />

@@ -3,67 +3,89 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
-import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
-import {
-  XOpenCTIIncidentCard,
-  XOpenCTIIncidentCardDummy,
-} from './XOpenCTIIncidentCard';
+import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import { ArtifactLine, ArtifactLineDummy } from './ArtifactLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfCardsToLoad = 50;
+const nbOfRowsToLoad = 50;
 
-class XOpenCTIIncidentsCards extends Component {
+class ArtifactsLines extends Component {
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
       this.props,
-      'xOpenCTIIncidents',
+      'stixCyberObservables',
       this.props.setNumberOfElements.bind(this),
     );
   }
 
   render() {
-    const { initialLoading, relay, onLabelClick } = this.props;
+    const {
+      initialLoading,
+      dataColumns,
+      relay,
+      onLabelClick,
+      onToggleEntity,
+      selectedElements,
+      selectAll,
+    } = this.props;
     return (
-      <ListCardsContent
+      <ListLinesContent
         initialLoading={initialLoading}
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['xOpenCTIIncidents', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfCardsToLoad,
-          ['xOpenCTIIncidents', 'pageInfo', 'globalCount'],
+        dataList={pathOr(
+          [],
+          ['stixCyberObservables', 'edges'],
           this.props.data,
         )}
-        CardComponent={<XOpenCTIIncidentCard />}
-        DummyCardComponent={<XOpenCTIIncidentCardDummy />}
-        nbOfCardsToLoad={nbOfCardsToLoad}
+        globalCount={pathOr(
+          nbOfRowsToLoad,
+          ['stixCyberObservables', 'pageInfo', 'globalCount'],
+          this.props.data,
+        )}
+        LineComponent={<ArtifactLine />}
+        DummyLineComponent={<ArtifactLineDummy />}
+        dataColumns={dataColumns}
+        nbOfRowsToLoad={nbOfRowsToLoad}
         onLabelClick={onLabelClick.bind(this)}
+        selectedElements={selectedElements}
+        selectAll={selectAll}
+        onToggleEntity={onToggleEntity.bind(this)}
       />
     );
   }
 }
 
-XOpenCTIIncidentsCards.propTypes = {
+ArtifactsLines.propTypes = {
+  classes: PropTypes.object,
+  paginationOptions: PropTypes.object,
+  dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
+  artifacts: PropTypes.object,
   initialLoading: PropTypes.bool,
   onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
 };
 
-export const xOpenCTIIncidentsCardsQuery = graphql`
-  query XOpenCTIIncidentsCardsPaginationQuery(
+export const artifactsLinesQuery = graphql`
+  query ArtifactsLinesPaginationQuery(
+    $types: [String]
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: XOpenCTIIncidentsOrdering
+    $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
-    $filters: [XOpenCTIIncidentsFiltering]
+    $filters: [StixCyberObservablesFiltering]
   ) {
-    ...XOpenCTIIncidentsCards_data
+    ...ArtifactsLines_data
       @arguments(
+        types: $types
         search: $search
         count: $count
         cursor: $cursor
@@ -75,32 +97,46 @@ export const xOpenCTIIncidentsCardsQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  XOpenCTIIncidentsCards,
+  ArtifactsLines,
   {
     data: graphql`
-      fragment XOpenCTIIncidentsCards_data on Query
+      fragment ArtifactsLines_data on Query
       @argumentDefinitions(
+        types: { type: "[String]" }
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        orderBy: { type: "XOpenCTIIncidentsOrdering", defaultValue: name }
+        orderBy: {
+          type: "StixCyberObservablesOrdering"
+          defaultValue: created_at
+        }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[XOpenCTIIncidentsFiltering]" }
+        filters: { type: "[StixCyberObservablesFiltering]" }
       ) {
-        xOpenCTIIncidents(
+        stixCyberObservables(
+          types: $types
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_xOpenCTIIncidents") {
+        ) @connection(key: "Pagination_stixCyberObservables") {
           edges {
             node {
               id
-              name
-              description
-              ...XOpenCTIIncidentCard_node
+              entity_type
+              observable_value
+              created_at
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
+              ...ArtifactLine_node
             }
           }
           pageInfo {
@@ -115,7 +151,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.xOpenCTIIncidents;
+      return props.data && props.data.artifacts;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -125,6 +161,7 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
+        types: fragmentVariables.types,
         search: fragmentVariables.search,
         count,
         cursor,
@@ -133,6 +170,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: xOpenCTIIncidentsCardsQuery,
+    query: artifactsLinesQuery,
   },
 );

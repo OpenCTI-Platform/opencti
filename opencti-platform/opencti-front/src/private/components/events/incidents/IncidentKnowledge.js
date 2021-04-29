@@ -9,11 +9,10 @@ import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import XOpenCTIIncidentPopover from './XOpenCTIIncidentPopover';
+import IncidentPopover from './IncidentPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 
 const styles = () => ({
@@ -23,34 +22,22 @@ const styles = () => ({
   },
 });
 
-class XOpenCTIIncidentKnowledgeComponent extends Component {
+class IncidentKnowledgeComponent extends Component {
   render() {
-    const { classes, xOpenCTIIncident } = this.props;
-    const link = `/dashboard/events/incidents/${xOpenCTIIncident.id}/knowledge`;
+    const { classes, incident } = this.props;
+    const link = `/dashboard/events/incidents/${incident.id}/knowledge`;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
-          stixDomainObject={xOpenCTIIncident}
-          PopoverComponent={<XOpenCTIIncidentPopover />}
-        />
-        <StixCoreObjectKnowledgeBar
-          stixCoreObjectLink={link}
-          availableSections={[
-            'attribution',
-            'victimology',
-            'attack_patterns',
-            'malwares',
-            'tools',
-            'vulnerabilities',
-            'observables',
-          ]}
+          stixDomainObject={incident}
+          PopoverComponent={<IncidentPopover />}
         />
         <Route
           exact
           path="/dashboard/events/incidents/:incidentId/knowledge/relations/:relationId"
           render={(routeProps) => (
             <StixCoreRelationship
-              entityId={xOpenCTIIncident.id}
+              entityId={incident.id}
               paddingRight={true}
               {...routeProps}
             />
@@ -61,8 +48,8 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
           path="/dashboard/events/incidents/:incidentId/knowledge/overview"
           render={(routeProps) => (
             <StixDomainObjectThreatKnowledge
-              stixDomainObjectId={xOpenCTIIncident.id}
-              stixDomainObjectType="X-OpenCTI-Incident"
+              stixDomainObjectId={incident.id}
+              stixDomainObjectType="Incident"
               displayObservablesStats={true}
               {...routeProps}
             />
@@ -73,7 +60,7 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
           path="/dashboard/events/incidents/:incidentId/knowledge/attribution"
           render={(routeProps) => (
             <EntityStixCoreRelationships
-              entityId={xOpenCTIIncident.id}
+              entityId={incident.id}
               relationshipTypes={['attributed-to']}
               targetStixDomainObjectTypes={[
                 'Threat-Actor',
@@ -91,7 +78,7 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
           path="/dashboard/events/incidents/:incidentId/knowledge/victimology"
           render={(routeProps) => (
             <StixDomainObjectVictimology
-              stixDomainObjectId={xOpenCTIIncident.id}
+              stixDomainObjectId={incident.id}
               entityLink={link}
               {...routeProps}
             />
@@ -102,7 +89,7 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
           path="/dashboard/events/incidents/:incidentId/knowledge/attack_patterns"
           render={(routeProps) => (
             <StixDomainObjectAttackPatterns
-              stixDomainObjectId={xOpenCTIIncident.id}
+              stixDomainObjectId={incident.id}
               entityLink={link}
               {...routeProps}
             />
@@ -113,7 +100,7 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
           path="/dashboard/events/incidents/:incidentId/knowledge/malwares"
           render={(routeProps) => (
             <EntityStixCoreRelationships
-              entityId={xOpenCTIIncident.id}
+              entityId={incident.id}
               relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
@@ -127,7 +114,7 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
           path="/dashboard/events/incidents/:incidentId/knowledge/tools"
           render={(routeProps) => (
             <EntityStixCoreRelationships
-              entityId={xOpenCTIIncident.id}
+              entityId={incident.id}
               relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Tool']}
               entityLink={link}
@@ -141,7 +128,7 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
           path="/dashboard/events/incidents/:incidentId/knowledge/vulnerabilities"
           render={(routeProps) => (
             <EntityStixCoreRelationships
-              entityId={xOpenCTIIncident.id}
+              entityId={incident.id}
               relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Vulnerability']}
               entityLink={link}
@@ -155,7 +142,7 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
           path="/dashboard/events/incidents/:incidentId/knowledge/observables"
           render={(routeProps) => (
             <StixCoreObjectStixCyberObservables
-              stixCoreObjectId={xOpenCTIIncident.id}
+              stixCoreObjectId={incident.id}
               stixCoreObjectLink={link}
               noRightBar={true}
               {...routeProps}
@@ -167,27 +154,24 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
   }
 }
 
-XOpenCTIIncidentKnowledgeComponent.propTypes = {
-  xOpenCTIIncident: PropTypes.object,
+IncidentKnowledgeComponent.propTypes = {
+  incident: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const XOpenCTIXOpenCTIIncidentKnowledge = createFragmentContainer(
-  XOpenCTIIncidentKnowledgeComponent,
-  {
-    xOpenCTIIncident: graphql`
-      fragment XOpenCTIIncidentKnowledge_xOpenCTIIncident on XOpenCTIIncident {
-        id
-        name
-        aliases
-      }
-    `,
-  },
-);
+const IncidentKnowledge = createFragmentContainer(IncidentKnowledgeComponent, {
+  incident: graphql`
+    fragment IncidentKnowledge_incident on Incident {
+      id
+      name
+      aliases
+    }
+  `,
+});
 
 export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(XOpenCTIXOpenCTIIncidentKnowledge);
+)(IncidentKnowledge);

@@ -131,7 +131,7 @@ class SectorKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={sector.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+                targetStixDomainObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}

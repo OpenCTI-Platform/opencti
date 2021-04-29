@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import {
-  map, keys, groupBy, assoc, compose,
-} from 'ramda';
+import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Accordion from '@material-ui/core/Accordion';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
@@ -15,6 +13,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { ExpandMore } from '@material-ui/icons';
+import Checkbox from '@material-ui/core/Checkbox';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
@@ -67,7 +66,7 @@ class StixCoreRelationshipCreationFromEntityLinesContainer extends Component {
 
   handleChangePanel(panelKey, event, expanded) {
     this.setState({
-      expandedPanels: assoc(panelKey, expanded, this.state.expandedPanels),
+      expandedPanels: R.assoc(panelKey, expanded, this.state.expandedPanels),
     });
   }
 
@@ -83,17 +82,19 @@ class StixCoreRelationshipCreationFromEntityLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, data, handleSelect,
+      t, classes, data, handleSelect, targetEntities,
     } = this.props;
-    const stixDomainObjectsNodes = map(
+    const targetEntitiesIds = R.pluck('id', targetEntities);
+    const stixDomainObjectsNodes = R.map(
       (n) => n.node,
       data.stixDomainObjects.edges,
     );
-    const byType = groupBy((stixDomainObject) => stixDomainObject.entity_type);
+    const byType = R.groupBy(
+      (stixDomainObject) => stixDomainObject.entity_type,
+    );
     const stixDomainObjects = byType(stixDomainObjectsNodes);
-    const stixDomainObjectsTypes = keys(stixDomainObjects);
+    const stixDomainObjectsTypes = R.keys(stixDomainObjects);
     let increment = 0;
-
     return (
       <div className={classes.container}>
         {stixDomainObjectsTypes.length > 0 ? (
@@ -141,6 +142,19 @@ class StixCoreRelationshipCreationFromEntityLinesContainer extends Component {
                         button={true}
                         onClick={handleSelect.bind(this, stixDomainObject)}
                       >
+                        <ListItemIcon
+                          style={{ minWidth: 40 }}
+                          onClick={handleSelect.bind(this, stixDomainObject)}
+                        >
+                          <Checkbox
+                            edge="start"
+                            checked={R.includes(
+                              stixDomainObject.id,
+                              targetEntitiesIds,
+                            )}
+                            disableRipple={true}
+                          />
+                        </ListItemIcon>
                         <ListItemIcon>
                           <ItemIcon type={type} />
                         </ListItemIcon>
@@ -174,6 +188,7 @@ class StixCoreRelationshipCreationFromEntityLinesContainer extends Component {
 
 StixCoreRelationshipCreationFromEntityLinesContainer.propTypes = {
   handleSelect: PropTypes.func,
+  targetEntities: PropTypes.func,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -297,7 +312,7 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                 name
                 description
               }
-              ... on XOpenCTIIncident {
+              ... on Incident {
                 name
                 description
               }
@@ -332,7 +347,7 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixCoreRelationshipCreationFromEntityStixDomainObjectsLines);

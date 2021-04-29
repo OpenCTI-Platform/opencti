@@ -42,8 +42,10 @@ export const resolveLink = (type) => {
       return '/dashboard/arsenal/tools';
     case 'Vulnerability':
       return '/dashboard/arsenal/vulnerabilities';
-    case 'X-OpenCTI-Incident':
+    case 'Incident':
       return '/dashboard/events/incidents';
+    case 'Artifact':
+      return '/dashboard/observations/artifacts';
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':
@@ -51,7 +53,6 @@ export const resolveLink = (type) => {
     case 'Email-Addr':
     case 'Email-Message':
     case 'Email-Mime-Part-Type':
-    case 'Artifact':
     case 'StixFile':
     case 'X509-Certificate':
     case 'IPv4-Addr':

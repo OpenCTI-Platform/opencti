@@ -63,6 +63,7 @@ const indicatorMutationFieldPatch = graphql`
     indicatorEdit(id: $id) {
       fieldPatch(input: $input) {
         ...IndicatorEditionOverview_indicator
+        ...Indicator_indicator
       }
     }
   }

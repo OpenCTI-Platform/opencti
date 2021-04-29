@@ -13,7 +13,6 @@ import {
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
-import { ConnectionHandler } from 'relay-runtime';
 import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -24,6 +23,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import { insertNode } from '../../../../utils/Store';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -111,16 +111,12 @@ class ThreatActorCreation extends Component {
       variables: {
         input: finalValues,
       },
-      updater: (store) => {
-        const payload = store.getRootField('threatActorAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node');
-        const conn = ConnectionHandler.getConnection(
-          store.get(store.getRoot().getDataID()),
-          'Pagination_threatActors',
-          this.props.paginationOptions,
-        );
-        ConnectionHandler.insertEdgeBefore(conn, newEdge);
-      },
+      updater: (store) => insertNode(
+        store,
+        'Pagination_threatActors',
+        this.props.paginationOptions,
+        'threatActorAdd',
+      ),
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);

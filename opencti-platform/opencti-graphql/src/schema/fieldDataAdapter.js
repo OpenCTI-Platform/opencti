@@ -2,6 +2,12 @@ import * as R from 'ramda';
 import { UnsupportedError } from '../config/errors';
 import { INTERNAL_IDS_ALIASES, IDS_STIX } from './general';
 import { STANDARD_HASHES } from './identifier';
+import { isDatedInternalObject } from './internalObject';
+import { isStixCoreObject } from './stixCoreObject';
+import { isStixCoreRelationship } from './stixCoreRelationship';
+import { isStixSightingRelationship } from './stixSightingRelationship';
+import { isStixMetaObject } from './stixMetaObject';
+import { isStixDomainObject } from './stixDomainObject';
 
 export const multipleAttributes = [
   IDS_STIX,
@@ -33,6 +39,7 @@ export const multipleAttributes = [
   'external_references',
   'kill_chain_phases',
   'tags',
+  'bookmarks',
 ];
 export const statsDateAttributes = [
   'created_at',
@@ -151,4 +158,23 @@ export const complexAttributeToApiFormat = (dataKey, instance) => {
       return { [key]: labValue, [value]: val };
     })
   )(attributeValue);
+};
+
+export const isUpdatedAtObject = (type) => {
+  return (
+    isDatedInternalObject(type) ||
+    isStixMetaObject(type) ||
+    isStixCoreObject(type) ||
+    isStixCoreRelationship(type) ||
+    isStixSightingRelationship(type)
+  );
+};
+
+export const isModifiedObject = (type) => {
+  return (
+    isStixMetaObject(type) ||
+    isStixDomainObject(type) ||
+    isStixCoreRelationship(type) ||
+    isStixSightingRelationship(type)
+  );
 };

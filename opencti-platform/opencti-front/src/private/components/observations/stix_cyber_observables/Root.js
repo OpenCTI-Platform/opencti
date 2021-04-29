@@ -37,6 +37,9 @@ const stixCyberObservableQuery = graphql`
       ...StixCyberObservableIndicators_stixCyberObservable
       ...StixCyberObservableKnowledge_stixCyberObservable
     }
+    connectorsForImport {
+      ...StixCyberObservableEnrichment_connectorsForImport
+    }
   }
 `;
 

@@ -28,13 +28,14 @@ import TopMenuNote from './TopMenuNote';
 import TopMenuOpinion from './TopMenuOpinion';
 import TopMenuExternalReference from './TopMenuExternalReference';
 import TopMenuEvents from './TopMenuEvents';
-import TopMenuXOpenCTIIncident from './TopMenuXOpenCTIIncident';
+import TopMenuIncident from './TopMenuIncident';
 import TopMenuObservedData from './TopMenuObservedData';
 import TopMenuStixRelationshipSighting from './TopMenuStixRelationshipSighting';
 import TopMenuObservations from './TopMenuObservations';
 import TopMenuIndicator from './TopMenuIndicator';
 import TopMenuInfrastructure from './TopMenuInfrastructure';
 import TopMenuStixCyberObservable from './TopMenuStixCyberObservable';
+import TopMenuArtifact from './TopMenuArtifact';
 import TopMenuThreats from './TopMenuThreats';
 import TopMenuThreatActor from './TopMenuThreatActor';
 import TopMenuIntrusionSet from './TopMenuIntrusionSet';
@@ -185,7 +186,7 @@ const TopBar = ({
             <TopMenuEvents />
           )}
           {location.pathname.includes('/dashboard/events/incidents/') && (
-            <TopMenuXOpenCTIIncident />
+            <TopMenuIncident />
           )}
           {location.pathname.includes('/dashboard/events/observed_data/') && (
             <TopMenuObservedData />
@@ -206,6 +207,9 @@ const TopBar = ({
           {location.pathname.includes(
             '/dashboard/observations/observables/',
           ) && <TopMenuStixCyberObservable />}
+          {location.pathname.includes('/dashboard/observations/artifacts/') && (
+            <TopMenuArtifact />
+          )}
           {(location.pathname === '/dashboard/threats'
             || location.pathname.match('/dashboard/threats/[a-z_]+$')) && (
             <TopMenuThreats />

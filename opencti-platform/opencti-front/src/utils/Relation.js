@@ -130,21 +130,21 @@ const relationsTypesMapping = {
   Tool_Country: ['targets'],
   Tool_City: ['targets'],
   Tool_Position: ['targets'],
-  'X-OpenCTI-Incident_Intrusion-Set': ['attributed-to'],
-  'X-OpenCTI-Incident_Threat-Actor': ['attributed-to'],
-  'X-OpenCTI-Incident_Campaign': ['attributed-to'],
-  'X-OpenCTI-Incident_Infrastructure': ['compromises', 'uses'],
-  'X-OpenCTI-Incident_Region': ['targets', 'originates-from'],
-  'X-OpenCTI-Incident_Country': ['targets', 'originates-from'],
-  'X-OpenCTI-Incident_City': ['targets', 'originates-from'],
-  'X-OpenCTI-Incident_Position': ['targets', 'originates-from'],
-  'X-OpenCTI-Incident_Sector': ['targets'],
-  'X-OpenCTI-Incident_Organization': ['targets'],
-  'X-OpenCTI-Incident_Individual': ['targets'],
-  'X-OpenCTI-Incident_Vulnerability': ['targets'],
-  'X-OpenCTI-Incident_Attack-Pattern': ['uses'],
-  'X-OpenCTI-Incident_Malware': ['uses'],
-  'X-OpenCTI-Incident_Tool': ['uses'],
+  'Incident_Intrusion-Set': ['attributed-to'],
+  'Incident_Threat-Actor': ['attributed-to'],
+  Incident_Campaign: ['attributed-to'],
+  Incident_Infrastructure: ['compromises', 'uses'],
+  Incident_Region: ['targets', 'originates-from'],
+  Incident_Country: ['targets', 'originates-from'],
+  Incident_City: ['targets', 'originates-from'],
+  Incident_Position: ['targets', 'originates-from'],
+  Incident_Sector: ['targets'],
+  Incident_Organization: ['targets'],
+  Incident_Individual: ['targets'],
+  Incident_Vulnerability: ['targets'],
+  'Incident_Attack-Pattern': ['uses'],
+  Incident_Malware: ['uses'],
+  Incident_Tool: ['uses'],
   Country_Region: ['located-at'],
   City_Country: ['located-at'],
   Position_City: ['located-at'],
@@ -156,6 +156,12 @@ const relationsTypesMapping = {
   'IPv6-Addr_Country': ['located-at'],
   'IPv6-Addr_City': ['located-at'],
   'IPv6-Addr_Position': ['located-at'],
+  'IPv4-Addr_Organization': ['belongs-to'],
+  'IPv4-Addr_Individual': ['belongs-to'],
+  'Artifact_IPv4-Addr': ['communicates-with'],
+  'Artifact_IPv6-Addr': ['communicates-with'],
+  'StixFile_IPv4-Addr': ['communicates-with'],
+  'StixFile_IPv6-Addr': ['communicates-with'],
   targets_City: ['located-at'],
   targets_Country: ['located-at'],
   targets_Region: ['located-at'],
@@ -165,6 +171,7 @@ const relationsTypesMapping = {
 const stixCyberObservableRelationshipTypesMapping = {
   Directory_Directory: ['contains'],
   Directory_StixFile: ['contains'],
+  Directory_Artifact: ['contains'],
   'Email-Addr_User-Account': ['belongs-to'],
   'Email-Message_Email-Addr': ['from', 'sender', 'to', 'bcc'],
   'Email-Message_Email-Mime-Part-Type': ['body-multipart'],
@@ -200,7 +207,7 @@ export const resolveStixCyberObservableRelationshipsTypes = (
   toType,
 ) => (stixCyberObservableRelationshipTypesMapping[`${fromType}_${toType}`]
   ? stixCyberObservableRelationshipTypesMapping[`${fromType}_${toType}`]
-  : []);
+  : ['x_opencti_linked-to']);
 
 export const resolveTargetTypes = (fromType) => pipe(
   keys,
@@ -208,10 +215,20 @@ export const resolveTargetTypes = (fromType) => pipe(
   map((n) => split('_', n)[1]),
 )(relationsTypesMapping);
 
-export const resolveStixCyberObservableRelationshipsTargetTypes = (fromType) => pipe(
-  keys,
-  filter((n) => n.includes(fromType)),
-  map((n) => split('_', n)[1]),
-)(stixCyberObservableRelationshipTypesMapping);
+export const resolveStixCyberObservableRelationshipsTargetTypes = (
+  fromType,
+) => {
+  const toTypes = pipe(
+    keys,
+    filter((n) => n.includes(fromType)),
+    map((n) => split('_', n)[1]),
+  )(stixCyberObservableRelationshipTypesMapping);
+  const fromTypes = pipe(
+    keys,
+    filter((n) => n.includes(fromType)),
+    map((n) => split('_', n)[0]),
+  )(stixCyberObservableRelationshipTypesMapping);
+  return { fromTypes, toTypes };
+};
 
 export const hasKillChainPhase = (type) => includes(type, ['uses', 'exploits', 'drops', 'indicates']);

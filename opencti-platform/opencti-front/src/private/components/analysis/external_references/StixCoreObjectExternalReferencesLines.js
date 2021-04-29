@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { createPaginationContainer } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
@@ -18,8 +19,11 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
-import { LinkOff } from '@material-ui/icons';
-import { compose } from 'ramda';
+import {
+  LinkOff,
+  ExpandMoreOutlined,
+  ExpandLessOutlined,
+} from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
@@ -35,6 +39,7 @@ const styles = (theme) => ({
     margin: '-4px 0 0 0',
     padding: 0,
     borderRadius: 6,
+    position: 'relative',
   },
   avatar: {
     width: 24,
@@ -49,6 +54,18 @@ const styles = (theme) => ({
     display: 'inline-block',
     height: '1em',
     backgroundColor: theme.palette.grey[700],
+  },
+  buttonExpand: {
+    position: 'absolute',
+    bottom: 2,
+    width: '100%',
+    height: 25,
+    backgroundColor: 'rgba(255, 255, 255, .2)',
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    '&:hover': {
+      backgroundColor: 'rgba(255, 255, 255, .5)',
+    },
   },
 });
 
@@ -66,7 +83,12 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
       externalLink: null,
       removeExternalReference: null,
       removing: false,
+      expanded: false,
     };
+  }
+
+  handleToggleExpand() {
+    this.setState({ expanded: !this.state.expanded });
   }
 
   handleOpenDialog(externalReferenceEdge) {
@@ -130,6 +152,9 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
     const {
       t, classes, stixCoreObjectId, data,
     } = this.props;
+    const { expanded } = this.state;
+    const externalReferencesEdges = data.stixCoreObject.externalReferences.edges;
+    const expandable = externalReferencesEdges.length > 7;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -145,9 +170,9 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
         </Security>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          {data.stixCoreObject.externalReferences.edges.length > 0 ? (
-            <List>
-              {data.stixCoreObject.externalReferences.edges.map(
+          {externalReferencesEdges.length > 0 ? (
+            <List style={{ marginBottom: 0 }}>
+              {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
                 (externalReferenceEdge) => {
                   const externalReference = externalReferenceEdge.node;
                   const externalReferenceId = externalReference.external_id
@@ -244,6 +269,20 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                 {t('No entities of this type has been found.')}
               </span>
             </div>
+          )}
+          {expandable && (
+            <Button
+              variant="contained"
+              size="small"
+              onClick={this.handleToggleExpand.bind(this)}
+              classes={{ root: classes.buttonExpand }}
+            >
+              {expanded ? (
+                <ExpandLessOutlined fontSize="small" />
+              ) : (
+                <ExpandMoreOutlined fontSize="small" />
+              )}
+            </Button>
           )}
         </Paper>
         <Dialog
@@ -367,7 +406,7 @@ const StixCoreObjectExternalReferencesLines = createPaginationContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixCoreObjectExternalReferencesLines);

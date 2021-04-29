@@ -7,6 +7,8 @@ import Button from '@material-ui/core/Button';
 import {
   Google, KeyOutline, Facebook, Github,
 } from 'mdi-material-ui';
+import Markdown from 'react-markdown';
+import Paper from '@material-ui/core/Paper';
 import { APP_BASE_PATH, QueryRenderer } from '../../relay/environment';
 import { ConnectedIntlProvider } from '../../components/AppIntlProvider';
 import logo from '../../resources/images/logo_opencti.png';
@@ -61,12 +63,18 @@ const styles = (theme) => ({
     marginRight: theme.spacing(1),
     fontSize: 20,
   },
+  paper: {
+    marginBottom: 20,
+    padding: 5,
+    textAlign: 'center',
+  },
 });
 
 const LoginQuery = graphql`
   query LoginQuery {
     settings {
       platform_demo
+      platform_login_message
       platform_providers {
         name
         type
@@ -143,6 +151,7 @@ const Login = ({ classes }) => {
       variables={{}}
       render={({ props }) => {
         if (props && props.settings) {
+          const loginMessage = props.settings.platform_login_message;
           const providers = props.settings.platform_providers;
           const isAuthForm = filter((p) => p.type === 'FORM', providers).length > 0;
           const authSSOs = filter((p) => p.type === 'SSO', providers);
@@ -151,6 +160,11 @@ const Login = ({ classes }) => {
             <ConnectedIntlProvider settings={props.settings}>
               <div className={classes.container} style={{ marginTop }}>
                 <img src={logo} alt="logo" className={classes.logo} />
+                {loginMessage && loginMessage.length > 0 && (
+                  <Paper classes={{ root: classes.paper }} elevation={2}>
+                    <Markdown source={loginMessage} />
+                  </Paper>
+                )}
                 {isAuthForm && (
                   <LoginForm
                     demo={pathOr(false, ['settings', 'platform_demo'], props)}

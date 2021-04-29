@@ -54,25 +54,7 @@ const FileLineAskDeleteMutation = graphql`
   }
 `;
 
-const FileLineImportAskJobMutation = graphql`
-  mutation FileLineImportAskJobMutation($fileName: ID!) {
-    askJobImport(fileName: $fileName) {
-      ...FileLine_file
-    }
-  }
-`;
-
 class FileLineComponent extends Component {
-  askForImportJob() {
-    commitMutation({
-      mutation: FileLineImportAskJobMutation,
-      variables: { fileName: this.props.file.id },
-      onCompleted: () => {
-        MESSAGING$.notifySuccess('Import successfully asked');
-      },
-    });
-  }
-
   executeRemove(mutation, variables) {
     commitMutation({
       mutation,
@@ -111,6 +93,7 @@ class FileLineComponent extends Component {
       dense,
       disableImport,
       directDownload,
+      handleOpenImport,
     } = this.props;
     const { lastModifiedSinceMin, uploadStatus, metaData } = file;
     const { messages, errors } = metaData;
@@ -119,7 +102,9 @@ class FileLineComponent extends Component {
     const isOutdated = isProgress && lastModifiedSinceMin > 1;
     const isImportActive = () => connectors && filter((x) => x.data.active, connectors).length > 0;
     const fileName = file.name;
-    const toolTip = [...messages, ...errors].map((s) => s.message).join(', ');
+    const toolTip = directDownload
+      ? fileName
+      : [...messages, ...errors].map((s) => s.message).join(', ');
     return (
       <div>
         <ListItem
@@ -152,12 +137,12 @@ class FileLineComponent extends Component {
             />
           </Tooltip>
           <ListItemSecondaryAction style={{ right: 0 }}>
-            {!disableImport ? (
+            {!disableImport && (
               <Tooltip title={t('Launch an import of this file')}>
                 <span>
                   <IconButton
                     disabled={isProgress || !isImportActive()}
-                    onClick={this.askForImportJob.bind(this)}
+                    onClick={handleOpenImport.bind(this, file)}
                     aria-haspopup="true"
                     color="primary"
                   >
@@ -165,10 +150,8 @@ class FileLineComponent extends Component {
                   </IconButton>
                 </span>
               </Tooltip>
-            ) : (
-              ''
             )}
-            {!directDownload && !isFail ? (
+            {!directDownload && !isFail && (
               <Tooltip title={t('Download this file')}>
                 <span>
                   <IconButton
@@ -181,8 +164,6 @@ class FileLineComponent extends Component {
                   </IconButton>
                 </span>
               </Tooltip>
-            ) : (
-              ''
             )}
             {isFail || isOutdated ? (
               <Tooltip title={t('Delete this file')}>
@@ -225,6 +206,7 @@ FileLineComponent.propTypes = {
   dense: PropTypes.bool,
   disableImport: PropTypes.bool,
   directDownload: PropTypes.bool,
+  handleOpenImport: PropTypes.func,
 };
 
 const FileLine = createFragmentContainer(FileLineComponent, {

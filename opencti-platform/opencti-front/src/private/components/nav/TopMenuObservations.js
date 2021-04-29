@@ -4,7 +4,12 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { HexagonOutline, ShieldSearch, ServerNetwork } from 'mdi-material-ui';
+import {
+  HexagonOutline,
+  ShieldSearch,
+  ServerNetwork,
+  ArchiveOutline,
+} from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
@@ -43,6 +48,25 @@ class TopMenuObservations extends Component {
         >
           <HexagonOutline className={classes.icon} fontSize="small" />
           {t('Observables')}
+        </Button>
+        <Button
+          component={Link}
+          to="/dashboard/observations/artifacts"
+          variant={
+            location.pathname.includes('/dashboard/observations/artifacts')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes('/dashboard/observations/artifacts')
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          <ArchiveOutline className={classes.icon} fontSize="small" />
+          {t('Artifacts')}
         </Button>
         <Button
           component={Link}

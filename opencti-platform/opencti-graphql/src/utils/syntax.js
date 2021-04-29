@@ -12,6 +12,7 @@ export const checkObservableSyntax = (observableType, observableData) => {
       if (!domainChecker.test(observableData.value)) return 'Valid domain name';
       break;
     case C.ENTITY_HASHED_OBSERVABLE_STIX_FILE:
+    case C.ENTITY_HASHED_OBSERVABLE_ARTIFACT:
       if (observableData.hashes && observableData.hashes.MD5) {
         const md5Checker = /^[a-fA-F0-9]{32}$/;
         if (!md5Checker.test(observableData.hashes.MD5)) return 'Valid MD5 hash';

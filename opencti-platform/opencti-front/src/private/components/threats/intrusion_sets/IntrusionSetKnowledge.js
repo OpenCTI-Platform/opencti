@@ -169,7 +169,7 @@ class IntrusionSetKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={intrusionSet.id}
                 relationshipTypes={['attributed-to']}
-                targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+                targetStixDomainObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -184,6 +184,20 @@ class IntrusionSetKnowledgeComponent extends Component {
                 stixCoreObjectId={intrusionSet.id}
                 stixCoreObjectLink={link}
                 noRightBar={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/infrastructures"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={intrusionSet.id}
+                relationshipTypes={['uses', 'compromises']}
+                targetStixDomainObjectTypes={['Infrastructure']}
+                entityLink={link}
+                isRelationReversed={false}
                 {...routeProps}
               />
             )}

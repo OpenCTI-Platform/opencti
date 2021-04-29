@@ -168,9 +168,13 @@ const TaxiiCollectionEditionContainer = (props) => {
               'markedBy',
               'labelledBy',
               'createdBy',
+              'x_opencti_score_gt',
+              'x_opencti_detection',
+              'confidence_gt',
             ]}
             currentFilters={[]}
             handleAddFilter={handleAddFilter}
+            noDirectFilters={true}
           />
         </div>
         <div className="clearfix" />

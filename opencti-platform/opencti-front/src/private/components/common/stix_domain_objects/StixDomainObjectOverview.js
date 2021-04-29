@@ -211,7 +211,7 @@ class StixDomainObjectOverview extends Component {
                 {t('Creator')}
               </Typography>
               <ItemCreator creator={stixDomainObject.creator} />
-              {stixDomainObject.objectMarking ? (
+              {stixDomainObject.objectMarking && (
                 <div>
                   <Typography
                     variant="h3"
@@ -226,8 +226,6 @@ class StixDomainObjectOverview extends Component {
                     reverse={true}
                   />
                 </div>
-              ) : (
-                ''
               )}
             </Grid>
           </Grid>

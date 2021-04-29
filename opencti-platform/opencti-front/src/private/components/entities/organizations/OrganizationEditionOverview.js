@@ -58,6 +58,7 @@ const organizationMutationFieldPatch = graphql`
     organizationEdit(id: $id) {
       fieldPatch(input: $input) {
         ...OrganizationEditionOverview_organization
+        ...Organization_organization
       }
     }
   }

@@ -93,7 +93,11 @@ class StixCyberObservablePopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/observations/observables');
+        this.props.history.push(
+          `/dashboard/observations/${
+            this.props.isArtifact ? 'artifacts' : 'observables'
+          }`,
+        );
       },
     });
   }
@@ -192,6 +196,7 @@ StixCyberObservablePopover.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  isArtifact: PropTypes.bool,
 };
 
 export default compose(

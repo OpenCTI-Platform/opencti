@@ -23,11 +23,8 @@ const styles = (theme) => ({
     width: 250,
     padding: '0 0 20px 0',
     position: 'fixed',
+    zIndex: 1100,
     backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('right', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
   },
   drawerPaperExports: {
     minHeight: '100vh',

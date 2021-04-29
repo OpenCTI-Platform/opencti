@@ -71,6 +71,7 @@ const stixCyberObservableMutationFieldPatch = graphql`
       fieldPatch(input: $input) {
         id
         ...StixCyberObservableEditionOverview_stixCyberObservable
+        ...StixCyberObservable_stixCyberObservable
       }
     }
   }
@@ -113,6 +114,7 @@ const stixCyberObservableMutationRelationDelete = graphql`
     stixCyberObservableEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...StixCyberObservableEditionOverview_stixCyberObservable
+        ...StixCyberObservable_stixCyberObservable
       }
     }
   }
@@ -575,6 +577,7 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           body
         }
         ... on Artifact {
+          x_opencti_additional_names
           mime_type
           payload_bin
           url

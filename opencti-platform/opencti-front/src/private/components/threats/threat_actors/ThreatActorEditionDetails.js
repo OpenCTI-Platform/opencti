@@ -51,6 +51,7 @@ const threatActorMutationFieldPatch = graphql`
     threatActorEdit(id: $id) {
       fieldPatch(input: $input) {
         ...ThreatActorEditionDetails_threatActor
+        ...ThreatActor_threatActor
       }
     }
   }
@@ -194,7 +195,7 @@ class ThreatActorEditionDetailsComponent extends Component {
                   onChange={this.handleSubmitField.bind(this)}
                   label={t('Sophistication')}
                   fullWidth={true}
-                  containerstyle={{ width: '100%' }}
+                  containerstyle={{ width: '100%', marginTop: 20 }}
                   helpertext={
                     <SubscriptionFocus
                       context={context}

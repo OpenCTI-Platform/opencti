@@ -63,6 +63,7 @@ export const ignoredAttributes = [
   'updated_at',
   'observable_value',
   'indicators',
+  'importFiles',
 ];
 
 export const dateAttributes = [

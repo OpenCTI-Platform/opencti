@@ -2,17 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Form, Formik, Field } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
-import {
-  assoc,
-  compose,
-  head,
-  includes,
-  map,
-  pipe,
-  pluck,
-  filter,
-  isNil,
-} from 'ramda';
+import * as R from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -20,7 +10,12 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
-import { Add, ArrowRightAlt, Close } from '@material-ui/icons';
+import {
+  Add,
+  ArrowRightAlt,
+  ChevronRightOutlined,
+  Close,
+} from '@material-ui/icons';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -184,6 +179,12 @@ const styles = (theme) => ({
   button: {
     marginLeft: theme.spacing(2),
   },
+  continue: {
+    position: 'fixed',
+    bottom: 40,
+    right: 30,
+    zIndex: 1001,
+  },
 });
 
 const stixCoreRelationshipCreationFromEntityQuery = graphql`
@@ -243,7 +244,7 @@ const stixCoreRelationshipCreationFromEntityQuery = graphql`
       ... on Vulnerability {
         name
       }
-      ... on XOpenCTIIncident {
+      ... on Incident {
         name
       }
       ... on StixCyberObservable {
@@ -312,7 +313,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
     this.state = {
       open: false,
       step: 0,
-      targetEntity: null,
+      targetEntities: [],
       search: '',
     };
   }
@@ -322,67 +323,81 @@ class StixCoreRelationshipCreationFromEntity extends Component {
   }
 
   handleClose() {
-    this.setState({ step: 0, targetEntity: null, open: false });
+    this.setState({ step: 0, targetEntities: [], open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
-    const { isRelationReversed, entityId, connectionKey } = this.props;
-    const { targetEntity } = this.state;
-    const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
-    const toEntityId = isRelationReversed ? entityId : targetEntity.id;
-    const finalValues = pipe(
-      assoc('fromId', fromEntityId),
-      assoc('toId', toEntityId),
-      assoc(
-        'start_time',
-        values.start_time ? parse(values.start_time).format() : null,
-      ),
-      assoc(
-        'stop_time',
-        values.stop_time ? parse(values.stop_time).format() : null,
-      ),
-      assoc('createdBy', values.createdBy.value),
-      assoc('killChainPhases', pluck('value', values.killChainPhases)),
-      assoc('objectMarking', pluck('value', values.objectMarking)),
-    )(values);
-    commitMutation({
-      mutation: isRelationReversed
-        ? stixCoreRelationshipCreationFromEntityToMutation
-        : stixCoreRelationshipCreationFromEntityFromMutation,
-      variables: { input: finalValues },
-      updater: (store) => {
-        if (typeof this.props.onCreate !== 'function') {
-          const payload = store.getRootField('stixCoreRelationshipAdd');
-          const newEdge = payload.setLinkedRecord(
-            connectionKey
-              ? payload.getLinkedRecord(isRelationReversed ? 'from' : 'to')
-              : payload,
-            'node',
-          );
-          const container = store.getRoot();
-          sharedUpdater(
-            store,
-            container.getDataID(),
-            this.props.paginationOptions,
-            newEdge,
-            connectionKey,
-          );
-        }
-      },
-      setSubmitting,
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        this.handleClose();
-        if (typeof this.props.onCreate === 'function') {
-          this.props.onCreate();
-        }
-      },
+  commit(finalValues) {
+    const { isRelationReversed, connectionKey } = this.props;
+    return new Promise((resolve, reject) => {
+      commitMutation({
+        mutation: isRelationReversed
+          ? stixCoreRelationshipCreationFromEntityToMutation
+          : stixCoreRelationshipCreationFromEntityFromMutation,
+        variables: { input: finalValues },
+        updater: (store) => {
+          if (typeof this.props.onCreate !== 'function') {
+            const payload = store.getRootField('stixCoreRelationshipAdd');
+            const newEdge = payload.setLinkedRecord(
+              connectionKey
+                ? payload.getLinkedRecord(isRelationReversed ? 'from' : 'to')
+                : payload,
+              'node',
+            );
+            const container = store.getRoot();
+            sharedUpdater(
+              store,
+              container.getDataID(),
+              this.props.paginationOptions,
+              newEdge,
+              connectionKey,
+            );
+          }
+        },
+        onError: (error) => {
+          reject(error);
+        },
+        onCompleted: (response) => {
+          resolve(response);
+        },
+      });
     });
   }
 
+  async onSubmit(values, { setSubmitting, resetForm }) {
+    const { isRelationReversed, entityId } = this.props;
+    const { targetEntities } = this.state;
+    setSubmitting(true);
+    for (const targetEntity of targetEntities) {
+      const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
+      const toEntityId = isRelationReversed ? entityId : targetEntity.id;
+      const finalValues = R.pipe(
+        R.assoc('fromId', fromEntityId),
+        R.assoc('toId', toEntityId),
+        R.assoc(
+          'start_time',
+          values.start_time ? parse(values.start_time).format() : null,
+        ),
+        R.assoc(
+          'stop_time',
+          values.stop_time ? parse(values.stop_time).format() : null,
+        ),
+        R.assoc('createdBy', values.createdBy.value),
+        R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
+        R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      )(values);
+      // eslint-disable-next-line no-await-in-loop
+      await this.commit(finalValues);
+    }
+    setSubmitting(false);
+    resetForm();
+    this.handleClose();
+    if (typeof this.props.onCreate === 'function') {
+      this.props.onCreate();
+    }
+  }
+
   handleResetSelection() {
-    this.setState({ step: 0, targetEntity: null });
+    this.setState({ step: 0, targetEntities: [] });
   }
 
   handleSearch(keyword) {
@@ -390,7 +405,21 @@ class StixCoreRelationshipCreationFromEntity extends Component {
   }
 
   handleSelectEntity(stixDomainObject) {
-    this.setState({ step: 1, targetEntity: stixDomainObject });
+    this.setState({
+      targetEntities: R.includes(
+        stixDomainObject.id,
+        R.pluck('id', this.state.targetEntities),
+      )
+        ? R.filter(
+          (n) => n.id !== stixDomainObject.id,
+          this.state.targetEntities,
+        )
+        : R.append(stixDomainObject, this.state.targetEntities),
+    });
+  }
+
+  handleNextStep() {
+    this.setState({ step: 1 });
   }
 
   renderFakeList() {
@@ -412,7 +441,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
   }
 
   renderSelectEntity() {
-    const { search } = this.state;
+    const { search, targetEntities } = this.state;
     const {
       classes,
       t,
@@ -455,85 +484,92 @@ class StixCoreRelationshipCreationFromEntity extends Component {
         </div>
         <div className={classes.containerList}>
           {targetStixDomainObjectTypes
-          && targetStixDomainObjectTypes.length > 0 ? (
-            <QueryRenderer
-              query={
-                stixCoreRelationshipCreationFromEntityStixDomainObjectsLinesQuery
-              }
-              variables={{ count: 25, ...stixDomainObjectsPaginationOptions }}
-              render={({ props }) => {
-                if (props) {
-                  return (
-                    <StixCoreRelationshipCreationFromEntityStixDomainObjectsLines
-                      handleSelect={this.handleSelectEntity.bind(this)}
-                      data={props}
-                    />
-                  );
+            && targetStixDomainObjectTypes.length > 0 && (
+              <QueryRenderer
+                query={
+                  stixCoreRelationshipCreationFromEntityStixDomainObjectsLinesQuery
                 }
-                return this.renderFakeList();
-              }}
-            />
-            ) : (
-              ''
-            )}
+                variables={{ count: 25, ...stixDomainObjectsPaginationOptions }}
+                render={({ props }) => {
+                  if (props) {
+                    return (
+                      <StixCoreRelationshipCreationFromEntityStixDomainObjectsLines
+                        handleSelect={this.handleSelectEntity.bind(this)}
+                        targetEntities={targetEntities}
+                        data={props}
+                      />
+                    );
+                  }
+                  return this.renderFakeList();
+                }}
+              />
+          )}
           {targetStixCyberObservableTypes
-          && targetStixCyberObservableTypes.length > 0 ? (
-            <QueryRenderer
-              query={
-                stixCoreRelationshipCreationFromEntityStixCyberObservablesLinesQuery
-              }
-              variables={{
-                count: 25,
-                ...stixCyberObservablesPaginationOptions,
-              }}
-              render={({ props }) => {
-                if (props) {
-                  return (
-                    <StixCoreRelationshipCreationFromEntityStixCyberObservablesLines
-                      noPadding={!!targetStixDomainObjectTypes}
-                      handleSelect={this.handleSelectEntity.bind(this)}
-                      data={props}
-                    />
-                  );
+            && targetStixCyberObservableTypes.length > 0 && (
+              <QueryRenderer
+                query={
+                  stixCoreRelationshipCreationFromEntityStixCyberObservablesLinesQuery
                 }
-                return !targetStixDomainObjectTypes
-                  || targetStixDomainObjectTypes.length === 0 ? (
-                    this.renderFakeList()
-                  ) : (
-                  <div> &nbsp; </div>
-                  );
-              }}
-            />
-            ) : (
-              ''
-            )}
-          {!targetStixCyberObservableTypes
-          && targetStixDomainObjectTypes
-          && targetStixDomainObjectTypes.length > 0 ? (
-            <StixDomainObjectCreation
-              display={this.state.open}
-              contextual={true}
-              inputValue={this.state.search}
-              paginationOptions={stixDomainObjectsPaginationOptions}
-              targetStixDomainObjectTypes={targetStixDomainObjectTypes}
-            />
-            ) : (
-              ''
-            )}
-          {!targetStixDomainObjectTypes
-          && targetStixCyberObservableTypes
-          && targetStixCyberObservableTypes.length > 0 ? (
-            <StixCyberObservableCreation
-              display={this.state.open}
-              contextual={true}
-              inputValue={this.state.search}
-              paginationKey="Pagination_stixCyberObservables"
-              paginationOptions={stixCyberObservablesPaginationOptions}
-              targetStixDomainObjectTypes={targetStixCyberObservableTypes}
-            />
-            ) : (
-              ''
-            )}
+                variables={{
+                  count: 25,
+                  ...stixCyberObservablesPaginationOptions,
+                }}
+                render={({ props }) => {
+                  if (props) {
+                    return (
+                      <StixCoreRelationshipCreationFromEntityStixCyberObservablesLines
+                        noPadding={!!targetStixDomainObjectTypes}
+                        handleSelect={this.handleSelectEntity.bind(this)}
+                        data={props}
+                      />
+                    );
+                  }
+                  return !targetStixDomainObjectTypes
+                    || targetStixDomainObjectTypes.length === 0 ? (
+                      this.renderFakeList()
+                    ) : (
+                    <div> &nbsp; </div>
+                    );
+                }}
+              />
+          )}
+          {targetEntities.length === 0
+            && !targetStixCyberObservableTypes
+            && targetStixDomainObjectTypes
+            && targetStixDomainObjectTypes.length > 0 && (
+              <StixDomainObjectCreation
+                display={this.state.open}
+                contextual={true}
+                inputValue={this.state.search}
+                paginationOptions={stixDomainObjectsPaginationOptions}
+                targetStixDomainObjectTypes={targetStixDomainObjectTypes}
+              />
+          )}
+          {targetEntities.length === 0
+            && !targetStixDomainObjectTypes
+            && targetStixCyberObservableTypes
+            && targetStixCyberObservableTypes.length > 0 && (
+              <StixCyberObservableCreation
+                display={this.state.open}
+                contextual={true}
+                inputValue={this.state.search}
+                paginationKey="Pagination_stixCyberObservables"
+                paginationOptions={stixCyberObservablesPaginationOptions}
+                targetStixDomainObjectTypes={targetStixCyberObservableTypes}
+              />
+          )}
+          {targetEntities.length > 0 && (
+            <Fab
+              variant="extended"
+              className={classes.continue}
+              size="small"
+              color="secondary"
+              onClick={this.handleNextStep.bind(this)}
+            >
+              {t('Continue')}
+              <ChevronRightOutlined />
+            </Fab>
+          )}
         </div>
       </div>
     );
@@ -546,23 +582,25 @@ class StixCoreRelationshipCreationFromEntity extends Component {
       isRelationReversed,
       allowedRelationshipTypes,
     } = this.props;
-    const { targetEntity } = this.state;
+    const { targetEntities } = this.state;
+    const isMultiple = targetEntities.length > 1;
     let fromEntity = sourceEntity;
-    let toEntity = targetEntity;
+    let toEntity = targetEntities[0];
     if (isRelationReversed) {
-      fromEntity = targetEntity;
+      // eslint-disable-next-line prefer-destructuring
+      fromEntity = targetEntities[0];
       toEntity = sourceEntity;
     }
-    const relationshipTypes = filter(
-      (n) => isNil(allowedRelationshipTypes)
+    const relationshipTypes = R.filter(
+      (n) => R.isNil(allowedRelationshipTypes)
         || allowedRelationshipTypes.length === 0
         || allowedRelationshipTypes.includes('stix-core-relationship')
         || allowedRelationshipTypes.includes(n),
       resolveRelationsTypes(fromEntity.entity_type, toEntity.entity_type),
     );
     // eslint-disable-next-line no-nested-ternary
-    const defaultRelationshipType = head(relationshipTypes)
-      ? head(relationshipTypes)
+    const defaultRelationshipType = R.head(relationshipTypes)
+      ? R.head(relationshipTypes)
       : relationshipTypes.includes('related-to')
         ? 'related-to'
         : '';
@@ -587,7 +625,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
         {({
           submitForm, handleReset, isSubmitting, setFieldValue, values,
         }) => (
-          <Form>
+          <Form style={{ paddingBottom: 50 }}>
             <div className={classes.header}>
               <IconButton
                 aria-label="Close"
@@ -629,20 +667,35 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {truncate(
-                        includes(
-                          'Stix-Cyber-Observable',
-                          fromEntity.parent_types,
+                      {isRelationReversed && isMultiple ? (
+                        <em>{t('Multiple entities selected')}</em>
+                      ) : (
+                        truncate(
+                          R.includes(
+                            'Stix-Cyber-Observable',
+                            fromEntity.parent_types,
+                          )
+                            ? fromEntity.observable_value
+                            : fromEntity.name,
+                          20,
                         )
-                          ? fromEntity.observable_value
-                          : fromEntity.name,
-                        20,
                       )}
                     </span>
                   </div>
                 </div>
                 <div className={classes.middle} style={{ paddingTop: 25 }}>
                   <ArrowRightAlt fontSize="large" />
+                  <br />
+                  {typeof this.props.handleReverseRelation === 'function' && (
+                    <Button
+                      variant="outlined"
+                      onClick={this.props.handleReverseRelation.bind(this)}
+                      color="secondary"
+                      size="small"
+                    >
+                      {t('Reverse')}
+                    </Button>
+                  )}
                 </div>
                 <div
                   className={classes.item}
@@ -673,11 +726,18 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {truncate(
-                        includes('Stix-Cyber-Observable', toEntity.parent_types)
-                          ? toEntity.observable_value
-                          : toEntity.name,
-                        20,
+                      {!isRelationReversed && isMultiple ? (
+                        <em>{t('Multiple entities selected')}</em>
+                      ) : (
+                        truncate(
+                          R.includes(
+                            'Stix-Cyber-Observable',
+                            toEntity.parent_types,
+                          )
+                            ? toEntity.observable_value
+                            : toEntity.name,
+                          20,
+                        )
                       )}
                     </span>
                   </div>
@@ -690,7 +750,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                 fullWidth={true}
                 containerstyle={{ marginTop: 20, width: '100%' }}
               >
-                {map(
+                {R.map(
                   (type) => (
                     <MenuItem key={type} value={type}>
                       {t(`relationship_${type}`)}
@@ -845,7 +905,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
             render={({ props }) => {
               if (props && props.stixCoreObject) {
                 return (
-                  <div style={{ height: '100%' }}>
+                  <div style={{ minHeight: '100%' }}>
                     {step === 0 ? this.renderSelectEntity() : ''}
                     {step === 1 ? this.renderForm(props.stixCoreObject) : ''}
                   </div>
@@ -876,9 +936,10 @@ StixCoreRelationshipCreationFromEntity.propTypes = {
   openExports: PropTypes.bool,
   connectionKey: PropTypes.string,
   connectionIsFrom: PropTypes.bool,
+  handleReverseRelation: PropTypes.func,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixCoreRelationshipCreationFromEntity);

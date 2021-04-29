@@ -151,7 +151,7 @@ const investigationGraphStixCoreObjectQuery = graphql`
       ... on Vulnerability {
         name
       }
-      ... on XOpenCTIIncident {
+      ... on Incident {
         name
         first_seen
         last_seen
@@ -404,7 +404,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on Vulnerability {
               name
             }
-            ... on XOpenCTIIncident {
+            ... on Incident {
               name
               first_seen
               last_seen
@@ -592,7 +592,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on Vulnerability {
               name
             }
-            ... on XOpenCTIIncident {
+            ... on Incident {
               name
               first_seen
               last_seen
@@ -1660,7 +1660,7 @@ const InvestigationGraph = createFragmentContainer(
               ... on Vulnerability {
                 name
               }
-              ... on XOpenCTIIncident {
+              ... on Incident {
                 name
                 first_seen
                 last_seen

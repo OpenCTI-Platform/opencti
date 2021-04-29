@@ -17,8 +17,8 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
-import { XOpenCTIIncidentEditionQuery } from './XOpenCTIIncidentEdition';
-import XOpenCTIIncidentEditionContainer from './XOpenCTIIncidentEditionContainer';
+import { IncidentEditionQuery } from './IncidentEdition';
+import IncidentEditionContainer from './IncidentEditionContainer';
 import Loader from '../../../../components/Loader';
 import Security, {
   KNOWLEDGE_KNUPDATE_KNDELETE,
@@ -47,15 +47,15 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const XOpenCTIIncidentPopoverDeletionMutation = graphql`
-  mutation XOpenCTIIncidentPopoverDeletionMutation($id: ID!) {
-    xOpenCTIIncidentEdit(id: $id) {
+const IncidentPopoverDeletionMutation = graphql`
+  mutation IncidentPopoverDeletionMutation($id: ID!) {
+    incidentEdit(id: $id) {
       delete
     }
   }
 `;
 
-class XOpenCTIXOpenCTIIncidentPopover extends Component {
+class IncidentPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -86,7 +86,7 @@ class XOpenCTIXOpenCTIIncidentPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: XOpenCTIIncidentPopoverDeletionMutation,
+      mutation: IncidentPopoverDeletionMutation,
       variables: {
         id: this.props.id,
       },
@@ -167,14 +167,14 @@ class XOpenCTIXOpenCTIIncidentPopover extends Component {
           onClose={this.handleCloseEdit.bind(this)}
         >
           <QueryRenderer
-            query={XOpenCTIIncidentEditionQuery}
+            query={IncidentEditionQuery}
             variables={{ id }}
             render={({ props }) => {
               if (props) {
                 // Done
                 return (
-                  <XOpenCTIIncidentEditionContainer
-                    xOpenCTIIncident={props.xOpenCTIIncident}
+                  <IncidentEditionContainer
+                    incident={props.incident}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );
@@ -188,7 +188,7 @@ class XOpenCTIXOpenCTIIncidentPopover extends Component {
   }
 }
 
-XOpenCTIXOpenCTIIncidentPopover.propTypes = {
+IncidentPopover.propTypes = {
   id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -199,4 +199,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(XOpenCTIXOpenCTIIncidentPopover);
+)(IncidentPopover);

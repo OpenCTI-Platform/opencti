@@ -57,6 +57,7 @@ export const opinionMutationFieldPatch = graphql`
     opinionEdit(id: $id) {
       fieldPatch(input: $input) {
         ...OpinionEditionOverview_opinion
+        ...Opinion_opinion
       }
     }
   }

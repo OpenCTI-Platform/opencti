@@ -165,7 +165,7 @@ class ThreatActorKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={threatActor.id}
               relationshipTypes={['attributed-to']}
-              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+              targetStixDomainObjectTypes={['Incident']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -180,6 +180,20 @@ class ThreatActorKnowledgeComponent extends Component {
               stixCoreObjectId={threatActor.id}
               stixCoreObjectLink={link}
               noRightBar={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/infrastructures"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={threatActor.id}
+              relationshipTypes={['uses', 'compromises']}
+              targetStixDomainObjectTypes={['Infrastructure']}
+              entityLink={link}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}

@@ -51,7 +51,18 @@ const styles = () => ({
   },
 });
 
-export const FileManagerExportMutation = graphql`
+export const fileManagerAskJobImportMutation = graphql`
+  mutation FileManagerAskJobImportMutation(
+    $fileName: ID!
+    $connectorId: String
+  ) {
+    askJobImport(fileName: $fileName, connectorId: $connectorId) {
+      ...FileLine_file
+    }
+  }
+`;
+
+export const fileManagerExportMutation = graphql`
   mutation FileManagerExportMutation(
     $id: ID!
     $format: String!
@@ -104,6 +115,10 @@ const exportValidation = (t) => Yup.object().shape({
   type: Yup.string().required(t('This field is required')),
 });
 
+const importValidation = (t) => Yup.object().shape({
+  connector_id: Yup.string().required(t('This field is required')),
+});
+
 const FileManager = ({
   id,
   entity,
@@ -112,6 +127,7 @@ const FileManager = ({
   connectorsExport,
   connectorsImport,
 }) => {
+  const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);
   const exportScopes = uniq(
     flatten(map((c) => c.connector_scope, connectorsExport)),
@@ -120,15 +136,33 @@ const FileManager = ({
   // eslint-disable-next-line max-len
   const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
   const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
+  const handleOpenImport = (file) => setFileToImport(file);
+  const handleCloseImport = () => setFileToImport(null);
   const handleOpenExport = () => setOpenExport(true);
   const handleCloseExport = () => setOpenExport(false);
 
-  const onSubmit = (values, { setSubmitting, resetForm }) => {
+  const onSubmitImport = (values, { setSubmitting, resetForm }) => {
+    commitMutation({
+      mutation: fileManagerAskJobImportMutation,
+      variables: {
+        fileName: fileToImport.id,
+        connectorId: values.connector_id,
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+        handleCloseImport();
+        MESSAGING$.notifySuccess('Import successfully asked');
+      },
+    });
+  };
+
+  const onSubmitExport = (values, { setSubmitting, resetForm }) => {
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
       : values.maxMarkingDefinition;
     commitMutation({
-      mutation: FileManagerExportMutation,
+      mutation: fileManagerExportMutation,
       variables: {
         id,
         format: values.format,
@@ -172,7 +206,11 @@ const FileManager = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <FileImportViewer entity={entity} connectors={importConnsPerFormat} />
+        <FileImportViewer
+          entity={entity}
+          connectors={importConnsPerFormat}
+          handleOpenImport={handleOpenImport}
+        />
         <FileExportViewer
           entity={entity}
           handleOpenExport={handleOpenExport}
@@ -182,13 +220,79 @@ const FileManager = ({
       <div>
         <Formik
           enableReinitialize={true}
+          initialValues={{ connector_id: '' }}
+          validationSchema={importValidation(t)}
+          onSubmit={onSubmitImport}
+          onReset={handleCloseImport}
+        >
+          {({ submitForm, handleReset, isSubmitting }) => (
+            <Form style={{ margin: '0 0 20px 0' }}>
+              <Dialog
+                open={fileToImport}
+                keepMounted={true}
+                onClose={handleCloseImport}
+                fullWidth={true}
+              >
+                <DialogTitle>{t('Launch an import')}</DialogTitle>
+                <DialogContent>
+                  <Field
+                    component={SelectField}
+                    name="connector_id"
+                    label={t('Connector')}
+                    fullWidth={true}
+                    containerstyle={{ width: '100%' }}
+                  >
+                    {connectorsImport.map((connector, i) => {
+                      const disabled = !fileToImport
+                        || (connector.connector_scope.length > 0
+                          && !includes(
+                            fileToImport.metaData.mimetype,
+                            connector.connector_scope,
+                          ));
+                      return (
+                        <MenuItem
+                          key={i}
+                          value={connector.id}
+                          disabled={disabled || !connector.active}
+                        >
+                          {connector.name}
+                        </MenuItem>
+                      );
+                    })}
+                  </Field>
+                </DialogContent>
+                <DialogActions>
+                  <Button
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    color="primary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Create')}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </Form>
+          )}
+        </Formik>
+      </div>
+      <div>
+        <Formik
+          enableReinitialize={true}
           initialValues={{
             format: '',
             type: 'full',
             maxMarkingDefinition: 'none',
           }}
           validationSchema={exportValidation(t)}
-          onSubmit={onSubmit}
+          onSubmit={onSubmitExport}
           onReset={handleCloseExport}
         >
           {({ submitForm, handleReset, isSubmitting }) => (

@@ -358,7 +358,7 @@ export const stixDomainObjectsLinesSearchQuery = graphql`
             name
             description
           }
-          ... on XOpenCTIIncident {
+          ... on Incident {
             name
             description
           }
@@ -492,7 +492,7 @@ const StixDomainObjectsLines = createPaginationContainer(
                 name
                 description
               }
-              ... on XOpenCTIIncident {
+              ... on Incident {
                 name
                 description
               }

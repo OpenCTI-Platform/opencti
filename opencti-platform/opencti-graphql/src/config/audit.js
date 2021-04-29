@@ -7,6 +7,10 @@ export const LOGIN_ACTION = 'LOGIN';
 export const LOGOUT_ACTION = 'LOGOUT';
 // endregion
 
+// region files
+export const UPLOAD_ACTION = 'UPLOAD';
+// endregion
+
 // region users / roles
 export const USER_CREATION = 'USER_CREATION';
 export const USER_DELETION = 'USER_DELETION';

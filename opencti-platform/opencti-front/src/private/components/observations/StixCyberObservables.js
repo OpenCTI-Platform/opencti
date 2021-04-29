@@ -183,15 +183,13 @@ class StixCyberObservables extends Component {
       numberOfSelectedElements = numberOfElements.original;
     }
     let finalFilters = filters;
-    if (observableTypes.length) {
-      finalFilters = R.assoc(
-        'entity_type',
-        observableTypes.length > 0
-          ? R.map((n) => ({ id: n, value: n }), observableTypes)
-          : ['Stix-Cyber-Observable'],
-        finalFilters,
-      );
-    }
+    finalFilters = R.assoc(
+      'entity_type',
+      observableTypes.length > 0
+        ? R.map((n) => ({ id: n, value: n }), observableTypes)
+        : [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }],
+      finalFilters,
+    );
     const dataColumns = {
       entity_type: {
         label: 'Type',
@@ -200,7 +198,7 @@ class StixCyberObservables extends Component {
       },
       observable_value: {
         label: 'Value',
-        width: '35%',
+        width: '30%',
         isSortable: false,
       },
       objectLabel: {
@@ -245,6 +243,7 @@ class StixCyberObservables extends Component {
             'created_at_start_date',
             'created_at_end_date',
             'createdBy',
+            'sightedBy',
           ]}
         >
           <QueryRenderer

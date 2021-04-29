@@ -56,6 +56,7 @@ const courseOfActionMutationFieldPatch = graphql`
     courseOfActionEdit(id: $id) {
       fieldPatch(input: $input) {
         ...CourseOfActionEditionOverview_courseOfAction
+        ...CourseOfAction_courseOfAction
       }
     }
   }

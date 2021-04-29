@@ -59,6 +59,7 @@ import {
   USER_CREATION,
   USER_DELETION,
 } from '../config/audit';
+import { buildPagination } from '../database/utils';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -390,6 +391,40 @@ export const userEditField = async (user, userId, input) => {
   const patch = { [key]: value };
   const userToEdit = await patchAttribute(user, userId, ENTITY_TYPE_USER, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToEdit, user);
+};
+
+export const bookmarks = async (user, types) => {
+  const currentUser = await loadById(user, user.id, ENTITY_TYPE_USER);
+  const bookmarkList =
+    types && types.length > 0
+      ? R.filter((n) => R.includes(n.type, types), currentUser.bookmarks || [])
+      : currentUser.bookmarks || [];
+  const filteredBookmarks = await Promise.all(R.map((n) => loadById(user, n.id, n.type), bookmarkList));
+  return buildPagination(
+    0,
+    null,
+    filteredBookmarks.map((n) => ({ node: n })),
+    filteredBookmarks.length
+  );
+};
+
+export const addBookmark = async (user, id, type) => {
+  const currentUser = await loadById(user, user.id, ENTITY_TYPE_USER);
+  const currentBookmarks = currentUser.bookmarks ? currentUser.bookmarks : [];
+  const newBookmarks = R.append(
+    { id, type },
+    R.filter((n) => n.id !== id, currentBookmarks)
+  );
+  await patchAttribute(user, user.id, ENTITY_TYPE_USER, { bookmarks: newBookmarks });
+  return loadById(user, id, type);
+};
+
+export const deleteBookmark = async (user, id) => {
+  const currentUser = await loadById(user, user.id, ENTITY_TYPE_USER);
+  const currentBookmarks = currentUser.bookmarks ? currentUser.bookmarks : [];
+  const newBookmarks = R.filter((n) => n.id !== id, currentBookmarks);
+  await patchAttribute(user, user.id, ENTITY_TYPE_USER, { bookmarks: newBookmarks });
+  return id;
 };
 
 export const meEditField = (user, userId, input) => {

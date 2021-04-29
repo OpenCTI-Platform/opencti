@@ -129,7 +129,7 @@ const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
           name
           description
         }
-        ... on XOpenCTIIncident {
+        ... on Incident {
           name
           description
         }

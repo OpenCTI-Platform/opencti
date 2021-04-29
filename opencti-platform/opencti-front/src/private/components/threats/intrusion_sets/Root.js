@@ -79,7 +79,6 @@ class RootIntrusionSet extends Component {
       },
     } = this.props;
     const link = `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`;
-
     return (
       <div>
         <TopBar me={me || null} />
@@ -96,6 +95,7 @@ class RootIntrusionSet extends Component {
               'tools',
               'vulnerabilities',
               'observables',
+              'infrastructures',
               'sightings',
               'observed_data',
             ]}

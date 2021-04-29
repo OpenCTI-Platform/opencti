@@ -377,7 +377,7 @@ class DashboardComponent extends Component {
             widget={widget}
           />
         );
-      case 'indidents':
+      case 'incidents':
         return (
           <EntityActivityIncidents
             startDate={startDate}
@@ -555,6 +555,7 @@ const Dashboard = createFragmentContainer(DashboardComponent, {
   workspace: graphql`
     fragment Dashboard_workspace on Workspace {
       id
+      type
       name
       description
       manifest

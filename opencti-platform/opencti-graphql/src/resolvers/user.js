@@ -1,4 +1,4 @@
-import { filter } from 'ramda';
+import * as R from 'ramda';
 import { withFilter } from 'graphql-subscriptions';
 import {
   addUser,
@@ -35,6 +35,9 @@ import {
   userEditField,
   userRenewToken,
   userWithOrigin,
+  bookmarks,
+  addBookmark,
+  deleteBookmark,
 } from '../domain/user';
 import { BUS_TOPICS, logApp, logAudit } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
@@ -59,6 +62,7 @@ const userResolvers = {
     sessions: () => findSessions(),
     capabilities: (_, args, { user }) => findCapabilities(user, args),
     me: (_, args, { user }) => findById(user, user.id),
+    bookmarks: (_, { types }, { user }) => bookmarks(user, types),
   },
   User: {
     groups: (current, _, { user }) => groupsLoader.load(current.id, user),
@@ -82,7 +86,7 @@ const userResolvers = {
   Mutation: {
     token: async (_, { input }, { req }) => {
       // We need to iterate on each provider to find one that validated the credentials
-      const formProviders = filter((p) => p.type === 'FORM', PROVIDERS);
+      const formProviders = R.filter((p) => p.type === 'FORM', PROVIDERS);
       if (formProviders.length === 0) {
         logApp.error('[AUTH] Cant authenticate without any form providers');
       }
@@ -137,6 +141,8 @@ const userResolvers = {
     }),
     meEdit: (_, { input }, { user }) => meEditField(user, user.id, input),
     userAdd: (_, { input }, { user }) => addUser(user, input),
+    bookmarkAdd: (_, { id, type }, { user }) => addBookmark(user, id, type),
+    bookmarkDelete: (_, { id }, { user }) => deleteBookmark(user, id),
   },
   Subscription: {
     user: {

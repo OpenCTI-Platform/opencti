@@ -258,7 +258,7 @@ const EntitiesStixDomainObjectLineFragment = createFragmentContainer(
           name
           description
         }
-        ... on XOpenCTIIncident {
+        ... on Incident {
           name
           aliases
           description

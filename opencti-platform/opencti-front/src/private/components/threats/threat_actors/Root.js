@@ -95,6 +95,7 @@ class RootThreatActor extends Component {
               'tools',
               'vulnerabilities',
               'observables',
+              'infrastructures',
               'sightings',
             ]}
           />

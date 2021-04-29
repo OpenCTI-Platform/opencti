@@ -155,7 +155,7 @@ class CampaignKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['attributed-to']}
-                targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+                targetStixDomainObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -170,6 +170,20 @@ class CampaignKnowledgeComponent extends Component {
                 stixCoreObjectId={campaign.id}
                 stixCoreObjectLink={link}
                 noRightBar={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/threats/campaigns/:campaignId/knowledge/infrastructures"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={campaign.id}
+                relationshipTypes={['uses', 'compromises']}
+                targetStixDomainObjectTypes={['Infrastructure']}
+                entityLink={link}
+                isRelationReversed={false}
                 {...routeProps}
               />
             )}

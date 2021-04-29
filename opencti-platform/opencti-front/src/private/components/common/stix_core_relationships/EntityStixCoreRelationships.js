@@ -251,13 +251,8 @@ class EntityStixCoreRelationships extends Component {
                     {t('Vulnerability')}
                   </MenuItem>
                 )}
-                {includes(
-                  'X-OpenCTI-Incident',
-                  targetStixDomainObjectTypes,
-                ) && (
-                  <MenuItem value="X-OpenCTI-Incident">
-                    {t('Incident')}
-                  </MenuItem>
+                {includes('Incident', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Incident">{t('Incident')}</MenuItem>
                 )}
               </Select>
             </Grid>

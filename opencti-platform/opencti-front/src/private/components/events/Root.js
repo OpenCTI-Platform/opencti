@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
-import XOpenCTIIncidents from './XOpenCTIIncidents';
-import RootXOpenCTIIncident from './x_opencti_incidents/Root';
+import Incidents from './Indidents';
+import RootIncident from './incidents/Root';
 import ObservedDatas from './ObservedDatas';
 import RootObservedData from './observed_data/Root';
 import StixSightingRelationships from './StixSightingRelationships';
@@ -21,13 +21,11 @@ class Root extends Component {
         <BoundaryRoute
           exact
           path="/dashboard/events/incidents"
-          component={XOpenCTIIncidents}
+          component={Incidents}
         />
         <BoundaryRoute
           path="/dashboard/events/incidents/:incidentId"
-          render={(routeProps) => (
-            <RootXOpenCTIIncident {...routeProps} me={me} />
-          )}
+          render={(routeProps) => <RootIncident {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact

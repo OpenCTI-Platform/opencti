@@ -21,6 +21,7 @@ import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
 import Loader from '../../../components/Loader';
+import MarkDownField from '../../../components/MarkDownField';
 
 const styles = () => ({
   container: {
@@ -47,6 +48,7 @@ const settingsQuery = graphql`
       platform_email
       platform_url
       platform_language
+      platform_login_message
       platform_providers {
         name
         strategy
@@ -68,6 +70,7 @@ const settingsMutationFieldPatch = graphql`
         platform_email
         platform_url
         platform_language
+        platform_login_message
       }
     }
   }
@@ -104,6 +107,7 @@ const settingsValidation = (t) => Yup.object().shape({
     .required(t('This field is required'))
     .url(t('The value must be an URL')),
   platform_language: Yup.string(),
+  platform_login_message: Yup.string(),
 });
 
 class Settings extends Component {
@@ -148,6 +152,7 @@ class Settings extends Component {
                   'platform_email',
                   'platform_url',
                   'platform_language',
+                  'platform_login_message',
                 ],
                 settings,
               );
@@ -288,6 +293,33 @@ class Settings extends Component {
                             );
                           })}
                         </List>
+                        <Formik
+                          enableReinitialize={true}
+                          initialValues={initialValues}
+                          validationSchema={settingsValidation(t)}
+                        >
+                          {() => (
+                            <Form style={{ marginTop: 20 }}>
+                              <Field
+                                component={MarkDownField}
+                                name="platform_login_message"
+                                label={t('Platform login message')}
+                                fullWidth={true}
+                                multiline={true}
+                                rows="4"
+                                style={{ marginTop: 20 }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_login_message"
+                                  />
+                                }
+                              />
+                            </Form>
+                          )}
+                        </Formik>
                       </Paper>
                     </Grid>
                   </Grid>

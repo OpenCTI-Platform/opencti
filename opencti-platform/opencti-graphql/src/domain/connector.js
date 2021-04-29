@@ -13,7 +13,7 @@ export const CONNECTOR_INTERNAL_EXPORT_FILE = 'INTERNAL_EXPORT_FILE'; // Files m
 const completeConnector = (connector) => {
   if (connector) {
     return pipe(
-      assoc('connector_scope', connector.connector_scope.split(',')),
+      assoc('connector_scope', connector.connector_scope ? connector.connector_scope.split(',') : []),
       assoc('config', connectorConfig(connector.id)),
       assoc('active', sinceNowInMinutes(connector.updated_at) < 5)
     )(connector);
@@ -33,15 +33,16 @@ export const connectors = (user) => {
   );
 };
 
-export const connectorsFor = async (user, type, scope, onlyAlive = false, onlyAuto = false) => {
+export const connectorsFor = async (user, type, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
   const connects = await connectors(user);
   return pipe(
     filter((c) => c.connector_type === type),
     filter((c) => (onlyAlive ? c.active === true : true)),
     filter((c) => (onlyAuto ? c.auto === true : true)),
+    filter((c) => (onlyContextual ? c.only_contextual === true : true)),
     // eslint-disable-next-line prettier/prettier
     filter((c) =>
-      scope
+      scope && c.connector_scope && c.connector_scope.length > 0
         ? includes(
             scope.toLowerCase(),
             map((s) => s.toLowerCase(), c.connector_scope)
@@ -55,8 +56,8 @@ export const connectorsForExport = async (user, scope, onlyAlive = false) => {
   return connectorsFor(user, CONNECTOR_INTERNAL_EXPORT_FILE, scope, onlyAlive);
 };
 
-export const connectorsForImport = async (user, scope, onlyAlive = false, onlyAuto = false) => {
-  return connectorsFor(user, CONNECTOR_INTERNAL_IMPORT_FILE, scope, onlyAlive, onlyAuto);
+export const connectorsForImport = async (user, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
+  return connectorsFor(user, CONNECTOR_INTERNAL_IMPORT_FILE, scope, onlyAlive, onlyAuto, onlyContextual);
 };
 // endregion
 
@@ -84,13 +85,21 @@ export const resetStateConnector = async (user, id) => {
 };
 
 export const registerConnector = async (user, connectorData) => {
-  const { id, name, type, scope, auto = null } = connectorData;
+  // eslint-disable-next-line camelcase
+  const { id, name, type, scope, auto = null, only_contextual = null } = connectorData;
   const connector = await loadById(user, id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
   if (connector) {
     // Simple connector update
-    const patch = { name, updated_at: now(), connector_user_id: user.id, connector_scope: scope.join(','), auto };
+    const patch = {
+      name,
+      updated_at: now(),
+      connector_user_id: user.id,
+      connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
+      auto,
+      only_contextual,
+    };
     await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch);
     return loadById(user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
   }
@@ -99,8 +108,9 @@ export const registerConnector = async (user, connectorData) => {
     internal_id: id,
     name,
     connector_type: type,
-    connector_scope: scope.join(','),
+    connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
     auto,
+    only_contextual,
     connector_user_id: user.id,
   };
   const createdConnector = await createEntity(user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
@@ -109,6 +119,7 @@ export const registerConnector = async (user, connectorData) => {
 };
 
 export const connectorDelete = async (user, connectorId) => {
+  // TODO Delete all works for this connector
   await unregisterConnector(connectorId);
   return deleteElementById(user, connectorId, ENTITY_TYPE_CONNECTOR);
 };

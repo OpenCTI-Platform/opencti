@@ -25,7 +25,7 @@ import Malware from '../resources/images/entities/malware_dark.svg';
 import ThreatActor from '../resources/images/entities/threat-actor_dark.svg';
 import Tool from '../resources/images/entities/tool_dark.svg';
 import Vulnerability from '../resources/images/entities/vulnerability_dark.svg';
-import XOpenCTIIncident from '../resources/images/entities/incident_dark.svg';
+import Incident from '../resources/images/entities/incident_dark.svg';
 import StixCyberObservable from '../resources/images/entities/stix-cyber-observable_dark.svg';
 import relationship from '../resources/images/entities/relationship.svg';
 import { itemColor } from './Colors';
@@ -73,7 +73,7 @@ export const graphImages = {
   'Threat-Actor': genImage(ThreatActor),
   Tool: genImage(Tool),
   Vulnerability: genImage(Vulnerability),
-  'X-OpenCTI-Incident': genImage(XOpenCTIIncident),
+  Incident: genImage(Incident),
   'Autonomous-System': genImage(StixCyberObservable),
   Directory: genImage(StixCyberObservable),
   'Domain-Name': genImage(StixCyberObservable),
@@ -125,7 +125,7 @@ export const graphLevel = {
   'Threat-Actor': 1,
   Tool: 1,
   Vulnerability: 1,
-  'X-OpenCTI-Incident': 1,
+  Incident: 1,
   'Autonomous-System': 1,
   Directory: 1,
   'Domain-Name': 1,
@@ -180,7 +180,7 @@ export const graphRawImages = {
   'Threat-Actor': ThreatActor,
   Tool,
   Vulnerability,
-  'X-OpenCTI-Incident': XOpenCTIIncident,
+  Incident,
   'Autonomous-System': StixCyberObservable,
   Directory: StixCyberObservable,
   'Domain-Name': StixCyberObservable,
@@ -224,6 +224,7 @@ export const decodeGraphData = (encodedGraphData) => {
 };
 
 export const defaultDate = (n) => {
+  if (!n) return '';
   if (!isNone(n.start_time)) {
     return n.start_time;
   }
@@ -249,6 +250,7 @@ export const defaultDate = (n) => {
 };
 
 export const defaultValue = (n, tooltip = false) => {
+  if (!n) return '';
   if (tooltip) {
     return `${n.x_mitre_id ? `[${n.x_mitre_id}] ` : ''}${
       n.name

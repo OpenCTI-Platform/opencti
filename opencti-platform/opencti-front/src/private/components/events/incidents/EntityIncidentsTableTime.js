@@ -54,8 +54,8 @@ const styles = () => ({
   },
 });
 
-const entityXOpenCTIIncidentsTableTimeXOpenCTIIncidentsTimeSeriesQuery = graphql`
-  query EntityXOpenCTIIncidentsTableTimeXOpenCTIIncidentsTimeSeriesQuery(
+const entityIncidentsTableTimeIncidentsTimeSeriesQuery = graphql`
+  query EntityIncidentsTableTimeIncidentsTimeSeriesQuery(
     $objectId: String
     $field: String!
     $operation: StatsOperation!
@@ -64,7 +64,7 @@ const entityXOpenCTIIncidentsTableTimeXOpenCTIIncidentsTimeSeriesQuery = graphql
     $interval: String!
     $relationship_type: String!
   ) {
-    xOpenCTIIncidentsTimeSeries(
+    incidentsTimeSeries(
       objectId: $objectId
       field: $field
       operation: $operation
@@ -79,7 +79,7 @@ const entityXOpenCTIIncidentsTableTimeXOpenCTIIncidentsTimeSeriesQuery = graphql
   }
 `;
 
-class EntityXOpenCTIXOpenCTIIncidentsTableTime extends Component {
+class EntityIncidentsTableTime extends Component {
   constructor(props) {
     super(props);
     this.state = { interval: 'year' };
@@ -104,7 +104,7 @@ class EntityXOpenCTIXOpenCTIIncidentsTableTime extends Component {
     } = this.props;
     const monthInterval = this.state.interval === 'month' ? monthsAgo(6) : monthsAgo(12 * 5);
     const finalStartDate = variant === 'explore' && startDate ? startDate : monthInterval;
-    const XOpenCTIIncidentsTimeSeriesVariables = {
+    const IncidentsTimeSeriesVariables = {
       objectId: entityId,
       field: 'first_seen',
       operation: 'count',
@@ -116,17 +116,15 @@ class EntityXOpenCTIXOpenCTIIncidentsTableTime extends Component {
     };
     return (
       <QueryRenderer
-        query={entityXOpenCTIIncidentsTableTimeXOpenCTIIncidentsTimeSeriesQuery}
-        variables={XOpenCTIIncidentsTimeSeriesVariables}
+        query={entityIncidentsTableTimeIncidentsTimeSeriesQuery}
+        variables={IncidentsTimeSeriesVariables}
         render={({ props }) => {
           if (
             props
-            && props.XOpenCTIIncidentsTimeSeries
-            && props.XOpenCTIIncidentsTimeSeries.length > 0
+            && props.IncidentsTimeSeries
+            && props.IncidentsTimeSeries.length > 0
           ) {
-            const XOpenCTIIncidentsTimeSeries = reverse(
-              props.XOpenCTIIncidentsTimeSeries,
-            );
+            const IncidentsTimeSeries = reverse(props.IncidentsTimeSeries);
             return (
               <Table className={classes.table}>
                 <TableHead>
@@ -138,12 +136,12 @@ class EntityXOpenCTIXOpenCTIIncidentsTableTime extends Component {
                       )}
                     </TableCell>
                     <TableCell align="right">
-                      {t('Number of x_opencti_XOpenCTIIncidents')}
+                      {t('Number of incidents')}
                     </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {XOpenCTIIncidentsTimeSeries.map((row) => {
+                  {IncidentsTimeSeries.map((row) => {
                     let date;
                     if (this.state.interval === 'month') {
                       date = md(row.date);
@@ -224,7 +222,7 @@ class EntityXOpenCTIXOpenCTIIncidentsTableTime extends Component {
             gutterBottom={true}
             style={{ float: 'left', padding: '10px 0 0 10px' }}
           >
-            {title || t('XOpenCTIIncidents')}
+            {title || t('Incidents')}
           </Typography>
           <Security needs={[EXPLORE_EXUPDATE]}>
             <IconButton
@@ -245,7 +243,7 @@ class EntityXOpenCTIXOpenCTIIncidentsTableTime extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {title || t('XOpenCTIIncidents')}
+          {title || t('Incidents')}
         </Typography>
         <div style={{ float: 'right', marginTop: -5 }}>
           <Chip
@@ -285,7 +283,7 @@ class EntityXOpenCTIXOpenCTIIncidentsTableTime extends Component {
   }
 }
 
-EntityXOpenCTIXOpenCTIIncidentsTableTime.propTypes = {
+EntityIncidentsTableTime.propTypes = {
   variant: PropTypes.string,
   title: PropTypes.string,
   entityId: PropTypes.string,
@@ -301,7 +299,4 @@ EntityXOpenCTIXOpenCTIIncidentsTableTime.propTypes = {
   relationship_type: PropTypes.string,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(EntityXOpenCTIXOpenCTIIncidentsTableTime);
+export default compose(inject18n, withStyles(styles))(EntityIncidentsTableTime);

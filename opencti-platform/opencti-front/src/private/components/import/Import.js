@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, join } from 'ramda';
+import * as R from 'ramda';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { interval } from 'rxjs';
@@ -15,11 +15,24 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItem from '@material-ui/core/ListItem';
 import Tooltip from '@material-ui/core/Tooltip';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import FileUploader from '../common/files/FileUploader';
-import inject18n from '../../../components/i18n';
-import FileLine from '../common/files/FileLine';
-import { scopesConn } from '../common/files/FileManager';
+import { Field, Form, Formik } from 'formik';
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import MenuItem from '@material-ui/core/MenuItem';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
+import * as Yup from 'yup';
+import SelectField from '../../../components/SelectField';
 import { FIVE_SECONDS } from '../../../utils/Time';
+import {
+  fileManagerAskJobImportMutation,
+  scopesConn,
+} from '../common/files/FileManager';
+import FileLine from '../common/files/FileLine';
+import inject18n from '../../../components/i18n';
+import FileUploader from '../common/files/FileUploader';
+import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -65,7 +78,16 @@ export const ImportQuery = graphql`
   }
 `;
 
+const importValidation = (t) => Yup.object().shape({
+  connector_id: Yup.string().required(t('This field is required')),
+});
+
 class ImportComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { fileToImport: null };
+  }
+
   componentDidMount() {
     this.subscription = interval$.subscribe(() => {
       this.props.relay.refetch();
@@ -74,6 +96,30 @@ class ImportComponent extends Component {
 
   componentWillUnmount() {
     this.subscription.unsubscribe();
+  }
+
+  handleOpenImport(file) {
+    this.setState({ fileToImport: file });
+  }
+
+  handleCloseImport() {
+    this.setState({ fileToImport: null });
+  }
+
+  onSubmitImport(values, { setSubmitting, resetForm }) {
+    commitMutation({
+      mutation: fileManagerAskJobImportMutation,
+      variables: {
+        fileName: this.state.fileToImport.id,
+        connectorId: values.connector_id,
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+        this.handleCloseImport();
+        MESSAGING$.notifySuccess('Import successfully asked');
+      },
+    });
   }
 
   render() {
@@ -85,9 +131,10 @@ class ImportComponent extends Component {
       connectorsImport,
       relay,
     } = this.props;
+    const { fileToImport } = this.state;
     const { edges } = importFiles;
-    const importConnsPerFormat = scopesConn(connectorsImport);
-
+    const connectors = R.filter((n) => !n.only_contextual, connectorsImport);
+    const importConnsPerFormat = scopesConn(connectors);
     return (
       <div className={classes.container}>
         <Typography
@@ -127,6 +174,7 @@ class ImportComponent extends Component {
                         connectors={
                           importConnsPerFormat[file.node.metaData.mimetype]
                         }
+                        handleOpenImport={this.handleOpenImport.bind(this)}
                       />
                     ))}
                   </List>
@@ -147,9 +195,9 @@ class ImportComponent extends Component {
               elevation={2}
               style={{ marginTop: 15 }}
             >
-              {connectorsImport.length ? (
+              {connectors.length ? (
                 <List>
-                  {connectorsImport.map((connector) => (
+                  {connectors.map((connector) => (
                     <ListItem
                       key={connector.id}
                       dense={true}
@@ -174,7 +222,7 @@ class ImportComponent extends Component {
                       </Tooltip>
                       <ListItemText
                         primary={connector.name}
-                        secondary={join(',', connector.connector_scope)}
+                        secondary={R.join(',', connector.connector_scope)}
                       />
                       <ListItemSecondaryAction>
                         <ListItemText primary={nsdt(connector.updated_at)} />
@@ -190,6 +238,72 @@ class ImportComponent extends Component {
             </Paper>
           </Grid>
         </Grid>
+        <div>
+          <Formik
+            enableReinitialize={true}
+            initialValues={{ connector_id: '' }}
+            validationSchema={importValidation(t)}
+            onSubmit={this.onSubmitImport.bind(this)}
+            onReset={this.handleCloseImport.bind(this)}
+          >
+            {({ submitForm, handleReset, isSubmitting }) => (
+              <Form style={{ margin: '0 0 20px 0' }}>
+                <Dialog
+                  open={fileToImport}
+                  keepMounted={true}
+                  onClose={this.handleCloseImport.bind(this)}
+                  fullWidth={true}
+                >
+                  <DialogTitle>{t('Launch an import')}</DialogTitle>
+                  <DialogContent>
+                    <Field
+                      component={SelectField}
+                      name="connector_id"
+                      label={t('Connector')}
+                      fullWidth={true}
+                      containerstyle={{ width: '100%' }}
+                    >
+                      {connectors.map((connector, i) => {
+                        const disabled = !fileToImport
+                          || (connector.connector_scope.length > 0
+                            && !R.includes(
+                              fileToImport.metaData.mimetype,
+                              connector.connector_scope,
+                            ));
+                        return (
+                          <MenuItem
+                            key={i}
+                            value={connector.id}
+                            disabled={disabled || !connector.active}
+                          >
+                            {connector.name}
+                          </MenuItem>
+                        );
+                      })}
+                    </Field>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button
+                      onClick={handleReset}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Cancel')}
+                    </Button>
+                    <Button
+                      color="primary"
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Create')}
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </Form>
+            )}
+          </Formik>
+        </div>
       </div>
     );
   }
@@ -211,6 +325,7 @@ const Import = createRefetchContainer(
         id
         name
         active
+        only_contextual
         connector_scope
         updated_at
       }
@@ -219,4 +334,4 @@ const Import = createRefetchContainer(
   ImportQuery,
 );
 
-export default compose(inject18n, withStyles(styles))(Import);
+export default R.compose(inject18n, withStyles(styles))(Import);

@@ -106,7 +106,9 @@ import {
   dateAttributes,
   dictAttributes,
   isDictionaryAttribute,
+  isModifiedObject,
   isMultipleAttribute,
+  isUpdatedAtObject,
   multipleAttributes,
   numericAttributes,
   statsDateAttributes,
@@ -116,6 +118,7 @@ import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
@@ -141,6 +144,7 @@ import {
   yearFormat,
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
+import { deleteAllFiles } from './minio';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -288,6 +292,7 @@ const buildRelationsFilter = (relationshipType, args) => {
     fromTypes = [],
     toTypes = [],
     elementWithTargetTypes = [],
+    relationshipTypes = [],
   } = args;
   const {
     startTimeStart,
@@ -387,7 +392,10 @@ const buildRelationsFilter = (relationshipType, args) => {
   if (startDate) finalFilters.push({ key: 'created_at', values: [startDate], operator: 'gt' });
   if (endDate) finalFilters.push({ key: 'created_at', values: [endDate], operator: 'lt' });
   if (confidences && confidences.length > 0) finalFilters.push({ key: 'confidence', values: confidences });
-  return R.pipe(R.assoc('types', [relationToGet]), R.assoc('filters', finalFilters))(args);
+  return R.pipe(
+    R.assoc('types', relationshipTypes.length > 0 ? relationshipTypes : [relationToGet]),
+    R.assoc('filters', finalFilters)
+  )(args);
 };
 const buildThingsFilter = (thingsTypes, args) => {
   return R.assoc('types', thingsTypes, args);
@@ -1187,12 +1195,15 @@ const innerUpdateAttribute = async (user, instance, rawInput, options = {}) => {
     updatedInputs.push(yearInput);
     updateOperations.push(innerUpdateAttribute(user, instance, yearInput));
   }
-  // Update modified / updated_at
-  if (isStixDomainObject(instance.entity_type) && key !== 'modified' && key !== 'updated_at') {
-    const today = now();
+  const today = now();
+  // Update updated_at
+  if (isUpdatedAtObject(instance.entity_type) && key !== 'modified' && key !== 'updated_at') {
     const updatedAtInput = { key: 'updated_at', value: [today] };
     updatedInputs.push(updatedAtInput);
     updateOperations.push(innerUpdateAttribute(user, instance, updatedAtInput));
+  }
+  // Update modified
+  if (isModifiedObject(instance.entity_type) && key !== 'modified' && key !== 'updated_at') {
     const modifiedAtInput = { key: 'modified', value: [today] };
     updatedInputs.push(modifiedAtInput);
     updateOperations.push(innerUpdateAttribute(user, instance, modifiedAtInput));
@@ -1276,6 +1287,14 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
       if (revokedIn.length > 0) {
         updatedInputs.push({ ...revokedInput, previous: getInstanceValue(revokedInput.key, instance) });
         impactedInputs.push(...revokedIn);
+      }
+      if (instance.entity_type === ENTITY_TYPE_INDICATOR && untilDateTime <= utcDate().toDate()) {
+        const detectionInput = { key: 'x_opencti_detection', value: [false] };
+        const detectionIn = await innerUpdateAttribute(user, instance, detectionInput, options);
+        if (detectionIn.length > 0) {
+          updatedInputs.push(detectionInput);
+          impactedInputs.push(...detectionIn);
+        }
       }
     }
     // If input impact aliases (aliases or x_opencti_aliases), regenerate internal ids
@@ -2084,6 +2103,7 @@ export const deleteElementById = async (user, elementId, type) => {
   try {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
+    await deleteAllFiles(user, `import/${element.entity_type}/${element.internal_id}`);
     await elDeleteElements(user, [element]);
     await storeDeleteEvent(user, element, stixLoadById);
     // Temporary stored the deleted elements to prevent concurrent problem at creation

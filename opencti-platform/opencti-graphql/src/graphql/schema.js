@@ -49,7 +49,7 @@ import noteResolvers from '../resolvers/note';
 import observedDataResolvers from '../resolvers/observedData';
 import opinionResolvers from '../resolvers/opinion';
 import indicatorResolvers from '../resolvers/indicator';
-import xOpenCTIIncidentResolvers from '../resolvers/xOpenCTIIncident';
+import incidentResolvers from '../resolvers/incident';
 import AuthDirectives, { AUTH_DIRECTIVE } from './authDirective';
 import connectorResolvers from '../resolvers/connector';
 import fileResolvers from '../resolvers/file';
@@ -120,7 +120,7 @@ const createSchema = () => {
     threatActorResolvers,
     toolResolvers,
     vulnerabilityResolvers,
-    xOpenCTIIncidentResolvers,
+    incidentResolvers,
     // STIX CYBER OBSERVABLE ENTITIES
     stixCyberObservableResolvers,
     // INTERNAL RELATIONSHIPS
