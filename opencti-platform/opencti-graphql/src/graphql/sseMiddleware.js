@@ -370,10 +370,25 @@ const createSeeMiddleware = () => {
     const { id } = req.params;
     const startFrom = req.query.from;
     const collection = await findById(req.session.user, id);
+    if (!collection) {
+      res.status(500);
+      res.json({ error: 'This live stream doesnt exists' });
+      return;
+    }
     const streamFilters = JSON.parse(collection.filters);
-    // If markings in filter not accessible for the user, throw an error and prevent connection?
-    // Because the stream will always be empty for him...
-    // TODO @JRI
+    // If no marking part of filtering are accessible for the user, return
+    // Its better to prevent connection instead of having no events accessible
+    if (streamFilters.markedBy) {
+      const userMarkings = (req.session.user.allowed_marking || []).map((m) => m.internal_id);
+      const filterMarkings = (streamFilters.markedBy || []).map((m) => m.id);
+      const isUserHaveAccess = filterMarkings.some((m) => userMarkings.includes(m));
+      if (!isUserHaveAccess) {
+        res.status(500);
+        res.json({ error: 'You need to have access to specific markings for this live stream' });
+        return;
+      }
+    }
+    // Create channel.
     const { channel, client } = createSseChannel(req, res);
     let processingMessages = [];
     const buildProcessingMessages = (user, elements) => {
@@ -389,7 +404,7 @@ const createSeeMiddleware = () => {
           processingMessages.push(element);
         }
       }
-      return startFrom && elements.length < MAX_RANGE_MESSAGES;
+      return elements.length < MAX_RANGE_MESSAGES;
     };
     const processor = createStreamProcessor(req.session.user, async (elements) => {
       // We need to build all elements that have change during the last call
