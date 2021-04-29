@@ -242,7 +242,12 @@ class ConnectorComponent extends Component {
                     {t('Only contextual')}
                   </Typography>
                   <ItemBoolean
-                    status={connector.only_contextual}
+                    status={
+                      connector.connector_type === 'INTERNAL_ENRICHMENT'
+                      || connector.connector_type === 'INTERNAL_IMPORT_FILE'
+                        ? connector.auto
+                        : null
+                    }
                     label={connector.only_contextual ? t('Yes') : t('No')}
                   />
                 </Grid>
