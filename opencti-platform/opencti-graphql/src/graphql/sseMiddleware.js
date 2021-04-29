@@ -245,21 +245,22 @@ const isEventGranted = (event, user) => {
   return isBypass || isGrantedForData;
 };
 
-const createBroadcastClient = (client) => {
+const createBroadcastClient = (channel) => {
   return {
-    client,
-    isLiveClient: () => client.isLiveStream,
+    id: channel.id,
+    expirationTime: channel.expirationTime,
+    close: () => channel.close(),
     sendEvent: (eventId, topic, event) => {
-      if (isEventGranted(event, client)) {
-        client.sendEvent(eventId, topic, event);
+      // Send event only if user is granted for
+      if (isEventGranted(event, channel)) {
+        channel.sendEvent(eventId, topic, event);
       }
-      return true;
     },
     sendHeartbeat: () => {
-      client.sendEvent(undefined, 'heartbeat', new Date());
+      channel.sendEvent(undefined, 'heartbeat', new Date());
     },
     sendConnected: (streamInfo) => {
-      client.sendEvent(undefined, 'connected', streamInfo);
+      channel.sendEvent(undefined, 'connected', streamInfo);
     },
   };
 };
@@ -270,12 +271,12 @@ const createHeartbeatProcessor = () => {
     const now = Date.now() / 1000;
     // Close expired sessions
     Object.values(broadcastClients)
-      .filter((c) => now >= c.client.expirationTime)
-      .forEach((c) => c.client.close());
+      .filter((c) => now >= c.expirationTime)
+      .forEach((c) => c.close());
     // Send heartbeat to alive sessions
     Object.values(broadcastClients)
       // Filter is required as the close is asynchronous
-      .filter((c) => now < c.client.expirationTime)
+      .filter((c) => now < c.expirationTime)
       .forEach((c) => c.sendHeartbeat());
   }, KEEP_ALIVE_INTERVAL_MS);
 };
@@ -300,8 +301,8 @@ const createSeeMiddleware = () => {
   const initBroadcasting = async (req, res, client, processor) => {
     const broadcasterInfo = await processor.info();
     req.on('close', () => {
-      delete broadcastClients[client.id];
       processor.shutdown();
+      delete broadcastClients[client.id];
     });
     res.writeHead(200, {
       Connection: 'keep-alive',
@@ -496,7 +497,7 @@ const createSeeMiddleware = () => {
   return {
     shutdown: () => {
       clearInterval(heartbeat);
-      Object.values(broadcastClients).forEach((c) => c.client.close());
+      Object.values(broadcastClients).forEach((c) => c.close());
     },
     applyMiddleware: ({ app }) => {
       app.use(`${basePath}/stream`, authenticate);
