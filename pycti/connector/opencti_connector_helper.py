@@ -351,7 +351,7 @@ class OpenCTIConnectorHelper:
         )
 
         # Configure logger
-        numeric_level = getattr(logging, self.log_level.upper(), None)
+        numeric_level = getattr(logging, self.log_level.upper() if self.log_level else "INFO", None)
         if not isinstance(numeric_level, int):
             raise ValueError("Invalid log level: " + self.log_level)
         logging.basicConfig(level=numeric_level)
