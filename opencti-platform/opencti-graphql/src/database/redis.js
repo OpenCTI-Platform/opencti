@@ -300,8 +300,7 @@ export const storeMergeEvent = async (user, instance, sourceEntities) => {
       type: convertTypeToStixType(instance.entity_type),
       source_ids: R.map((s) => s.standard_id, sourceEntities),
     };
-    const dataEvent = buildStixData(data);
-    const event = buildEvent(EVENT_TYPE_MERGE, user, instance.objectMarking, message, dataEvent);
+    const event = buildEvent(EVENT_TYPE_MERGE, user, instance.objectMarking, message, data);
     return pushToStream(clientBase, event);
   } catch (e) {
     throw DatabaseError('Error in store merge event', { error: e });
