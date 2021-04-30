@@ -11,15 +11,19 @@ import { ROLE_ADMINISTRATOR, ROLE_DEFAULT, STREAMAPI, SYSTEM_USER, TAXIIAPI } fr
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
-import { redisInitializeClients, redisIsAlive } from './database/redis';
+import { lockResource, redisInitializeClients, redisIsAlive } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import applyMigration, { lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity, patchAttribute } from './database/middleware';
 import { INDEX_INTERNAL_OBJECTS } from './database/utils';
-import { ConfigurationError } from './config/errors';
+import { ConfigurationError, TYPE_LOCK_ERROR } from './config/errors';
 import { BYPASS } from './schema/general';
 
-// Platform capabilities definition
+// region Platform constants
+const PLATFORM_LOCK_ID = 'platform_init_lock';
+// endregion
+
+// region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
 const BYPASS_CAPABILITIES = { name: BYPASS, description: 'Bypass all capabilities', attribute_order: 1 };
 export const TAXII_CAPABILITIES = {
@@ -96,6 +100,7 @@ export const CAPABILITIES = [
     description: 'Connect and consume the platform stream',
   },
 ];
+// endregion
 
 // Check every dependencies
 export const checkSystemDependencies = async () => {
@@ -255,9 +260,12 @@ const isExistingPlatform = async () => {
 
 // eslint-disable-next-line
 const platformInit = async (testMode = false) => {
+  let lock;
   try {
     await redisInitializeClients();
     await checkSystemDependencies();
+    lock = await lockResource([PLATFORM_LOCK_ID]);
+    logApp.info(`[INIT] Starting platform initialization`);
     const alreadyExists = await isExistingPlatform();
     if (!alreadyExists) {
       logApp.info(`[INIT] New platform detected, initialization...`);
@@ -275,10 +283,19 @@ const platformInit = async (testMode = false) => {
       }
     }
   } catch (e) {
-    const isApolloError = e instanceof ApolloError;
-    const error = isApolloError ? e : { name: 'UnknownError', data: { message: e.message, _stack: e.stack } };
-    logApp.error(`[OPENCTI] Platform initialization fail`, { error });
+    if (e.name === TYPE_LOCK_ERROR) {
+      logApp.error(`[OPENCTI] Platform cant get the lock for initialization`);
+    } else {
+      const isApolloError = e instanceof ApolloError;
+      const error = isApolloError ? e : { name: 'UnknownError', data: { message: e.message, _stack: e.stack } };
+      logApp.error(`[OPENCTI] Platform initialization fail`, { error });
+    }
     throw e;
+  } finally {
+    if (lock) {
+      await lock.unlock();
+      logApp.info(`[INIT] Platform initialization done`);
+    }
   }
   return true;
 };
