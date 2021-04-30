@@ -264,13 +264,32 @@ class Filters extends Component {
             value: n,
             type: 'attribute',
           })),
-        )(['0', '15', '50', '75', '85']);
+        )(['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100']);
         this.setState({
           entities: {
             ...this.state.entities,
             x_opencti_score_gt: R.union(
               scoreEntities,
               this.state.entities.x_opencti_score_gt,
+            ),
+          },
+        });
+        break;
+      case 'x_opencti_score_lte':
+        // eslint-disable-next-line no-case-declarations
+        const scoreLteEntities = R.pipe(
+          R.map((n) => ({
+            label: n,
+            value: n,
+            type: 'attribute',
+          })),
+        )(['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100']);
+        this.setState({
+          entities: {
+            ...this.state.entities,
+            x_opencti_score_lte: R.union(
+              scoreLteEntities,
+              this.state.entities.x_opencti_score_lte,
             ),
           },
         });
@@ -577,7 +596,7 @@ class Filters extends Component {
                 onInputChange={this.searchEntities.bind(this, filterKey)}
                 inputValue={inputValues[filterKey] || ''}
                 onChange={this.handleChange.bind(this, filterKey)}
-                getOptionSelected={(option, value) => option.value === value}
+                getOptionSelected={(option, value) => option.value === value.value}
                 renderInput={(params) => (
                   <TextField
                     {...params}

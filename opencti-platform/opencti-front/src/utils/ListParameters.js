@@ -134,6 +134,9 @@ export const convertFilters = (filters) => pipe(
     } else if (key.endsWith('end_date') || key.endsWith('_lt')) {
       key = key.replace('_end_date', '').replace('_lt', '');
       operator = 'lt';
+    } else if (key.endsWith('_lte')) {
+      key = key.replace('_lte', '');
+      operator = 'lte';
     }
     const values = last(pair);
     const valIds = map((v) => v.id, values);
