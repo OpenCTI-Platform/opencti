@@ -1,4 +1,5 @@
 import * as Minio from 'minio';
+import * as He from 'he';
 import { assoc, concat, map, sort } from 'ramda';
 import querystring from 'querystring';
 import conf, { logApp, logAudit } from '../config/conf';
@@ -75,11 +76,6 @@ export const loadFile = async (user, filename) => {
   }
 };
 
-const htmlDecode = (str) => {
-  return str.replace(/&#(\d+);/g, (match, dec) => {
-    return String.fromCharCode(dec);
-  });
-};
 const rawFilesListing = (user, directory) => {
   return new Promise((resolve, reject) => {
     const files = [];
@@ -98,7 +94,7 @@ const rawFilesListing = (user, directory) => {
   }).then((files) => {
     return Promise.all(
       map((elem) => {
-        const filename = htmlDecode(elem.name);
+        const filename = He.decode(elem.name);
         return loadFile(user, filename);
       }, files)
     );
