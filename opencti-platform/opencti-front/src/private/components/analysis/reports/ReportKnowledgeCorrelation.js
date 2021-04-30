@@ -856,12 +856,12 @@ class ReportKnowledgeCorrelationComponent extends Component {
           R.filter((m) => m.id),
         )(report.objects.edges),
         R.pipe(
-          R.filter((m) => m.node.reports),
+          R.filter((m) => m && m.node.reports),
           R.map((m) => m.node.reports.edges),
           R.flatten,
           R.map((m) => m.node.createdBy),
           R.flatten,
-          R.filter((m) => m.id),
+          R.filter((m) => m && m.id),
         )(report.objects.edges),
       ),
     );
