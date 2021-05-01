@@ -122,7 +122,7 @@ class ReportKnowledgeComponent extends Component {
           PopoverComponent={<ReportPopover />}
           link={`/dashboard/analysis/reports/${report.id}/knowledge`}
           modes={[
-            { key: 'graph', label: 'Graph', current: mode === 'graph' },
+            { key: 'graph', label: 'Entity Graph', current: mode === 'graph' },
             { key: 'correlation', label: 'Correlation', current: mode === 'correlation' },
             {
               key: 'matrix',
