@@ -186,6 +186,7 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
         parent_types
         created_at
         updated_at
+        modified
         ... on AttackPattern {
           name
           x_mitre_id
