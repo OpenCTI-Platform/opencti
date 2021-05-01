@@ -30,11 +30,6 @@ import {
 } from '../../../../utils/ListParameters';
 import ReportKnowledgeGraphBar from './ReportKnowledgeGraphBar';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
-import {
-  reportKnowledgeCorrelationMutationRelationAddMutation,
-  reportKnowledgeCorrelationMutationRelationDeleteMutation,
-} from './ReportKnowledgeCorrelationQuery';
-import { stixCoreRelationshipEditionDeleteMutation } from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -54,21 +49,6 @@ export const reportKnowledgeCorrelationQuery = graphql`
   query ReportKnowledgeCorrelationQuery($id: String) {
     report(id: $id) {
       ...ReportKnowledgeCorrelation_report
-    }
-  }
-`;
-
-const reportKnowledgeCorrelationCheckRelationQuery = graphql`
-  query ReportKnowledgeCorrelationCheckRelationQuery($id: String!) {
-    stixCoreRelationship(id: $id) {
-      id
-      reports {
-        edges {
-          node {
-            id
-          }
-        }
-      }
     }
   }
 `;
@@ -535,174 +515,6 @@ class ReportKnowledgeCorrelationComponent extends Component {
     });
   }
 
-  handleAddEntity(stixCoreObject) {
-    if (R.map((n) => n.id, this.graphObjects).includes(stixCoreObject.id)) return;
-    this.graphObjects = [...this.graphObjects, stixCoreObject];
-    this.graphData = buildCorrelationData(
-      this.graphObjects,
-      decodeGraphData(this.props.report.x_opencti_graph_data),
-      this.props.t,
-      this.state,
-    );
-    const selectedTimeRangeInterval = computeTimeRangeInterval(
-      this.graphObjects,
-    );
-    this.setState(
-      {
-        selectedTimeRangeInterval,
-        graphData: { ...this.graphData },
-      },
-      () => {
-        setTimeout(() => this.handleZoomToFit(), 1500);
-      },
-    );
-  }
-
-  handleAddRelation(stixCoreRelationship) {
-    const input = {
-      toId: stixCoreRelationship.id,
-      relationship_type: 'object',
-    };
-    commitMutation({
-      mutation: reportKnowledgeCorrelationMutationRelationAddMutation,
-      variables: {
-        id: this.props.report.id,
-        input,
-      },
-      onCompleted: () => {
-        this.graphObjects = [...this.graphObjects, stixCoreRelationship];
-        this.graphData = buildCorrelationData(
-          this.graphObjects,
-          decodeGraphData(this.props.report.x_opencti_graph_data),
-          this.props.t,
-          this.state,
-        );
-        const selectedTimeRangeInterval = computeTimeRangeInterval(
-          this.graphObjects,
-        );
-        this.setState({
-          selectedTimeRangeInterval,
-          graphData: { ...this.graphData },
-        });
-      },
-    });
-  }
-
-  handleDelete(stixCoreObject) {
-    const relationshipsToRemove = R.filter(
-      (n) => n.from?.id === stixCoreObject.id || n.to?.id === stixCoreObject.id,
-      this.graphObjects,
-    );
-    this.graphObjects = R.filter(
-      (n) => n.id !== stixCoreObject.id
-        && n.from?.id !== stixCoreObject.id
-        && n.to?.id !== stixCoreObject.id,
-      this.graphObjects,
-    );
-    this.graphData = buildCorrelationData(
-      this.graphObjects,
-      decodeGraphData(this.props.report.x_opencti_graph_data),
-      this.props.t,
-      this.state,
-    );
-    R.forEach((n) => {
-      commitMutation({
-        mutation: reportKnowledgeCorrelationMutationRelationDeleteMutation,
-        variables: {
-          id: this.props.report.id,
-          toId: n.id,
-          relationship_type: 'object',
-        },
-      });
-    }, relationshipsToRemove);
-    this.setState({
-      graphData: { ...this.graphData },
-    });
-  }
-
-  handleDeleteSelected() {
-    // Remove selected links
-    const selectedLinks = Array.from(this.selectedLinks);
-    const selectedLinksIds = R.map((n) => n.id, selectedLinks);
-    R.forEach((n) => {
-      fetchQuery(reportKnowledgeCorrelationCheckRelationQuery, {
-        id: n.id,
-      })
-        .toPromise()
-        .then((data) => {
-          if (data.stixCoreRelationship.reports.edges.length === 1) {
-            commitMutation({
-              mutation: stixCoreRelationshipEditionDeleteMutation,
-              variables: {
-                id: n.id,
-              },
-            });
-          } else {
-            commitMutation({
-              mutation: reportKnowledgeCorrelationMutationRelationDeleteMutation,
-              variables: {
-                id: this.props.report.id,
-                toId: n.id,
-                relationship_type: 'object',
-              },
-            });
-          }
-        });
-    }, this.selectedLinks);
-    this.graphObjects = R.filter(
-      (n) => !R.includes(n.id, selectedLinksIds),
-      this.graphObjects,
-    );
-    this.selectedLinks.clear();
-
-    // Remove selected nodes
-    const selectedNodes = Array.from(this.selectedNodes);
-    const selectedNodesIds = R.map((n) => n.id, selectedNodes);
-    const relationshipsToRemove = R.filter(
-      (n) => R.includes(n.from?.id, selectedNodesIds)
-        || R.includes(n.to?.id, selectedNodesIds),
-      this.graphObjects,
-    );
-    this.graphObjects = R.filter(
-      (n) => !R.includes(n.id, selectedNodesIds)
-        && !R.includes(n.from?.id, selectedNodesIds)
-        && !R.includes(n.to?.id, selectedNodesIds),
-      this.graphObjects,
-    );
-    R.forEach((n) => {
-      commitMutation({
-        mutation: reportKnowledgeCorrelationMutationRelationDeleteMutation,
-        variables: {
-          id: this.props.report.id,
-          toId: n.id,
-          relationship_type: 'object',
-        },
-      });
-    }, relationshipsToRemove);
-    R.forEach((n) => {
-      commitMutation({
-        mutation: reportKnowledgeCorrelationMutationRelationDeleteMutation,
-        variables: {
-          id: this.props.report.id,
-          toId: n.id,
-          relationship_type: 'object',
-        },
-      });
-    }, selectedNodes);
-    this.selectedNodes.clear();
-    this.graphData = buildCorrelationData(
-      this.graphObjects,
-      decodeGraphData(this.props.report.x_opencti_graph_data),
-      this.props.t,
-      this.state,
-    );
-    this.setState({
-      graphData: { ...this.graphData },
-      numberOfSelectedNodes: this.selectedNodes.size,
-      numberOfSelectedLinks: this.selectedLinks.size,
-    });
-  }
-
   handleCloseEntityEdition(entityId) {
     setTimeout(() => {
       fetchQuery(reportKnowledgeCorrelationStixCoreObjectQuery, {
@@ -903,10 +715,10 @@ class ReportKnowledgeCorrelationComponent extends Component {
           handleSelectAll={this.handleSelectAll.bind(this)}
           handleSelectByType={this.handleSelectByType.bind(this)}
           report={report}
-          onAdd={this.handleAddEntity.bind(this)}
-          onDelete={this.handleDelete.bind(this)}
-          onAddRelation={this.handleAddRelation.bind(this)}
-          handleDeleteSelected={this.handleDeleteSelected.bind(this)}
+          onAdd={false}
+          onDelete={false}
+          onAddRelation={false}
+          handleDeleteSelected={false}
           selectedNodes={Array.from(this.selectedNodes)}
           selectedLinks={Array.from(this.selectedLinks)}
           numberOfSelectedNodes={numberOfSelectedNodes}

@@ -613,22 +613,24 @@ class ReportKnowledgeGraphBar extends Component {
                   height: '100%',
                 }}
               >
-                <ContainerAddStixCoreObjects
-                  containerId={report.id}
-                  containerStixCoreObjects={report.objects.edges}
-                  knowledgeGraph={true}
-                  defaultCreatedBy={R.propOr(null, 'createdBy', report)}
-                  defaultMarkingDefinitions={R.map(
-                    (n) => n.node,
-                    R.pathOr([], ['objectMarking', 'edges'], report),
-                  )}
-                  targetStixCoreObjectTypes={[
-                    'Stix-Domain-Object',
-                    'Stix-Cyber-Observable',
-                  ]}
-                  onAdd={onAdd}
-                  onDelete={onDelete}
-                />
+                {onAdd && (
+                  <ContainerAddStixCoreObjects
+                    containerId={report.id}
+                    containerStixCoreObjects={report.objects.edges}
+                    knowledgeGraph={true}
+                    defaultCreatedBy={R.propOr(null, 'createdBy', report)}
+                    defaultMarkingDefinitions={R.map(
+                      (n) => n.node,
+                      R.pathOr([], ['objectMarking', 'edges'], report),
+                    )}
+                    targetStixCoreObjectTypes={[
+                      'Stix-Domain-Object',
+                      'Stix-Cyber-Observable',
+                    ]}
+                    onAdd={onAdd}
+                    onDelete={onDelete}
+                  />
+                )}
                 <Tooltip title={t('View the item')}>
                   <span>
                     <IconButton
@@ -666,47 +668,53 @@ class ReportKnowledgeGraphBar extends Component {
                   }
                   handleClose={this.handleCloseRelationEdition.bind(this)}
                 />
-                <Tooltip title={t('Create a relationship')}>
-                  <span>
-                    <IconButton
-                      color="primary"
-                      onClick={this.handleOpenCreateRelationship.bind(this)}
-                      disabled={!relationEnabled}
-                    >
-                      <LinkOutlined />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <StixCoreRelationshipCreation
-                  open={openCreatedRelation}
-                  from={relationFrom}
-                  to={relationTo}
-                  firstSeen={lastLinkFirstSeen || dateFormat(report.published)}
-                  lastSeen={lastLinkLastSeen || dateFormat(report.published)}
-                  weight={report.confidence}
-                  handleClose={this.handleCloseCreateRelationship.bind(this)}
-                  handleResult={onAddRelation}
-                  handleReverseRelation={this.handleReverseRelation.bind(this)}
-                  defaultCreatedBy={R.propOr(null, 'createdBy', report)}
-                  defaultMarkingDefinitions={R.map(
-                    (n) => n.node,
-                    R.pathOr([], ['objectMarking', 'edges'], report),
-                  )}
-                />
-                <Tooltip title={t('Remove selected items')}>
-                  <span>
-                    <IconButton
-                      color="primary"
-                      onClick={this.handleOpenRemove.bind(this)}
-                      disabled={
-                        numberOfSelectedNodes === 0
-                        && numberOfSelectedLinks === 0
-                      }
-                    >
-                      <DeleteOutlined />
-                    </IconButton>
-                  </span>
-                </Tooltip>
+                {onAddRelation && (
+                  <Tooltip title={t('Create a relationship')}>
+                    <span>
+                      <IconButton
+                        color="primary"
+                        onClick={this.handleOpenCreateRelationship.bind(this)}
+                        disabled={!relationEnabled}
+                      >
+                        <LinkOutlined />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                )}
+                {onAddRelation && (
+                  <StixCoreRelationshipCreation
+                    open={openCreatedRelation}
+                    from={relationFrom}
+                    to={relationTo}
+                    firstSeen={lastLinkFirstSeen || dateFormat(report.published)}
+                    lastSeen={lastLinkLastSeen || dateFormat(report.published)}
+                    weight={report.confidence}
+                    handleClose={this.handleCloseCreateRelationship.bind(this)}
+                    handleResult={onAddRelation}
+                    handleReverseRelation={this.handleReverseRelation.bind(this)}
+                    defaultCreatedBy={R.propOr(null, 'createdBy', report)}
+                    defaultMarkingDefinitions={R.map(
+                      (n) => n.node,
+                      R.pathOr([], ['objectMarking', 'edges'], report),
+                    )}
+                  />
+                )}
+                {handleDeleteSelected && (
+                  <Tooltip title={t('Remove selected items')}>
+                    <span>
+                      <IconButton
+                        color="primary"
+                        onClick={this.handleOpenRemove.bind(this)}
+                        disabled={
+                          numberOfSelectedNodes === 0
+                          && numberOfSelectedLinks === 0
+                        }
+                      >
+                        <DeleteOutlined />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                )}
                 <Dialog
                   open={this.state.displayRemove}
                   keepMounted={true}
