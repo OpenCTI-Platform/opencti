@@ -434,7 +434,7 @@ export const buildCorrelationData = (objects, graphData, t, filterAdjust) => {
   const nodes = R.pipe(
     R.map((n) => ({
       id: n.id,
-      val: n.entity_type,
+      val: graphLevel[n.entity_type],
       name: defaultValue(n, true),
       defaultDate: jsDate(defaultDate(n)),
       label: truncate(defaultValue(n), n.entity_type === 'Attack-Pattern' ? 30 : 20),
