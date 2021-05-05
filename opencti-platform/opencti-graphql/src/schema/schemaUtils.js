@@ -40,7 +40,7 @@ import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isBasicRelationship, isStixRelationship } from './stixRelationship';
 import { isInternalRelationship } from './internalRelationship';
 import { isBasicObject, isStixCoreObject, isStixObject } from './stixCoreObject';
-import { STIX_SIGHTING_RELATIONSHIP } from "./stixSightingRelationship";
+import { STIX_SIGHTING_RELATIONSHIP } from './stixSightingRelationship';
 
 const isStixId = (id) => id.match(/[a-z-]+--[\w-]{36}/g);
 const isInternalId = (id) => validator.isUUID(id);
