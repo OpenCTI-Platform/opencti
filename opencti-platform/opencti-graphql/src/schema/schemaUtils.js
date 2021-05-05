@@ -65,6 +65,31 @@ export const convertEntityTypeToStixType = (type) => {
   }
 };
 
+const pascalize = (str) => {
+  return str
+    .match(/[a-z]+/gi)
+    .map((word) => {
+      return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase();
+    })
+    .join('-');
+};
+
+export const generateEntityType = (entity) => {
+  switch (entity.type) {
+    case 'identity':
+      switch (entity.identity_class) {
+        case 'class':
+          return 'Sector';
+        default:
+          return pascalize(entity.identity_class);
+      }
+    case 'location':
+      return entity.x_opencti_location_type;
+    default:
+      return pascalize(entity.type);
+  }
+};
+
 export const parents = (type) => {
   // ENTITIES
   if (isStixDomainObject(type)) {

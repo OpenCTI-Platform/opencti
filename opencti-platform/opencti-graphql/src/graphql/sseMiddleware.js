@@ -11,12 +11,14 @@ import { stixLoadById } from '../database/middleware';
 import { convertFiltersToQueryOptions } from '../domain/taxii';
 import { elList } from '../database/elasticSearch';
 import {
+  isEmptyField,
   READ_DATA_INDICES,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE,
 } from '../database/utils';
-import { buildStixData, stixDataConverter } from '../database/stix';
+import { buildStixData } from '../database/stix';
+import { generateEntityType, parents } from '../schema/schemaUtils';
 
 let heartbeat;
 const KEEP_ALIVE_INTERVAL_MS = 20000;
@@ -182,8 +184,19 @@ export const isInstanceMatchFilters = (instance, filters) => {
     // --- Depending of the data
     // Entity type filtering
     if (type === TYPE_FILTER) {
-      const dataType = instance.identity_class || instance.type;
-      const found = values.map((v) => v.id.toLowerCase()).includes(dataType);
+      const instanceType = generateEntityType(instance);
+      const instanceAllTypes = [instanceType, ...parents(instanceType)];
+      let found = false;
+      if (values.length === 0) {
+        found = true;
+      } else {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const filter of values) {
+          if (instanceAllTypes.includes(filter.id)) {
+            found = true;
+          }
+        }
+      }
       if (!found) return false;
     }
     // Creator filtering
@@ -399,8 +412,19 @@ const createSeeMiddleware = () => {
         const isGranted = isEventGranted(element.data, user);
         // Pre filter for entity_type if needed
         const filterTypes = streamFilters?.entity_type || [];
-        const instanceType = data.identity_class || data.type;
-        const isValid = filterTypes.length === 0 || filterTypes.map((v) => v.id.toLowerCase()).includes(instanceType);
+        const instanceType = generateEntityType(data);
+        const instanceAllTypes = [instanceType, ...parents(instanceType)];
+        let isValid = false;
+        if (filterTypes.length === 0) {
+          isValid = true;
+        } else {
+          // eslint-disable-next-line no-restricted-syntax
+          for (const filter of filterTypes) {
+            if (instanceAllTypes.includes(filter.id)) {
+              isValid = true;
+            }
+          }
+        }
         if (isGranted && isValid) {
           processingMessages.push(element);
         }
@@ -422,7 +446,7 @@ const createSeeMiddleware = () => {
             const createdInstance = buildStixData(currentInstance, { patchGeneration: true });
             const isMatchFilters = isInstanceMatchFilters(createdInstance, streamFilters);
             if (isMatchFilters) {
-              const data = stixDataConverter(currentInstance);
+              const data = buildStixData(currentInstance);
               data.x_opencti_patch = patch;
               const markings = data.object_marking_refs || [];
               client.sendEvent(eventId, EVENT_TYPE_CREATE, { data, markings });
@@ -443,7 +467,7 @@ const createSeeMiddleware = () => {
             const beforePatch = rebuildInstanceBeforePatch(current, patch);
             const isBeforePatchVisible = isInstanceMatchFilters(beforePatch, streamFilters);
             const isCurrentVisible = isInstanceMatchFilters(current, streamFilters);
-            const data = stixDataConverter(currentInstance);
+            const data = buildStixData(currentInstance);
             const markings = data.object_marking_refs || [];
             data.x_opencti_patch = patch;
             // If updatedInstance pass the filtering but not initialInstance -> creation event
@@ -466,14 +490,14 @@ const createSeeMiddleware = () => {
     try {
       await initBroadcasting(req, res, client, processor);
       // If empty start date, stream all results corresponding to the filters
-      if (!startFrom) {
+      if (isEmptyField(startFrom)) {
         const queryOptions = convertFiltersToQueryOptions(streamFilters);
         const callback = async (elements) => {
           if (channel.connected()) {
             for (let index = 0; index < elements.length; index += 1) {
               const { internal_id: elemId } = elements[index];
               const instance = await stixLoadById(req.session.user, elemId);
-              const data = stixDataConverter(instance);
+              const data = buildStixData(instance);
               const markings = data.object_marking_refs || [];
               channel.sendEvent(undefined, EVENT_TYPE_CREATE, { data, markings });
             }

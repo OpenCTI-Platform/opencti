@@ -158,7 +158,7 @@ const StreamCollectionEditionContainer = (props) => {
           <Close fontSize="small" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update a filtered stream')}
+          {t('Update a live stream')}
         </Typography>
         <div style={{ float: 'right', margin: '10px 0 0 0' }}>
           <Filters
@@ -168,9 +168,14 @@ const StreamCollectionEditionContainer = (props) => {
               'markedBy',
               'labelledBy',
               'createdBy',
+              'x_opencti_score_gt',
+              'x_opencti_detection',
+              'revoked',
+              'confidence_gt',
             ]}
             currentFilters={[]}
             handleAddFilter={handleAddFilter}
+            noDirectFilters={true}
           />
         </div>
         <div className="clearfix" />
@@ -186,14 +191,14 @@ const StreamCollectionEditionContainer = (props) => {
               <Field
                 component={TextField}
                 name="name"
-                label={t('Collection name')}
+                label={t('Name')}
                 fullWidth={true}
                 onSubmit={handleSubmitField}
               />
               <Field
                 component={TextField}
                 name="description"
-                label={t('Collection description')}
+                label={t('Description')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
                 onSubmit={handleSubmitField}

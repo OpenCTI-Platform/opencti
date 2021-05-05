@@ -69,6 +69,9 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
+  title: {
+    float: 'left',
+  },
   filters: {
     float: 'left',
     margin: '-8px 0 0 -5px',
@@ -190,7 +193,27 @@ const StreamCollectionCreation = (props) => {
           >
             <Close fontSize="small" />
           </IconButton>
-          <Typography variant="h6">{t('Create a filtered stream')}</Typography>
+          <Typography variant="h6" classes={{ root: classes.title }}>
+            {t('Create a live stream')}
+          </Typography>
+          <div style={{ float: 'right', margin: '10px 0 0 0' }}>
+            <Filters
+              variant="text"
+              availableFilterKeys={[
+                'entity_type',
+                'markedBy',
+                'labelledBy',
+                'createdBy',
+                'x_opencti_score_gt',
+                'x_opencti_detection',
+                'revoked',
+                'confidence_gt',
+              ]}
+              currentFilters={[]}
+              handleAddFilter={handleAddFilter}
+              noDirectFilters={true}
+            />
+          </div>
         </div>
         <div className={classes.container}>
           <Formik
@@ -207,28 +230,17 @@ const StreamCollectionCreation = (props) => {
                 <Field
                   component={TextField}
                   name="name"
-                  label={t('Stream name')}
+                  label={t('Name')}
                   fullWidth={true}
                 />
                 <Field
                   component={TextField}
                   name="description"
-                  label={t('Stream description')}
+                  label={t('Description')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
                 <div style={{ marginTop: 35 }}>
-                  <Filters
-                    variant="text"
-                    availableFilterKeys={[
-                      'entity_type',
-                      'markedBy',
-                      'labelledBy',
-                      'createdBy',
-                    ]}
-                    currentFilters={[]}
-                    handleAddFilter={handleAddFilter}
-                  />
                   <div className={classes.filters}>
                     {map((currentFilter) => {
                       const label = `${truncate(

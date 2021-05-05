@@ -13,7 +13,7 @@ import {
   RELATION_OBJECT_MARKING,
 } from './stixMetaRelationship';
 import { RELATION_RELATED_TO } from './stixCoreRelationship';
-import { STIX_SIGHTING_RELATIONSHIP } from "./stixSightingRelationship";
+import { STIX_SIGHTING_RELATIONSHIP } from './stixSightingRelationship';
 
 export const ENTITY_AUTONOMOUS_SYSTEM = 'Autonomous-System';
 export const ENTITY_DIRECTORY = 'Directory';

@@ -170,6 +170,7 @@ const TaxiiCollectionEditionContainer = (props) => {
               'createdBy',
               'x_opencti_score_gt',
               'x_opencti_detection',
+              'revoked',
               'confidence_gt',
             ]}
             currentFilters={[]}
@@ -190,14 +191,14 @@ const TaxiiCollectionEditionContainer = (props) => {
               <Field
                 component={TextField}
                 name="name"
-                label={t('Collection name')}
+                label={t('Name')}
                 fullWidth={true}
                 onSubmit={handleSubmitField}
               />
               <Field
                 component={TextField}
                 name="description"
-                label={t('Collection description')}
+                label={t('Description')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
                 onSubmit={handleSubmitField}

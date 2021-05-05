@@ -180,7 +180,7 @@ class StreamCollectionPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this stream?')}
+              {t('Do you want to delete this live stream?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>

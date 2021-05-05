@@ -480,7 +480,9 @@ export const createStreamProcessor = (user, callback) => {
   return {
     info: async () => processInfo(),
     start: async (start = 'live') => {
-      startEventId = start === 'live' ? '$' : start;
+      let fromStart = start;
+      if (isEmptyField(fromStart)) fromStart = 'live';
+      startEventId = fromStart === 'live' ? '$' : fromStart;
       client = await createRedisClient(); // Create client for this processing loop
       logApp.info(`[STREAM] Starting stream processor for ${user.user_email}`);
       processingLoopPromise = processingLoop();

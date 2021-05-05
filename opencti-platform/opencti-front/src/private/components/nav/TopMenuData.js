@@ -124,7 +124,7 @@ class TopMenuData extends Component {
             }
             classes={{ root: classes.button }}
           >
-            {t('Taxii feeds')}
+            {t('TAXII collections')}
           </Button>
         </Security>
       </div>
