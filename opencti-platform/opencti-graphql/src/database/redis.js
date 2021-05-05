@@ -3,6 +3,7 @@ import Redis from 'ioredis';
 import Redlock from 'redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
+import { create as createJsonDiff } from 'jsondiffpatch';
 import conf, { configureCA, logApp } from '../config/conf';
 import {
   generateLogMessage,
@@ -17,7 +18,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import { buildStixData, convertTypeToStixType, stixDataConverter } from './stix';
+import { buildStixData, stixDataConverter } from './stix';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { MARKING_DEFINITION_STATEMENT } from '../schema/stixMetaObject';
@@ -291,16 +292,89 @@ const pushToStream = (client, event) => {
   }
   return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
 };
-export const storeMergeEvent = async (user, instance, sourceEntities) => {
+const DIFF_ADDED = 1;
+const DIFF_CHANGE = 2;
+const DIFF_REMOVE = 3;
+const DIFF_TYPE = '_t';
+const DIFF_TYPE_ARRAY = 'a';
+export const computeMergeDifferential = (initialInstance, mergedInstance) => {
+  const convertInit = buildStixData(initialInstance, { patchGeneration: true });
+  const convertMerged = buildStixData(mergedInstance, { patchGeneration: true });
+  const diffGenerator = createJsonDiff({
+    objectHash: (obj) => {
+      return obj.x_opencti_internal_id;
+    },
+  });
+  const diff = diffGenerator.diff(convertInit, convertMerged);
+  const patch = {};
+  const entries = Object.entries(diff);
+  for (let index = 0; index < entries.length; index += 1) {
+    const [field, diffDelta] = entries[index];
+    // https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
+    if (Array.isArray(diffDelta)) {
+      let current;
+      let previous;
+      // Value added
+      if (diffDelta.length === DIFF_ADDED) {
+        const value = R.head(diffDelta);
+        current = value;
+        previous = Array.isArray(value) ? [] : '';
+      }
+      // Value changed
+      if (diffDelta.length === DIFF_CHANGE) {
+        current = R.last(diffDelta);
+        previous = R.head(diffDelta);
+      }
+      // Value removed
+      if (diffDelta.length === DIFF_REMOVE) {
+        const value = R.head(diffDelta);
+        previous = value;
+        current = Array.isArray(value) ? [] : '';
+      }
+      // Setup the patch
+      if (patch.replace) {
+        patch.replace[field] = { current, previous };
+      } else {
+        patch.replace = { [field]: { current, previous } };
+      }
+    } else if (diffDelta[DIFF_TYPE] === DIFF_TYPE_ARRAY) {
+      // Is an array changes
+      const delta = R.dissoc(DIFF_TYPE, diffDelta);
+      const deltaObjEntries = Object.entries(delta);
+      for (let indexDelta = 0; indexDelta < deltaObjEntries.length; indexDelta += 1) {
+        const [, diffData] = deltaObjEntries[indexDelta];
+        if (diffData.length === DIFF_ADDED) {
+          if (patch.add) {
+            patch.add[field] = diffData;
+          } else {
+            patch.add = { [field]: diffData };
+          }
+        }
+        if (diffData.length === DIFF_REMOVE) {
+          const removedValue = R.head(diffData);
+          const removeVal = Array.isArray(removedValue) ? removedValue : [removedValue];
+          if (patch.remove) {
+            patch.remove[field] = removeVal;
+          } else {
+            patch.remove = { [field]: removeVal };
+          }
+        }
+      }
+    } else {
+      // Is a internal complex object, like extensions
+      // TODO @JRI
+    }
+  }
+  return patch;
+};
+export const storeMergeEvent = async (user, initialInstance, mergedInstance, sourceEntities) => {
   try {
-    const message = generateLogMessage(EVENT_TYPE_MERGE, instance, sourceEntities);
-    const data = {
-      id: instance.standard_id,
-      x_opencti_id: instance.internal_id,
-      type: convertTypeToStixType(instance.entity_type),
-      source_ids: R.map((s) => s.standard_id, sourceEntities),
-    };
-    const event = buildEvent(EVENT_TYPE_MERGE, user, instance.objectMarking, message, data);
+    const patch = computeMergeDifferential(initialInstance, mergedInstance);
+    const message = generateLogMessage(EVENT_TYPE_MERGE, initialInstance, sourceEntities);
+    const data = buildStixData(mergedInstance);
+    data.x_opencti_patch = patch;
+    data.sources = R.map((s) => buildStixData(s), sourceEntities);
+    const event = buildEvent(EVENT_TYPE_MERGE, user, mergedInstance.objectMarking, message, data);
     return pushToStream(clientBase, event);
   } catch (e) {
     throw DatabaseError('Error in store merge event', { error: e });
@@ -446,9 +520,9 @@ const processStreamResult = async (results, callback) => {
 };
 
 let processingLoopPromise;
-export const MAX_RANGE_MESSAGES = 2000;
 const WAIT_TIME = 1000;
-export const createStreamProcessor = (user, callback) => {
+const MAX_RANGE_MESSAGES = 500;
+export const createStreamProcessor = (user, callback, maxRange = MAX_RANGE_MESSAGES) => {
   let client;
   let startEventId;
   let streamListening = true;
@@ -460,7 +534,7 @@ export const createStreamProcessor = (user, callback) => {
       'BLOCK',
       WAIT_TIME,
       'COUNT',
-      MAX_RANGE_MESSAGES,
+      maxRange,
       'STREAMS',
       OPENCTI_STREAM,
       startEventId
@@ -502,23 +576,6 @@ export const createStreamProcessor = (user, callback) => {
       await client.disconnect();
     },
   };
-};
-export const getStreamRange = async (from, limit, callback) => {
-  const client = await createRedisClient();
-  const size = limit > MAX_RANGE_MESSAGES ? MAX_RANGE_MESSAGES : limit;
-  return client.call('XRANGE', OPENCTI_STREAM, from, '+', 'COUNT', size).then(async (results) => {
-    let lastEventId;
-    if (results && results.length > 0) {
-      await processStreamResult(results, callback);
-      const lastResult = R.last(results);
-      lastEventId = R.head(lastResult);
-    } else {
-      const streamInfo = await fetchStreamInfo();
-      lastEventId = streamInfo.lastEventId;
-    }
-    await client.disconnect();
-    return { lastEventId };
-  });
 };
 // endregion
 

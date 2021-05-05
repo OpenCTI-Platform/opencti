@@ -40,6 +40,7 @@ import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isBasicRelationship, isStixRelationship } from './stixRelationship';
 import { isInternalRelationship } from './internalRelationship';
 import { isBasicObject, isStixCoreObject, isStixObject } from './stixCoreObject';
+import { STIX_SIGHTING_RELATIONSHIP } from "./stixSightingRelationship";
 
 const isStixId = (id) => id.match(/[a-z-]+--[\w-]{36}/g);
 const isInternalId = (id) => validator.isUUID(id);
@@ -74,8 +75,12 @@ const pascalize = (str) => {
     .join('-');
 };
 
-export const generateEntityType = (entity) => {
+export const generateInternalType = (entity) => {
   switch (entity.type) {
+    case 'sighting':
+      return STIX_SIGHTING_RELATIONSHIP;
+    case 'relationship':
+      return ABSTRACT_STIX_CORE_RELATIONSHIP;
     case 'identity':
       switch (entity.identity_class) {
         case 'class':

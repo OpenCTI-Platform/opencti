@@ -47,7 +47,7 @@ import { isBasicRelationship } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 
-const MIN_DATA_FIELDS = ['name', 'internal_id', 'standard_id', 'base_type', 'entity_type', 'connections'];
+const MIN_DATA_FIELDS = ['name', 'value', 'internal_id', 'standard_id', 'base_type', 'entity_type', 'connections'];
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result');

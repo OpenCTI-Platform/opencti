@@ -471,16 +471,14 @@ const loadElementDependencies = async (user, element, args = {}) => {
   const fromResolvedPromise = elFindByIds(user, fromResolvedIds, { toMap: true, minSource });
   const [toResolved, fromResolved] = await Promise.all([toResolvedPromise, fromResolvedPromise]);
   if (fromRelations.length > 0) {
-    // Put the row data in internal attributes
-    if (fullResolve === false) {
-      // Build the flatten view inside the data
-      const grouped = R.groupBy((a) => relationTypeToInputName(a.entity_type), fromRelations);
-      const entries = Object.entries(grouped);
-      for (let index = 0; index < entries.length; index += 1) {
-        const [key, values] = entries[index];
-        data[key] = R.map((v) => toResolved[v.toId], values);
-      }
-    } else {
+    // Build the flatten view inside the data
+    const grouped = R.groupBy((a) => relationTypeToInputName(a.entity_type), fromRelations);
+    const entries = Object.entries(grouped);
+    for (let index = 0; index < entries.length; index += 1) {
+      const [key, values] = entries[index];
+      data[key] = R.map((v) => toResolved[v.toId], values);
+    }
+    if (fullResolve) {
       const flatRelations = fromRelations.map((rel) => ({ ...toResolved[rel.toId], i_relation: rel }));
       data[INTERNAL_FROM_FIELD] = transformRawRelationsToAttributes(flatRelations);
     }
@@ -1134,8 +1132,10 @@ export const mergeEntities = async (user, targetEntityId, sourceEntityIds, opts 
     // Lock the participants that will be merged
     lock = await lockResource(participantIds);
     // - TRANSACTION PART
+    const initialInstance = await stixLoadById(user, targetEntityId);
     await mergeEntitiesRaw(user, target, sources, opts);
-    await storeMergeEvent(user, target, sources);
+    const mergedInstance = await stixLoadById(user, targetEntityId);
+    await storeMergeEvent(user, initialInstance, mergedInstance, sources);
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id));
     // - END TRANSACTION
