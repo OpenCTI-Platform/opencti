@@ -321,12 +321,18 @@ export const storeUpdateEvent = async (user, instance, updateEvents) => {
         return true;
       }
       // else just continue as usual
-      let data = {
+      const data = {
         standard_id: instance.standard_id,
         internal_id: instance.internal_id,
         entity_type: instance.entity_type,
+        x_opencti_patch: dataPatch,
       };
-      data = { ...data, x_opencti_patch: dataPatch };
+      if (instance.identity_class) {
+        data.identity_class = instance.identity_class;
+      }
+      if (instance.x_opencti_location_type) {
+        data.x_opencti_location_type = instance.x_opencti_location_type;
+      }
       // Generate the message
       const operation = updateEvents.length === 1 ? R.head(Object.keys(R.head(updateEvents))) : UPDATE_OPERATION_CHANGE;
       const messageInput = R.mergeAll(updateEvents.map((i) => stixDataConverter(R.head(Object.values(i)))));

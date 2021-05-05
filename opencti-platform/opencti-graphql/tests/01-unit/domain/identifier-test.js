@@ -2,6 +2,7 @@
 import { generateAliasesId, normalizeName } from '../../../src/schema/identifier';
 import { cleanStixIds } from '../../../src/database/stix';
 import { relationTypeToInputName } from '../../../src/database/utils';
+import { generateEntityType } from '../../../src/schema/schemaUtils';
 
 test('should name correctly normalize', () => {
   let normalize = normalizeName('My data %test     ');
@@ -143,4 +144,22 @@ test('should multi stix id correctly max sized', () => {
 test('should relation to input name', () => {
   const name = relationTypeToInputName('object-marking');
   expect(name).toEqual('objectMarking');
+});
+
+test('should stix type converter work', () => {
+  const attackPattern = { type: 'attack-pattern' };
+  const attackPatternType = generateEntityType(attackPattern);
+  expect(attackPatternType).toEqual('Attack-Pattern');
+  const courseOfAction = { type: 'course-of-action' };
+  const courseOfActionType = generateEntityType(courseOfAction);
+  expect(courseOfActionType).toEqual('Course-Of-Action');
+  const indicator = { type: 'indicator' };
+  const indicatorType = generateEntityType(indicator);
+  expect(indicatorType).toEqual('Indicator');
+  const identity = { type: 'identity', identity_class: 'individual' };
+  const identityType = generateEntityType(identity);
+  expect(identityType).toEqual('Individual');
+  const location = { type: 'location', x_opencti_location_type: 'Country' };
+  const locationType = generateEntityType(location);
+  expect(locationType).toEqual('Country');
 });

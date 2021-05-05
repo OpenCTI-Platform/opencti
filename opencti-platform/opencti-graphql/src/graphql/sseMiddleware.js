@@ -218,7 +218,7 @@ export const isInstanceMatchFilters = (instance, filters) => {
 // Concept here is to recreate the instance before is change
 // Basically reverting the patch.
 export const rebuildInstanceBeforePatch = (stixWithInternalRefs, patch) => {
-  const rebuild = { ...stixWithInternalRefs };
+  const rebuild = R.clone(stixWithInternalRefs);
   const patchEntries = Object.entries(patch);
   for (let index = 0; index < patchEntries.length; index += 1) {
     const [type, actionPatch] = patchEntries[index];
