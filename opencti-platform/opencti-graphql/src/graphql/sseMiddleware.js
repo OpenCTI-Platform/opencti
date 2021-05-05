@@ -337,6 +337,7 @@ const createSeeMiddleware = () => {
   const initBroadcasting = async (req, res, client, processor) => {
     const broadcasterInfo = await processor.info();
     req.on('close', () => {
+      req.finished = true;
       processor.shutdown();
       delete broadcastClients[client.id];
     });

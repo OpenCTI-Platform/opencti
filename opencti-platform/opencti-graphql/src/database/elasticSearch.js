@@ -1260,7 +1260,8 @@ export const elList = async (user, indexName, options = {}) => {
   const publish = async (elements) => {
     const { callback } = options;
     if (callback) {
-      continueProcess = (await callback(elements)) || true;
+      const callbackResult = await callback(elements);
+      continueProcess = callbackResult === true || callbackResult === undefined;
     } else {
       listing.push(...elements);
     }
