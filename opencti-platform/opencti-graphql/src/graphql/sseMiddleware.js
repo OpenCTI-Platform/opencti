@@ -115,7 +115,7 @@ const computeAggregatePatch = (events) => {
   const impactFullActions = cleanCancelledAction(eventsDifferential);
   if (impactFullActions.length === 0) {
     // Finally nothing happens :)
-    return undefined;
+    return {};
   }
   // Now we need to recompute the actions diff from impacts
   const patchElements = [];
@@ -155,6 +155,9 @@ const isElementEvolved = (openctiId, events) => {
   }
   // 02. Handle update differential
   // In this case, we only take care about element evolution
+  if (R.empty(patch)) {
+    return undefined;
+  }
   return { id: openctiId, eventId, topic: EVENT_TYPE_UPDATE, patch };
 };
 export const computeEventsDiff = (elements) => {
