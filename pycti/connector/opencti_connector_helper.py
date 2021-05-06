@@ -316,16 +316,21 @@ class ListenStream(threading.Thread):
                 logging.info("Catchup done")
             else:
                 event_id = msg.id
-                date = datetime.datetime.fromtimestamp(
-                    round(int(event_id.split("-")[0]) / 1000)
-                )
-                logging.info(
-                    "Processing message (id: " + event_id + ", date: " + str(date) + ")"
-                )
+                if event_id is not None:
+                    date = datetime.datetime.fromtimestamp(
+                        round(int(event_id.split("-")[0]) / 1000)
+                    )
+                    logging.info(
+                        "Processing message (id: "
+                        + event_id
+                        + ", date: "
+                        + str(date)
+                        + ")"
+                    )
+                    state = self.helper.get_state()
+                    state["connectorLastEventId"] = str(event_id)
+                    self.helper.set_state(state)
                 self.callback(msg)
-                state = self.helper.get_state()
-                state["connectorLastEventId"] = str(msg.id)
-                self.helper.set_state(state)
 
 
 class OpenCTIConnectorHelper:
