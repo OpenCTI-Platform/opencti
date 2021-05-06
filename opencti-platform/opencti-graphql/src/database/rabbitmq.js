@@ -8,7 +8,7 @@ import { DatabaseError } from '../config/errors';
 export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
 export const WORKER_EXCHANGE = 'amqp.worker.exchange';
 
-export const EVENT_TYPE_CATCH = 'catch';
+export const EVENT_TYPE_SYNC = 'sync';
 export const EVENT_TYPE_CREATE = 'create';
 export const EVENT_TYPE_UPDATE = 'update';
 export const EVENT_TYPE_MERGE = 'merge';

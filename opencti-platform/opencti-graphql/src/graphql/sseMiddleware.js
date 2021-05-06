@@ -7,7 +7,7 @@ import { generateInternalId } from '../schema/identifier';
 import { BYPASS } from '../schema/general';
 import { findById } from '../domain/stream';
 import {
-  EVENT_TYPE_CATCH,
+  EVENT_TYPE_SYNC,
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
   EVENT_TYPE_MERGE,
@@ -374,9 +374,12 @@ const createSeeMiddleware = () => {
         if (topic) {
           message += `event: ${topic}\n`;
         }
-        message += 'data: ';
-        message += JSON.stringify(data);
-        message += '\n\n';
+        if (data) {
+          message += 'data: ';
+          message += JSON.stringify(data);
+          message += '\n';
+        }
+        message += '\n';
         res.write(message);
         res.flush();
       },
@@ -401,7 +404,7 @@ const createSeeMiddleware = () => {
     });
     try {
       await initBroadcasting(req, res, client, processor);
-      await processor.start(req.query.from);
+      await processor.start(req.query.from || req.headers['Last-Event-ID']);
       broadcastClients[client.id] = client;
     } catch (err) {
       res.status(500);
@@ -439,7 +442,7 @@ const createSeeMiddleware = () => {
   };
   const filteredStreamHandler = async (req, res) => {
     const { id } = req.params;
-    const startFrom = req.query.from;
+    const startFrom = req.query.from || req.headers['Last-Event-ID'];
     const collection = await findById(req.session.user, id);
     if (!collection) {
       res.status(500);
@@ -516,6 +519,9 @@ const createSeeMiddleware = () => {
             }
           }
         }
+        if (elements.length > 0 && channel.connected()) {
+          channel.sendEvent(R.last(elements).id, EVENT_TYPE_SYNC, null);
+        }
       },
       compactDepth
     );
@@ -543,7 +549,7 @@ const createSeeMiddleware = () => {
         await elList(req.session.user, READ_DATA_INDICES, queryOptions);
         // We need to sent a special event to mark the end of init with the current timestamp
         const catchId = `${new Date().getTime()}-0`;
-        channel.sendEvent(catchId, EVENT_TYPE_CATCH, { message: 'Catchup done' });
+        channel.sendEvent(catchId, EVENT_TYPE_SYNC, { message: 'Catchup done' });
       }
       // After start to stream the live.
       await processor.start(startFrom);
