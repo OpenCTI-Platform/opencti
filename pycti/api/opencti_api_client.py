@@ -82,12 +82,10 @@ class OpenCTIApiClient:
         # Check configuration
         self.ssl_verify = ssl_verify
         self.proxies = proxies
-        if url is None or len(token) == 0:
-            raise ValueError("Url configuration must be configured")
+        if url is None or len(url) == 0:
+            raise ValueError("An URL must be set")
         if token is None or len(token) == 0 or token == "ChangeMe":
-            raise ValueError(
-                "Token configuration must be the same as APP__ADMIN__TOKEN"
-            )
+            raise ValueError("A TOKEN must be set")
 
         # Configure logger
         self.log_level = log_level

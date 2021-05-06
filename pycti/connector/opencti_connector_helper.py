@@ -3,7 +3,6 @@ import datetime
 import json
 import logging
 import os
-import queue
 import ssl
 import threading
 import time
@@ -11,15 +10,12 @@ import uuid
 from typing import Callable, Dict, List, Optional, Union
 
 import pika
-import requests
 from pika.exceptions import NackError, UnroutableError
 from sseclient import SSEClient
 
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
-
-EVENTS_QUEUE = queue.Queue()
 
 
 def get_config_variable(
@@ -222,81 +218,114 @@ class PingAlive(threading.Thread):
         self.ping()
 
 
-class StreamCatcher(threading.Thread):
-    def __init__(
-        self,
-        opencti_url,
-        opencti_token,
-        connector_last_event_id,
-        last_event_id,
-        stream_connection_id,
-    ):
+class ListenStream(threading.Thread):
+    def __init__(self, helper, callback, url, token, verify_ssl):
         threading.Thread.__init__(self)
-        self.opencti_url = opencti_url
-        self.opencti_token = opencti_token
-        self.connector_last_event_id = connector_last_event_id
-        self.last_event_id = last_event_id
-        self.stream_connection_id = stream_connection_id
-        self.session = requests.session()
-
-    def get_range(self, from_id):
-        payload = {
-            "from": from_id,
-            "size": 2000,
-            "connectionId": self.stream_connection_id,
-        }
-        headers = {"Authorization": "Bearer " + self.opencti_token}
-        r = self.session.post(
-            self.opencti_url + "/stream/history", json=payload, headers=headers
-        )
-        result = r.json()
-        if result and "lastEventId" in result:
-            return result["lastEventId"]
+        self.helper = helper
+        self.callback = callback
+        self.url = url
+        self.token = token
+        self.verify_ssl = verify_ssl
 
     def run(self):
-        if self.connector_last_event_id:
-            from_event_id = self.connector_last_event_id
-            # If from event ID is "-", start from the beginning
-            if from_event_id == "-":
-                from_event_timestamp = 0
-            # If from event ID is a "pure" timestamp
-            elif "-" not in str(from_event_id):
-                from_event_timestamp = int(from_event_id)
-            elif "-" in str(from_event_id):
-                from_event_timestamp = int(str(from_event_id).split("-")[0])
+        current_state = self.helper.get_state()
+        if current_state is None:
+            current_state = {"connectorLastEventId": "-"}
+            self.helper.set_state(current_state)
+
+        # If URL and token are provided, likely consuming a remote stream
+        if self.url is not None and self.token is not None:
+            # If a live stream ID, appending the URL
+            live_stream_uri = (
+                ("/" + self.helper.connect_live_stream_id)
+                if self.helper.connect_live_stream_id is not None
+                else ""
+            )
+            # Live stream "from" should be empty if start from the beginning
+            if self.helper.connect_live_stream_id is not None:
+                live_stream_from = (
+                    ("?from=" + current_state["connectorLastEventId"])
+                    if current_state["connectorLastEventId"] != "-"
+                    else ""
+                )
+            # Global stream "from" should be 0 if starting from the beginning
             else:
-                from_event_timestamp = 0
-            last_event_timestamp = int(self.last_event_id.split("-")[0])
-            if from_event_timestamp > last_event_timestamp:
-                from_event_timestamp = last_event_timestamp - 1
-                from_event_id = str(from_event_timestamp) + "-0"
-            while (
-                from_event_timestamp <= last_event_timestamp
-                and from_event_id != self.last_event_id
-            ):
-                from_event_id = self.get_range(from_event_id)
-                from_event_timestamp = int(from_event_id.split("-")[0])
-        logging.info("Events catchup requests done.")
-
-
-class StreamProcessor(threading.Thread):
-    def __init__(self, message_callback, get_state, set_state):
-        threading.Thread.__init__(self)
-        self.message_callback = message_callback
-        self.get_state = get_state
-        self.set_state = set_state
-
-    def run(self):
-        logging.info("All old events processed, consuming is now LIVE!")
-        while True:
-            msg = EVENTS_QUEUE.get(block=True, timeout=None)
-            self.message_callback(msg)
-            state = self.get_state()
-            if state is not None:
-                state["connectorLastEventId"] = msg.id
-                self.set_state(state)
+                live_stream_from = "?from=" + (
+                    current_state["connectorLastEventId"]
+                    if current_state["connectorLastEventId"] != "-"
+                    else "0"
+                )
+            live_stream_url = self.url + "/stream" + live_stream_uri + live_stream_from
+            opencti_ssl_verify = (
+                self.verify_ssl if self.verify_ssl is not None else True
+            )
+            logging.info(
+                "Starting listening stream events (URL: "
+                + live_stream_url
+                + ", SSL verify: "
+                + str(opencti_ssl_verify)
+                + ")"
+            )
+            messages = SSEClient(
+                live_stream_url,
+                headers={"Authorization": "Bearer " + self.token},
+                verify=opencti_ssl_verify,
+            )
+        else:
+            live_stream_uri = (
+                ("/" + self.helper.connect_live_stream_id)
+                if self.helper.connect_live_stream_id is not None
+                else ""
+            )
+            if self.helper.connect_live_stream_id is not None:
+                live_stream_from = (
+                    ("?from=" + current_state["connectorLastEventId"])
+                    if current_state["connectorLastEventId"] != "-"
+                    else ""
+                )
+            # Global stream "from" should be 0 if starting from the beginning
             else:
-                self.set_state({"connectorLastEventId": msg.id})
+                live_stream_from = "?from=" + (
+                    current_state["connectorLastEventId"]
+                    if current_state["connectorLastEventId"] != "-"
+                    else "0"
+                )
+            live_stream_url = (
+                self.helper.opencti_url + "/stream" + live_stream_uri + live_stream_from
+            )
+            logging.info(
+                "Starting listening stream events (URL: "
+                + live_stream_url
+                + ", SSL verify: "
+                + str(self.helper.opencti_ssl_verify)
+                + ")"
+            )
+            messages = SSEClient(
+                live_stream_url,
+                headers={"Authorization": "Bearer " + self.helper.opencti_token},
+                verify=self.helper.opencti_ssl_verify,
+            )
+
+        for msg in messages:
+            if msg.event == "heartbeat":
+                logging.info("HEARTBEAT:" + str(msg))
+                continue
+            elif msg.event == "connected":
+                logging.info("CONNECTED:" + str(msg))
+            elif msg.event == "catch":
+                logging.info("Catchup done")
+            else:
+                event_id = msg.id
+                date = datetime.datetime.fromtimestamp(
+                    round(int(event_id.split("-")[0]) / 1000)
+                )
+                logging.info(
+                    "Processing message (id: " + event_id + ", date: " + str(date) + ")"
+                )
+                self.callback(msg)
+                state = self.helper.get_state()
+                state["connectorLastEventId"] = str(msg.id)
+                self.helper.set_state(state)
 
 
 class OpenCTIConnectorHelper:
@@ -323,6 +352,13 @@ class OpenCTIConnectorHelper:
         )
         self.connect_type = get_config_variable(
             "CONNECTOR_TYPE", ["connector", "type"], config
+        )
+        self.connect_live_stream_id = get_config_variable(
+            "CONNECTOR_LIVE_STREAM_ID",
+            ["connector", "live_stream_id"],
+            config,
+            False,
+            None,
         )
         self.connect_name = get_config_variable(
             "CONNECTOR_NAME", ["connector", "name"], config
@@ -427,97 +463,19 @@ class OpenCTIConnectorHelper:
         listen_queue.start()
 
     def listen_stream(
-        self, message_callback, url=None, token=None, verify=None
+        self,
+        message_callback,
+        url=None,
+        token=None,
+        verify_ssl=None,
     ) -> None:
         """listen for messages and register callback function
 
         :param message_callback: callback function to process messages
         """
-        current_state = self.get_state()
-        if current_state is None:
-            current_state = {"connectorLastEventId": "-"}
 
-        # Get the last event ID with the "connected" event msg
-        if url is not None and token is not None:
-            opencti_ssl_verify = verify if verify is not None else True
-            logging.info(
-                "Starting listening stream events with SSL verify to: "
-                + str(opencti_ssl_verify)
-            )
-            messages = SSEClient(
-                url + "/stream",
-                headers={"Authorization": "Bearer " + token},
-                verify=opencti_ssl_verify,
-            )
-        else:
-            logging.info(
-                "Starting listening stream events with SSL verify to: "
-                + str(self.opencti_ssl_verify)
-            )
-            messages = SSEClient(
-                self.opencti_url + "/stream",
-                headers={"Authorization": "Bearer " + self.opencti_token},
-                verify=self.opencti_ssl_verify,
-            )
-
-        # Create processor thread
-        processor_thread = StreamProcessor(
-            message_callback, self.get_state, self.set_state
-        )
-
-        last_event_id = None
-        for msg in messages:
-            try:
-                data = json.loads(msg.data)
-            except:
-                logging.error("Failed to load JSON: " + msg.data)
-                continue
-            if msg.event == "heartbeat":
-                logging.info("HEARTBEAT:" + str(msg))
-                continue
-            elif msg.event == "connected":
-                last_event_id = data["lastEventId"]
-                stream_connection_id = data["connectionId"]
-                # Launch processor if up to date
-                if current_state["connectorLastEventId"] == last_event_id:
-                    processor_thread.start()
-                # Launch catcher if not up to date
-                if last_event_id != current_state["connectorLastEventId"]:
-                    logging.info(
-                        "Some events have not been processed, catching them..."
-                    )
-                    if url is not None and token is not None:
-                        catcher_thread = StreamCatcher(
-                            url,
-                            token,
-                            current_state["connectorLastEventId"],
-                            last_event_id,
-                            stream_connection_id,
-                        )
-                    else:
-                        catcher_thread = StreamCatcher(
-                            self.opencti_url,
-                            self.opencti_token,
-                            current_state["connectorLastEventId"],
-                            last_event_id,
-                            stream_connection_id,
-                        )
-                    catcher_thread.start()
-            else:
-                # If receiving the last message, launch processor
-                if msg.id == last_event_id:
-                    message_callback(msg)
-                    processor_thread.start()
-                elif "catchup" not in data:
-                    EVENTS_QUEUE.put(msg)
-                else:
-                    message_callback(msg)
-                    state = self.get_state()
-                    if state is not None:
-                        state["connectorLastEventId"] = msg.id
-                        self.set_state(state)
-                    else:
-                        self.set_state({"connectorLastEventId": msg.id})
+        listen_stream = ListenStream(self, message_callback, url, token, verify_ssl)
+        listen_stream.start()
 
     def get_opencti_url(self):
         return self.opencti_url
