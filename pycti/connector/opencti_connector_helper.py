@@ -307,30 +307,19 @@ class ListenStream(threading.Thread):
             )
 
         for msg in messages:
-            if msg.event == "heartbeat":
-                logging.info("HEARTBEAT:" + str(msg))
+            if msg.event == "heartbeat" or msg.event == "connected":
                 continue
-            elif msg.event == "connected":
-                logging.info("CONNECTED:" + str(msg))
             elif msg.event == "catch":
-                logging.info("Catchup done")
-            else:
-                event_id = msg.id
-                if event_id is not None:
-                    date = datetime.datetime.fromtimestamp(
-                        round(int(event_id.split("-")[0]) / 1000)
-                    )
-                    logging.info(
-                        "Processing message (id: "
-                        + event_id
-                        + ", date: "
-                        + str(date)
-                        + ")"
-                    )
+                if msg.id is not None:
                     state = self.helper.get_state()
-                    state["connectorLastEventId"] = str(event_id)
+                    state["connectorLastEventId"] = str(msg.id)
                     self.helper.set_state(state)
+            else:
                 self.callback(msg)
+                if msg.id is not None:
+                    state = self.helper.get_state()
+                    state["connectorLastEventId"] = str(msg.id)
+                    self.helper.set_state(state)
 
 
 class OpenCTIConnectorHelper:
