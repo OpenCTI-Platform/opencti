@@ -12,8 +12,8 @@ const errorConverter = (e) => {
   const details = R.pipe(R.dissoc('reason'), R.dissoc('http_status'))(e.data);
   return {
     title: e.message,
-    description: e.data.reason,
     error_code: e.name,
+    description: e.data?.reason,
     http_status: e.data?.http_status || 500,
     details,
   };
