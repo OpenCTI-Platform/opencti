@@ -84,6 +84,9 @@ export const convertTypeToStixType = (type) => {
   if (isStixCoreRelationship(type)) {
     return 'relationship';
   }
+  if (isStixSightingRelationship(type)) {
+    return 'sighting';
+  }
   return type.toLowerCase();
 };
 

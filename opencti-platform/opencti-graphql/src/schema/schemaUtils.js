@@ -78,8 +78,6 @@ const pascalize = (str) => {
 export const generateInternalType = (entity) => {
   switch (entity.type) {
     case 'sighting':
-    case 'Stix-Sighting-Relationship':
-    case 'stix-sighting-relationship':
       return STIX_SIGHTING_RELATIONSHIP;
     case 'relationship':
       return ABSTRACT_STIX_CORE_RELATIONSHIP;
