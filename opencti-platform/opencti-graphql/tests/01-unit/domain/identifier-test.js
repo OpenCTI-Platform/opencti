@@ -162,4 +162,10 @@ test('should stix type converter work', () => {
   const location = { type: 'location', x_opencti_location_type: 'Country' };
   const locationType = generateInternalType(location);
   expect(locationType).toEqual('Country');
+  const ipv4 = { type: 'ipv4-addr' };
+  const ipv4Type = generateInternalType(ipv4);
+  expect(ipv4Type).toEqual('IPv4-Addr');
+  const hostname = { type: 'x-opencti-hostname' };
+  const hostnameType = generateInternalType(hostname);
+  expect(hostnameType).toEqual('X-OpenCTI-Hostname');
 });

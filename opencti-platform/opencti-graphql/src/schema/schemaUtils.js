@@ -68,7 +68,7 @@ export const convertEntityTypeToStixType = (type) => {
 
 const pascalize = (str) => {
   return str
-    .match(/[a-z]+/gi)
+    .match(/[a-z0-9]+/gi)
     .map((word) => {
       return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase();
     })
@@ -90,8 +90,14 @@ export const generateInternalType = (entity) => {
       }
     case 'location':
       return entity.x_opencti_location_type;
+    case 'ipv4-addr':
+      return 'IPv4-Addr';
+    case 'ipv6-addr':
+      return 'IPv6-Addr';
+    case 'file':
+      return 'StixFile';
     default:
-      return pascalize(entity.type);
+      return pascalize(entity.type).replace('X-Opencti', 'X-OpenCTI');
   }
 };
 
