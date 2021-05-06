@@ -309,7 +309,7 @@ class ListenStream(threading.Thread):
         for msg in messages:
             if msg.event == "heartbeat" or msg.event == "connected":
                 continue
-            elif msg.event == "catch":
+            elif msg.event == "sync":
                 if msg.id is not None:
                     state = self.helper.get_state()
                     state["connectorLastEventId"] = str(msg.id)
