@@ -160,6 +160,25 @@ const StreamCollectionEditionContainer = (props) => {
         <Typography variant="h6" classes={{ root: classes.title }}>
           {t('Update a live stream')}
         </Typography>
+        <div style={{ float: 'right', margin: '10px 0 0 0' }}>
+          <Filters
+            variant="text"
+            availableFilterKeys={[
+              'entity_type',
+              'markedBy',
+              'labelledBy',
+              'createdBy',
+              'x_opencti_score_gt',
+              'x_opencti_detection',
+              'revoked',
+              'confidence_gt',
+              'indicator_types',
+            ]}
+            currentFilters={[]}
+            handleAddFilter={handleAddFilter}
+            noDirectFilters={true}
+          />
+        </div>
         <div className="clearfix" />
       </div>
       <div className={classes.container}>

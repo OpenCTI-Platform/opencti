@@ -208,6 +208,7 @@ const StreamCollectionCreation = (props) => {
                 'x_opencti_detection',
                 'revoked',
                 'confidence_gt',
+                'indicator_types',
               ]}
               currentFilters={[]}
               handleAddFilter={handleAddFilter}
