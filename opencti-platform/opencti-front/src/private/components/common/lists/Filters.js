@@ -313,6 +313,49 @@ class Filters extends Component {
           },
         });
         break;
+      case 'revoked':
+        // eslint-disable-next-line no-case-declarations
+        const revokedEntities = R.pipe(
+          R.map((n) => ({
+            label: t(n),
+            value: n,
+            type: 'attribute',
+          })),
+        )(['true', 'false']);
+        this.setState({
+          entities: {
+            ...this.state.entities,
+            revoked: R.union(revokedEntities, this.state.entities.revoked),
+          },
+        });
+        break;
+      case 'indicator_types':
+        // eslint-disable-next-line no-case-declarations
+        const indicatorTypesEntities = R.pipe(
+          R.map((n) => ({
+            label: t(n),
+            value: n,
+            type: 'attribute',
+          })),
+        )([
+          'stix',
+          'pcre',
+          'sigma',
+          'snort',
+          'suricata',
+          'yara',
+          'tanium-signals',
+        ]);
+        this.setState({
+          entities: {
+            ...this.state.entities,
+            indicator_types: R.union(
+              indicatorTypesEntities,
+              this.state.entities.indicator_types,
+            ),
+          },
+        });
+        break;
       case 'x_opencti_base_severity':
         fetchQuery(attributesSearchQuery, {
           fieldKey: 'x_opencti_base_severity',

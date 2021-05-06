@@ -29,7 +29,7 @@ const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', { maxAge: 5000, httpOnly: false });
 };
 
-const createApp = async (apolloServer, broadcaster) => {
+const createApp = async (apolloServer) => {
   const appSessionHandler = initializeSession();
   const limiter = new RateLimit({
     windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
@@ -86,11 +86,8 @@ const createApp = async (apolloServer, broadcaster) => {
   apolloServer.applyMiddleware({ app, cors: true, onHealthCheck, path: `${basePath}/graphql` });
   app.use(bodyParser.json({ limit: '100mb' }));
 
-  let seeMiddleware;
-  if (broadcaster) {
-    seeMiddleware = createSeeMiddleware(broadcaster);
-    seeMiddleware.applyMiddleware({ app });
-  }
+  const seeMiddleware = createSeeMiddleware();
+  seeMiddleware.applyMiddleware({ app });
 
   // -- Init Taxii rest api
   initTaxiiApi(app);

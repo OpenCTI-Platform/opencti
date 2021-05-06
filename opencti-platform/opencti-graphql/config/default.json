@@ -57,7 +57,8 @@
     "use_ssl": false,
     "ca": [],
     "port": 6379,
-    "trimming": 0
+    "trimming": 0,
+    "live_depth_compact": 5000
   },
   "elasticsearch": {
     "url": "http://localhost:9200",

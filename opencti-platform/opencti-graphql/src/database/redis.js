@@ -3,6 +3,7 @@ import Redis from 'ioredis';
 import Redlock from 'redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
+import { create as createJsonDiff } from 'jsondiffpatch';
 import conf, { configureCA, logApp } from '../config/conf';
 import {
   generateLogMessage,
@@ -17,13 +18,14 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import { buildStixData, convertTypeToStixType, stixDataConverter } from './stix';
-import { DatabaseError, FunctionalError } from '../config/errors';
+import { buildStixData, stixDataConverter } from './stix';
+import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { MARKING_DEFINITION_STATEMENT } from '../schema/stixMetaObject';
 import { now } from '../utils/format';
 import RedisStore from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
+import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 
 const USE_SSL = conf.get('redis:use_ssl');
 const REDIS_CA = conf.get('redis:ca').map((path) => readFileSync(path));
@@ -270,10 +272,13 @@ const mapJSToStream = (event) => {
   return cmdArgs;
 };
 const buildEvent = (eventType, user, markings, message, data) => {
+  if (!data.id || !data.x_opencti_id || !data.type) {
+    throw UnsupportedError('Stream event requires id, type and x_opencti_id');
+  }
   const secureMarkings = R.filter((m) => m.definition_type !== MARKING_DEFINITION_STATEMENT, markings || []);
   const eventMarkingIds = R.map((i) => i.standard_id, secureMarkings);
   return {
-    version: '1', // Event version.
+    version: '2', // Event version.
     type: eventType,
     origin: user.origin,
     markings: eventMarkingIds,
@@ -287,16 +292,89 @@ const pushToStream = (client, event) => {
   }
   return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
 };
-export const storeMergeEvent = async (user, instance, sourceEntities) => {
+const DIFF_ADDED = 1;
+const DIFF_CHANGE = 2;
+const DIFF_REMOVE = 3;
+const DIFF_TYPE = '_t';
+const DIFF_TYPE_ARRAY = 'a';
+export const computeMergeDifferential = (initialInstance, mergedInstance) => {
+  const convertInit = buildStixData(initialInstance, { patchGeneration: true });
+  const convertMerged = buildStixData(mergedInstance, { patchGeneration: true });
+  const diffGenerator = createJsonDiff({
+    objectHash: (obj) => {
+      return obj.x_opencti_internal_id;
+    },
+  });
+  const diff = diffGenerator.diff(convertInit, convertMerged);
+  const patch = {};
+  const entries = Object.entries(diff);
+  for (let index = 0; index < entries.length; index += 1) {
+    const [field, diffDelta] = entries[index];
+    // https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
+    if (Array.isArray(diffDelta)) {
+      let current;
+      let previous;
+      // Value added
+      if (diffDelta.length === DIFF_ADDED) {
+        const value = R.head(diffDelta);
+        current = value;
+        previous = Array.isArray(value) ? [] : '';
+      }
+      // Value changed
+      if (diffDelta.length === DIFF_CHANGE) {
+        current = R.last(diffDelta);
+        previous = R.head(diffDelta);
+      }
+      // Value removed
+      if (diffDelta.length === DIFF_REMOVE) {
+        const value = R.head(diffDelta);
+        previous = value;
+        current = Array.isArray(value) ? [] : '';
+      }
+      // Setup the patch
+      if (patch.replace) {
+        patch.replace[field] = { current, previous };
+      } else {
+        patch.replace = { [field]: { current, previous } };
+      }
+    } else if (diffDelta[DIFF_TYPE] === DIFF_TYPE_ARRAY) {
+      // Is an array changes
+      const delta = R.dissoc(DIFF_TYPE, diffDelta);
+      const deltaObjEntries = Object.entries(delta);
+      for (let indexDelta = 0; indexDelta < deltaObjEntries.length; indexDelta += 1) {
+        const [, diffData] = deltaObjEntries[indexDelta];
+        if (diffData.length === DIFF_ADDED) {
+          if (patch.add) {
+            patch.add[field] = diffData;
+          } else {
+            patch.add = { [field]: diffData };
+          }
+        }
+        if (diffData.length === DIFF_REMOVE) {
+          const removedValue = R.head(diffData);
+          const removeVal = Array.isArray(removedValue) ? removedValue : [removedValue];
+          if (patch.remove) {
+            patch.remove[field] = removeVal;
+          } else {
+            patch.remove = { [field]: removeVal };
+          }
+        }
+      }
+    } else {
+      // Is a internal complex object, like extensions
+      // TODO @JRI
+    }
+  }
+  return patch;
+};
+export const storeMergeEvent = async (user, initialInstance, mergedInstance, sourceEntities) => {
   try {
-    const message = generateLogMessage(EVENT_TYPE_MERGE, instance, sourceEntities);
-    const data = {
-      id: instance.standard_id,
-      x_opencti_id: instance.internal_id,
-      type: convertTypeToStixType(instance.entity_type),
-      source_ids: R.map((s) => s.standard_id, sourceEntities),
-    };
-    const event = buildEvent(EVENT_TYPE_MERGE, user, instance.objectMarking, message, data);
+    const patch = computeMergeDifferential(initialInstance, mergedInstance);
+    const message = generateLogMessage(EVENT_TYPE_MERGE, initialInstance, sourceEntities);
+    const data = buildStixData(mergedInstance);
+    data.x_opencti_patch = patch;
+    data.sources = R.map((s) => buildStixData(s), sourceEntities);
+    const event = buildEvent(EVENT_TYPE_MERGE, user, mergedInstance.objectMarking, message, data);
     return pushToStream(clientBase, event);
   } catch (e) {
     throw DatabaseError('Error in store merge event', { error: e });
@@ -308,30 +386,34 @@ export const storeUpdateEvent = async (user, instance, updateEvents) => {
     try {
       const convertedInputs = updateEvents.map((i) => {
         const [k, v] = R.head(Object.entries(i));
-        const convert = stixDataConverter(v);
+        const convert = stixDataConverter(v, { patchGeneration: true });
         return isNotEmptyField(convert) ? { [k]: convert } : null;
       });
-      const dataUpdate = R.mergeAll(convertedInputs);
+      const dataPatch = R.mergeAll(convertedInputs);
       // dataUpdate can be empty
-      if (isEmptyField(dataUpdate)) {
+      if (isEmptyField(dataPatch)) {
         return true;
       }
-      // else just continue as usual1
+      // else just continue as usual
       const data = {
-        id: instance.standard_id,
-        x_opencti_id: instance.internal_id,
-        type: convertTypeToStixType(instance.entity_type),
-        x_data_update: dataUpdate,
+        standard_id: instance.standard_id,
+        internal_id: instance.internal_id,
+        entity_type: instance.entity_type,
+        x_opencti_patch: dataPatch,
       };
-      if (instance.hashes) {
-        data.hashes = instance.hashes;
+      if (instance.identity_class) {
+        data.identity_class = instance.identity_class;
+      }
+      if (instance.x_opencti_location_type) {
+        data.x_opencti_location_type = instance.x_opencti_location_type;
       }
       // Generate the message
       const operation = updateEvents.length === 1 ? R.head(Object.keys(R.head(updateEvents))) : UPDATE_OPERATION_CHANGE;
       const messageInput = R.mergeAll(updateEvents.map((i) => stixDataConverter(R.head(Object.values(i)))));
       const message = generateLogMessage(operation, instance, messageInput);
       // Build and send the event
-      const event = buildEvent(EVENT_TYPE_UPDATE, user, instance.objectMarking, message, data);
+      const dataEvent = buildStixData(data);
+      const event = buildEvent(EVENT_TYPE_UPDATE, user, instance.objectMarking, message, dataEvent);
       return pushToStream(clientBase, event);
     } catch (e) {
       throw DatabaseError('Error in store update event', { error: e });
@@ -339,7 +421,7 @@ export const storeUpdateEvent = async (user, instance, updateEvents) => {
   }
   return true;
 };
-export const storeCreateEvent = async (user, instance, input) => {
+export const storeCreateEvent = async (user, instance, input, stixLoader) => {
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     try {
       // If relationship but not stix core
@@ -349,7 +431,12 @@ export const storeCreateEvent = async (user, instance, input) => {
       if (isStixRelationship(instance.entity_type) && !isCore && !isSighting) {
         const field = relationTypeToInputName(instance.entity_type);
         const inputUpdate = { [field]: input.to };
-        return storeUpdateEvent(user, instance.from, [{ [UPDATE_OPERATION_ADD]: inputUpdate }]);
+        const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
+        let publishedInstance = instance.from;
+        if (mustRepublished) {
+          publishedInstance = await stixLoader(user, instance.from.internal_id);
+        }
+        return storeUpdateEvent(user, publishedInstance, [{ [UPDATE_OPERATION_ADD]: inputUpdate }]);
       }
       // Create of an event for
       const identifiers = {
@@ -370,18 +457,11 @@ export const storeCreateEvent = async (user, instance, input) => {
   }
   return true;
 };
-export const storeDeleteEvent = async (user, instance) => {
+export const storeDeleteEvent = async (user, instance, stixLoader) => {
   try {
     if (isStixObject(instance.entity_type)) {
       const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
-      const data = {
-        id: instance.standard_id,
-        x_opencti_id: instance.internal_id,
-        type: convertTypeToStixType(instance.entity_type),
-      };
-      if (instance.hashes) {
-        data.hashes = instance.hashes;
-      }
+      const data = buildStixData(instance, { diffMode: false });
       const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
       return pushToStream(clientBase, event);
     }
@@ -391,19 +471,16 @@ export const storeDeleteEvent = async (user, instance) => {
       if (!isCore && !isSighting) {
         const field = relationTypeToInputName(instance.entity_type);
         const inputUpdate = { [field]: instance.to };
-        return storeUpdateEvent(user, instance.from, [{ [UPDATE_OPERATION_REMOVE]: inputUpdate }]);
+        const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
+        let publishedInstance = instance.from;
+        if (mustRepublished) {
+          publishedInstance = await stixLoader(user, instance.from.internal_id);
+        }
+        return storeUpdateEvent(user, publishedInstance, [{ [UPDATE_OPERATION_REMOVE]: inputUpdate }]);
       }
       // for other deletion, just produce a delete event
       const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
-      const data = {
-        id: instance.standard_id,
-        x_opencti_id: instance.internal_id,
-        type: convertTypeToStixType(instance.entity_type),
-        source_ref: instance.from.standard_id,
-        x_opencti_source_ref: instance.from.internal_id,
-        target_ref: instance.to.standard_id,
-        x_opencti_target_ref: instance.to.internal_id,
-      };
+      const data = buildStixData(instance, { diffMode: false });
       const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
       return pushToStream(clientBase, event);
     }
@@ -429,26 +506,39 @@ const mapStreamToJS = ([id, data]) => {
 const processStreamResult = async (results, callback) => {
   const streamData = R.map((r) => mapStreamToJS(r), results);
   const lastElement = R.last(streamData);
+  // Prepare the elements
+  const processedResults = [];
   for (let index = 0; index < streamData.length; index += 1) {
     const dataElement = streamData[index];
-    const { eventId, type, markings, origin, data, message } = dataElement;
-    const eventData = { markings, origin, data, message };
-    await callback(eventId, type, eventData);
+    const { eventId, type, markings, origin, data, message, version } = dataElement;
+    const eventData = { markings, origin, data, message, version };
+    processedResults.push({ id: eventId, topic: type, data: eventData });
   }
+  // Callback the data
+  await callback(processedResults);
   return lastElement.eventId;
 };
 
 let processingLoopPromise;
-let streamListening = true;
-const MAX_RANGE_MESSAGES = 2000;
-const WAIT_TIME = 20000;
-export const createStreamProcessor = (callback) => {
+const WAIT_TIME = 1000;
+const MAX_RANGE_MESSAGES = 500;
+export const createStreamProcessor = (user, callback, maxRange = MAX_RANGE_MESSAGES) => {
+  let client;
   let startEventId;
+  let streamListening = true;
   const processInfo = async () => {
     return fetchStreamInfo();
   };
-  const processStep = async (client) => {
-    const streamResult = await client.xread('BLOCK', WAIT_TIME, 'COUNT', 1, 'STREAMS', OPENCTI_STREAM, startEventId);
+  const processStep = async () => {
+    const streamResult = await client.xread(
+      'BLOCK',
+      WAIT_TIME,
+      'COUNT',
+      maxRange,
+      'STREAMS',
+      OPENCTI_STREAM,
+      startEventId
+    );
     // since previous call is async (and blocking) we should check if we are still running before processing the message
     if (!streamListening) {
       return false;
@@ -460,47 +550,32 @@ export const createStreamProcessor = (callback) => {
     }
     return true;
   };
-  const processingLoop = async (client) => {
-    const streamInfo = await processInfo();
-    startEventId = streamInfo.lastEventId;
+  const processingLoop = async () => {
     while (streamListening) {
-      if (!(await processStep(client))) {
+      if (!(await processStep())) {
         break;
       }
     }
   };
   return {
     info: async () => processInfo(),
-    start: async () => {
-      const client = await createRedisClient(); // Create client for this processing loop
-      logApp.info('[STREAM] Starting streaming processor');
-      processingLoopPromise = processingLoop(client);
+    start: async (start = 'live') => {
+      let fromStart = start;
+      if (isEmptyField(fromStart)) fromStart = 'live';
+      startEventId = fromStart === 'live' ? '$' : fromStart;
+      client = await createRedisClient(); // Create client for this processing loop
+      logApp.info(`[STREAM] Starting stream processor for ${user.user_email}`);
+      processingLoopPromise = processingLoop();
     },
     shutdown: async () => {
-      logApp.info('[STREAM] Shutdown streaming processor');
+      logApp.info(`[STREAM] Shutdown stream processor for ${user.user_email}`);
       streamListening = false;
       if (processingLoopPromise) {
         await processingLoopPromise;
       }
+      await client.disconnect();
     },
   };
-};
-export const getStreamRange = async (from, limit, callback) => {
-  const client = await createRedisClient();
-  const size = limit > MAX_RANGE_MESSAGES ? MAX_RANGE_MESSAGES : limit;
-  return client.call('XRANGE', OPENCTI_STREAM, from, '+', 'COUNT', size).then(async (results) => {
-    let lastEventId;
-    if (results && results.length > 0) {
-      await processStreamResult(results, callback);
-      const lastResult = R.last(results);
-      lastEventId = R.head(lastResult);
-    } else {
-      const streamInfo = await fetchStreamInfo();
-      lastEventId = streamInfo.lastEventId;
-    }
-    await client.disconnect();
-    return { lastEventId };
-  });
 };
 // endregion
 

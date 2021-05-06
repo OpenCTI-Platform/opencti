@@ -32,7 +32,6 @@ export const findById = async (user, collectionId) => {
 export const findAll = (user, args) => {
   return listEntities(user, [ENTITY_TYPE_TAXII_COLLECTION], args);
 };
-
 export const taxiiCollectionEditField = async (user, collectionId, input) => {
   const collection = await updateAttribute(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_TAXII_COLLECTION].EDIT_TOPIC, collection, user);
@@ -76,18 +75,9 @@ export const collectionCount = async (taxiiCollection, user) => {
   });
   return data.pageInfo.globalCount;
 };
-const collectionQuery = async (user, collectionId, args) => {
-  const { added_after, limit, next, match = {} } = args;
-  const { id, spec_version, type, version } = match;
-  if (spec_version || version) {
-    throw FunctionalError('Unsupported parameters provided', { spec_version, version });
-  }
-  const collection = await loadById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
-  if (!collection) {
-    throw ResourceNotFoundError({ id: collectionId });
-  }
+
+export const convertFiltersToQueryOptions = (filters, updated_at) => {
   const queryFilters = [];
-  const filters = collection.filters ? JSON.parse(collection.filters) : undefined;
   const types = [];
   if (filters) {
     const filterEntries = Object.entries(filters);
@@ -100,22 +90,36 @@ const collectionQuery = async (user, collectionId, args) => {
       }
     }
   }
-  if (added_after) {
-    queryFilters.push({ key: 'updated_at', values: [added_after], operator: 'gte' });
+  if (updated_at) {
+    queryFilters.push({ key: 'updated_at', values: [updated_at], operator: 'gte' });
   }
+  return {
+    types,
+    orderMode: 'asc',
+    orderBy: 'updated_at',
+    filters: queryFilters,
+  };
+};
+
+const collectionQuery = async (user, collectionId, args) => {
+  const { added_after, limit, next, match = {} } = args;
+  const { id, spec_version, type, version } = match;
+  if (spec_version || version) {
+    throw FunctionalError('Unsupported parameters provided', { spec_version, version });
+  }
+  const collection = await loadById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
+  if (!collection) {
+    throw ResourceNotFoundError({ id: collectionId });
+  }
+  const filters = collection.filters ? JSON.parse(collection.filters) : undefined;
+  const options = convertFiltersToQueryOptions(filters, added_after);
+  options.after = next;
   let maxSize = 100;
   if (limit) {
     const paramLimit = parseInt(limit, 10);
     maxSize = paramLimit > 100 ? 100 : paramLimit;
   }
-  const options = {
-    types,
-    first: maxSize,
-    orderMode: 'asc',
-    orderBy: 'updated_at',
-    after: next,
-    filters: queryFilters,
-  };
+  options.first = maxSize;
   if (type) options.types = type.split(',');
   if (id) options.ids = id.split(',');
   return elPaginate(user, READ_STIX_INDICES, options);

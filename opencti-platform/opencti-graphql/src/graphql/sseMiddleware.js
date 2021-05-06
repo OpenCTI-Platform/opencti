@@ -1,45 +1,307 @@
 import * as R from 'ramda';
-import * as bodyParser from 'body-parser';
-import { basePath, logApp } from '../config/conf';
+import conf, { basePath, logApp } from '../config/conf';
 import { authenticateUser, STREAMAPI } from '../domain/user';
-import { getStreamRange, createStreamProcessor } from '../database/redis';
+import { createStreamProcessor } from '../database/redis';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { generateInternalId } from '../schema/identifier';
 import { BYPASS } from '../schema/general';
+import { findById } from '../domain/stream';
+import {
+  EVENT_TYPE_CATCH,
+  EVENT_TYPE_CREATE,
+  EVENT_TYPE_DELETE,
+  EVENT_TYPE_MERGE,
+  EVENT_TYPE_UPDATE,
+} from '../database/rabbitmq';
+import { stixLoadById } from '../database/middleware';
+import { convertFiltersToQueryOptions } from '../domain/taxii';
+import { elList } from '../database/elasticSearch';
+import {
+  isEmptyField,
+  READ_DATA_INDICES,
+  UPDATE_OPERATION_ADD,
+  UPDATE_OPERATION_REMOVE,
+  UPDATE_OPERATION_REPLACE,
+} from '../database/utils';
+import { buildStixData } from '../database/stix';
+import { generateInternalType, parents } from '../schema/schemaUtils';
 
 let heartbeat;
+const MIN_LIVE_STREAM_EVENT_VERSION = 2;
 const KEEP_ALIVE_INTERVAL_MS = 20000;
 const broadcastClients = {};
 
-const createBroadcastClient = (client) => {
-  const broadcastClient = {
-    client,
-    sendEvent: (eventId, topic, event) => {
-      const { data } = event;
-      const clientMarkings = R.map((m) => m.standard_id, client.allowed_marking);
-      const isMarkingObject = data.type === ENTITY_TYPE_MARKING_DEFINITION.toLowerCase();
-      const isUserHaveAccess = event.markings.length === 0 || event.markings.every((m) => clientMarkings.includes(m));
-      const isBypass = R.find((s) => s.name === BYPASS, client.capabilities || []) !== undefined;
-      // Granted if:
-      // - Event concern directly a marking definition
-      // - Event has no specified markings
-      // - User have all event markings
-      // - User have the bypass capabilities
-      const isGrantedForData = isMarkingObject || isUserHaveAccess;
-      if (isGrantedForData || isBypass) {
-        client.sendEvent(eventId, topic, event);
+const MARKING_FILTER = 'markedBy';
+const LABEL_FILTER = 'labelledBy';
+const CREATOR_FILTER = 'createdBy';
+const TYPE_FILTER = 'entity_type';
+
+const EVENT_ADD = 'add';
+const EVENT_DEL = 'del';
+const EVENT_REP = 'replace';
+const cleanCancelledAction = (eventsDifferential) => {
+  const remaining = [];
+  // for (let diffIndex = 0; diffIndex < eventsDifferential.length; diffIndex += 1) {
+  const data = eventsDifferential[0];
+  const { action, key, val } = data;
+  const reverseAction = action === EVENT_ADD ? EVENT_DEL : EVENT_ADD;
+  // Looking for reverse actions in the next steps
+  let findReversedActionIndex = -1;
+  const differentialTable = [];
+  for (let nextActions = 1; nextActions < eventsDifferential.length; nextActions += 1) {
+    const nextElem = eventsDifferential[nextActions];
+    const isReversed = nextElem.action === reverseAction && nextElem.key === key && nextElem.val === val;
+    if (isReversed && findReversedActionIndex === -1) {
+      findReversedActionIndex = nextActions;
+    } else {
+      differentialTable.push(nextElem);
+    }
+  }
+  // Find the reverse action
+  if (findReversedActionIndex === -1) {
+    // If no reverse action, keep the action and check the rest of the table.
+    remaining.push(data);
+  }
+  if (differentialTable.length > 0) {
+    remaining.push(...cleanCancelledAction(differentialTable));
+  }
+  return remaining;
+};
+const computeAggregatePatch = (events) => {
+  const eventsDifferential = [];
+  const updateEvents = events.filter((e) => e.topic === EVENT_TYPE_UPDATE || e.topic === EVENT_TYPE_MERGE);
+  for (let index = 0; index < updateEvents.length; index += 1) {
+    const updateEvent = updateEvents[index];
+    const action = updateEvent.data.data.x_opencti_patch;
+    if (action?.add) {
+      const addActionsEntries = Object.entries(action.add);
+      for (let addIndex = 0; addIndex < addActionsEntries.length; addIndex += 1) {
+        const [key, values] = addActionsEntries[addIndex];
+        const vals = values.map((v) => ({ action: EVENT_ADD, key, val: v.value, src: EVENT_ADD, patch: action })); // `${ADD}${ACTION_SPLIT}${key}${v}`);
+        eventsDifferential.push(...vals);
       }
-      return true;
+    }
+    if (action?.remove) {
+      const delActionsEntries = Object.entries(action.remove);
+      for (let delIndex = 0; delIndex < delActionsEntries.length; delIndex += 1) {
+        const [key, values] = delActionsEntries[delIndex];
+        const vals = values.map((v) => ({ action: EVENT_DEL, key, val: v.value, src: EVENT_DEL, patch: action })); // `${DEL}${ACTION_SPLIT}${key}${v}`);
+        eventsDifferential.push(...vals);
+      }
+    }
+    if (action?.replace) {
+      const replaceActionsEntries = Object.entries(action.replace);
+      for (let replaceIndex = 0; replaceIndex < replaceActionsEntries.length; replaceIndex += 1) {
+        const [key, values] = replaceActionsEntries[replaceIndex];
+        const { current, previous } = values;
+        if (Array.isArray(current)) {
+          const deleted = previous.filter((f) => !current.includes(f));
+          eventsDifferential.push(
+            ...deleted.map((v) => ({ action: EVENT_DEL, key, val: v, src: EVENT_REP, patch: action }))
+          );
+          const added = current.filter((f) => !previous.includes(f));
+          eventsDifferential.push(
+            ...added.map((v) => ({ action: EVENT_ADD, key, val: v, src: EVENT_REP, patch: action }))
+          );
+        } else {
+          eventsDifferential.push({ action: EVENT_DEL, key, val: previous, src: EVENT_REP, patch: action });
+          eventsDifferential.push({ action: EVENT_ADD, key, val: current, src: EVENT_REP, patch: action });
+        }
+      }
+    }
+  }
+  // Compute the final diff
+  if (eventsDifferential.length === 0) return {};
+  const impactFullActions = cleanCancelledAction(eventsDifferential);
+  if (impactFullActions.length === 0) {
+    // Finally nothing happens :)
+    return {};
+  }
+  // Now we need to recompute the actions diff from impacts
+  const patchElements = [];
+  const actionsPerKey = R.groupBy((e) => e.key, impactFullActions);
+  const keyEntries = Object.entries(actionsPerKey);
+  for (let keyIndex = 0; keyIndex < keyEntries.length; keyIndex += 1) {
+    const [, vals] = keyEntries[keyIndex];
+    const diff = R.mergeAll(vals.map((v) => v.patch));
+    patchElements.push(diff);
+  }
+  const mergeDeepAll = R.unapply(R.reduce(R.mergeDeepRight, {}));
+  return mergeDeepAll(...patchElements);
+};
+const isElementEvolved = (openctiId, events) => {
+  // 01. Handle create/delete differential
+  // - (CREATION) Create => YES
+  // - (RECREATION) Delete - Create = Not possible because x_opencti_id will be different
+  // - (DELETION) Delete => YES
+  // - (INSTANT DELETION) Create - Delete = NO
+  const creationEvents = events.filter((e) => e.topic === EVENT_TYPE_CREATE);
+  const isCreatedElement = creationEvents.length > 0;
+  const deletionEvents = events.filter((e) => e.topic === EVENT_TYPE_DELETE);
+  const isDeleteElement = deletionEvents.length > 0;
+  // If created but deleted in the same time frame, considering nothing happen
+  if (isCreatedElement && isDeleteElement) {
+    return undefined;
+  }
+  const eventId = R.last(events).id;
+  // If is a creation or a deletion, considering as an evolution
+  const patch = computeAggregatePatch(events);
+  if (isCreatedElement) {
+    return { id: openctiId, eventId, topic: EVENT_TYPE_CREATE, patch };
+  }
+  if (isDeleteElement) {
+    const content = R.head(deletionEvents).data.data;
+    return { id: openctiId, eventId, topic: EVENT_TYPE_DELETE, content, patch };
+  }
+  // 02. Handle update differential
+  // In this case, we only take care about element evolution
+  if (R.isEmpty(patch)) {
+    return undefined;
+  }
+  return { id: openctiId, eventId, topic: EVENT_TYPE_UPDATE, patch };
+};
+export const computeEventsDiff = (elements) => {
+  // If merge elements are inside, we need to flatten the deletion
+  const flattenElements = [];
+  for (let elemIndex = 0; elemIndex < elements.length; elemIndex += 1) {
+    const element = elements[elemIndex];
+    if (element.topic === EVENT_TYPE_MERGE) {
+      const mergedDeleted = element.data.data.sources.map((s) => {
+        return {
+          id: element.id,
+          topic: EVENT_TYPE_DELETE,
+          data: { markings: s.object_marking_refs, origin: element.origin, data: s, version: element.version },
+        };
+      });
+      flattenElements.push(...mergedDeleted);
+    }
+    flattenElements.push(element);
+  }
+  // Need to compute the diff change
+  const groupedById = R.groupBy((e) => e.data.data.x_opencti_id, flattenElements);
+  const entries = Object.entries(groupedById);
+  const retainElements = [];
+  for (let i = 0; i < entries.length; i += 1) {
+    const [k, v] = entries[i];
+    const isElementEvolve = isElementEvolved(k, v);
+    if (isElementEvolve) {
+      retainElements.push(isElementEvolve);
+    }
+  }
+  return R.sort((a, b) => {
+    const [timeA] = a.id.split('-');
+    const [timeB] = b.id.split('-');
+    return parseInt(timeA, 10) - parseInt(timeB, 10);
+  }, retainElements);
+};
+export const isInstanceMatchFilters = (instance, filters) => {
+  // User is granted but we still need to apply filters if needed
+  const filterEntries = Object.entries(filters);
+  for (let index = 0; index < filterEntries.length; index += 1) {
+    const [type, values] = filterEntries[index];
+    // --- Directly accessible in the event
+    // Markings filtering
+    if (type === MARKING_FILTER) {
+      // event must have one of this marking
+      const markingIds = (instance.object_marking_refs || []).map((l) => l.x_opencti_internal_id);
+      const found = values.map((v) => v.id).some((r) => markingIds.includes(r));
+      if (!found) return false;
+    }
+    // --- Depending of the data
+    // Entity type filtering
+    if (type === TYPE_FILTER) {
+      const instanceType = generateInternalType(instance);
+      const instanceAllTypes = [instanceType, ...parents(instanceType)];
+      let found = false;
+      if (values.length === 0) {
+        found = true;
+      } else {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const filter of values) {
+          if (instanceAllTypes.includes(filter.id)) {
+            found = true;
+          }
+        }
+      }
+      if (!found) return false;
+    }
+    // Creator filtering
+    if (type === CREATOR_FILTER) {
+      const creatorIds = (instance.created_by_ref || []).map((l) => l.x_opencti_internal_id);
+      const found = values.map((v) => v.id).some((r) => creatorIds.includes(r));
+      if (!found) return false;
+    }
+    // Labels filtering
+    if (type === LABEL_FILTER) {
+      const labelsIds = (instance.labels || []).map((l) => l.x_opencti_internal_id);
+      const found = values.map((v) => v.id).some((r) => labelsIds.includes(r));
+      if (!found) return false;
+    }
+  }
+  return true;
+};
+
+// Concept here is to recreate the instance before is change
+// Basically reverting the patch.
+export const rebuildInstanceBeforePatch = (stixWithInternalRefs, patch) => {
+  const rebuild = R.clone(stixWithInternalRefs);
+  const patchEntries = Object.entries(patch);
+  for (let index = 0; index < patchEntries.length; index += 1) {
+    const [type, actionPatch] = patchEntries[index];
+    const elementEntries = Object.entries(actionPatch);
+    for (let elemIndex = 0; elemIndex < elementEntries.length; elemIndex += 1) {
+      const [key, changes] = elementEntries[elemIndex];
+      if (type === UPDATE_OPERATION_REPLACE) {
+        const { previous } = changes;
+        rebuild[key] = previous;
+      }
+      if (type === UPDATE_OPERATION_ADD) {
+        const ids = changes.map((c) => c.x_opencti_internal_id);
+        rebuild[key] = (rebuild[key] || []).filter((e) => !ids.includes(e.x_opencti_internal_id));
+      }
+      if (type === UPDATE_OPERATION_REMOVE) {
+        const ops = rebuild[key] || [];
+        ops.push(...changes);
+        rebuild[key] = ops;
+      }
+    }
+  }
+  return rebuild;
+};
+
+const isEventGranted = (event, user) => {
+  const { data } = event;
+  // Granted if:
+  // - Event concern directly a marking definition
+  // - Event has no specified markings
+  // - User have all event markings
+  // - User have the bypass capabilities
+  const clientMarkings = R.map((m) => m.standard_id, user.allowed_marking);
+  const isMarkingObject = data.type === ENTITY_TYPE_MARKING_DEFINITION.toLowerCase();
+  const isUserHaveAccess = event.markings.length === 0 || event.markings.every((m) => clientMarkings.includes(m));
+  const isBypass = R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
+  const isGrantedForData = isMarkingObject || isUserHaveAccess;
+  return isBypass || isGrantedForData;
+};
+
+const createBroadcastClient = (channel) => {
+  return {
+    id: channel.id,
+    expirationTime: channel.expirationTime,
+    close: () => channel.close(),
+    sendEvent: (eventId, topic, event) => {
+      // Send event only if user is granted for
+      if (isEventGranted(event, channel)) {
+        channel.sendEvent(eventId, topic, event);
+      }
     },
     sendHeartbeat: () => {
-      client.sendEvent(undefined, 'heartbeat', new Date());
+      channel.sendEvent(undefined, 'heartbeat', new Date());
     },
     sendConnected: (streamInfo) => {
-      client.sendEvent(undefined, 'connected', streamInfo);
-      broadcastClient.sendHeartbeat();
+      channel.sendEvent(undefined, 'connected', streamInfo);
     },
   };
-  return broadcastClient;
 };
 
 const createHeartbeatProcessor = () => {
@@ -48,30 +310,14 @@ const createHeartbeatProcessor = () => {
     const now = Date.now() / 1000;
     // Close expired sessions
     Object.values(broadcastClients)
-      .filter((c) => now >= c.client.expirationTime)
-      .forEach((c) => c.client.close());
+      .filter((c) => now >= c.expirationTime)
+      .forEach((c) => c.close());
     // Send heartbeat to alive sessions
     Object.values(broadcastClients)
       // Filter is required as the close is asynchronous
-      .filter((c) => now < c.client.expirationTime)
+      .filter((c) => now < c.expirationTime)
       .forEach((c) => c.sendHeartbeat());
   }, KEEP_ALIVE_INTERVAL_MS);
-};
-
-export const initBroadcaster = () => {
-  return createStreamProcessor(async (eventId, topic, data) => {
-    const now = Date.now() / 1000;
-    Object.values(broadcastClients)
-      // Filter is required as the close is asynchronous
-      .filter((c) => now < c.client.expirationTime)
-      .forEach((c) => c.sendEvent(eventId, topic, data));
-  });
-};
-
-export const broadcast = (event, data) => {
-  Object.values(broadcastClients).forEach((broadcastClient) => {
-    broadcastClient.sendEvent(event, data);
-  });
 };
 
 const authenticate = async (req, res, next) => {
@@ -89,42 +335,40 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-const streamHistoryHandler = async (req, res) => {
-  const { userId, body } = req;
-  const { from = '-', size = 200, connectionId } = body;
-  const connectedClient = broadcastClients[connectionId];
-  // Check if connection exist and the client is correctly related
-  if (!connectedClient || connectedClient.client.userId !== userId) {
-    res.status(401).json({ status: 'This stream connection does not exist' });
-  } else {
-    try {
-      const rangeProcessor = (eventId, topic, data) =>
-        connectedClient.sendEvent(eventId, topic, R.assoc('catchup', true, data));
-      const streamRangeResult = await getStreamRange(from, size, rangeProcessor);
-      res.json(streamRangeResult);
-    } catch (e) {
-      res.status(401).json({ status: e.message });
-    }
-  }
-};
-
-const createSeeMiddleware = (broadcaster) => {
+const createSeeMiddleware = () => {
   createHeartbeatProcessor();
-  const eventsHandler = async (req, res) => {
-    const client = {
+  const initBroadcasting = async (req, res, client, processor) => {
+    const broadcasterInfo = await processor.info();
+    req.on('close', () => {
+      req.finished = true;
+      processor.shutdown();
+      delete broadcastClients[client.id];
+    });
+    res.writeHead(200, {
+      Connection: 'keep-alive',
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': 'no-cache, no-transform', // no-transform is required for dev proxy
+    });
+    client.sendConnected({ ...broadcasterInfo, connectionId: client.id });
+  };
+  const createSseChannel = (req, res) => {
+    const channel = {
       id: generateInternalId(),
+      user: req.session.user,
       userId: req.userId,
       expirationTime: req.expirationTime,
       allowed_marking: req.allowed_marking,
       capabilities: req.capabilities,
-      sendEvent: (id, topic, data) => {
+      connected: () => !req.finished,
+      sendEvent: (eventId, topic, data) => {
         if (req.finished) {
-          logApp.warn('[STREAM] Write on an already terminated response', { id: client.userId });
+          logApp.warn('[STREAM] Write on an already terminated response', { id: channel.userId });
           return;
         }
         let message = '';
-        if (id) {
-          message += `id: ${id}\n`;
+        if (eventId) {
+          message += `id: ${eventId}\n`;
         }
         if (topic) {
           message += `event: ${topic}\n`;
@@ -136,44 +380,187 @@ const createSeeMiddleware = (broadcaster) => {
         res.flush();
       },
       close: () => {
-        client.expirationTime = 0;
+        channel.expirationTime = 0;
         try {
           res.end();
         } catch (e) {
-          logApp.error('[STREAM] Failing to close client', { clientId: client.userId, error: e });
+          logApp.error('[STREAM] Failing to close client', { clientId: channel.userId, error: e });
         }
       },
     };
-    req.on('close', () => {
-      if (client === broadcastClients[client.id]?.client) {
-        delete broadcastClients[client.id];
+    return { channel, client: createBroadcastClient(channel) };
+  };
+  const genericStreamHandler = async (req, res) => {
+    const { client } = createSseChannel(req, res);
+    const processor = createStreamProcessor(req.session.user, async (elements) => {
+      for (let index = 0; index < elements.length; index += 1) {
+        const { id: eventId, topic, data } = elements[index];
+        client.sendEvent(eventId, topic, data);
       }
     });
-    res.writeHead(200, {
-      Connection: 'keep-alive',
-      'Content-Type': 'text/event-stream; charset=utf-8',
-      'Access-Control-Allow-Origin': '*',
-      'Cache-Control': 'no-cache, no-transform', // no-transform is required for dev proxy
-    });
-    // Create the new connection
-    const broadcastClient = createBroadcastClient(client);
-    broadcastClients[client.id] = broadcastClient;
-    const clients = Object.entries(broadcastClients).length;
-    const broadcasterInfo = await broadcaster.info();
-    broadcastClient.sendConnected({ ...broadcasterInfo, connectionId: client.id, clients });
-    logApp.debug(`[STREAM] Clients connection ${req.userId} (${clients})`);
+    try {
+      await initBroadcasting(req, res, client, processor);
+      await processor.start(req.query.from);
+      broadcastClients[client.id] = client;
+    } catch (err) {
+      res.status(500);
+      res.json({ error: 'Error accessing stream (empty stream or redis client connection problem)' });
+    }
+  };
+  const buildProcessingMessages = (streamFilters, user, elements) => {
+    const processingMessages = [];
+    for (let messageIndex = 0; messageIndex < elements.length; messageIndex += 1) {
+      const element = elements[messageIndex];
+      const { data, version } = element.data;
+      if (parseInt(version, 10) >= MIN_LIVE_STREAM_EVENT_VERSION) {
+        const isGranted = isEventGranted(element.data, user);
+        // Pre filter for entity_type if needed
+        const filterTypes = streamFilters?.entity_type || [];
+        const instanceType = generateInternalType(data);
+        const instanceAllTypes = [instanceType, ...parents(instanceType)];
+        let isValid = false;
+        if (filterTypes.length === 0) {
+          isValid = true;
+        } else {
+          // eslint-disable-next-line no-restricted-syntax
+          for (const filter of filterTypes) {
+            if (instanceAllTypes.includes(filter.id)) {
+              isValid = true;
+            }
+          }
+        }
+        if (isGranted && isValid) {
+          processingMessages.push(element);
+        }
+      }
+    }
+    return processingMessages;
+  };
+  const filteredStreamHandler = async (req, res) => {
+    const { id } = req.params;
+    const startFrom = req.query.from;
+    const collection = await findById(req.session.user, id);
+    if (!collection) {
+      res.status(500);
+      res.json({ error: 'This live stream doesnt exists' });
+      return;
+    }
+    const streamFilters = JSON.parse(collection.filters);
+    // If no marking part of filtering are accessible for the user, return
+    // Its better to prevent connection instead of having no events accessible
+    if (streamFilters.markedBy) {
+      const userMarkings = (req.session.user.allowed_marking || []).map((m) => m.internal_id);
+      const filterMarkings = (streamFilters.markedBy || []).map((m) => m.id);
+      const isUserHaveAccess = filterMarkings.some((m) => userMarkings.includes(m));
+      if (!isUserHaveAccess) {
+        res.status(500);
+        res.json({ error: 'You need to have access to specific markings for this live stream' });
+        return;
+      }
+    }
+    // Create channel.
+    const { channel, client } = createSseChannel(req, res);
+    const compactDepth = conf.get('redis:live_depth_compact');
+    const processor = createStreamProcessor(
+      req.session.user,
+      async (elements) => {
+        // We need to build all elements that have change during the last call
+        const processingMessages = buildProcessingMessages(streamFilters, req.session.user, elements);
+        // Need to compute the diff change
+        const diffElements = computeEventsDiff(processingMessages);
+        for (let index = 0; index < diffElements.length; index += 1) {
+          const { id: diffId, eventId, topic, content, patch } = diffElements[index];
+          if (topic === EVENT_TYPE_CREATE) {
+            const currentInstance = await stixLoadById(req.session.user, diffId);
+            // Could be null because of user markings restriction
+            if (currentInstance) {
+              const createdInstance = buildStixData(currentInstance, { patchGeneration: true });
+              const isMatchFilters = isInstanceMatchFilters(createdInstance, streamFilters);
+              if (isMatchFilters) {
+                const data = buildStixData(currentInstance);
+                data.x_opencti_patch = patch;
+                const markings = data.object_marking_refs || [];
+                client.sendEvent(eventId, EVENT_TYPE_CREATE, { data, markings });
+              }
+            }
+          }
+          if (topic === EVENT_TYPE_DELETE) {
+            const data = content;
+            const markings = data.object_marking_refs || [];
+            data.x_opencti_patch = patch;
+            client.sendEvent(eventId, EVENT_TYPE_DELETE, { data, markings });
+          }
+          if (topic === EVENT_TYPE_UPDATE) {
+            const currentInstance = await stixLoadById(req.session.user, diffId);
+            // Could be null because of markings restriction
+            if (currentInstance) {
+              const current = buildStixData(currentInstance, { patchGeneration: true });
+              const beforePatch = rebuildInstanceBeforePatch(current, patch);
+              const isBeforePatchVisible = isInstanceMatchFilters(beforePatch, streamFilters);
+              const isCurrentVisible = isInstanceMatchFilters(current, streamFilters);
+              const data = buildStixData(currentInstance);
+              const markings = data.object_marking_refs || [];
+              data.x_opencti_patch = patch;
+              // If updatedInstance pass the filtering but not initialInstance -> creation event
+              if (isCurrentVisible && !isBeforePatchVisible) {
+                client.sendEvent(eventId, EVENT_TYPE_CREATE, { data, markings });
+              }
+              // If initialInstance pass the filtering but not updatedInstance -> deletion event
+              if (isBeforePatchVisible && !isCurrentVisible) {
+                client.sendEvent(eventId, EVENT_TYPE_DELETE, { data, markings });
+              }
+              if (isBeforePatchVisible && isCurrentVisible) {
+                client.sendEvent(eventId, topic, { data, markings });
+              }
+            }
+          }
+        }
+      },
+      compactDepth
+    );
+    try {
+      await initBroadcasting(req, res, client, processor);
+      // If empty start date, stream all results corresponding to the filters
+      if (isEmptyField(startFrom)) {
+        const queryOptions = convertFiltersToQueryOptions(streamFilters);
+        const callback = async (elements) => {
+          for (let index = 0; index < elements.length; index += 1) {
+            const { internal_id: elemId } = elements[index];
+            const instance = await stixLoadById(req.session.user, elemId);
+            const data = buildStixData(instance);
+            const markings = data.object_marking_refs || [];
+            if (channel.connected()) {
+              channel.sendEvent(undefined, EVENT_TYPE_CREATE, { data, markings });
+            } else {
+              return false;
+            }
+          }
+          return channel.connected();
+        };
+        queryOptions.minSource = true;
+        queryOptions.callback = callback;
+        await elList(req.session.user, READ_DATA_INDICES, queryOptions);
+        // We need to sent a special event to mark the end of init with the current timestamp
+        const catchId = `${new Date().getTime()}-0`;
+        channel.sendEvent(catchId, EVENT_TYPE_CATCH, { message: 'Catchup done' });
+      }
+      // After start to stream the live.
+      await processor.start(startFrom);
+      broadcastClients[client.id] = client;
+    } catch (e) {
+      res.status(500);
+      res.json({ error: 'Error accessing stream (empty stream or redis client connection problem)' });
+    }
   };
   return {
     shutdown: () => {
       clearInterval(heartbeat);
-      Object.values(broadcastClients).forEach((c) => c.client.close());
-      broadcaster.shutdown();
+      Object.values(broadcastClients).forEach((c) => c.close());
     },
     applyMiddleware: ({ app }) => {
       app.use(`${basePath}/stream`, authenticate);
-      app.get(`${basePath}/stream`, eventsHandler);
-      app.use(`${basePath}/stream/history`, bodyParser.json());
-      app.post(`${basePath}/stream/history`, streamHistoryHandler);
+      app.get(`${basePath}/stream`, genericStreamHandler);
+      app.get(`${basePath}/stream/:id`, filteredStreamHandler);
     },
   };
 };

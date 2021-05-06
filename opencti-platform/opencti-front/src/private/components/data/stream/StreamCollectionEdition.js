@@ -68,40 +68,40 @@ const styles = (theme) => ({
   },
 });
 
-const taxiiCollectionMutationFieldPatch = graphql`
-  mutation TaxiiCollectionEditionFieldPatchMutation(
+const streamCollectionMutationFieldPatch = graphql`
+  mutation StreamCollectionEditionFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
-    taxiiCollectionEdit(id: $id) {
+    streamCollectionEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...TaxiiCollectionEdition_taxiiCollection
+        ...StreamCollectionEdition_streamCollection
       }
     }
   }
 `;
 
-const taxiiCollectionValidation = (t) => Yup.object().shape({
+const streamCollectionValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
 });
 
-const TaxiiCollectionEditionContainer = (props) => {
+const StreamCollectionEditionContainer = (props) => {
   const {
-    t, classes, handleClose, taxiiCollection,
+    t, classes, handleClose, streamCollection,
   } = props;
-  const initialValues = pickAll(['name', 'description'], taxiiCollection);
+  const initialValues = pickAll(['name', 'description'], streamCollection);
   const [filters, setFilters] = useState(
-    JSON.parse(props.taxiiCollection.filters),
+    JSON.parse(props.streamCollection.filters),
   );
   const handleSubmitField = (name, value) => {
-    taxiiCollectionValidation(props.t)
+    streamCollectionValidation(props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
-          mutation: taxiiCollectionMutationFieldPatch,
+          mutation: streamCollectionMutationFieldPatch,
           variables: {
-            id: props.taxiiCollection.id,
+            id: props.streamCollection.id,
             input: { key: name, value },
           },
         });
@@ -121,9 +121,9 @@ const TaxiiCollectionEditionContainer = (props) => {
     }
     const jsonFilters = JSON.stringify(newFilters);
     commitMutation({
-      mutation: taxiiCollectionMutationFieldPatch,
+      mutation: streamCollectionMutationFieldPatch,
       variables: {
-        id: props.taxiiCollection.id,
+        id: props.streamCollection.id,
         input: { key: 'filters', value: jsonFilters },
       },
       onCompleted: () => {
@@ -135,11 +135,11 @@ const TaxiiCollectionEditionContainer = (props) => {
     const newFilters = dissoc(key, filters);
     const jsonFilters = JSON.stringify(newFilters);
     const variables = {
-      id: props.taxiiCollection.id,
+      id: props.streamCollection.id,
       input: { key: 'filters', value: jsonFilters },
     };
     commitMutation({
-      mutation: taxiiCollectionMutationFieldPatch,
+      mutation: streamCollectionMutationFieldPatch,
       variables,
       onCompleted: () => {
         setFilters(newFilters);
@@ -158,7 +158,7 @@ const TaxiiCollectionEditionContainer = (props) => {
           <Close fontSize="small" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update a TAXII collection')}
+          {t('Update a live stream')}
         </Typography>
         <div style={{ float: 'right', margin: '10px 0 0 0' }}>
           <Filters
@@ -185,7 +185,7 @@ const TaxiiCollectionEditionContainer = (props) => {
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
-          validationSchema={taxiiCollectionValidation(t)}
+          validationSchema={streamCollectionValidation(t)}
         >
           {() => (
             <Form style={{ margin: '20px 0 20px 0' }}>
@@ -259,19 +259,19 @@ const TaxiiCollectionEditionContainer = (props) => {
   );
 };
 
-TaxiiCollectionEditionContainer.propTypes = {
+StreamCollectionEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
-  taxiiCollection: PropTypes.object,
+  streamCollection: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
 
-const TaxiiCollectionEditionFragment = createFragmentContainer(
-  TaxiiCollectionEditionContainer,
+const StreamCollectionEditionFragment = createFragmentContainer(
+  StreamCollectionEditionContainer,
   {
-    taxiiCollection: graphql`
-      fragment TaxiiCollectionEdition_taxiiCollection on TaxiiCollection {
+    streamCollection: graphql`
+      fragment StreamCollectionEdition_streamCollection on StreamCollection {
         id
         name
         description
@@ -284,4 +284,4 @@ const TaxiiCollectionEditionFragment = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(TaxiiCollectionEditionFragment);
+)(StreamCollectionEditionFragment);

@@ -64,8 +64,9 @@ import {
 } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservableRelationship, RELATION_LINKED } from '../schema/stixCyberObservableRelationship';
-import { isMultipleAttribute } from '../schema/fieldDataAdapter';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
+import { isEmptyField } from './utils';
+import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -99,10 +100,8 @@ const BASIC_FIELDS = [
   'stop_time',
   'hashes',
 ];
-const isDefinedValue = (element, diffMode) => {
+const isDefinedValue = (element) => {
   if (element) {
-    // Element is defined, empty or not we need to add it in the result
-    if (diffMode) return true;
     // If not in diff mode, we only take into account none empty element
     const isArray = Array.isArray(element);
     if (isArray) return element.length > 0;
@@ -112,17 +111,17 @@ const isDefinedValue = (element, diffMode) => {
   return false;
 };
 export const stixDataConverter = (data, args = {}) => {
-  const { diffMode = true } = args;
+  const { patchGeneration = false } = args;
   let finalData = data;
   // Relationships
-  if (isDefinedValue(finalData.from, diffMode)) {
+  if (isDefinedValue(finalData.from)) {
     finalData = R.pipe(
       R.dissoc('from'),
       R.assoc('source_ref', data.from.standard_id),
       R.assoc('x_opencti_source_ref', data.from.internal_id)
     )(finalData);
   }
-  if (isDefinedValue(finalData.to, diffMode)) {
+  if (isDefinedValue(finalData.to)) {
     finalData = R.pipe(
       R.dissoc('to'),
       R.assoc('target_ref', data.to.standard_id),
@@ -130,53 +129,77 @@ export const stixDataConverter = (data, args = {}) => {
     )(finalData);
   }
   // Specific input cases
-  if (isDefinedValue(finalData.stix_id, diffMode)) {
+  if (isDefinedValue(finalData.stix_id)) {
     finalData = R.pipe(R.dissoc('stix_id'), R.assoc('x_opencti_stix_ids', [data.stix_id]))(finalData);
   } else {
     finalData = R.dissoc('stix_id', finalData);
   }
   // Inner relations
-  if (isDefinedValue(finalData.object, diffMode)) {
+  if (isDefinedValue(finalData.object)) {
     const objectSet = Array.isArray(finalData.object) ? finalData.object : [finalData.object];
-    const objects = R.map((m) => m.standard_id, objectSet);
+    const objects = R.map(
+      (m) => (patchGeneration ? { value: m.standard_id, x_opencti_internal_id: m.internal_id } : m.standard_id),
+      objectSet
+    );
     finalData = R.pipe(R.dissoc('object'), R.assoc('object_refs', objects))(finalData);
   } else {
     finalData = R.dissoc('object', finalData);
   }
-  if (isDefinedValue(finalData.objectMarking, diffMode)) {
+  if (isDefinedValue(finalData.objectMarking)) {
     const markingSet = Array.isArray(finalData.objectMarking) ? finalData.objectMarking : [finalData.objectMarking];
-    const markings = R.map((m) => m.standard_id, markingSet);
+    const markings = R.map(
+      (m) => (patchGeneration ? { value: m.standard_id, x_opencti_internal_id: m.internal_id } : m.standard_id),
+      markingSet
+    );
     finalData = R.pipe(R.dissoc('objectMarking'), R.assoc('object_marking_refs', markings))(finalData);
   } else {
     finalData = R.dissoc('objectMarking', finalData);
   }
-  if (isDefinedValue(finalData.createdBy, diffMode)) {
+  if (isDefinedValue(finalData.createdBy)) {
     const creator = Array.isArray(finalData.createdBy) ? R.head(finalData.createdBy) : finalData.createdBy;
-    finalData = R.pipe(R.dissoc('createdBy'), R.assoc('created_by_ref', creator.standard_id))(finalData);
+    const created = patchGeneration
+      ? [{ value: creator.standard_id, x_opencti_internal_id: creator.internal_id }]
+      : creator.standard_id;
+    finalData = R.pipe(R.dissoc('createdBy'), R.assoc('created_by_ref', created))(finalData);
   } else {
     finalData = R.dissoc('createdBy', finalData);
   }
   // Embedded relations
-  if (isDefinedValue(finalData.objectLabel, diffMode)) {
+  if (isDefinedValue(finalData.objectLabel)) {
     const labelSet = Array.isArray(finalData.objectLabel) ? finalData.objectLabel : [finalData.objectLabel];
-    const labels = R.map((m) => m.value, labelSet);
+    const labels = R.map(
+      (m) => (patchGeneration ? { value: m.value, x_opencti_internal_id: m.internal_id } : m.value),
+      labelSet
+    );
     finalData = R.pipe(R.dissoc('objectLabel'), R.assoc('labels', labels))(finalData);
   } else {
     finalData = R.dissoc('objectLabel', finalData);
   }
-  if (isDefinedValue(finalData.killChainPhases, diffMode)) {
+  if (isDefinedValue(finalData.killChainPhases)) {
     const killSet = Array.isArray(finalData.killChainPhases) ? finalData.killChainPhases : [finalData.killChainPhases];
-    const kills = R.map((k) => R.pick(['kill_chain_name', 'phase_name'], k), killSet);
+    const kills = R.map(
+      (k) =>
+        patchGeneration
+          ? { value: R.pick(['kill_chain_name', 'phase_name'], k), x_opencti_internal_id: k.internal_id }
+          : R.pick(['kill_chain_name', 'phase_name'], k),
+      killSet
+    );
     finalData = R.pipe(R.dissoc('killChainPhases'), R.assoc('kill_chain_phases', kills))(finalData);
   } else {
     finalData = R.dissoc('killChainPhases', finalData);
   }
-  if (isDefinedValue(finalData.externalReferences, diffMode)) {
+  if (isDefinedValue(finalData.externalReferences)) {
     const externalSet = Array.isArray(finalData.externalReferences)
       ? finalData.externalReferences
       : [finalData.externalReferences];
     const externals = R.map(
-      (e) => R.pick(['source_name', 'description', 'url', 'hashes', 'external_id'], e),
+      (e) =>
+        patchGeneration
+          ? {
+              value: R.pick(['source_name', 'description', 'url', 'hashes', 'external_id'], e),
+              x_opencti_internal_id: e.internal_id,
+            }
+          : R.pick(['source_name', 'description', 'url', 'hashes', 'external_id'], e),
       externalSet
     );
     finalData = R.pipe(R.dissoc('externalReferences'), R.assoc('external_references', externals))(finalData);
@@ -188,35 +211,32 @@ export const stixDataConverter = (data, args = {}) => {
   const entries = Object.entries(finalData);
   for (let index = 0; index < entries.length; index += 1) {
     const [key, val] = entries[index];
-    if (key.startsWith('i_') || key === 'x_opencti_graph_data' || val === null) {
+    const isNullVal = Array.isArray(val) ? val.length === 0 : isEmptyField(val);
+    if (key.startsWith('i_') || isStixRelationShipExceptMeta(key) || key === 'x_opencti_graph_data' || isNullVal) {
       // Internal opencti attributes.
     } else if (key.startsWith('attribute_')) {
       // Stix but reserved keywords
       const targetKey = key.replace('attribute_', '');
       filteredData[targetKey] = val;
-    } else if (!isMultipleAttribute(key) && !key.endsWith('_refs')) {
-      filteredData[key] = Array.isArray(val) ? R.head(val) : val;
-    } else if (diffMode) {
-      // In diff mode, empty values must be available
-      filteredData[key] = val;
-    } else if (!isMultipleAttribute(key) || val.length > 0) {
+    } else {
       filteredData[key] = val;
     }
   }
   // Add x_ in extension
   // https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_ct36xlv6obo7
-  const dataEntries = Object.entries(filteredData);
-  const opencti = {};
-  for (let attr = 0; attr < dataEntries.length; attr += 1) {
-    const [key, val] = dataEntries[attr];
-    if (key.startsWith('x_opencti_')) {
-      opencti[key.substring('x_opencti_'.length)] = val;
-    }
-  }
-  if (diffMode) {
-    return filteredData;
-  }
-  return { ...filteredData, extensions: { x_opencti: opencti } };
+  // const dataEntries = Object.entries(filteredData);
+  // const openctiExtension = {};
+  // for (let attr = 0; attr < dataEntries.length; attr += 1) {
+  //   const [key, val] = dataEntries[attr];
+  //   if (key.startsWith('x_opencti_')) {
+  //     openctiExtension[key.substring('x_opencti_'.length)] = val;
+  //   }
+  // }
+  // if (R.isEmpty(openctiExtension)) {
+  //   return filteredData;
+  // }
+  // return { ...filteredData, extensions: { x_opencti: openctiExtension } };
+  return filteredData;
 };
 export const buildStixData = (data, args = {}) => {
   const { onlyBase = false } = args;

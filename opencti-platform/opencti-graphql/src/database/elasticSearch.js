@@ -47,7 +47,7 @@ import { isBasicRelationship } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 
-const MIN_DATA_FIELDS = ['name', 'internal_id', 'standard_id', 'base_type', 'entity_type', 'connections'];
+const MIN_DATA_FIELDS = ['name', 'value', 'internal_id', 'standard_id', 'base_type', 'entity_type', 'connections'];
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result');
@@ -1013,7 +1013,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
   mustnot.push(...markingRestrictions.must_not);
   if (ids.length > 0) {
     const idsTermsPerType = [];
-    const elementTypes = [ID_STANDARD, IDS_STIX];
+    const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
     for (let i = 0; i < ids.length; i += 1) {
       const id = ids[i];
       for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
@@ -1254,17 +1254,19 @@ export const elPaginate = async (user, indexName, options = {}) => {
 };
 export const elList = async (user, indexName, options = {}) => {
   let hasNextPage = true;
+  let continueProcess = true;
   let searchAfter = options.after;
   const listing = [];
   const publish = async (elements) => {
     const { callback } = options;
     if (callback) {
-      await callback(elements);
+      const callbackResult = await callback(elements);
+      continueProcess = callbackResult === true || callbackResult === undefined;
     } else {
       listing.push(...elements);
     }
   };
-  while (hasNextPage) {
+  while (continueProcess && hasNextPage) {
     // Force options to prevent connection format and manage search after
     const opts = { ...options, first: MAX_SEARCH_SIZE, after: searchAfter, connectionFormat: false };
     const elements = await elPaginate(user, indexName, opts);

@@ -54,7 +54,7 @@ const styles = (theme) => ({
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
-    padding: '20px 0px 20px 60px',
+    padding: '20px 20px 20px 60px',
   },
   closeButton: {
     position: 'absolute',
@@ -86,15 +86,15 @@ const styles = (theme) => ({
   },
 });
 
-const TaxiiCollectionCreationMutation = graphql`
-  mutation TaxiiCollectionCreationMutation($input: TaxiiCollectionAddInput!) {
-    taxiiCollectionAdd(input: $input) {
-      ...TaxiiLine_node
+const StreamCollectionCreationMutation = graphql`
+  mutation StreamCollectionCreationMutation($input: StreamCollectionAddInput!) {
+    streamCollectionAdd(input: $input) {
+      ...StreamLine_node
     }
   }
 `;
 
-const taxiiCollectionCreationValidation = (t) => Yup.object().shape({
+const streamCollectionCreationValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
 });
@@ -103,13 +103,13 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_taxiiCollections',
+    'Pagination_streamCollections',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-const TaxiiCollectionCreation = (props) => {
+const StreamCollectionCreation = (props) => {
   const { t, classes } = props;
   const [open, setOpen] = useState(false);
   const [filters, setFilters] = useState({});
@@ -124,12 +124,12 @@ const TaxiiCollectionCreation = (props) => {
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = JSON.stringify(filters);
     commitMutation({
-      mutation: TaxiiCollectionCreationMutation,
+      mutation: StreamCollectionCreationMutation,
       variables: {
         input: { ...values, filters: jsonFilters },
       },
       updater: (store) => {
-        const payload = store.getRootField('taxiiCollectionAdd');
+        const payload = store.getRootField('streamCollectionAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node');
         const container = store.getRoot();
         sharedUpdater(
@@ -194,7 +194,7 @@ const TaxiiCollectionCreation = (props) => {
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Create a TAXII collection')}
+            {t('Create a live stream')}
           </Typography>
           <div style={{ float: 'right', margin: '10px 0 0 0' }}>
             <Filters
@@ -222,7 +222,7 @@ const TaxiiCollectionCreation = (props) => {
               name: '',
               description: '',
             }}
-            validationSchema={taxiiCollectionCreationValidation(t)}
+            validationSchema={streamCollectionCreationValidation(t)}
             onSubmit={onSubmit}
             onReset={onReset}
           >
@@ -318,7 +318,7 @@ const TaxiiCollectionCreation = (props) => {
   );
 };
 
-TaxiiCollectionCreation.propTypes = {
+StreamCollectionCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -328,4 +328,4 @@ TaxiiCollectionCreation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(TaxiiCollectionCreation);
+)(StreamCollectionCreation);
