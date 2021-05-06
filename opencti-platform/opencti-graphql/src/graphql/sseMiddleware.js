@@ -95,16 +95,17 @@ const computeAggregatePatch = (events) => {
         const [key, values] = replaceActionsEntries[replaceIndex];
         const { current, previous } = values;
         if (Array.isArray(current)) {
-          const deleted = previous.filter((f) => !current.includes(f));
+          const previousValues = previous || [];
+          const deleted = previousValues.filter((f) => !current.includes(f));
           eventsDifferential.push(
             ...deleted.map((v) => ({ action: EVENT_DEL, key, val: v, src: EVENT_REP, patch: action }))
           );
-          const added = current.filter((f) => !previous.includes(f));
+          const added = current.filter((f) => !previousValues.includes(f));
           eventsDifferential.push(
             ...added.map((v) => ({ action: EVENT_ADD, key, val: v, src: EVENT_REP, patch: action }))
           );
         } else {
-          eventsDifferential.push({ action: EVENT_DEL, key, val: previous, src: EVENT_REP, patch: action });
+          eventsDifferential.push({ action: EVENT_DEL, key, val: previous || '', src: EVENT_REP, patch: action });
           eventsDifferential.push({ action: EVENT_ADD, key, val: current, src: EVENT_REP, patch: action });
         }
       }

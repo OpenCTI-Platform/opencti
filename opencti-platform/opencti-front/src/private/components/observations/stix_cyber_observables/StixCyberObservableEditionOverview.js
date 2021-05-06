@@ -140,7 +140,11 @@ class StixCyberObservableEditionOverviewComponent extends Component {
       finalName = name.replace('hashes_', 'hashes.');
     }
     if (multipleAttributes.includes(finalName)) {
-      finalValue = finalValue.split(',');
+      if (finalValue.length > 0) {
+        finalValue = finalValue.split(',');
+      } else {
+        finalValue = [];
+      }
     }
     commitMutation({
       mutation: stixCyberObservableMutationFieldPatch,
