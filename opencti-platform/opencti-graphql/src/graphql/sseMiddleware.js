@@ -155,7 +155,7 @@ const isElementEvolved = (openctiId, events) => {
   }
   // 02. Handle update differential
   // In this case, we only take care about element evolution
-  if (R.empty(patch)) {
+  if (R.isEmpty(patch)) {
     return undefined;
   }
   return { id: openctiId, eventId, topic: EVENT_TYPE_UPDATE, patch };
