@@ -11,6 +11,7 @@ const error = (type, message, data) => {
 export const AUTH_FAILURE = 'AuthFailure';
 export const AuthenticationFailure = (reason, data) =>
   error(AUTH_FAILURE, reason || 'Wrong name or password', {
+    http_status: 401,
     category: CATEGORY_TECHNICAL,
     ...data,
   });
@@ -19,16 +20,16 @@ export const AuthenticationFailure = (reason, data) =>
 export const AUTH_REQUIRED = 'AuthRequired';
 export const AuthRequired = (data) =>
   error(AUTH_REQUIRED, 'You must be logged in to do this.', {
-    category: CATEGORY_TECHNICAL,
     http_status: 401,
+    category: CATEGORY_TECHNICAL,
     ...data,
   });
 
 export const FORBIDDEN_ACCESS = 'ForbiddenAccess';
 export const ForbiddenAccess = (data) =>
   error(FORBIDDEN_ACCESS, 'You are not allowed to do this.', {
-    category: CATEGORY_TECHNICAL,
     http_status: 403,
+    category: CATEGORY_TECHNICAL,
     ...data,
   });
 
@@ -43,6 +44,7 @@ export const ResourceNotFoundError = (data) =>
 export const DatabaseError = (reason, data) =>
   error('DatabaseError', 'A database error has occurred', {
     reason: reason || 'No reason specify',
+    http_status: 500,
     category: CATEGORY_TECHNICAL,
     ...data,
   });
@@ -50,6 +52,7 @@ export const DatabaseError = (reason, data) =>
 export const ConfigurationError = (reason, data) =>
   error('ConfigurationError', 'A configuration error has occurred', {
     reason: reason || 'No reason specify',
+    http_status: 500,
     category: CATEGORY_TECHNICAL,
     ...data,
   });
@@ -57,6 +60,7 @@ export const ConfigurationError = (reason, data) =>
 export const UnknownError = (reason, data) =>
   error('UnknownError', 'An unknown error has occurred', {
     reason: reason || 'No reason specify',
+    http_status: 500,
     category: CATEGORY_TECHNICAL,
     ...data,
   });
@@ -65,7 +69,7 @@ export const UNSUPPORTED_ERROR = 'UnsupportedError';
 export const UnsupportedError = (reason, data) =>
   error(UNSUPPORTED_ERROR, 'Unsupported operation', {
     reason: reason || 'No reason specify',
-    http_status: 501,
+    http_status: 500,
     category: CATEGORY_BUSINESS,
     ...data,
   });
@@ -73,8 +77,8 @@ export const UnsupportedError = (reason, data) =>
 export const FunctionalError = (reason, data) =>
   error('FunctionalError', 'Business validation', {
     reason: reason || 'No reason specify',
-    category: CATEGORY_BUSINESS,
     http_status: 400,
+    category: CATEGORY_BUSINESS,
     ...data,
   });
 
@@ -82,6 +86,7 @@ export const TYPE_LOCK_ERROR = 'LockError';
 export const LockTimeoutError = (data) =>
   error(TYPE_LOCK_ERROR, 'Lock timeout', {
     reason: 'Execution timeout, too many concurrent call on the same entities',
+    http_status: 500,
     category: CATEGORY_BUSINESS,
     ...data,
   });
@@ -90,6 +95,7 @@ export const TYPE_DUPLICATE_ENTRY = 'DuplicateEntryError';
 export const DuplicateEntryError = (reason, data) =>
   error(TYPE_DUPLICATE_ENTRY, 'Existing element', {
     reason: reason || 'No reason specify',
+    http_status: 500,
     category: CATEGORY_BUSINESS,
     ...data,
   });
@@ -106,6 +112,7 @@ export const MissingReferenceError = (data) =>
 export const ValidationError = (field, data) =>
   error('ValidationError', 'Validation error', {
     reason: `Invalid field ${field}`,
+    http_status: 500,
     category: CATEGORY_BUSINESS,
     ...data,
   });

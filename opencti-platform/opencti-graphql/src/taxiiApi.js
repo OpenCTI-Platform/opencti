@@ -14,7 +14,7 @@ const errorConverter = (e) => {
     title: e.message,
     description: e.data.reason,
     error_code: e.name,
-    http_status: e.data.http_status,
+    http_status: e.data?.http_status || 500,
     details,
   };
 };
