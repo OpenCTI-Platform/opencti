@@ -209,6 +209,14 @@ export const stixDataConverter = (data, args = {}) => {
   } else {
     finalData = R.dissoc('externalReferences', finalData);
   }
+  // StixID V1 are transient and so not in data output
+  if (isDefinedValue(finalData.x_opencti_stix_ids)) {
+    finalData.x_opencti_stix_ids = finalData.x_opencti_stix_ids.filter((stixId) => {
+      const segments = stixId.split('--');
+      const [, uuid] = segments;
+      return uuidVersion(uuid) !== 1;
+    });
+  }
   // Attributes filtering
   const filteredData = {};
   const entries = Object.entries(finalData);
