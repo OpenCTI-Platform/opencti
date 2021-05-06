@@ -33,6 +33,9 @@ class ContainerStixDomainObjectsLines extends Component {
       container,
       paginationOptions,
       openExports,
+      onToggleEntity,
+      selectedElements,
+      selectAll,
     } = this.props;
     return (
       <div>
@@ -56,6 +59,9 @@ class ContainerStixDomainObjectsLines extends Component {
           DummyLineComponent={<ContainerStixDomainObjectLineDummy />}
           dataColumns={dataColumns}
           nbOfRowsToLoad={nbOfRowsToLoad}
+          selectedElements={selectedElements}
+          selectAll={selectAll}
+          onToggleEntity={onToggleEntity.bind(this)}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ContainerAddStixCoreObjects
@@ -88,6 +94,9 @@ ContainerStixDomainObjectsLines.propTypes = {
   setNumberOfElements: PropTypes.func,
   onTypesChange: PropTypes.func,
   openExports: PropTypes.bool,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
 };
 
 export const containerStixDomainObjectsLinesQuery = graphql`

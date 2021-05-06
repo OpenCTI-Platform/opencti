@@ -26,14 +26,6 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: 310,
-    padding: '0 0 20px 0',
-    overflowX: 'hidden',
-    zIndex: 0,
-    backgroundColor: theme.palette.navAlt.background,
-  },
   buttonClose: {
     float: 'right',
     margin: '2px -16px 0 0',

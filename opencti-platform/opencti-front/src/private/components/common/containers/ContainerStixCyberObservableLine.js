@@ -11,6 +11,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
 import { compose, pathOr, take } from 'ramda';
 import { HexagonOutline } from 'mdi-material-ui';
+import Checkbox from '@material-ui/core/Checkbox';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
@@ -30,10 +31,6 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-  },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -55,6 +52,9 @@ class ContainerStixCyberObservableLineComponent extends Component {
       dataColumns,
       containerId,
       paginationOptions,
+      onToggleEntity,
+      selectedElements,
+      selectAll,
     } = this.props;
     return (
       <ListItem
@@ -66,6 +66,17 @@ class ContainerStixCyberObservableLineComponent extends Component {
           node.entity_type === 'Artifact' ? 'artifacts' : 'observables'
         }/${node.id}`}
       >
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 40 }}
+          onClick={onToggleEntity.bind(this, node)}
+        >
+          <Checkbox
+            edge="start"
+            checked={selectAll || node.id in (selectedElements || {})}
+            disableRipple={true}
+          />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <HexagonOutline />
         </ListItemIcon>
@@ -114,7 +125,7 @@ class ContainerStixCyberObservableLineComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
+        <ListItemSecondaryAction>
           <ContainerStixCoreObjectPopover
             containerId={containerId}
             toId={node.id}
@@ -136,6 +147,9 @@ ContainerStixCyberObservableLineComponent.propTypes = {
   fd: PropTypes.func,
   t: PropTypes.func,
   paginationOptions: PropTypes.object,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
 };
 
 const ContainerStixCyberObservableLineFragment = createFragmentContainer(

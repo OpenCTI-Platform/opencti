@@ -6,6 +6,7 @@ import {
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { withStyles } from '@material-ui/core';
+import * as R from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixDomainObjectsLines, {
@@ -17,6 +18,8 @@ import {
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import inject18n from '../../../../components/i18n';
+import { defaultValue } from '../../../../utils/Graph';
+import ToolBar from '../../data/ToolBar';
 
 const styles = () => ({
   container: {
@@ -40,6 +43,8 @@ class ContainerStixDomainObjectsComponent extends Component {
       types: propOr([], 'types', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
+      selectedElements: null,
+      selectAll: false,
     };
   }
 
@@ -83,6 +88,35 @@ class ContainerStixDomainObjectsComponent extends Component {
     this.setState({ numberOfElements });
   }
 
+  handleToggleSelectEntity(entity) {
+    const { selectedElements } = this.state;
+    if (entity.id in (selectedElements || {})) {
+      const newSelectedElements = R.omit([entity.id], selectedElements);
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    } else {
+      const newSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        selectedElements || {},
+      );
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    }
+  }
+
+  handleToggleSelectAll() {
+    this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
+  }
+
+  handleClearSelectedElements() {
+    this.setState({ selectAll: false, selectedElements: null });
+  }
+
   render() {
     const { container, classes } = this.props;
     const {
@@ -91,9 +125,14 @@ class ContainerStixDomainObjectsComponent extends Component {
       searchTerm,
       openExports,
       numberOfElements,
+      selectedElements,
+      selectAll,
       types,
     } = this.state;
-
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original;
+    }
     const dataColumns = {
       entity_type: {
         label: 'Type',
@@ -133,6 +172,13 @@ class ContainerStixDomainObjectsComponent extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
       search: searchTerm,
     };
+    const finalFilters = {
+      entity_type:
+        types.length > 0
+          ? R.map((n) => ({ id: n, value: n }), types)
+          : [{ id: 'Stix-Domain-Object', value: 'Stix-Domain-Object' }],
+      containedBy: [{ id: container.id, value: defaultValue(container) }],
+    };
     return (
       <div className={classes.container}>
         <ListLines
@@ -142,6 +188,9 @@ class ContainerStixDomainObjectsComponent extends Component {
           handleSort={this.handleSort.bind(this)}
           handleSearch={this.handleSearch.bind(this)}
           handleToggleExports={this.handleToggleExports.bind(this)}
+          handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+          selectAll={selectAll}
+          iconExtension={true}
           exportEntityType="Stix-Domain-Object"
           openExports={openExports}
           exportContext={`of-container-${container.id}`}
@@ -162,10 +211,23 @@ class ContainerStixDomainObjectsComponent extends Component {
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
                 onTypesChange={this.handleToggle.bind(this)}
                 openExports={openExports}
+                selectedElements={selectedElements}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                selectAll={selectAll}
               />
             )}
           />
         </ListLines>
+        <ToolBar
+          selectedElements={selectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          filters={finalFilters}
+          handleClearSelectedElements={this.handleClearSelectedElements.bind(
+            this,
+          )}
+          withPaddingRight={true}
+        />
         <StixDomainObjectsRightBar
           types={types}
           handleToggle={this.handleToggle.bind(this)}
@@ -191,6 +253,20 @@ const ContainerStixDomainObjects = createFragmentContainer(
     container: graphql`
       fragment ContainerStixDomainObjects_container on Container {
         id
+        ... on Report {
+          name
+        }
+        ... on Note {
+          attribute_abstract
+          content
+        }
+        ... on Opinion {
+          opinion
+        }
+        ... on ObservedData {
+          first_observed
+          last_observed
+        }
         ...ContainerHeader_container
       }
     `,

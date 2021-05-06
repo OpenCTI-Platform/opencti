@@ -33,6 +33,9 @@ class ContainerStixCyberObservablesLines extends Component {
       container,
       paginationOptions,
       openExports,
+      onToggleEntity,
+      selectedElements,
+      selectAll,
     } = this.props;
     return (
       <div>
@@ -56,6 +59,9 @@ class ContainerStixCyberObservablesLines extends Component {
           DummyLineComponent={<ContainerStixCyberObservableLineDummy />}
           dataColumns={dataColumns}
           nbOfRowsToLoad={nbOfRowsToLoad}
+          selectedElements={selectedElements}
+          selectAll={selectAll}
+          onToggleEntity={onToggleEntity.bind(this)}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ContainerAddStixCoreObjects
@@ -88,6 +94,9 @@ ContainerStixCyberObservablesLines.propTypes = {
   setNumberOfElements: PropTypes.func,
   onTypesChange: PropTypes.func,
   openExports: PropTypes.bool,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
 };
 
 export const containerStixCyberObservablesLinesQuery = graphql`

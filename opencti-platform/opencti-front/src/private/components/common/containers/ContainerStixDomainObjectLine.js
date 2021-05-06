@@ -10,6 +10,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { Help, MoreVert } from '@material-ui/icons';
 import { compose, pathOr, take } from 'ramda';
+import Checkbox from '@material-ui/core/Checkbox';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -52,6 +53,9 @@ class ContainerStixDomainObjectLineComponent extends Component {
       dataColumns,
       containerId,
       paginationOptions,
+      onToggleEntity,
+      selectedElements,
+      selectAll,
     } = this.props;
     return (
       <ListItem
@@ -61,6 +65,17 @@ class ContainerStixDomainObjectLineComponent extends Component {
         component={Link}
         to={`${resolveLink(node.entity_type)}/${node.id}`}
       >
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 40 }}
+          onClick={onToggleEntity.bind(this, node)}
+        >
+          <Checkbox
+            edge="start"
+            checked={selectAll || node.id in (selectedElements || {})}
+            disableRipple={true}
+          />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon type={node.entity_type} />
         </ListItemIcon>
@@ -133,6 +148,9 @@ ContainerStixDomainObjectLineComponent.propTypes = {
   fd: PropTypes.func,
   t: PropTypes.func,
   paginationOptions: PropTypes.object,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
 };
 
 const ContainerStixDomainObjectLineFragment = createFragmentContainer(
