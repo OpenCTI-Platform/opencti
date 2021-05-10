@@ -71,8 +71,9 @@ class StixDomainObjectDetectDuplicate extends Component {
     }
   }
 
-  handleOpen() {
+  handleOpen(e) {
     this.setState({ open: true });
+    e.preventDefault();
   }
 
   handleClose() {
