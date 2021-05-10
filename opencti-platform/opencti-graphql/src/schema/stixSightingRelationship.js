@@ -28,7 +28,7 @@ export const stixSightingRelationshipsAttributes = {
     'i_first_seen_month',
     'i_first_seen_year',
     'last_seen',
-    'last_seen',
+    'i_last_seen_day',
     'i_last_seen_month',
     'i_last_seen_year',
     'attribute_count',

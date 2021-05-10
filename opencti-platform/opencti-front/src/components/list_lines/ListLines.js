@@ -309,7 +309,7 @@ class ListLines extends Component {
               <ListItemIcon
                 style={{
                   minWidth:
-                    typeof handleToggleSelectAll === 'function' ? 40 : 50,
+                    typeof handleToggleSelectAll === 'function' ? 38 : 56,
                 }}
               >
                 {typeof handleToggleSelectAll === 'function' ? (

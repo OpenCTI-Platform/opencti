@@ -22,10 +22,9 @@ const styles = (theme) => ({
   },
   bottomNav: {
     zIndex: 1000,
-    padding: '0 200px 0 205px',
+    padding: '10px 200px 10px 205px',
     backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
-    height: 50,
   },
   chips: {
     display: 'flex',
@@ -93,7 +92,7 @@ class EntityStixSightingRelationships extends Component {
       },
       name: {
         label: 'Name',
-        width: '25%',
+        width: '20%',
         isSortable: false,
       },
       entity_type: {
@@ -196,28 +195,28 @@ class EntityStixSightingRelationships extends Component {
                   onChange={this.handleChangeEntities.bind(this)}
                 >
                   <MenuItem value="All">{t('All entities')}</MenuItem>
-                  {includes('Region', targetStixDomainObjectTypes)
-                    || (includes('Identity', targetStixDomainObjectTypes) && (
-                      <MenuItem value="Region">{t('Region')}</MenuItem>
-                    ))}
-                  {includes('Country', targetStixDomainObjectTypes)
-                    || (includes('Identity', targetStixDomainObjectTypes) && (
-                      <MenuItem value="Country">{t('Country')}</MenuItem>
-                    ))}
-                  {includes('City', targetStixDomainObjectTypes)
-                    || (includes('Identity', targetStixDomainObjectTypes) && (
-                      <MenuItem value="City">{t('City')}</MenuItem>
-                    ))}
-                  {includes('Organization', targetStixDomainObjectTypes)
-                    || (includes('Identity', targetStixDomainObjectTypes) && (
-                      <MenuItem value="Organization">
-                        {t('Organization')}
-                      </MenuItem>
-                    ))}
-                  {includes('User', targetStixDomainObjectTypes)
-                    || (includes('Identity', targetStixDomainObjectTypes) && (
-                      <MenuItem value="User">{t('Individual')}</MenuItem>
-                    ))}
+                  {(includes('Region', targetStixDomainObjectTypes)
+                    || includes('Identity', targetStixDomainObjectTypes)) && (
+                    <MenuItem value="Region">{t('Region')}</MenuItem>
+                  )}
+                  {(includes('Country', targetStixDomainObjectTypes)
+                    || includes('Identity', targetStixDomainObjectTypes)) && (
+                    <MenuItem value="Country">{t('Country')}</MenuItem>
+                  )}
+                  {(includes('City', targetStixDomainObjectTypes)
+                    || includes('Identity', targetStixDomainObjectTypes)) && (
+                    <MenuItem value="City">{t('City')}</MenuItem>
+                  )}
+                  {(includes('Organization', targetStixDomainObjectTypes)
+                    || includes('Identity', targetStixDomainObjectTypes)) && (
+                    <MenuItem value="Organization">
+                      {t('Organization')}
+                    </MenuItem>
+                  )}
+                  {(includes('User', targetStixDomainObjectTypes)
+                    || includes('Identity', targetStixDomainObjectTypes)) && (
+                    <MenuItem value="User">{t('Individual')}</MenuItem>
+                  )}
                 </Select>
               </Grid>
             </Grid>

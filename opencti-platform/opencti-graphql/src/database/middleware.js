@@ -1597,6 +1597,44 @@ const upsertElementRaw = async (user, id, type, data) => {
   }
   if (isStixSightingRelationship(type) && data.attribute_count) {
     const patch = { attribute_count: element.attribute_count + data.attribute_count };
+    // If a first_seen is given
+    let newFirstSeen = null;
+    if (!R.isNil(data.first_seen)) {
+      const givenFirstSeen = moment(data.first_seen);
+      // If a first_seen already exists
+      if (!R.isNil(element.first_seen)) {
+        // If the new first_seen is before the existing one, we update
+        const existingFirstSeen = moment(element.first_seen);
+        if (givenFirstSeen.isBefore(existingFirstSeen)) {
+          newFirstSeen = givenFirstSeen.utc().toISOString();
+        }
+        // If no first_seen exists, we update
+      } else {
+        newFirstSeen = givenFirstSeen.utc().toISOString();
+      }
+      if (newFirstSeen !== null) {
+        patch.first_seen = newFirstSeen;
+      }
+    }
+    // If a last_seen is given
+    let newLastSeen = null;
+    if (!R.isNil(data.last_seen)) {
+      const givenLastSeen = moment(data.last_seen);
+      // If a last_seen already exists
+      if (!R.isNil(element.last_seen)) {
+        // If the new last_seen is after the existing one, we update
+        const existingLastSeen = moment(element.last_seen);
+        if (givenLastSeen.isAfter(existingLastSeen)) {
+          newLastSeen = givenLastSeen.utc().toISOString();
+        }
+        // If no last_seen exists, we update
+      } else {
+        newLastSeen = givenLastSeen.utc().toISOString();
+      }
+      if (newLastSeen !== null) {
+        patch.last_seen = newLastSeen;
+      }
+    }
     const patched = await patchAttributeRaw(user, element, patch);
     impactedInputs.push(...patched.impactedInputs);
     updatedReplaceInputs.push(...patched.updatedInputs);
