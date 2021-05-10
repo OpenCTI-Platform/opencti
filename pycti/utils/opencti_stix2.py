@@ -1499,8 +1499,13 @@ class OpenCTIStix2:
         # Marking definitions
         for bundle in bundles:
             for item in bundle["objects"]:
-                if "x_data_update" in item:
-                    self.stix2_update.process_update(item)
+                if "x_opencti_event_version" in bundle:
+                    if bundle["x_opencti_event_version"] == "1":
+                        if "x_data_update" in item:
+                            self.stix2_update.process_update_v1(item)
+                    elif bundle["x_opencti_event_version"] == "2":
+                        if "x_opencti_patch":
+                            self.stix2_update.process_update_v2(item)
                 elif item["type"] == "relationship":
                     self.import_relationship(item, update, types)
                 elif item["type"] == "sighting":
@@ -1527,9 +1532,31 @@ class OpenCTIStix2:
                                         item, observed_data_ref, to_id, update
                                     )
                 elif StixCyberObservableTypes.has_value(item["type"]):
-                    self.import_observable(item, update, types)
+                    if types is None or len(types) == 0:
+                        self.import_observable(item, update, types)
+                    elif item["type"] in types or "observable" in types:
+                        self.import_observable(item, update, types)
                 else:
-                    self.import_object(item, update, types)
+                    # Check the scope
+                    if types is None or len(types) == 0:
+                        self.import_object(item, update, types)
+                    # Handle identity & location if part of the scope
+                    elif item["type"] in types:
+                        self.import_object(item, update, types)
+                    else:
+                        # Specific OpenCTI scopes
+                        if item["type"] == "identity":
+                            if "identity_class" in item:
+                                if ("class" in types or "sector" in types) and item[
+                                    "identity_class"
+                                ] == "class":
+                                    self.import_object(item, update, types)
+                                elif item["identity_class"] in types:
+                                    self.import_object(item, update, types)
+                        elif item["type"] == "location":
+                            if "x_opencti_location_type" in item:
+                                if item["x_opencti_location_type"] in types:
+                                    self.import_object(item, update, types)
                 imported_elements.append({"id": item["id"], "type": item["type"]})
 
         return imported_elements

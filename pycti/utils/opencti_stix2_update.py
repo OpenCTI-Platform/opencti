@@ -212,7 +212,7 @@ class OpenCTIStix2Update:
                 id=id, identity_id=created_by_ref
             )
 
-    def process_update(self, data):
+    def process_update_v1(self, data):
         try:
             if "add" in data["x_data_update"]:
                 for key in data["x_data_update"]["add"].keys():
@@ -322,6 +322,113 @@ class OpenCTIStix2Update:
                             key,
                             data["x_data_update"]["replace"][key],
                         )
+        except:
+            self.opencti.log("error", "Cannot process this message")
+            pass
+
+    def process_update_v2(self, data):
+        try:
+            if "add" in data["x_opencti_patch"]:
+                for key in data["x_opencti_patch"]["add"].keys():
+                    if key == "object_marking_refs":
+                        self.add_object_marking_refs(
+                            data["type"],
+                            data["id"],
+                            data["x_opencti_patch"]["add"]["object_marking_refs"],
+                        )
+                    elif key == "object_refs":
+                        self.add_object_refs(
+                            data["type"],
+                            data["id"],
+                            data["x_opencti_patch"]["add"]["object_refs"],
+                        )
+                    elif key == "labels":
+                        self.add_labels(
+                            data["type"],
+                            data["id"],
+                            data["x_opencti_patch"]["add"]["labels"],
+                        )
+                    elif key == "external_references":
+                        self.add_external_references(
+                            data["type"],
+                            data["id"],
+                            data["x_opencti_patch"]["add"]["external_references"],
+                        )
+                    elif key == "kill_chain_phases":
+                        self.add_kill_chain_phases(
+                            data["type"],
+                            data["id"],
+                            data["x_opencti_patch"]["add"]["kill_chain_phases"],
+                        )
+                    elif key == "created_by_ref":
+                        self.replace_created_by_ref(
+                            data["type"],
+                            data["id"],
+                            data["x_opencti_patch"]["add"]["created_by_ref"],
+                        )
+                    else:
+                        self.update_attribute(
+                            data["type"],
+                            data["id"],
+                            "add",
+                            key,
+                            data["x_opencti_patch"]["add"][key],
+                        )
+            if "remove" in data["x_opencti_patch"]:
+                for key in data["x_opencti_patch"]["remove"].keys():
+                    if key == "object_marking_refs":
+                        self.remove_object_marking_refs(
+                            data["type"],
+                            data["id"],
+                            data["x_opencti_patch"]["remove"]["object_marking_refs"],
+                        )
+                    elif key == "object_refs":
+                        self.remove_object_refs(
+                            data["type"],
+                            data["id"],
+                            data["x_opencti_patch"]["remove"]["object_refs"],
+                        )
+                    elif key == "labels":
+                        self.remove_labels(
+                            data["type"],
+                            data["id"],
+                            data["x_opencti_patch"]["remove"]["labels"],
+                        )
+                    elif key == "external_references":
+                        self.remove_external_references(
+                            data["type"],
+                            data["id"],
+                            data["x_opencti_patch"]["remove"]["external_references"],
+                        )
+                    elif key == "kill_chain_phases":
+                        self.remove_kill_chain_phases(
+                            data["type"],
+                            data["id"],
+                            data["x_opencti_patch"]["remove"]["kill_chain_phases"],
+                        )
+                    elif key == "created_by_ref":
+                        self.replace_created_by_ref(
+                            data["type"],
+                            data["id"],
+                            None,
+                        )
+                    else:
+                        self.update_attribute(
+                            data["type"],
+                            data["id"],
+                            "remove",
+                            key,
+                            data["x_opencti_patch"]["remove"][key],
+                        )
+            if "replace" in data["x_opencti_patch"]:
+                for key in data["x_opencti_patch"]["replace"].keys():
+                    self.update_attribute(
+                        data["type"],
+                        data["id"],
+                        "replace",
+                        key,
+                        data["x_opencti_patch"]["replace"][key]["current"],
+                    )
         except:
             self.opencti.log("error", "Cannot process this message")
             pass
