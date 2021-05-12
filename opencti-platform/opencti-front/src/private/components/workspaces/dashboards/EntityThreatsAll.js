@@ -38,7 +38,7 @@ class EntityThreatsAll extends Component {
         return (
           <EntityStixCoreRelationshipsDonut
             title={`${t('Threats')} - ${widget.entity.name}`}
-            stixCoreObjectId={widget.entity.id}
+            entityId={widget.entity.id}
             toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
             relationshipType="targets"
             isTo={true}
@@ -52,7 +52,7 @@ class EntityThreatsAll extends Component {
         return (
           <EntityStixCoreRelationshipsAreaChart
             title={`${t('Threats')} - ${widget.entity.name}`}
-            stixCoreObjectId={widget.entity.id}
+            entityId={widget.entity.id}
             toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
             relationshipType="targets"
             startDate={startDate}
@@ -64,7 +64,7 @@ class EntityThreatsAll extends Component {
         return (
           <EntityStixCoreRelationshipsVerticalBars
             title={`${t('Threats')} - ${widget.entity.name}`}
-            stixCoreObjectId={widget.entity.id}
+            entityId={widget.entity.id}
             toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
             relationshipType="targets"
             startDate={startDate}

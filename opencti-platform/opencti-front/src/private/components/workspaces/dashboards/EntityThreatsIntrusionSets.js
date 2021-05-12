@@ -24,7 +24,7 @@ class ThreatVictimologyAll extends Component {
         return (
           <EntityStixCoreRelationshipsHorizontalBars
             title={`${t('Intrusion Sets')} - ${widget.entity.name}`}
-            entityId={widget.entity.id}
+            stixCoreObjectId={widget.entity.id}
             toTypes={['Intrusion-Set']}
             relationshipType="targets"
             isTo={true}
