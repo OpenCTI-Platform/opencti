@@ -3,9 +3,10 @@ import { SchemaDirectiveVisitor } from 'graphql-tools';
 import { includes, map, filter } from 'ramda';
 import { defaultFieldResolver, responsePathAsArray } from 'graphql';
 import { AuthRequired, ForbiddenAccess } from '../config/errors';
-import { BYPASS, OPENCTI_ADMIN_UUID } from '../schema/general';
+import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { logAudit } from '../config/conf';
 import { ACCESS_CONTROL } from '../config/audit';
+import { BYPASS } from '../utils/access';
 
 export const AUTH_DIRECTIVE = 'auth';
 

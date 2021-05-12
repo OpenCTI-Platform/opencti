@@ -83,11 +83,9 @@ import {
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
-  INDEX_MARKINGS_FIELD,
   INTERNAL_IDS_ALIASES,
   REL_INDEX_PREFIX,
   schemaTypes,
-  SYSTEM_USER,
 } from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
@@ -147,6 +145,7 @@ import {
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { deleteAllFiles } from './minio';
+import { filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -1333,6 +1332,7 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
     updatedInstance: mergeInstanceWithInputs(instance, impactedInputs),
   };
 };
+// noinspection ExceptionCaughtLocallyJS
 export const updateAttribute = async (user, id, type, inputs, options = {}) => {
   const elements = Array.isArray(inputs) ? inputs : [inputs];
   const { operation = UPDATE_OPERATION_REPLACE } = options;
@@ -1398,6 +1398,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
           // Return merged element after waiting for it.
           return merged;
         }
+        // noinspection ExceptionCaughtLocallyJS
         throw FunctionalError(`This update will produce a duplicate`, { id: instance.id, type });
       }
     }
@@ -1714,6 +1715,7 @@ const upsertElementRaw = async (user, id, type, data) => {
   // Return all elements requirement for stream and indexation
   return { type: TRX_UPDATE, element, relations: rawRelations, streamInputs, indexInput };
 };
+
 const createRelationRaw = async (user, input) => {
   const { from, to, relationship_type: relationshipType } = input;
   // 01. Generate the ID
@@ -1745,10 +1747,7 @@ const createRelationRaw = async (user, input) => {
   let existingRelationship = null;
   if (existingRelationships.length > 0) {
     // We need to filter what we found with the user rights
-    const authorizedMarkings = user.allowed_marking.map((a) => a.internal_id);
-    const filteredRelations = existingRelationships.filter((e) =>
-      (e[INDEX_MARKINGS_FIELD] || []).every((m) => authorizedMarkings.includes(m))
-    );
+    const filteredRelations = filterElementsAccordingToUser(user, existingRelationships);
     // If nothing accessible for this user, throw ForbiddenAccess
     if (filteredRelations.length === 0) {
       throw UnsupportedError('Restricted relation already exists');
@@ -1960,10 +1959,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
   // If existing entities have been found and type is a STIX Core Object
   if (existingEntities.length > 0) {
     // We need to filter what we found with the user rights
-    const authorizedMarkings = user.allowed_marking.map((a) => a.internal_id);
-    const filteredEntities = existingEntities.filter((e) =>
-      (e[INDEX_MARKINGS_FIELD] || []).every((m) => authorizedMarkings.includes(m))
-    );
+    const filteredEntities = filterElementsAccordingToUser(user, existingEntities);
     // If nothing accessible for this user, throw ForbiddenAccess
     if (filteredEntities.length === 0) {
       throw UnsupportedError('Restricted entity already exists');

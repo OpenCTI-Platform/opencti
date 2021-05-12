@@ -7,7 +7,7 @@ import { prepareDate } from '../utils/format';
 import { patchAttribute } from '../database/middleware';
 import conf, { logApp } from '../config/conf';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
-import { SYSTEM_USER } from '../schema/general';
+import { SYSTEM_USER } from '../utils/access';
 
 // Expired manager responsible to monitor expired elements
 // In order to change the revoked attribute to true

@@ -1,8 +1,5 @@
 import * as R from 'ramda';
 
-export const BYPASS = 'BYPASS';
-export const ROLE_ADMINISTRATOR = 'Administrator';
-
 // Specific prefix
 export const REL_INDEX_PREFIX = 'rel_';
 export const INDEX_MARKINGS_FIELD = `${REL_INDEX_PREFIX}object-marking.internal_id`;
@@ -49,17 +46,6 @@ export const ABSTRACT_INTERNAL_OBJECT = 'Internal-Object';
 export const ENTITY_TYPE_CONTAINER = 'Container';
 export const ENTITY_TYPE_IDENTITY = 'Identity';
 export const ENTITY_TYPE_LOCATION = 'Location';
-
-// Users
-export const SYSTEM_USER = {
-  id: OPENCTI_SYSTEM_UUID,
-  name: 'SYSTEM',
-  user_email: 'SYSTEM',
-  origin: {},
-  roles: [{ name: ROLE_ADMINISTRATOR }],
-  capabilities: [{ name: BYPASS }],
-  allowed_marking: [],
-};
 
 // Abstract
 export const ABSTRACT_TYPES = [

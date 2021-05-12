@@ -17,7 +17,7 @@ import applyMigration, { lastAvailableMigrationTime } from './database/migration
 import { createEntity, loadEntity, patchAttribute } from './database/middleware';
 import { INDEX_INTERNAL_OBJECTS } from './database/utils';
 import { ConfigurationError, TYPE_LOCK_ERROR } from './config/errors';
-import { BYPASS, ROLE_ADMINISTRATOR, SYSTEM_USER } from './schema/general';
+import { BYPASS, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';

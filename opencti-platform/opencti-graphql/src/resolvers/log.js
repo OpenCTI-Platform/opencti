@@ -1,6 +1,6 @@
 import { findAll, logsTimeSeries, logsWorkerConfig } from '../domain/log';
 import { findById } from '../domain/user';
-import { SYSTEM_USER } from '../schema/general';
+import { SYSTEM_USER } from '../utils/access';
 
 const logResolvers = {
   Query: {

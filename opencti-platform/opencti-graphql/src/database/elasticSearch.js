@@ -26,7 +26,6 @@ import {
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   BASE_TYPE_RELATION,
-  BYPASS,
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
@@ -46,6 +45,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
+import { BYPASS } from '../utils/access';
 
 const MIN_DATA_FIELDS = ['name', 'value', 'internal_id', 'standard_id', 'base_type', 'entity_type', 'connections'];
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');

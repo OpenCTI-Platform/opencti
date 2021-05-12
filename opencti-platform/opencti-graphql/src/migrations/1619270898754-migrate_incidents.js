@@ -6,7 +6,7 @@ import { generateStandardId } from '../schema/identifier';
 import { logApp } from '../config/conf';
 import { ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';
 import { DatabaseError } from '../config/errors';
-import { SYSTEM_USER } from '../schema/general';
+import { SYSTEM_USER } from '../utils/access';
 
 export const up = async (next) => {
   const start = new Date().getTime();

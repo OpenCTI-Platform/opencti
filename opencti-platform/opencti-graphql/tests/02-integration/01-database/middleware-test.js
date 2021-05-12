@@ -34,9 +34,9 @@ import {
   ENTITY_TYPE_THREAT_ACTOR,
 } from '../../../src/schema/stixDomainObject';
 import {
-    ABSTRACT_STIX_CORE_RELATIONSHIP,
-    ABSTRACT_STIX_META_RELATIONSHIP,
-    REL_INDEX_PREFIX, SYSTEM_USER,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  REL_INDEX_PREFIX,
 } from '../../../src/schema/general';
 import { RELATION_MITIGATES, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCyberObservable';
@@ -55,6 +55,7 @@ import {
 } from '../../../src/utils/format';
 import { READ_DATA_INDICES } from '../../../src/database/utils';
 import { INTERNAL_FROM_FIELD } from '../../../src/schema/identifier';
+import { SYSTEM_USER } from '../../../src/utils/access';
 
 describe('Basic and utils', () => {
   it('should escape according to grakn needs', () => {

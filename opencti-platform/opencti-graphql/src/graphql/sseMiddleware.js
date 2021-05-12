@@ -4,7 +4,6 @@ import { authenticateUser, STREAMAPI } from '../domain/user';
 import { createStreamProcessor } from '../database/redis';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { generateInternalId } from '../schema/identifier';
-import { BYPASS } from '../schema/general';
 import { findById } from '../domain/stream';
 import {
   EVENT_TYPE_SYNC,
@@ -25,6 +24,7 @@ import {
 } from '../database/utils';
 import { buildStixData } from '../database/stix';
 import { generateInternalType, parents } from '../schema/schemaUtils';
+import { BYPASS, isBypassUser } from '../utils/access';
 
 let heartbeat;
 const MIN_LIVE_STREAM_EVENT_VERSION = 2;
@@ -280,7 +280,7 @@ const isEventGranted = (event, user) => {
   const clientMarkings = R.map((m) => m.standard_id, user.allowed_marking);
   const isMarkingObject = data.type === ENTITY_TYPE_MARKING_DEFINITION.toLowerCase();
   const isUserHaveAccess = event.markings.length === 0 || event.markings.every((m) => clientMarkings.includes(m));
-  const isBypass = R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
+  const isBypass = isBypassUser(user);
   const isGrantedForData = isMarkingObject || isUserHaveAccess;
   return isBypass || isGrantedForData;
 };

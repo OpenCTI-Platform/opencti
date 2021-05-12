@@ -43,7 +43,7 @@ import {
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
 } from '../schema/internalRelationship';
-import { ABSTRACT_INTERNAL_RELATIONSHIP, BYPASS, OPENCTI_ADMIN_UUID, SYSTEM_USER } from '../schema/general';
+import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { findAll as allMarkings } from './markingDefinition';
 import { findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
@@ -60,6 +60,7 @@ import {
   USER_DELETION,
 } from '../config/audit';
 import { buildPagination } from '../database/utils';
+import { BYPASS, SYSTEM_USER } from '../utils/access';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -581,6 +582,7 @@ const resolveUserByToken = async (tokenValue) => {
   const user = { ...client, capabilities, allowed_marking: marking.user, all_marking: marking.all };
   return buildSessionUser(user, tokenValue);
 };
+
 export const resolveUserById = async (id) => {
   const client = await loadById(SYSTEM_USER, id, ENTITY_TYPE_USER);
   const capabilities = await getCapabilities(client.id);
