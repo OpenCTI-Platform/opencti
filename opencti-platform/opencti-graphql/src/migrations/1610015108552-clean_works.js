@@ -1,7 +1,7 @@
 import { connectors } from '../domain/connector';
 import { deleteOldCompletedWorks } from '../domain/work';
 import { logApp } from '../config/conf';
-import { SYSTEM_USER } from '../domain/user';
+import { SYSTEM_USER } from '../schema/general';
 
 export const up = async (next) => {
   const connectorList = await connectors(SYSTEM_USER);

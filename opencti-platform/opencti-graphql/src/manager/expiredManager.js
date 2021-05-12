@@ -2,12 +2,12 @@ import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import { Promise } from 'bluebird';
 import { lockResource } from '../database/redis';
 import { elList, ES_MAX_CONCURRENCY } from '../database/elasticSearch';
-import { SYSTEM_USER } from '../domain/user';
 import { READ_DATA_INDICES } from '../database/utils';
 import { prepareDate } from '../utils/format';
 import { patchAttribute } from '../database/middleware';
 import conf, { logApp } from '../config/conf';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
+import { SYSTEM_USER } from '../schema/general';
 
 // Expired manager responsible to monitor expired elements
 // In order to change the revoked attribute to true

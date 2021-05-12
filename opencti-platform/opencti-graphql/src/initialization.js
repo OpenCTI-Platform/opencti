@@ -7,7 +7,7 @@ import { isStorageAlive } from './database/minio';
 import { rabbitMQIsAlive } from './database/rabbitmq';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
-import { ROLE_ADMINISTRATOR, ROLE_DEFAULT, STREAMAPI, SYSTEM_USER, TAXIIAPI } from './domain/user';
+import { ROLE_DEFAULT, STREAMAPI, TAXIIAPI } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
@@ -17,7 +17,7 @@ import applyMigration, { lastAvailableMigrationTime } from './database/migration
 import { createEntity, loadEntity, patchAttribute } from './database/middleware';
 import { INDEX_INTERNAL_OBJECTS } from './database/utils';
 import { ConfigurationError, TYPE_LOCK_ERROR } from './config/errors';
-import { BYPASS } from './schema/general';
+import { BYPASS, ROLE_ADMINISTRATOR, SYSTEM_USER } from './schema/general';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';

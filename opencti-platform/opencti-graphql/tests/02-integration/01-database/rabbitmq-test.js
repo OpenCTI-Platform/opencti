@@ -6,7 +6,7 @@ import {
   registerConnectorQueues,
   unregisterConnector,
 } from '../../../src/database/rabbitmq';
-import { CONNECTOR_INTERNAL_IMPORT_FILE } from '../../../src/domain/connector';
+import { CONNECTOR_INTERNAL_IMPORT_FILE } from '../../../src/schema/general';
 
 describe('Rabbit basic and utils', () => {
   it('should rabbit in correct version', async () => {

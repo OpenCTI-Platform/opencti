@@ -1,10 +1,9 @@
 import * as R from 'ramda';
 import { el, ES_IGNORE_THROTTLED } from '../database/elasticSearch';
 import { logApp } from '../config/conf';
-import { ABSTRACT_BASIC_RELATIONSHIP } from '../schema/general';
+import { ABSTRACT_BASIC_RELATIONSHIP, SYSTEM_USER } from '../schema/general';
 import { deleteElementById } from '../database/middleware';
 import { READ_DATA_INDICES, READ_RELATIONSHIPS_INDICES } from '../database/utils';
-import { SYSTEM_USER } from '../domain/user';
 
 const average = (arr) => arr.reduce((p, c) => p + c, 0) / arr.length;
 const computeMissingRelationsForType = async (relationType) => {

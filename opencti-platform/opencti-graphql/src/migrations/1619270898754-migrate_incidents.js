@@ -4,9 +4,9 @@ import { READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../d
 import { BULK_TIMEOUT, el, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/elasticSearch';
 import { generateStandardId } from '../schema/identifier';
 import { logApp } from '../config/conf';
-import { SYSTEM_USER } from '../domain/user';
 import { ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';
 import { DatabaseError } from '../config/errors';
+import { SYSTEM_USER } from '../schema/general';
 
 export const up = async (next) => {
   const start = new Date().getTime();

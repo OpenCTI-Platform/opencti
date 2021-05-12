@@ -6,7 +6,7 @@ import { DatabaseError } from '../config/errors';
 import { RELATION_MIGRATES } from '../schema/internalRelationship';
 import { ENTITY_TYPE_MIGRATION_REFERENCE, ENTITY_TYPE_MIGRATION_STATUS } from '../schema/internalObject';
 import { createEntity, createRelation, listThroughGetTo, loadEntity, patchAttribute } from './middleware';
-import { SYSTEM_USER } from '../domain/user';
+import { SYSTEM_USER } from '../schema/general';
 
 const normalizeMigrationName = (rawName) => {
   if (rawName.startsWith('./')) {

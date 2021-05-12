@@ -3,8 +3,8 @@ import * as R from 'ramda';
 import { elPaginate } from '../database/elasticSearch';
 import conf from '../config/conf';
 import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
-import { findById, SYSTEM_USER } from './user';
-import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
+import { findById } from './user';
+import { ABSTRACT_STIX_CORE_OBJECT, SYSTEM_USER } from '../schema/general';
 import { loadById, timeSeriesEntities } from '../database/middleware';
 import { READ_INDEX_HISTORY, INDEX_HISTORY } from '../database/utils';
 

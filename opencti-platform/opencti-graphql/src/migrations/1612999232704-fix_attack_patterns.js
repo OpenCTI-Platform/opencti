@@ -4,7 +4,7 @@ import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../schema/stixDomainObject';
 import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/elasticSearch';
 import { logApp } from '../config/conf';
-import { SYSTEM_USER } from '../domain/user';
+import { SYSTEM_USER } from '../schema/general';
 
 export const up = async (next) => {
   const start = new Date().getTime();

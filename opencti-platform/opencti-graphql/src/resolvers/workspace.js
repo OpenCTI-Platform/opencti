@@ -12,11 +12,12 @@ import {
   workspaceAddRelations,
   workspaceDeleteRelation,
 } from '../domain/workspace';
-import { SYSTEM_USER, findById as findUserById } from '../domain/user';
+import { findById as findUserById } from '../domain/user';
 import { fetchEditContext, pubsub } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_WORKSPACE } from '../schema/internalObject';
 import withCancel from '../graphql/subscriptionWrapper';
+import { SYSTEM_USER } from '../schema/general';
 
 const toolResolvers = {
   Query: {

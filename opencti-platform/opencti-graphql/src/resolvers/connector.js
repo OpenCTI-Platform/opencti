@@ -1,5 +1,6 @@
 import {
   connectorDelete,
+  connectorForWork,
   connectors,
   connectorsForExport,
   connectorsForImport,
@@ -9,7 +10,6 @@ import {
   resetStateConnector,
 } from '../domain/connector';
 import {
-  connectorForWork,
   createWork,
   deleteWork,
   reportActionImport,

@@ -16,7 +16,7 @@ import {
   updateTask,
 } from '../domain/task';
 import conf, { logApp } from '../config/conf';
-import { resolveUserById, SYSTEM_USER } from '../domain/user';
+import { resolveUserById } from '../domain/user';
 import {
   createRelation,
   deleteElementById,
@@ -30,7 +30,7 @@ import { now } from '../utils/format';
 import { INDEX_INTERNAL_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { elUpdate } from '../database/elasticSearch';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import { ABSTRACT_BASIC_RELATIONSHIP } from '../schema/general';
+import { ABSTRACT_BASIC_RELATIONSHIP, SYSTEM_USER } from '../schema/general';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.

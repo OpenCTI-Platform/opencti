@@ -7,7 +7,7 @@ import { getRabbitMQVersion } from '../database/rabbitmq';
 import { getMinIOVersion } from '../database/minio';
 import pjson from '../../package.json';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { SYSTEM_USER } from './user';
+import { SYSTEM_USER } from '../schema/general';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };

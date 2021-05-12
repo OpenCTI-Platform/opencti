@@ -1,8 +1,8 @@
 import { createCapabilities, TAXII_CAPABILITIES } from '../initialization';
 import { deleteElementById, loadById } from '../database/middleware';
-import { SYSTEM_USER } from '../domain/user';
 import { ENTITY_TYPE_CAPABILITY } from '../schema/internalObject';
 import { generateStandardId } from '../schema/identifier';
+import { SYSTEM_USER } from '../schema/general';
 
 export const up = async (next) => {
   // Create taxii capabilities

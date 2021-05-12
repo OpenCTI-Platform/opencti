@@ -43,7 +43,7 @@ import {
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
 } from '../schema/internalRelationship';
-import { ABSTRACT_INTERNAL_RELATIONSHIP, BYPASS, OPENCTI_ADMIN_UUID, OPENCTI_SYSTEM_UUID } from '../schema/general';
+import { ABSTRACT_INTERNAL_RELATIONSHIP, BYPASS, OPENCTI_ADMIN_UUID, SYSTEM_USER } from '../schema/general';
 import { findAll as allMarkings } from './markingDefinition';
 import { findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
@@ -66,16 +66,6 @@ const BASIC = 'Basic ';
 export const STREAMAPI = 'STREAMAPI';
 export const TAXIIAPI = 'TAXIIAPI';
 export const ROLE_DEFAULT = 'Default';
-export const ROLE_ADMINISTRATOR = 'Administrator';
-export const SYSTEM_USER = {
-  id: OPENCTI_SYSTEM_UUID,
-  name: 'SYSTEM',
-  user_email: 'SYSTEM',
-  origin: {},
-  roles: [{ name: ROLE_ADMINISTRATOR }],
-  capabilities: [{ name: BYPASS }],
-  allowed_marking: [],
-};
 
 export const userWithOrigin = (req, user) => {
   // /!\ This metadata information is used in different ways

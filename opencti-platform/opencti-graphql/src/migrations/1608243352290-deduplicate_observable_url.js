@@ -2,9 +2,9 @@ import * as R from 'ramda';
 import { el, ES_IGNORE_THROTTLED } from '../database/elasticSearch';
 import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { mergeEntities, patchAttribute } from '../database/middleware';
-import { SYSTEM_USER } from '../domain/user';
 import { generateStandardId } from '../schema/identifier';
 import { logApp } from '../config/conf';
+import { SYSTEM_USER } from '../schema/general';
 
 export const up = async (next) => {
   // region find duplicates

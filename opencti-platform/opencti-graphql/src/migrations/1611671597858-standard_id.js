@@ -5,7 +5,7 @@ import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../sch
 import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/elasticSearch';
 import { generateStandardId } from '../schema/identifier';
 import { logApp } from '../config/conf';
-import { SYSTEM_USER } from '../domain/user';
+import { SYSTEM_USER } from '../schema/general';
 
 export const up = async (next) => {
   const start = new Date().getTime();

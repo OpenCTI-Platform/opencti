@@ -5,9 +5,8 @@ import { elIndex, elPaginate } from '../database/elasticSearch';
 import { INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES } from '../database/utils';
 import { ENTITY_TYPE_TASK } from '../schema/internalObject';
 import { deleteElementById, listEntities, loadById, patchAttribute } from '../database/middleware';
-import { SYSTEM_USER } from './user';
 import { GlobalFilters } from '../utils/filtering';
-import { BYPASS } from '../schema/general';
+import { BYPASS, SYSTEM_USER } from '../schema/general';
 import { ForbiddenAccess } from '../config/errors';
 import { KNOWLEDGE_DELETE } from '../initialization';
 

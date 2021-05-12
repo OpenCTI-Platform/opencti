@@ -4,8 +4,7 @@ import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/elasticSearch';
 import { generateStandardId } from '../schema/identifier';
 import { logApp } from '../config/conf';
-import { SYSTEM_USER } from '../domain/user';
-import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../schema/general';
+import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION, SYSTEM_USER } from '../schema/general';
 
 export const up = async (next) => {
   const start = new Date().getTime();

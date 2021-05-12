@@ -1,9 +1,11 @@
 import * as R from 'ramda';
 
 export const BYPASS = 'BYPASS';
+export const ROLE_ADMINISTRATOR = 'Administrator';
 
 // Specific prefix
 export const REL_INDEX_PREFIX = 'rel_';
+export const INDEX_MARKINGS_FIELD = `${REL_INDEX_PREFIX}object-marking.internal_id`;
 
 // General
 export const ID_INTERNAL = 'internal_id';
@@ -12,6 +14,11 @@ export const INTERNAL_IDS_ALIASES = 'i_aliases_ids';
 export const IDS_STIX = 'x_opencti_stix_ids';
 export const BASE_TYPE_RELATION = 'RELATION';
 export const BASE_TYPE_ENTITY = 'ENTITY';
+
+// Connectors
+export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
+export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files mime types to support (application/json, ...) -> import-
+export const CONNECTOR_INTERNAL_EXPORT_FILE = 'INTERNAL_EXPORT_FILE'; // Files mime types to generate (application/pdf, ...) -> export-
 
 // General UUID
 export const OASIS_NAMESPACE = '00abedb4-aa42-466c-9c01-fed23315a9b7';
@@ -42,6 +49,17 @@ export const ABSTRACT_INTERNAL_OBJECT = 'Internal-Object';
 export const ENTITY_TYPE_CONTAINER = 'Container';
 export const ENTITY_TYPE_IDENTITY = 'Identity';
 export const ENTITY_TYPE_LOCATION = 'Location';
+
+// Users
+export const SYSTEM_USER = {
+  id: OPENCTI_SYSTEM_UUID,
+  name: 'SYSTEM',
+  user_email: 'SYSTEM',
+  origin: {},
+  roles: [{ name: ROLE_ADMINISTRATOR }],
+  capabilities: [{ name: BYPASS }],
+  allowed_marking: [],
+};
 
 // Abstract
 export const ABSTRACT_TYPES = [

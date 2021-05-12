@@ -9,7 +9,6 @@ import {
   elUpdate,
   ES_IGNORE_THROTTLED,
 } from '../database/elasticSearch';
-import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_EXPORT_FILE, loadConnectorById } from './connector';
 import { generateWorkId } from '../schema/identifier';
 import { READ_INDEX_HISTORY, isNotEmptyField, INDEX_HISTORY } from '../database/utils';
 import { redisCreateWork, redisDeleteWork, redisGetWork, redisUpdateWorkFigures } from '../database/redis';
@@ -17,6 +16,7 @@ import { logApp } from '../config/conf';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { DatabaseError } from '../config/errors';
 import { now, sinceNowInMinutes } from '../utils/format';
+import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 
 export const workToExportFile = (work) => {
   return {
@@ -31,12 +31,6 @@ export const workToExportFile = (work) => {
       errors: work.errors,
     },
   };
-};
-
-export const connectorForWork = async (user, id) => {
-  const work = await elLoadByIds(user, id, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
-  if (work) return loadConnectorById(user, work.connector_id);
-  return null;
 };
 
 export const findAll = (user, args = {}) => {

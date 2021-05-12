@@ -34,12 +34,11 @@ import {
   ENTITY_TYPE_THREAT_ACTOR,
 } from '../../../src/schema/stixDomainObject';
 import {
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_META_RELATIONSHIP,
-  REL_INDEX_PREFIX,
+    ABSTRACT_STIX_CORE_RELATIONSHIP,
+    ABSTRACT_STIX_META_RELATIONSHIP,
+    REL_INDEX_PREFIX, SYSTEM_USER,
 } from '../../../src/schema/general';
 import { RELATION_MITIGATES, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
-import { SYSTEM_USER } from '../../../src/domain/user';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCyberObservable';
 import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixMetaRelationship';
 import { addLabel } from '../../../src/domain/label';
