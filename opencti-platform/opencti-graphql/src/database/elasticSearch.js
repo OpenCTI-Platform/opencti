@@ -1004,6 +1004,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', minSource = false } = options;
   const { types = null, filters = [], filterMode = 'and', search = null, connectionFormat = true } = options;
+  const { relExclude = true } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let must = [];
   let mustnot = [];
@@ -1208,7 +1209,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
   const query = {
     index: indexName,
     ignore_throttled: ES_IGNORE_THROTTLED,
-    _source_excludes: `${REL_INDEX_PREFIX}*`,
+    _source_excludes: relExclude ? `${REL_INDEX_PREFIX}*` : '',
     _source_includes: minSource ? MIN_DATA_FIELDS : '*',
     track_total_hits: true,
     body,

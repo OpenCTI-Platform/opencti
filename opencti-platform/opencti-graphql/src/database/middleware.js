@@ -83,9 +83,11 @@ import {
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
+  INDEX_MARKINGS_FIELD,
   INTERNAL_IDS_ALIASES,
   REL_INDEX_PREFIX,
   schemaTypes,
+  SYSTEM_USER,
 } from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
@@ -1717,19 +1719,8 @@ const createRelationRaw = async (user, input) => {
   // 01. Generate the ID
   const internalId = generateInternalId();
   const standardId = generateStandardId(relationshipType, input);
-  // Meta single relation check
-  if (isStixSingleMetaRelationship(relationshipType)) {
-    // If relation already exist, we fail
-    const rels = await listRelations(user, relationshipType, { fromId: from.internal_id, connectionFormat: false });
-    if (rels.length > 0) {
-      throw UnsupportedError('Relation cant be created (single cardinality)', {
-        relationshipType,
-        fromId: from.internal_id,
-      });
-    }
-  }
   // region 02. Check existing relationship
-  const listingArgs = { fromId: from.internal_id, toId: to.internal_id };
+  const listingArgs = { fromId: from.internal_id, toId: to.internal_id, connectionFormat: false, relExclude: false };
   if (isStixCoreRelationship(relationshipType)) {
     if (!R.isNil(input.start_time)) {
       listingArgs.startTimeStart = prepareDate(moment(input.start_time).subtract(1, 'months').utc());
@@ -1749,11 +1740,28 @@ const createRelationRaw = async (user, input) => {
       listingArgs.lastSeenStop = prepareDate(moment(input.last_seen).add(1, 'months').utc());
     }
   }
-  const existingRelationships = await listRelations(user, relationshipType, listingArgs);
   // endregion
+  const existingRelationships = await listRelations(SYSTEM_USER, relationshipType, listingArgs);
   let existingRelationship = null;
-  if (existingRelationships.edges.length > 0) {
-    existingRelationship = R.head(existingRelationships.edges).node;
+  if (existingRelationships.length > 0) {
+    // We need to filter what we found with the user rights
+    const authorizedMarkings = user.allowed_marking.map((a) => a.internal_id);
+    const filteredRelations = existingRelationships.filter((e) =>
+      (e[INDEX_MARKINGS_FIELD] || []).every((m) => authorizedMarkings.includes(m))
+    );
+    // If nothing accessible for this user, throw ForbiddenAccess
+    if (filteredRelations.length === 0) {
+      throw UnsupportedError('Restricted relation already exists');
+    }
+    // Meta single relation check
+    if (isStixSingleMetaRelationship(relationshipType)) {
+      // If relation already exist, we fail
+      throw UnsupportedError('Relation cant be created (single cardinality)', {
+        relationshipType,
+        fromId: from.internal_id,
+      });
+    }
+    existingRelationship = R.head(filteredRelations);
   }
   if (existingRelationship) {
     return upsertElementRaw(user, existingRelationship.id, relationshipType, input);
@@ -1947,20 +1955,29 @@ export const createRelations = async (user, inputs) => {
 const createEntityRaw = async (user, standardId, participantIds, input, type) => {
   // Generate the internal id if needed
   const internalId = input.internal_id || generateInternalId();
-  // Check if the entity exists
-  const existingEntities = await internalFindByIds(user, participantIds, { type });
+  // Check if the entity exists, must be done with SYSTEM USER to really find it.
+  const existingEntities = await internalFindByIds(SYSTEM_USER, participantIds, { type, relExclude: false });
   // If existing entities have been found and type is a STIX Core Object
   if (existingEntities.length > 0) {
-    if (existingEntities.length === 1) {
-      return upsertElementRaw(user, R.head(existingEntities).id, type, input);
+    // We need to filter what we found with the user rights
+    const authorizedMarkings = user.allowed_marking.map((a) => a.internal_id);
+    const filteredEntities = existingEntities.filter((e) =>
+      (e[INDEX_MARKINGS_FIELD] || []).every((m) => authorizedMarkings.includes(m))
+    );
+    // If nothing accessible for this user, throw ForbiddenAccess
+    if (filteredEntities.length === 0) {
+      throw UnsupportedError('Restricted entity already exists');
+    }
+    if (filteredEntities.length === 1) {
+      return upsertElementRaw(user, R.head(filteredEntities).id, type, input);
     }
     // If creation is not by a reference
     // We can in best effort try to merge a common stix_id
     if (input.update === true) {
       // The new one is new reference, merge all found entities
       // Target entity is existingByStandard by default or any other
-      const target = R.find((e) => e.standard_id === standardId, existingEntities) || R.head(existingEntities);
-      const sourcesEntities = R.filter((e) => e.internal_id !== target.internal_id, existingEntities);
+      const target = R.find((e) => e.standard_id === standardId, filteredEntities) || R.head(filteredEntities);
+      const sourcesEntities = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
       const sources = sourcesEntities.map((s) => s.internal_id);
       await mergeEntities(user, target.internal_id, sources, { locks: participantIds });
       return upsertElementRaw(user, target.internal_id, type, input);
@@ -1968,13 +1985,13 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
     // Sometimes multiple entities can match
     // Looking for aliasA, aliasB, find in different entities for example
     // In this case, we try to find if one match the standard id
-    const existingByStandard = R.find((e) => e.standard_id === standardId, existingEntities);
+    const existingByStandard = R.find((e) => e.standard_id === standardId, filteredEntities);
     if (existingByStandard) {
       // If a STIX ID has been passed in the creation
       if (input.stix_id) {
         // Find the entity corresponding to this STIX ID
         const stixIdFinder = (e) => e.standard_id === input.stix_id || e.x_opencti_stix_ids.includes(input.stix_id);
-        const existingByGivenStixId = R.find(stixIdFinder, existingEntities);
+        const existingByGivenStixId = R.find(stixIdFinder, filteredEntities);
         // If the entity exists by the stix id and not the same as the previously founded.
         if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
           // Merge this entity into the one matching the standard id
@@ -1985,7 +2002,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       }
       // In this mode we can safely consider this entity like the existing one.
       // We can upsert element except the aliases that are part of other entities
-      const concurrentEntities = R.filter((e) => e.standard_id !== standardId, existingEntities);
+      const concurrentEntities = R.filter((e) => e.standard_id !== standardId, filteredEntities);
       const key = resolveAliasesField(type);
       const concurrentAliases = R.flatten(R.map((c) => [c[key], c.name], concurrentEntities));
       const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
@@ -1995,7 +2012,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
     }
 
     // If not we dont know what to do, just throw an exception.
-    const entityIds = R.map((i) => i.standard_id, existingEntities);
+    const entityIds = R.map((i) => i.standard_id, filteredEntities);
     throw UnsupportedError('Cant upsert entity. Too many entities resolved', { input, entityIds });
   }
   // Complete with identifiers
