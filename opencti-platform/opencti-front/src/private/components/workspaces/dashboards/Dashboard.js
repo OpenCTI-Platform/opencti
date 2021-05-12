@@ -183,13 +183,17 @@ class DashboardComponent extends Component {
     this.saveManifest(newManifest);
   }
 
+  static getDayStartDate() {
+    return dayStartDate(null, false);
+  }
+
   // eslint-disable-next-line class-methods-use-this
   renderGlobalVisualization(widget, config) {
     const { relativeDate } = config;
     const startDate = relativeDate
       ? this.computerRelativeDate(relativeDate)
       : config.startDate;
-    const endDate = relativeDate ? dayStartDate() : config.endDate;
+    const endDate = relativeDate ? DashboardComponent.getDayStartDate() : config.endDate;
     switch (widget.dataType) {
       case 'all':
         return (
@@ -259,7 +263,7 @@ class DashboardComponent extends Component {
     const startDate = relativeDate
       ? this.computerRelativeDate(relativeDate)
       : config.startDate;
-    const endDate = relativeDate ? dayStartDate() : config.endDate;
+    const endDate = relativeDate ? DashboardComponent.getDayStartDate() : config.endDate;
     switch (widget.dataType) {
       case 'all':
         return (
@@ -326,7 +330,7 @@ class DashboardComponent extends Component {
   // eslint-disable-next-line class-methods-use-this
   computerRelativeDate(relativeDate) {
     if (relativeDate.includes('days')) {
-      return daysAgo(relativeDate.split('-')[1]);
+      return daysAgo(relativeDate.split('-')[1], null, false);
     }
     if (relativeDate.includes('months')) {
       return monthsAgo(relativeDate.split('-')[1]);
@@ -343,7 +347,7 @@ class DashboardComponent extends Component {
     const startDate = relativeDate
       ? this.computerRelativeDate(relativeDate)
       : config.startDate;
-    const endDate = relativeDate ? dayStartDate() : config.endDate;
+    const endDate = relativeDate ? DashboardComponent.getDayStartDate() : config.endDate;
     switch (widget.dataType) {
       case 'all':
         return (

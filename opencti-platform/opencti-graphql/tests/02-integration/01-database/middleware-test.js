@@ -724,8 +724,8 @@ describe('Relations distribution', () => {
       fromId: malware.internal_id,
       field: 'entity_type',
       operation: 'count',
-      start: '2020-02-28T22:59:00.000Z',
-      end: '2020-02-28T23:01:00.000Z',
+      startDate: '2020-02-28T22:59:00.000Z',
+      endDate: '2020-02-28T23:01:00.000Z',
     };
     const distribution = await distributionRelations(ADMIN_USER, options);
     expect(distribution.length).toEqual(0);

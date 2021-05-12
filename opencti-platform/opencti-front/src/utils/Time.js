@@ -9,12 +9,14 @@ export const TEN_SECONDS = FIVE_SECONDS * 2;
 
 export const parse = (date) => moment(date);
 
-export const dayStartDate = (date = null) => {
+export const dayStartDate = (date = null, fromStart = true) => {
   let start = new Date();
   if (date) {
     start = parse(date).toDate();
   }
-  start.setHours(0, 0, 0, 0);
+  if (fromStart) {
+    start.setHours(0, 0, 0, 0);
+  }
   return start;
 };
 
@@ -31,7 +33,7 @@ export const now = () => moment().format();
 
 export const dayAgo = () => moment().subtract(1, 'days').format();
 
-export const daysAgo = (number, date = null) => moment(dayStartDate(date)).subtract(number, 'days').format();
+export const daysAgo = (number, date = null, fromStart = true) => moment(dayStartDate(date, fromStart)).subtract(number, 'days').format();
 
 export const daysAfter = (number, date = null, noFuture = true) => {
   const newDate = moment(date || dayStartDate())
