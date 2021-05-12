@@ -90,6 +90,7 @@ const visualizationTypesMapping = {
   vulnerabilities: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, TIMELINE],
   campaigns: [AREA, TIMELINE, VERTICAL_BAR],
   indicators: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA],
+  incidents: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA],
   reports: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA],
 };
 
@@ -195,7 +196,7 @@ class WidgetCreation extends Component {
     const { searchTerm, perspective } = this.state;
     let types = ['Threat-Actor', 'Intrusion-Set', 'Malware', 'Tool'];
     if (perspective === 'entity') {
-      types = ['Sector', 'Country'];
+      types = ['Identity', 'Location'];
     }
     return (
       <QueryRenderer
@@ -614,7 +615,7 @@ class WidgetCreation extends Component {
         <Grid item={true} xs="4">
           <Card elevation={3} className={classes.card2}>
             <CardActionArea
-              onClick={this.handleSelectDataType.bind(this, 'indicators')}
+              onClick={this.handleSelectDataType.bind(this, 'incidents')}
               style={{ height: '100%' }}
             >
               <CardContent>
@@ -764,11 +765,11 @@ class WidgetCreation extends Component {
                       variant="h1"
                       style={{ marginTop: 20 }}
                     >
-                      {t('Sector or location')}
+                      {t('Identity or location')}
                     </Typography>
                     <br />
                     <Typography variant="body1">
-                      {t('Display data about sectors, countries, cities, etc.')}
+                      {t('Display data about organizations, sectors, countries, etc.')}
                     </Typography>
                   </CardContent>
                 </CardActionArea>

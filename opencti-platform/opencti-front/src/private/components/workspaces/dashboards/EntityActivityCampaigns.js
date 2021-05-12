@@ -38,7 +38,7 @@ class ThreatVictimologyAll extends Component {
                 textAlign: 'center',
               }}
             >
-              {t('No entities of this type has been found.')}
+              {t('Not implemented yet.')}
             </span>
           </div>
         );
