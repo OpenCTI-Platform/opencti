@@ -20,10 +20,11 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import Chip from '@material-ui/core/Chip';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import Filters from '../../common/lists/Filters';
+import Filters, { uniqFilters } from '../../common/lists/Filters';
 import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
@@ -113,7 +114,9 @@ const TaxiiCollectionEditionContainer = (props) => {
     if (filters[key] && filters[key].length > 0) {
       newFilters = assoc(
         key,
-        uniqBy(prop('id'), [{ id, value }, ...filters[key]]),
+        uniqFilters.includes(key)
+          ? [{ id, value }]
+          : R.uniqBy(R.prop('id'), [{ id, value }, ...this.state.filters[key]]),
         filters,
       );
     } else {
@@ -172,7 +175,7 @@ const TaxiiCollectionEditionContainer = (props) => {
               'x_opencti_detection',
               'revoked',
               'confidence_gt',
-              'indicator_types',
+              'pattern_type',
             ]}
             currentFilters={[]}
             handleAddFilter={handleAddFilter}

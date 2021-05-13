@@ -4,6 +4,7 @@ import {
   assoc, compose, dissoc, propOr, uniqBy, prop,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
+import * as R from 'ramda';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -15,6 +16,7 @@ import OpinionsLines, { opinionsLinesQuery } from './opinions/OpinionsLines';
 import inject18n from '../../../components/i18n';
 import OpinionCreation from './opinions/OpinionCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import { uniqFilters } from '../common/lists/Filters';
 
 class Opinions extends Component {
   constructor(props) {
@@ -70,7 +72,12 @@ class Opinions extends Component {
         {
           filters: assoc(
             key,
-            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            uniqFilters.includes(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
             this.state.filters,
           ),
         },

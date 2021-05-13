@@ -4,6 +4,7 @@ import {
   assoc, compose, dissoc, propOr, uniqBy, prop,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
+import * as R from 'ramda';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -21,6 +22,7 @@ import IntrusionSetsLines, {
 } from './intrusion_sets/IntrusionSetsLines';
 import IntrusionSetCreation from './intrusion_sets/IntrusionSetCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import { uniqFilters } from '../common/lists/Filters';
 
 class IntrusionSets extends Component {
   constructor(props) {
@@ -76,7 +78,12 @@ class IntrusionSets extends Component {
         {
           filters: assoc(
             key,
-            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            uniqFilters.includes(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
             this.state.filters,
           ),
         },

@@ -4,6 +4,7 @@ import {
   assoc, compose, dissoc, propOr, uniqBy, prop,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
+import * as R from 'ramda';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -17,6 +18,7 @@ import PositionsLines, {
 } from './positions/PositionsLines';
 import PositionCreation from './positions/PositionCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import { uniqFilters } from '../common/lists/Filters';
 
 class Positions extends Component {
   constructor(props) {
@@ -68,7 +70,12 @@ class Positions extends Component {
         {
           filters: assoc(
             key,
-            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            uniqFilters.includes(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
             this.state.filters,
           ),
         },

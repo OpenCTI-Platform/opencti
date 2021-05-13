@@ -15,6 +15,7 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Chip from '@material-ui/core/Chip';
+import * as R from 'ramda';
 import { QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 import TopBar from './nav/TopBar';
@@ -30,7 +31,7 @@ import {
   convertFilters,
   saveViewParameters,
 } from '../../utils/ListParameters';
-import Filters from './common/lists/Filters';
+import Filters, { uniqFilters } from './common/lists/Filters';
 import { truncate } from '../../utils/String';
 
 const styles = () => ({
@@ -88,7 +89,12 @@ class Search extends Component {
         {
           filters: assoc(
             key,
-            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            uniqFilters.includes(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
             this.state.filters,
           ),
         },

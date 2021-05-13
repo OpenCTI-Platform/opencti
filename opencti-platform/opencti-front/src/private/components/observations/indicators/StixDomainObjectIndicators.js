@@ -15,6 +15,7 @@ import {
 import IndicatorsRightBar from './IndicatorsRightBar';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import ToolBar from '../../data/ToolBar';
+import { uniqFilters } from '../../common/lists/Filters';
 
 class StixDomainObjectIndicators extends Component {
   constructor(props) {
@@ -136,7 +137,12 @@ class StixDomainObjectIndicators extends Component {
         {
           filters: R.assoc(
             key,
-            R.uniqBy(R.prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            uniqFilters.includes(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
             this.state.filters,
           ),
         },

@@ -69,6 +69,14 @@ const styles = (theme) => ({
 });
 
 const directFilters = ['report_types', 'x_opencti_detection', 'sightedBy'];
+export const uniqFilters = [
+  'revoked',
+  'x_opencti_detection',
+  'x_opencti_base_score_gt',
+  'confidence_gt',
+  'x_opencti_score_gt',
+  'x_opencti_score_lte',
+];
 
 class Filters extends Component {
   constructor(props) {
@@ -329,9 +337,9 @@ class Filters extends Component {
           },
         });
         break;
-      case 'indicator_types':
+      case 'pattern_type':
         // eslint-disable-next-line no-case-declarations
-        const indicatorTypesEntities = R.pipe(
+        const patternTypesEntities = R.pipe(
           R.map((n) => ({
             label: t(n),
             value: n,
@@ -349,9 +357,9 @@ class Filters extends Component {
         this.setState({
           entities: {
             ...this.state.entities,
-            indicator_types: R.union(
-              indicatorTypesEntities,
-              this.state.entities.indicator_types,
+            pattern_type: R.union(
+              patternTypesEntities,
+              this.state.entities.pattern_type,
             ),
           },
         });
@@ -768,7 +776,12 @@ class Filters extends Component {
       this.setState({
         filters: R.assoc(
           key,
-          R.uniqBy(R.prop('id'), [{ id, value }, ...this.state.filters[key]]),
+          uniqFilters.includes(key)
+            ? [{ id, value }]
+            : R.uniqBy(R.prop('id'), [
+              { id, value },
+              ...this.state.filters[key],
+            ]),
           this.state.filters,
         ),
       });

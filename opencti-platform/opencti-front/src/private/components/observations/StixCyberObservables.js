@@ -28,6 +28,7 @@ import {
 } from '../../../utils/ListParameters';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import ToolBar from '../data/ToolBar';
+import { uniqFilters } from '../common/lists/Filters';
 
 const styles = () => ({
   container: {
@@ -142,7 +143,12 @@ class StixCyberObservables extends Component {
         {
           filters: assoc(
             key,
-            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            uniqFilters.includes(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
             this.state.filters,
           ),
         },

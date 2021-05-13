@@ -19,6 +19,7 @@ import ArtifactsLines, {
   artifactsLinesQuery,
 } from './artifacts/ArtifactsLines';
 import ArtifactCreation from './artifacts/ArtifactCreation';
+import { uniqFilters } from '../common/lists/Filters';
 
 class StixCyberObservables extends Component {
   constructor(props) {
@@ -103,7 +104,12 @@ class StixCyberObservables extends Component {
         {
           filters: assoc(
             key,
-            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            uniqFilters.includes(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
             this.state.filters,
           ),
         },

@@ -16,6 +16,7 @@ import ReportsLines, { reportsLinesQuery } from './reports/ReportsLines';
 import inject18n from '../../../components/i18n';
 import ReportCreation from './reports/ReportCreation';
 import ToolBar from '../data/ToolBar';
+import { uniqFilters } from '../common/lists/Filters';
 
 class Reports extends Component {
   constructor(props) {
@@ -104,7 +105,12 @@ class Reports extends Component {
         {
           filters: assoc(
             key,
-            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            uniqFilters.includes(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
             this.state.filters,
           ),
         },

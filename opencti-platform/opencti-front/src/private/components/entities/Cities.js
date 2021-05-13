@@ -4,6 +4,7 @@ import {
   assoc, compose, dissoc, propOr, uniqBy, prop,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
+import * as R from 'ramda';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -15,6 +16,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import CitiesLines, { citiesLinesQuery } from './cities/CitiesLines';
 import CityCreation from './cities/CityCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import { uniqFilters } from '../common/lists/Filters';
 
 class Cities extends Component {
   constructor(props) {
@@ -66,7 +68,12 @@ class Cities extends Component {
         {
           filters: assoc(
             key,
-            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            uniqFilters.includes(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
             this.state.filters,
           ),
         },

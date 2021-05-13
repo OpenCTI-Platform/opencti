@@ -10,6 +10,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import IconButton from '@material-ui/core/IconButton';
 import { GraphOutline } from 'mdi-material-ui';
 import { TableChartOutlined } from '@material-ui/icons';
+import * as R from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -26,6 +27,7 @@ import StixCoreObjectOrStixCoreRelationshipContainersGraph, {
 } from './StixCoreObjectOrStixCoreRelationshipContainersGraph';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
+import { uniqFilters } from '../lists/Filters';
 
 const VIEW_AS_KNOWLEDGE = 'knowledge';
 
@@ -134,7 +136,12 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
         {
           filters: assoc(
             key,
-            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            uniqFilters.includes(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
             this.state.filters,
           ),
         },

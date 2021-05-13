@@ -22,10 +22,11 @@ import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import Chip from '@material-ui/core/Chip';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import Filters from '../../common/lists/Filters';
+import Filters, { uniqFilters } from '../../common/lists/Filters';
 import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
@@ -157,7 +158,12 @@ const TaxiiCollectionCreation = (props) => {
       setFilters(
         assoc(
           key,
-          uniqBy(prop('id'), [{ id, value }, ...filters[key]]),
+          uniqFilters.includes(key)
+            ? [{ id, value }]
+            : R.uniqBy(R.prop('id'), [
+              { id, value },
+              ...this.state.filters[key],
+            ]),
           filters,
         ),
       );
@@ -208,7 +214,7 @@ const TaxiiCollectionCreation = (props) => {
                 'x_opencti_detection',
                 'revoked',
                 'confidence_gt',
-                'indicator_types',
+                'pattern_type',
               ]}
               currentFilters={[]}
               handleAddFilter={handleAddFilter}
