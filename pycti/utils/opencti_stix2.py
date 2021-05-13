@@ -1562,7 +1562,7 @@ class OpenCTIStix2:
                                     self.import_object(item, update, types)
                         elif item["type"] == "location":
                             if "x_opencti_location_type" in item:
-                                if item["x_opencti_location_type"] in types:
+                                if item["x_opencti_location_type"].lower() in types:
                                     self.import_object(item, update, types)
                 imported_elements.append({"id": item["id"], "type": item["type"]})
 
