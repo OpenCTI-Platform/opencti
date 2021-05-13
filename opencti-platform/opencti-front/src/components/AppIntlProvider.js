@@ -31,6 +31,11 @@ const AppIntlProvider = (props) => {
     ? me.language
     : platformLang;
   const baseMessages = i18n.messages[lang] || i18n.messages[DEFAULT_LANG];
+  if (lang === 'fr') {
+    moment.locale('fr');
+  } else {
+    moment.locale('en-gb');
+  }
   return (
     <IntlProvider
       locale={lang}
