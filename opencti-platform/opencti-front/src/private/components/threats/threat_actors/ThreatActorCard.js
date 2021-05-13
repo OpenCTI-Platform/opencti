@@ -119,10 +119,11 @@ class ThreatActorCardComponent extends Component {
           <CardContent className={classes.content}>
             <div className={classes.description}>
               <Markdown
-                source={node.description}
                 disallowedTypes={['link', 'linkReference']}
                 unwrapDisallowed={true}
-              />
+              >
+                {node.description}
+              </Markdown>
             </div>
             <div className={classes.objectLabel}>
               <StixCoreObjectLabels

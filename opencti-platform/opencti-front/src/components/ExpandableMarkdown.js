@@ -23,10 +23,9 @@ const ExpandableMarkdown = (props) => {
         </div>
       )}
       <div style={{ marginTop: -5 }}>
-        <Markdown
-          {...props}
-          source={expand ? source : truncate(source, limit)}
-        />
+        <Markdown {...props}>
+          {expand ? source : truncate(source, limit)}
+        </Markdown>
       </div>
       <div className="clearfix" />
     </div>

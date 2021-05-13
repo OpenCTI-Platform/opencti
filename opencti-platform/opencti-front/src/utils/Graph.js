@@ -332,6 +332,7 @@ export const buildGraphData = (objects, graphData, t) => {
       (n) => !n.parent_types.includes('basic-relationship')
         || R.includes(n.id, relationshipsIdsInNestedRelationship),
     ),
+    R.uniqBy(R.prop('id')),
     R.map((n) => ({
       id: n.id,
       val:
@@ -397,6 +398,7 @@ export const buildGraphData = (objects, graphData, t) => {
         && n.from
         && n.to,
     ),
+    R.uniqBy(R.prop('id')),
     R.map((n) => ({
       id: n.id,
       parent_types: n.parent_types,
@@ -419,6 +421,7 @@ export const buildGraphData = (objects, graphData, t) => {
   )(objects);
   const nestedLinks = R.pipe(
     R.filter((n) => R.includes(n.id, relationshipsIdsInNestedRelationship)),
+    R.uniqBy(R.prop('id')),
     R.map((n) => [
       {
         id: n.id,

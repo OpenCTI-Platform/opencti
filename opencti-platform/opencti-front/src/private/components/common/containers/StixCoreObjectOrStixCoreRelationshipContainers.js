@@ -4,6 +4,12 @@ import {
   assoc, compose, dissoc, propOr, uniqBy, prop,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
+import Drawer from '@material-ui/core/Drawer';
+import { withStyles } from '@material-ui/core/styles';
+import Tooltip from '@material-ui/core/Tooltip';
+import IconButton from '@material-ui/core/IconButton';
+import { GraphOutline } from 'mdi-material-ui';
+import { TableChartOutlined } from '@material-ui/icons';
 import { QueryRenderer } from '../../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -15,30 +21,54 @@ import StixCoreObjectOrStixCoreRelationshipContainersLines, {
   stixCoreObjectOrStixCoreRelationshipContainersLinesQuery,
 } from './StixCoreObjectOrStixCoreRelationshipContainersLines';
 import inject18n from '../../../../components/i18n';
+import StixCoreObjectOrStixCoreRelationshipContainersGraph, {
+  stixCoreObjectOrStixCoreRelationshipContainersGraphQuery,
+} from './StixCoreObjectOrStixCoreRelationshipContainersGraph';
+import Loader from '../../../../components/Loader';
+import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
 
 const VIEW_AS_KNOWLEDGE = 'knowledge';
+
+const styles = (theme) => ({
+  container: {
+    marginTop: 20,
+    paddingBottom: 70,
+  },
+  containerGraph: {
+    marginTop: 20,
+  },
+  bottomNav: {
+    zIndex: 1000,
+    backgroundColor: theme.palette.navBottom.background,
+    display: 'flex',
+    overflow: 'hidden',
+  },
+  button: {
+    marginRight: 10,
+  },
+});
 
 class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
   constructor(props) {
     super(props);
-    const params = buildViewParamsFromUrlAndStorage(
+    this.params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-reports${
-        props.stixCoreObjectOrStixCoreRelationshipId
-          ? `-${props.stixCoreObjectOrStixCoreRelationshipId}`
+      `view-containers${
+        props.stixDomainObjectOrStixCoreRelationship.id
+          ? `-${props.stixDomainObjectOrStixCoreRelationship.id}`
           : ''
       }`,
     );
     this.state = {
-      sortBy: propOr('created', 'sortBy', params),
-      orderAsc: propOr(false, 'orderAsc', params),
-      searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('lines', 'view', params),
-      filters: propOr({}, 'filters', params),
+      sortBy: propOr('created', 'sortBy', this.params),
+      orderAsc: propOr(false, 'orderAsc', this.params),
+      searchTerm: propOr('', 'searchTerm', this.params),
+      view: propOr('lines', 'view', this.params),
+      filters: propOr({}, 'filters', this.params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
-      viewAs: propOr(VIEW_AS_KNOWLEDGE, 'viewAs', params),
+      viewAs: propOr(VIEW_AS_KNOWLEDGE, 'viewAs', this.params),
     };
   }
 
@@ -52,13 +82,30 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-reports${
-        this.props.stixCoreObjectOrStixCoreRelationshipId
-          ? `-${this.props.stixCoreObjectOrStixCoreRelationshipId}`
+      `view-containers${
+        this.props.stixDomainObjectOrStixCoreRelationship.id
+          ? `-${this.props.stixDomainObjectOrStixCoreRelationship.id}`
           : ''
       }`,
       this.state,
     );
+  }
+
+  saveViewParameters(params) {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      `view-containers${
+        this.props.stixDomainObjectOrStixCoreRelationship.id
+          ? `-${this.props.stixDomainObjectOrStixCoreRelationship.id}`
+          : ''
+      }`,
+      { ...this.state, ...params },
+    );
+  }
+
+  handleChangeView(mode) {
+    this.setState({ view: mode }, () => this.saveView());
   }
 
   handleSearch(value) {
@@ -120,10 +167,10 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       openExports,
       numberOfElements,
     } = this.state;
-    const { stixCoreObjectOrStixCoreRelationshipId, authorId } = this.props;
+    const { stixDomainObjectOrStixCoreRelationship, authorId } = this.props;
     let exportContext = null;
-    if (stixCoreObjectOrStixCoreRelationshipId) {
-      exportContext = `of-entity-${stixCoreObjectOrStixCoreRelationshipId}`;
+    if (stixDomainObjectOrStixCoreRelationship) {
+      exportContext = `of-entity-${stixDomainObjectOrStixCoreRelationship.id}`;
     } else if (authorId) {
       exportContext = `of-entity-${authorId}`;
     }
@@ -199,8 +246,71 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
     );
   }
 
+  renderGraph() {
+    const { view } = this.state;
+    const { stixDomainObjectOrStixCoreRelationship } = this.props;
+    return (
+      <QueryRenderer
+        query={stixCoreObjectOrStixCoreRelationshipContainersGraphQuery}
+        variables={{
+          id: stixDomainObjectOrStixCoreRelationship.id,
+          types: [
+            'Threat-Actor',
+            'Intrusion-Set',
+            'Campaign',
+            'Incident',
+            'Malware',
+            'Tool',
+            'Vulnerability',
+            'Attack-Pattern',
+            'Sector',
+            'Organization',
+            'Individual',
+            'Region',
+            'Country',
+            'City',
+            'uses',
+            'targets',
+            'attributed-to',
+            'located-at',
+            'part-of',
+            'belongs-to',
+          ],
+        }}
+        render={({ props }) => {
+          if (props) {
+            return (
+              <StixCoreObjectOrStixCoreRelationshipContainersGraph
+                params={this.params}
+                saveViewParameters={this.saveViewParameters.bind(this)}
+                stixDomainObjectOrStixCoreRelationship={
+                  stixDomainObjectOrStixCoreRelationship
+                }
+                data={props}
+                handleChangeView={this.handleChangeView.bind(this)}
+                view={view}
+              />
+            );
+          }
+          return (
+            <div>
+              <StixCoreObjectOrStixCoreRelationshipContainersGraphBar
+                disabled={true}
+                handleChangeView={this.handleChangeView.bind(this)}
+                view={view}
+              />
+              <Loader />
+            </div>
+          );
+        }}
+      />
+    );
+  }
+
   render() {
     const {
+      classes,
+      t,
       match: {
         params: { reportType },
       },
@@ -234,15 +344,70 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div style={{ marginTop: 20 }}>
+      <div
+        className={
+          view === 'lines' ? classes.container : classes.containerGraph
+        }
+      >
+        {!authorId && view === 'lines' && (
+          <Drawer
+            anchor="bottom"
+            variant="permanent"
+            classes={{ paper: classes.bottomNav }}
+          >
+            <div
+              style={{
+                height: 54,
+                verticalAlign: 'top',
+                transition: 'height 0.2s linear',
+              }}
+            >
+              <div
+                style={{
+                  verticalAlign: 'top',
+                  width: '100%',
+                  height: 54,
+                  paddingTop: 3,
+                }}
+              >
+                <div
+                  style={{
+                    float: 'left',
+                    marginLeft: 190,
+                    height: '100%',
+                    display: 'flex',
+                  }}
+                >
+                  <Tooltip title={t('Lines view')}>
+                    <IconButton
+                      color={view === 'lines' ? 'secondary' : 'primary'}
+                      onClick={this.handleChangeView.bind(this, 'lines')}
+                    >
+                      <TableChartOutlined />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={t('Graph view')}>
+                    <IconButton
+                      color={view === 'graph' ? 'secondary' : 'primary'}
+                      onClick={this.handleChangeView.bind(this, 'graph')}
+                    >
+                      <GraphOutline />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+              </div>
+            </div>
+          </Drawer>
+        )}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        {view === 'graph' ? this.renderGraph() : ''}
       </div>
     );
   }
 }
 
 StixCoreObjectOrStixCoreRelationshipContainers.propTypes = {
-  stixCoreObjectOrStixCoreRelationshipId: PropTypes.string,
+  stixDomainObjectOrStixCoreRelationship: PropTypes.object,
   authorId: PropTypes.string,
   t: PropTypes.func,
   match: PropTypes.object,
@@ -255,4 +420,5 @@ StixCoreObjectOrStixCoreRelationshipContainers.propTypes = {
 export default compose(
   inject18n,
   withRouter,
+  withStyles(styles),
 )(StixCoreObjectOrStixCoreRelationshipContainers);

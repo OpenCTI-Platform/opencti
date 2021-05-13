@@ -39,6 +39,7 @@ const regionQuery = graphql`
       id
       name
       x_opencti_aliases
+      x_opencti_graph_data
       ...Region_region
       ...RegionKnowledge_region
       ...FileImportViewer_entity
@@ -138,7 +139,9 @@ class RootRegion extends Component {
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
-                            stixCoreObjectOrStixCoreRelationshipId={regionId}
+                            stixDomainObjectOrStixCoreRelationship={
+                              props.region
+                            }
                           />
                         </React.Fragment>
                       )}

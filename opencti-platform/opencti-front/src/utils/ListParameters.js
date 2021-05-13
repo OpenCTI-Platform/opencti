@@ -28,6 +28,8 @@ export const saveViewParameters = (
     dissoc('selectedElements'),
     dissoc('selectAll'),
     dissoc('numberOfSelectedElements'),
+    dissoc('numberOfSelectedNodes'),
+    dissoc('numberOfSelectedLinks'),
     dissoc('lastSeenStart'),
     dissoc('lastSeenStop'),
   )(params);

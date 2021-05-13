@@ -1342,6 +1342,7 @@ interface StixDomainObject {
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Technical
   creator: User
   toStix: String
@@ -1455,6 +1456,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # AttackPattern
   name: String!
   description: String
@@ -1581,6 +1583,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Campaign
   name: String!
   description: String
@@ -1700,6 +1703,7 @@ interface Container {
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Container
   objects(
     first: Int
@@ -1797,6 +1801,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Container
   objects(
     first: Int
@@ -1924,6 +1929,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Container
   objects(
     first: Int
@@ -2049,6 +2055,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Container
   objects(
     first: Int
@@ -2178,6 +2185,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Container
   objects(
     first: Int
@@ -2195,7 +2203,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   description: String
   report_types: [String]
   published: DateTime
-  x_opencti_graph_data: String
   x_opencti_report_status: Int
   # Technical
   creator: User
@@ -2306,6 +2313,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # CourseOfAction
   name: String!
   description: String
@@ -2426,6 +2434,7 @@ interface Identity {
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Identity
   identity_class: String!
   name: String!
@@ -2542,6 +2551,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Identity
   identity_class: String!
   name: String!
@@ -2672,6 +2682,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Identity
   identity_class: String!
   name: String!
@@ -2795,6 +2806,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Identity
   identity_class: String!
   name: String!
@@ -2932,6 +2944,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Indicator
   pattern_type: String
   pattern_version: String
@@ -3068,6 +3081,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Infrastructure
   name: String!
   aliases: [String]
@@ -3185,6 +3199,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # IntrusionSet
   name: String!
   description: String
@@ -3317,6 +3332,7 @@ interface Location {
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Location
   name: String!
   description: String
@@ -3427,6 +3443,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Location
   name: String!
   description: String
@@ -3551,6 +3568,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Location
   name: String!
   description: String
@@ -3666,6 +3684,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Location
   name: String!
   description: String
@@ -3781,6 +3800,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Location
   name: String!
   description: String
@@ -3910,6 +3930,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Malware
   name: String!
   description: String
@@ -4035,6 +4056,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # ThreatActor
   name: String!
   description: String
@@ -4163,6 +4185,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Tool
   name: String!
   description: String
@@ -4282,6 +4305,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Vulnerability
   name: String!
   description: String
@@ -4400,6 +4424,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   lang: String
   created: DateTime
   modified: DateTime
+  x_opencti_graph_data: String
   # Incident
   name: String!
   description: String
@@ -7775,6 +7800,7 @@ type Query {
     search: String
     toStix: Boolean
   ): ContainerConnection @auth(for: [KNOWLEDGE])
+  containersObjectsOfObject(id: String!, types: [String]): StixObjectOrStixRelationshipConnection @auth(for: [KNOWLEDGE])
   note(id: String): Note @auth(for: [KNOWLEDGE])
   notes(
     first: Int
@@ -8425,6 +8451,7 @@ type WorkspaceEditMutations {
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [EXPLORE_EXUPDATE])
   relationsAdd(input: StixMetaRelationshipsAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
   relationDelete(toId: String!, relationship_type: String!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+  relationsDelete(toIds: [String]!, relationship_type: String!): Workspace @auth(for: [EXPLORE_EXUPDATE])
   contextPatch(input: EditContext): Workspace
   contextClean: Workspace
 }

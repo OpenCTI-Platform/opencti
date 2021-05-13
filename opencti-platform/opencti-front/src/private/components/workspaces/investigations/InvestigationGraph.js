@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
 import ForceGraph3D from 'react-force-graph-3d';
 import SpriteText from 'three-spritetext';
 import ForceGraph2D from 'react-force-graph-2d';
@@ -30,21 +29,11 @@ import {
 } from '../../../../utils/Graph';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import Theme from '../../../../components/ThemeDark';
-import { investigationAddStixCoreObjectsLinesRelationDeleteMutation } from './InvestigationAddStixCoreObjectsLines';
+import { investigationAddStixCoreObjectsLinesRelationsDeleteMutation } from './InvestigationAddStixCoreObjectsLines';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
-
-const styles = (theme) => ({
-  bottomNav: {
-    zIndex: 1000,
-    padding: '7px 274px 0 215px',
-    backgroundColor: theme.palette.navBottom.background,
-    display: 'flex',
-    height: 64,
-  },
-});
 
 export const investigationGraphQuery = graphql`
   query InvestigationGraphQuery($id: String) {
@@ -1009,16 +998,15 @@ class InvestigationGraphComponent extends Component {
       decodeGraphData(this.props.workspace.graph_data),
       this.props.t,
     );
-    R.forEach((n) => {
-      commitMutation({
-        mutation: investigationAddStixCoreObjectsLinesRelationDeleteMutation,
-        variables: {
-          id: this.props.workspace.id,
-          toId: n.id,
-          relationship_type: 'has-reference',
-        },
-      });
-    }, relationshipsToRemove);
+    const toIds = R.map((n) => n.id, relationshipsToRemove);
+    commitMutation({
+      mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
+      variables: {
+        id: this.props.workspace.id,
+        toIds,
+        relationship_type: 'has-reference',
+      },
+    });
     this.setState({
       graphData: applyFilters(
         this.graphData,
@@ -1035,17 +1023,18 @@ class InvestigationGraphComponent extends Component {
     // Remove selected links
     const selectedLinks = Array.from(this.selectedLinks);
     const selectedLinksIds = R.map((n) => n.id, selectedLinks);
-    R.forEach(
-      (n) => commitMutation({
-        mutation: investigationAddStixCoreObjectsLinesRelationDeleteMutation,
-        variables: {
-          id: this.props.workspace.id,
-          toId: n.id,
-          relationship_type: 'has-reference',
-        },
-      }),
-      this.selectedLinks,
+    const toIds = R.filter(
+      (n) => n !== undefined,
+      R.map((n) => n.id, this.selectedLinks),
     );
+    commitMutation({
+      mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
+      variables: {
+        id: this.props.workspace.id,
+        toIds,
+        relationship_type: 'has-reference',
+      },
+    });
     this.graphObjects = R.filter(
       (n) => !R.includes(n.id, selectedLinksIds),
       this.graphObjects,
@@ -1054,7 +1043,10 @@ class InvestigationGraphComponent extends Component {
 
     // Remove selected nodes
     const selectedNodes = Array.from(this.selectedNodes);
-    const selectedNodesIds = R.map((n) => n.id, selectedNodes);
+    const selectedNodesIds = R.filter(
+      (n) => n !== undefined,
+      R.map((n) => n.id, selectedNodes),
+    );
     const relationshipsToRemove = R.filter(
       (n) => R.includes(n.from?.id, selectedNodesIds)
         || R.includes(n.to?.id, selectedNodesIds),
@@ -1066,26 +1058,30 @@ class InvestigationGraphComponent extends Component {
         && !R.includes(n.to?.id, selectedNodesIds),
       this.graphObjects,
     );
-    R.forEach((n) => {
-      commitMutation({
-        mutation: investigationAddStixCoreObjectsLinesRelationDeleteMutation,
-        variables: {
-          id: this.props.workspace.id,
-          toId: n.id,
-          relationship_type: 'has-reference',
-        },
-      });
-    }, relationshipsToRemove);
-    R.forEach((n) => {
-      commitMutation({
-        mutation: investigationAddStixCoreObjectsLinesRelationDeleteMutation,
-        variables: {
-          id: this.props.workspace.id,
-          toId: n.id,
-          relationship_type: 'has-reference',
-        },
-      });
-    }, selectedNodes);
+    const relationshipsToIds = R.filter(
+      (n) => n !== undefined,
+      R.map((n) => n.id, relationshipsToRemove),
+    );
+    commitMutation({
+      mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
+      variables: {
+        id: this.props.workspace.id,
+        toIds: relationshipsToIds,
+        relationship_type: 'has-reference',
+      },
+    });
+    const nodesToIds = R.filter(
+      (n) => n !== undefined,
+      R.map((n) => n.id, selectedNodes),
+    );
+    commitMutation({
+      mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
+      variables: {
+        id: this.props.workspace.id,
+        toIds: nodesToIds,
+        relationship_type: 'has-reference',
+      },
+    });
     this.selectedNodes.clear();
     this.graphData = buildGraphData(
       this.graphObjects,
@@ -1757,8 +1753,4 @@ const InvestigationGraph = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(InvestigationGraph);
+export default R.compose(inject18n, withRouter)(InvestigationGraph);

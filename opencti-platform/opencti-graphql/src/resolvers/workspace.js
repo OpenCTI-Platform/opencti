@@ -11,6 +11,7 @@ import {
   workspaceAddRelation,
   workspaceAddRelations,
   workspaceDeleteRelation,
+  workspaceDeleteRelations,
 } from '../domain/workspace';
 import { findById as findUserById } from '../domain/user';
 import { fetchEditContext, pubsub } from '../database/redis';
@@ -42,6 +43,8 @@ const toolResolvers = {
       relationsAdd: ({ input }) => workspaceAddRelations(user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) =>
         workspaceDeleteRelation(user, id, toId, relationshipType),
+      relationsDelete: ({ toIds, relationship_type: relationshipType }) =>
+        workspaceDeleteRelations(user, id, toIds, relationshipType),
     }),
     workspaceAdd: (_, { input }, { user }) => addWorkspace(user, input),
   },

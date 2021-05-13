@@ -39,6 +39,7 @@ const infrastructureQuery = graphql`
       standard_id
       name
       aliases
+      x_opencti_graph_data
       ...Infrastructure_infrastructure
       ...InfrastructureKnowledge_infrastructure
       ...FileImportViewer_entity
@@ -125,8 +126,8 @@ class RootInfrastructure extends Component {
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
-                            stixCoreObjectOrStixCoreRelationshipId={
-                              infrastructureId
+                            stixDomainObjectOrStixCoreRelationship={
+                              props.infrastructure
                             }
                           />
                         </React.Fragment>

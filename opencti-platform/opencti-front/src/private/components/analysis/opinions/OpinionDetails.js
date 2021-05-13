@@ -31,7 +31,7 @@ class OpinionDetailsComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Opinion')}
           </Typography>
-          <Markdown className="markdown" source={opinion.opinion} />
+          <Markdown className="markdown">{opinion.opinion}</Markdown>
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -39,7 +39,7 @@ class OpinionDetailsComponent extends Component {
           >
             {t('Explanation')}
           </Typography>
-          <Markdown className="markdown" source={opinion.explanation} />
+          <Markdown className="markdown">{opinion.explanation}</Markdown>
         </Paper>
       </div>
     );

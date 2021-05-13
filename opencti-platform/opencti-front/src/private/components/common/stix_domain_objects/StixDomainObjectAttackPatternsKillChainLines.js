@@ -182,10 +182,9 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                               secondary={
                                 attackPattern.description
                                 && attackPattern.description.length > 0 ? (
-                                  <Markdown
-                                    className="markdown"
-                                    source={attackPattern.description}
-                                  />
+                                  <Markdown className="markdown">
+                                    {attackPattern.description}
+                                  </Markdown>
                                   ) : (
                                     t('No description of this usage')
                                   )

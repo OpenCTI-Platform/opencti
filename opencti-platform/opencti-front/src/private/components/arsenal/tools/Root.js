@@ -41,6 +41,7 @@ const toolQuery = graphql`
       standard_id
       name
       aliases
+      x_opencti_graph_data
       ...Tool_tool
       ...ToolKnowledge_tool
       ...FileImportViewer_entity
@@ -138,7 +139,7 @@ class RootTool extends Component {
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
-                            stixCoreObjectOrStixCoreRelationshipId={toolId}
+                            stixDomainObjectOrStixCoreRelationship={props.tool}
                           />
                         </React.Fragment>
                       )}

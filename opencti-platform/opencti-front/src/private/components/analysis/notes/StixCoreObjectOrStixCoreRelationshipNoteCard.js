@@ -189,7 +189,9 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
               noWrap={true}
               style={{ margin: '10px 0 10px 0', fontWeight: 500 }}
             >
-              <Markdown className="markdown" source={node.attribute_abstract} />
+              <Markdown className="markdown">
+                {node.attribute_abstract}
+              </Markdown>
             </Typography>
             <Typography
               variant="h3"
@@ -199,10 +201,9 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
               {t('Content')}
             </Typography>
             <Typography variant="body2" style={{ marginBottom: 20 }}>
-              <Markdown
-                className="markdown"
-                source={truncate(node.content, 200)}
-              />
+              <Markdown className="markdown">
+                {truncate(node.content, 200)}
+              </Markdown>
             </Typography>
             <div className={classes.objectLabel}>
               <StixCoreObjectLabels labels={node.objectLabel} />

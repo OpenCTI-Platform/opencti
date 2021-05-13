@@ -42,6 +42,7 @@ const attackPatternQuery = graphql`
       standard_id
       name
       aliases
+      x_opencti_graph_data
       ...AttackPattern_attackPattern
       ...AttackPatternKnowledge_attackPattern
       ...FileImportViewer_entity
@@ -144,8 +145,8 @@ class RootAttackPattern extends Component {
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
-                            stixCoreObjectOrStixCoreRelationshipId={
-                              attackPatternId
+                            stixDomainObjectOrStixCoreRelationship={
+                              props.attackPattern
                             }
                           />
                         </React.Fragment>

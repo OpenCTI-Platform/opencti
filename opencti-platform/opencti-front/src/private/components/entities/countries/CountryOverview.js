@@ -58,7 +58,7 @@ class CountryOverviewComponent extends Component {
           >
             {t('Description')}
           </Typography>
-          <Markdown className="markdown" source={country.description} />
+          <Markdown className="markdown">{country.description}</Markdown>
         </Paper>
       </div>
     );

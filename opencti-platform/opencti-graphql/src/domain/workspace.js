@@ -86,6 +86,20 @@ export const workspaceDeleteRelation = async (user, workspaceId, toId, relations
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
 };
 
+export const workspaceDeleteRelations = async (user, workspaceId, toIds, relationshipType) => {
+  const workspace = await loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE);
+  if (!workspace) {
+    throw FunctionalError('Cannot delete the relation, workspace cannot be found.');
+  }
+  if (!isInternalRelationship(relationshipType)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+  }
+  for (let i = 0; i < toIds.length; i += 1) {
+    await deleteRelationsByFromAndTo(user, workspaceId, toIds[i], relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+  }
+  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
+};
+
 export const workspaceEditField = async (user, workspaceId, input) => {
   const workspace = await updateAttribute(user, workspaceId, ENTITY_TYPE_WORKSPACE, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);

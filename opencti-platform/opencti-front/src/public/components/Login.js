@@ -162,7 +162,7 @@ const Login = ({ classes }) => {
                 <img src={logo} alt="logo" className={classes.logo} />
                 {loginMessage && loginMessage.length > 0 && (
                   <Paper classes={{ root: classes.paper }} elevation={2}>
-                    <Markdown source={loginMessage} />
+                    <Markdown>{loginMessage}</Markdown>
                   </Paper>
                 )}
                 {isAuthForm && (

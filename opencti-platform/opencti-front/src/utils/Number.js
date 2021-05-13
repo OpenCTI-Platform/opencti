@@ -31,7 +31,7 @@ export const bytesFormat = (number, digits = 2) => {
   const sizes = [' Bytes', 'KB', 'MB', 'GB', 'TB'];
   if (number === 0) {
     return {
-    // eslint-disable-next-line no-restricted-properties
+      // eslint-disable-next-line no-restricted-properties
       number: 0,
       symbol: ' Bytes',
       original: number,

@@ -39,6 +39,7 @@ const countryQuery = graphql`
       id
       name
       x_opencti_aliases
+      x_opencti_graph_data
       ...Country_country
       ...CountryKnowledge_country
       ...FileImportViewer_entity
@@ -139,7 +140,9 @@ class RootCountry extends Component {
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
-                            stixCoreObjectOrStixCoreRelationshipId={countryId}
+                            stixDomainObjectOrStixCoreRelationship={
+                              props.country
+                            }
                           />
                         </React.Fragment>
                       )}

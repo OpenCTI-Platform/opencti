@@ -48,10 +48,9 @@ class IndividualDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Contact information')}
               </Typography>
-              <Markdown
-                className="markdown"
-                source={individual.contact_information}
-              />
+              <Markdown className="markdown">
+                {individual.contact_information}
+              </Markdown>
             </Grid>
           </Grid>
         </Paper>

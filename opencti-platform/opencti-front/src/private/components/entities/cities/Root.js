@@ -39,6 +39,7 @@ const cityQuery = graphql`
       id
       name
       x_opencti_aliases
+      x_opencti_graph_data
       ...City_city
       ...CityKnowledge_city
       ...FileImportViewer_entity
@@ -135,7 +136,7 @@ class RootCity extends Component {
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
-                            stixCoreObjectOrStixCoreRelationshipId={cityId}
+                            stixDomainObjectOrStixCoreRelationship={props.city}
                           />
                         </React.Fragment>
                       )}

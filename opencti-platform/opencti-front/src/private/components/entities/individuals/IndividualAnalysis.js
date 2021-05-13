@@ -32,7 +32,7 @@ class IndividualAnalysisComponent extends Component {
         />
         {viewAs === 'knowledge' ? (
           <StixCoreObjectOrStixCoreRelationshipContainers
-            stixCoreObjectOrStixCoreRelationshipId={individual.id}
+            stixDomainObjectOrStixCoreRelationship={individual}
             viewAs={viewAs}
           />
         ) : (
@@ -62,6 +62,7 @@ const IndividualAnalysis = createFragmentContainer(
         id
         name
         x_opencti_aliases
+        x_opencti_graph_data
       }
     `,
   },

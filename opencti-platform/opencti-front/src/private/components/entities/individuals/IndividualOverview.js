@@ -80,7 +80,7 @@ class IndividualOverviewComponent extends Component {
           >
             {t('Description')}
           </Typography>
-          <Markdown className="markdown" source={individual.description} />
+          <Markdown className="markdown">{individual.description}</Markdown>
         </Paper>
       </div>
     );

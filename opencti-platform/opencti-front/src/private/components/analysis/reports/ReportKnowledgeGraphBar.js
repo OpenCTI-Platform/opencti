@@ -17,7 +17,7 @@ import {
   DateRangeOutlined,
 } from '@material-ui/icons';
 import {
-  Video3D,
+  Video3d,
   SelectAll,
   SelectGroup,
   GraphOutline,
@@ -331,7 +331,7 @@ class ReportKnowledgeGraphBar extends Component {
                     color={currentMode3D ? 'secondary' : 'primary'}
                     onClick={handleToggle3DMode.bind(this)}
                   >
-                    <Video3D />
+                    <Video3d />
                   </IconButton>
                 </span>
               </Tooltip>

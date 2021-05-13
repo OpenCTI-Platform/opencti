@@ -96,6 +96,20 @@ export const investigationAddStixCoreObjectsLinesRelationDeleteMutation = graphq
   }
 `;
 
+export const investigationAddStixCoreObjectsLinesRelationsDeleteMutation = graphql`
+  mutation InvestigationAddStixCoreObjectsLinesRelationsDeleteMutation(
+    $id: ID!
+    $toIds: [String]!
+    $relationship_type: String!
+  ) {
+    workspaceEdit(id: $id) {
+      relationsDelete(toIds: $toIds, relationship_type: $relationship_type) {
+        id
+      }
+    }
+  }
+`;
+
 class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
   constructor(props) {
     super(props);
@@ -249,14 +263,13 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
                             )}`
                           }`}
                           secondary={
-                            <Markdown
-                              className="markdown"
-                              source={truncate(
+                            <Markdown className="markdown">
+                              {truncate(
                                 stixCoreObject.description
                                   || fd(stixCoreObject.created_at),
                                 200,
                               )}
-                            />
+                            </Markdown>
                           }
                         />
                       </ListItem>

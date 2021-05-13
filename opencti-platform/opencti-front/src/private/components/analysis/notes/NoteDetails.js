@@ -31,7 +31,7 @@ class NoteDetailsComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Abstract')}
           </Typography>
-          <Markdown className="markdown" source={note.attribute_abstract} />
+          <Markdown className="markdown">{note.attribute_abstract}</Markdown>
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -39,7 +39,7 @@ class NoteDetailsComponent extends Component {
           >
             {t('Content')}
           </Typography>
-          <Markdown className="markdown" source={note.content} />
+          <Markdown className="markdown">{note.content}</Markdown>
         </Paper>
       </div>
     );

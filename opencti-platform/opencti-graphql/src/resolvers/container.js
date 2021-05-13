@@ -1,4 +1,4 @@
-import { findAll, findById, objects } from '../domain/container';
+import { findAll, findById, objects, containersObjectsOfObject } from '../domain/container';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -19,6 +19,7 @@ const containerResolvers = {
   Query: {
     container: (_, { id }, { user }) => findById(user, id),
     containers: (_, args, { user }) => findAll(user, args),
+    containersObjectsOfObject: (_, { id, types }, { user }) => containersObjectsOfObject(user, id, types),
   },
   Container: {
     __resolveType(obj) {

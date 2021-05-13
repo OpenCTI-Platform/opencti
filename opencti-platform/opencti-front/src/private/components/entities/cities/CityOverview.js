@@ -58,7 +58,7 @@ class CityOverviewComponent extends Component {
           >
             {t('Description')}
           </Typography>
-          <Markdown className="markdown" source={city.description} />
+          <Markdown className="markdown">{city.description}</Markdown>
         </Paper>
       </div>
     );

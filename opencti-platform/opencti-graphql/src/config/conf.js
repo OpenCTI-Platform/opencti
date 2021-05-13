@@ -243,21 +243,23 @@ export const basePath = isEmpty(AppBasePath) || contextPath.startsWith('/') ? co
 export const configureCA = (certificates) => {
   if (certificates.length) {
     return { ca: certificates };
-  } else {
-    for (const cert of LINUX_CERTFILES) {
-      try {
-        if (lstatSync(cert).isFile()) {
-          return { ca: [readFileSync(cert)] };
-        }
-      } catch (err) {
-        if (err.code === 'ENOENT') {
-          continue;
-        } else {
-          throw err;
-        }
+  }
+  // eslint-disable-next-line no-restricted-syntax
+  for (const cert of LINUX_CERTFILES) {
+    try {
+      if (lstatSync(cert).isFile()) {
+        return { ca: [readFileSync(cert)] };
+      }
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        // eslint-disable-next-line no-continue
+        continue;
+      } else {
+        throw err;
       }
     }
   }
+  return { ca: [] };
 };
 
 export default nconf;

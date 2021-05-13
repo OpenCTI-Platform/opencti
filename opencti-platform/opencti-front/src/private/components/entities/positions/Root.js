@@ -138,7 +138,9 @@ class RootPosition extends Component {
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
-                            stixCoreObjectOrStixCoreRelationshipId={positionId}
+                            stixDomainObjectOrStixCoreRelationship={
+                              props.position
+                            }
                           />
                         </React.Fragment>
                       )}

@@ -36,14 +36,15 @@ const subscription = graphql`
 const sectorQuery = graphql`
   query RootSectorQuery($id: String!) {
     sector(id: $id) {
-      ...Sector_sector
-      ...SectorKnowledge_sector
-      ...FileImportViewer_entity
-      ...FileExportViewer_entity
       id
       standard_id
       name
       x_opencti_aliases
+      x_opencti_graph_data
+      ...Sector_sector
+      ...SectorKnowledge_sector
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
     }
     connectorsForExport {
       ...FileManager_connectorsExport
@@ -139,7 +140,9 @@ class RootSector extends Component {
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
-                            stixCoreObjectOrStixCoreRelationshipId={sectorId}
+                            stixDomainObjectOrStixCoreRelationship={
+                              props.sector
+                            }
                           />
                         </React.Fragment>
                       )}

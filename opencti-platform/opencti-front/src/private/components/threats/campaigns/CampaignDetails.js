@@ -45,7 +45,7 @@ class CampaignDetailsComponent extends Component {
               >
                 {t('Objective')}
               </Typography>
-              <Markdown className="markdown" source={campaign.objective} />
+              <Markdown className="markdown">{campaign.objective}</Markdown>
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>

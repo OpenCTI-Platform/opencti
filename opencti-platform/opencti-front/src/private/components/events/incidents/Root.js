@@ -40,6 +40,7 @@ const IncidentQuery = graphql`
       standard_id
       name
       aliases
+      x_opencti_graph_data
       ...Incident_incident
       ...IncidentKnowledge_incident
       ...FileImportViewer_entity
@@ -138,8 +139,8 @@ class RootIncident extends Component {
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
-                            stixCoreObjectOrStixCoreRelationshipId={
-                              props.incident.id
+                            stixDomainObjectOrStixCoreRelationship={
+                              props.incident
                             }
                           />
                         </React.Fragment>

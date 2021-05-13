@@ -222,13 +222,9 @@ class WidgetCreation extends Component {
                     <ListItemText
                       primary={stixDomainObjectEdge.node.name}
                       secondary={
-                        <Markdown
-                          className="markdown"
-                          source={truncate(
-                            stixDomainObjectEdge.node.description,
-                            200,
-                          )}
-                        />
+                        <Markdown className="markdown">
+                          {truncate(stixDomainObjectEdge.node.description, 200)}
+                        </Markdown>
                       }
                     />
                   </ListItem>
@@ -769,7 +765,9 @@ class WidgetCreation extends Component {
                     </Typography>
                     <br />
                     <Typography variant="body1">
-                      {t('Display data about organizations, sectors, countries, etc.')}
+                      {t(
+                        'Display data about organizations, sectors, countries, etc.',
+                      )}
                     </Typography>
                   </CardContent>
                 </CardActionArea>

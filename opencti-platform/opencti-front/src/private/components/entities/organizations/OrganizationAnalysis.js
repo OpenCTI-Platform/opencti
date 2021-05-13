@@ -32,7 +32,7 @@ class OrganizationAnalysisComponent extends Component {
         />
         {viewAs === 'knowledge' ? (
           <StixCoreObjectOrStixCoreRelationshipContainers
-            stixCoreObjectOrStixCoreRelationshipId={organization.id}
+            stixDomainObjectOrStixCoreRelationship={organization}
             viewAs={viewAs}
           />
         ) : (
@@ -62,6 +62,7 @@ const OrganizationAnalysis = createFragmentContainer(
         id
         name
         x_opencti_aliases
+        x_opencti_graph_data
       }
     `,
   },

@@ -197,10 +197,9 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               secondary={
                                 stixDomainObject.description
                                 && stixDomainObject.description.length > 0 ? (
-                                  <Markdown
-                                    className="markdown"
-                                    source={stixDomainObject.description}
-                                  />
+                                  <Markdown className="markdown">
+                                    {stixDomainObject.description}
+                                  </Markdown>
                                   ) : (
                                     t('No description of this usage')
                                   )

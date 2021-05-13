@@ -42,6 +42,7 @@ const threatActorQuery = graphql`
       standard_id
       name
       aliases
+      x_opencti_graph_data
       ...ThreatActor_threatActor
       ...ThreatActorKnowledge_threatActor
       ...FileImportViewer_entity
@@ -147,8 +148,8 @@ class RootThreatActor extends Component {
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
-                            stixCoreObjectOrStixCoreRelationshipId={
-                              threatActorId
+                            stixDomainObjectOrStixCoreRelationship={
+                              props.threatActor
                             }
                           />
                         </React.Fragment>

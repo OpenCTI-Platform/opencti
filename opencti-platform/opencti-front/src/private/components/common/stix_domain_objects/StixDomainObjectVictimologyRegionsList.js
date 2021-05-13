@@ -353,10 +353,9 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                             // eslint-disable-next-line no-nested-ternary
                             stixCoreRelationship.description
                             && stixCoreRelationship.description.length > 0 ? (
-                              <Markdown
-                                className="markdown"
-                                source={stixCoreRelationship.description}
-                              />
+                              <Markdown className="markdown">
+                                {stixCoreRelationship.description}
+                              </Markdown>
                               ) : (
                                 t('No description of this targeting')
                               )
@@ -468,12 +467,9 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                       stixCoreRelationship.description
                                       && stixCoreRelationship.description.length
                                         > 0 ? (
-                                        <Markdown
-                                          className="markdown"
-                                          source={
-                                            stixCoreRelationship.description
-                                          }
-                                        />
+                                        <Markdown className="markdown">
+                                          {stixCoreRelationship.description}
+                                        </Markdown>
                                         ) : stixCoreRelationship.inferred ? (
                                         <i>{t('This relation is inferred')}</i>
                                         ) : (
@@ -566,12 +562,11 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                               stixCoreRelationship.description
                                               && stixCoreRelationship.description
                                                 .length > 0 ? (
-                                                <Markdown
-                                                  className="markdown"
-                                                  source={
+                                                <Markdown className="markdown">
+                                                  {
                                                     stixCoreRelationship.description
                                                   }
-                                                />
+                                                </Markdown>
                                                 ) : stixCoreRelationship.inferred ? (
                                                 <i>
                                                   {t(

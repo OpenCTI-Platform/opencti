@@ -42,6 +42,7 @@ const intrusionSetQuery = graphql`
       standard_id
       name
       aliases
+      x_opencti_graph_data
       ...IntrusionSet_intrusionSet
       ...IntrusionSetKnowledge_intrusionSet
       ...FileImportViewer_entity
@@ -148,8 +149,8 @@ class RootIntrusionSet extends Component {
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
-                            stixCoreObjectOrStixCoreRelationshipId={
-                              intrusionSetId
+                            stixDomainObjectOrStixCoreRelationship={
+                              props.intrusionSet
                             }
                           />
                         </React.Fragment>

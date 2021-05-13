@@ -42,6 +42,7 @@ const campaignQuery = graphql`
       standard_id
       name
       aliases
+      x_opencti_graph_data
       ...Campaign_campaign
       ...CampaignKnowledge_campaign
       ...FileImportViewer_entity
@@ -143,7 +144,9 @@ class RootCampaign extends Component {
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
-                            stixCoreObjectOrStixCoreRelationshipId={campaignId}
+                            stixDomainObjectOrStixCoreRelationship={
+                              props.campaign
+                            }
                           />
                         </React.Fragment>
                       )}

@@ -2172,7 +2172,7 @@ export const deleteElementById = async (user, elementId, type) => {
 };
 export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshipType, scopeType, opts = {}) => {
   /* istanbul ignore if */
-  if (R.isNil(scopeType)) {
+  if (R.isNil(scopeType) || R.isNil(fromId) || R.isNil(toId)) {
     throw FunctionalError(`You need to specify a scope type when deleting a relation with from and to`);
   }
   const fromThing = await internalLoadById(user, fromId, opts);

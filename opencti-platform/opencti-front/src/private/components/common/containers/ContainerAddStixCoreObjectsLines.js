@@ -335,14 +335,13 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                             60,
                           )}`}
                           secondary={
-                            <Markdown
-                              className="markdown"
-                              source={truncate(
+                            <Markdown className="markdown">
+                              {truncate(
                                 stixCoreObject.description
                                   || fd(stixCoreObject.created_at),
                                 200,
                               )}
-                            />
+                            </Markdown>
                           }
                         />
                       </ListItem>

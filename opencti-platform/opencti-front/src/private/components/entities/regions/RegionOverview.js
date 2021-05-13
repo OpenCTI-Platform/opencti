@@ -58,7 +58,7 @@ class RegionOverviewComponent extends Component {
           >
             {t('Description')}
           </Typography>
-          <Markdown className="markdown" source={region.description} />
+          <Markdown className="markdown">{region.description}</Markdown>
         </Paper>
       </div>
     );

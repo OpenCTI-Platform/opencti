@@ -349,10 +349,9 @@ class StixCoreRelationshipContainer extends Component {
               >
                 {t('Description')}
               </Typography>
-              <Markdown
-                className="markdown"
-                source={stixCoreRelationship.description}
-              />
+              <Markdown className="markdown">
+                {stixCoreRelationship.description}
+              </Markdown>
             </Paper>
           </Grid>
         </Grid>

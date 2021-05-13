@@ -58,7 +58,7 @@ class PositionOverviewComponent extends Component {
           >
             {t('Description')}
           </Typography>
-          <Markdown className="markdown" source={position.description} />
+          <Markdown className="markdown">{position.description}</Markdown>
         </Paper>
       </div>
     );

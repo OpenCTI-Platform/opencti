@@ -89,10 +89,9 @@ class OrganizationDetailsComponent extends Component {
               >
                 {t('Contact information')}
               </Typography>
-              <Markdown
-                className="markdown"
-                source={organization.contact_information}
-              />
+              <Markdown className="markdown">
+                {organization.contact_information}
+              </Markdown>
             </Grid>
           </Grid>
         </Paper>

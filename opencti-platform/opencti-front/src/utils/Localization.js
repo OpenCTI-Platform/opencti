@@ -121,7 +121,8 @@ const i18n = {
         'Souhaitez-vous supprimer cette note ?',
       'Do you want to delete these entities?':
         'Souhaitez-vous supprimer ces entités ?',
-      'Do you want to delete this live stream?': 'Souhaitez-vous supprimer ce stream live ?',
+      'Do you want to delete this live stream?':
+        'Souhaitez-vous supprimer ce stream live ?',
       'Do you want to create a STIX Indcator from this observable?':
         'Souhaitez-vous créer un indicateur STIX depuis cet observable ?',
       'Confirmation required': 'Confirmation requise',

@@ -193,7 +193,9 @@ class DashboardComponent extends Component {
     const startDate = relativeDate
       ? this.computerRelativeDate(relativeDate)
       : config.startDate;
-    const endDate = relativeDate ? DashboardComponent.getDayStartDate() : config.endDate;
+    const endDate = relativeDate
+      ? DashboardComponent.getDayStartDate()
+      : config.endDate;
     switch (widget.dataType) {
       case 'all':
         return (
@@ -263,7 +265,9 @@ class DashboardComponent extends Component {
     const startDate = relativeDate
       ? this.computerRelativeDate(relativeDate)
       : config.startDate;
-    const endDate = relativeDate ? DashboardComponent.getDayStartDate() : config.endDate;
+    const endDate = relativeDate
+      ? DashboardComponent.getDayStartDate()
+      : config.endDate;
     switch (widget.dataType) {
       case 'all':
         return (
@@ -347,7 +351,9 @@ class DashboardComponent extends Component {
     const startDate = relativeDate
       ? this.computerRelativeDate(relativeDate)
       : config.startDate;
-    const endDate = relativeDate ? DashboardComponent.getDayStartDate() : config.endDate;
+    const endDate = relativeDate
+      ? DashboardComponent.getDayStartDate()
+      : config.endDate;
     switch (widget.dataType) {
       case 'all':
         return (

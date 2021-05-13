@@ -40,6 +40,7 @@ const vulnerabilityQuery = graphql`
       id
       standard_id
       name
+      x_opencti_graph_data
       ...Vulnerability_vulnerability
       ...VulnerabilityReports_vulnerability
       ...VulnerabilityKnowledge_vulnerability
@@ -144,8 +145,8 @@ class RootVulnerability extends Component {
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
-                            stixCoreObjectOrStixCoreRelationshipId={
-                              vulnerabilityId
+                            stixDomainObjectOrStixCoreRelationship={
+                              props.vulnerability
                             }
                           />
                         </React.Fragment>

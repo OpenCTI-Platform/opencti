@@ -196,17 +196,15 @@ class UserHistoryLineComponent extends Component {
             <Tooltip
               classes={{ tooltip: classes.tooltip }}
               title={
-                <Markdown
-                  className="markdown"
-                  source={`\`${node.user.name}\` ${node.context_data?.message}`}
-                />
+                <Markdown className="markdown">
+                  {`\`${node.user.name}\` ${node.context_data?.message}`}
+                </Markdown>
               }
             >
               <div className={classes.description}>
-                <Markdown
-                  className="markdown"
-                  source={`\`${node.user.name}\` ${node.context_data?.message}`}
-                />
+                <Markdown className="markdown">
+                  {`\`${node.user.name}\` ${node.context_data?.message}`}
+                </Markdown>
               </div>
             </Tooltip>
           </Paper>
