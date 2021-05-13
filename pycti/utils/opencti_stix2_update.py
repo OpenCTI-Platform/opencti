@@ -13,8 +13,10 @@ class OpenCTIStix2Update:
         self.opencti = opencti
         self.mapping_cache = {}
 
-    def add_object_marking_refs(self, entity_type, id, object_marking_refs):
+    def add_object_marking_refs(self, entity_type, id, object_marking_refs, version=2):
         for object_marking_ref in object_marking_refs:
+            if version == 2:
+                object_marking_ref = object_marking_ref["value"]
             if entity_type == "relationship":
                 self.opencti.stix_core_relationship.add_marking_definition(
                     id=id, marking_definition_id=object_marking_ref
@@ -28,8 +30,12 @@ class OpenCTIStix2Update:
                     id=id, marking_definition_id=object_marking_ref
                 )
 
-    def remove_object_marking_refs(self, entity_type, id, object_marking_refs):
+    def remove_object_marking_refs(
+        self, entity_type, id, object_marking_refs, version=2
+    ):
         for object_marking_ref in object_marking_refs:
+            if version == 2:
+                object_marking_ref = object_marking_ref["value"]
             if entity_type == "relationship":
                 self.opencti.stix_core_relationship.remove_marking_definition(
                     id=id, marking_definition_id=object_marking_ref
@@ -43,8 +49,10 @@ class OpenCTIStix2Update:
                     id=id, marking_definition_id=object_marking_ref
                 )
 
-    def add_external_references(self, entity_type, id, external_references):
+    def add_external_references(self, entity_type, id, external_references, version=2):
         for external_reference in external_references:
+            if version == 2:
+                external_reference = external_reference["value"]
             if "url" in external_reference and "source_name" in external_reference:
                 url = external_reference["url"]
                 source_name = external_reference["source_name"]
@@ -73,8 +81,12 @@ class OpenCTIStix2Update:
                     id=id, external_reference_id=external_reference_id
                 )
 
-    def remove_external_references(self, entity_type, id, external_references):
+    def remove_external_references(
+        self, entity_type, id, external_references, version=2
+    ):
         for external_reference in external_references:
+            if version == 2:
+                external_reference = external_reference["value"]
             if entity_type == "relationship":
                 self.opencti.stix_core_relationship.remove_external_reference(
                     id=id, external_reference_id=external_reference["id"]
@@ -88,8 +100,10 @@ class OpenCTIStix2Update:
                     id=id, external_reference_id=external_reference["id"]
                 )
 
-    def add_kill_chain_phases(self, entity_type, id, kill_chain_phases):
+    def add_kill_chain_phases(self, entity_type, id, kill_chain_phases, version=2):
         for kill_chain_phase in kill_chain_phases:
+            if version == 2:
+                kill_chain_phase = kill_chain_phase["value"]
             kill_chain_phase_id = self.opencti.kill_chain_phase.create(
                 kill_chain_name=kill_chain_phase["kill_chain_name"],
                 phase_name=kill_chain_phase["phase_name"],
@@ -111,8 +125,10 @@ class OpenCTIStix2Update:
                     id=id, kill_chain_phase_id=kill_chain_phase_id
                 )
 
-    def remove_kill_chain_phases(self, entity_type, id, kill_chain_phases):
+    def remove_kill_chain_phases(self, entity_type, id, kill_chain_phases, version=2):
         for kill_chain_phase in kill_chain_phases:
+            if version == 2:
+                kill_chain_phase = kill_chain_phase["value"]
             if entity_type == "relationship":
                 self.opencti.stix_core_relationship.remove_kill_chain_phase(
                     id=id, kill_chain_phase_id=kill_chain_phase["id"]
@@ -126,8 +142,10 @@ class OpenCTIStix2Update:
                     id=id, kill_chain_phase_id=kill_chain_phase["id"]
                 )
 
-    def add_object_refs(self, entity_type, id, object_refs):
+    def add_object_refs(self, entity_type, id, object_refs, version=2):
         for object_ref in object_refs:
+            if version == 2:
+                object_ref = object_ref["value"]
             if entity_type == "report":
                 self.opencti.report.add_stix_object_or_stix_relationship(
                     id=id, stixObjectOrStixRelationshipId=object_ref
@@ -145,8 +163,10 @@ class OpenCTIStix2Update:
                     id=id, stixObjectOrStixRelationshipId=object_ref
                 )
 
-    def remove_object_refs(self, entity_type, id, object_refs):
+    def remove_object_refs(self, entity_type, id, object_refs, version=2):
         for object_ref in object_refs:
+            if version == 2:
+                object_ref = object_ref["value"]
             if entity_type == "report":
                 self.opencti.report.remove_stix_object_or_stix_relationship(
                     id=id, stixObjectOrStixRelationshipId=object_ref
@@ -164,8 +184,10 @@ class OpenCTIStix2Update:
                     id=id, stixObjectOrStixRelationshipId=object_ref
                 )
 
-    def add_labels(self, entity_type, id, labels):
+    def add_labels(self, entity_type, id, labels, version=2):
         for label in labels:
+            if version == 2:
+                label = label["value"]
             if entity_type == "relationship":
                 self.opencti.stix_core_relationship.add_label(id=id, label_name=label)
             elif StixCyberObservableTypes.has_value(entity_type):
@@ -173,8 +195,10 @@ class OpenCTIStix2Update:
             else:
                 self.opencti.stix_domain_object.add_label(id=id, label_name=label)
 
-    def remove_labels(self, entity_type, id, labels):
+    def remove_labels(self, entity_type, id, labels, version=2):
         for label in labels:
+            if version == 2:
+                label = label["value"]
             if entity_type == "relationship":
                 self.opencti.stix_core_relationship.remove_label(
                     id=id, label_name=label
@@ -183,6 +207,24 @@ class OpenCTIStix2Update:
                 self.opencti.stix_cyber_observable.remove_label(id=id, label_name=label)
             else:
                 self.opencti.stix_domain_object.remove_label(id=id, label_name=label)
+
+    def replace_created_by_ref(self, entity_type, id, created_by_ref, version=2):
+        if version == 2:
+            created_by_ref = (
+                created_by_ref[0]["value"] if created_by_ref is not None else None
+            )
+        if entity_type == "relationship":
+            self.opencti.stix_core_relationship.update_created_by(
+                id=id, identity_id=created_by_ref
+            )
+        elif StixCyberObservableTypes.has_value(entity_type):
+            self.opencti.stix_cyber_observable.update_created_by(
+                id=id, identity_id=created_by_ref
+            )
+        else:
+            self.opencti.stix_domain_object.update_created_by(
+                id=id, identity_id=created_by_ref
+            )
 
     def update_attribute(self, entity_type, id, operation, key, value):
         if entity_type == "relationship":
@@ -198,20 +240,6 @@ class OpenCTIStix2Update:
                 id=id, key=key, value=value, operation=operation
             )
 
-    def replace_created_by_ref(self, entity_type, id, created_by_ref):
-        if entity_type == "relationship":
-            self.opencti.stix_core_relationship.update_created_by(
-                id=id, identity_id=created_by_ref
-            )
-        elif StixCyberObservableTypes.has_value(entity_type):
-            self.opencti.stix_cyber_observable.update_created_by(
-                id=id, identity_id=created_by_ref
-            )
-        else:
-            self.opencti.stix_domain_object.update_created_by(
-                id=id, identity_id=created_by_ref
-            )
-
     def process_update_v1(self, data):
         try:
             if "add" in data["x_data_update"]:
@@ -221,36 +249,42 @@ class OpenCTIStix2Update:
                             data["type"],
                             data["id"],
                             data["x_data_update"]["add"]["object_marking_refs"],
+                            1,
                         )
                     elif key == "object_refs":
                         self.add_object_refs(
                             data["type"],
                             data["id"],
                             data["x_data_update"]["add"]["object_refs"],
+                            1,
                         )
                     elif key == "labels":
                         self.add_labels(
                             data["type"],
                             data["id"],
                             data["x_data_update"]["add"]["labels"],
+                            1,
                         )
                     elif key == "external_references":
                         self.add_external_references(
                             data["type"],
                             data["id"],
                             data["x_data_update"]["add"]["external_references"],
+                            1,
                         )
                     elif key == "kill_chain_phases":
                         self.add_kill_chain_phases(
                             data["type"],
                             data["id"],
                             data["x_data_update"]["add"]["kill_chain_phases"],
+                            1,
                         )
                     elif key == "created_by_ref":
                         self.replace_created_by_ref(
                             data["type"],
                             data["id"],
                             data["x_data_update"]["add"]["created_by_ref"],
+                            1,
                         )
                     else:
                         self.update_attribute(
@@ -267,37 +301,38 @@ class OpenCTIStix2Update:
                             data["type"],
                             data["id"],
                             data["x_data_update"]["remove"]["object_marking_refs"],
+                            1,
                         )
                     elif key == "object_refs":
                         self.remove_object_refs(
                             data["type"],
                             data["id"],
                             data["x_data_update"]["remove"]["object_refs"],
+                            1,
                         )
                     elif key == "labels":
                         self.remove_labels(
                             data["type"],
                             data["id"],
                             data["x_data_update"]["remove"]["labels"],
+                            1,
                         )
                     elif key == "external_references":
                         self.remove_external_references(
                             data["type"],
                             data["id"],
                             data["x_data_update"]["remove"]["external_references"],
+                            1,
                         )
                     elif key == "kill_chain_phases":
                         self.remove_kill_chain_phases(
                             data["type"],
                             data["id"],
                             data["x_data_update"]["remove"]["kill_chain_phases"],
+                            1,
                         )
                     elif key == "created_by_ref":
-                        self.replace_created_by_ref(
-                            data["type"],
-                            data["id"],
-                            None,
-                        )
+                        self.replace_created_by_ref(data["type"], data["id"], None, 1)
                     else:
                         self.update_attribute(
                             data["type"],
@@ -429,6 +464,8 @@ class OpenCTIStix2Update:
                         key,
                         data["x_opencti_patch"]["replace"][key]["current"],
                     )
-        except:
+        except Exception as e:
+            print(e)
+            print(data)
             self.opencti.log("error", "Cannot process this message")
             pass

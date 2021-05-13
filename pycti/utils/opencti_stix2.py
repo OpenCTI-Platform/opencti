@@ -1490,9 +1490,14 @@ class OpenCTIStix2:
             raise ValueError("JSON data type is not a STIX2 bundle")
         if "objects" not in stix_bundle or len(stix_bundle["objects"]) == 0:
             raise ValueError("JSON data objects is empty")
+        event_version = (
+            stix_bundle["x_opencti_event_version"]
+            if "x_opencti_event_version" in stix_bundle
+            else None
+        )
 
         stix2_splitter = OpenCTIStix2Splitter()
-        bundles = stix2_splitter.split_bundle(stix_bundle, False)
+        bundles = stix2_splitter.split_bundle(stix_bundle, False, event_version)
         # Import every elements in a specific order
         imported_elements = []
 
@@ -1503,10 +1508,12 @@ class OpenCTIStix2:
                     if bundle["x_opencti_event_version"] == "1":
                         if "x_data_update" in item:
                             self.stix2_update.process_update_v1(item)
+                            continue
                     elif bundle["x_opencti_event_version"] == "2":
-                        if "x_opencti_patch":
+                        if "x_opencti_patch" in item:
                             self.stix2_update.process_update_v2(item)
-                elif item["type"] == "relationship":
+                            continue
+                if item["type"] == "relationship":
                     self.import_relationship(item, update, types)
                 elif item["type"] == "sighting":
                     # Resolve the to

@@ -35,7 +35,7 @@ class OpenCTIStix2Splitter:
         self.cache_index[item_id] = item  # Put in cache
         return nb_deps
 
-    def split_bundle(self, bundle, use_json=True) -> list:
+    def split_bundle(self, bundle, use_json=True, event_version=None) -> list:
         """splits a valid stix2 bundle into a list of bundles
         :param bundle: valid stix2 bundle
         :type bundle:
@@ -70,11 +70,11 @@ class OpenCTIStix2Splitter:
 
         self.elements.sort(key=by_dep_size)
         for entity in self.elements:
-            bundles.append(self.stix2_create_bundle([entity], use_json))
+            bundles.append(self.stix2_create_bundle([entity], use_json, event_version))
         return bundles
 
     @staticmethod
-    def stix2_create_bundle(items, use_json):
+    def stix2_create_bundle(items, use_json, event_version=None):
         """create a stix2 bundle with items
 
         :param items: valid stix2 items
@@ -91,4 +91,6 @@ class OpenCTIStix2Splitter:
             "spec_version": "2.1",
             "objects": items,
         }
+        if event_version is not None:
+            bundle["x_opencti_event_version"] = event_version
         return json.dumps(bundle) if use_json else bundle
