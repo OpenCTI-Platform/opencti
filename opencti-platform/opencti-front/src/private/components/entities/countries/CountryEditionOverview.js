@@ -160,19 +160,21 @@ class CountryEditionOverviewComponent extends Component {
           toId: currentCreatedBy.value,
           relationship_type: 'created-by',
         },
+        onCompleted: () => {
+          if (value.value) {
+            commitMutation({
+              mutation: countryMutationRelationAdd,
+              variables: {
+                id: this.props.country.id,
+                input: {
+                  toId: value.value,
+                  relationship_type: 'created-by',
+                },
+              },
+            });
+          }
+        },
       });
-      if (value.value) {
-        commitMutation({
-          mutation: countryMutationRelationAdd,
-          variables: {
-            id: this.props.country.id,
-            input: {
-              toId: value.value,
-              relationship_type: 'created-by',
-            },
-          },
-        });
-      }
     }
   }
 

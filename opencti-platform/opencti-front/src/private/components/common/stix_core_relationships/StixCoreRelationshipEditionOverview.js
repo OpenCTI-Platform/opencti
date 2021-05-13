@@ -276,19 +276,21 @@ const StixCoreRelationshipEditionContainer = ({
           toId: currentCreatedBy.value,
           relationship_type: 'created-by',
         },
+        onCompleted: () => {
+          if (value.value) {
+            commitMutation({
+              mutation: stixCoreRelationshipMutationRelationAdd,
+              variables: {
+                id: stixCoreRelationship.id,
+                input: {
+                  toId: value.value,
+                  relationship_type: 'created-by',
+                },
+              },
+            });
+          }
+        },
       });
-      if (value.value) {
-        commitMutation({
-          mutation: stixCoreRelationshipMutationRelationAdd,
-          variables: {
-            id: stixCoreRelationship.id,
-            input: {
-              toId: value.value,
-              relationship_type: 'created-by',
-            },
-          },
-        });
-      }
     }
   };
   const handleChangeFocus = (name) => {

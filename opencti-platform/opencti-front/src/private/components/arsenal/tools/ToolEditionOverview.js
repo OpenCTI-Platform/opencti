@@ -157,19 +157,21 @@ class ToolEditionOverviewComponent extends Component {
           id: this.props.tool.id,
           relationId: currentCreatedBy.relation,
         },
+        onCompleted: () => {
+          if (value.value) {
+            commitMutation({
+              mutation: toolMutationRelationAdd,
+              variables: {
+                id: this.props.tool.id,
+                input: {
+                  toId: value.value,
+                  relationship_type: 'created-by',
+                },
+              },
+            });
+          }
+        },
       });
-      if (value.value) {
-        commitMutation({
-          mutation: toolMutationRelationAdd,
-          variables: {
-            id: this.props.tool.id,
-            input: {
-              toId: value.value,
-              relationship_type: 'created-by',
-            },
-          },
-        });
-      }
     }
   }
 

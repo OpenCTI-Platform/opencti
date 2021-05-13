@@ -160,19 +160,21 @@ class SectorEditionOverviewComponent extends Component {
           id: this.props.sector.id,
           relationId: currentCreatedBy.relation,
         },
+        onCompleted: () => {
+          if (value.value) {
+            commitMutation({
+              mutation: sectorMutationRelationAdd,
+              variables: {
+                id: this.props.sector.id,
+                input: {
+                  toId: value.value,
+                  relationship_type: 'created-by',
+                },
+              },
+            });
+          }
+        },
       });
-      if (value.value) {
-        commitMutation({
-          mutation: sectorMutationRelationAdd,
-          variables: {
-            id: this.props.sector.id,
-            input: {
-              toId: value.value,
-              relationship_type: 'created-by',
-            },
-          },
-        });
-      }
     }
   }
 

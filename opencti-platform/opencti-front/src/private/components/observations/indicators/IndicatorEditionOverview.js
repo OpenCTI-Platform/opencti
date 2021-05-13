@@ -218,19 +218,21 @@ class IndicatorEditionOverviewComponent extends Component {
           id: this.props.indicator.id,
           relationId: currentCreatedBy.relation,
         },
+        onCompleted: () => {
+          if (value.value) {
+            commitMutation({
+              mutation: indicatorMutationRelationAdd,
+              variables: {
+                id: this.props.indicator.id,
+                input: {
+                  toId: value.value,
+                  relationship_type: 'created-by',
+                },
+              },
+            });
+          }
+        },
       });
-      if (value.value) {
-        commitMutation({
-          mutation: indicatorMutationRelationAdd,
-          variables: {
-            id: this.props.indicator.id,
-            input: {
-              toId: value.value,
-              relationship_type: 'created-by',
-            },
-          },
-        });
-      }
     }
   }
 

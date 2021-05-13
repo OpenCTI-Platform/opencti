@@ -167,19 +167,21 @@ class AttackPatternEditionOverviewComponent extends Component {
           toId: currentCreatedBy.value,
           relationship_type: 'created-by',
         },
+        onCompleted: () => {
+          if (value.value) {
+            commitMutation({
+              mutation: attackPatternMutationRelationAdd,
+              variables: {
+                id: this.props.attackPattern.id,
+                input: {
+                  toId: value.value,
+                  relationship_type: 'created-by',
+                },
+              },
+            });
+          }
+        },
       });
-      if (value.value) {
-        commitMutation({
-          mutation: attackPatternMutationRelationAdd,
-          variables: {
-            id: this.props.attackPattern.id,
-            input: {
-              toId: value.value,
-              relationship_type: 'created-by',
-            },
-          },
-        });
-      }
     }
   }
 

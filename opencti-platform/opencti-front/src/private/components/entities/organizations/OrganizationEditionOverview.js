@@ -173,19 +173,21 @@ class OrganizationEditionOverviewComponent extends Component {
           toId: currentCreatedBy.value,
           relationship_type: 'created-by',
         },
+        onCompleted: () => {
+          if (value.value) {
+            commitMutation({
+              mutation: organizationMutationRelationAdd,
+              variables: {
+                id: this.props.organization.id,
+                input: {
+                  toId: value.value,
+                  relationship_type: 'created-by',
+                },
+              },
+            });
+          }
+        },
       });
-      if (value.value) {
-        commitMutation({
-          mutation: organizationMutationRelationAdd,
-          variables: {
-            id: this.props.organization.id,
-            input: {
-              toId: value.value,
-              relationship_type: 'created-by',
-            },
-          },
-        });
-      }
     }
   }
 

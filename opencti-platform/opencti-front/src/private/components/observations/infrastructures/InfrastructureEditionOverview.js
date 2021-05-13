@@ -166,19 +166,21 @@ class InfrastructureEditionOverviewComponent extends Component {
           toId: currentCreatedBy.value,
           relationship_type: 'created-by',
         },
+        onCompleted: () => {
+          if (value.value) {
+            commitMutation({
+              mutation: infrastructureMutationRelationAdd,
+              variables: {
+                id: this.props.infrastructure.id,
+                input: {
+                  toId: value.value,
+                  relationship_type: 'created-by',
+                },
+              },
+            });
+          }
+        },
       });
-      if (value.value) {
-        commitMutation({
-          mutation: infrastructureMutationRelationAdd,
-          variables: {
-            id: this.props.infrastructure.id,
-            input: {
-              toId: value.value,
-              relationship_type: 'created-by',
-            },
-          },
-        });
-      }
     }
   }
 

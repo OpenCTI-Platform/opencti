@@ -165,19 +165,21 @@ class CourseOfActionEditionOverviewComponent extends Component {
           id: this.props.courseOfAction.id,
           relationId: currentCreatedBy.relation,
         },
+        onCompleted: () => {
+          if (value.value) {
+            commitMutation({
+              mutation: courseOfActionMutationRelationAdd,
+              variables: {
+                id: this.props.courseOfAction.id,
+                input: {
+                  toId: value.value,
+                  relationship_type: 'created-by',
+                },
+              },
+            });
+          }
+        },
       });
-      if (value.value) {
-        commitMutation({
-          mutation: courseOfActionMutationRelationAdd,
-          variables: {
-            id: this.props.courseOfAction.id,
-            input: {
-              toId: value.value,
-              relationship_type: 'created-by',
-            },
-          },
-        });
-      }
     }
   }
 
