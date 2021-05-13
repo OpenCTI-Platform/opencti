@@ -14,7 +14,7 @@ import {
   UPDATE_OPERATION_CHANGE,
   UPDATE_OPERATION_REMOVE,
 } from './utils';
-import { isStixObject } from '../schema/stixCoreObject';
+import { isStixObject, isStixSpecificationObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
@@ -25,7 +25,8 @@ import { MARKING_DEFINITION_STATEMENT } from '../schema/stixMetaObject';
 import { now } from '../utils/format';
 import RedisStore from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
-import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+import { isStixMetaRelationship, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 
 const USE_SSL = conf.get('redis:use_ssl');
 const REDIS_CA = conf.get('redis:ca').map((path) => readFileSync(path));
@@ -422,13 +423,10 @@ export const storeUpdateEvent = async (user, instance, updateEvents) => {
   return true;
 };
 export const storeCreateEvent = async (user, instance, input, stixLoader) => {
-  if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
+  if (isStixSpecificationObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     try {
-      // If relationship but not stix core
-      const isCore = isStixCoreRelationship(instance.entity_type);
-      const isSighting = isStixSightingRelationship(instance.entity_type);
       // If internal relation, publish an update instead of a creation
-      if (isStixRelationship(instance.entity_type) && !isCore && !isSighting) {
+      if (isStixCyberObservableRelationship(instance.entity_type) || isStixMetaRelationship(instance.entity_type)) {
         const field = relationTypeToInputName(instance.entity_type);
         const inputUpdate = { [field]: input.to };
         const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;

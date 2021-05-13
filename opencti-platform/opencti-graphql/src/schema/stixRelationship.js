@@ -12,4 +12,5 @@ export const isStixRelationship = (type) =>
   isStixSightingRelationship(type) ||
   isStixCyberObservableRelationship(type) ||
   isStixMetaRelationship(type);
+
 export const isBasicRelationship = (type) => isInternalRelationship(type) || isStixRelationship(type);
