@@ -229,6 +229,9 @@ export const elCreateIndexes = async (indexesToCreate = WRITE_PLATFORM_INDICES) 
                     },
                   ],
                   properties: {
+                    standard_id: {
+                      type: 'text',
+                    },
                     timestamp: {
                       type: 'date',
                     },
