@@ -5,16 +5,26 @@ FROM base AS graphql-deps-builder
 
 WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
-RUN yarn install --network-timeout 60000000 --frozen-lockfile --production && yarn cache clean --all
+RUN yarn install --frozen-lockfile --production && yarn cache clean --all
 
 
 FROM base AS graphql-builder
 
 WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
-RUN yarn install --network-timeout 60000000
+RUN yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
 RUN yarn run webpack --mode production
+
+
+FROM base AS front-builder
+
+WORKDIR /opt/opencti-build/opencti-front
+COPY opencti-front/package.json opencti-front/yarn.lock ./
+RUN yarn install
+COPY opencti-front /opt/opencti-build/opencti-front
+COPY opencti-graphql/config/schema/opencti.graphql /opt/opencti-build/opencti-graphql/config/schema/opencti.graphql
+RUN yarn relay && yarn generate
 
 
 FROM base AS app
