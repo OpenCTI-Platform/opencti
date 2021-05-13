@@ -172,7 +172,8 @@ export const computeEventsDiff = (elements) => {
   for (let elemIndex = 0; elemIndex < elements.length; elemIndex += 1) {
     const element = elements[elemIndex];
     if (element.topic === EVENT_TYPE_MERGE) {
-      const mergedDeleted = element.data.data.sources.map((s) => {
+      const instanceData = element.data.data;
+      const mergedDeleted = instanceData.x_opencti_sources.map((s) => {
         return {
           id: element.id,
           topic: EVENT_TYPE_DELETE,

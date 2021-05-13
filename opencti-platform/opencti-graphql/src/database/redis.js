@@ -373,7 +373,7 @@ export const storeMergeEvent = async (user, initialInstance, mergedInstance, sou
     const message = generateLogMessage(EVENT_TYPE_MERGE, initialInstance, sourceEntities);
     const data = buildStixData(mergedInstance);
     data.x_opencti_patch = patch;
-    data.sources = R.map((s) => buildStixData(s), sourceEntities);
+    data.x_opencti_sources = R.map((s) => buildStixData(s), sourceEntities);
     const event = buildEvent(EVENT_TYPE_MERGE, user, mergedInstance.objectMarking, message, data);
     return pushToStream(clientBase, event);
   } catch (e) {
