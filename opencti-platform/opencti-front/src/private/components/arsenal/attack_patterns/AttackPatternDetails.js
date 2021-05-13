@@ -40,12 +40,10 @@ class AttackPatternDetailsComponent extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
-              {attackPattern.isSubAttackPattern ? (
+              {attackPattern.isSubAttackPattern && (
                 <AttackPatternParentAttackPatterns
                   attackPattern={attackPattern}
                 />
-              ) : (
-                ''
               )}
               <Typography
                 variant="h3"

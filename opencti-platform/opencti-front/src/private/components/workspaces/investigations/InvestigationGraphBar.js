@@ -27,7 +27,7 @@ import {
   Video3d,
   SelectAll,
   SelectGroup,
-  GraphOutline,
+  FamilyTree,
   AutoFix,
 } from 'mdi-material-ui';
 import TimeRange from 'react-timeline-range-slider';
@@ -355,7 +355,7 @@ class InvestigationGraphBar extends Component {
                     onClick={handleToggleTreeMode.bind(this)}
                     disabled={currentModeFixed}
                   >
-                    <GraphOutline />
+                    <FamilyTree />
                   </IconButton>
                 </span>
               </Tooltip>

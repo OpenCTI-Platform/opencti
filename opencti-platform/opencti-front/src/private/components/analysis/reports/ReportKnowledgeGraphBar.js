@@ -20,7 +20,7 @@ import {
   Video3d,
   SelectAll,
   SelectGroup,
-  GraphOutline,
+  FamilyTree,
   AutoFix,
 } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -348,7 +348,7 @@ class ReportKnowledgeGraphBar extends Component {
                     onClick={handleToggleTreeMode.bind(this)}
                     disabled={currentModeFixed}
                   >
-                    <GraphOutline />
+                    <FamilyTree />
                   </IconButton>
                 </span>
               </Tooltip>

@@ -6,10 +6,13 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import Chip from '@material-ui/core/Chip';
+import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 import CoursesOfActionAttackPatterns from './CourseOfActionAttackPatterns';
 import ItemCreator from '../../../../components/ItemCreator';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({
   paper: {
@@ -37,18 +40,27 @@ class CourseOfActionDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixCoreObjectLabelsView
-            labels={courseOfAction.objectLabel}
-            id={courseOfAction.id}
-          />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Creator')}
-          </Typography>
-          <ItemCreator creator={courseOfAction.creator} />
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Description')}
+              </Typography>
+              <ExpandableMarkdown
+                source={courseOfAction.description}
+                limit={300}
+              />
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('External ID')}
+              </Typography>
+              <Chip
+                size="small"
+                label={courseOfAction.x_mitre_id}
+                color="primary"
+              />
+            </Grid>
+          </Grid>
           <CoursesOfActionAttackPatterns courseOfAction={courseOfAction} />
         </Paper>
       </div>
@@ -69,6 +81,8 @@ const CourseOfActionDetails = createFragmentContainer(
     courseOfAction: graphql`
       fragment CourseOfActionDetails_courseOfAction on CourseOfAction {
         id
+        description
+        x_mitre_id
         creator {
           id
           name

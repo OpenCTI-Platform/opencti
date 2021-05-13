@@ -20,6 +20,7 @@ import {
   SelectGroup,
   GraphOutline,
   AutoFix,
+  FamilyTree,
 } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import List from '@material-ui/core/List';
@@ -249,7 +250,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                       color={currentModeTree ? 'secondary' : 'primary'}
                       disabled={true}
                     >
-                      <GraphOutline />
+                      <FamilyTree />
                     </IconButton>
                   </span>
                 </Tooltip>
@@ -461,7 +462,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                     onClick={handleToggleTreeMode.bind(this)}
                     disabled={currentModeFixed}
                   >
-                    <GraphOutline />
+                    <FamilyTree />
                   </IconButton>
                 </span>
               </Tooltip>
