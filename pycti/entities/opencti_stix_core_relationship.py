@@ -535,6 +535,10 @@ class StixCoreRelationship:
         id = kwargs.get("id", None)
         key = kwargs.get("key", None)
         value = kwargs.get("value", None)
+        if isinstance(value, list):
+            value = [str(v) for v in value]
+        else:
+            value = str(value)
         if id is not None and key is not None and value is not None:
             self.opencti.log(
                 "info",

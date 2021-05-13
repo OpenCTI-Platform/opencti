@@ -219,18 +219,23 @@ class PingAlive(threading.Thread):
 
 
 class ListenStream(threading.Thread):
-    def __init__(self, helper, callback, url, token, verify_ssl):
+    def __init__(self, helper, callback, url, token, verify_ssl, start_timestamp):
         threading.Thread.__init__(self)
         self.helper = helper
         self.callback = callback
         self.url = url
         self.token = token
         self.verify_ssl = verify_ssl
+        self.start_timestamp = start_timestamp
 
     def run(self):
         current_state = self.helper.get_state()
         if current_state is None:
-            current_state = {"connectorLastEventId": "-"}
+            current_state = {
+                "connectorLastEventId": str(self.start_timestamp) + "-0"
+                if self.start_timestamp is not None and len(self.start_timestamp) > 0
+                else "-"
+            }
             self.helper.set_state(current_state)
 
         # If URL and token are provided, likely consuming a remote stream
@@ -462,13 +467,16 @@ class OpenCTIConnectorHelper:
         url=None,
         token=None,
         verify_ssl=None,
+        start_timestamp=None,
     ) -> None:
         """listen for messages and register callback function
 
         :param message_callback: callback function to process messages
         """
 
-        listen_stream = ListenStream(self, message_callback, url, token, verify_ssl)
+        listen_stream = ListenStream(
+            self, message_callback, url, token, verify_ssl, start_timestamp
+        )
         listen_stream.start()
 
     def get_opencti_url(self):
@@ -515,11 +523,12 @@ class OpenCTIConnectorHelper:
         work_id = kwargs.get("work_id", self.work_id)
         entities_types = kwargs.get("entities_types", None)
         update = kwargs.get("update", False)
+        event_version = kwargs.get("event_version", None)
 
         if entities_types is None:
             entities_types = []
         stix2_splitter = OpenCTIStix2Splitter()
-        bundles = stix2_splitter.split_bundle(bundle)
+        bundles = stix2_splitter.split_bundle(bundle, True, event_version)
         if len(bundles) == 0:
             raise ValueError("Nothing to import")
         if work_id is not None:
