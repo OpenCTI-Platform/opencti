@@ -158,14 +158,12 @@ class StixCoreObjectStixCyberObservables extends Component {
           paddingRight={220}
           paginationOptions={paginationOptions}
         />
-        {!noRightBar ? (
+        {!noRightBar && (
           <StixCyberObservablesRightBar
             types={targetStixCyberObservableTypes}
             handleToggle={this.handleToggle.bind(this)}
             handleClear={this.handleClear.bind(this)}
           />
-        ) : (
-          ''
         )}
       </div>
     );

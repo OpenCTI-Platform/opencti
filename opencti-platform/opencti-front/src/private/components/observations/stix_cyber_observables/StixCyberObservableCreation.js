@@ -254,6 +254,7 @@ const stixCyberObservableMutation = graphql`
     ) {
       id
       entity_type
+      parent_types
       observable_value
       x_opencti_description
       created_at

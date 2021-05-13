@@ -15,6 +15,8 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { ExpandMore } from '@material-ui/icons';
+import Checkbox from '@material-ui/core/Checkbox';
+import * as R from 'ramda';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
@@ -70,8 +72,14 @@ class StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer e
 
   render() {
     const {
-      t, classes, data, handleSelect, noPadding,
+      t,
+      classes,
+      data,
+      handleSelect,
+      noPadding,
+      targetEntities,
     } = this.props;
+    const targetEntitiesIds = R.pluck('id', targetEntities);
     const stixCyberObservablesNodes = map(
       (n) => n.node,
       data.stixCyberObservables.edges,
@@ -112,6 +120,19 @@ class StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer e
                     button={true}
                     onClick={handleSelect.bind(this, stixCyberObservable)}
                   >
+                    <ListItemIcon
+                      style={{ minWidth: 40 }}
+                      onClick={handleSelect.bind(this, stixCyberObservable)}
+                    >
+                      <Checkbox
+                        edge="start"
+                        checked={R.includes(
+                          stixCyberObservable.id,
+                          targetEntitiesIds,
+                        )}
+                        disableRipple={true}
+                      />
+                    </ListItemIcon>
                     <ListItemIcon>
                       <ItemIcon type={type} />
                     </ListItemIcon>
@@ -135,6 +156,7 @@ class StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer e
 
 StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer.propTypes = {
   handleSelect: PropTypes.func,
+  targetEntities: PropTypes.func,
   noPadding: PropTypes.bool,
   data: PropTypes.object,
   limit: PropTypes.number,

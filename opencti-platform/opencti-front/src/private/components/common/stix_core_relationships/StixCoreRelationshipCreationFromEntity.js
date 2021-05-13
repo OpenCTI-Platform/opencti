@@ -519,6 +519,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                     return (
                       <StixCoreRelationshipCreationFromEntityStixCyberObservablesLines
                         noPadding={!!targetStixDomainObjectTypes}
+                        targetEntities={targetEntities}
                         handleSelect={this.handleSelectEntity.bind(this)}
                         data={props}
                       />
