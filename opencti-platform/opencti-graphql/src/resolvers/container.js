@@ -14,6 +14,7 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 const containerResolvers = {
   Query: {
@@ -42,7 +43,8 @@ const containerResolvers = {
   Mutation: {
     containerEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
+      fieldPatch: ({ input, operation = UPDATE_OPERATION_REPLACE }) =>
+        stixDomainObjectEditField(user, id, input, { operation }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),

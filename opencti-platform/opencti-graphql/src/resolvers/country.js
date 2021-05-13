@@ -8,6 +8,7 @@ import {
   stixDomainObjectDelete,
 } from '../domain/stixDomainObject';
 import { batchLoader } from '../database/middleware';
+import { UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 const batchRegionLoader = batchLoader(batchRegion);
 
@@ -22,7 +23,8 @@ const countryResolvers = {
   Mutation: {
     countryEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
+      fieldPatch: ({ input, operation = UPDATE_OPERATION_REPLACE }) =>
+        stixDomainObjectEditField(user, id, input, { operation }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),

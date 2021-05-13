@@ -23,6 +23,7 @@ import { REL_INDEX_PREFIX } from '../schema/general';
 import { distributionEntities, batchLoader } from '../database/middleware';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { batchKillChainPhases } from '../domain/stixCoreObject';
+import { UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 const killChainPhasesLoader = batchLoader(batchKillChainPhases);
 const batchObservablesLoader = batchLoader(batchObservables);
@@ -65,7 +66,8 @@ const indicatorResolvers = {
   Mutation: {
     indicatorEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
+      fieldPatch: ({ input, operation = UPDATE_OPERATION_REPLACE }) =>
+        stixDomainObjectEditField(user, id, input, { operation }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
