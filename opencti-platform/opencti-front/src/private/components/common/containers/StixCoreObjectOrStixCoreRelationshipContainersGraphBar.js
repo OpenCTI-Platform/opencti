@@ -174,7 +174,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
       handleToggleDisplayTimeRange,
       handleTimeRangeChange,
       timeRangeValues,
-      view,
       handleChangeView,
       disabled,
     } = this.props;

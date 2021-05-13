@@ -344,7 +344,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
   }
 
   render() {
-    const { handleChangeView, view } = this.props;
+    const { handleChangeView } = this.props;
     const {
       mode3D,
       modeFixed,
@@ -413,7 +413,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
           handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}
           timeRangeValues={timeRangeValues}
           handleChangeView={handleChangeView.bind(this)}
-          view={view}
         />
         {mode3D ? (
           <ForceGraph3D
@@ -588,7 +587,6 @@ StixCoreObjectOrStixCoreRelationshipContainersGraphComponent.propTypes = {
   setNumberOfElements: PropTypes.func,
   saveViewParameters: PropTypes.func,
   handleChangeView: PropTypes.func,
-  view: PropTypes.string,
 };
 
 export const stixCoreObjectOrStixCoreRelationshipContainersGraphQuery = graphql`

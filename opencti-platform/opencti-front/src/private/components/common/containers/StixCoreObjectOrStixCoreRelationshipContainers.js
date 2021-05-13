@@ -247,7 +247,6 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
   }
 
   renderGraph() {
-    const { view } = this.state;
     const { stixDomainObjectOrStixCoreRelationship } = this.props;
     return (
       <QueryRenderer
@@ -288,7 +287,6 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
                 }
                 data={props}
                 handleChangeView={this.handleChangeView.bind(this)}
-                view={view}
               />
             );
           }
@@ -297,7 +295,6 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
               <StixCoreObjectOrStixCoreRelationshipContainersGraphBar
                 disabled={true}
                 handleChangeView={this.handleChangeView.bind(this)}
-                view={view}
               />
               <Loader />
             </div>
