@@ -69,7 +69,7 @@ const styles = (theme) => ({
 });
 
 const directFilters = ['report_types', 'x_opencti_detection', 'sightedBy'];
-export const uniqFilters = [
+const uniqFilters = [
   'revoked',
   'x_opencti_detection',
   'x_opencti_base_score_gt',
@@ -77,6 +77,9 @@ export const uniqFilters = [
   'x_opencti_score_gt',
   'x_opencti_score_lte',
 ];
+export const isUniqFilter = (key) => uniqFilters.includes(key)
+  || key.endsWith('start_date')
+  || key.endsWith('end_date');
 
 class Filters extends Component {
   constructor(props) {
@@ -776,7 +779,7 @@ class Filters extends Component {
       this.setState({
         filters: R.assoc(
           key,
-          uniqFilters.includes(key)
+          isUniqFilter(key)
             ? [{ id, value }]
             : R.uniqBy(R.prop('id'), [
               { id, value },

@@ -16,7 +16,7 @@ import {
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import StixDomainObjectsRightBar from '../common/stix_domain_objects/StixDomainObjectsRightBar';
-import { uniqFilters } from '../common/lists/Filters';
+import { isUniqFilter } from '../common/lists/Filters';
 
 const styles = () => ({
   container: {
@@ -102,7 +102,7 @@ class Entities extends Component {
         {
           filters: R.assoc(
             key,
-            uniqFilters.includes(key)
+            isUniqFilter(key)
               ? [{ id, value }]
               : R.uniqBy(R.prop('id'), [
                 { id, value },

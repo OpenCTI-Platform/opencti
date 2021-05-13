@@ -1,8 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, propOr, assoc, dissoc, uniqBy, prop,
-} from 'ramda';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import { QueryRenderer } from '../../../relay/environment';
@@ -19,7 +16,7 @@ import ArtifactsLines, {
   artifactsLinesQuery,
 } from './artifacts/ArtifactsLines';
 import ArtifactCreation from './artifacts/ArtifactCreation';
-import { uniqFilters } from '../common/lists/Filters';
+import { isUniqFilter } from '../common/lists/Filters';
 
 class StixCyberObservables extends Component {
   constructor(props) {
@@ -30,11 +27,11 @@ class StixCyberObservables extends Component {
       'view-artifacts',
     );
     this.state = {
-      sortBy: propOr('created_at', 'sortBy', params),
-      orderAsc: propOr(false, 'orderAsc', params),
-      searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('lines', 'view', params),
-      filters: propOr({}, 'filters', params),
+      sortBy: R.propOr('created_at', 'sortBy', params),
+      orderAsc: R.propOr(false, 'orderAsc', params),
+      searchTerm: R.propOr('', 'searchTerm', params),
+      view: R.propOr('lines', 'view', params),
+      filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
@@ -102,9 +99,9 @@ class StixCyberObservables extends Component {
     if (this.state.filters[key] && this.state.filters[key].length > 0) {
       this.setState(
         {
-          filters: assoc(
+          filters: R.assoc(
             key,
-            uniqFilters.includes(key)
+            isUniqFilter(key)
               ? [{ id, value }]
               : R.uniqBy(R.prop('id'), [
                 { id, value },
@@ -118,7 +115,7 @@ class StixCyberObservables extends Component {
     } else {
       this.setState(
         {
-          filters: assoc(key, [{ id, value }], this.state.filters),
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
         },
         () => this.saveView(),
       );
@@ -126,7 +123,7 @@ class StixCyberObservables extends Component {
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {
@@ -289,4 +286,4 @@ StixCyberObservables.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter)(StixCyberObservables);
+export default R.compose(inject18n, withRouter)(StixCyberObservables);

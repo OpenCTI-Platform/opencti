@@ -3,17 +3,6 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import {
-  assoc,
-  compose,
-  dissoc,
-  last,
-  map,
-  pickAll,
-  prop,
-  toPairs,
-  uniqBy,
-} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -24,7 +13,7 @@ import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import Filters, { uniqFilters } from '../../common/lists/Filters';
+import Filters, { isUniqFilter } from '../../common/lists/Filters';
 import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
@@ -91,7 +80,7 @@ const StreamCollectionEditionContainer = (props) => {
   const {
     t, classes, handleClose, streamCollection,
   } = props;
-  const initialValues = pickAll(['name', 'description'], streamCollection);
+  const initialValues = R.pickAll(['name', 'description'], streamCollection);
   const [filters, setFilters] = useState(
     JSON.parse(props.streamCollection.filters),
   );
@@ -112,15 +101,15 @@ const StreamCollectionEditionContainer = (props) => {
   const handleAddFilter = (key, id, value) => {
     let newFilters;
     if (filters[key] && filters[key].length > 0) {
-      newFilters = assoc(
+      newFilters = R.assoc(
         key,
-        uniqFilters.includes(key)
+        isUniqFilter(key)
           ? [{ id, value }]
           : R.uniqBy(R.prop('id'), [{ id, value }, ...this.state.filters[key]]),
         filters,
       );
     } else {
-      newFilters = assoc(key, [{ id, value }], filters);
+      newFilters = R.assoc(key, [{ id, value }], filters);
     }
     const jsonFilters = JSON.stringify(newFilters);
     commitMutation({
@@ -135,7 +124,7 @@ const StreamCollectionEditionContainer = (props) => {
     });
   };
   const handleRemoveFilter = (key) => {
-    const newFilters = dissoc(key, filters);
+    const newFilters = R.dissoc(key, filters);
     const jsonFilters = JSON.stringify(newFilters);
     const variables = {
       id: props.streamCollection.id,
@@ -209,20 +198,20 @@ const StreamCollectionEditionContainer = (props) => {
               />
               <div style={{ marginTop: 35 }}>
                 <div className={classes.filters}>
-                  {map((currentFilter) => {
+                  {R.map((currentFilter) => {
                     const label = `${truncate(
                       t(`filter_${currentFilter[0]}`),
                       20,
                     )}`;
                     const values = (
                       <span>
-                        {map(
+                        {R.map(
                           (n) => (
                             <span key={n.value}>
                               {n.value && n.value.length > 0
                                 ? truncate(n.value, 15)
                                 : t('No label')}{' '}
-                              {last(currentFilter[1]).value !== n.value && (
+                              {R.last(currentFilter[1]).value !== n.value && (
                                 <code>OR</code>
                               )}{' '}
                             </span>
@@ -232,9 +221,8 @@ const StreamCollectionEditionContainer = (props) => {
                       </span>
                     );
                     return (
-                      <span>
+                      <span key={currentFilter[0]}>
                         <Chip
-                          key={currentFilter[0]}
                           classes={{ root: classes.filter }}
                           label={
                             <div>
@@ -243,7 +231,7 @@ const StreamCollectionEditionContainer = (props) => {
                           }
                           onDelete={() => handleRemoveFilter(currentFilter[0])}
                         />
-                        {last(toPairs(filters))[0] !== currentFilter[0] && (
+                        {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
                           <Chip
                             classes={{ root: classes.operator }}
                             label={t('AND')}
@@ -251,7 +239,7 @@ const StreamCollectionEditionContainer = (props) => {
                         )}
                       </span>
                     );
-                  }, toPairs(filters))}
+                  }, R.toPairs(filters))}
                 </div>
               </div>
             </Form>
@@ -284,7 +272,7 @@ const StreamCollectionEditionFragment = createFragmentContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(StreamCollectionEditionFragment);

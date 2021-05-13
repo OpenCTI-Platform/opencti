@@ -1,15 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose,
-  append,
-  filter,
-  propOr,
-  assoc,
-  dissoc,
-  uniqBy,
-  prop,
-} from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import * as R from 'ramda';
@@ -28,7 +18,7 @@ import {
 } from '../../../utils/ListParameters';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import ToolBar from '../data/ToolBar';
-import { uniqFilters } from '../common/lists/Filters';
+import { isUniqFilter } from '../common/lists/Filters';
 
 const styles = () => ({
   container: {
@@ -45,12 +35,12 @@ class StixCyberObservables extends Component {
       'view-stix_cyber_observables',
     );
     this.state = {
-      sortBy: propOr('created_at', 'sortBy', params),
-      orderAsc: propOr(false, 'orderAsc', params),
-      searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('lines', 'view', params),
-      filters: propOr({}, 'filters', params),
-      observableTypes: propOr([], 'observableTypes', params),
+      sortBy: R.propOr('created_at', 'sortBy', params),
+      orderAsc: R.propOr(false, 'orderAsc', params),
+      searchTerm: R.propOr('', 'searchTerm', params),
+      view: R.propOr('lines', 'view', params),
+      filters: R.propOr({}, 'filters', params),
+      observableTypes: R.propOr([], 'observableTypes', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
@@ -83,7 +73,7 @@ class StixCyberObservables extends Component {
     if (this.state.observableTypes.includes(type)) {
       this.setState(
         {
-          observableTypes: filter(
+          observableTypes: R.filter(
             (t) => t !== type,
             this.state.observableTypes,
           ),
@@ -92,7 +82,7 @@ class StixCyberObservables extends Component {
       );
     } else {
       this.setState(
-        { observableTypes: append(type, this.state.observableTypes) },
+        { observableTypes: R.append(type, this.state.observableTypes) },
         () => this.saveView(),
       );
     }
@@ -141,9 +131,9 @@ class StixCyberObservables extends Component {
     if (this.state.filters[key] && this.state.filters[key].length > 0) {
       this.setState(
         {
-          filters: assoc(
+          filters: R.assoc(
             key,
-            uniqFilters.includes(key)
+            isUniqFilter(key)
               ? [{ id, value }]
               : R.uniqBy(R.prop('id'), [
                 { id, value },
@@ -157,7 +147,7 @@ class StixCyberObservables extends Component {
     } else {
       this.setState(
         {
-          filters: assoc(key, [{ id, value }], this.state.filters),
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
         },
         () => this.saveView(),
       );
@@ -165,7 +155,7 @@ class StixCyberObservables extends Component {
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {
@@ -333,7 +323,7 @@ StixCyberObservables.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withRouter,
   withStyles(styles),

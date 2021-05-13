@@ -8,16 +8,6 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import {
-  assoc,
-  compose,
-  dissoc,
-  last,
-  map,
-  prop,
-  toPairs,
-  uniqBy,
-} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
@@ -26,7 +16,7 @@ import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import Filters, { uniqFilters } from '../../common/lists/Filters';
+import Filters, { isUniqFilter } from '../../common/lists/Filters';
 import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
@@ -156,9 +146,9 @@ const StreamCollectionCreation = (props) => {
   const handleAddFilter = (key, id, value) => {
     if (filters[key] && filters[key].length > 0) {
       setFilters(
-        assoc(
+        R.assoc(
           key,
-          uniqFilters.includes(key)
+          isUniqFilter(key)
             ? [{ id, value }]
             : R.uniqBy(R.prop('id'), [
               { id, value },
@@ -168,11 +158,11 @@ const StreamCollectionCreation = (props) => {
         ),
       );
     } else {
-      setFilters(assoc(key, [{ id, value }], filters));
+      setFilters(R.assoc(key, [{ id, value }], filters));
     }
   };
   const handleRemoveFilter = (key) => {
-    setFilters(dissoc(key, filters));
+    setFilters(R.dissoc(key, filters));
   };
 
   return (
@@ -249,20 +239,20 @@ const StreamCollectionCreation = (props) => {
                 />
                 <div style={{ marginTop: 35 }}>
                   <div className={classes.filters}>
-                    {map((currentFilter) => {
+                    {R.map((currentFilter) => {
                       const label = `${truncate(
                         t(`filter_${currentFilter[0]}`),
                         20,
                       )}`;
                       const values = (
                         <span>
-                          {map(
+                          {R.map(
                             (n) => (
                               <span key={n.value}>
                                 {n.value && n.value.length > 0
                                   ? truncate(n.value, 15)
                                   : t('No label')}{' '}
-                                {last(currentFilter[1]).value !== n.value && (
+                                {R.last(currentFilter[1]).value !== n.value && (
                                   <code>OR</code>
                                 )}{' '}
                               </span>
@@ -272,9 +262,8 @@ const StreamCollectionCreation = (props) => {
                         </span>
                       );
                       return (
-                        <span>
+                        <span key={currentFilter[0]}>
                           <Chip
-                            key={currentFilter[0]}
                             classes={{ root: classes.filter }}
                             label={
                               <div>
@@ -284,7 +273,8 @@ const StreamCollectionCreation = (props) => {
                             onDelete={() => handleRemoveFilter(currentFilter[0])
                             }
                           />
-                          {last(toPairs(filters))[0] !== currentFilter[0] && (
+                          {R.last(R.toPairs(filters))[0]
+                            !== currentFilter[0] && (
                             <Chip
                               classes={{ root: classes.operator }}
                               label={t('AND')}
@@ -292,7 +282,7 @@ const StreamCollectionCreation = (props) => {
                           )}
                         </span>
                       );
-                    }, toPairs(filters))}
+                    }, R.toPairs(filters))}
                   </div>
                 </div>
                 <div className="clearfix" />
@@ -331,7 +321,7 @@ StreamCollectionCreation.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(StreamCollectionCreation);

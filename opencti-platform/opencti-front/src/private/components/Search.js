@@ -1,17 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import {
-  assoc,
-  compose,
-  dissoc,
-  map,
-  propOr,
-  toPairs,
-  uniqBy,
-  prop,
-  last,
-} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Chip from '@material-ui/core/Chip';
@@ -31,7 +20,7 @@ import {
   convertFilters,
   saveViewParameters,
 } from '../../utils/ListParameters';
-import Filters, { uniqFilters } from './common/lists/Filters';
+import Filters, { isUniqFilter } from './common/lists/Filters';
 import { truncate } from '../../utils/String';
 
 const styles = () => ({
@@ -66,7 +55,7 @@ class Search extends Component {
       'view-search',
     );
     this.state = {
-      filters: propOr({}, 'filters', params),
+      filters: R.propOr({}, 'filters', params),
     };
   }
 
@@ -87,9 +76,9 @@ class Search extends Component {
     if (this.state.filters[key] && this.state.filters[key].length > 0) {
       this.setState(
         {
-          filters: assoc(
+          filters: R.assoc(
             key,
-            uniqFilters.includes(key)
+            isUniqFilter(key)
               ? [{ id, value }]
               : R.uniqBy(R.prop('id'), [
                 { id, value },
@@ -103,7 +92,7 @@ class Search extends Component {
     } else {
       this.setState(
         {
-          filters: assoc(key, [{ id, value }], this.state.filters),
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
         },
         () => this.saveView(),
       );
@@ -111,7 +100,7 @@ class Search extends Component {
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   render() {
@@ -159,15 +148,15 @@ class Search extends Component {
             currentFilters={filters}
           />
           <div className={classes.filters}>
-            {map((currentFilter) => {
+            {R.map((currentFilter) => {
               const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
               const values = (
                 <span>
-                  {map(
+                  {R.map(
                     (n) => (
                       <span key={n.value}>
                         {truncate(n.value, 15)}{' '}
-                        {last(currentFilter[1]).value !== n.value && (
+                        {R.last(currentFilter[1]).value !== n.value && (
                           <code>OR</code>
                         )}
                       </span>
@@ -177,9 +166,8 @@ class Search extends Component {
                 </span>
               );
               return (
-                <span>
+                <span key={currentFilter[0]}>
                   <Chip
-                    key={currentFilter[0]}
                     classes={{ root: classes.filter }}
                     label={
                       <div>
@@ -191,7 +179,7 @@ class Search extends Component {
                       currentFilter[0],
                     )}
                   />
-                  {last(toPairs(filters))[0] !== currentFilter[0] && (
+                  {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
                     <Chip
                       classes={{ root: classes.operator }}
                       label={t('AND')}
@@ -199,7 +187,7 @@ class Search extends Component {
                   )}
                 </span>
               );
-            }, toPairs(filters))}
+            }, R.toPairs(filters))}
           </div>
         </div>
         <div className="clearfix" />
@@ -245,4 +233,4 @@ Search.propTypes = {
   me: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(Search);
+export default R.compose(inject18n, withRouter, withStyles(styles))(Search);

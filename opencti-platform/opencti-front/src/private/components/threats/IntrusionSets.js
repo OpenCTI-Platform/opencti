@@ -1,8 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  assoc, compose, dissoc, propOr, uniqBy, prop,
-} from 'ramda';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import { QueryRenderer } from '../../../relay/environment';
@@ -22,7 +19,7 @@ import IntrusionSetsLines, {
 } from './intrusion_sets/IntrusionSetsLines';
 import IntrusionSetCreation from './intrusion_sets/IntrusionSetCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
-import { uniqFilters } from '../common/lists/Filters';
+import { isUniqFilter } from '../common/lists/Filters';
 
 class IntrusionSets extends Component {
   constructor(props) {
@@ -33,11 +30,11 @@ class IntrusionSets extends Component {
       'view-intrusion_sets',
     );
     this.state = {
-      sortBy: propOr('name', 'sortBy', params),
-      orderAsc: propOr(true, 'orderAsc', params),
-      searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('cards', 'view', params),
-      filters: propOr({}, 'filters', params),
+      sortBy: R.propOr('name', 'sortBy', params),
+      orderAsc: R.propOr(true, 'orderAsc', params),
+      searchTerm: R.propOr('', 'searchTerm', params),
+      view: R.propOr('cards', 'view', params),
+      filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
     };
@@ -76,9 +73,9 @@ class IntrusionSets extends Component {
     if (this.state.filters[key] && this.state.filters[key].length > 0) {
       this.setState(
         {
-          filters: assoc(
+          filters: R.assoc(
             key,
-            uniqFilters.includes(key)
+            isUniqFilter(key)
               ? [{ id, value }]
               : R.uniqBy(R.prop('id'), [
                 { id, value },
@@ -92,7 +89,7 @@ class IntrusionSets extends Component {
     } else {
       this.setState(
         {
-          filters: assoc(key, [{ id, value }], this.state.filters),
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
         },
         () => this.saveView(),
       );
@@ -100,7 +97,7 @@ class IntrusionSets extends Component {
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {
@@ -271,4 +268,4 @@ IntrusionSets.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter)(IntrusionSets);
+export default R.compose(inject18n, withRouter)(IntrusionSets);

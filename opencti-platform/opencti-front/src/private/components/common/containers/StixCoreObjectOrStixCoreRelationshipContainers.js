@@ -1,8 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  assoc, compose, dissoc, propOr, uniqBy, prop,
-} from 'ramda';
 import { withRouter } from 'react-router-dom';
 import Drawer from '@material-ui/core/Drawer';
 import { withStyles } from '@material-ui/core/styles';
@@ -27,7 +24,7 @@ import StixCoreObjectOrStixCoreRelationshipContainersGraph, {
 } from './StixCoreObjectOrStixCoreRelationshipContainersGraph';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
-import { uniqFilters } from '../lists/Filters';
+import { isUniqFilter } from '../lists/Filters';
 
 const VIEW_AS_KNOWLEDGE = 'knowledge';
 
@@ -63,14 +60,14 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       }`,
     );
     this.state = {
-      sortBy: propOr('created', 'sortBy', this.params),
-      orderAsc: propOr(false, 'orderAsc', this.params),
-      searchTerm: propOr('', 'searchTerm', this.params),
-      view: propOr('lines', 'view', this.params),
-      filters: propOr({}, 'filters', this.params),
+      sortBy: R.propOr('created', 'sortBy', this.params),
+      orderAsc: R.propOr(false, 'orderAsc', this.params),
+      searchTerm: R.propOr('', 'searchTerm', this.params),
+      view: R.propOr('lines', 'view', this.params),
+      filters: R.propOr({}, 'filters', this.params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
-      viewAs: propOr(VIEW_AS_KNOWLEDGE, 'viewAs', this.params),
+      viewAs: R.propOr(VIEW_AS_KNOWLEDGE, 'viewAs', this.params),
     };
   }
 
@@ -134,9 +131,9 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
     if (this.state.filters[key] && this.state.filters[key].length > 0) {
       this.setState(
         {
-          filters: assoc(
+          filters: R.assoc(
             key,
-            uniqFilters.includes(key)
+            isUniqFilter(key)
               ? [{ id, value }]
               : R.uniqBy(R.prop('id'), [
                 { id, value },
@@ -150,7 +147,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
     } else {
       this.setState(
         {
-          filters: assoc(key, [{ id, value }], this.state.filters),
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
         },
         () => this.saveView(),
       );
@@ -158,7 +155,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {
@@ -421,7 +418,7 @@ StixCoreObjectOrStixCoreRelationshipContainers.propTypes = {
   viewAs: PropTypes.string,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withRouter,
   withStyles(styles),

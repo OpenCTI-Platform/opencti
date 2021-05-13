@@ -1,8 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  assoc, compose, dissoc, propOr, uniqBy, prop,
-} from 'ramda';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import { QueryRenderer } from '../../../relay/environment';
@@ -16,7 +13,7 @@ import ReportsLines, { reportsLinesQuery } from './reports/ReportsLines';
 import inject18n from '../../../components/i18n';
 import ReportCreation from './reports/ReportCreation';
 import ToolBar from '../data/ToolBar';
-import { uniqFilters } from '../common/lists/Filters';
+import { isUniqFilter } from '../common/lists/Filters';
 
 class Reports extends Component {
   constructor(props) {
@@ -27,11 +24,11 @@ class Reports extends Component {
       `view-reports${props.objectId ? `-${props.objectId}` : ''}`,
     );
     this.state = {
-      sortBy: propOr('published', 'sortBy', params),
-      orderAsc: propOr(false, 'orderAsc', params),
-      searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('lines', 'view', params),
-      filters: propOr({}, 'filters', params),
+      sortBy: R.propOr('published', 'sortBy', params),
+      orderAsc: R.propOr(false, 'orderAsc', params),
+      searchTerm: R.propOr('', 'searchTerm', params),
+      view: R.propOr('lines', 'view', params),
+      filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
@@ -103,9 +100,9 @@ class Reports extends Component {
     if (this.state.filters[key] && this.state.filters[key].length > 0) {
       this.setState(
         {
-          filters: assoc(
+          filters: R.assoc(
             key,
-            uniqFilters.includes(key)
+            isUniqFilter(key)
               ? [{ id, value }]
               : R.uniqBy(R.prop('id'), [
                 { id, value },
@@ -119,7 +116,7 @@ class Reports extends Component {
     } else {
       this.setState(
         {
-          filters: assoc(key, [{ id, value }], this.state.filters),
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
         },
         () => this.saveView(),
       );
@@ -127,7 +124,7 @@ class Reports extends Component {
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {
@@ -312,4 +309,4 @@ Reports.propTypes = {
   onChangeOpenExports: PropTypes.func,
 };
 
-export default compose(inject18n, withRouter)(Reports);
+export default R.compose(inject18n, withRouter)(Reports);
