@@ -56,7 +56,7 @@ const TextField = (props) => {
         ) : meta.touched ? (
           meta.error
         ) : (
-          ''
+          props.helperText
         )
       }
     />
