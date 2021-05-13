@@ -9,7 +9,7 @@ import { buildStixData } from '../database/stix';
 import { FunctionalError, ResourceNotFoundError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { GlobalFilters } from '../utils/filtering';
+import { adaptFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
 
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 
@@ -80,25 +80,15 @@ export const convertFiltersToQueryOptions = (filters, updated_at) => {
   const queryFilters = [];
   const types = [];
   if (filters) {
-    const filterEntries = Object.entries(filters);
+    const adaptedFilters = adaptFiltersFrontendFormat(filters);
+    const filterEntries = Object.entries(adaptedFilters);
     for (let index = 0; index < filterEntries.length; index += 1) {
       // eslint-disable-next-line prefer-const
-      let [key, val] = filterEntries[index];
-      if (key === 'entity_type') {
-        types.push(...val.map((v) => v.id));
+      let [key, { operator, values }] = filterEntries[index];
+      if (key === TYPE_FILTER) {
+        types.push(...values.map((v) => v.id));
       } else {
-        let operator = 'eq';
-        if (key.endsWith('start_date') || key.endsWith('_gt')) {
-          key = key.replace('_start_date', '').replace('_gt', '');
-          operator = 'gt';
-        } else if (key.endsWith('end_date') || key.endsWith('_lt')) {
-          key = key.replace('_end_date', '').replace('_lt', '');
-          operator = 'lt';
-        } else if (key.endsWith('_lte')) {
-          key = key.replace('_lte', '');
-          operator = 'lte';
-        }
-        queryFilters.push({ key: GlobalFilters[key] || key, values: val.map((v) => v.id), operator });
+        queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator });
       }
     }
   }

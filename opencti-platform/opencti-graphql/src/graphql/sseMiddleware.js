@@ -25,6 +25,7 @@ import {
 import { buildStixData } from '../database/stix';
 import { generateInternalType, parents } from '../schema/schemaUtils';
 import { BYPASS, isBypassUser } from '../utils/access';
+import { adaptFiltersFrontendFormat, TYPE_FILTER } from '../utils/filtering';
 
 let heartbeat;
 const MIN_LIVE_STREAM_EVENT_VERSION = 2;
@@ -34,12 +35,11 @@ const broadcastClients = {};
 const MARKING_FILTER = 'markedBy';
 const LABEL_FILTER = 'labelledBy';
 const CREATOR_FILTER = 'createdBy';
-const TYPE_FILTER = 'entity_type';
-const X_OPENCTI_SCORE_FILTER = 'x_opencti_score';
-const X_OPENCTI_DETECTION_FILTER = 'x_opencti_detection';
+const SCORE_FILTER = 'x_opencti_score';
+const DETECTION_FILTER = 'x_opencti_detection';
 const CONFIDENCE_FILTER = 'confidence';
 const REVOKED_FILTER = 'revoked';
-const INDICATOR_TYPES_FILTER = 'indicator_types';
+const PATTERN_FILTER = 'pattern_type';
 
 const EVENT_ADD = 'add';
 const EVENT_DEL = 'del';
@@ -200,12 +200,14 @@ export const computeEventsDiff = (elements) => {
     return parseInt(timeA, 10) - parseInt(timeB, 10);
   }, retainElements);
 };
+
 export const isInstanceMatchFilters = (instance, filters) => {
+  // Pre filters transformation to handle specific frontend format
+  const adaptedFilters = adaptFiltersFrontendFormat(filters);
   // User is granted but we still need to apply filters if needed
-  const filterEntries = Object.entries(filters);
+  const filterEntries = Object.entries(adaptedFilters);
   for (let index = 0; index < filterEntries.length; index += 1) {
-    const [type, values] = filterEntries[index];
-    // --- Directly accessible in the event
+    const [type, { operator, values }] = filterEntries[index];
     // Markings filtering
     if (type === MARKING_FILTER) {
       // event must have one of this marking
@@ -213,7 +215,6 @@ export const isInstanceMatchFilters = (instance, filters) => {
       const found = values.map((v) => v.id).some((r) => markingIds.includes(r));
       if (!found) return false;
     }
-    // --- Depending of the data
     // Entity type filtering
     if (type === TYPE_FILTER) {
       const instanceType = generateInternalType(instance);
@@ -241,6 +242,41 @@ export const isInstanceMatchFilters = (instance, filters) => {
     if (type === LABEL_FILTER) {
       const labelsIds = (instance.labels || []).map((l) => l.x_opencti_internal_id);
       const found = values.map((v) => v.id).some((r) => labelsIds.includes(r));
+      if (!found) return false;
+    }
+    // Boolean filtering
+    if (type === REVOKED_FILTER || type === DETECTION_FILTER) {
+      const { id } = R.head(values);
+      const found = (id === 'true') === instance[type];
+      if (!found) return false;
+    }
+    // Numeric filtering
+    if (type === SCORE_FILTER || type === CONFIDENCE_FILTER) {
+      const { id } = R.head(values);
+      let found = false;
+      const numeric = parseInt(id, 10);
+      switch (operator) {
+        case 'lt':
+          found = instance[type] < numeric;
+          break;
+        case 'lte':
+          found = instance[type] <= numeric;
+          break;
+        case 'gt':
+          found = instance[type] > numeric;
+          break;
+        case 'gte':
+          found = instance[type] >= numeric;
+          break;
+        default:
+          found = instance[type] === numeric;
+      }
+      if (!found) return false;
+    }
+    // String filtering
+    if (type === PATTERN_FILTER) {
+      const { id } = R.head(values);
+      const found = id === instance[type];
       if (!found) return false;
     }
   }

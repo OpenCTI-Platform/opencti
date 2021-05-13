@@ -3,7 +3,7 @@ import { formatError as apolloFormatError } from 'apollo-errors';
 import { GraphQLError } from 'graphql';
 import { dissocPath } from 'ramda';
 import createSchema from './schema';
-import { DEV_MODE } from '../config/conf';
+import conf, { DEV_MODE } from '../config/conf';
 import { authenticateUser, userWithOrigin } from '../domain/user';
 import { UnknownError, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
@@ -18,10 +18,12 @@ const buildContext = (user, req, res) => {
   return { req, res, user, workId };
 };
 const createApolloServer = () => {
+  const cdnUrl = conf.get('app:playground_cdn_url');
   return new ApolloServer({
     schema: createSchema(),
     introspection: true,
     playground: {
+      cdnUrl,
       settings: {
         'request.credentials': 'same-origin',
       },

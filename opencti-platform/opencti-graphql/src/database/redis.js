@@ -573,7 +573,9 @@ export const createStreamProcessor = (user, callback, maxRange = MAX_RANGE_MESSA
       if (processingLoopPromise) {
         await processingLoopPromise;
       }
-      await client.disconnect();
+      if (client) {
+        await client.disconnect();
+      }
     },
   };
 };
