@@ -45,8 +45,7 @@ const styles = (theme) => ({
     float: 'left',
   },
   filters: {
-    float: 'left',
-    margin: '-8px 18px 0 -5px',
+    marginTop: 20,
   },
   filter: {
     margin: '0 10px 10px 0',
@@ -105,7 +104,7 @@ const TaxiiCollectionEditionContainer = (props) => {
         key,
         isUniqFilter(key)
           ? [{ id, value }]
-          : R.uniqBy(R.prop('id'), [{ id, value }, ...this.state.filters[key]]),
+          : R.uniqBy(R.prop('id'), [{ id, value }, filters[key]]),
         filters,
       );
     } else {
@@ -149,29 +148,7 @@ const TaxiiCollectionEditionContainer = (props) => {
         >
           <Close fontSize="small" />
         </IconButton>
-        <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update a TAXII collection')}
-        </Typography>
-        <div style={{ float: 'right', margin: '10px 0 0 0' }}>
-          <Filters
-            variant="text"
-            availableFilterKeys={[
-              'entity_type',
-              'markedBy',
-              'labelledBy',
-              'createdBy',
-              'x_opencti_score_gt',
-              'x_opencti_detection',
-              'revoked',
-              'confidence_gt',
-              'pattern_type',
-            ]}
-            currentFilters={[]}
-            handleAddFilter={handleAddFilter}
-            noDirectFilters={true}
-          />
-        </div>
-        <div className="clearfix" />
+        <Typography variant="h6">{t('Update a TAXII collection')}</Typography>
       </div>
       <div className={classes.container}>
         <Formik
@@ -197,50 +174,68 @@ const TaxiiCollectionEditionContainer = (props) => {
                 onSubmit={handleSubmitField}
               />
               <div style={{ marginTop: 35 }}>
-                <div className={classes.filters}>
-                  {R.map((currentFilter) => {
-                    const label = `${truncate(
-                      t(`filter_${currentFilter[0]}`),
-                      20,
-                    )}`;
-                    const values = (
-                      <span>
-                        {R.map(
-                          (n) => (
-                            <span key={n.value}>
-                              {n.value && n.value.length > 0
-                                ? truncate(n.value, 15)
-                                : t('No label')}{' '}
-                              {R.last(currentFilter[1]).value !== n.value && (
-                                <code>OR</code>
-                              )}{' '}
-                            </span>
-                          ),
-                          currentFilter[1],
-                        )}
-                      </span>
-                    );
-                    return (
-                      <span key={currentFilter[0]}>
+                <Filters
+                  variant="text"
+                  availableFilterKeys={[
+                    'entity_type',
+                    'markedBy',
+                    'labelledBy',
+                    'createdBy',
+                    'x_opencti_score_gt',
+                    'x_opencti_detection',
+                    'revoked',
+                    'confidence_gt',
+                    'pattern_type',
+                  ]}
+                  currentFilters={[]}
+                  handleAddFilter={handleAddFilter}
+                  noDirectFilters={true}
+                />
+              </div>
+              <div className="clearfix" />
+              <div className={classes.filters}>
+                {R.map((currentFilter) => {
+                  const label = `${truncate(
+                    t(`filter_${currentFilter[0]}`),
+                    20,
+                  )}`;
+                  const values = (
+                    <span>
+                      {R.map(
+                        (n) => (
+                          <span key={n.value}>
+                            {n.value && n.value.length > 0
+                              ? truncate(n.value, 15)
+                              : t('No label')}{' '}
+                            {R.last(currentFilter[1]).value !== n.value && (
+                              <code>OR</code>
+                            )}{' '}
+                          </span>
+                        ),
+                        currentFilter[1],
+                      )}
+                    </span>
+                  );
+                  return (
+                    <span key={currentFilter[0]}>
+                      <Chip
+                        classes={{ root: classes.filter }}
+                        label={
+                          <div>
+                            <strong>{label}</strong>: {values}
+                          </div>
+                        }
+                        onDelete={() => handleRemoveFilter(currentFilter[0])}
+                      />
+                      {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
                         <Chip
-                          classes={{ root: classes.filter }}
-                          label={
-                            <div>
-                              <strong>{label}</strong>: {values}
-                            </div>
-                          }
-                          onDelete={() => handleRemoveFilter(currentFilter[0])}
+                          classes={{ root: classes.operator }}
+                          label={t('AND')}
                         />
-                        {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
-                          <Chip
-                            classes={{ root: classes.operator }}
-                            label={t('AND')}
-                          />
-                        )}
-                      </span>
-                    );
-                  }, R.toPairs(filters))}
-                </div>
+                      )}
+                    </span>
+                  );
+                }, R.toPairs(filters))}
               </div>
             </Form>
           )}
