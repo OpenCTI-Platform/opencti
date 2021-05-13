@@ -35,6 +35,11 @@ const MARKING_FILTER = 'markedBy';
 const LABEL_FILTER = 'labelledBy';
 const CREATOR_FILTER = 'createdBy';
 const TYPE_FILTER = 'entity_type';
+const X_OPENCTI_SCORE_FILTER = 'x_opencti_score';
+const X_OPENCTI_DETECTION_FILTER = 'x_opencti_detection';
+const CONFIDENCE_FILTER = 'confidence';
+const REVOKED_FILTER = 'revoked';
+const INDICATOR_TYPES_FILTER = 'indicator_types';
 
 const EVENT_ADD = 'add';
 const EVENT_DEL = 'del';

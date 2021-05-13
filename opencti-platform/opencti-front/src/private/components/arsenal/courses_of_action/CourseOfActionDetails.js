@@ -9,9 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import Chip from '@material-ui/core/Chip';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 import CoursesOfActionAttackPatterns from './CourseOfActionAttackPatterns';
-import ItemCreator from '../../../../components/ItemCreator';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({

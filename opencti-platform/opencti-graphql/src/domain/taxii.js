@@ -82,11 +82,23 @@ export const convertFiltersToQueryOptions = (filters, updated_at) => {
   if (filters) {
     const filterEntries = Object.entries(filters);
     for (let index = 0; index < filterEntries.length; index += 1) {
-      const [key, val] = filterEntries[index];
+      // eslint-disable-next-line prefer-const
+      let [key, val] = filterEntries[index];
       if (key === 'entity_type') {
         types.push(...val.map((v) => v.id));
       } else {
-        queryFilters.push({ key: GlobalFilters[key] || key, values: val.map((v) => v.id) });
+        let operator = 'eq';
+        if (key.endsWith('start_date') || key.endsWith('_gt')) {
+          key = key.replace('_start_date', '').replace('_gt', '');
+          operator = 'gt';
+        } else if (key.endsWith('end_date') || key.endsWith('_lt')) {
+          key = key.replace('_end_date', '').replace('_lt', '');
+          operator = 'lt';
+        } else if (key.endsWith('_lte')) {
+          key = key.replace('_lte', '');
+          operator = 'lte';
+        }
+        queryFilters.push({ key: GlobalFilters[key] || key, values: val.map((v) => v.id), operator });
       }
     }
   }
