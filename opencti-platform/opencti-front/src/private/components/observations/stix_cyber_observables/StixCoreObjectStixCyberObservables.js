@@ -29,6 +29,7 @@ class StixCoreObjectStixCyberObservables extends Component {
       toType: 'All',
       targetStixCyberObservableTypes: ['Stix-Cyber-Observable'],
       view: 'lines',
+      numberOfElements: { number: 0, symbol: '' },
     };
   }
 
@@ -38,6 +39,10 @@ class StixCoreObjectStixCyberObservables extends Component {
 
   handleSearch(value) {
     this.setState({ searchTerm: value });
+  }
+
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
   }
 
   handleToggle(type) {
@@ -70,7 +75,7 @@ class StixCoreObjectStixCyberObservables extends Component {
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc } = this.state;
+    const { sortBy, orderAsc, numberOfElements } = this.state;
     const { stixCoreObjectLink } = this.props;
     const dataColumns = {
       entity_type: {
@@ -107,6 +112,7 @@ class StixCoreObjectStixCyberObservables extends Component {
         handleSearch={this.handleSearch.bind(this)}
         displayImport={true}
         secondaryAction={true}
+        numberOfElements={numberOfElements}
       >
         <QueryRenderer
           query={stixCoreObjectStixCyberObservablesLinesQuery}
@@ -118,6 +124,7 @@ class StixCoreObjectStixCyberObservables extends Component {
               stixCoreObjectLink={stixCoreObjectLink}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         />
@@ -127,16 +134,10 @@ class StixCoreObjectStixCyberObservables extends Component {
 
   render() {
     const {
-      classes,
-      stixCoreObjectId,
-      relationshipType,
-      noRightBar,
+      classes, stixCoreObjectId, relationshipType, noRightBar,
     } = this.props;
     const {
-      view,
-      targetStixCyberObservableTypes,
-      sortBy,
-      orderAsc,
+      view, targetStixCyberObservableTypes, sortBy, orderAsc,
     } = this.state;
     const paginationOptions = {
       fromTypes: targetStixCyberObservableTypes,

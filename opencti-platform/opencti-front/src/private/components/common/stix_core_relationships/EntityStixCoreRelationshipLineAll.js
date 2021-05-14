@@ -14,6 +14,7 @@ import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
+import { defaultValue } from '../../../../utils/Graph';
 
 const styles = (theme) => ({
   item: {
@@ -83,7 +84,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {!restricted ? remoteNode.name : t('Restricted')}
+                {!restricted ? defaultValue(remoteNode) : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}

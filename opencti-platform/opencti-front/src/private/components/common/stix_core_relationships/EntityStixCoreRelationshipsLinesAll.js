@@ -8,10 +8,20 @@ import {
   EntityStixCoreRelationshipLineAll,
   EntityStixCoreRelationshipLineAllDummy,
 } from './EntityStixCoreRelationshipLineAll';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
 
 class EntityStixCoreRelationshipsLinesAll extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'stixCoreRelationships',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
     const {
       initialLoading,

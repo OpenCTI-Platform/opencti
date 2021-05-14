@@ -131,6 +131,10 @@ class EntityStixCoreRelationships extends Component {
     );
   }
 
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
+  }
+
   renderBottomMenu() {
     const {
       t,
@@ -284,7 +288,7 @@ class EntityStixCoreRelationships extends Component {
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc } = this.state;
+    const { sortBy, orderAsc, numberOfElements } = this.state;
     const {
       entityLink,
       entityId,
@@ -331,6 +335,7 @@ class EntityStixCoreRelationships extends Component {
         handleSearch={this.handleSearch.bind(this)}
         displayImport={true}
         secondaryAction={true}
+        numberOfElements={numberOfElements}
       >
         <QueryRenderer
           query={
@@ -352,6 +357,7 @@ class EntityStixCoreRelationships extends Component {
                 entityId={entityId}
                 dataColumns={dataColumns}
                 initialLoading={props === null}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
               />
             ) : isRelationReversed ? (
               <EntityStixCoreRelationshipsLinesTo
@@ -360,6 +366,7 @@ class EntityStixCoreRelationships extends Component {
                 entityLink={entityLink}
                 dataColumns={dataColumns}
                 initialLoading={props === null}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
               />
             ) : (
               <EntityStixCoreRelationshipsLinesFrom
@@ -368,6 +375,7 @@ class EntityStixCoreRelationships extends Component {
                 entityLink={entityLink}
                 dataColumns={dataColumns}
                 initialLoading={props === null}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
               />
             ))
           }
