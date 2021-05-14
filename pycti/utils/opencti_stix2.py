@@ -1545,7 +1545,11 @@ class OpenCTIStix2:
                         self.import_observable(item, update, types)
                 else:
                     # Check the scope
-                    if types is None or len(types) == 0:
+                    if (
+                        item["type"] == "marking-definition"
+                        or types is None
+                        or len(types) == 0
+                    ):
                         self.import_object(item, update, types)
                     # Handle identity & location if part of the scope
                     elif item["type"] in types:
