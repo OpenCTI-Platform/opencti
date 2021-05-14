@@ -117,6 +117,7 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
+  ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
@@ -1458,6 +1459,7 @@ const getLocksFromInput = (type, input) => {
     let additionalFields = {};
     if (isStixDomainObjectIdentity(type)) additionalFields = { identity_class: input.identity_class };
     if (isStixDomainObjectLocation(type)) additionalFields = { x_opencti_location_type: input.x_opencti_location_type };
+    if (type === ENTITY_TYPE_ATTACK_PATTERN && input.x_mitre_id) additionalFields = { x_mitre_id: input.x_mitre_id };
     lockIds.push(...generateAliasesId(aliases, additionalFields));
   }
   return lockIds;
