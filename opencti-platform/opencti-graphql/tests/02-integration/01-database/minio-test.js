@@ -45,7 +45,7 @@ describe('Minio file listing', () => {
     let file = head(list.edges).node;
     expect(file.id).toEqual(exportFileId);
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(10513);
+    expect(file.size).toEqual(10519);
     expect(file.metaData).not.toBeNull();
     expect(file.metaData.encoding).toEqual('7bit');
     expect(file.metaData.filename).toEqual(exportFileName.replace(/\s/g, '%20'));
@@ -55,7 +55,7 @@ describe('Minio file listing', () => {
     expect(list.edges.length).toEqual(1);
     file = head(list.edges).node;
     expect(file.id).toEqual(importFileId);
-    expect(file.size).toEqual(10513);
+    expect(file.size).toEqual(10519);
     expect(file.name).toEqual(exportFileName);
   });
   it('should file download', async () => {
@@ -74,7 +74,7 @@ describe('Minio file listing', () => {
     expect(file).not.toBeNull();
     expect(file.id).toEqual(exportFileId);
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(10513);
+    expect(file.size).toEqual(10519);
   });
   it('should delete file', async () => {
     let deleted = await deleteFile(ADMIN_USER, exportFileId);

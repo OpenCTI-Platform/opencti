@@ -450,11 +450,11 @@ describe('Elasticsearch pagination', () => {
   });
   it('should entity paginate with classic search', async () => {
     let data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { search: 'malicious' });
-    expect(data.edges.length).toEqual(2);
+    expect(data.edges.length).toEqual(3);
     data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { search: 'with malicious' });
     expect(data.edges.length).toEqual(5);
     data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { search: '"with malicious"' });
-    expect(data.edges.length).toEqual(1);
+    expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate with escaped search', async () => {
     let data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { search: '(Citation:' });

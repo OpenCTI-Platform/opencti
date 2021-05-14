@@ -555,7 +555,7 @@
       "type": "attack-pattern",
       "spec_version": "2.1",
       "x_opencti_external_id": "T1368",
-      "name": "Spear phishing messages with text only",
+      "name": "Spear phishing messages with malicious links",
       "labels": ["attack-pattern"],
       "description": "This technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.\n\nEmails with text only phishing messages do not contain any attachments or links to websites. They are designed to get a user to take a follow on action such as calling a phone number or wiring money. They can also be used to elicit an email response to confirm existence of an account or user. (Citation: Paypal Phone Scam)",
       "created": "2017-12-14T16:46:06.044Z",
