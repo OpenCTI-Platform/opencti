@@ -152,7 +152,7 @@ export const stixDomainObjectFieldsToBeUpdated = {
   [ENTITY_TYPE_IDENTITY_INDIVIDUAL]: ['name', 'revoked', 'description'],
   [ENTITY_TYPE_IDENTITY_ORGANIZATION]: ['name', 'revoked', 'description'],
   [ENTITY_TYPE_IDENTITY_SECTOR]: ['name', 'revoked', 'description'],
-  [ENTITY_TYPE_INDICATOR]: ['name', 'revoked', 'description'],
+  [ENTITY_TYPE_INDICATOR]: ['name', 'revoked', 'description', 'valid_from', 'valid_until'],
   [ENTITY_TYPE_INFRASTRUCTURE]: ['name', 'revoked', 'description'],
   [ENTITY_TYPE_INTRUSION_SET]: [
     'name',
