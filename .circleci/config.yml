@@ -34,9 +34,6 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
-          working_directory: ~/
-          command: cp -a ./opencti/* ./opencti_built
-      - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn install
       - run:
@@ -309,6 +306,7 @@ jobs:
             docker buildx install
             # Run binfmt
             docker run --rm --privileged tonistiigi/binfmt:latest --install "$BUILDX_PLATFORMS"
+            docker buildx create --name mybuilder --use
       - run:
           working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
