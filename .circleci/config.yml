@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  build_platform:
+  build_frontend:
     working_directory: ~/opencti
     docker:
       - image: nikolaik/python-nodejs:python3.9-nodejs15
@@ -16,6 +16,20 @@ jobs:
           working_directory: ~/opencti/opencti-platform/opencti-front
           command: yarn build
           no_output_timeout: 30m
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - opencti
+            
+  build_platform:
+    working_directory: ~/opencti
+    docker:
+      - image: nikolaik/python-nodejs:python3.9-nodejs15
+    steps:
+      - run:
+          command: apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y build-essential libffi-dev
+      - attach_workspace:
+          at: ~/
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn install
@@ -25,23 +39,17 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - opencti
+            - opencti_built
 
   build_platform_musl:
-    working_directory: ~/opencti_musl
+    working_directory: ~/opencti
     docker:
       - image: nikolaik/python-nodejs:python3.9-nodejs15-alpine
     steps:
       - run:
           command: apk update && apk upgrade && apk --no-cache add git build-base libmagic libffi-dev
-      - checkout
-      - run: 
-          working_directory: ~/opencti_musl/opencti-platform/opencti-front
-          command: yarn install
-      - run:
-          working_directory: ~/opencti_musl/opencti-platform/opencti-front
-          command: yarn build
-          no_output_timeout: 30m          
+      - attach_workspace:
+          at: ~/           
       - run:
           working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
           command: yarn install
@@ -51,10 +59,10 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - opencti_musl         
+            - opencti_built_musl         
             
   package_rolling:
-    working_directory: ~/opencti
+    working_directory: ~/opencti_built
     docker:
       - image: circleci/node:15-stretch
     steps:
@@ -77,7 +85,7 @@ jobs:
           command: scp "opencti-$(date '+%Y%m%d').tar.gz" git-OLOszi5F@opencti.io:/dns/io/opencti/releases/
 
   package_rolling_musl:
-    working_directory: ~/opencti_musl
+    working_directory: ~/opencti_built_musl
     docker:
       - image: circleci/node:15-stretch
     steps:
@@ -100,7 +108,7 @@ jobs:
           command: scp "opencti-$(date '+%Y%m%d')_musl.tar.gz" git-OLOszi5F@opencti.io:/dns/io/opencti/releases/
 
   deploy_demo:
-    working_directory: ~/opencti
+    working_directory: ~/opencti_built
     docker:
       - image: circleci/node:15-stretch
     steps:
@@ -137,7 +145,7 @@ jobs:
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
   deploy_reference:
-    working_directory: ~/opencti
+    working_directory: ~/opencti_built
     docker:
       - image: circleci/node:15-stretch
     steps:
@@ -174,7 +182,7 @@ jobs:
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
   deploy_testing:
-    working_directory: ~/opencti
+    working_directory: ~/opencti_built
     docker:
       - image: circleci/node:15-stretch
     steps:
@@ -211,7 +219,7 @@ jobs:
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
           
   deploy_club:
-    working_directory: ~/opencti
+    working_directory: ~/opencti_built
     docker:
       - image: circleci/node:15-stretch
     steps:
@@ -252,7 +260,8 @@ jobs:
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
-      - checkout
+      - attach_workspace:
+          at: ~/
       - setup_remote_docker:
           version: 19.03.13
       - run:
@@ -283,7 +292,7 @@ jobs:
       - run:
           working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
-          command: docker build -t opencti/platform:rolling .
+          command: docker build -f Dockerfile_circleci -t opencti/platform:rolling .
           no_output_timeout: 30m
       - run:
           working_directory: ~/opencti/opencti-worker
@@ -299,14 +308,22 @@ jobs:
 workflows:
   opencti:
     jobs:
+      - build_frontend:
+          filters:
+            tags:
+              only: /.*/    
       - build_platform:
           filters:
             tags:
               only: /.*/
+          requires:
+            - build_frontend                
       - build_platform_musl:
           filters:
             tags:
-              only: /.*/           
+              only: /.*/      
+          requires:
+            - build_frontend                   
       - package_rolling:
           requires:
             - build_platform
@@ -351,14 +368,14 @@ workflows:
                 - master                                
       - docker_build_rolling:
           requires:
-            - build_platform  
+            - build_frontend  
           filters:
             branches:
               only:
                 - master
       - docker_build:
           requires:
-            - build_platform   
+            - build_frontend
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
