@@ -310,20 +310,17 @@ jobs:
             docker run --rm --privileged tonistiigi/binfmt:latest --install "$BUILDX_PLATFORMS"
             docker buildx create --name mybuilder --use
       - run:
-          working_directory: ~/opencti/opencti-platform
+          name: Login
+          command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run:
+          working_directory: ~/opencti_docker/opencti-platform
           name: Build Docker image opencti/platform
-          command: docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -f Dockerfile_circleci -t opencti/platform:rolling .
+          command: docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -f Dockerfile_circleci -t opencti/platform:rolling --push .
           no_output_timeout: 30m
       - run:
-          working_directory: ~/opencti/opencti-worker
+          working_directory: ~/opencti_docker/opencti-worker
           name: Build Docker image opencti/worker
-          command: docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t opencti/worker:rolling .
-      - run:
-          name: Publish Docker Image to Docker Hub
-          command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker push opencti/platform:rolling
-            docker push opencti/worker:rolling
+          command: docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t opencti/worker:rolling --push .
 
 workflows:
   opencti:
