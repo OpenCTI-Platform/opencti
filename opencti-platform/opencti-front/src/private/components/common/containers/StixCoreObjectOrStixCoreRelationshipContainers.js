@@ -315,7 +315,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       match: {
         params: { reportType },
       },
-      stixCoreObjectOrStixCoreRelationshipId,
+      stixDomainObjectOrStixCoreRelationship,
       authorId,
     } = this.props;
     const {
@@ -332,10 +332,13 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       });
     }
     if (authorId) finalFilters.push({ key: 'createdBy', values: [authorId] });
-    if (stixCoreObjectOrStixCoreRelationshipId) {
+    if (
+      stixDomainObjectOrStixCoreRelationship
+      && stixDomainObjectOrStixCoreRelationship.id
+    ) {
       finalFilters.push({
         key: 'objectContains',
-        values: [stixCoreObjectOrStixCoreRelationshipId],
+        values: [stixDomainObjectOrStixCoreRelationship.id],
       });
     }
     const paginationOptions = {
