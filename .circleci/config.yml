@@ -23,6 +23,8 @@ jobs:
           root: ~/
           paths:
             - opencti
+            - opencti_docker
+            - opencti_musl
             
   build_platform:
     working_directory: ~/opencti
