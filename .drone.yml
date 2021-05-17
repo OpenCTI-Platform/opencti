@@ -59,6 +59,12 @@ steps:
     event:
       - tag
 
+- name: slack
+  image: plugins/slack
+  settings:
+    webhook: https://hooks.slack.com/services/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
+    channel: notifications
+
 services:
 - name: redis
   image: redis:6.2.3

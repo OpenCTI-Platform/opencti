@@ -16,6 +16,9 @@ jobs:
           working_directory: ~/opencti/opencti-platform/opencti-front
           command: yarn build
           no_output_timeout: 30m
+      - run: 
+          working_directory: ~/
+          command: cp -a opencti opencti_docker && cp -a opencti opencti_musl
       - persist_to_workspace:
           root: ~/
           paths:
@@ -31,6 +34,9 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
+          working_directory: ~/
+          command: cp -a ./opencti/* ./opencti_built
+      - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn install
       - run:
@@ -39,10 +45,10 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - opencti_built
+            - opencti
 
   build_platform_musl:
-    working_directory: ~/opencti
+    working_directory: ~/opencti_musl
     docker:
       - image: nikolaik/python-nodejs:python3.9-nodejs15-alpine
     steps:
@@ -59,10 +65,10 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - opencti_built_musl         
+            - opencti_musl         
             
   package_rolling:
-    working_directory: ~/opencti_built
+    working_directory: ~/opencti
     docker:
       - image: circleci/node:15-stretch
     steps:
@@ -85,7 +91,7 @@ jobs:
           command: scp "opencti-$(date '+%Y%m%d').tar.gz" git-OLOszi5F@opencti.io:/dns/io/opencti/releases/
 
   package_rolling_musl:
-    working_directory: ~/opencti_built_musl
+    working_directory: ~/opencti_musl
     docker:
       - image: circleci/node:15-stretch
     steps:
@@ -108,7 +114,7 @@ jobs:
           command: scp "opencti-$(date '+%Y%m%d')_musl.tar.gz" git-OLOszi5F@opencti.io:/dns/io/opencti/releases/
 
   deploy_demo:
-    working_directory: ~/opencti_built
+    working_directory: ~/opencti
     docker:
       - image: circleci/node:15-stretch
     steps:
@@ -145,7 +151,7 @@ jobs:
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
   deploy_reference:
-    working_directory: ~/opencti_built
+    working_directory: ~/opencti
     docker:
       - image: circleci/node:15-stretch
     steps:
@@ -182,7 +188,7 @@ jobs:
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
   deploy_testing:
-    working_directory: ~/opencti_built
+    working_directory: ~/opencti
     docker:
       - image: circleci/node:15-stretch
     steps:
@@ -219,7 +225,7 @@ jobs:
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
           
   deploy_club:
-    working_directory: ~/opencti_built
+    working_directory: ~/opencti
     docker:
       - image: circleci/node:15-stretch
     steps:
@@ -256,7 +262,7 @@ jobs:
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master          
           
   docker_build:
-    working_directory: ~/opencti
+    working_directory: ~/opencti_docker
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
@@ -282,22 +288,36 @@ jobs:
             docker push opencti/worker:${CIRCLE_TAG}
 
   docker_build_rolling:
-    working_directory: ~/opencti
-    docker:
-      - image: circleci/buildpack-deps:stretch
+    working_directory: ~/opencti_docker
+    machine:
+      image: ubuntu-1604:202007-01
+    environment:
+      DOCKER_BUILDKIT: 1
     steps:
-      - checkout
-      - setup_remote_docker:
-          version: 19.03.13
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install buildx
+          command: |
+            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.4.2/buildx-v0.4.2.linux-amd64"
+            curl --output docker-buildx \
+              --silent --show-error --location --fail --retry 3 \
+              "$BUILDX_BINARY_URL"
+            mkdir -p ~/.docker/cli-plugins
+            mv docker-buildx ~/.docker/cli-plugins/
+            chmod a+x ~/.docker/cli-plugins/docker-buildx
+            docker buildx install
+            # Run binfmt
+            docker run --rm --privileged tonistiigi/binfmt:latest --install "$BUILDX_PLATFORMS"
       - run:
           working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
-          command: docker build -f Dockerfile_circleci -t opencti/platform:rolling .
+          command: docker buildx --platform linux/amd64,linux/arm64,linux/arm/v7 -f Dockerfile_circleci -t opencti/platform:rolling .
           no_output_timeout: 30m
       - run:
           working_directory: ~/opencti/opencti-worker
           name: Build Docker image opencti/worker
-          command: docker build -t opencti/worker:rolling .
+          command: docker buildx --platform linux/amd64,linux/arm64,linux/arm/v7 -t opencti/worker:rolling .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
