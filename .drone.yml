@@ -62,9 +62,13 @@ steps:
 - name: slack
   image: plugins/slack
   settings:
-    webhook: https://hooks.slack.com/services/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
+    webhook: https://hooks.slack.com/services/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
+    username: drone
+    icon_url: 
     channel: notifications
-
+  when:
+    status: [ success, failure ]
+    
 services:
 - name: redis
   image: redis:6.2.3

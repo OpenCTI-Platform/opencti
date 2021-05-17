@@ -312,12 +312,12 @@ jobs:
       - run:
           working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
-          command: docker buildx --platform linux/amd64,linux/arm64,linux/arm/v7 -f Dockerfile_circleci -t opencti/platform:rolling .
+          command: docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -f Dockerfile_circleci -t opencti/platform:rolling .
           no_output_timeout: 30m
       - run:
           working_directory: ~/opencti/opencti-worker
           name: Build Docker image opencti/worker
-          command: docker buildx --platform linux/amd64,linux/arm64,linux/arm/v7 -t opencti/worker:rolling .
+          command: docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t opencti/worker:rolling .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
