@@ -191,6 +191,7 @@ export const stixDomainObjectFieldsToBeUpdated = {
     'x_opencti_attack_vector',
     'x_opencti_integrity_impact',
     'x_opencti_availability_impact',
+    'x_opencti_confidentiality_impact',
   ],
   [ENTITY_TYPE_INCIDENT]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'objective'],
 };
@@ -770,6 +771,7 @@ export const stixDomainObjectsAttributes = {
     'x_opencti_attack_vector',
     'x_opencti_integrity_impact',
     'x_opencti_availability_impact',
+    'x_opencti_confidentiality_impact',
     'x_opencti_graph_data',
   ],
   [ENTITY_TYPE_INCIDENT]: [
