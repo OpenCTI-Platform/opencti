@@ -262,28 +262,46 @@ jobs:
           
   docker_build:
     working_directory: ~/opencti_docker
-    docker:
-      - image: circleci/buildpack-deps:stretch
+    machine:
+      image: ubuntu-1604:202007-01
+    environment:
+      DOCKER_BUILDKIT: 1
+      BUILDX_PLATFORMS: linux/amd64,linux/arm64,linux/ppc64le,linux/arm/v7
     steps:
       - attach_workspace:
           at: ~/
-      - setup_remote_docker:
-          version: 19.03.13
       - run:
-          working_directory: ~/opencti/opencti-platform
+          name: Install buildx
+          command: |
+            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.4.2/buildx-v0.4.2.linux-amd64"
+            curl --output docker-buildx \
+              --silent --show-error --location --fail --retry 3 \
+              "$BUILDX_BINARY_URL"
+            mkdir -p ~/.docker/cli-plugins
+            mv docker-buildx ~/.docker/cli-plugins/
+            chmod a+x ~/.docker/cli-plugins/docker-buildx
+            docker buildx install
+            # Run binfmt
+            docker run --rm --privileged tonistiigi/binfmt:latest --install "$BUILDX_PLATFORMS"
+            docker buildx create --name mybuilder --use
+      - run:
+          name: Login
+          command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run:
+          working_directory: ~/opencti_docker/opencti-platform
           name: Build Docker image opencti/platform
-          command: docker build -t opencti/platform:latest . && docker tag opencti/platform:latest opencti/platform:${CIRCLE_TAG}
+          command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci -t opencti/platform:latest --push .
+          no_output_timeout: 30m
       - run:
-          working_directory: ~/opencti/opencti-worker
+          working_directory: ~/opencti_docker/opencti-worker
           name: Build Docker image opencti/worker
-          command: docker build -t opencti/worker:latest . && docker tag opencti/worker:latest opencti/worker:${CIRCLE_TAG}
-      - run:
+          command: docker buildx build --platform $BUILDX_PLATFORMS -t opencti/worker:latest --push .
+       - run:
           name: Publish Docker Image to Docker Hub
           command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker push opencti/platform:latest
+            docker tag opencti/platform:latest opencti/platform:${CIRCLE_TAG}
+            docker tag opencti/worker:latest opencti/worker:${CIRCLE_TAG}
             docker push opencti/platform:${CIRCLE_TAG}
-            docker push opencti/worker:latest
             docker push opencti/worker:${CIRCLE_TAG}
 
   docker_build_rolling:
@@ -292,7 +310,7 @@ jobs:
       image: ubuntu-1604:202007-01
     environment:
       DOCKER_BUILDKIT: 1
-      BUILDX_PLATFORMS: linux/amd64,linux/arm64
+      BUILDX_PLATFORMS: linux/amd64
     steps:
       - attach_workspace:
           at: ~/
