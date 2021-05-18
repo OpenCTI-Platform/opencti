@@ -581,4 +581,39 @@ export const openVocabularies = {
         'Acting without identifiable reason or purpose and creating unpredictable events. Unpredictable is not a miscellaneous or default category. Unpredictable means a truly random and likely bizarre event, which seems to have no logical purpose to the victims.',
     },
   ],
+  'indicator-type-ov': [
+    {
+      key: 'anomalous-activity',
+      description:
+        'Unexpected, or unusual activity that may not necessarily be malicious or indicate compromise. This type of activity may include reconnaissance-like behavior such as port scans or version identification, network behavior anomalies, and asset and/or user behavioral anomalies.',
+    },
+    {
+      key: 'anonymization',
+      description:
+        'Suspected anonymization tools or infrastructure (proxy, TOR, VPN, etc.).',
+    },
+    {
+      key: 'benign',
+      description:
+        'Activity that is not suspicious or malicious in and of itself, but when combined with other activity may indicate suspicious or malicious behavior.',
+    },
+    {
+      key: 'compromised',
+      description: 'Assets that are suspected to be compromised.',
+    },
+    {
+      key: 'malicious-activity',
+      description: 'Patterns of suspected malicious objects and/or activity.',
+    },
+    {
+      key: 'attribution',
+      description:
+        'Patterns of behavior that indicate attribution to a particular Threat Actor or Campaign.',
+    },
+    {
+      key: 'unknown',
+      description:
+        'There is not enough information available to determine the type of indicator.',
+    },
+  ],
 };

@@ -27,10 +27,10 @@ const styles = () => ({
   chip: {
     fontSize: 12,
     lineHeight: '12px',
-    backgroundColor: 'rgba(0, 150, 136, 0.3)',
+    backgroundColor: 'rgba(64, 193, 255, 0.2)',
+    borderRadius: 5,
     color: '#ffffff',
     textTransform: 'uppercase',
-    borderRadius: '0',
     margin: '0 5px 5px 0',
   },
 });

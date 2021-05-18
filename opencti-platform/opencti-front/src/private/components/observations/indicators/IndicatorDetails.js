@@ -31,10 +31,10 @@ const styles = () => ({
   chip: {
     fontSize: 12,
     lineHeight: '12px',
-    backgroundColor: 'rgba(0, 150, 136, 0.3)',
+    backgroundColor: 'rgba(64, 193, 255, 0.2)',
+    borderRadius: 5,
     color: '#ffffff',
     textTransform: 'uppercase',
-    borderRadius: '0',
     margin: '0 5px 5px 0',
   },
 });
@@ -79,6 +79,21 @@ class IndicatorDetailsComponent extends Component {
                 {t('Description')}
               </Typography>
               <ExpandableMarkdown source={indicator.description} limit={400} />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Indicator types')}
+              </Typography>
+              {indicator.indicator_types
+                && indicator.indicator_types.map((indicatorType) => (
+                  <Chip
+                    key={indicatorType}
+                    classes={{ root: classes.chip }}
+                    label={indicatorType}
+                  />
+                ))}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -125,6 +140,7 @@ class IndicatorDetailsComponent extends Component {
                   })}
                 </List>
               )}
+
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -169,6 +185,7 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
       x_opencti_score
       x_opencti_detection
       x_mitre_platforms
+      indicator_types
       creator {
         id
         name
