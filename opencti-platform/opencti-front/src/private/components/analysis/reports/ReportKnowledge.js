@@ -11,6 +11,9 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import ReportKnowledgeGraph, {
   reportKnowledgeGraphQuery,
 } from './ReportKnowledgeGraph';
+import ReportKnowledgeCorrelation, {
+  reportKnowledgeCorrelationQuery,
+} from './ReportKnowledgeCorrelation';
 import Loader from '../../../../components/Loader';
 import ReportPopover from './ReportPopover';
 import AttackPatternsMatrix from '../../arsenal/attack_patterns/AttackPatternsMatrix';
@@ -119,7 +122,8 @@ class ReportKnowledgeComponent extends Component {
           PopoverComponent={<ReportPopover />}
           link={`/dashboard/analysis/reports/${report.id}/knowledge`}
           modes={[
-            { key: 'graph', label: 'Graph', current: mode === 'graph' },
+            { key: 'graph', label: 'Entity Graph', current: mode === 'graph' },
+            { key: 'correlation', label: 'Correlation', current: mode === 'correlation' },
             {
               key: 'matrix',
               label: 'Techniques matrix',
@@ -137,6 +141,22 @@ class ReportKnowledgeComponent extends Component {
               render={({ props }) => {
                 if (props && props.report) {
                   return <ReportKnowledgeGraph report={props.report} />;
+                }
+                return <Loader />;
+              }}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/analysis/reports/:reportId/knowledge/correlation"
+          render={() => (
+            <QueryRenderer
+              query={reportKnowledgeCorrelationQuery}
+              variables={{ id: report.id }}
+              render={({ props }) => {
+                if (props && props.report) {
+                  return <ReportKnowledgeCorrelation report={props.report} />;
                 }
                 return <Loader />;
               }}

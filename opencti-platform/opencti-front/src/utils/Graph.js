@@ -299,7 +299,7 @@ export const computeTimeRangeInterval = (objects) => {
 export const computeTimeRangeValues = (interval, objects) => {
   const elementsDates = R.map(
     (n) => timestamp(defaultDate(n)),
-    R.filter((n) => !n.parent_types.includes('basic-relationship'), objects),
+    R.filter((n) => n.parent_types && !n.parent_types.includes('basic-relationship'), objects),
   );
   const minutes = minutesBetweenDates(interval[0], interval[1]);
   const intervalInMinutes = Math.ceil(minutes / 100);
@@ -318,6 +318,148 @@ export const computeTimeRangeValues = (interval, objects) => {
     }),
     intervals,
   );
+};
+
+export const applyNodeFilters = (
+  nodesData,
+  stixCoreObjectsTypes = [],
+  markedBy = [],
+  createdBy = [],
+  excludedStixCoreObjectsTypes = [],
+  interval = [],
+) => {
+  const nodes = R.pipe(
+    R.filter(
+      (n) => excludedStixCoreObjectsTypes.length === 0
+        || !R.includes(n.entity_type, excludedStixCoreObjectsTypes),
+    ),
+    R.filter(
+      (n) => stixCoreObjectsTypes.length === 0
+        || R.includes(n.entity_type, stixCoreObjectsTypes),
+    ),
+    R.filter(
+      (n) => markedBy.length === 0
+        || !n.objectMarking
+        || R.any((m) => R.includes(m.node.id, markedBy), n.objectMarking.edges),
+    ),
+    R.filter(
+      (n) => createdBy.length === 0 || R.includes(n.createdBy.id, createdBy),
+    ),
+    R.filter(
+      (n) => interval.length === 0
+        || isNone(n.defaultDate)
+        || (n.defaultDate >= interval[0] && n.defaultDate <= interval[1]),
+    ),
+  )(nodesData);
+  return nodes;
+};
+
+export const applyFilters = (
+  graphData,
+  stixCoreObjectsTypes = [],
+  markedBy = [],
+  createdBy = [],
+  excludedStixCoreObjectsTypes = [],
+  interval = [],
+) => {
+  const nodes = applyNodeFilters(
+    graphData.nodes,
+    stixCoreObjectsTypes,
+    markedBy,
+    createdBy,
+    excludedStixCoreObjectsTypes,
+    interval,
+  );
+  const nodeIds = R.map((n) => n.id, nodes);
+  const links = R.pipe(
+    R.filter(
+      (n) => R.includes(n.source_id, nodeIds) && R.includes(n.target_id, nodeIds),
+    ),
+  )(graphData.links);
+  return {
+    nodes,
+    links,
+  };
+};
+
+export const buildCorrelationData = (objects, graphData, t, filterAdjust) => {
+  const thisReportLinkNodes = R.pipe(
+    R.filter(
+      (n) => n.reports && n.parent_types && n.reports.edges.length > 1,
+    ),
+  )(applyNodeFilters(
+    R.filter((o) => o && o.id && o.entity_type && o.reports, objects),
+    filterAdjust.stixCoreObjectsTypes,
+    filterAdjust.markedBy,
+    filterAdjust.createdBy,
+    [],
+    filterAdjust.selectedTimeRangeInterval,
+  ));
+  const relatedReportNodes = applyNodeFilters(
+    R.pipe(
+      R.map((n) => n.reports.edges),
+      R.flatten,
+      R.map((n) => n.node),
+      R.uniqBy(R.prop('id')),
+      R.map((n) => (n.defaultDate ? { ...n } : { ...n, defaultDate: jsDate(defaultDate(n)) })),
+    )(thisReportLinkNodes),
+    [],
+    filterAdjust.markedBy,
+    filterAdjust.createdBy,
+    [],
+    filterAdjust.selectedTimeRangeInterval,
+  );
+
+  const links = R.pipe(
+    R.map((n) => R.map((e) => ({
+      id: R.concat(n.id, '-', e.id),
+      parent_types: ['basic-relationship'],
+      entity_type: 'basic-relationship',
+      relationship_type: 'reported-in',
+      source: n.id,
+      target: e.id,
+      label: '',
+      name: '',
+      source_id: n.id,
+      target_id: e.id,
+      from: n.id,
+      to: n.id,
+      start_time: '',
+      stop_time: '',
+      defaultDate: jsDate(defaultDate(n)),
+    }), relatedReportNodes)),
+    R.flatten,
+  )(thisReportLinkNodes);
+  const combinedNodes = R.concat(thisReportLinkNodes, relatedReportNodes);
+  const nodes = R.pipe(
+    R.map((n) => ({
+      id: n.id,
+      val: graphLevel[n.entity_type],
+      name: defaultValue(n, true),
+      defaultDate: jsDate(defaultDate(n)),
+      label: truncate(defaultValue(n), n.entity_type === 'Attack-Pattern' ? 30 : 20),
+      img: graphImages[n.entity_type],
+      entity_type: n.entity_type,
+      rawImg: graphRawImages[n.entity_type],
+      color: n.x_opencti_color || n.color || itemColor(n.entity_type, false),
+      parent_types: n.parent_types,
+      isObservable: !!n.observable_value,
+      markedBy: R.map(
+        (m) => ({ id: m.node.id, definition: m.node.definition }),
+        R.pathOr([], ['objectMarking', 'edges'], n),
+      ),
+      createdBy: n.createdBy
+        ? n.createdBy
+        : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: 'Unknown' },
+      fx: graphData[n.id] && graphData[n.id].x ? graphData[n.id].x : null,
+      fy: graphData[n.id] && graphData[n.id].y ? graphData[n.id].y : null,
+    })),
+  )(combinedNodes);
+
+  return {
+    nodes,
+    links,
+  };
 };
 
 export const buildGraphData = (objects, graphData, t) => {
@@ -457,48 +599,6 @@ export const buildGraphData = (objects, graphData, t) => {
     R.flatten,
   )(objects);
   const links = R.concat(normalLinks, nestedLinks);
-  return {
-    nodes,
-    links,
-  };
-};
-
-export const applyFilters = (
-  graphData,
-  stixCoreObjectsTypes = [],
-  markedBy = [],
-  createdBy = [],
-  excludedStixCoreObjectsTypes = [],
-  interval = [],
-) => {
-  const nodes = R.pipe(
-    R.filter(
-      (n) => excludedStixCoreObjectsTypes.length === 0
-        || !R.includes(n.entity_type, excludedStixCoreObjectsTypes),
-    ),
-    R.filter(
-      (n) => stixCoreObjectsTypes.length === 0
-        || R.includes(n.entity_type, stixCoreObjectsTypes),
-    ),
-    R.filter(
-      (n) => markedBy.length === 0
-        || R.any((m) => R.includes(m.id, markedBy), n.markedBy),
-    ),
-    R.filter(
-      (n) => createdBy.length === 0 || R.includes(n.createdBy.id, createdBy),
-    ),
-    R.filter(
-      (n) => interval.length === 0
-        || isNone(n.defaultDate)
-        || (n.defaultDate >= interval[0] && n.defaultDate <= interval[1]),
-    ),
-  )(graphData.nodes);
-  const nodeIds = R.map((n) => n.id, nodes);
-  const links = R.pipe(
-    R.filter(
-      (n) => R.includes(n.source_id, nodeIds) && R.includes(n.target_id, nodeIds),
-    ),
-  )(graphData.links);
   return {
     nodes,
     links,
