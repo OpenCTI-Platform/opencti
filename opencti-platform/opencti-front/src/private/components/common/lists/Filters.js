@@ -221,10 +221,18 @@ class Filters extends Component {
             this.setState({
               entities: {
                 ...this.state.entities,
-                labelledBy: R.union(
-                  labelledByEntities,
-                  this.state.entities.labelledBy,
-                ),
+                labelledBy: [
+                  {
+                    label: t('No label'),
+                    value: null,
+                    type: 'Label',
+                    color: '#ffffff',
+                  },
+                  ...R.union(
+                    labelledByEntities,
+                    this.state.entities.labelledBy,
+                  ),
+                ],
               },
             });
           });
