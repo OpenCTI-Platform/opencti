@@ -315,7 +315,7 @@ jobs:
       - run:
           working_directory: ~/opencti_docker/opencti-platform
           name: Build Docker image opencti/platform
-          command: pwd && ls && docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -f Dockerfile_circleci -t opencti/platform:rolling --push .
+          command: docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -f Dockerfile_circleci -t opencti/platform:rolling --push .
           no_output_timeout: 30m
       - run:
           working_directory: ~/opencti_docker/opencti-worker
