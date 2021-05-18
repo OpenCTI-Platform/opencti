@@ -53,6 +53,7 @@ export const READ_INDEX_STIX_CYBER_OBSERVABLES = `${INDEX_STIX_CYBER_OBSERVABLES
 const INDEX_INTERNAL_RELATIONSHIPS = 'opencti_internal_relationships';
 export const READ_INDEX_INTERNAL_RELATIONSHIPS = `${INDEX_INTERNAL_RELATIONSHIPS}*`;
 const INDEX_STIX_CORE_RELATIONSHIPS = 'opencti_stix_core_relationships';
+export const INDEX_STIX_CORE_RELATIONSHIPS_INFERRED = 'opencti_stix_core_relationships_inferred';
 export const READ_INDEX_STIX_CORE_RELATIONSHIPS = `${INDEX_STIX_CORE_RELATIONSHIPS}*`;
 const INDEX_STIX_SIGHTING_RELATIONSHIPS = 'opencti_stix_sighting_relationships';
 export const READ_INDEX_STIX_SIGHTING_RELATIONSHIPS = `${INDEX_STIX_SIGHTING_RELATIONSHIPS}*`;
@@ -69,6 +70,7 @@ export const WRITE_PLATFORM_INDICES = [
   INDEX_STIX_CYBER_OBSERVABLES,
   INDEX_INTERNAL_RELATIONSHIPS,
   INDEX_STIX_CORE_RELATIONSHIPS,
+  INDEX_STIX_CORE_RELATIONSHIPS_INFERRED,
   INDEX_STIX_SIGHTING_RELATIONSHIPS,
   INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   INDEX_STIX_META_RELATIONSHIPS,
@@ -183,7 +185,12 @@ export const buildPagination = (limit, searchAfter, instances, globalCount) => {
   return { edges, pageInfo };
 };
 
-export const inferIndexFromConceptType = (conceptType) => {
+export const inferIndexFromConceptType = (conceptType, inferred = false) => {
+  // Inferred support
+  if (inferred) {
+    if (isStixCoreRelationship(conceptType)) return INDEX_STIX_CORE_RELATIONSHIPS_INFERRED;
+    throw DatabaseError(`Cant find inferred index for type ${conceptType}`);
+  }
   // Entities
   if (isHistoryObject(conceptType)) return INDEX_HISTORY;
   if (isInternalObject(conceptType)) return INDEX_INTERNAL_OBJECTS;

@@ -58,6 +58,9 @@ import {
   VALID_UNTIL,
 } from '../schema/identifier';
 import {
+  buildCreateEvent,
+  buildUpdateEvent,
+  checkParticipantsDeletion,
   lockResource,
   notify,
   redisAddDeletions,
@@ -1718,32 +1721,44 @@ const upsertElementRaw = async (user, id, type, data) => {
   return { type: TRX_UPDATE, element, relations: rawRelations, streamInputs, indexInput };
 };
 
-const createRelationRaw = async (user, input) => {
+export const buildRelationTimeFilter = (input) => {
+  const args = {};
+  const { relationship_type: relationshipType } = input;
+  if (isStixCoreRelationship(relationshipType)) {
+    if (!R.isNil(input.start_time)) {
+      args.startTimeStart = prepareDate(moment(input.start_time).subtract(1, 'months').utc());
+      args.startTimeStop = prepareDate(moment(input.start_time).add(1, 'months').utc());
+    }
+    if (!R.isNil(input.stop_time)) {
+      args.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'months').utc());
+      args.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'months').utc());
+    }
+  } else if (isStixSightingRelationship(relationshipType)) {
+    if (!R.isNil(input.first_seen)) {
+      args.firstSeenStart = prepareDate(moment(input.first_seen).subtract(1, 'months').utc());
+      args.firstSeenStop = prepareDate(moment(input.first_seen).add(1, 'months').utc());
+    }
+    if (!R.isNil(input.last_seen)) {
+      args.lastSeenStart = prepareDate(moment(input.last_seen).subtract(1, 'months').utc());
+      args.lastSeenStop = prepareDate(moment(input.last_seen).add(1, 'months').utc());
+    }
+  }
+  return args;
+};
+
+const createRelationRaw = async (user, input, inferred = false) => {
   const { from, to, relationship_type: relationshipType } = input;
   // 01. Generate the ID
   const internalId = generateInternalId();
   const standardId = generateStandardId(relationshipType, input);
   // region 02. Check existing relationship
-  const listingArgs = { fromId: from.internal_id, toId: to.internal_id, connectionFormat: false, relExclude: false };
-  if (isStixCoreRelationship(relationshipType)) {
-    if (!R.isNil(input.start_time)) {
-      listingArgs.startTimeStart = prepareDate(moment(input.start_time).subtract(1, 'months').utc());
-      listingArgs.startTimeStop = prepareDate(moment(input.start_time).add(1, 'months').utc());
-    }
-    if (!R.isNil(input.stop_time)) {
-      listingArgs.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'months').utc());
-      listingArgs.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'months').utc());
-    }
-  } else if (isStixSightingRelationship(relationshipType)) {
-    if (!R.isNil(input.first_seen)) {
-      listingArgs.firstSeenStart = prepareDate(moment(input.first_seen).subtract(1, 'months').utc());
-      listingArgs.firstSeenStop = prepareDate(moment(input.first_seen).add(1, 'months').utc());
-    }
-    if (!R.isNil(input.last_seen)) {
-      listingArgs.lastSeenStart = prepareDate(moment(input.last_seen).subtract(1, 'months').utc());
-      listingArgs.lastSeenStop = prepareDate(moment(input.last_seen).add(1, 'months').utc());
-    }
-  }
+  const timeFilters = buildRelationTimeFilter(input);
+  const listingArgs = {
+    fromId: from.internal_id,
+    toId: to.internal_id,
+    connectionFormat: false,
+    ...timeFilters,
+  };
   // endregion
   const existingRelationships = await listRelations(SYSTEM_USER, relationshipType, listingArgs);
   let existingRelationship = null;
@@ -1772,7 +1787,10 @@ const createRelationRaw = async (user, input) => {
   let data = {};
   // Default attributes
   // basic-relationship
-  data._index = inferIndexFromConceptType(relationshipType);
+  data._index = inferIndexFromConceptType(relationshipType, inferred);
+  if (inferred) {
+    data.x_opencti_explanation = input.explanation;
+  }
   data.internal_id = internalId;
   data.standard_id = standardId;
   data.entity_type = relationshipType;
@@ -1896,6 +1914,27 @@ const checkRelationConsistency = (relationshipType, fromType, toType) => {
     }
   }
 };
+
+export const createInferredRelation = async (input) => {
+  // Inference creation is created in a single stream
+  // For this reason we do not need to lock the participants
+  const resolvedInput = await inputResolveRefs(SYSTEM_USER, input);
+  const { from, to } = resolvedInput;
+  const dataRel = await createRelationRaw(SYSTEM_USER, resolvedInput, true);
+  // Index the created element
+  await indexCreatedElement(dataRel);
+  // Push the input in the stream
+  let event;
+  if (dataRel.type === TRX_CREATION) {
+    const relWithConnections = { ...dataRel.element, from, to };
+    event = await buildCreateEvent(SYSTEM_USER, relWithConnections, resolvedInput, stixLoadById);
+  } else if (dataRel.streamInputs.length > 0) {
+    // If upsert with new data
+    event = buildUpdateEvent(SYSTEM_USER, dataRel.element, dataRel.streamInputs);
+  }
+  return event;
+};
+
 export const createRelation = async (user, input) => {
   let lock;
   const { fromId, toId, relationship_type: relationshipType } = input;
@@ -1957,7 +1996,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
   // Generate the internal id if needed
   const internalId = input.internal_id || generateInternalId();
   // Check if the entity exists, must be done with SYSTEM USER to really find it.
-  const existingEntities = await internalFindByIds(SYSTEM_USER, participantIds, { type, relExclude: false });
+  const existingEntities = await internalFindByIds(SYSTEM_USER, participantIds, { type });
   // If existing entities have been found and type is a STIX Core Object
   if (existingEntities.length > 0) {
     // We need to filter what we found with the user rights

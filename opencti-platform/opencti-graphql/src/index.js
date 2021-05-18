@@ -1,7 +1,10 @@
-import { DEV_MODE, logApp } from './config/conf';
+import conf, { DEV_MODE, logApp } from './config/conf';
 import platformInit from './initialization';
-import { listenServer, restartServer } from './httpServer';
+import { listenServer, restartServer, stopServer } from './httpServer';
 import { redisInitializeClients } from './database/redis';
+import initExpiredManager from './manager/expiredManager';
+import initTaskManager from './manager/taskManager';
+import initInferenceEngine from './manager/inferenceManager';
 
 let server;
 if (DEV_MODE && module.hot) {
@@ -25,12 +28,65 @@ if (DEV_MODE && module.hot) {
   /* eslint-enable */
 }
 
+const API_PORT = conf.get('app:port');
+const ENABLED_API = conf.get('app:enabled');
+const ENABLED_EXPIRED_MANAGER = conf.get('expiration_scheduler:enabled');
+const expiredManager = initExpiredManager();
+const ENABLED_TASK_SCHEDULER = conf.get('task_scheduler:enabled');
+const taskManager = initTaskManager();
+const ENABLED_INFERENCE_ENGINE = conf.get('inference_engine:enabled');
+const inferenceEngine = initInferenceEngine();
 (async () => {
   try {
     logApp.info(`[OPENCTI] Starting platform`);
+    // Init the platform default
     await platformInit();
-    server = await listenServer();
+    // region API initialization
+    if (ENABLED_API) {
+      server = await listenServer();
+      logApp.info(`[OPENCTI] API ready on port ${API_PORT}`);
+    } else {
+      logApp.info(`[OPENCTI] API not started (disabled by configuration)`);
+    }
+    // endregion
+    // region Expiration manager
+    if (ENABLED_EXPIRED_MANAGER) {
+      await expiredManager.start();
+      logApp.info(`[OPENCTI] Expiration manager started`);
+    } else {
+      logApp.info(`[OPENCTI] Expiration manager not started (disabled by configuration)`);
+    }
+    // endregion
+    // region Task manager
+    if (ENABLED_TASK_SCHEDULER) {
+      await taskManager.start();
+      logApp.info(`[OPENCTI] Task manager started`);
+    } else {
+      logApp.info(`[OPENCTI] Task manager not started (disabled by configuration)`);
+    }
+    // endregion
+    // region Inference engine
+    if (ENABLED_INFERENCE_ENGINE) {
+      const engineStarted = await inferenceEngine.start();
+      if (engineStarted) {
+        logApp.info(`[OPENCTI] Inference engine started`);
+      } else {
+        logApp.info('[OPENCTI] Inference engine not started (already started by another instance)');
+      }
+    } else {
+      logApp.info(`[OPENCTI] Inference engine not started (disabled by configuration)`);
+    }
   } catch (e) {
     process.exit(1);
   }
 })();
+
+process.on('SIGTERM', async () => {
+  logApp.info('[OPENCTI] SIGTERM signal received, stopping OpenCTI');
+  if (server) {
+    await stopServer(server);
+  }
+  await expiredManager.shutdown();
+  await taskManager.shutdown();
+  await inferenceEngine.shutdown();
+});

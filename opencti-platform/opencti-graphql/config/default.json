@@ -1,6 +1,7 @@
 {
   "app": {
     "port": 4000,
+    "enabled": true,
     "https_cert": {
       "ca": [],
       "key": null,
@@ -44,11 +45,17 @@
       "token": "ChangeMe"
     }
   },
+  "inference_engine": {
+    "enabled": true,
+    "lock_key": "inference_engine_lock"
+  },
   "task_scheduler": {
+    "enabled": true,
     "lock_key": "task_manager_lock",
     "interval": 10000
   },
   "expiration_scheduler": {
+    "enabled": true,
     "lock_key": "expired_manager_lock",
     "interval": 300000
   },

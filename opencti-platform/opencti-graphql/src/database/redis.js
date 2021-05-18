@@ -368,53 +368,61 @@ export const computeMergeDifferential = (initialInstance, mergedInstance) => {
   }
   return patch;
 };
+// Merge
+const buildMergeEvent = (user, initialInstance, mergedInstance, sourceEntities) => {
+  const patch = computeMergeDifferential(initialInstance, mergedInstance);
+  const message = generateLogMessage(EVENT_TYPE_MERGE, initialInstance, sourceEntities);
+  const data = buildStixData(mergedInstance);
+  data.x_opencti_patch = patch;
+  data.x_opencti_sources = R.map((s) => buildStixData(s), sourceEntities);
+  return buildEvent(EVENT_TYPE_MERGE, user, mergedInstance.objectMarking, message, data);
+};
 export const storeMergeEvent = async (user, initialInstance, mergedInstance, sourceEntities) => {
   try {
-    const patch = computeMergeDifferential(initialInstance, mergedInstance);
-    const message = generateLogMessage(EVENT_TYPE_MERGE, initialInstance, sourceEntities);
-    const data = buildStixData(mergedInstance);
-    data.x_opencti_patch = patch;
-    data.x_opencti_sources = R.map((s) => buildStixData(s), sourceEntities);
-    const event = buildEvent(EVENT_TYPE_MERGE, user, mergedInstance.objectMarking, message, data);
+    const event = buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities);
     return pushToStream(clientBase, event);
   } catch (e) {
     throw DatabaseError('Error in store merge event', { error: e });
   }
 };
+// Update
+export const buildUpdateEvent = (user, instance, updateEvents) => {
+  const convertedInputs = updateEvents.map((i) => {
+    const [k, v] = R.head(Object.entries(i));
+    const convert = stixDataConverter(v, { patchGeneration: true });
+    return isNotEmptyField(convert) ? { [k]: convert } : null;
+  });
+  const dataPatch = R.mergeAll(convertedInputs);
+  // dataUpdate can be empty
+  if (isEmptyField(dataPatch)) {
+    return true;
+  }
+  // else just continue as usual
+  const data = {
+    standard_id: instance.standard_id,
+    internal_id: instance.internal_id,
+    entity_type: instance.entity_type,
+    x_opencti_patch: dataPatch,
+  };
+  if (instance.identity_class) {
+    data.identity_class = instance.identity_class;
+  }
+  if (instance.x_opencti_location_type) {
+    data.x_opencti_location_type = instance.x_opencti_location_type;
+  }
+  // Generate the message
+  const operation = updateEvents.length === 1 ? R.head(Object.keys(R.head(updateEvents))) : UPDATE_OPERATION_CHANGE;
+  const messageInput = R.mergeAll(updateEvents.map((i) => stixDataConverter(R.head(Object.values(i)))));
+  const message = generateLogMessage(operation, instance, messageInput);
+  // Build and send the event
+  const dataEvent = buildStixData(data);
+  return buildEvent(EVENT_TYPE_UPDATE, user, instance.objectMarking, message, dataEvent);
+};
 export const storeUpdateEvent = async (user, instance, updateEvents) => {
   // updateEvents -> [{ operation, input }]
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     try {
-      const convertedInputs = updateEvents.map((i) => {
-        const [k, v] = R.head(Object.entries(i));
-        const convert = stixDataConverter(v, { patchGeneration: true });
-        return isNotEmptyField(convert) ? { [k]: convert } : null;
-      });
-      const dataPatch = R.mergeAll(convertedInputs);
-      // dataUpdate can be empty
-      if (isEmptyField(dataPatch)) {
-        return true;
-      }
-      // else just continue as usual
-      const data = {
-        standard_id: instance.standard_id,
-        internal_id: instance.internal_id,
-        entity_type: instance.entity_type,
-        x_opencti_patch: dataPatch,
-      };
-      if (instance.identity_class) {
-        data.identity_class = instance.identity_class;
-      }
-      if (instance.x_opencti_location_type) {
-        data.x_opencti_location_type = instance.x_opencti_location_type;
-      }
-      // Generate the message
-      const operation = updateEvents.length === 1 ? R.head(Object.keys(R.head(updateEvents))) : UPDATE_OPERATION_CHANGE;
-      const messageInput = R.mergeAll(updateEvents.map((i) => stixDataConverter(R.head(Object.values(i)))));
-      const message = generateLogMessage(operation, instance, messageInput);
-      // Build and send the event
-      const dataEvent = buildStixData(data);
-      const event = buildEvent(EVENT_TYPE_UPDATE, user, instance.objectMarking, message, dataEvent);
+      const event = buildUpdateEvent(user, instance, updateEvents);
       return pushToStream(clientBase, event);
     } catch (e) {
       throw DatabaseError('Error in store update event', { error: e });
@@ -422,32 +430,36 @@ export const storeUpdateEvent = async (user, instance, updateEvents) => {
   }
   return true;
 };
+// Create
+export const buildCreateEvent = async (user, instance, input, stixLoader) => {
+  // If internal relation, publish an update instead of a creation
+  if (isStixCyberObservableRelationship(instance.entity_type) || isStixMetaRelationship(instance.entity_type)) {
+    const field = relationTypeToInputName(instance.entity_type);
+    const inputUpdate = { [field]: input.to };
+    const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
+    let publishedInstance = instance.from;
+    if (mustRepublished) {
+      publishedInstance = await stixLoader(user, instance.from.internal_id);
+    }
+    return buildUpdateEvent(user, publishedInstance, [{ [UPDATE_OPERATION_ADD]: inputUpdate }]);
+  }
+  // Create of an event for
+  const identifiers = {
+    standard_id: instance.standard_id,
+    internal_id: instance.internal_id,
+    entity_type: instance.entity_type,
+  };
+  // Convert the input to data
+  const data = buildStixData({ ...identifiers, ...input }, { diffMode: false });
+  // Generate the message
+  const message = generateLogMessage(EVENT_TYPE_CREATE, instance, data);
+  // Build and send the event
+  return buildEvent(EVENT_TYPE_CREATE, user, input.objectMarking, message, data);
+};
 export const storeCreateEvent = async (user, instance, input, stixLoader) => {
   if (isStixSpecificationObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     try {
-      // If internal relation, publish an update instead of a creation
-      if (isStixCyberObservableRelationship(instance.entity_type) || isStixMetaRelationship(instance.entity_type)) {
-        const field = relationTypeToInputName(instance.entity_type);
-        const inputUpdate = { [field]: input.to };
-        const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
-        let publishedInstance = instance.from;
-        if (mustRepublished) {
-          publishedInstance = await stixLoader(user, instance.from.internal_id);
-        }
-        return storeUpdateEvent(user, publishedInstance, [{ [UPDATE_OPERATION_ADD]: inputUpdate }]);
-      }
-      // Create of an event for
-      const identifiers = {
-        standard_id: instance.standard_id,
-        internal_id: instance.internal_id,
-        entity_type: instance.entity_type,
-      };
-      // Convert the input to data
-      const data = buildStixData({ ...identifiers, ...input }, { diffMode: false });
-      // Generate the message
-      const message = generateLogMessage(EVENT_TYPE_CREATE, instance, data);
-      // Build and send the event
-      const event = buildEvent(EVENT_TYPE_CREATE, user, input.objectMarking, message, data);
+      const event = await buildCreateEvent(user, instance, input, stixLoader);
       return pushToStream(clientBase, event);
     } catch (e) {
       throw DatabaseError('Error in store create event', { error: e });
@@ -455,31 +467,34 @@ export const storeCreateEvent = async (user, instance, input, stixLoader) => {
   }
   return true;
 };
+// Delete
+export const buildDeleteEvent = async (user, instance, stixLoader) => {
+  if (isStixObject(instance.entity_type)) {
+    const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
+    const data = buildStixData(instance, { diffMode: false });
+    return buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
+  }
+  const isCore = isStixCoreRelationship(instance.entity_type);
+  const isSighting = isStixSightingRelationship(instance.entity_type);
+  if (!isCore && !isSighting) {
+    const field = relationTypeToInputName(instance.entity_type);
+    const inputUpdate = { [field]: instance.to };
+    const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
+    let publishedInstance = instance.from;
+    if (mustRepublished) {
+      publishedInstance = await stixLoader(user, instance.from.internal_id);
+    }
+    return buildUpdateEvent(user, publishedInstance, [{ [UPDATE_OPERATION_REMOVE]: inputUpdate }]);
+  }
+  // for other deletion, just produce a delete event
+  const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
+  const data = buildStixData(instance, { diffMode: false });
+  return buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
+};
 export const storeDeleteEvent = async (user, instance, stixLoader) => {
   try {
-    if (isStixObject(instance.entity_type)) {
-      const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
-      const data = buildStixData(instance, { diffMode: false });
-      const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
-      return pushToStream(clientBase, event);
-    }
-    if (isStixRelationship(instance.entity_type)) {
-      const isCore = isStixCoreRelationship(instance.entity_type);
-      const isSighting = isStixSightingRelationship(instance.entity_type);
-      if (!isCore && !isSighting) {
-        const field = relationTypeToInputName(instance.entity_type);
-        const inputUpdate = { [field]: instance.to };
-        const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
-        let publishedInstance = instance.from;
-        if (mustRepublished) {
-          publishedInstance = await stixLoader(user, instance.from.internal_id);
-        }
-        return storeUpdateEvent(user, publishedInstance, [{ [UPDATE_OPERATION_REMOVE]: inputUpdate }]);
-      }
-      // for other deletion, just produce a delete event
-      const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
-      const data = buildStixData(instance, { diffMode: false });
-      const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
+    if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
+      const event = await buildDeleteEvent(user, instance, stixLoader);
       return pushToStream(clientBase, event);
     }
   } catch (e) {

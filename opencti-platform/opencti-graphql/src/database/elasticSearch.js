@@ -42,10 +42,11 @@ import {
 import { getParentTypes } from '../schema/schemaUtils';
 import { isStixObjectAliased } from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
-import { isBasicRelationship } from '../schema/stixRelationship';
+import { isBasicRelationship, STIX_RELATIONSHIPS } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
+import { INTERNAL_RELATIONSHIPS } from '../schema/internalRelationship';
 
 const MIN_DATA_FIELDS = ['name', 'value', 'internal_id', 'standard_id', 'base_type', 'entity_type', 'connections'];
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
@@ -69,6 +70,11 @@ const UNIMPACTED_ENTITIES_ROLE = [
 ];
 export const isImpactedTypeAndSide = (type, side) => !UNIMPACTED_ENTITIES_ROLE.includes(`${type}_${side}`);
 export const isImpactedRole = (role) => !UNIMPACTED_ENTITIES_ROLE.includes(role);
+const computeRelsExclude = () => {
+  // Exclude every rel except markings
+  const allRels = [...STIX_RELATIONSHIPS, ...INTERNAL_RELATIONSHIPS];
+  return allRels.filter((r) => r !== RELATION_OBJECT_MARKING).map((r) => REL_INDEX_PREFIX + r);
+};
 
 export const el = new Client({
   node: conf.get('elasticsearch:url'),
@@ -630,7 +636,7 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
   const query = {
     index: READ_RELATIONSHIPS_INDICES,
     size: MAX_SEARCH_SIZE,
-    _source_excludes: `${REL_INDEX_PREFIX}*`,
+    _source_excludes: computeRelsExclude(),
     ignore_throttled: ES_IGNORE_THROTTLED,
     body: {
       query: {
@@ -655,7 +661,7 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
 
 export const elFindByIds = async (user, ids, opts = {}) => {
   const { indices = READ_DATA_INDICES, toMap = false, type = null } = opts;
-  const { relExclude = true, minSource = false } = opts;
+  const { minSource = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
   if (processIds.length === 0) return [];
@@ -703,7 +709,7 @@ export const elFindByIds = async (user, ids, opts = {}) => {
       index: indices,
       size: MAX_SEARCH_SIZE,
       ignore_throttled: ES_IGNORE_THROTTLED,
-      _source_excludes: relExclude ? `${REL_INDEX_PREFIX}*` : '',
+      _source_excludes: computeRelsExclude(),
       _source_includes: minSource ? MIN_DATA_FIELDS : '*',
       body: {
         query: {
@@ -1014,7 +1020,6 @@ export const elPaginate = async (user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', minSource = false } = options;
   const { types = null, filters = [], filterMode = 'and', search = null, connectionFormat = true } = options;
-  const { relExclude = true } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let must = [];
   let mustnot = [];
@@ -1219,7 +1224,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
   const query = {
     index: indexName,
     ignore_throttled: ES_IGNORE_THROTTLED,
-    _source_excludes: relExclude ? `${REL_INDEX_PREFIX}*` : '',
+    _source_excludes: computeRelsExclude(),
     _source_includes: minSource ? MIN_DATA_FIELDS : '*',
     track_total_hits: true,
     body,
@@ -1320,7 +1325,7 @@ export const elAttributeValues = async (user, field) => {
   const query = {
     index: [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS],
     ignore_throttled: ES_IGNORE_THROTTLED,
-    _source_excludes: `${REL_INDEX_PREFIX}*`,
+    _source_excludes: computeRelsExclude(),
     body,
   };
   const data = await el.search(query);

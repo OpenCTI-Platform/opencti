@@ -59,7 +59,12 @@ const initExpiredManager = () => {
         await expireHandler();
       }, SCHEDULE_TIME);
     },
-    shutdown: () => clearIntervalAsync(scheduler),
+    shutdown: async () => {
+      if (scheduler) {
+        return clearIntervalAsync(scheduler);
+      }
+      return true;
+    },
   };
 };
 

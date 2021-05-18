@@ -7,8 +7,6 @@ import { readFileSync } from 'fs';
 import conf, { logApp } from './config/conf';
 import createApp from './app';
 import createApolloServer from './graphql/graphql';
-import initExpiredManager from './manager/expiredManager';
-import initTaskManager from './manager/taskManager';
 import { isStrategyActivated, STRATEGY_CERT } from './config/providers';
 
 const PORT = conf.get('app:port');
@@ -17,8 +15,7 @@ const CERT_KEY_PATH = conf.get('app:https_cert:key');
 const CERT_KEY_CERT = conf.get('app:https_cert:crt');
 const CA_CERTS = conf.get('app:https_cert:ca');
 const rejectUnauthorized = conf.get('app:https_cert:reject_unauthorized');
-const expiredManager = initExpiredManager();
-const taskManager = initTaskManager();
+
 const createHttpServer = async () => {
   const apolloServer = createApolloServer();
   const { app, seeMiddleware } = await createApp(apolloServer);
@@ -34,8 +31,6 @@ const createHttpServer = async () => {
   }
   httpServer.setTimeout(REQ_TIMEOUT || 120000);
   apolloServer.installSubscriptionHandlers(httpServer);
-  await expiredManager.start();
-  await taskManager.start();
   return { httpServer, seeMiddleware };
 };
 
@@ -45,19 +40,14 @@ export const listenServer = async () => {
       const serverPromise = createHttpServer();
       serverPromise.then(({ httpServer, seeMiddleware }) => {
         httpServer.on('close', () => {
-          if (seeMiddleware) {
-            seeMiddleware.shutdown();
-          }
-          expiredManager.shutdown();
-          taskManager.shutdown();
+          seeMiddleware.shutdown();
         });
         httpServer.listen(PORT, () => {
-          logApp.info(`[OPENCTI] Servers ready on port ${PORT}`);
           resolve(httpServer);
         });
       });
     } catch (e) {
-      logApp.error(`[OPENCTI] Start http server fail`, { error: e });
+      logApp.error(`[OPENCTI] API start fail`, { error: e });
       reject(e);
     }
   });
@@ -74,8 +64,6 @@ export const restartServer = async (httpServer) => {
   });
 };
 export const stopServer = async (httpServer) => {
-  // await broadcaster.shutdown();
-  await expiredManager.shutdown();
   return new Promise((resolve) => {
     httpServer.close(() => {
       resolve();
@@ -83,5 +71,3 @@ export const stopServer = async (httpServer) => {
     httpServer.emit('close'); // force server close
   });
 };
-
-export default createHttpServer;

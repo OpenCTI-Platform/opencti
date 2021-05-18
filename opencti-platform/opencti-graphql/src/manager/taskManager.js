@@ -30,8 +30,8 @@ import { now } from '../utils/format';
 import { INDEX_INTERNAL_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { elUpdate } from '../database/elasticSearch';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import { ABSTRACT_BASIC_RELATIONSHIP} from '../schema/general';
-import {SYSTEM_USER} from "../utils/access";
+import { ABSTRACT_BASIC_RELATIONSHIP } from '../schema/general';
+import { SYSTEM_USER } from '../utils/access';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -250,7 +250,12 @@ const initTaskManager = () => {
         await taskHandler();
       }, SCHEDULE_TIME);
     },
-    shutdown: () => clearIntervalAsync(scheduler),
+    shutdown: async () => {
+      if (scheduler) {
+        return clearIntervalAsync(scheduler);
+      }
+      return true;
+    },
   };
 };
 
