@@ -138,7 +138,7 @@ export const commitMutation = ({
     if (setSubmitting) setSubmitting(false);
     if (error && error.res && error.res.errors) {
       const authRequired = filter(
-        (e) => e.data.type === 'authentication',
+        (e) => pathOr(e.message, ['data', 'type'], e) === 'authentication',
         error.res.errors,
       );
       if (!isEmpty(authRequired)) {
