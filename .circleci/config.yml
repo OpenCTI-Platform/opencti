@@ -296,7 +296,7 @@ jobs:
           working_directory: ~/opencti_docker/opencti-worker
           name: Build Docker image opencti/worker
           command: docker buildx build --platform $BUILDX_PLATFORMS -t opencti/worker:latest --push .
-       - run:
+      - run:
           name: Publish Docker Image to Docker Hub
           command: |
             docker tag opencti/platform:latest opencti/platform:${CIRCLE_TAG}
