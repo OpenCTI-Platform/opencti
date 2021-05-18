@@ -292,6 +292,7 @@ jobs:
       image: ubuntu-1604:202007-01
     environment:
       DOCKER_BUILDKIT: 1
+      BUILDX_PLATFORMS: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386,linux/arm/v7,linux/arm/v6
     steps:
       - attach_workspace:
           at: ~/
@@ -315,12 +316,12 @@ jobs:
       - run:
           working_directory: ~/opencti_docker/opencti-platform
           name: Build Docker image opencti/platform
-          command: docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -f Dockerfile_circleci -t opencti/platform:rolling --push .
+          command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci -t opencti/platform:rolling --push .
           no_output_timeout: 30m
       - run:
           working_directory: ~/opencti_docker/opencti-worker
           name: Build Docker image opencti/worker
-          command: docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t opencti/worker:rolling --push .
+          command: docker buildx build --platform $BUILDX_PLATFORMS -t opencti/worker:rolling --push .
 
 workflows:
   opencti:
