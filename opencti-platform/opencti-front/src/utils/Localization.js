@@ -582,6 +582,8 @@ const i18n = {
       'Export format': "Format d'export",
       'Export successfully started': "L'export a démarré avec succès",
       'Export type': "Type d'export",
+      'Export to image (png)': 'Exporter en image (png)',
+      'Export to document (pdf)': 'Exporter en document (pdf)',
       'Generate an export': 'Générer un export',
       'No export connector available to generate an export':
         "Aucun connecteur d'export disponible pour générer un export",

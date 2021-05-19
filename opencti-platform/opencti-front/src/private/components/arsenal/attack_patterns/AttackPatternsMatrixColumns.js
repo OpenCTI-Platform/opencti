@@ -225,33 +225,37 @@ class AttackPatternsMatrixColumnsComponent extends Component {
           handleChangeKillChain={this.handleChangeKillChain.bind(this)}
           killChains={killChains}
         />
-        <div className={classes.header}>
-          {attackPatternsOfPhases.map((k) => (
-            <div key={k.id} className={classes.headerElement}>
-              <div className={classes.title}>{truncate(k.phase_name, 18)}</div>
-              <span className={classes.subtitle}>{`${
-                k.attackPatterns.length
-              } ${t('techniques')}`}</span>
-            </div>
-          ))}
-        </div>
-        <div className={classes.body}>
-          {attackPatternsOfPhases.map((k) => (
-            <div key={k.id} className={classes.column}>
-              {k.attackPatterns.map((a) => (
-                <div
-                  key={a.id}
-                  className={classes.element}
-                  style={{
-                    border: `1px solid ${colors[a.level][0]}`,
-                    backgroundColor: colors[a.level][1],
-                  }}
-                >
-                  <div className={classes.name}>{a.name}</div>
+        <div id="container">
+          <div className={classes.header}>
+            {attackPatternsOfPhases.map((k) => (
+              <div key={k.id} className={classes.headerElement}>
+                <div className={classes.title}>
+                  {truncate(k.phase_name, 18)}
                 </div>
-              ))}
-            </div>
-          ))}
+                <span className={classes.subtitle}>{`${
+                  k.attackPatterns.length
+                } ${t('techniques')}`}</span>
+              </div>
+            ))}
+          </div>
+          <div className={classes.body}>
+            {attackPatternsOfPhases.map((k) => (
+              <div key={k.id} className={classes.column}>
+                {k.attackPatterns.map((a) => (
+                  <div
+                    key={a.id}
+                    className={classes.element}
+                    style={{
+                      border: `1px solid ${colors[a.level][0]}`,
+                      backgroundColor: colors[a.level][1],
+                    }}
+                  >
+                    <div className={classes.name}>{a.name}</div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );

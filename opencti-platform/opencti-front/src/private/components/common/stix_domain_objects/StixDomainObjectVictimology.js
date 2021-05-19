@@ -88,7 +88,7 @@ class StixDomainObjectVictimology extends Component {
       relationship_type: 'targets',
     };
     return (
-      <div className={classes.container}>
+      <div className={classes.container} id="container">
         <Drawer
           anchor="bottom"
           variant="permanent"

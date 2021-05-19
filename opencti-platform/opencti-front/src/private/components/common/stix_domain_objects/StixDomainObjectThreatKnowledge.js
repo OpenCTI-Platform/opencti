@@ -22,6 +22,7 @@ import StixDomainObjectGlobalKillChain from './StixDomainObjectGlobalKillChain';
 import StixDomainObjectTimeline from './StixDomainObjectTimeline';
 import Loader from '../../../../components/Loader';
 import { stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
+import ExportButtons from '../../../../components/ExportButtons';
 
 const styles = (theme) => ({
   card: {
@@ -61,6 +62,10 @@ const styles = (theme) => ({
     margin: '10px 0 70px 0',
     padding: '15px 15px 15px 15px',
     borderRadius: 6,
+  },
+  export: {
+    float: 'right',
+    marginTop: -60,
   },
 });
 
@@ -326,6 +331,14 @@ class StixDomainObjectThreatKnowledge extends Component {
           <Tab label={t('Global kill chain')} value="killchain" />
           <Tab label={t('Timeline')} value="timeline" />
         </Tabs>
+        <div className={classes.export}>
+          <ExportButtons
+            domElementId="container"
+            name={
+              viewType === 'killchain' ? t('Global kill chain') : t('Timeline')
+            }
+          />
+        </div>
         <QueryRenderer
           query={stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery}
           variables={{ first: 500, ...paginationOptions }}

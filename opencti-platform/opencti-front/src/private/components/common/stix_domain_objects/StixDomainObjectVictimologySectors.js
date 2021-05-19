@@ -43,6 +43,7 @@ import SearchInput from '../../../../components/SearchInput';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
+import ExportButtons from '../../../../components/ExportButtons';
 
 const styles = (theme) => ({
   container: {
@@ -56,6 +57,10 @@ const styles = (theme) => ({
   },
   subnested: {
     paddingLeft: theme.spacing(8),
+  },
+  export: {
+    float: 'right',
+    marginTop: -10,
   },
 });
 
@@ -187,9 +192,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     }
     for (const organizationSector of organizationsSectors) {
       for (const parentSector of organizationSector.parentSectors) {
-        finalSectors[parentSector.id].subSectors[
-          organizationSector.id
-        ] = organizationSector;
+        finalSectors[parentSector.id].subSectors[organizationSector.id] = organizationSector;
         finalSectors[parentSector.id].subsectors_text = `${
           finalSectors[parentSector.id].subsectors_text
         } ${organizationSector.name} ${organizationSector.description}`;
@@ -267,6 +270,10 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     return (
       <div>
         <SearchInput variant="small" onSubmit={this.handleSearch.bind(this)} />
+        <div className={classes.export}>
+          <ExportButtons domElementId="container" name={t('Victimology')} />
+        </div>
+        <div className="clearfix" />
         <div className={classes.container} id="container">
           <List>
             {orderedFinalSectors.map((sector) => {

@@ -13,6 +13,7 @@ import SearchInput from '../../../../components/SearchInput';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixDomainObjectVictimologyRegionsList from './StixDomainObjectVictimologyRegionsList';
 import StixDomainObjectVictimologyRegionsMap from './StixDomainObjectVictimologyRegionsMap';
+import ExportButtons from '../../../../components/ExportButtons';
 
 const styles = (theme) => ({
   container: {
@@ -26,6 +27,10 @@ const styles = (theme) => ({
   },
   subnested: {
     paddingLeft: theme.spacing(8),
+  },
+  export: {
+    float: 'right',
+    marginLeft: 5,
   },
 });
 
@@ -71,6 +76,9 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
               <TableChartOutlined />
             </IconButton>
           </Tooltip>
+          <div className={classes.export}>
+            <ExportButtons domElementId="container" name={t('Victimology')} />
+          </div>
         </div>
         <div className={classes.container} id="container">
           {currentView === 'list' && (
