@@ -290,12 +290,12 @@ jobs:
       - run:
           working_directory: ~/opencti_docker/opencti-platform
           name: Build Docker image opencti/platform
-          command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci -t opencti/platform:latest .
+          command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci -t opencti/platform:latest --load .
           no_output_timeout: 30m
       - run:
           working_directory: ~/opencti_docker/opencti-worker
           name: Build Docker image opencti/worker
-          command: docker buildx build --platform $BUILDX_PLATFORMS -t opencti/worker:latest .
+          command: docker buildx build --platform $BUILDX_PLATFORMS -t opencti/worker:latest --load .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -336,12 +336,17 @@ jobs:
       - run:
           working_directory: ~/opencti_docker/opencti-platform
           name: Build Docker image opencti/platform
-          command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci -t opencti/platform:rolling --push .
+          command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci -t opencti/platform:rolling --load .
           no_output_timeout: 30m
       - run:
           working_directory: ~/opencti_docker/opencti-worker
           name: Build Docker image opencti/worker
-          command: docker buildx build --platform $BUILDX_PLATFORMS -t opencti/worker:rolling --push .
+          command: docker buildx build --platform $BUILDX_PLATFORMS -t opencti/worker:rolling --load .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            docker push opencti/platform:rolling
+            docker push opencti/worker:rolling
 
 workflows:
   opencti:
