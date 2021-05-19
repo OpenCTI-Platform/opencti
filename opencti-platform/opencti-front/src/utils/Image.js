@@ -67,12 +67,12 @@ export const exportPdf = (domElementId, name) => {
       const width = (imgProps.width * pdfHeight) / imgProps.height;
       const height = (imgProps.height * pdfWidth) / imgProps.width;
       if (height <= pdfHeight) {
-        const marginX = (pdfWidth - pdfWidth) / 2;
+        const marginX = 0;
         const marginY = (pdfHeight - height) / 2;
         pdf.addImage(image, 'PNG', marginX, marginY, pdfWidth, height);
       } else {
         const marginX = (pdfWidth - width) / 2;
-        const marginY = (pdfHeight - pdfHeight) / 2;
+        const marginY = 0;
         pdf.addImage(image, 'PNG', marginX, marginY, width, pdfHeight);
       }
       pdf.save(`${name}.pdf`);

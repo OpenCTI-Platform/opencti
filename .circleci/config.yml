@@ -312,7 +312,7 @@ jobs:
       image: ubuntu-1604:202007-01
     environment:
       DOCKER_BUILDKIT: 1
-      BUILDX_PLATFORMS: linux/amd64
+      BUILDX_PLATFORMS: linux/amd64,linux/arm64
     steps:
       - attach_workspace:
           at: ~/
