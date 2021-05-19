@@ -57,7 +57,7 @@ const createApp = async (apolloServer) => {
         ],
         fontSrc: ["'self'", 'https://fonts.gstatic.com/'],
         imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
-        connectSrc: ["'self'", 'wss://*', 'ws://*'],
+        connectSrc: ["'self'", 'wss://*', 'ws://*', 'http://*', 'https://*'],
         objectSrc: ["'none'"],
       },
     },
