@@ -426,7 +426,7 @@ class DashboardComponent extends Component {
                 <InputLabel id="relative">{t('Relative time')}</InputLabel>
                 <Select
                   labelId="relative"
-                  value={relativeDate}
+                  value={relativeDate === null ? '' : relativeDate}
                   onChange={this.handleDateChange.bind(this, 'relativeDate')}
                 >
                   <MenuItem value="none">{t('None')}</MenuItem>
