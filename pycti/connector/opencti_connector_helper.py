@@ -493,6 +493,12 @@ class OpenCTIConnectorHelper:
 
     def log_info(self, msg):
         logging.info(msg)
+    
+    def log_debug(self, msg):
+        logging.debug(msg)
+    
+    def log_warning(self, msg):
+        logging.warning(msg)
 
     def date_now(self) -> str:
         """get the current date (UTC)
