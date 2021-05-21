@@ -404,6 +404,11 @@ export const buildUpdateEvent = (user, instance, updateEvents) => {
     entity_type: instance.entity_type,
     x_opencti_patch: dataPatch,
   };
+  if (instance.relationship_type) {
+    data.relationship_type = instance.relationship_type;
+    data.x_opencti_source_ref = instance.fromId;
+    data.x_opencti_target_ref = instance.toId;
+  }
   if (instance.identity_class) {
     data.identity_class = instance.identity_class;
   }
@@ -468,9 +473,10 @@ export const storeCreateEvent = async (user, instance, input, stixLoader) => {
   return true;
 };
 // Delete
-export const buildDeleteEvent = async (user, instance, stixLoader) => {
+export const buildDeleteEvent = async (user, instance, stixLoader, opts = {}) => {
+  const { withoutMessage = false } = opts;
   if (isStixObject(instance.entity_type)) {
-    const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
+    const message = withoutMessage ? '-' : generateLogMessage(EVENT_TYPE_DELETE, instance);
     const data = buildStixData(instance, { diffMode: false });
     return buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
   }
@@ -487,7 +493,7 @@ export const buildDeleteEvent = async (user, instance, stixLoader) => {
     return buildUpdateEvent(user, publishedInstance, [{ [UPDATE_OPERATION_REMOVE]: inputUpdate }]);
   }
   // for other deletion, just produce a delete event
-  const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
+  const message = withoutMessage ? '-' : generateLogMessage(EVENT_TYPE_DELETE, instance);
   const data = buildStixData(instance, { diffMode: false });
   return buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
 };

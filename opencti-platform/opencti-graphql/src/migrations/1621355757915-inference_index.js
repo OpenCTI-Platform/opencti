@@ -1,8 +1,8 @@
 import { elCreateIndexes } from '../database/elasticSearch';
-import { INDEX_STIX_CORE_RELATIONSHIPS_INFERRED } from '../database/utils';
+import { INDEX_INFERRED_ENTITIES, INDEX_INFERRED_RELATIONSHIPS } from '../database/utils';
 
 export const up = async (next) => {
-  await elCreateIndexes([INDEX_STIX_CORE_RELATIONSHIPS_INFERRED]);
+  await elCreateIndexes([INDEX_INFERRED_ENTITIES, INDEX_INFERRED_RELATIONSHIPS]);
   next();
 };
 

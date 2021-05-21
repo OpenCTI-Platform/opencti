@@ -33,7 +33,7 @@ module.exports = (env, argv) => {
       path: resolvePath('build'),
       libraryTarget: 'commonjs2',
     },
-    devtool: isDev ? 'inline-source-map' : 'nosources-source-map',
+    devtool: isDev ? 'eval-source-map' : 'nosources-source-map',
     optimization: {
       emitOnErrors: false,
       minimize: true,

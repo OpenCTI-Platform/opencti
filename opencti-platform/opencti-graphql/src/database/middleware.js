@@ -15,6 +15,7 @@ import {
   fillTimeSeries,
   inferIndexFromConceptType,
   isEmptyField,
+  isInferredIndex,
   isNotEmptyField,
   READ_DATA_INDICES,
   READ_ENTITIES_INDICES,
@@ -28,6 +29,7 @@ import {
   elAggregationCount,
   elAggregationRelationsCount,
   elDeleteElements,
+  elDeleteInstanceIds,
   elFindByFromAndTo,
   elFindByIds,
   elHistogramCount,
@@ -35,6 +37,7 @@ import {
   elList,
   elLoadByIds,
   elPaginate,
+  elUpdate,
   elUpdateElement,
   elUpdateEntityConnections,
   elUpdateRelationConnections,
@@ -59,8 +62,8 @@ import {
 } from '../schema/identifier';
 import {
   buildCreateEvent,
+  buildDeleteEvent,
   buildUpdateEvent,
-  checkParticipantsDeletion,
   lockResource,
   notify,
   redisAddDeletions,
@@ -410,8 +413,9 @@ export const listThings = async (user, thingsTypes, args = {}) => {
   return elPaginate(user, READ_DATA_INDICES, paginateArgs);
 };
 export const listAllThings = async (user, thingsTypes, args = {}) => {
+  const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilter(thingsTypes, args);
-  const result = await elList(user, READ_DATA_INDICES, paginateArgs);
+  const result = await elList(user, indices, paginateArgs);
   const nodeResult = result.map((n) => ({ node: n }));
   return buildPagination(0, null, nodeResult, nodeResult.length);
 };
@@ -1083,7 +1087,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     }
   }
   // eslint-disable-next-line no-use-before-define
-  const data = await updateAttributeRaw(user, targetEntity, updateAttributes);
+  const data = updateAttributeRaw(user, targetEntity, updateAttributes);
   const { impactedInputs } = data;
   // region Update elasticsearch
   // Elastic update with partial instance to prevent data override
@@ -1176,7 +1180,7 @@ const checkAttributeConsistency = (entityType, key) => {
     throw FunctionalError(`This attribute key ${key} is not allowed on the type ${entityType}`);
   }
 };
-const innerUpdateAttribute = async (user, instance, rawInput, options = {}) => {
+const innerUpdateAttribute = (user, instance, rawInput, options = {}) => {
   const { key } = rawInput;
   // Check consistency
   checkAttributeConsistency(instance.entity_type, key);
@@ -1185,41 +1189,33 @@ const innerUpdateAttribute = async (user, instance, rawInput, options = {}) => {
   const updatedInputs = [input];
   // --- 01 Get the current attribute types
   // Adding dates elements
-  const updateOperations = [];
   if (R.includes(key, statsDateAttributes)) {
     const dayValue = dayFormat(R.head(input.value));
     const monthValue = monthFormat(R.head(input.value));
     const yearValue = yearFormat(R.head(input.value));
     const dayInput = { key: `i_${key}_day`, value: [dayValue] };
     updatedInputs.push(dayInput);
-    updateOperations.push(innerUpdateAttribute(user, instance, dayInput));
     const monthInput = { key: `i_${key}_month`, value: [monthValue] };
     updatedInputs.push(monthInput);
-    updateOperations.push(innerUpdateAttribute(user, instance, monthInput));
     const yearInput = { key: `i_${key}_year`, value: [yearValue] };
     updatedInputs.push(yearInput);
-    updateOperations.push(innerUpdateAttribute(user, instance, yearInput));
   }
   const today = now();
   // Update updated_at
   if (isUpdatedAtObject(instance.entity_type) && key !== 'modified' && key !== 'updated_at') {
     const updatedAtInput = { key: 'updated_at', value: [today] };
     updatedInputs.push(updatedAtInput);
-    updateOperations.push(innerUpdateAttribute(user, instance, updatedAtInput));
   }
   // Update modified
   if (isModifiedObject(instance.entity_type) && key !== 'modified' && key !== 'updated_at') {
     const modifiedAtInput = { key: 'modified', value: [today] };
     updatedInputs.push(modifiedAtInput);
-    updateOperations.push(innerUpdateAttribute(user, instance, modifiedAtInput));
   }
   // Update created
   if (instance.entity_type === ENTITY_TYPE_CONTAINER_REPORT && key === 'published') {
     const createdInput = { key: 'created', value: input.value };
     updatedInputs.push(createdInput);
-    updateOperations.push(innerUpdateAttribute(user, instance, createdInput));
   }
-  await Promise.all(updateOperations);
   return updatedInputs;
 };
 const prepareAttributes = (elements) => {
@@ -1255,7 +1251,7 @@ const getInstanceValue = (key, instance) => {
   return instance[key];
 };
 
-export const updateAttributeRaw = async (user, instance, inputs, options = {}) => {
+export const updateAttributeRaw = (user, instance, inputs, options = {}) => {
   const elements = Array.isArray(inputs) ? inputs : [inputs];
   const updatedInputs = [];
   const impactedInputs = [];
@@ -1265,7 +1261,7 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
   // Update all needed attributes
   for (let index = 0; index < preparedElements.length; index += 1) {
     const input = preparedElements[index];
-    const ins = await innerUpdateAttribute(user, instance, input, options);
+    const ins = innerUpdateAttribute(user, instance, input, options);
     if (ins.length > 0) {
       updatedInputs.push({ ...input, previous: getInstanceValue(input.key, instance) });
       impactedInputs.push(...ins);
@@ -1280,7 +1276,7 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
         additionalFields = { x_opencti_location_type: instance.x_opencti_location_type };
       const aliasesId = generateAliasesId(aliases, additionalFields);
       const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
-      const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, options);
+      const aliasIns = innerUpdateAttribute(user, instance, aliasInput, options);
       impactedInputs.push(...aliasIns);
     }
     // If is valid_until modification, update also revoked
@@ -1288,14 +1284,14 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
       const untilDate = R.head(input.value);
       const untilDateTime = utcDate(untilDate).toDate();
       const revokedInput = { key: REVOKED, value: [untilDateTime < utcDate().toDate()] };
-      const revokedIn = await innerUpdateAttribute(user, instance, revokedInput, options);
+      const revokedIn = innerUpdateAttribute(user, instance, revokedInput, options);
       if (revokedIn.length > 0) {
         updatedInputs.push({ ...revokedInput, previous: getInstanceValue(revokedInput.key, instance) });
         impactedInputs.push(...revokedIn);
       }
       if (instance.entity_type === ENTITY_TYPE_INDICATOR && untilDateTime <= utcDate().toDate()) {
         const detectionInput = { key: 'x_opencti_detection', value: [false] };
-        const detectionIn = await innerUpdateAttribute(user, instance, detectionInput, options);
+        const detectionIn = innerUpdateAttribute(user, instance, detectionInput, options);
         if (detectionIn.length > 0) {
           updatedInputs.push(detectionInput);
           impactedInputs.push(...detectionIn);
@@ -1312,7 +1308,7 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
         additionalFields = { x_opencti_location_type: instance.x_opencti_location_type };
       const aliasesId = generateAliasesId([instance.name, ...input.value], additionalFields);
       const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
-      const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, options);
+      const aliasIns = innerUpdateAttribute(user, instance, aliasInput, options);
       if (aliasIns.length > 0) {
         impactedInputs.push(...aliasIns);
       }
@@ -1324,7 +1320,7 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
     const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
     const standardId = generateStandardId(instanceType, updatedInstance);
     const standardInput = { key: ID_STANDARD, value: [standardId] };
-    const ins = await innerUpdateAttribute(user, instance, standardInput, options);
+    const ins = innerUpdateAttribute(user, instance, standardInput, options);
     if (ins.length > 0) {
       impactedInputs.push(...ins);
     }
@@ -1407,7 +1403,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
       }
     }
     // noinspection UnnecessaryLocalVariableJS
-    const data = await updateAttributeRaw(user, instance, inputs, options);
+    const data = updateAttributeRaw(user, instance, inputs, options);
     const { updatedInstance, impactedInputs } = data;
     // Check the consistency of the observable.
     if (isStixCyberObservable(instance.entity_type)) {
@@ -1439,7 +1435,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     if (lock) await lock.unlock();
   }
 };
-export const patchAttributeRaw = async (user, instance, patch, options = {}) => {
+export const patchAttributeRaw = (user, instance, patch, options = {}) => {
   const inputs = transformPathToInput(patch);
   return updateAttributeRaw(user, instance, inputs, options);
 };
@@ -1578,37 +1574,73 @@ const buildInnerRelation = (from, to, type) => {
   }
   return relations;
 };
-const upsertElementRaw = async (user, id, type, data) => {
-  let element = await markedLoadById(user, id, type);
+const upsertIdentifiedFields = (user, element, input, fields) => {
+  const upsertUpdated = [];
+  const upsertImpacted = [];
+  if (fields) {
+    const patch = {};
+    for (let fieldIndex = 0; fieldIndex < fields.length; fieldIndex += 1) {
+      const fieldKey = fields[fieldIndex];
+      const inputData = input[fieldKey];
+      if (isNotEmptyField(inputData)) {
+        patch[fieldKey] = Array.isArray(inputData) ? inputData : [inputData];
+      }
+    }
+    if (!R.isEmpty(patch)) {
+      const patched = patchAttributeRaw(user, element, patch);
+      upsertImpacted.push(...patched.impactedInputs);
+      upsertUpdated.push(...patched.updatedInputs);
+    }
+  }
+  return { upsertImpacted, upsertUpdated };
+};
+const upsertElementRaw = async (user, id, type, input) => {
+  const element = await markedLoadById(user, id, type);
+  const forceUpdate = input.update === true;
   const updatedAddInputs = []; // Direct modified inputs (add)
   const updatedReplaceInputs = []; // Direct modified inputs (replace)
   const impactedInputs = []; // Inputs impacted by updated inputs + updated inputs
+  // Handle inference specific behavior
+  if (element.i_inference_rule) {
+    // The current instance is inferred, updating is only possible if the same
+    // rule is responsible for the update
+    const currentRuleName = element.i_inference_rule.name;
+    const ruleName = input.inferenceRule.name;
+    if (currentRuleName !== ruleName) {
+      throw UnsupportedError('Rule collision');
+    }
+    // If same rule, explanation should be the same, nothing to do
+  } else {
+    // Element already exists but not inferred, adding the inference.
+    const patch = { i_inference_rule: input.inferenceRule };
+    const patched = patchAttributeRaw(user, element, patch, { operation: UPDATE_OPERATION_REPLACE });
+    impactedInputs.push(...patched.impactedInputs);
+    updatedAddInputs.push(...patched.updatedInputs);
+  }
   // Handle attributes updates
-  if (isNotEmptyField(data.stix_id)) {
-    const patch = { x_opencti_stix_ids: [data.stix_id] };
-    const patched = await patchAttributeRaw(user, element, patch, {
-      operation: UPDATE_OPERATION_ADD,
-    });
+  if (isNotEmptyField(input.stix_id)) {
+    const patch = { x_opencti_stix_ids: [input.stix_id] };
+    const patched = patchAttributeRaw(user, element, patch, { operation: UPDATE_OPERATION_ADD });
     impactedInputs.push(...patched.impactedInputs);
     updatedAddInputs.push(...patched.updatedInputs);
   }
   // Upsert the aliases
   if (isStixObjectAliased(type)) {
-    const { name } = data;
+    const { name } = input;
     const key = resolveAliasesField(type);
-    const aliases = [...(data[ATTRIBUTE_ALIASES] || []), ...(data[ATTRIBUTE_ALIASES_OPENCTI] || [])];
+    const aliases = [...(input[ATTRIBUTE_ALIASES] || []), ...(input[ATTRIBUTE_ALIASES_OPENCTI] || [])];
     if (normalizeName(element.name) !== normalizeName(name)) aliases.push(name);
     const patch = { [key]: aliases };
-    const patched = await patchAttributeRaw(user, element, patch, { operation: UPDATE_OPERATION_ADD });
+    const patched = patchAttributeRaw(user, element, patch, { operation: UPDATE_OPERATION_ADD });
     impactedInputs.push(...patched.impactedInputs);
     updatedAddInputs.push(...patched.updatedInputs);
   }
-  if (isStixSightingRelationship(type) && data.attribute_count) {
-    const patch = { attribute_count: element.attribute_count + data.attribute_count };
+  if (isStixSightingRelationship(type) && input.attribute_count) {
+    const patch = { attribute_count: element.attribute_count + input.attribute_count };
     // If a first_seen is given
     let newFirstSeen = null;
-    if (!R.isNil(data.first_seen)) {
-      const givenFirstSeen = moment(data.first_seen);
+    if (!R.isNil(input.first_seen)) {
+      const givenFirstSeen = moment(input.first_seen);
       // If a first_seen already exists
       if (!R.isNil(element.first_seen)) {
         // If the new first_seen is before the existing one, we update
@@ -1626,8 +1658,8 @@ const upsertElementRaw = async (user, id, type, data) => {
     }
     // If a last_seen is given
     let newLastSeen = null;
-    if (!R.isNil(data.last_seen)) {
-      const givenLastSeen = moment(data.last_seen);
+    if (!R.isNil(input.last_seen)) {
+      const givenLastSeen = moment(input.last_seen);
       // If a last_seen already exists
       if (!R.isNil(element.last_seen)) {
         // If the new last_seen is after the existing one, we update
@@ -1643,53 +1675,29 @@ const upsertElementRaw = async (user, id, type, data) => {
         patch.last_seen = newLastSeen;
       }
     }
-    const patched = await patchAttributeRaw(user, element, patch);
+    const patched = patchAttributeRaw(user, element, patch);
     impactedInputs.push(...patched.impactedInputs);
     updatedReplaceInputs.push(...patched.updatedInputs);
   }
-  if (isStixDomainObject(type) && data.update === true) {
+  if (isStixDomainObject(type) && forceUpdate) {
     const fields = stixDomainObjectFieldsToBeUpdated[type];
-    if (fields) {
-      const patch = {};
-      for (let fieldIndex = 0; fieldIndex < fields.length; fieldIndex += 1) {
-        const fieldKey = fields[fieldIndex];
-        const inputData = data[fieldKey];
-        if (isNotEmptyField(inputData)) {
-          patch[fieldKey] = Array.isArray(inputData) ? inputData : [inputData];
-        }
-      }
-      if (!R.isEmpty(patch)) {
-        const patched = await patchAttributeRaw(user, element, patch);
-        impactedInputs.push(...patched.impactedInputs);
-        updatedReplaceInputs.push(...patched.updatedInputs);
-      }
-    }
+    const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(user, element, input, fields);
+    impactedInputs.push(...upsertImpacted);
+    updatedReplaceInputs.push(...upsertUpdated);
   }
-  if (isStixCyberObservable(type) && data.update === true) {
+  if (isStixCyberObservable(type) && forceUpdate) {
     const fields = stixCyberObservableFieldsToBeUpdated[type];
-    if (fields) {
-      const patch = {};
-      for (let fieldIndex = 0; fieldIndex < fields.length; fieldIndex += 1) {
-        const fieldKey = fields[fieldIndex];
-        const inputData = data[fieldKey];
-        if (isNotEmptyField(inputData)) {
-          patch[fieldKey] = Array.isArray(inputData) ? inputData : [inputData];
-        }
-      }
-      if (!R.isEmpty(patch)) {
-        const patched = await patchAttributeRaw(user, element, patch);
-        impactedInputs.push(...patched.impactedInputs);
-        updatedReplaceInputs.push(...patched.updatedInputs);
-      }
-    }
+    const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(user, element, input, fields);
+    impactedInputs.push(...upsertImpacted);
+    updatedReplaceInputs.push(...upsertUpdated);
   }
   // Upsert markings
   const rawRelations = [];
   const targetsPerType = [];
-  if (data.objectMarking && data.objectMarking.length > 0) {
+  if (input.objectMarking && input.objectMarking.length > 0) {
     const markings = [];
     const markingsIds = R.map((m) => m.internal_id, element.objectMarking || []);
-    const markingToCreate = R.filter((m) => !markingsIds.includes(m.internal_id), data.objectMarking);
+    const markingToCreate = R.filter((m) => !markingsIds.includes(m.internal_id), input.objectMarking);
     for (let index = 0; index < markingToCreate.length; index += 1) {
       const markingTo = markingToCreate[index];
       const dataRels = buildInnerRelation(element, markingTo, RELATION_OBJECT_MARKING);
@@ -1711,14 +1719,14 @@ const upsertElementRaw = async (user, id, type, data) => {
     }
     streamInputs.push({ [UPDATE_OPERATION_ADD]: streamInput });
   }
-  let indexInput;
   if (impactedInputs.length > 0) {
-    element = mergeInstanceWithInputs(element, impactedInputs);
+    const merged = mergeInstanceWithInputs(element, impactedInputs);
     // Build the input to reindex in elastic
-    indexInput = partialInstanceWithInputs(element, impactedInputs);
+    const indexInput = partialInstanceWithInputs(merged, impactedInputs);
+    return { type: TRX_UPDATE, element: merged, relations: rawRelations, streamInputs, indexInput };
   }
   // Return all elements requirement for stream and indexation
-  return { type: TRX_UPDATE, element, relations: rawRelations, streamInputs, indexInput };
+  return { type: TRX_UPDATE, element, relations: rawRelations, streamInputs };
 };
 
 export const buildRelationTimeFilter = (input) => {
@@ -1746,8 +1754,9 @@ export const buildRelationTimeFilter = (input) => {
   return args;
 };
 
-const createRelationRaw = async (user, input, inferred = false) => {
-  const { from, to, relationship_type: relationshipType } = input;
+const createRelationRaw = async (user, input) => {
+  const { from, to, relationship_type: relationshipType, inferenceRule } = input;
+  const inferred = isNotEmptyField(inferenceRule);
   // 01. Generate the ID
   const internalId = generateInternalId();
   const standardId = generateStandardId(relationshipType, input);
@@ -1789,7 +1798,7 @@ const createRelationRaw = async (user, input, inferred = false) => {
   // basic-relationship
   data._index = inferIndexFromConceptType(relationshipType, inferred);
   if (inferred) {
-    data.x_opencti_explanation = input.explanation;
+    data.i_inference_rule = input.inferenceRule;
   }
   data.internal_id = internalId;
   data.standard_id = standardId;
@@ -1920,7 +1929,7 @@ export const createInferredRelation = async (input) => {
   // For this reason we do not need to lock the participants
   const resolvedInput = await inputResolveRefs(SYSTEM_USER, input);
   const { from, to } = resolvedInput;
-  const dataRel = await createRelationRaw(SYSTEM_USER, resolvedInput, true);
+  const dataRel = await createRelationRaw(SYSTEM_USER, resolvedInput);
   // Index the created element
   await indexCreatedElement(dataRel);
   // Push the input in the stream
@@ -2180,6 +2189,27 @@ export const createEntity = async (user, input, type) => {
 // endregion
 
 // region mutation deletion
+export const deleteInferredElement = async (elements) => {
+  // Element in inferences index can be deleted.
+  const pureInferences = elements.filter((e) => isInferredIndex(e._index));
+  await elDeleteInstanceIds(pureInferences);
+  // Element in standard index can only loose the inference link.
+  const mixedInferences = elements.filter((e) => !isInferredIndex(e._index));
+  const mixedHandler = (mixedInference) => {
+    return elUpdate(mixedInference._index, mixedInference.id, {
+      script: {
+        source: 'ctx._source.remove(params.del_field_name)',
+        lang: 'painless',
+        params: { del_field_name: 'i_inference_rule' },
+      },
+    });
+  };
+  await Promise.map(mixedInferences, mixedHandler, { concurrency: ES_MAX_CONCURRENCY });
+  const createEvent = (e) => buildDeleteEvent(SYSTEM_USER, e, stixLoadById, { withoutMessage: true });
+  // noinspection UnnecessaryLocalVariableJS
+  const generatedEvents = await Promise.map(pureInferences, createEvent, { concurrency: ES_MAX_CONCURRENCY });
+  return generatedEvents;
+};
 export const deleteElementById = async (user, elementId, type) => {
   let lock;
   if (R.isNil(type)) {
