@@ -1,22 +1,20 @@
 export default {
   fontFamily: 'Roboto, sans-serif',
   palette: {
-    type: 'dark',
-    text: { secondary: 'rgba(255, 255, 255, 0.5)' },
-    primary: { main: '#00bcd4' },
+    type: 'light',
+    primary: { main: '#507bc8' },
     secondary: { main: '#ff3d00' },
-    header: { background: '#1b2226', text: '#ffffff' },
-    navAlt: { background: '#14262c', backgroundHeader: '#2d4b5b' },
+    header: { background: '#ffffff', text: '#000000' },
+    navAlt: { background: '#ffffff', backgroundHeader: '#fafafa' },
     navBottom: { background: '#0f181f' },
     background: {
-      paper: '#28353a',
-      paperLight: '#265058',
-      nav: '#28353a',
-      navLight: '#14262c',
-      default: '#222c30',
+      paper: '#ffffff',
+      paperLight: '#fafafa',
+      nav: '#ffffff',
+      navLight: '#ffffff',
+      default: '#fafafa',
     },
-    action: { disabled: '#4f4f4f', grid: '#0f181f' },
-    divider: 'rgba(255, 255, 255, 0.2)',
+    action: { disabled: '#747474', grid: '#dbdbdb' },
   },
   typography: {
     useNextVariants: true,
@@ -29,14 +27,14 @@ export default {
     h1: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: '#00bcd4',
+      color: '#507bc8',
       fontWeight: 400,
       fontSize: 22,
     },
     h2: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: '#ffffff',
+      color: '#000000',
       fontWeight: 500,
       fontSize: 16,
       textTransform: 'uppercase',
@@ -44,7 +42,7 @@ export default {
     h3: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: '#00bcd4',
+      color: '#507bc8',
       fontWeight: 400,
       fontSize: 13,
     },
@@ -54,17 +52,17 @@ export default {
       textTransform: 'uppercase',
       fontSize: 12,
       fontWeight: 500,
-      color: '#a8a8a8',
+      color: '#4b4b4b',
     },
     h5: {
-      color: '#ffffff',
+      color: '#000000',
       fontWeight: 400,
       fontSize: 13,
       textTransform: 'uppercase',
       marginTop: -4,
     },
     h6: {
-      color: '#ffffff',
+      color: '#000000',
       fontWeight: 400,
       fontSize: 18,
     },
@@ -73,18 +71,18 @@ export default {
     MuiCssBaseline: {
       '@global': {
         '*': {
-          scrollbarColor: '#14262c #2d4b5b',
+          scrollbarColor: '#c6c6c6 #c6c6c6',
         },
         '*::-webkit-scrollbar': {
           width: 12,
         },
         '*::-webkit-scrollbar-track': {
-          background: '#2d4b5b',
+          background: '#c6c6c6',
         },
         '*::-webkit-scrollbar-thumb': {
-          backgroundColor: '#14262c',
+          backgroundColor: '#f0f0f0',
           borderRadius: 20,
-          border: '3px solid #14262c',
+          border: '3px solid #f0f0f0',
         },
         html: {
           WebkitFontSmoothing: 'auto',

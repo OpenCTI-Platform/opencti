@@ -11,7 +11,7 @@ import {
   filter,
   head,
 } from 'ramda';
-import { withStyles } from '@material-ui/core';
+import { withTheme, withStyles } from '@material-ui/core';
 import {
   Map, TileLayer, GeoJSON, Marker,
 } from 'react-leaflet';
@@ -77,7 +77,9 @@ const LocationMiniMapTargets = (props) => {
     }
     return { fillOpacity: 0, color: 'none' };
   };
-  const { center, zoom, cities } = props;
+  const {
+    center, zoom, cities, theme,
+  } = props;
   const locatedCities = cities
     ? filter((n) => n.latitude && n.longitude, cities)
     : [];
@@ -89,7 +91,13 @@ const LocationMiniMapTargets = (props) => {
         attributionControl={false}
         zoomControl={false}
       >
-        <TileLayer url={settings.platform_map_tile_server} />
+        <TileLayer
+          url={
+            theme.palette.type === 'light'
+              ? settings.platform_map_tile_server_light
+              : settings.platform_map_tile_server_dark
+          }
+        />
         <GeoJSON data={countries} style={getStyle} />
         {locatedCities.map((city) => {
           const position = [city.latitude, city.longitude];
@@ -106,10 +114,15 @@ LocationMiniMapTargets.propTypes = {
   countries: PropTypes.array,
   cities: PropTypes.array,
   zoom: PropTypes.number,
+  theme: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fd: PropTypes.func,
   history: PropTypes.object,
 };
 
-export default compose(inject18n, withStyles(styles))(LocationMiniMapTargets);
+export default compose(
+  inject18n,
+  withTheme,
+  withStyles(styles),
+)(LocationMiniMapTargets);

@@ -153,7 +153,6 @@ const TopBar = ({
     <AppBar
       position="fixed"
       className={classes.appBar}
-      style={{ backgroundColor: '#1b2226' }}
     >
       <Toolbar>
         <div className={classes.logoContainer}>

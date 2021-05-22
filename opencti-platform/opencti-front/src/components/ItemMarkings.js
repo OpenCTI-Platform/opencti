@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import * as R from 'ramda';
 import * as PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, withTheme } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
+import { compose } from 'ramda';
 import { truncate } from '../utils/String';
 
 const styles = () => ({
@@ -25,7 +26,7 @@ const styles = () => ({
   },
 });
 
-const inlineStyles = {
+const inlineStylesDark = {
   white: {
     backgroundColor: '#ffffff',
     color: '#2b2b2b',
@@ -44,10 +45,34 @@ const inlineStyles = {
   },
 };
 
+const inlineStylesLight = {
+  white: {
+    backgroundColor: '#ffffff',
+    color: '#2b2b2b',
+    border: '1px solid #2b2b2b',
+  },
+  green: {
+    backgroundColor: '#2e7d32',
+    color: '#ffffff',
+  },
+  blue: {
+    backgroundColor: '#283593',
+    color: '#ffffff',
+  },
+  red: {
+    backgroundColor: '#c62828',
+    color: '#ffffff',
+  },
+  orange: {
+    backgroundColor: '#d84315',
+    color: '#ffffff',
+  },
+};
+
 class ItemMarkings extends Component {
   render() {
     const {
-      classes, variant, markingDefinitions, limit,
+      classes, variant, markingDefinitions, limit, theme,
     } = this.props;
     const className = variant === 'inList' ? classes.chipInList : classes.chip;
     const number = limit || 1;
@@ -62,20 +87,36 @@ class ItemMarkings extends Component {
         {markings.map((markingDefinition) => {
           const label = truncate(markingDefinition.definition, 20);
           if (markingDefinition.x_opencti_color) {
+            let backgroundColor = markingDefinition.x_opencti_color;
+            let textColor = theme.palette.text.primary;
+            let border = '0';
+            if (theme.palette.type === 'light') {
+              if (backgroundColor === '#ffffff') {
+                backgroundColor = '#ffffff';
+                textColor = '#2b2b2b';
+                border = '1px solid #2b2b2b';
+              } else {
+                textColor = '#ffffff';
+              }
+            } else if (backgroundColor === '#ffffff') {
+              textColor = '#2b2b2b';
+            }
             return (
               <Chip
                 key={markingDefinition.definition}
                 className={className}
                 style={{
-                  backgroundColor: markingDefinition.x_opencti_color,
-                  color:
-                    markingDefinition.x_opencti_color === '#ffffff'
-                      ? '#2b2b2b'
-                      : 'inherit',
+                  backgroundColor,
+                  color: textColor,
+                  border,
                 }}
                 label={label}
               />
             );
+          }
+          let inlineStyles = inlineStylesDark;
+          if (theme.palette.type === 'light') {
+            inlineStyles = inlineStylesLight;
           }
           switch (markingDefinition.definition) {
             case 'CD':
@@ -110,15 +151,6 @@ class ItemMarkings extends Component {
                   label={label}
                 />
               );
-            case 'TLP:WHITE':
-              return (
-                <Chip
-                  key={markingDefinition.definition}
-                  className={className}
-                  style={inlineStyles.white}
-                  label={label}
-                />
-              );
             case 'SF':
               return (
                 <Chip
@@ -145,10 +177,11 @@ class ItemMarkings extends Component {
 }
 
 ItemMarkings.propTypes = {
+  theme: PropTypes.object,
   classes: PropTypes.object.isRequired,
   variant: PropTypes.string,
   limit: PropTypes.number,
   markingDefinitions: PropTypes.array,
 };
 
-export default withStyles(styles)(ItemMarkings);
+export default compose(withTheme, withStyles(styles))(ItemMarkings);

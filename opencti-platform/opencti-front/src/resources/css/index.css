@@ -2,22 +2,6 @@
   font-size: 100%;
   font-family: "Roboto", sans-serif;
   scrollbar-width: thin;
-  scrollbar-color: #14262c #2d4b5b;
-}
-
-/* Works on Chrome, Edge, and Safari */
-*::-webkit-scrollbar {
-  width: 12px;
-}
-
-*::-webkit-scrollbar-track {
-  background: #2d4b5b;
-}
-
-*::-webkit-scrollbar-thumb {
-  background-color: #14262c;
-  border-radius: 20px;
-  border: 3px solid #2d4b5b;
 }
 
 :focus {
@@ -64,14 +48,6 @@ a:focus {
   text-decoration: none;
 }
 
-a {
-  color: #00bcd4;
-}
-
-a .MuiListItemText-primary {
-  color: #ffffff;
-}
-
 pre {
   padding: 10px;
   font-family: Consolas, monaco, monospace;
@@ -92,27 +68,6 @@ code {
   font-size: 12px;
   font-weight: 400;
   background: rgba(64, 193, 255, 0.2);
-}
-
-span.icon {
-  font-family: "Roboto", sans-serif;
-  display: block;
-  float: right;
-  padding: 2px 0 0 0;
-  color: #00bcd4;
-  font-weight: 400;
-}
-
-span.red {
-  color: #f44336;
-}
-
-span.green {
-  color: #4caf50;
-}
-
-span.teal {
-  color: #80cbc4;
 }
 
 span.raw {

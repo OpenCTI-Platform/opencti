@@ -47,6 +47,7 @@ const settingsQuery = graphql`
       platform_title
       platform_email
       platform_url
+      platform_theme
       platform_language
       platform_login_message
       platform_providers {
@@ -69,6 +70,7 @@ const settingsMutationFieldPatch = graphql`
         platform_title
         platform_email
         platform_url
+        platform_theme
         platform_language
         platform_login_message
       }
@@ -106,6 +108,7 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_url: Yup.string()
     .required(t('This field is required'))
     .url(t('The value must be an URL')),
+  platform_theme: Yup.string(),
   platform_language: Yup.string(),
   platform_login_message: Yup.string(),
 });
@@ -151,6 +154,7 @@ class Settings extends Component {
                   'platform_title',
                   'platform_email',
                   'platform_url',
+                  'platform_theme',
                   'platform_language',
                   'platform_login_message',
                 ],
@@ -236,6 +240,35 @@ class Settings extends Component {
                                     />
                                   }
                                 />
+                                <Field
+                                  component={SelectField}
+                                  name="platform_theme"
+                                  label={t('Theme')}
+                                  fullWidth={true}
+                                  containerstyle={{
+                                    marginTop: 20,
+                                    width: '100%',
+                                  }}
+                                  onFocus={this.handleChangeFocus.bind(
+                                    this,
+                                    id,
+                                  )}
+                                  onChange={this.handleSubmitField.bind(
+                                    this,
+                                    id,
+                                  )}
+                                  helpertext={
+                                    <SubscriptionFocus
+                                      context={editContext}
+                                      fieldName="platform_theme"
+                                    />
+                                  }
+                                >
+                                  <MenuItem value="dark">{t('Dark')}</MenuItem>
+                                  <MenuItem value="light">
+                                    {t('Light')}
+                                  </MenuItem>
+                                </Field>
                                 <Field
                                   component={SelectField}
                                   name="platform_language"
@@ -330,10 +363,7 @@ class Settings extends Component {
                           query={settingsAboutQuery}
                           render={({ props: aboutProps }) => {
                             if (aboutProps) {
-                              const {
-                                version,
-                                dependencies,
-                              } = aboutProps.about;
+                              const { version, dependencies } = aboutProps.about;
                               return (
                                 <div>
                                   <Typography variant="h1" gutterBottom={true}>
