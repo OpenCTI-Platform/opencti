@@ -578,10 +578,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
 
   renderForm(sourceEntity) {
     const {
-      t,
-      classes,
-      isRelationReversed,
-      allowedRelationshipTypes,
+      t, classes, isRelationReversed, allowedRelationshipTypes,
     } = this.props;
     const { targetEntities } = this.state;
     const isMultiple = targetEntities.length > 1;
@@ -862,11 +859,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
 
   render() {
     const {
-      classes,
-      entityId,
-      variant,
-      paddingRight,
-      openExports,
+      classes, entityId, variant, paddingRight, openExports,
     } = this.props;
     const { open, step } = this.state;
     return (

@@ -124,11 +124,7 @@ class AddNotesLinesContainer extends Component {
   }
 
   render() {
-    const {
-      classes,
-      data,
-      stixCoreObjectOrStixCoreRelationshipNotes,
-    } = this.props;
+    const { classes, data, stixCoreObjectOrStixCoreRelationshipNotes } = this.props;
     const entityNotesIds = map(
       (n) => n.node.id,
       stixCoreObjectOrStixCoreRelationshipNotes,

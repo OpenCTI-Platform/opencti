@@ -203,12 +203,7 @@ class EntityCampaignsTableTime extends Component {
 
   render() {
     const {
-      t,
-      classes,
-      variant,
-      title,
-      configuration,
-      handleOpenConfig,
+      t, classes, variant, title, configuration, handleOpenConfig,
     } = this.props;
     if (variant === 'explore') {
       return (

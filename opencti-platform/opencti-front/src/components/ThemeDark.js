@@ -14,6 +14,7 @@ export default {
       nav: '#28353a',
       navLight: '#14262c',
       default: '#222c30',
+      chip: 'rgba(64, 193, 255, 0.2)',
     },
     action: { disabled: '#4f4f4f', grid: '#0f181f' },
     divider: 'rgba(255, 255, 255, 0.2)',
@@ -83,7 +84,7 @@ export default {
         },
         '*::-webkit-scrollbar-thumb': {
           backgroundColor: '#14262c',
-          borderRadius: 20,
+          borderRadius: 0,
           border: '3px solid #14262c',
         },
         html: {
@@ -91,6 +92,21 @@ export default {
         },
         a: {
           color: '#507bc8',
+        },
+        'input:-webkit-autofill': {
+          '-webkit-animation': 'autofill 0s forwards',
+          animation: 'autofill 0s forwards',
+          '-webkit-text-fill-color': '#000000 !important',
+          caretColor: 'transparent !important',
+          '-webkit-box-shadow': '0 0 0 1000px #f8f8f8 inset !important',
+          borderTopLeftRadius: 'inherit',
+          borderTopRightRadius: 'inherit',
+        },
+        pre: {
+          background: 'rgba(64, 193, 255, 0.2)',
+        },
+        code: {
+          background: 'rgba(64, 193, 255, 0.2)',
         },
       },
     },

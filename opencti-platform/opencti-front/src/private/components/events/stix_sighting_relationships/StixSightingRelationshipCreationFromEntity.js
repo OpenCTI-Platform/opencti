@@ -426,10 +426,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
   }
 
   renderObservableSearchResults() {
-    const {
-      targetStixDomainObjectTypes,
-      targetStixCyberObservableTypes,
-    } = this.props;
+    const { targetStixDomainObjectTypes, targetStixCyberObservableTypes } = this.props;
 
     if (
       !targetStixCyberObservableTypes

@@ -71,7 +71,10 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             </IconButton>
           </Tooltip>
           <div className={classes.export}>
-            <ExportButtons domElementId="container" name={t('Attack patterns kill chain')} />
+            <ExportButtons
+              domElementId="container"
+              name={t('Attack patterns kill chain')}
+            />
           </div>
         </div>
         {currentView === 'list' && (

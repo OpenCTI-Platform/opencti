@@ -299,7 +299,10 @@ export const computeTimeRangeInterval = (objects) => {
 export const computeTimeRangeValues = (interval, objects) => {
   const elementsDates = R.map(
     (n) => timestamp(defaultDate(n)),
-    R.filter((n) => n.parent_types && !n.parent_types.includes('basic-relationship'), objects),
+    R.filter(
+      (n) => n.parent_types && !n.parent_types.includes('basic-relationship'),
+      objects,
+    ),
   );
   const minutes = minutesBetweenDates(interval[0], interval[1]);
   const intervalInMinutes = Math.ceil(minutes / 100);
@@ -384,17 +387,17 @@ export const applyFilters = (
 
 export const buildCorrelationData = (objects, graphData, t, filterAdjust) => {
   const thisReportLinkNodes = R.pipe(
-    R.filter(
-      (n) => n.reports && n.parent_types && n.reports.edges.length > 1,
+    R.filter((n) => n.reports && n.parent_types && n.reports.edges.length > 1),
+  )(
+    applyNodeFilters(
+      R.filter((o) => o && o.id && o.entity_type && o.reports, objects),
+      filterAdjust.stixCoreObjectsTypes,
+      filterAdjust.markedBy,
+      filterAdjust.createdBy,
+      [],
+      filterAdjust.selectedTimeRangeInterval,
     ),
-  )(applyNodeFilters(
-    R.filter((o) => o && o.id && o.entity_type && o.reports, objects),
-    filterAdjust.stixCoreObjectsTypes,
-    filterAdjust.markedBy,
-    filterAdjust.createdBy,
-    [],
-    filterAdjust.selectedTimeRangeInterval,
-  ));
+  );
   const relatedReportNodes = applyNodeFilters(
     R.pipe(
       R.map((n) => n.reports.edges),
@@ -411,23 +414,26 @@ export const buildCorrelationData = (objects, graphData, t, filterAdjust) => {
   );
 
   const links = R.pipe(
-    R.map((n) => R.map((e) => ({
-      id: R.concat(n.id, '-', e.id),
-      parent_types: ['basic-relationship'],
-      entity_type: 'basic-relationship',
-      relationship_type: 'reported-in',
-      source: n.id,
-      target: e.id,
-      label: '',
-      name: '',
-      source_id: n.id,
-      target_id: e.id,
-      from: n.id,
-      to: n.id,
-      start_time: '',
-      stop_time: '',
-      defaultDate: jsDate(defaultDate(n)),
-    }), relatedReportNodes)),
+    R.map((n) => R.map(
+      (e) => ({
+        id: R.concat(n.id, '-', e.id),
+        parent_types: ['basic-relationship'],
+        entity_type: 'basic-relationship',
+        relationship_type: 'reported-in',
+        source: n.id,
+        target: e.id,
+        label: '',
+        name: '',
+        source_id: n.id,
+        target_id: e.id,
+        from: n.id,
+        to: n.id,
+        start_time: '',
+        stop_time: '',
+        defaultDate: jsDate(defaultDate(n)),
+      }),
+      relatedReportNodes,
+    )),
     R.flatten,
   )(thisReportLinkNodes);
   const combinedNodes = R.concat(thisReportLinkNodes, relatedReportNodes);
@@ -437,7 +443,10 @@ export const buildCorrelationData = (objects, graphData, t, filterAdjust) => {
       val: graphLevel[n.entity_type],
       name: defaultValue(n, true),
       defaultDate: jsDate(defaultDate(n)),
-      label: truncate(defaultValue(n), n.entity_type === 'Attack-Pattern' ? 30 : 20),
+      label: truncate(
+        defaultValue(n),
+        n.entity_type === 'Attack-Pattern' ? 30 : 20,
+      ),
       img: graphImages[n.entity_type],
       entity_type: n.entity_type,
       rawImg: graphRawImages[n.entity_type],
@@ -477,12 +486,11 @@ export const buildGraphData = (objects, graphData, t) => {
     R.uniqBy(R.prop('id')),
     R.map((n) => ({
       id: n.id,
-      val:
-        graphLevel[
-          n.parent_types.includes('basic-relationship')
-            ? 'relationship'
-            : n.entity_type
-        ],
+      val: graphLevel[
+        n.parent_types.includes('basic-relationship')
+          ? 'relationship'
+          : n.entity_type
+      ],
       name: `${
         n.relationship_type
           ? `${t('Start time')} ${
@@ -501,12 +509,11 @@ export const buildGraphData = (objects, graphData, t) => {
           defaultValue(n),
           n.entity_type === 'Attack-Pattern' ? 30 : 20,
         ),
-      img:
-        graphImages[
-          n.parent_types.includes('basic-relationship')
-            ? 'relationship'
-            : n.entity_type
-        ],
+      img: graphImages[
+        n.parent_types.includes('basic-relationship')
+          ? 'relationship'
+          : n.entity_type
+      ],
       rawImg:
         graphRawImages[
           n.parent_types.includes('basic-relationship')

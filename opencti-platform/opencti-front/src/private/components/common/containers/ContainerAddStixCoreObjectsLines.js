@@ -122,11 +122,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
 
   toggleStixCoreObject(stixCoreObject) {
     const {
-      containerId,
-      paginationOptions,
-      knowledgeGraph,
-      onAdd,
-      onDelete,
+      containerId, paginationOptions, knowledgeGraph, onAdd, onDelete,
     } = this.props;
     const { addedStixCoreObjects } = this.state;
     const containerStixCoreObjectsIds = this.getContainerStixCoreObjectsIds();

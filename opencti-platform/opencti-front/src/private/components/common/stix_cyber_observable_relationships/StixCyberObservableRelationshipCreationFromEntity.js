@@ -388,10 +388,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
   renderSelectEntity() {
     const { search } = this.state;
     const { classes, t, entityType } = this.props;
-    const {
-      fromTypes,
-      toTypes,
-    } = resolveStixCyberObservableRelationshipsTargetTypes(entityType);
+    const { fromTypes, toTypes } = resolveStixCyberObservableRelationshipsTargetTypes(entityType);
     const allTypes = R.uniq([...fromTypes, ...toTypes]);
     const paginationOptions = {
       search,
@@ -484,10 +481,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
   renderForm(sourceEntity) {
     const { t, classes, entityType } = this.props;
     const { targetEntity } = this.state;
-    const {
-      fromTypes,
-      toTypes,
-    } = resolveStixCyberObservableRelationshipsTargetTypes(entityType);
+    const { fromTypes, toTypes } = resolveStixCyberObservableRelationshipsTargetTypes(entityType);
     let fromEntity = sourceEntity;
     let toEntity = targetEntity;
     let isRelationReversed = false;

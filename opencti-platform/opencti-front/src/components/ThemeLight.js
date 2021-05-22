@@ -6,13 +6,14 @@ export default {
     secondary: { main: '#ff3d00' },
     header: { background: '#ffffff', text: '#000000' },
     navAlt: { background: '#ffffff', backgroundHeader: '#fafafa' },
-    navBottom: { background: '#0f181f' },
+    navBottom: { background: '#ffffff' },
     background: {
       paper: '#ffffff',
       paperLight: '#fafafa',
       nav: '#ffffff',
       navLight: '#ffffff',
       default: '#fafafa',
+      chip: 'rgba(80, 123, 200, 0.6)',
     },
     action: { disabled: '#747474', grid: '#dbdbdb' },
   },
@@ -71,24 +72,39 @@ export default {
     MuiCssBaseline: {
       '@global': {
         '*': {
-          scrollbarColor: '#c6c6c6 #c6c6c6',
+          scrollbarColor: '#f0f0f0 #c6c6c6',
         },
         '*::-webkit-scrollbar': {
           width: 12,
         },
         '*::-webkit-scrollbar-track': {
-          background: '#c6c6c6',
+          background: '#f0f0f0',
         },
         '*::-webkit-scrollbar-thumb': {
-          backgroundColor: '#f0f0f0',
-          borderRadius: 20,
-          border: '3px solid #f0f0f0',
+          backgroundColor: '#c6c6c6',
+          borderRadius: 0,
+          border: '3px solid #c6c6c6',
         },
         html: {
           WebkitFontSmoothing: 'auto',
         },
         a: {
           color: '#507bc8',
+        },
+        'input:-webkit-autofill': {
+          '-webkit-animation': 'autofill 0s forwards',
+          animation: 'autofill 0s forwards',
+          '-webkit-text-fill-color': '#000000 !important',
+          caretColor: 'transparent !important',
+          '-webkit-box-shadow': '0 0 0 1000px #f8f8f8 inset !important',
+          borderTopLeftRadius: 'inherit',
+          borderTopRightRadius: 'inherit',
+        },
+        pre: {
+          background: 'rgba(0, 0, 0, 0.02)',
+        },
+        code: {
+          background: 'rgba(0, 0, 0, 0.02)',
         },
       },
     },

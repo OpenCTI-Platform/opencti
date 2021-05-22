@@ -168,37 +168,37 @@ const StixCoreRelationshipCreationFromRelationStixCyberObservablesLines = create
   StixCoreRelationshipCreationFromRelationStixCyberObservablesLinesContainer,
   {
     data: graphql`
-      fragment StixCoreRelationshipCreationFromRelationStixCyberObservablesLines_data on Query
-      @argumentDefinitions(
-        search: { type: "String" }
-        types: { type: "[String]" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: {
-          type: "StixCyberObservablesOrdering"
-          defaultValue: created_at
-        }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-      ) {
-        stixCyberObservables(
-          search: $search
-          types: $types
-          first: $count
-          after: $cursor
-          orderBy: $orderBy
-          orderMode: $orderMode
-        ) @connection(key: "Pagination_stixCyberObservables") {
-          edges {
-            node {
-              id
-              entity_type
-              parent_types
-              observable_value
+        fragment StixCoreRelationshipCreationFromRelationStixCyberObservablesLines_data on Query
+        @argumentDefinitions(
+          search: { type: "String" }
+          types: { type: "[String]" }
+          count: { type: "Int", defaultValue: 25 }
+          cursor: { type: "ID" }
+          orderBy: {
+            type: "StixCyberObservablesOrdering"
+            defaultValue: created_at
+          }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
+        ) {
+          stixCyberObservables(
+            search: $search
+            types: $types
+            first: $count
+            after: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+          ) @connection(key: "Pagination_stixCyberObservables") {
+            edges {
+              node {
+                id
+                entity_type
+                parent_types
+                observable_value
+              }
             }
           }
         }
-      }
-    `,
+      `,
   },
   {
     direction: 'forward',
@@ -221,7 +221,8 @@ const StixCoreRelationshipCreationFromRelationStixCyberObservablesLines = create
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: stixCoreRelationshipCreationFromRelationStixCyberObservablesLinesQuery,
+    query:
+        stixCoreRelationshipCreationFromRelationStixCyberObservablesLinesQuery,
   },
 );
 

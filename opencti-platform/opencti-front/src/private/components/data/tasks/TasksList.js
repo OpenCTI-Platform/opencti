@@ -31,7 +31,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 
 const interval$ = interval(FIVE_SECONDS);
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -87,7 +87,7 @@ const styles = () => ({
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: 'rgba(64, 193, 255, 0.2)',
+    backgroundColor: theme.palette.background.chip,
     margin: '5px 10px 5px 0',
   },
 });

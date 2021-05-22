@@ -14,11 +14,7 @@ const nbOfRowsToLoad = 8;
 class ContainerStixObjectsOrStixRelationshipsLines extends Component {
   render() {
     const {
-      initialLoading,
-      dataColumns,
-      relay,
-      container,
-      paginationOptions,
+      initialLoading, dataColumns, relay, container, paginationOptions,
     } = this.props;
     return (
       <div>

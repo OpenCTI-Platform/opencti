@@ -87,10 +87,7 @@ class StixDomainObjectAddObjectRefs extends Component {
 
   render() {
     const {
-      t,
-      classes,
-      stixDomainObjectId,
-      stixDomainObjectObjectRefs,
+      t, classes, stixDomainObjectId, stixDomainObjectObjectRefs,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,

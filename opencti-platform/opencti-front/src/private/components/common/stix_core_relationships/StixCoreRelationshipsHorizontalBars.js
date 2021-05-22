@@ -207,7 +207,10 @@ class StixCoreRelationshipsHorizontalBars extends Component {
                     textAnchor="end"
                     tickFormatter={tickFormatter}
                   />
-                  <CartesianGrid strokeDasharray="2 2" stroke={theme.palette.action.grid} />
+                  <CartesianGrid
+                    strokeDasharray="2 2"
+                    stroke={theme.palette.action.grid}
+                  />
                   <Tooltip
                     cursor={{
                       fill: 'rgba(0, 0, 0, 0.2)',

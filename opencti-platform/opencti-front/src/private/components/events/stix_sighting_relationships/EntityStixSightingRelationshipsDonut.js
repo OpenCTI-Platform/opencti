@@ -141,14 +141,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
   renderLabel(props) {
     const RADIAN = Math.PI / 180;
     const {
-      cx,
-      cy,
-      midAngle,
-      outerRadius,
-      fill,
-      payload,
-      percent,
-      value,
+      cx, cy, midAngle, outerRadius, fill, payload, percent, value,
     } = props;
     const sin = Math.sin(-RADIAN * midAngle);
     const cos = Math.cos(-RADIAN * midAngle);

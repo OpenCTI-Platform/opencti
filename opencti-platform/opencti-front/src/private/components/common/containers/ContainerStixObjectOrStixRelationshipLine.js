@@ -10,6 +10,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { Help, MoreVert } from '@material-ui/icons';
 import { compose, pathOr, take } from 'ramda';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -153,10 +154,8 @@ ContainerStixObjectOrStixRelationshipLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
 };
 
-const ContainerStixObjectOrStixRelationshipLineFragment = createFragmentContainer(
-  ContainerStixObjectOrStixRelationshipLineComponent,
-  {
-    node: graphql`
+const ContainerStixObjectOrStixRelationshipLineFragment = createFragmentContainer(ContainerStixObjectOrStixRelationshipLineComponent, {
+  node: graphql`
       fragment ContainerStixObjectOrStixRelationshipLine_node on StixObjectOrStixRelationship {
         ... on BasicObject {
           id
@@ -378,8 +377,7 @@ const ContainerStixObjectOrStixRelationshipLineFragment = createFragmentContaine
         }
       }
     `,
-  },
-);
+});
 
 export const ContainerStixObjectOrStixRelationshipLine = compose(
   inject18n,
@@ -392,7 +390,7 @@ class ContainerStixObjectOrStixRelationshipLineDummyComponent extends Component 
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Help />
+          <Skeleton animation="wave" variant="circle" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -401,25 +399,45 @@ class ContainerStixObjectOrStixRelationshipLineDummyComponent extends Component 
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectMarking.width }}
               >
-                <div className="fakeItem" style={{ width: 100 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={100}
+                  height="100%"
+                />
               </div>
             </div>
           }

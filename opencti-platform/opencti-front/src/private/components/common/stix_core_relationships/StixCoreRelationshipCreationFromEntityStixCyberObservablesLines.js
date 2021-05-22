@@ -72,12 +72,7 @@ class StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer e
 
   render() {
     const {
-      t,
-      classes,
-      data,
-      handleSelect,
-      noPadding,
-      targetEntities,
+      t, classes, data, handleSelect, noPadding, targetEntities,
     } = this.props;
     const targetEntitiesIds = R.pluck('id', targetEntities);
     const stixCyberObservablesNodes = map(
@@ -190,38 +185,38 @@ const StixCoreRelationshipCreationFromEntityStixCyberObservablesLines = createPa
   StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer,
   {
     data: graphql`
-      fragment StixCoreRelationshipCreationFromEntityStixCyberObservablesLines_data on Query
-      @argumentDefinitions(
-        search: { type: "String" }
-        types: { type: "[String]" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: {
-          type: "StixCyberObservablesOrdering"
-          defaultValue: created_at
-        }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-      ) {
-        stixCyberObservables(
-          search: $search
-          types: $types
-          first: $count
-          after: $cursor
-          orderBy: $orderBy
-          orderMode: $orderMode
-        ) @connection(key: "Pagination_stixCyberObservables") {
-          edges {
-            node {
-              id
-              entity_type
-              parent_types
-              observable_value
-              x_opencti_description
+        fragment StixCoreRelationshipCreationFromEntityStixCyberObservablesLines_data on Query
+        @argumentDefinitions(
+          search: { type: "String" }
+          types: { type: "[String]" }
+          count: { type: "Int", defaultValue: 25 }
+          cursor: { type: "ID" }
+          orderBy: {
+            type: "StixCyberObservablesOrdering"
+            defaultValue: created_at
+          }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
+        ) {
+          stixCyberObservables(
+            search: $search
+            types: $types
+            first: $count
+            after: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+          ) @connection(key: "Pagination_stixCyberObservables") {
+            edges {
+              node {
+                id
+                entity_type
+                parent_types
+                observable_value
+                x_opencti_description
+              }
             }
           }
         }
-      }
-    `,
+      `,
   },
   {
     direction: 'forward',
@@ -244,7 +239,8 @@ const StixCoreRelationshipCreationFromEntityStixCyberObservablesLines = createPa
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: stixCoreRelationshipCreationFromEntityStixCyberObservablesLinesQuery,
+    query:
+        stixCoreRelationshipCreationFromEntityStixCyberObservablesLinesQuery,
   },
 );
 

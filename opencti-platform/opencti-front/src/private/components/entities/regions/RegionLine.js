@@ -67,12 +67,7 @@ const styles = (theme) => ({
 class RegionLineComponent extends Component {
   render() {
     const {
-      classes,
-      subRegions,
-      countries,
-      node,
-      isSubRegion,
-      keyword,
+      classes, subRegions, countries, node, isSubRegion, keyword,
     } = this.props;
     const sortByNameCaseInsensitive = sortBy(compose(toLower, prop('name')));
     const filterByKeyword = (n) => keyword === ''

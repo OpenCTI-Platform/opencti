@@ -9,6 +9,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRightOutlined, HelpOutlined } from '@material-ui/icons';
 import { compose, pathOr, take } from 'ramda';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
@@ -135,54 +136,54 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
   StixCoreObjectOrStixCoreRelationshipContainerLineComponent,
   {
     node: graphql`
-      fragment StixCoreObjectOrStixCoreRelationshipContainerLine_node on Container {
-        id
-        entity_type
-        ... on Note {
-          attribute_abstract
-          content
-          created
-        }
-        ... on Opinion {
-          opinion
-          created
-        }
-        ... on ObservedData {
-          first_observed
-          last_observed
-        }
-        ... on Report {
-          name
-          published
-          x_opencti_report_status
-        }
-        createdBy {
-          ... on Identity {
-            id
+        fragment StixCoreObjectOrStixCoreRelationshipContainerLine_node on Container {
+          id
+          entity_type
+          ... on Note {
+            attribute_abstract
+            content
+            created
+          }
+          ... on Opinion {
+            opinion
+            created
+          }
+          ... on ObservedData {
+            first_observed
+            last_observed
+          }
+          ... on Report {
             name
-            entity_type
+            published
+            x_opencti_report_status
           }
-        }
-        objectMarking {
-          edges {
-            node {
+          createdBy {
+            ... on Identity {
               id
-              definition
-              x_opencti_color
+              name
+              entity_type
+            }
+          }
+          objectMarking {
+            edges {
+              node {
+                id
+                definition
+                x_opencti_color
+              }
+            }
+          }
+          objectLabel {
+            edges {
+              node {
+                id
+                value
+                color
+              }
             }
           }
         }
-        objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
-        }
-      }
-    `,
+      `,
   },
 );
 
@@ -197,7 +198,7 @@ class StixCoreObjectOrStixCoreRelationshipContainerLineDummyComponent extends Co
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <HelpOutlined />
+          <Skeleton animation="wave" variant="circle" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -206,31 +207,56 @@ class StixCoreObjectOrStixCoreRelationshipContainerLineDummyComponent extends Co
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
-                <div className="fakeItem" style={{ width: '70%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectMarking.width }}
               >
-                <div className="fakeItem" style={{ width: 100 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={100}
+                  height="100%"
+                />
               </div>
             </div>
           }

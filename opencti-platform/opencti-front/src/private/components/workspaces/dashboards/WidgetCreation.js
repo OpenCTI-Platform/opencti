@@ -150,10 +150,7 @@ class WidgetCreation extends Component {
 
   completeSetup() {
     const {
-      perspective,
-      dataType,
-      visualizationType,
-      selectedEntity,
+      perspective, dataType, visualizationType, selectedEntity,
     } = this.state;
     this.props.onComplete({
       id: uuid(),

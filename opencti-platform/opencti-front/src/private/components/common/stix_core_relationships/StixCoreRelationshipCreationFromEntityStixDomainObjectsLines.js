@@ -221,106 +221,106 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
   StixCoreRelationshipCreationFromEntityLinesContainer,
   {
     data: graphql`
-      fragment StixCoreRelationshipCreationFromEntityStixDomainObjectsLines_data on Query
-      @argumentDefinitions(
-        search: { type: "String" }
-        types: { type: "[String]" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-      ) {
-        stixDomainObjects(
-          search: $search
-          types: $types
-          first: $count
-          after: $cursor
-          orderBy: $orderBy
-          orderMode: $orderMode
-        ) @connection(key: "Pagination_stixDomainObjects") {
-          edges {
-            node {
-              id
-              entity_type
-              parent_types
-              ... on AttackPattern {
-                name
-                description
-                x_mitre_id
-              }
-              ... on Campaign {
-                name
-                description
-              }
-              ... on CourseOfAction {
-                name
-                description
-              }
-              ... on Individual {
-                name
-                description
-              }
-              ... on Organization {
-                name
-                description
-              }
-              ... on Sector {
-                name
-                description
-              }
-              ... on Indicator {
-                name
-                description
-              }
-              ... on Infrastructure {
-                name
-                description
-              }
-              ... on IntrusionSet {
-                name
-                description
-              }
-              ... on Position {
-                name
-                description
-              }
-              ... on City {
-                name
-                description
-              }
-              ... on Country {
-                name
-                description
-              }
-              ... on Region {
-                name
-                description
-              }
-              ... on Malware {
-                name
-                description
-              }
-              ... on ThreatActor {
-                name
-                description
-              }
-              ... on Tool {
-                name
-                description
-              }
-              ... on Vulnerability {
-                name
-                description
-              }
-              ... on Incident {
-                name
-                description
+        fragment StixCoreRelationshipCreationFromEntityStixDomainObjectsLines_data on Query
+        @argumentDefinitions(
+          search: { type: "String" }
+          types: { type: "[String]" }
+          count: { type: "Int", defaultValue: 25 }
+          cursor: { type: "ID" }
+          orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
+        ) {
+          stixDomainObjects(
+            search: $search
+            types: $types
+            first: $count
+            after: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+          ) @connection(key: "Pagination_stixDomainObjects") {
+            edges {
+              node {
+                id
+                entity_type
+                parent_types
+                ... on AttackPattern {
+                  name
+                  description
+                  x_mitre_id
+                }
+                ... on Campaign {
+                  name
+                  description
+                }
+                ... on CourseOfAction {
+                  name
+                  description
+                }
+                ... on Individual {
+                  name
+                  description
+                }
+                ... on Organization {
+                  name
+                  description
+                }
+                ... on Sector {
+                  name
+                  description
+                }
+                ... on Indicator {
+                  name
+                  description
+                }
+                ... on Infrastructure {
+                  name
+                  description
+                }
+                ... on IntrusionSet {
+                  name
+                  description
+                }
+                ... on Position {
+                  name
+                  description
+                }
+                ... on City {
+                  name
+                  description
+                }
+                ... on Country {
+                  name
+                  description
+                }
+                ... on Region {
+                  name
+                  description
+                }
+                ... on Malware {
+                  name
+                  description
+                }
+                ... on ThreatActor {
+                  name
+                  description
+                }
+                ... on Tool {
+                  name
+                  description
+                }
+                ... on Vulnerability {
+                  name
+                  description
+                }
+                ... on Incident {
+                  name
+                  description
+                }
               }
             }
           }
         }
-      }
-    `,
+      `,
   },
   {
     direction: 'forward',

@@ -64,13 +64,7 @@ const styles = (theme) => ({
 class EntityStixSightingRelationshipLineComponent extends Component {
   render() {
     const {
-      nsd,
-      t,
-      classes,
-      dataColumns,
-      node,
-      paginationOptions,
-      isTo,
+      nsd, t, classes, dataColumns, node, paginationOptions, isTo,
     } = this.props;
     const entity = isTo ? node.from : node.to;
     const restricted = entity === null;

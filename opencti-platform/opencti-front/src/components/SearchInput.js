@@ -37,13 +37,7 @@ const styles = (theme) => ({
 class SearchInput extends Component {
   render() {
     const {
-      t,
-      classes,
-      onChange,
-      onSubmit,
-      variant,
-      keyword,
-      fullWidth,
+      t, classes, onChange, onSubmit, variant, keyword, fullWidth,
     } = this.props;
     return (
       <Input

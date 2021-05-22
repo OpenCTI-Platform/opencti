@@ -59,12 +59,7 @@ class StixCyberObservablesExportsContentComponent extends Component {
 
   render() {
     const {
-      classes,
-      t,
-      data,
-      paginationOptions,
-      handleToggle,
-      context,
+      classes, t, data, paginationOptions, handleToggle, context,
     } = this.props;
     const stixCyberObservablesExportFiles = pathOr(
       [],

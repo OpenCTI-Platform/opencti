@@ -38,12 +38,7 @@ const styles = () => ({
 class StixDomainObjectOverview extends Component {
   render() {
     const {
-      t,
-      fldt,
-      classes,
-      stixDomainObject,
-      withoutMarking,
-      withPattern,
+      t, fldt, classes, stixDomainObject, withoutMarking, withPattern,
     } = this.props;
     const stixIds = stixDomainObject.x_opencti_stix_ids || [];
     return (

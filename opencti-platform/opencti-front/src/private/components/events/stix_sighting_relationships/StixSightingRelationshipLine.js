@@ -65,13 +65,7 @@ const styles = (theme) => ({
 class StixSightingRelationshipLineComponent extends Component {
   render() {
     const {
-      nsd,
-      t,
-      fd,
-      classes,
-      dataColumns,
-      node,
-      paginationOptions,
+      nsd, t, fd, classes, dataColumns, node, paginationOptions,
     } = this.props;
     return (
       <ListItem

@@ -63,12 +63,7 @@ const stixCoreObjectIndicatorsAreaChartTimeSeriesQuery = graphql`
 class StixCoreObjectIndicatorsAreaChart extends Component {
   renderContent() {
     const {
-      t,
-      md,
-      indicatorType,
-      startDate,
-      endDate,
-      stixCoreObjectId,
+      t, md, indicatorType, startDate, endDate, stixCoreObjectId,
     } = this.props;
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);

@@ -8,19 +8,6 @@
   outline: 0;
 }
 
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-  -webkit-animation: autofill 0s forwards;
-  animation: autofill 0s forwards;
-  -webkit-text-fill-color: #fff !important;
-  caret-color: transparent !important;
-  -webkit-box-shadow: 0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important;
-  border-top-left-radius: inherit;
-  border-top-right-radius: inherit;
-}
-
 @keyframes autofill {
   100% {
     background: transparent;
@@ -52,7 +39,6 @@ pre {
   padding: 10px;
   font-family: Consolas, monaco, monospace;
   font-size: 12px;
-  background: rgba(64, 193, 255, 0.2);
   border-radius: 5px;
   white-space: pre-wrap;
   white-space: -moz-pre-wrap;
@@ -67,7 +53,6 @@ code {
   padding: 3px;
   font-size: 12px;
   font-weight: 400;
-  background: rgba(64, 193, 255, 0.2);
 }
 
 span.raw {
@@ -111,31 +96,6 @@ div.markdown p {
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.fakeItem {
-  display: inline-block;
-  position: relative;
-  height: 1em;
-  font-size: 13px;
-  background: #4f4f4f;
-  overflow: hidden;
-}
-
-.fakeItem:after {
-  overflow: hidden;
-  width: 50%;
-  height: 100%;
-  content: "";
-  position: absolute;
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0),
-    rgba(255, 255, 255, 0.18),
-    rgba(0, 0, 0, 0)
-  );
-  transform: translateX(-100%);
-  animation: loading 1s infinite;
 }
 
 .leaflet-container {

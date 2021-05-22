@@ -21,10 +21,7 @@ class WorkspacesLines extends Component {
 
   render() {
     const {
-      initialLoading,
-      dataColumns,
-      relay,
-      paginationOptions,
+      initialLoading, dataColumns, relay, paginationOptions,
     } = this.props;
     return (
       <ListLinesContent

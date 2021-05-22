@@ -143,380 +143,380 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
   SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent,
   {
     node: graphql`
-      fragment SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node on StixCoreRelationship {
-        id
-        entity_type
-        parent_types
-        relationship_type
-        confidence
-        start_time
-        stop_time
-        description
-        from {
-          ... on StixDomainObject {
-            id
-            entity_type
-            parent_types
-            created_at
-            updated_at
-            objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
-                }
-              }
-            }
-          }
-          ... on AttackPattern {
-            name
-            description
-            x_mitre_id
-            killChainPhases {
-              edges {
-                node {
-                  id
-                  phase_name
-                  x_opencti_order
-                }
-              }
-            }
-            objectMarking {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
-            }
-            objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
-                }
-              }
-            }
-          }
-          ... on Campaign {
-            name
-            description
-          }
-          ... on CourseOfAction {
-            name
-            description
-          }
-          ... on Individual {
-            name
-            description
-          }
-          ... on Organization {
-            name
-            description
-          }
-          ... on Sector {
-            name
-            description
-          }
-          ... on Indicator {
-            name
-            description
-          }
-          ... on Infrastructure {
-            name
-            description
-          }
-          ... on IntrusionSet {
-            name
-            description
-          }
-          ... on Position {
-            name
-            description
-          }
-          ... on City {
-            name
-            description
-          }
-          ... on Country {
-            name
-            description
-          }
-          ... on Region {
-            name
-            description
-          }
-          ... on Malware {
-            name
-            description
-          }
-          ... on ThreatActor {
-            name
-            description
-          }
-          ... on Tool {
-            name
-            description
-          }
-          ... on Vulnerability {
-            name
-            description
-          }
-          ... on Incident {
-            name
-            description
-          }
-          ... on StixCyberObservable {
-            id
-            entity_type
-            parent_types
-            observable_value
-            objectMarking {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
-            }
-            objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
-                }
-              }
-            }
-          }
-          ... on Indicator {
-            id
-            name
-            pattern_type
-            pattern_version
-            description
-            valid_from
-            valid_until
-            x_opencti_score
-            x_opencti_main_observable_type
-            created
-            objectMarking {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
-            }
-            objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
-                }
-              }
-            }
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        to {
-          ... on StixDomainObject {
-            id
-            entity_type
-            parent_types
-            created_at
-            updated_at
-            objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
-                }
-              }
-            }
-          }
-          ... on AttackPattern {
-            name
-            description
-            x_mitre_id
-            killChainPhases {
-              edges {
-                node {
-                  id
-                  phase_name
-                  x_opencti_order
-                }
-              }
-            }
-            objectMarking {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
-            }
-            objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
-                }
-              }
-            }
-          }
-          ... on Campaign {
-            name
-            description
-          }
-          ... on CourseOfAction {
-            name
-            description
-          }
-          ... on Individual {
-            name
-            description
-          }
-          ... on Organization {
-            name
-            description
-          }
-          ... on Sector {
-            name
-            description
-          }
-          ... on Indicator {
-            name
-            description
-          }
-          ... on Infrastructure {
-            name
-            description
-          }
-          ... on IntrusionSet {
-            name
-            description
-          }
-          ... on Position {
-            name
-            description
-          }
-          ... on City {
-            name
-            description
-          }
-          ... on Country {
-            name
-            description
-          }
-          ... on Region {
-            name
-            description
-          }
-          ... on Malware {
-            name
-            description
-          }
-          ... on ThreatActor {
-            name
-            description
-          }
-          ... on Tool {
-            name
-            description
-          }
-          ... on Vulnerability {
-            name
-            description
-          }
-          ... on Incident {
-            name
-            description
-          }
-          ... on StixCyberObservable {
-            id
-            entity_type
-            parent_types
-            observable_value
-            objectMarking {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
-            }
-            objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
-                }
-              }
-            }
-          }
-          ... on Indicator {
-            id
-            name
-            pattern_type
-            pattern_version
-            description
-            valid_from
-            valid_until
-            x_opencti_score
-            x_opencti_main_observable_type
-            created
-            objectMarking {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
-            }
-            objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
-                }
-              }
-            }
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        killChainPhases {
-          edges {
-            node {
+        fragment SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node on StixCoreRelationship {
+          id
+          entity_type
+          parent_types
+          relationship_type
+          confidence
+          start_time
+          stop_time
+          description
+          from {
+            ... on StixDomainObject {
               id
-              phase_name
-              x_opencti_order
+              entity_type
+              parent_types
+              created_at
+              updated_at
+              objectLabel {
+                edges {
+                  node {
+                    id
+                    value
+                    color
+                  }
+                }
+              }
+            }
+            ... on AttackPattern {
+              name
+              description
+              x_mitre_id
+              killChainPhases {
+                edges {
+                  node {
+                    id
+                    phase_name
+                    x_opencti_order
+                  }
+                }
+              }
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
+              objectLabel {
+                edges {
+                  node {
+                    id
+                    value
+                    color
+                  }
+                }
+              }
+            }
+            ... on Campaign {
+              name
+              description
+            }
+            ... on CourseOfAction {
+              name
+              description
+            }
+            ... on Individual {
+              name
+              description
+            }
+            ... on Organization {
+              name
+              description
+            }
+            ... on Sector {
+              name
+              description
+            }
+            ... on Indicator {
+              name
+              description
+            }
+            ... on Infrastructure {
+              name
+              description
+            }
+            ... on IntrusionSet {
+              name
+              description
+            }
+            ... on Position {
+              name
+              description
+            }
+            ... on City {
+              name
+              description
+            }
+            ... on Country {
+              name
+              description
+            }
+            ... on Region {
+              name
+              description
+            }
+            ... on Malware {
+              name
+              description
+            }
+            ... on ThreatActor {
+              name
+              description
+            }
+            ... on Tool {
+              name
+              description
+            }
+            ... on Vulnerability {
+              name
+              description
+            }
+            ... on Incident {
+              name
+              description
+            }
+            ... on StixCyberObservable {
+              id
+              entity_type
+              parent_types
+              observable_value
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
+              objectLabel {
+                edges {
+                  node {
+                    id
+                    value
+                    color
+                  }
+                }
+              }
+            }
+            ... on Indicator {
+              id
+              name
+              pattern_type
+              pattern_version
+              description
+              valid_from
+              valid_until
+              x_opencti_score
+              x_opencti_main_observable_type
+              created
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
+              objectLabel {
+                edges {
+                  node {
+                    id
+                    value
+                    color
+                  }
+                }
+              }
+            }
+            ... on BasicRelationship {
+              id
+              entity_type
+              parent_types
+            }
+            ... on StixCoreRelationship {
+              relationship_type
+            }
+          }
+          to {
+            ... on StixDomainObject {
+              id
+              entity_type
+              parent_types
+              created_at
+              updated_at
+              objectLabel {
+                edges {
+                  node {
+                    id
+                    value
+                    color
+                  }
+                }
+              }
+            }
+            ... on AttackPattern {
+              name
+              description
+              x_mitre_id
+              killChainPhases {
+                edges {
+                  node {
+                    id
+                    phase_name
+                    x_opencti_order
+                  }
+                }
+              }
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
+              objectLabel {
+                edges {
+                  node {
+                    id
+                    value
+                    color
+                  }
+                }
+              }
+            }
+            ... on Campaign {
+              name
+              description
+            }
+            ... on CourseOfAction {
+              name
+              description
+            }
+            ... on Individual {
+              name
+              description
+            }
+            ... on Organization {
+              name
+              description
+            }
+            ... on Sector {
+              name
+              description
+            }
+            ... on Indicator {
+              name
+              description
+            }
+            ... on Infrastructure {
+              name
+              description
+            }
+            ... on IntrusionSet {
+              name
+              description
+            }
+            ... on Position {
+              name
+              description
+            }
+            ... on City {
+              name
+              description
+            }
+            ... on Country {
+              name
+              description
+            }
+            ... on Region {
+              name
+              description
+            }
+            ... on Malware {
+              name
+              description
+            }
+            ... on ThreatActor {
+              name
+              description
+            }
+            ... on Tool {
+              name
+              description
+            }
+            ... on Vulnerability {
+              name
+              description
+            }
+            ... on Incident {
+              name
+              description
+            }
+            ... on StixCyberObservable {
+              id
+              entity_type
+              parent_types
+              observable_value
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
+              objectLabel {
+                edges {
+                  node {
+                    id
+                    value
+                    color
+                  }
+                }
+              }
+            }
+            ... on Indicator {
+              id
+              name
+              pattern_type
+              pattern_version
+              description
+              valid_from
+              valid_until
+              x_opencti_score
+              x_opencti_main_observable_type
+              created
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
+              objectLabel {
+                edges {
+                  node {
+                    id
+                    value
+                    color
+                  }
+                }
+              }
+            }
+            ... on BasicRelationship {
+              id
+              entity_type
+              parent_types
+            }
+            ... on StixCoreRelationship {
+              relationship_type
+            }
+          }
+          killChainPhases {
+            edges {
+              node {
+                id
+                phase_name
+                x_opencti_order
+              }
             }
           }
         }
-      }
-    `,
+      `,
   },
 );
 

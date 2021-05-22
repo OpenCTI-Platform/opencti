@@ -123,7 +123,11 @@ class ReportKnowledgeComponent extends Component {
           link={`/dashboard/analysis/reports/${report.id}/knowledge`}
           modes={[
             { key: 'graph', label: 'Entity Graph', current: mode === 'graph' },
-            { key: 'correlation', label: 'Correlation', current: mode === 'correlation' },
+            {
+              key: 'correlation',
+              label: 'Correlation',
+              current: mode === 'correlation',
+            },
             {
               key: 'matrix',
               label: 'Techniques matrix',

@@ -137,10 +137,7 @@ class EntityStixCoreRelationships extends Component {
 
   renderBottomMenu() {
     const {
-      t,
-      classes,
-      targetStixDomainObjectTypes,
-      relationshipTypes,
+      t, classes, targetStixDomainObjectTypes, relationshipTypes,
     } = this.props;
     const {
       openEntityType,
@@ -290,10 +287,7 @@ class EntityStixCoreRelationships extends Component {
   renderLines(paginationOptions) {
     const { sortBy, orderAsc, numberOfElements } = this.state;
     const {
-      entityLink,
-      entityId,
-      isRelationReversed,
-      allDirections,
+      entityLink, entityId, isRelationReversed, allDirections,
     } = this.props;
     const dataColumns = {
       relationship_type: {

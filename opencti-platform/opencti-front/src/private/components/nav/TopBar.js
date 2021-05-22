@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
@@ -124,7 +124,7 @@ const logoutMutation = graphql`
 `;
 
 const TopBar = ({
-  t, classes, location, history, keyword,
+  t, classes, location, history, keyword, theme,
 }) => {
   const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
   const handleOpenMenu = (event) => {
@@ -153,6 +153,8 @@ const TopBar = ({
     <AppBar
       position="fixed"
       className={classes.appBar}
+      elevation={1}
+      style={{ backgroundColor: theme.palette.header.background }}
     >
       <Toolbar>
         <div className={classes.logoContainer}>
@@ -409,10 +411,16 @@ const TopBar = ({
 
 TopBar.propTypes = {
   keyword: PropTypes.string,
+  theme: PropTypes.object,
   classes: PropTypes.object,
   location: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(TopBar);
+export default compose(
+  inject18n,
+  withRouter,
+  withTheme,
+  withStyles(styles),
+)(TopBar);

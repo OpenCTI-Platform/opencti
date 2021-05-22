@@ -92,12 +92,7 @@ const styles = (theme) => ({
 
 const StixCyberObservableEnrichment = (props) => {
   const {
-    stixCyberObservable,
-    connectorsForImport,
-    relay,
-    classes,
-    t,
-    nsdt,
+    stixCyberObservable, connectorsForImport, relay, classes, t, nsdt,
   } = props;
   const { id } = stixCyberObservable;
   const file = stixCyberObservable.importFiles

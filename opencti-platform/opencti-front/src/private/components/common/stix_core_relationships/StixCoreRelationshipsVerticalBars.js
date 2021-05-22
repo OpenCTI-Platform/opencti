@@ -76,13 +76,7 @@ class StixCoreRelationshipsVerticalBars extends Component {
 
   renderContent() {
     const {
-      t,
-      toTypes,
-      relationshipType,
-      md,
-      field,
-      startDate,
-      endDate,
+      t, toTypes, relationshipType, md, field, startDate, endDate,
     } = this.props;
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);

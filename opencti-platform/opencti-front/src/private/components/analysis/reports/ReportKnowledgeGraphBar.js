@@ -686,12 +686,16 @@ class ReportKnowledgeGraphBar extends Component {
                     open={openCreatedRelation}
                     from={relationFrom}
                     to={relationTo}
-                    firstSeen={lastLinkFirstSeen || dateFormat(report.published)}
+                    firstSeen={
+                      lastLinkFirstSeen || dateFormat(report.published)
+                    }
                     lastSeen={lastLinkLastSeen || dateFormat(report.published)}
                     weight={report.confidence}
                     handleClose={this.handleCloseCreateRelationship.bind(this)}
                     handleResult={onAddRelation}
-                    handleReverseRelation={this.handleReverseRelation.bind(this)}
+                    handleReverseRelation={this.handleReverseRelation.bind(
+                      this,
+                    )}
                     defaultCreatedBy={R.propOr(null, 'createdBy', report)}
                     defaultMarkingDefinitions={R.map(
                       (n) => n.node,

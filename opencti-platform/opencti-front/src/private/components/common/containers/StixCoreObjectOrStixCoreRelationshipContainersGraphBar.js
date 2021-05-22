@@ -210,7 +210,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
               >
                 <Tooltip title={t('Lines view')}>
                   <IconButton
-                    color='primary'
+                    color="primary"
                     onClick={handleChangeView.bind(this, 'lines')}
                   >
                     <TableChartOutlined />
@@ -218,7 +218,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                 </Tooltip>
                 <Tooltip title={t('Graph view')}>
                   <IconButton
-                    color='secondary'
+                    color="secondary"
                     onClick={handleChangeView.bind(this, 'graph')}
                   >
                     <GraphOutline />
@@ -421,7 +421,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
             >
               <Tooltip title={t('Lines view')}>
                 <IconButton
-                  color='primary'
+                  color="primary"
                   onClick={handleChangeView.bind(this, 'lines')}
                 >
                   <TableChartOutlined />
@@ -429,7 +429,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
               </Tooltip>
               <Tooltip title={t('Graph view')}>
                 <IconButton
-                  color='secondary'
+                  color="secondary"
                   onClick={handleChangeView.bind(this, 'graph')}
                 >
                   <GraphOutline />

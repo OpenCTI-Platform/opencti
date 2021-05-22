@@ -124,12 +124,7 @@ class ImportComponent extends Component {
 
   render() {
     const {
-      classes,
-      t,
-      nsdt,
-      importFiles,
-      connectorsImport,
-      relay,
+      classes, t, nsdt, importFiles, connectorsImport, relay,
     } = this.props;
     const { fileToImport } = this.state;
     const { edges } = importFiles;

@@ -490,10 +490,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
   renderSelectEntity() {
     const { search } = this.state;
     const {
-      classes,
-      t,
-      targetStixDomainObjectTypes,
-      onlyObservables,
+      classes, t, targetStixDomainObjectTypes, onlyObservables,
     } = this.props;
     const stixDomainObjectsPaginationOptions = {
       search,
@@ -592,10 +589,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
 
   renderForm(sourceEntity) {
     const {
-      t,
-      classes,
-      isRelationReversed,
-      allowedRelationshipTypes,
+      t, classes, isRelationReversed, allowedRelationshipTypes,
     } = this.props;
     const { targetEntity } = this.state;
     let fromEntity = sourceEntity;

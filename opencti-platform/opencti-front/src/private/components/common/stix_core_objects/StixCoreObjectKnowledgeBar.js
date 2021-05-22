@@ -56,11 +56,7 @@ const styles = (theme) => ({
 class StixCoreObjectKnowledgeBar extends Component {
   render() {
     const {
-      t,
-      location,
-      classes,
-      stixCoreObjectLink,
-      availableSections,
+      t, location, classes, stixCoreObjectLink, availableSections,
     } = this.props;
     // eslint-disable-next-line max-len
     const isInAvailableSection = (sections) => any((filter) => includes(filter, sections), availableSections);

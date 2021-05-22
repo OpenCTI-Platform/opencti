@@ -230,20 +230,22 @@ class ReportKnowledgeCorrelationComponent extends Component {
     this.zoom = R.propOr(null, 'zoom', params);
     this.graphObjects = R.map((n) => n.node, props.report.objects.edges);
     const stixCoreObjectsTypes = R.filter(
-      (t) => typeof (t) !== 'undefined' && t !== '',
+      (t) => typeof t !== 'undefined' && t !== '',
       R.propOr([], 'stixCoreObjectsTypes', params),
     );
     const markedBy = R.propOr([], 'markedBy', params);
     const createdBy = R.propOr([], 'createdBy', params);
-    const timeRangeInterval = computeTimeRangeInterval(R.uniqBy(
-      R.prop('id'),
-      R.pipe(
-        R.filter((n) => n.node.reports),
-        R.map((n) => n.node.reports.edges),
-        R.flatten,
-        R.map((n) => n.node),
-      )(props.report.objects.edges),
-    ));
+    const timeRangeInterval = computeTimeRangeInterval(
+      R.uniqBy(
+        R.prop('id'),
+        R.pipe(
+          R.filter((n) => n.node.reports),
+          R.map((n) => n.node.reports.edges),
+          R.flatten,
+          R.map((n) => n.node),
+        )(props.report.objects.edges),
+      ),
+    );
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
       modeFixed: R.propOr(false, 'modeFixed', params),
@@ -366,13 +368,9 @@ class ReportKnowledgeCorrelationComponent extends Component {
     const filterAdjust = {
       markedBy: this.state.markedBy,
       createdBy: this.state.createdBy,
-      stixCoreObjectsTypes: ((stixCoreObjectsTypes.includes(type))
+      stixCoreObjectsTypes: stixCoreObjectsTypes.includes(type)
         ? R.filter((t) => t !== type, stixCoreObjectsTypes)
-        : R.append(
-          type,
-          stixCoreObjectsTypes,
-        )
-      ),
+        : R.append(type, stixCoreObjectsTypes),
       selectedTimeRangeInterval: this.state.selectedTimeRangeInterval,
     };
     this.setState(
@@ -392,13 +390,9 @@ class ReportKnowledgeCorrelationComponent extends Component {
   handleToggleMarkedBy(markingDefinition) {
     const { markedBy } = this.state;
     const filterAdjust = {
-      markedBy: ((this.state.markedBy.includes(markingDefinition))
+      markedBy: this.state.markedBy.includes(markingDefinition)
         ? R.filter((t) => t !== markingDefinition, markedBy)
-        : R.append(
-          markingDefinition,
-          markedBy,
-        )
-      ),
+        : R.append(markingDefinition, markedBy),
       createdBy: this.state.createdBy,
       stixCoreObjectsTypes: this.state.stixCoreObjectsTypes,
       selectedTimeRangeInterval: this.state.selectedTimeRangeInterval,
@@ -421,13 +415,9 @@ class ReportKnowledgeCorrelationComponent extends Component {
     const { createdBy } = this.state;
     const filterAdjust = {
       markedBy: this.state.markedBy,
-      createdBy: ((createdBy.includes(createdByRef))
+      createdBy: createdBy.includes(createdByRef)
         ? R.filter((t) => t !== createdByRef, createdBy)
-        : R.append(
-          createdByRef,
-          createdBy,
-        )
-      ),
+        : R.append(createdByRef, createdBy),
       stixCoreObjectsTypes: this.state.stixCoreObjectsTypes,
       selectedTimeRangeInterval: this.state.selectedTimeRangeInterval,
     };
@@ -583,7 +573,12 @@ class ReportKnowledgeCorrelationComponent extends Component {
   }
 
   handleResetLayout() {
-    this.graphData = buildCorrelationData(this.graphObjects, {}, this.props.t, this.state);
+    this.graphData = buildCorrelationData(
+      this.graphObjects,
+      {},
+      this.props.t,
+      this.state,
+    );
     this.setState(
       {
         graphData: { ...this.graphData },
@@ -636,7 +631,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
     const width = window.innerWidth - 210;
     const height = window.innerHeight - 180;
     const stixCoreObjectsTypes = R.filter(
-      (t) => typeof (t) !== 'undefined' && t !== '',
+      (t) => typeof t !== 'undefined' && t !== '',
       R.uniq(R.map((e) => e.node.entity_type, report.objects.edges)),
     );
     const markedBy = R.uniqBy(
@@ -829,8 +824,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
             graphData={graphData}
             onZoomEnd={this.handleZoomEnd.bind(this)}
             nodeRelSize={4}
-            nodeCanvasObject={
-              (node, ctx) => nodePaint(node, node.color, ctx, this.selectedNodes.has(node))
+            nodeCanvasObject={(node, ctx) => nodePaint(node, node.color, ctx, this.selectedNodes.has(node))
             }
             nodePointerAreaPaint={nodeAreaPaint}
             // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
