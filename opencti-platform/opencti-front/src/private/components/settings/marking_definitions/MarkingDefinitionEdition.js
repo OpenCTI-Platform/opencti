@@ -31,6 +31,7 @@ const styles = (theme) => ({
     position: 'absolute',
     top: 12,
     left: 5,
+    color: 'inherit',
   },
   importButton: {
     position: 'absolute',

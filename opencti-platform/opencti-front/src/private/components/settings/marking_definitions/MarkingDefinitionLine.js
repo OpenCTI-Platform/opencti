@@ -9,6 +9,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert, CenterFocusStrongOutlined } from '@material-ui/icons';
 import { compose } from 'ramda';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import MarkingDefinitionPopover from './MarkingDefinitionPopover';
 
@@ -140,7 +141,7 @@ class MarkingDefinitionLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <CenterFocusStrongOutlined />
+          <Skeleton animation="wave" variant="circle" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -149,31 +150,56 @@ class MarkingDefinitionLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.definition_type.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.definition.width }}
               >
-                <div className="fakeItem" style={{ width: '70%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.x_opencti_color.width }}
               >
-                <div className="fakeItem" style={{ width: '60%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.x_opencti_order.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created.width }}
               >
-                <div className="fakeItem" style={{ width: 140 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
             </div>
           }

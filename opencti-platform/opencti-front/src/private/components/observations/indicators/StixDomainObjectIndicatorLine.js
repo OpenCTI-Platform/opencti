@@ -12,6 +12,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
 import { ShieldSearch } from 'mdi-material-ui';
 import Checkbox from '@material-ui/core/Checkbox';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -214,7 +215,7 @@ class StixDomainObjectIndicatorLineDummyComponent extends Component {
           <Checkbox edge="start" disabled={true} disableRipple={true} />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <ShieldSearch />
+          <Skeleton animation="wave" variant="circle" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -223,37 +224,67 @@ class StixDomainObjectIndicatorLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.pattern_type.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.valid_until.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectMarking.width }}
               >
-                <div className="fakeItem" style={{ width: 80 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={80}
+                  height="100%"
+                />
               </div>
             </div>
           }

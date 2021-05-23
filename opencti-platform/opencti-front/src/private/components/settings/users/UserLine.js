@@ -13,6 +13,7 @@ import {
 } from '@material-ui/icons';
 import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
@@ -140,7 +141,7 @@ class UserLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <PersonOutlined />
+          <Skeleton animation="wave" variant="circle" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -149,31 +150,56 @@ class UserLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.user_email.width }}
               >
-                <div className="fakeItem" style={{ width: '70%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.firstname.width }}
               >
-                <div className="fakeItem" style={{ width: '60%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.lastname.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
-                <div className="fakeItem" style={{ width: 140 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
               </div>
             </div>
           }

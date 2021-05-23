@@ -24,6 +24,7 @@ const styles = (theme) => ({
     position: 'absolute',
     top: 12,
     left: 5,
+    color: 'inherit',
   },
   container: {
     padding: '10px 20px 20px 20px',
