@@ -409,7 +409,7 @@ class EntityStixCoreRelationships extends Component {
       // eslint-disable-next-line prefer-destructuring
       relationshipType = relationshipTypes[0];
     } else if (selectedRelationshipType !== 'All') {
-      relationshipType = selectedEntityType;
+      relationshipType = selectedRelationshipType;
     }
     let paginationOptions = {
       relationship_type: relationshipType,
