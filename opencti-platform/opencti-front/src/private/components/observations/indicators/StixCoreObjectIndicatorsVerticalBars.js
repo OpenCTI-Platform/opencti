@@ -11,12 +11,11 @@ import {
   YAxis,
   Tooltip,
 } from 'recharts';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
-import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 
@@ -63,7 +62,13 @@ const stixCoreObjectReporstVerticalBarsTimeSeriesQuery = graphql`
 class IndicatorsVerticalBars extends Component {
   renderContent() {
     const {
-      t, md, indicatorType, startDate, endDate, stixCoreObjectId,
+      t,
+      md,
+      indicatorType,
+      startDate,
+      endDate,
+      stixCoreObjectId,
+      theme,
     } = this.props;
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);
@@ -95,16 +100,19 @@ class IndicatorsVerticalBars extends Component {
                     left: -10,
                   }}
                 >
-                  <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
+                  <CartesianGrid
+                    strokeDasharray="2 2"
+                    stroke={theme.palette.action.grid}
+                  />
                   <XAxis
                     dataKey="date"
-                    stroke="#ffffff"
+                    stroke={theme.palette.text.primary}
                     interval={interval}
                     angle={-45}
                     textAnchor="end"
                     tickFormatter={md}
                   />
-                  <YAxis stroke="#ffffff" />
+                  <YAxis stroke={theme.palette.text.primary} />
                   <Tooltip
                     cursor={{
                       fill: 'rgba(0, 0, 0, 0.2)',
@@ -119,7 +127,7 @@ class IndicatorsVerticalBars extends Component {
                     labelFormatter={md}
                   />
                   <Bar
-                    fill={Theme.palette.primary.main}
+                    fill={theme.palette.primary.main}
                     dataKey="value"
                     barSize={5}
                   />
@@ -183,9 +191,14 @@ class IndicatorsVerticalBars extends Component {
 
 IndicatorsVerticalBars.propTypes = {
   classes: PropTypes.object,
+  theme: PropTypes.object,
   stixCoreObjectId: PropTypes.string,
   t: PropTypes.func,
   md: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(IndicatorsVerticalBars);
+export default compose(
+  inject18n,
+  withTheme,
+  withStyles(styles),
+)(IndicatorsVerticalBars);

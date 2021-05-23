@@ -758,6 +758,7 @@ input UserAddInput {
   lastname: String
   description: String
   language: String
+  theme: String
   roles: [ID]
 }
 input UserLoginInput {

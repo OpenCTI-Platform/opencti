@@ -19,7 +19,7 @@ const AppThemeProvider = (props) => {
   const platformTheme = platformThemeSettings !== null && platformThemeSettings !== 'auto'
     ? props.settings.platform_theme
     : 'dark';
-  const theme = me && me.theme !== null && me.theme !== undefined
+  const theme = me && me.theme !== null && me.theme !== undefined && me.theme !== 'default'
     ? me.theme
     : platformTheme;
   let muiTheme = createMuiTheme(themeDark);

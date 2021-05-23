@@ -2,6 +2,7 @@ export default {
   fontFamily: 'Roboto, sans-serif',
   palette: {
     type: 'light',
+    text: { secondary: 'rgba(0, 0, 0, 0.5)' },
     primary: { main: '#507bc8' },
     secondary: { main: '#ff3d00' },
     header: { background: '#507bc8', text: '#ffffff' },
@@ -16,7 +17,7 @@ export default {
       paperLight: '#fafafa',
       nav: '#ffffff',
       navLight: '#ffffff',
-      default: '#fafafa',
+      default: '#f5f5f5',
       chip: 'rgba(80, 123, 200, 0.6)',
     },
     action: { disabled: '#ababab', grid: '#dbdbdb' },
@@ -109,6 +110,39 @@ export default {
         },
         code: {
           background: 'rgba(0, 0, 0, 0.02)',
+        },
+        '.react-mde': {
+          border: '0 !important',
+          borderBottom: '1px solid #aaaaaa !important',
+          '&:hover': {
+            borderBottom: '2px solid #000000 !important',
+            marginBottom: '-1px !important',
+          },
+        },
+        '.error .react-mde': {
+          border: '0 !important',
+          borderBottom: '2px solid #f44336 !important',
+          marginBottom: '-1px !important',
+          ':&hover': {
+            border: '0 !important',
+            borderBottom: '2px solid #f44336 !important',
+            marginBottom: '-1px !important',
+          },
+        },
+        '.mde-header': {
+          border: '1px solid #e6e6e6 !important',
+          backgroundColor: '#fafafa !important',
+          color: '#000000 !important',
+        },
+        '.mde-header-item button': {
+          color: '#000000 !important',
+        },
+        '.mde-tabs button': {
+          color: '#000000 !important',
+        },
+        '.mde-textarea-wrapper textarea': {
+          color: '#000000',
+          backgroundColor: '#ffffff',
         },
       },
     },

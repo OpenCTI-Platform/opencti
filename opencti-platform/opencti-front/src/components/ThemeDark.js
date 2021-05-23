@@ -113,6 +113,39 @@ export default {
         code: {
           background: 'rgba(64, 193, 255, 0.2)',
         },
+        '.react-mde': {
+          border: '0 !important',
+          borderBottom: '1px solid #b9bfc1 !important',
+          '&:hover': {
+            borderBottom: '2px solid #ffffff !important',
+            marginBottom: '-1px !important',
+          },
+        },
+        '.error .react-mde': {
+          border: '0 !important',
+          borderBottom: '2px solid #f44336 !important',
+          marginBottom: '-1px !important',
+          '&:hover': {
+            border: '0 !important',
+            borderBottom: '2px solid #f44336 !important',
+            marginBottom: '-1px !important',
+          },
+        },
+        '.mde-header': {
+          border: '0 !important',
+          backgroundColor: 'transparent !important',
+          color: '#ffffff !important',
+        },
+        '.mde-header-item button': {
+          color: '#ffffff !important',
+        },
+        '.mde-tabs button': {
+          color: '#ffffff !important',
+        },
+        '.mde-textarea-wrapper textarea': {
+          color: '#ffffff',
+          backgroundColor: '#14262c',
+        },
       },
     },
   },

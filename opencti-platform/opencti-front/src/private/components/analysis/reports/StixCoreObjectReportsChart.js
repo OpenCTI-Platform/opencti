@@ -11,14 +11,13 @@ import {
   YAxis,
   Tooltip,
 } from 'recharts';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Chip from '@material-ui/core/Chip';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import { now, monthsAgo } from '../../../../utils/Time';
-import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
 
 const styles = () => ({
@@ -89,7 +88,7 @@ class StixCoreObjectReportsChart extends Component {
 
   render() {
     const {
-      t, md, classes, stixCoreObjectId, authorId, reportType,
+      t, md, classes, stixCoreObjectId, authorId, reportType, theme,
     } = this.props;
     let reportsTimeSeriesVariables;
     if (authorId) {
@@ -168,16 +167,19 @@ class StixCoreObjectReportsChart extends Component {
                         left: -10,
                       }}
                     >
-                      <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
+                      <CartesianGrid
+                        strokeDasharray="2 2"
+                        stroke={theme.palette.action.grid}
+                      />
                       <XAxis
                         dataKey="date"
-                        stroke="#ffffff"
+                        stroke={theme.palette.text.primary}
                         interval={this.state.interval}
                         angle={-45}
                         textAnchor="end"
                         tickFormatter={md}
                       />
-                      <YAxis stroke="#ffffff" />
+                      <YAxis stroke={theme.palette.text.primary} />
                       <Tooltip
                         cursor={{
                           fill: 'rgba(0, 0, 0, 0.2)',
@@ -192,7 +194,7 @@ class StixCoreObjectReportsChart extends Component {
                         labelFormatter={md}
                       />
                       <Bar
-                        fill={Theme.palette.primary.main}
+                        fill={theme.palette.primary.main}
                         dataKey="value"
                         barSize={5}
                       />
@@ -244,6 +246,7 @@ StixCoreObjectReportsChart.propTypes = {
   stixCoreObjectId: PropTypes.string,
   authorId: PropTypes.string,
   classes: PropTypes.object,
+  theme: PropTypes.object,
   reportType: PropTypes.string,
   t: PropTypes.func,
   md: PropTypes.func,
@@ -252,5 +255,6 @@ StixCoreObjectReportsChart.propTypes = {
 
 export default compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(StixCoreObjectReportsChart);

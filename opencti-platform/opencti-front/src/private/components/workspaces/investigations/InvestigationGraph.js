@@ -9,6 +9,7 @@ import ForceGraph2D from 'react-force-graph-2d';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import { withRouter } from 'react-router-dom';
+import { withTheme } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import InvestigationGraphBar from './InvestigationGraphBar';
 import {
@@ -28,7 +29,6 @@ import {
   nodeThreePaint,
 } from '../../../../utils/Graph';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
-import Theme from '../../../../components/ThemeDark';
 import { investigationAddStixCoreObjectsLinesRelationsDeleteMutation } from './InvestigationAddStixCoreObjectsLines';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 
@@ -1291,7 +1291,7 @@ class InvestigationGraphComponent extends Component {
   }
 
   render() {
-    const { workspace } = this.props;
+    const { workspace, theme } = this.props;
     const {
       mode3D,
       modeFixed,
@@ -1376,13 +1376,13 @@ class InvestigationGraphComponent extends Component {
             ref={this.graph}
             width={width}
             height={height}
-            backgroundColor={Theme.palette.background.default}
+            backgroundColor={theme.palette.background.default}
             graphData={graphData}
             nodeThreeObjectExtend={true}
             nodeThreeObject={nodeThreePaint}
             linkColor={(link) => (this.selectedLinks.has(link)
-              ? Theme.palette.secondary.main
-              : Theme.palette.primary.main)
+              ? theme.palette.secondary.main
+              : theme.palette.primary.main)
             }
             linkWidth={0.2}
             linkDirectionalArrowLength={3}
@@ -1473,8 +1473,8 @@ class InvestigationGraphComponent extends Component {
             linkCanvasObjectMode={() => 'after'}
             linkCanvasObject={linkPaint}
             linkColor={(link) => (this.selectedLinks.has(link)
-              ? Theme.palette.secondary.main
-              : Theme.palette.primary.main)
+              ? theme.palette.secondary.main
+              : theme.palette.primary.main)
             }
             linkDirectionalArrowLength={3}
             linkDirectionalArrowRelPos={0.99}
@@ -1535,6 +1535,7 @@ class InvestigationGraphComponent extends Component {
 InvestigationGraphComponent.propTypes = {
   workspace: PropTypes.object,
   classes: PropTypes.object,
+  theme: PropTypes.object,
   t: PropTypes.func,
 };
 
@@ -1752,4 +1753,4 @@ const InvestigationGraph = createFragmentContainer(
   },
 );
 
-export default R.compose(inject18n, withRouter)(InvestigationGraph);
+export default R.compose(inject18n, withRouter, withTheme)(InvestigationGraph);

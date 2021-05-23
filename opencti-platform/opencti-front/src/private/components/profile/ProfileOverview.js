@@ -157,6 +157,7 @@ class ProfileOverviewComponent extends Component {
                   containerstyle={{ marginTop: 20, width: '100%' }}
                   onChange={this.handleSubmitField.bind(this)}
                 >
+                  <MenuItem value="default">{t('Default')}</MenuItem>
                   <MenuItem value="dark">{t('Dark')}</MenuItem>
                   <MenuItem value="light">{t('Light')}</MenuItem>
                 </Field>

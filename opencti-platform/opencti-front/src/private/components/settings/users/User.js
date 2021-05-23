@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
@@ -49,7 +49,6 @@ import Loader from '../../../../components/Loader';
 import {
   FIVE_SECONDS, now, timestamp, yearsAgo,
 } from '../../../../utils/Time';
-import Theme from '../../../../components/ThemeDark';
 import UserHistory from './UserHistory';
 
 const Transition = React.forwardRef((props, ref) => (
@@ -235,7 +234,7 @@ class UserComponent extends Component {
 
   render() {
     const {
-      classes, user, t, mtd, nsd, nsdt,
+      classes, theme, user, t, mtd, nsd, nsdt,
     } = this.props;
     const orderedSessions = R.sort(
       (a, b) => timestamp(a.created) - timestamp(b.created),
@@ -441,16 +440,16 @@ class UserComponent extends Component {
                           >
                             <CartesianGrid
                               strokeDasharray="2 2"
-                              stroke="#0f181f"
+                              stroke={theme.palette.action.grid}
                             />
                             <XAxis
                               dataKey="date"
-                              stroke="#ffffff"
+                              stroke={theme.palette.text.primary}
                               interval={0}
                               textAnchor="end"
                               tickFormatter={mtd}
                             />
-                            <YAxis stroke="#ffffff" />
+                            <YAxis stroke={theme.palette.text.primary} />
                             <Tooltip
                               cursor={{
                                 fill: 'rgba(0, 0, 0, 0.2)',
@@ -467,9 +466,9 @@ class UserComponent extends Component {
                             <Area
                               type="monotone"
                               dataKey="value"
-                              stroke={Theme.palette.primary.main}
+                              stroke={theme.palette.primary.main}
                               strokeWidth={2}
-                              fill={Theme.palette.primary.main}
+                              fill={theme.palette.primary.main}
                               fillOpacity={0.1}
                             />
                           </AreaChart>
@@ -578,6 +577,7 @@ class UserComponent extends Component {
 UserComponent.propTypes = {
   user: PropTypes.object,
   classes: PropTypes.object,
+  theme: PropTypes.object,
   t: PropTypes.func,
 };
 
@@ -630,4 +630,4 @@ const User = createRefetchContainer(
   userQuery,
 );
 
-export default compose(inject18n, withStyles(styles))(User);
+export default compose(inject18n, withTheme, withStyles(styles))(User);

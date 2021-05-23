@@ -39,16 +39,16 @@ const Root = () => (
       render={({ props }) => {
         if (props) {
           return (
-            <ConnectedThemeProvider settings={props.settings}>
-              <CssBaseline />
-              <UserContext.Provider
-                value={{ me: props.me, settings: props.settings }}
-              >
+            <UserContext.Provider
+              value={{ me: props.me, settings: props.settings }}
+            >
+              <ConnectedThemeProvider settings={props.settings}>
+                <CssBaseline />
                 <ConnectedIntlProvider settings={props.settings}>
                   <Index me={props.me} />
                 </ConnectedIntlProvider>
-              </UserContext.Provider>
-            </ConnectedThemeProvider>
+              </ConnectedThemeProvider>
+            </UserContext.Provider>
           );
         }
         return <div />;

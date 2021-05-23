@@ -86,7 +86,8 @@ class StixCoreObjectExternalReferences extends Component {
                             animation="wave"
                             variant="rect"
                             width="90%"
-                            height="100%"
+                            height={15}
+                            style={{ marginBottom: 10 }}
                           />
                         }
                         secondary={
@@ -94,7 +95,7 @@ class StixCoreObjectExternalReferences extends Component {
                             animation="wave"
                             variant="rect"
                             width="90%"
-                            height="100%"
+                            height={15}
                           />
                         }
                       />

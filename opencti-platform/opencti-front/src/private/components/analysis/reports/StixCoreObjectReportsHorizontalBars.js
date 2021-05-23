@@ -12,14 +12,13 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
-import Theme from '../../../../components/ThemeDark';
 import { truncate } from '../../../../utils/String';
 
 const styles = () => ({
@@ -61,7 +60,9 @@ const tickFormatter = (title) => truncate(title, 10);
 
 class StixCoreObjectReportsHorizontalBars extends Component {
   renderContent() {
-    const { t, stixCoreObjectId, field } = this.props;
+    const {
+      t, stixCoreObjectId, field, theme,
+    } = this.props;
     const reportsDistributionVariables = {
       objectId: stixCoreObjectId,
       field: field || 'report_types',
@@ -93,18 +94,21 @@ class StixCoreObjectReportsHorizontalBars extends Component {
                   <XAxis
                     type="number"
                     dataKey="value"
-                    stroke="#ffffff"
+                    stroke={theme.palette.text.primary}
                     allowDecimals={false}
                   />
                   <YAxis
-                    stroke="#ffffff"
+                    stroke={theme.palette.text.primary}
                     dataKey={field.includes('.') ? 'entity.name' : 'label'}
                     type="category"
                     angle={-30}
                     textAnchor="end"
                     tickFormatter={tickFormatter}
                   />
-                  <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
+                  <CartesianGrid
+                    strokeDasharray="2 2"
+                    stroke={theme.palette.action.grid}
+                  />
                   <Tooltip
                     cursor={{
                       fill: 'rgba(0, 0, 0, 0.2)',
@@ -118,7 +122,7 @@ class StixCoreObjectReportsHorizontalBars extends Component {
                     }}
                   />
                   <Bar
-                    fill={Theme.palette.primary.main}
+                    fill={theme.palette.primary.main}
                     dataKey="value"
                     barSize={15}
                   >
@@ -191,11 +195,13 @@ StixCoreObjectReportsHorizontalBars.propTypes = {
   stixCoreObjectId: PropTypes.string,
   title: PropTypes.string,
   field: PropTypes.string,
+  theme: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
 export default compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(StixCoreObjectReportsHorizontalBars);

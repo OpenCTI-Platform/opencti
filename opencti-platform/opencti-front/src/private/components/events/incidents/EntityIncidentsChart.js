@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Chip from '@material-ui/core/Chip';
@@ -19,7 +19,6 @@ import IconButton from '@material-ui/core/IconButton';
 import { SettingsInputComponent } from '@material-ui/icons';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo, now } from '../../../../utils/Time';
-import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
 import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 
@@ -105,6 +104,7 @@ class EntityIncidentsChart extends Component {
       // eslint-disable-next-line camelcase
       relationship_type,
       variant,
+      theme,
     } = this.props;
     const IncidentsTimeSeriesVariables = {
       objectId: entityId,
@@ -136,19 +136,22 @@ class EntityIncidentsChart extends Component {
                     left: -10,
                   }}
                 >
-                  <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
+                  <CartesianGrid
+                    strokeDasharray="2 2"
+                    stroke={theme.palette.action.grid}
+                  />
                   <XAxis
                     dataKey="date"
-                    stroke="#ffffff"
+                    stroke={theme.palette.text.primary}
                     interval={this.state.interval}
                     angle={-45}
                     textAnchor="end"
                     tickFormatter={md}
                   />
-                  <YAxis stroke="#ffffff" />
+                  <YAxis stroke={theme.palette.text.primary} />
                   <Line
                     type="monotone"
-                    stroke={Theme.palette.primary.main}
+                    stroke={theme.palette.primary.main}
                     dataKey="value"
                   />
                 </LineChart>
@@ -265,6 +268,7 @@ EntityIncidentsChart.propTypes = {
   variant: PropTypes.string,
   title: PropTypes.string,
   entityId: PropTypes.string,
+  theme: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
@@ -274,4 +278,8 @@ EntityIncidentsChart.propTypes = {
   relationship_type: PropTypes.string,
 };
 
-export default compose(inject18n, withStyles(styles))(EntityIncidentsChart);
+export default compose(
+  inject18n,
+  withTheme,
+  withStyles(styles),
+)(EntityIncidentsChart);

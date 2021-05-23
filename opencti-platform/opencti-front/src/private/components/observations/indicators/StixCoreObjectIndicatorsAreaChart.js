@@ -11,12 +11,11 @@ import {
   Area,
   Tooltip,
 } from 'recharts';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
-import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 
@@ -63,7 +62,13 @@ const stixCoreObjectIndicatorsAreaChartTimeSeriesQuery = graphql`
 class StixCoreObjectIndicatorsAreaChart extends Component {
   renderContent() {
     const {
-      t, md, indicatorType, startDate, endDate, stixCoreObjectId,
+      t,
+      md,
+      indicatorType,
+      startDate,
+      endDate,
+      stixCoreObjectId,
+      theme,
     } = this.props;
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);
@@ -95,16 +100,19 @@ class StixCoreObjectIndicatorsAreaChart extends Component {
                     left: -10,
                   }}
                 >
-                  <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
+                  <CartesianGrid
+                    strokeDasharray="2 2"
+                    stroke={theme.palette.action.grid}
+                  />
                   <XAxis
                     dataKey="date"
-                    stroke="#ffffff"
+                    stroke={theme.palette.text.primary}
                     interval={interval}
                     textAnchor="end"
                     angle={-30}
                     tickFormatter={md}
                   />
-                  <YAxis stroke="#ffffff" />
+                  <YAxis stroke={theme.palette.text.primary} />
                   <Tooltip
                     cursor={{
                       fill: 'rgba(0, 0, 0, 0.2)',
@@ -121,9 +129,9 @@ class StixCoreObjectIndicatorsAreaChart extends Component {
                   <Area
                     type="monotone"
                     dataKey="value"
-                    stroke={Theme.palette.primary.main}
+                    stroke={theme.palette.primary.main}
                     strokeWidth={2}
-                    fill={Theme.palette.primary.main}
+                    fill={theme.palette.primary.main}
                     fillOpacity={0.1}
                   />
                 </AreaChart>
@@ -186,6 +194,7 @@ class StixCoreObjectIndicatorsAreaChart extends Component {
 
 StixCoreObjectIndicatorsAreaChart.propTypes = {
   classes: PropTypes.object,
+  theme: PropTypes.object,
   stixCoreObjectId: PropTypes.string,
   t: PropTypes.func,
   md: PropTypes.func,
@@ -193,5 +202,6 @@ StixCoreObjectIndicatorsAreaChart.propTypes = {
 
 export default compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(StixCoreObjectIndicatorsAreaChart);

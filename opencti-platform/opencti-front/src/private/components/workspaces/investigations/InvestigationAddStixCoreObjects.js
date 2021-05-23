@@ -166,7 +166,8 @@ class InvestigationAddStixCoreObjects extends Component {
                           animation="wave"
                           variant="rect"
                           width="90%"
-                          height={20}
+                          height={15}
+                          style={{ marginBottom: 10 }}
                         />
                       }
                       secondary={
@@ -174,7 +175,7 @@ class InvestigationAddStixCoreObjects extends Component {
                           animation="wave"
                           variant="rect"
                           width="90%"
-                          height={20}
+                          height={15}
                         />
                       }
                     />

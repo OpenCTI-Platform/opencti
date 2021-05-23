@@ -6,7 +6,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, withTheme } from '@material-ui/core/styles';
 import { DescriptionOutlined, DeviceHubOutlined } from '@material-ui/icons';
 import { HexagonMultipleOutline } from 'mdi-material-ui';
 import Typography from '@material-ui/core/Typography';
@@ -24,7 +24,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo, now, yearsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
-import Theme from '../../../../components/ThemeDark';
 import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
@@ -123,7 +122,7 @@ const stixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery = graphql`
 class StixDomainObjectAuthorKnowledge extends Component {
   render() {
     const {
-      t, nsd, mtd, n, classes, stixDomainObjectId,
+      t, nsd, mtd, n, classes, stixDomainObjectId, theme,
     } = this.props;
     return (
       <div>
@@ -295,16 +294,16 @@ class StixDomainObjectAuthorKnowledge extends Component {
                           >
                             <CartesianGrid
                               strokeDasharray="2 2"
-                              stroke="#0f181f"
+                              stroke={theme.palette.action.grid}
                             />
                             <XAxis
                               dataKey="date"
-                              stroke="#ffffff"
+                              stroke={theme.palette.text.primary}
                               interval={0}
                               textAnchor="end"
                               tickFormatter={mtd}
                             />
-                            <YAxis stroke="#ffffff" />
+                            <YAxis stroke={theme.palette.text.primary} />
                             <Tooltip
                               cursor={{
                                 fill: 'rgba(0, 0, 0, 0.2)',
@@ -321,9 +320,9 @@ class StixDomainObjectAuthorKnowledge extends Component {
                             <Area
                               type="monotone"
                               dataKey="value"
-                              stroke={Theme.palette.primary.main}
+                              stroke={theme.palette.primary.main}
                               strokeWidth={2}
-                              fill={Theme.palette.primary.main}
+                              fill={theme.palette.primary.main}
                               fillOpacity={0.1}
                             />
                           </AreaChart>
@@ -346,10 +345,12 @@ StixDomainObjectAuthorKnowledge.propTypes = {
   stixDomainObjectId: PropTypes.string,
   stixDomainObjectType: PropTypes.string,
   classes: PropTypes.object,
+  theme: PropTypes.object,
   t: PropTypes.func,
 };
 
 export default compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(StixDomainObjectAuthorKnowledge);

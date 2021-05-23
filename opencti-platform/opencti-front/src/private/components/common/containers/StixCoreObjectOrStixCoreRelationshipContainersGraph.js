@@ -4,6 +4,7 @@ import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import * as R from 'ramda';
 import { Subject, timer } from 'rxjs';
+import { withTheme } from '@material-ui/core/styles';
 import { debounce } from 'rxjs/operators';
 import { withRouter } from 'react-router-dom';
 import ForceGraph3D from 'react-force-graph-3d';
@@ -23,7 +24,6 @@ import {
 } from '../../../../utils/Graph';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import Theme from '../../../../components/ThemeDark';
 import { stixDomainObjectMutationFieldPatch } from '../stix_domain_objects/StixDomainObjectEditionOverview';
 import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
 
@@ -346,7 +346,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
   }
 
   render() {
-    const { handleChangeView } = this.props;
+    const { handleChangeView, theme } = this.props;
     const {
       mode3D,
       modeFixed,
@@ -421,13 +421,13 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
             ref={this.graph}
             width={width}
             height={height}
-            backgroundColor={Theme.palette.background.default}
+            backgroundColor={theme.palette.background.default}
             graphData={graphData}
             nodeThreeObjectExtend={true}
             nodeThreeObject={nodeThreePaint}
             linkColor={(link) => (this.selectedLinks.has(link)
-              ? Theme.palette.secondary.main
-              : Theme.palette.primary.main)
+              ? theme.palette.secondary.main
+              : theme.palette.primary.main)
             }
             linkWidth={0.2}
             linkDirectionalArrowLength={3}
@@ -518,8 +518,8 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
             linkCanvasObjectMode={() => 'after'}
             linkCanvasObject={linkPaint}
             linkColor={(link) => (this.selectedLinks.has(link)
-              ? Theme.palette.secondary.main
-              : Theme.palette.primary.main)
+              ? theme.palette.secondary.main
+              : theme.palette.primary.main)
             }
             linkDirectionalArrowLength={3}
             linkDirectionalArrowRelPos={0.99}
@@ -579,6 +579,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
 
 StixCoreObjectOrStixCoreRelationshipContainersGraphComponent.propTypes = {
   stixDomainObjectOrStixCoreRelationship: PropTypes.object,
+  theme: PropTypes.object,
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   relay: PropTypes.object,
@@ -776,4 +777,5 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContain
 export default R.compose(
   inject18n,
   withRouter,
+  withTheme,
 )(StixCoreObjectOrStixCoreRelationshipContainersGraph);

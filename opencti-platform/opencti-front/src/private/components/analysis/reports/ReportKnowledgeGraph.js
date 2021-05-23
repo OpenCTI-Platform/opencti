@@ -8,9 +8,8 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import ForceGraph2D from 'react-force-graph-2d';
 import ForceGraph3D from 'react-force-graph-3d';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, withTheme } from '@material-ui/core/styles';
 import { withRouter } from 'react-router-dom';
-import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import {
@@ -805,7 +804,7 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   render() {
-    const { report } = this.props;
+    const { report, theme } = this.props;
     const {
       mode3D,
       modeFixed,
@@ -888,13 +887,13 @@ class ReportKnowledgeGraphComponent extends Component {
             ref={this.graph}
             width={width}
             height={height}
-            backgroundColor={Theme.palette.background.default}
+            backgroundColor={theme.palette.background.default}
             graphData={graphData}
             nodeThreeObjectExtend={true}
             nodeThreeObject={nodeThreePaint}
             linkColor={(link) => (this.selectedLinks.has(link)
-              ? Theme.palette.secondary.main
-              : Theme.palette.primary.main)
+              ? theme.palette.secondary.main
+              : theme.palette.primary.main)
             }
             linkWidth={0.2}
             linkDirectionalArrowLength={3}
@@ -985,8 +984,8 @@ class ReportKnowledgeGraphComponent extends Component {
             linkCanvasObjectMode={() => 'after'}
             linkCanvasObject={linkPaint}
             linkColor={(link) => (this.selectedLinks.has(link)
-              ? Theme.palette.secondary.main
-              : Theme.palette.primary.main)
+              ? theme.palette.secondary.main
+              : theme.palette.primary.main)
             }
             linkDirectionalArrowLength={3}
             linkDirectionalArrowRelPos={0.99}
@@ -1047,6 +1046,7 @@ class ReportKnowledgeGraphComponent extends Component {
 ReportKnowledgeGraphComponent.propTypes = {
   report: PropTypes.object,
   classes: PropTypes.object,
+  theme: PropTypes.object,
   t: PropTypes.func,
 };
 
@@ -1245,5 +1245,6 @@ const ReportKnowledgeGraph = createFragmentContainer(
 export default R.compose(
   inject18n,
   withRouter,
+  withTheme,
   withStyles(styles),
 )(ReportKnowledgeGraph);
