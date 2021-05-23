@@ -4,7 +4,7 @@ export default {
     type: 'light',
     text: { secondary: 'rgba(0, 0, 0, 0.5)' },
     primary: { main: '#507bc8' },
-    secondary: { main: '#ff3d00' },
+    secondary: { main: '#d84315' },
     header: { background: '#507bc8', text: '#ffffff' },
     navAlt: {
       background: '#ffffff',
@@ -20,7 +20,7 @@ export default {
       default: '#f5f5f5',
       chip: 'rgba(80, 123, 200, 0.6)',
     },
-    action: { disabled: '#ababab', grid: '#dbdbdb' },
+    action: { disabled: '#ababab', grid: '#dbdbdb', expansion: '#fafafa' },
   },
   typography: {
     useNextVariants: true,
@@ -40,7 +40,6 @@ export default {
     h2: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: '#000000',
       fontWeight: 500,
       fontSize: 16,
       textTransform: 'uppercase',
@@ -61,14 +60,12 @@ export default {
       color: '#4b4b4b',
     },
     h5: {
-      color: '#000000',
       fontWeight: 400,
       fontSize: 13,
       textTransform: 'uppercase',
       marginTop: -4,
     },
     h6: {
-      color: '#ffffff',
       fontWeight: 400,
       fontSize: 18,
     },
@@ -77,7 +74,7 @@ export default {
     MuiCssBaseline: {
       '@global': {
         '*': {
-          scrollbarColor: '#f0f0f0 #c6c6c6',
+          scrollbarColor: '#c6c6c6 #f0f0f0',
         },
         '*::-webkit-scrollbar': {
           width: 12,
@@ -87,8 +84,8 @@ export default {
         },
         '*::-webkit-scrollbar-thumb': {
           backgroundColor: '#c6c6c6',
-          borderRadius: 0,
-          border: '3px solid #c6c6c6',
+          borderRadius: 20,
+          border: '3px solid #f0f0f0',
         },
         html: {
           WebkitFontSmoothing: 'auto',

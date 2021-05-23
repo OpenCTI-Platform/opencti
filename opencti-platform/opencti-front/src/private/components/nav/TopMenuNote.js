@@ -74,7 +74,7 @@ class TopMenuNote extends Component {
           size="small"
           color={
             location.pathname === `/dashboard/analysis/notes/${noteId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -93,7 +93,7 @@ class TopMenuNote extends Component {
             size="small"
             color={
               location.pathname === `/dashboard/analysis/notes/${noteId}/files`
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -112,7 +112,7 @@ class TopMenuNote extends Component {
           size="small"
           color={
             location.pathname === `/dashboard/analysis/notes/${noteId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

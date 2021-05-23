@@ -57,7 +57,7 @@ const styles = (theme) => ({
     right: 0,
     textAlign: 'center',
     position: 'absolute',
-    color: '#ffffff',
+    color: theme.palette.text.primary,
     fontSize: 15,
     zIndex: -5,
     backgroundColor: theme.palette.background.default,

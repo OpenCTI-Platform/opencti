@@ -17,7 +17,7 @@ import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsV
 import ItemPatternType from '../../../../components/ItemPatternType';
 import ItemMarkings from '../../../../components/ItemMarkings';
 
-const styles = () => ({
+const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -28,7 +28,7 @@ const styles = () => ({
   chip: {
     fontSize: 12,
     lineHeight: '12px',
-    backgroundColor: 'rgba(0, 150, 136, 0.3)',
+    backgroundColor: theme.palette.background.chip,
     color: '#ffffff',
     textTransform: 'uppercase',
     borderRadius: '0',

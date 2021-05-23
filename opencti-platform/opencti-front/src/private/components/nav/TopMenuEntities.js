@@ -43,7 +43,7 @@ class TopMenuTechniques extends Component {
           size="small"
           color={
             location.pathname === '/dashboard/entities/sectors'
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -62,7 +62,7 @@ class TopMenuTechniques extends Component {
           size="small"
           color={
             location.pathname === '/dashboard/entities/countries'
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -81,7 +81,7 @@ class TopMenuTechniques extends Component {
           size="small"
           color={
             location.pathname === '/dashboard/entities/cities'
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -100,7 +100,7 @@ class TopMenuTechniques extends Component {
           size="small"
           color={
             location.pathname === '/dashboard/entities/positions'
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -119,7 +119,7 @@ class TopMenuTechniques extends Component {
           size="small"
           color={
             location.pathname === '/dashboard/entities/organizations'
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -138,7 +138,7 @@ class TopMenuTechniques extends Component {
           size="small"
           color={
             location.pathname === '/dashboard/entities/individuals'
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

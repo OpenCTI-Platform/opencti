@@ -70,7 +70,7 @@ class TopMenuStixCyberObservable extends Component {
           color={
             location.pathname
             === `/dashboard/observations/observables/${observableId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -92,7 +92,7 @@ class TopMenuStixCyberObservable extends Component {
             location.pathname.includes(
               `/dashboard/observations/observables/${observableId}/knowledge`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -112,7 +112,7 @@ class TopMenuStixCyberObservable extends Component {
           color={
             location.pathname
             === `/dashboard/observations/observables/${observableId}/sightings`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -132,7 +132,7 @@ class TopMenuStixCyberObservable extends Component {
           color={
             location.pathname
             === `/dashboard/observations/observables/${observableId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

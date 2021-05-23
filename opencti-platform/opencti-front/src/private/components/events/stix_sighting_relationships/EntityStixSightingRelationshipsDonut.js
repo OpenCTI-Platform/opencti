@@ -137,8 +137,8 @@ class EntityStixSightingRelationshipsDonut extends Component {
     return props.value;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   renderLabel(props) {
+    const { theme } = this.props;
     const RADIAN = Math.PI / 180;
     const {
       cx, cy, midAngle, outerRadius, fill, payload, percent, value,
@@ -165,7 +165,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
           x={ex + (cos >= 0 ? 1 : -1) * 12}
           y={ey}
           textAnchor={textAnchor}
-          fill="#ffffff"
+          fill={theme.palette.text.primary}
           style={{ fontSize: 12 }}
         >
           {' '}

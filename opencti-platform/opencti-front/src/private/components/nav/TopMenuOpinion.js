@@ -74,7 +74,7 @@ class TopMenuOpinion extends Component {
           size="small"
           color={
             location.pathname === `/dashboard/analysis/opinions/${opinionId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -95,7 +95,7 @@ class TopMenuOpinion extends Component {
             color={
               location.pathname
               === `/dashboard/analysis/opinions/${opinionId}/files`
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -116,7 +116,7 @@ class TopMenuOpinion extends Component {
           color={
             location.pathname
             === `/dashboard/analysis/opinions/${opinionId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

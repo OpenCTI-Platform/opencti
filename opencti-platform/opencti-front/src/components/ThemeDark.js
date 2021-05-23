@@ -4,7 +4,7 @@ export default {
     type: 'dark',
     text: { secondary: 'rgba(255, 255, 255, 0.5)' },
     primary: { main: '#00bcd4' },
-    secondary: { main: '#ff3d00' },
+    secondary: { main: '#d84315' },
     header: { background: '#1b2226', text: '#ffffff' },
     navAlt: {
       background: '#14262c',
@@ -20,7 +20,7 @@ export default {
       default: '#222c30',
       chip: 'rgba(64, 193, 255, 0.2)',
     },
-    action: { disabled: '#4f4f4f', grid: '#0f181f' },
+    action: { disabled: '#4f4f4f', grid: '#0f181f', expansion: '#193e45' },
     divider: 'rgba(255, 255, 255, 0.2)',
   },
   typography: {
@@ -41,7 +41,6 @@ export default {
     h2: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: '#ffffff',
       fontWeight: 500,
       fontSize: 16,
       textTransform: 'uppercase',
@@ -62,14 +61,12 @@ export default {
       color: '#a8a8a8',
     },
     h5: {
-      color: '#ffffff',
       fontWeight: 400,
       fontSize: 13,
       textTransform: 'uppercase',
       marginTop: -4,
     },
     h6: {
-      color: '#ffffff',
       fontWeight: 400,
       fontSize: 18,
     },
@@ -88,8 +85,8 @@ export default {
         },
         '*::-webkit-scrollbar-thumb': {
           backgroundColor: '#14262c',
-          borderRadius: 0,
-          border: '3px solid #14262c',
+          borderRadius: 20,
+          border: '3px solid #2d4b5b',
         },
         html: {
           WebkitFontSmoothing: 'auto',

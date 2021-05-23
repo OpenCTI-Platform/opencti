@@ -28,7 +28,7 @@ import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/repo
 import ItemAuthor from '../../../../components/ItemAuthor';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
     position: 'relative',
   },
@@ -60,7 +60,7 @@ const styles = () => ({
   type: {
     width: '100%',
     textAlign: 'center',
-    color: '#ffffff',
+    color: theme.palette.text.primary,
     fontSize: 11,
   },
   content: {
@@ -69,7 +69,7 @@ const styles = () => ({
     height: 40,
     maxHeight: 40,
     lineHeight: '40px',
-    color: '#ffffff',
+    color: theme.palette.text.primary,
     textAlign: 'center',
     wordBreak: 'break-word',
   },
@@ -84,7 +84,7 @@ const styles = () => ({
     paddingTop: 20,
     width: 200,
     textAlign: 'center',
-    color: '#ffffff',
+    color: theme.palette.text.primary,
   },
   paper: {
     height: '100%',

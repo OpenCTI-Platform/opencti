@@ -74,7 +74,7 @@ class TopMenuIntrusionSet extends Component {
           color={
             location.pathname
             === `/dashboard/threats/intrusion_sets/${intrusionSetId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -96,7 +96,7 @@ class TopMenuIntrusionSet extends Component {
             location.pathname.includes(
               `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -116,7 +116,7 @@ class TopMenuIntrusionSet extends Component {
           color={
             location.pathname
             === `/dashboard/threats/intrusion_sets/${intrusionSetId}/analysis`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -138,7 +138,7 @@ class TopMenuIntrusionSet extends Component {
             location.pathname.includes(
               `/dashboard/threats/intrusion_sets/${intrusionSetId}/indicators`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -159,7 +159,7 @@ class TopMenuIntrusionSet extends Component {
             color={
               location.pathname
               === `/dashboard/threats/intrusion_sets/${intrusionSetId}/files`
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -180,7 +180,7 @@ class TopMenuIntrusionSet extends Component {
           color={
             location.pathname
             === `/dashboard/threats/intrusion_sets/${intrusionSetId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

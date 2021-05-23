@@ -105,7 +105,7 @@ const styles = (theme) => ({
   chip: {
     fontSize: 12,
     lineHeight: '12px',
-    backgroundColor: 'rgba(0, 150, 136, 0.3)',
+    backgroundColor: theme.palette.background.chip,
     color: '#ffffff',
     textTransform: 'uppercase',
     borderRadius: '0',

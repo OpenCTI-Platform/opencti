@@ -70,7 +70,7 @@ class TopMenuArtifact extends Component {
           color={
             location.pathname
             === `/dashboard/observations/artifacts/${observableId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -92,7 +92,7 @@ class TopMenuArtifact extends Component {
             location.pathname.includes(
               `/dashboard/observations/artifacts/${observableId}/knowledge`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -112,7 +112,7 @@ class TopMenuArtifact extends Component {
           color={
             location.pathname
             === `/dashboard/observations/artifacts/${observableId}/sightings`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -132,7 +132,7 @@ class TopMenuArtifact extends Component {
           color={
             location.pathname
             === `/dashboard/observations/artifacts/${observableId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

@@ -74,7 +74,7 @@ class TopMenuRegion extends Component {
           size="small"
           color={
             location.pathname === `/dashboard/entities/regions/${regionId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -96,7 +96,7 @@ class TopMenuRegion extends Component {
             location.pathname.includes(
               `/dashboard/entities/regions/${regionId}/knowledge`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -116,7 +116,7 @@ class TopMenuRegion extends Component {
           color={
             location.pathname
             === `/dashboard/entities/regions/${regionId}/analysis`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -137,7 +137,7 @@ class TopMenuRegion extends Component {
             color={
               location.pathname
               === `/dashboard/entities/regions/${regionId}/files`
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -158,7 +158,7 @@ class TopMenuRegion extends Component {
           color={
             location.pathname
             === `/dashboard/entities/regions/${regionId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

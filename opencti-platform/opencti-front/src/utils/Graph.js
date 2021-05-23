@@ -652,7 +652,7 @@ export const nodeAreaPaint = ({ name, x, y }, color, ctx) => {
   ctx.fillText(name, x, y + 10);
 };
 
-export const linkPaint = (link, ctx) => {
+export const linkPaint = (link, ctx, color) => {
   const start = link.source;
   const end = link.target;
   if (typeof start !== 'object' || typeof end !== 'object') return;
@@ -672,14 +672,14 @@ export const linkPaint = (link, ctx) => {
   ctx.rotate(textAngle);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = color;
   ctx.fillText(link.label, 0, 0);
   ctx.restore();
 };
 
-export const nodeThreePaint = (node) => {
+export const nodeThreePaint = (node, color) => {
   const sprite = new SpriteText(node.label);
-  sprite.color = '#ffffff';
+  sprite.color = color;
   sprite.textHeight = 1.5;
   return sprite;
 };

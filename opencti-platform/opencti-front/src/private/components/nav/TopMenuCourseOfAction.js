@@ -77,7 +77,7 @@ class TopMenuCourseOfAction extends Component {
           color={
             location.pathname
             === `/dashboard/arsenal/courses_of_action/${courseOfActionId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -98,7 +98,7 @@ class TopMenuCourseOfAction extends Component {
             color={
               location.pathname
               === `/dashboard/arsenal/courses_of_action/${courseOfActionId}/files`
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -119,7 +119,7 @@ class TopMenuCourseOfAction extends Component {
           color={
             location.pathname
             === `/dashboard/arsenal/courses_of_action/${courseOfActionId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

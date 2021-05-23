@@ -119,7 +119,7 @@ const styles = (theme) => ({
   type: {
     width: '100%',
     textAlign: 'center',
-    color: '#ffffff',
+    color: theme.palette.text.primary,
     fontSize: 11,
   },
   content: {
@@ -127,7 +127,7 @@ const styles = (theme) => ({
     height: 40,
     maxHeight: 40,
     lineHeight: '40px',
-    color: '#ffffff',
+    color: theme.palette.text.primary,
     textAlign: 'center',
   },
   name: {
@@ -166,7 +166,7 @@ const styles = (theme) => ({
     width: 200,
     textAlign: 'center',
     padding: 0,
-    color: '#ffffff',
+    color: theme.palette.text.primary,
   },
   buttonBack: {
     marginTop: 20,

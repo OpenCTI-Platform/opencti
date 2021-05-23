@@ -103,7 +103,7 @@ class Filters extends Component {
   }
 
   searchEntities(filterKey, event) {
-    const { t } = this.props;
+    const { t, theme } = this.props;
     if (event && event.target.value !== 0) {
       this.setState({
         inputValues: R.assoc(
@@ -226,7 +226,8 @@ class Filters extends Component {
                     label: t('No label'),
                     value: null,
                     type: 'Label',
-                    color: '#ffffff',
+                    color:
+                      theme.palette.type === 'dark' ? '#ffffff' : '#000000',
                   },
                   ...R.union(
                     labelledByEntities,

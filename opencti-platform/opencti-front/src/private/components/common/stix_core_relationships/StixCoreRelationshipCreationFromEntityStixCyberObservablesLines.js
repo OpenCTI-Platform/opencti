@@ -23,7 +23,7 @@ import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
   expansionPanel: {
-    backgroundColor: '#193E45',
+    backgroundColor: theme.palette.action.expansion,
   },
   heading: {
     fontSize: theme.typography.pxToRem(15),

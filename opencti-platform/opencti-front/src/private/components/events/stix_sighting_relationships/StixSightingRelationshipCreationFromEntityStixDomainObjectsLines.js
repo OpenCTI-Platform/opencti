@@ -24,7 +24,7 @@ const styles = (theme) => ({
     padding: '20px 0 0 0',
   },
   expansionPanel: {
-    backgroundColor: '#193E45',
+    backgroundColor: theme.palette.action.expansion,
   },
   heading: {
     fontSize: theme.typography.pxToRem(15),
@@ -52,7 +52,7 @@ const styles = (theme) => ({
     left: 16,
     right: 0,
     position: 'absolute',
-    color: '#ffffff',
+    color: theme.palette.text.primary,
     fontSize: 15,
     zIndex: -5,
     backgroundColor: '#14262c',

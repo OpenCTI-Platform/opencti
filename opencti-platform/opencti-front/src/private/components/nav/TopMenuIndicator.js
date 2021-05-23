@@ -73,7 +73,7 @@ class TopMenuIndicator extends Component {
           color={
             location.pathname
             === `/dashboard/observations/indicators/${indicatorId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -95,7 +95,7 @@ class TopMenuIndicator extends Component {
             location.pathname.includes(
               `/dashboard/observations/indicators/${indicatorId}/knowledge`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -115,7 +115,7 @@ class TopMenuIndicator extends Component {
           color={
             location.pathname
             === `/dashboard/observations/indicators/${indicatorId}/sightings`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -135,7 +135,7 @@ class TopMenuIndicator extends Component {
           color={
             location.pathname
             === `/dashboard/observations/indicators/${indicatorId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

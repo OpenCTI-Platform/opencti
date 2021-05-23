@@ -323,7 +323,7 @@ const TopBar = ({
                     location.pathname.includes(
                       '/dashboard/workspaces/dashboards',
                     )
-                      ? 'primary'
+                      ? 'secondary'
                       : 'inherit'
                   }
                   classes={{ root: classes.button }}
@@ -346,7 +346,7 @@ const TopBar = ({
                     location.pathname.includes(
                       '/dashboard/workspaces/investigations',
                     )
-                      ? 'primary'
+                      ? 'secondary'
                       : 'inherit'
                   }
                   classes={{ root: classes.button }}
@@ -367,7 +367,7 @@ const TopBar = ({
                   }
                   color={
                     location.pathname === '/dashboard/import'
-                      ? 'primary'
+                      ? 'secondary'
                       : 'inherit'
                   }
                   classes={{ root: classes.button }}
