@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import {
   AspectRatio,
@@ -55,7 +55,6 @@ import StixCoreRelationshipEdition from '../../common/stix_core_relationships/St
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
 import { resolveLink } from '../../../../utils/Entity';
 import { parseDomain } from '../../../../utils/Graph';
-import ThemeDark from '../../../../components/ThemeDark';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -239,6 +238,7 @@ class ReportKnowledgeGraphBar extends Component {
       handleToggleDisplayTimeRange,
       handleTimeRangeChange,
       timeRangeValues,
+      theme,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -789,7 +789,7 @@ class ReportKnowledgeGraphBar extends Component {
                     />
                     <Scatter
                       data={timeRangeValues}
-                      fill={ThemeDark.palette.primary.main}
+                      fill={theme.palette.primary.main}
                     />
                   </ScatterChart>
                 </ResponsiveContainer>
@@ -852,9 +852,11 @@ ReportKnowledgeGraphBar.propTypes = {
   timeRangeInterval: PropTypes.array,
   selectedTimeRangeInterval: PropTypes.array,
   timeRangeValues: PropTypes.array,
+  theme: PropTypes.object,
 };
 
 export default R.compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(ReportKnowledgeGraphBar);

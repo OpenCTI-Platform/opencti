@@ -9,13 +9,13 @@ const ignoredClasses = [
   'MuiInputBase-root',
 ];
 
-export const exportImage = (domElementId, name) => {
+export const exportImage = (domElementId, name, backgroundColor) => {
   const container = document.getElementById(domElementId);
   htmlToImage
     .toBlob(container, {
       useCORS: true,
       allowTaint: true,
-      backgroundColor: ThemeDark.palette.background.default,
+      backgroundColor,
       style: { margin: 0 },
       filter: (domNode) => {
         if (domNode.className) {
@@ -33,13 +33,13 @@ export const exportImage = (domElementId, name) => {
     });
 };
 
-export const exportPdf = (domElementId, name) => {
+export const exportPdf = (domElementId, name, backgroundColor) => {
   const container = document.getElementById(domElementId);
   htmlToImage
     .toPng(container, {
       useCORS: true,
       allowTaint: true,
-      backgroundColor: ThemeDark.palette.background.default,
+      backgroundColor,
       style: { margin: 0 },
       filter: (domNode) => {
         if (domNode.className) {

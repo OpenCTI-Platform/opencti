@@ -3,7 +3,7 @@ import IconButton from '@material-ui/core/IconButton';
 import { ImageOutlined } from '@material-ui/icons';
 import { FilePdfOutline } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import * as R from 'ramda';
 import { exportImage, exportPdf } from '../utils/Image';
 import inject18n from './i18n';
@@ -16,14 +16,15 @@ const styles = () => ({
 
 const ExportButtons = (props) => {
   const {
-    classes, domElementId, name, t,
+    classes, domElementId, name, t, theme,
   } = props;
   return (
     <div className={classes.exportButtons}>
       <Tooltip title={t('Export to image (png)')} aria-label="generate-export">
         <span>
           <IconButton
-            onClick={() => exportImage(domElementId, name)}
+            onClick={() => exportImage(domElementId, name, theme.palette.background.default)
+            }
             color="primary"
             aria-label="Export"
           >
@@ -37,7 +38,8 @@ const ExportButtons = (props) => {
       >
         <span>
           <IconButton
-            onClick={() => exportPdf(domElementId, name)}
+            onClick={() => exportPdf(domElementId, name, theme.palette.background.default)
+            }
             color="primary"
             aria-label="Export"
           >
@@ -49,4 +51,8 @@ const ExportButtons = (props) => {
   );
 };
 
-export default R.compose(inject18n, withStyles(styles))(ExportButtons);
+export default R.compose(
+  inject18n,
+  withTheme,
+  withStyles(styles),
+)(ExportButtons);

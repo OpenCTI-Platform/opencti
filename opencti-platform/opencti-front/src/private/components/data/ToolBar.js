@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -56,7 +56,6 @@ import {
   fetchQuery,
   MESSAGING$,
 } from '../../../relay/environment';
-import ThemeDark from '../../../components/ThemeDark';
 import ItemMarking from '../../../components/ItemMarking';
 import ItemIcon from '../../../components/ItemIcon';
 import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
@@ -725,6 +724,7 @@ class ToolBar extends Component {
       selectAll,
       filters,
       withPaddingRight,
+      theme,
     } = this.props;
     const {
       actions, keptEntityId, mergingElement, actionsInputs,
@@ -784,7 +784,7 @@ class ToolBar extends Component {
               style={{
                 padding: '2px 5px 2px 5px',
                 marginRight: 5,
-                backgroundColor: ThemeDark.palette.secondary.main,
+                backgroundColor: theme.palette.secondary.main,
               }}
             >
               {numberOfSelectedElements}
@@ -861,7 +861,7 @@ class ToolBar extends Component {
                 style={{
                   padding: '2px 5px 2px 5px',
                   marginRight: 5,
-                  backgroundColor: ThemeDark.palette.secondary.main,
+                  backgroundColor: theme.palette.secondary.main,
                 }}
               >
                 {n(numberOfSelectedElements)}
@@ -896,7 +896,7 @@ class ToolBar extends Component {
                           padding: '2px 5px 2px 5px',
                           marginRight: 5,
                           color: '#000000',
-                          backgroundColor: ThemeDark.palette.primary.main,
+                          backgroundColor: theme.palette.primary.main,
                         }}
                       >
                         1
@@ -988,7 +988,7 @@ class ToolBar extends Component {
                               padding: '2px 5px 2px 5px',
                               marginRight: 5,
                               color: '#000000',
-                              backgroundColor: ThemeDark.palette.primary.main,
+                              backgroundColor: theme.palette.primary.main,
                             }}
                           >
                             {number + 2}
@@ -1279,6 +1279,7 @@ class ToolBar extends Component {
 
 ToolBar.propTypes = {
   classes: PropTypes.object,
+  theme: PropTypes.object,
   t: PropTypes.func,
   numberOfSelectedElements: PropTypes.number,
   selectedElements: PropTypes.object,
@@ -1288,4 +1289,4 @@ ToolBar.propTypes = {
   withPaddingRight: PropTypes.bool,
 };
 
-export default R.compose(inject18n, withStyles(styles))(ToolBar);
+export default R.compose(inject18n, withTheme, withStyles(styles))(ToolBar);
