@@ -1,7 +1,6 @@
 import { jsPDF } from 'jspdf';
 import * as htmlToImage from 'html-to-image';
 import fileDownload from 'js-file-download';
-import ThemeDark from '../components/ThemeDark';
 
 const ignoredClasses = [
   'MuiDrawer-docked',
@@ -62,7 +61,7 @@ export const exportPdf = (domElementId, name, backgroundColor) => {
       }
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      pdf.setFillColor(ThemeDark.palette.background.default);
+      pdf.setFillColor(backgroundColor);
       pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
       const width = (imgProps.width * pdfHeight) / imgProps.height;
       const height = (imgProps.height * pdfWidth) / imgProps.width;

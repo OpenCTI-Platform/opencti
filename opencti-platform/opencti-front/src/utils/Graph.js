@@ -630,7 +630,7 @@ export const nodePaint = (
   ctx.fill();
   if (selected) {
     ctx.lineWidth = 0.8;
-    ctx.strokeStyle = Theme.palette.primary.main;
+    ctx.strokeStyle = Theme.palette.secondary.main;
     ctx.stroke();
   }
   const size = 8;
