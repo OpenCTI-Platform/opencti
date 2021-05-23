@@ -72,7 +72,7 @@ const LocationMiniMapTargets = (props) => {
       return {
         color: country.level ? colors[country.level] : colors[5],
         weight: 1,
-        fillOpacity: 0.1,
+        fillOpacity: props.theme.palette.type === 'light' ? 0.5 : 0.1,
       };
     }
     return { fillOpacity: 0, color: 'none' };

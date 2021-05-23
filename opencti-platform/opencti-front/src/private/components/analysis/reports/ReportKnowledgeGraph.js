@@ -890,7 +890,7 @@ class ReportKnowledgeGraphComponent extends Component {
             backgroundColor={theme.palette.background.default}
             graphData={graphData}
             nodeThreeObjectExtend={true}
-            nodeThreeObject={nodeThreePaint}
+            nodeThreeObject={(node) => nodeThreePaint(node, theme.palette.text.primary)}
             linkColor={(link) => (this.selectedLinks.has(link)
               ? theme.palette.secondary.main
               : theme.palette.primary.main)
@@ -982,7 +982,7 @@ class ReportKnowledgeGraphComponent extends Component {
             // linkDirectionalParticleWidth={1}
             // linkDirectionalParticleSpeed={() => 0.004}
             linkCanvasObjectMode={() => 'after'}
-            linkCanvasObject={linkPaint}
+            linkCanvasObject={(link, ctx) => linkPaint(link, ctx, theme.palette.text.primary)}
             linkColor={(link) => (this.selectedLinks.has(link)
               ? theme.palette.secondary.main
               : theme.palette.primary.main)

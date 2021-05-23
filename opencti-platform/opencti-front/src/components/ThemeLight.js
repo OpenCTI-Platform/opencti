@@ -14,7 +14,7 @@ export default {
     navBottom: { background: '#ffffff' },
     background: {
       paper: '#ffffff',
-      paperLight: '#fafafa',
+      paperLight: '#f5f5f5',
       nav: '#ffffff',
       navLight: '#ffffff',
       default: '#f5f5f5',
