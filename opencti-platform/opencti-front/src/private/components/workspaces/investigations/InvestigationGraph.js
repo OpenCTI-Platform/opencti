@@ -877,7 +877,9 @@ class InvestigationGraphComponent extends Component {
         () => this.saveParameters(true),
       );
     } else {
-      this.setState({ createdBy: R.append(createdByRef, createdBy) }, () => this.saveParameters(true));
+      this.setState(
+        { createdBy: R.append(createdByRef, createdBy) }, () => this.saveParameters(true),
+      );
     }
   }
 
@@ -1462,7 +1464,8 @@ class InvestigationGraphComponent extends Component {
             graphData={graphData}
             onZoomEnd={this.handleZoomEnd.bind(this)}
             nodeRelSize={4}
-            nodeCanvasObject={(node, ctx) => nodePaint(node, node.color, ctx, this.selectedNodes.has(node))
+            nodeCanvasObject={
+              (node, ctx) => nodePaint(node, node.color, ctx, this.selectedNodes.has(node))
             }
             nodePointerAreaPaint={nodeAreaPaint}
             // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}

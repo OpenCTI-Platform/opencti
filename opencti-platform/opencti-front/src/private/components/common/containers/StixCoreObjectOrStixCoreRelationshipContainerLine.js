@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRightOutlined, HelpOutlined } from '@material-ui/icons';
+import { KeyboardArrowRightOutlined } from '@material-ui/icons';
 import { compose, pathOr, take } from 'ramda';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';

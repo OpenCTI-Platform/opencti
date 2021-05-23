@@ -673,7 +673,8 @@ const i18n = {
       Name: 'Nom',
       Description: 'Description',
       'Is family': 'Est une famille',
-      'Architecture execution env.': "Env. d'éxécution",
+      'Is family?': 'Est une famille ?',
+      'Architecture execution env.': "Env. d'éxécution,",
       'Implementation languages': "Langages d'implémentation",
       'This sector does not have any description.':
         "Ce secteur n'a aucune description.",

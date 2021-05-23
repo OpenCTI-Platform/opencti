@@ -5,7 +5,7 @@ import graphql from 'babel-plugin-relay/macro';
 import {
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from 'recharts';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -112,7 +112,7 @@ class ReportsDonut extends Component {
 
   renderContent() {
     const {
-      t, field, startDate, endDate, variant,
+      t, field, startDate, endDate, variant, theme,
     } = this.props;
     const reportsDistributionVariables = {
       field: field || 'report_types',
@@ -169,7 +169,7 @@ class ReportsDonut extends Component {
                       <Cell
                         key={index}
                         fill={itemColor(entry.label)}
-                        stroke="#28353a"
+                        stroke={theme.palette.background.paper}
                       />
                     ))}
                   </Pie>
@@ -238,7 +238,8 @@ ReportsDonut.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   classes: PropTypes.object,
+  theme: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(ReportsDonut);
+export default compose(inject18n, withTheme, withStyles(styles))(ReportsDonut);

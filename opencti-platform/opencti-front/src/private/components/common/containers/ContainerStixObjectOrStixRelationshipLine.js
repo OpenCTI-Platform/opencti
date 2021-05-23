@@ -8,7 +8,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { Help, MoreVert } from '@material-ui/icons';
+import { MoreVert } from '@material-ui/icons';
 import { compose, pathOr, take } from 'ramda';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
@@ -154,6 +154,7 @@ ContainerStixObjectOrStixRelationshipLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
 };
 
+// eslint-disable-next-line max-len
 const ContainerStixObjectOrStixRelationshipLineFragment = createFragmentContainer(ContainerStixObjectOrStixRelationshipLineComponent, {
   node: graphql`
       fragment ContainerStixObjectOrStixRelationshipLine_node on StixObjectOrStixRelationship {

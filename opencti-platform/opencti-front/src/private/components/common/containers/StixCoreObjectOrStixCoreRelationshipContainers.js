@@ -54,9 +54,9 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       props.history,
       props.location,
       `view-containers${
-        props.stixDomainObjectOrStixCoreRelationship.id
+        props.stixDomainObjectOrStixCoreRelationship
           ? `-${props.stixDomainObjectOrStixCoreRelationship.id}`
-          : ''
+          : `-${props.authorId}`
       }`,
     );
     this.state = {
@@ -82,9 +82,9 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       this.props.history,
       this.props.location,
       `view-containers${
-        this.props.stixDomainObjectOrStixCoreRelationship.id
+        this.props.stixDomainObjectOrStixCoreRelationship
           ? `-${this.props.stixDomainObjectOrStixCoreRelationship.id}`
-          : ''
+          : `-${this.props.authorId}`
       }`,
       this.state,
     );
@@ -95,9 +95,9 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       this.props.history,
       this.props.location,
       `view-containers${
-        this.props.stixDomainObjectOrStixCoreRelationship.id
+        this.props.stixDomainObjectOrStixCoreRelationship
           ? `-${this.props.stixDomainObjectOrStixCoreRelationship.id}`
-          : ''
+          : `-${this.props.authorId}`
       }`,
       { ...this.state, ...params },
     );

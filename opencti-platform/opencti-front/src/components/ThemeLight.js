@@ -15,7 +15,7 @@ export default {
       default: '#fafafa',
       chip: 'rgba(80, 123, 200, 0.6)',
     },
-    action: { disabled: '#747474', grid: '#dbdbdb' },
+    action: { disabled: '#ababab', grid: '#dbdbdb' },
   },
   typography: {
     useNextVariants: true,
