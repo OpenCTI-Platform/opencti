@@ -11,9 +11,9 @@ import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
-import { ChessKnight } from 'mdi-material-ui';
 import IconButton from '@material-ui/core/IconButton';
 import { StarBorderOutlined } from '@material-ui/icons';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import {
@@ -94,7 +94,7 @@ class CampaignCardComponent extends Component {
       t, fsd, classes, node, bookmarksIds, onLabelClick,
     } = this.props;
     return (
-      <Card classes={{ root: classes.card }} raised={true}>
+      <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
@@ -191,30 +191,63 @@ class CampaignCardDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <Card classes={{ root: classes.cardDummy }} raised={true}>
+      <Card classes={{ root: classes.cardDummy }} raised={true} elevation={3}>
         <CardActionArea classes={{ root: classes.area }}>
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={<Avatar className={classes.avatarDisabled}>D</Avatar>}
+            avatar={
+              <Skeleton
+                animation="wave"
+                variant="circle"
+                width={30}
+                height={30}
+              />
+            }
             title={
-              <div
-                className={classes.placeholderHeader}
-                style={{ width: '85%' }}
+              <Skeleton
+                animation="wave"
+                variant="rect"
+                width="90%"
+                style={{ marginBottom: 10 }}
               />
             }
             titleTypographyProps={{ color: 'inherit' }}
             subheader={
-              <div
-                className={classes.placeholderHeaderDark}
-                style={{ width: '70%' }}
+              <Skeleton
+                animation="wave"
+                variant="rect"
+                width="90%"
+                style={{ marginBottom: 10 }}
               />
             }
-            action={<ChessKnight className={classes.icon} />}
+            action={
+              <Skeleton
+                animation="wave"
+                variant="circle"
+                width={30}
+                height={30}
+              />
+            }
           />
           <CardContent classes={{ root: classes.contentDummy }}>
-            <div className="fakeItem" style={{ width: '90%' }} />
-            <div className="fakeItem" style={{ width: '95%' }} />
-            <div className="fakeItem" style={{ width: '90%' }} />
+            <Skeleton
+              animation="wave"
+              variant="rect"
+              width="90%"
+              style={{ marginBottom: 10 }}
+            />
+            <Skeleton
+              animation="wave"
+              variant="rect"
+              width="95%"
+              style={{ marginBottom: 10 }}
+            />
+            <Skeleton
+              animation="wave"
+              variant="rect"
+              width="90%"
+              style={{ marginBottom: 10 }}
+            />
           </CardContent>
         </CardActionArea>
       </Card>

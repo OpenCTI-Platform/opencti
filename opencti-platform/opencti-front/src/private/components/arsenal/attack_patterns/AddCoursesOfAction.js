@@ -43,6 +43,7 @@ const styles = (theme) => ({
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
+    color: theme.palette.navAlt.backgroundHeaderText,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -161,7 +162,8 @@ class AddCoursesOfAction extends Component {
                               animation="wave"
                               variant="rect"
                               width="90%"
-                              height={20}
+                              height={15}
+                              style={{ marginBottom: 10 }}
                             />
                           }
                           secondary={
@@ -169,7 +171,7 @@ class AddCoursesOfAction extends Component {
                               animation="wave"
                               variant="rect"
                               width="90%"
-                              height={20}
+                              height={15}
                             />
                           }
                         />

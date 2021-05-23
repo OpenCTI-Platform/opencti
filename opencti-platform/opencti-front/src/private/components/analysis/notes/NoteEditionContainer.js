@@ -14,6 +14,7 @@ import NoteEditionOverview from './NoteEditionOverview';
 const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
+    color: theme.palette.navAlt.backgroundHeaderText,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {

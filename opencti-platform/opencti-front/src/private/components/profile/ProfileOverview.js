@@ -42,6 +42,7 @@ const userValidation = (t) => Yup.object().shape({
     .email(t('The value must be an email address')),
   firstname: Yup.string(),
   lastname: Yup.string(),
+  theme: Yup.string(),
   language: Yup.string(),
   description: Yup.string(),
 });
@@ -93,6 +94,7 @@ class ProfileOverviewComponent extends Component {
         'user_email',
         'firstname',
         'lastname',
+        'theme',
         'language',
       ],
       me,
@@ -143,6 +145,21 @@ class ProfileOverviewComponent extends Component {
                   style={{ marginTop: 20 }}
                   onSubmit={this.handleSubmitField.bind(this)}
                 />
+                <Field
+                  component={SelectField}
+                  name="theme"
+                  label={t('Theme')}
+                  fullWidth={true}
+                  inputProps={{
+                    name: 'theme',
+                    id: 'theme',
+                  }}
+                  containerstyle={{ marginTop: 20, width: '100%' }}
+                  onChange={this.handleSubmitField.bind(this)}
+                >
+                  <MenuItem value="dark">{t('Dark')}</MenuItem>
+                  <MenuItem value="light">{t('Light')}</MenuItem>
+                </Field>
                 <Field
                   component={SelectField}
                   name="language"
@@ -270,6 +287,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       firstname
       lastname
       language
+      theme
       token
       description
     }

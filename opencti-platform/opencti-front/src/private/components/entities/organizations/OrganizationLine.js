@@ -12,6 +12,7 @@ import {
   AccountBalanceOutlined,
 } from '@material-ui/icons';
 import { compose } from 'ramda';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
@@ -153,8 +154,8 @@ class OrganizationLineDummyComponent extends Component {
     const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <AccountBalanceOutlined />
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <Skeleton animation="wave" variant="circle" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -163,31 +164,56 @@ class OrganizationLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.x_opencti_organization_type.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
-                <div className="fakeItem" style={{ width: '90%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created.width }}
               >
-                <div className="fakeItem" style={{ width: 140 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.modified.width }}
               >
-                <div className="fakeItem" style={{ width: 140 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
               </div>
             </div>
           }

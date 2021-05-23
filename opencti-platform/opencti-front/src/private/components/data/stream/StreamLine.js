@@ -14,6 +14,7 @@ import {
 } from 'ramda';
 import Chip from '@material-ui/core/Chip';
 import Slide from '@material-ui/core/Slide';
+import Skeleton from '@material-ui/lab/Skeleton';
 import { truncate } from '../../../../utils/String';
 import StreamPopover from './StreamPopover';
 import inject18n from '../../../../components/i18n';
@@ -189,8 +190,8 @@ class StreamDummyComponent extends Component {
     const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <DatabaseExportOutline />
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <Skeleton animation="wave" variant="circle" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -199,19 +200,34 @@ class StreamDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.description.width }}
               >
-                <div className="fakeItem" style={{ width: '70%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.filters.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
             </div>
           }

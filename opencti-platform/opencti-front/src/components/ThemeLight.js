@@ -4,8 +4,12 @@ export default {
     type: 'light',
     primary: { main: '#507bc8' },
     secondary: { main: '#ff3d00' },
-    header: { background: '#ffffff', text: '#000000' },
-    navAlt: { background: '#ffffff', backgroundHeader: '#fafafa' },
+    header: { background: '#507bc8', text: '#ffffff' },
+    navAlt: {
+      background: '#ffffff',
+      backgroundHeader: '#507bc8',
+      backgroundHeaderText: '#ffffff',
+    },
     navBottom: { background: '#ffffff' },
     background: {
       paper: '#ffffff',
@@ -63,7 +67,7 @@ export default {
       marginTop: -4,
     },
     h6: {
-      color: '#000000',
+      color: '#ffffff',
       fontWeight: 400,
       fontSize: 18,
     },

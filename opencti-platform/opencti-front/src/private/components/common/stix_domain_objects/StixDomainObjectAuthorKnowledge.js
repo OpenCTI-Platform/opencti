@@ -131,6 +131,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
           <Grid item={true} xs={4}>
             <Card
               raised={true}
+              elevation={3}
               classes={{ root: classes.card }}
               style={{ height: 120 }}
             >
@@ -172,6 +173,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
           <Grid item={true} xs={4}>
             <Card
               raised={true}
+              elevation={3}
               classes={{ root: classes.card }}
               style={{ height: 120 }}
             >
@@ -216,6 +218,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
           <Grid item={true} xs={4}>
             <Card
               raised={true}
+              elevation={3}
               classes={{ root: classes.card }}
               style={{ height: 120 }}
             >

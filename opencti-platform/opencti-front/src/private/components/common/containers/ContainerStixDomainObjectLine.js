@@ -292,7 +292,12 @@ class ContainerStixDomainObjectLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}

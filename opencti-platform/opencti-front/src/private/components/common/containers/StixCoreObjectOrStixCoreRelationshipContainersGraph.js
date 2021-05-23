@@ -217,9 +217,8 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
         () => this.saveParameters(true),
       );
     } else {
-      this.setState(
-        { createdBy: R.append(createdByRef, createdBy) }, () => this.saveParameters(true),
-      );
+      // eslint-disable-next-line max-len
+      this.setState({ createdBy: R.append(createdByRef, createdBy) }, () => this.saveParameters(true));
     }
   }
 

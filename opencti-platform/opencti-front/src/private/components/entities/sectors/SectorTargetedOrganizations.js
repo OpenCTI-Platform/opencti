@@ -11,6 +11,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { AccountBalanceOutlined } from '@material-ui/icons';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -214,17 +215,30 @@ class SectorTargetedOrganizations extends Component {
                       divider={true}
                       button={false}
                     >
-                      <ListItemIcon
-                        classes={{ root: classes.itemIconDisabled }}
-                      >
-                        <AccountBalanceOutlined />
+                      <ListItemIcon classes={{ root: classes.itemIcon }}>
+                        <Skeleton
+                          animation="wave"
+                          variant="circle"
+                          width={30}
+                          height={30}
+                        />
                       </ListItemIcon>
                       <ListItemText
                         primary={
-                          <span className="fakeItem" style={{ width: '80%' }} />
+                          <Skeleton
+                            animation="wave"
+                            variant="rect"
+                            width="90%"
+                            height={20}
+                          />
                         }
                         secondary={
-                          <span className="fakeItem" style={{ width: '90%' }} />
+                          <Skeleton
+                            animation="wave"
+                            variant="rect"
+                            width="90%"
+                            height={20}
+                          />
                         }
                       />
                     </ListItem>

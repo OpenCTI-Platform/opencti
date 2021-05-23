@@ -19,11 +19,11 @@ import {
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
-import Avatar from '@material-ui/core/Avatar';
 import ListItemText from '@material-ui/core/ListItemText';
 import Fab from '@material-ui/core/Fab';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
+import Skeleton from '@material-ui/lab/Skeleton';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -77,6 +77,7 @@ const styles = (theme) => ({
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
+    color: theme.palette.navAlt.backgroundHeaderText,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -422,17 +423,37 @@ class StixCoreRelationshipCreationFromEntity extends Component {
     this.setState({ step: 1 });
   }
 
+  // eslint-disable-next-line class-methods-use-this
   renderFakeList() {
     return (
       <List>
         {Array.from(Array(20), (e, i) => (
           <ListItem key={i} divider={true} button={false}>
             <ListItemIcon>
-              <Avatar classes={{ root: this.props.classes.avatar }}>{i}</Avatar>
+              <Skeleton
+                animation="wave"
+                variant="circle"
+                width={30}
+                height={30}
+              />
             </ListItemIcon>
             <ListItemText
-              primary={<span className="fakeItem" style={{ width: '80%' }} />}
-              secondary={<span className="fakeItem" style={{ width: '90%' }} />}
+              primary={
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height={20}
+                />
+              }
+              secondary={
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height={20}
+                />
+              }
             />
           </ListItem>
         ))}

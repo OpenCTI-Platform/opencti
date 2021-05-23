@@ -20,6 +20,7 @@ import {
   toLower,
 } from 'ramda';
 import List from '@material-ui/core/List';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import { CountryLine } from '../countries/CountryLine';
 
@@ -141,10 +142,12 @@ class RegionLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <LocalPlayOutlined />
+          <Skeleton animation="wave" variant="circle" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
-          primary={<span className="fakeItem" style={{ width: '80%' }} />}
+          primary={
+            <Skeleton animation="wave" variant="rect" width="90%" height={20} />
+          }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <KeyboardArrowRightOutlined />

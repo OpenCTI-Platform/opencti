@@ -6,7 +6,11 @@ export default {
     primary: { main: '#00bcd4' },
     secondary: { main: '#ff3d00' },
     header: { background: '#1b2226', text: '#ffffff' },
-    navAlt: { background: '#14262c', backgroundHeader: '#2d4b5b' },
+    navAlt: {
+      background: '#14262c',
+      backgroundHeader: '#2d4b5b',
+      backgroundHeaderText: '#ffffff',
+    },
     navBottom: { background: '#0f181f' },
     background: {
       paper: '#28353a',
@@ -96,9 +100,10 @@ export default {
         'input:-webkit-autofill': {
           '-webkit-animation': 'autofill 0s forwards',
           animation: 'autofill 0s forwards',
-          '-webkit-text-fill-color': '#000000 !important',
+          '-webkit-text-fill-color': '#ffffff !important',
           caretColor: 'transparent !important',
-          '-webkit-box-shadow': '0 0 0 1000px #f8f8f8 inset !important',
+          '-webkit-box-shadow':
+            '0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important',
           borderTopLeftRadius: 'inherit',
           borderTopRightRadius: 'inherit',
         },
