@@ -34,19 +34,17 @@ const styles = () => ({
   },
 });
 
-const stixCoreObjectIndicatorsAreaChartTimeSeriesQuery = graphql`
-  query StixCoreObjectIndicatorsAreaChartTimeSeriesQuery(
+const stixCoreObjectCampaignsAreaChartTimeSeriesQuery = graphql`
+  query StixCoreObjectCampaignsAreaChartTimeSeriesQuery(
     $objectId: String
-    $pattern_type: String
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
   ) {
-    indicatorsTimeSeries(
+    campaignsTimeSeries(
       objectId: $objectId
-      pattern_type: $pattern_type
       field: $field
       operation: $operation
       startDate: $startDate
@@ -59,13 +57,13 @@ const stixCoreObjectIndicatorsAreaChartTimeSeriesQuery = graphql`
   }
 `;
 
-class StixCoreObjectIndicatorsAreaChart extends Component {
+class StixCoreObjectCampaignsAreaChart extends Component {
   renderContent() {
     const {
       t,
       md,
       nsd,
-      indicatorType,
+      campaignType,
       startDate,
       endDate,
       stixCoreObjectId,
@@ -79,10 +77,10 @@ class StixCoreObjectIndicatorsAreaChart extends Component {
     if (days <= 30) {
       tickFormatter = nsd;
     }
-    const indicatorsTimeSeriesVariables = {
+    const campaignsTimeSeriesVariables = {
       authorId: null,
       objectId: stixCoreObjectId,
-      indicatorType: indicatorType || null,
+      campaignType: campaignType || null,
       field: 'created_at',
       operation: 'count',
       startDate: finalStartDate,
@@ -91,14 +89,14 @@ class StixCoreObjectIndicatorsAreaChart extends Component {
     };
     return (
       <QueryRenderer
-        query={stixCoreObjectIndicatorsAreaChartTimeSeriesQuery}
-        variables={indicatorsTimeSeriesVariables}
+        query={stixCoreObjectCampaignsAreaChartTimeSeriesQuery}
+        variables={campaignsTimeSeriesVariables}
         render={({ props }) => {
-          if (props && props.indicatorsTimeSeries) {
+          if (props && props.campaignsTimeSeries) {
             return (
               <ResponsiveContainer height="100%" width="100%">
                 <AreaChart
-                  data={props.indicatorsTimeSeries}
+                  data={props.campaignsTimeSeries}
                   margin={{
                     top: 20,
                     right: 0,
@@ -184,7 +182,7 @@ class StixCoreObjectIndicatorsAreaChart extends Component {
     return (
       <div style={{ height: height || '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {title || t('Indicators history')}
+          {title || t('Campaigns history')}
         </Typography>
         {variant !== 'inLine' ? (
           <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -198,7 +196,7 @@ class StixCoreObjectIndicatorsAreaChart extends Component {
   }
 }
 
-StixCoreObjectIndicatorsAreaChart.propTypes = {
+StixCoreObjectCampaignsAreaChart.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   stixCoreObjectId: PropTypes.string,
@@ -210,4 +208,4 @@ export default compose(
   inject18n,
   withTheme,
   withStyles(styles),
-)(StixCoreObjectIndicatorsAreaChart);
+)(StixCoreObjectCampaignsAreaChart);

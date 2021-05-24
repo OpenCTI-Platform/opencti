@@ -89,8 +89,8 @@ const visualizationTypesMapping = {
   malwares: [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE],
   vulnerabilities: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, TIMELINE],
   campaigns: [AREA, TIMELINE, VERTICAL_BAR],
+  incidents: [AREA, TIMELINE, VERTICAL_BAR],
   indicators: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA],
-  incidents: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA],
   reports: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA],
 };
 

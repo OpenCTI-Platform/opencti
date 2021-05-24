@@ -17,7 +17,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { monthsAgo, now } from '../../../../utils/Time';
+import { monthsAgo, now, numberOfDays } from '../../../../utils/Time';
 
 const styles = () => ({
   paper: {
@@ -64,6 +64,7 @@ class IndicatorsVerticalBars extends Component {
     const {
       t,
       md,
+      nsd,
       indicatorType,
       startDate,
       endDate,
@@ -73,6 +74,11 @@ class IndicatorsVerticalBars extends Component {
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
+    const days = numberOfDays(finalStartDate, finalEndDate);
+    let tickFormatter = md;
+    if (days <= 30) {
+      tickFormatter = nsd;
+    }
     const indicatorsTimeSeriesVariables = {
       authorId: null,
       objectId: stixCoreObjectId,
@@ -110,7 +116,7 @@ class IndicatorsVerticalBars extends Component {
                     interval={interval}
                     angle={-45}
                     textAnchor="end"
-                    tickFormatter={md}
+                    tickFormatter={tickFormatter}
                   />
                   <YAxis stroke={theme.palette.text.primary} />
                   <Tooltip
@@ -124,7 +130,7 @@ class IndicatorsVerticalBars extends Component {
                       fontSize: 12,
                       borderRadius: 10,
                     }}
-                    labelFormatter={md}
+                    labelFormatter={tickFormatter}
                   />
                   <Bar
                     fill={theme.palette.primary.main}

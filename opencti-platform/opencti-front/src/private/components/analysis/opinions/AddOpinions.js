@@ -9,7 +9,6 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
-import Avatar from '@material-ui/core/Avatar';
 import { Add, Close } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
