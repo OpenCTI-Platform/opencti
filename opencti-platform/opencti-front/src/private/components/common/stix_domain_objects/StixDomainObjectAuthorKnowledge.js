@@ -122,7 +122,7 @@ const stixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery = graphql`
 class StixDomainObjectAuthorKnowledge extends Component {
   render() {
     const {
-      t, nsd, mtd, n, classes, stixDomainObjectId, theme,
+      t, fsd, mtd, n, classes, stixDomainObjectId, theme,
     } = this.props;
     return (
       <div>
@@ -315,7 +315,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
                                 fontSize: 12,
                                 borderRadius: 10,
                               }}
-                              labelFormatter={nsd}
+                              labelFormatter={fsd}
                             />
                             <Area
                               type="monotone"

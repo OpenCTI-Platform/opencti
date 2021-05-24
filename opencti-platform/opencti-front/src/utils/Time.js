@@ -45,6 +45,12 @@ export const daysAfter = (number, date = null, noFuture = true) => {
   return newDate;
 };
 
+export const numberOfDays = (dateA, dateB) => {
+  const momentDateA = parse(dateA);
+  const momentDateB = parse(dateB);
+  return momentDateB.diff(momentDateA, 'days');
+};
+
 export const minutesBefore = (number, date = null) => moment(date || dayStartDate())
   .subtract(number, 'minutes')
   .format();

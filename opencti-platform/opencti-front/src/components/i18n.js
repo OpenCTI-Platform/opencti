@@ -63,7 +63,7 @@ const inject18n = (WrappedComponent) => {
         }
         return this.props.intl.formatDate(date, {
           day: 'numeric',
-          month: 'short',
+          month: 'numeric',
           year: 'numeric',
         });
       };

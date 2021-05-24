@@ -905,7 +905,7 @@ StixSightingRelationshipCreationFromRelation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
   variant: PropTypes.string,
   onCreate: PropTypes.func,
   paddingRight: PropTypes.bool,

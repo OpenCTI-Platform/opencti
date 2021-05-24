@@ -17,7 +17,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { monthsAgo, now } from '../../../../utils/Time';
+import { monthsAgo, now, numberOfDays } from '../../../../utils/Time';
 
 const styles = () => ({
   paper: {
@@ -58,11 +58,16 @@ const reporstVerticalBarsTimeSeriesQuery = graphql`
 class ReportsVerticalBars extends Component {
   renderContent() {
     const {
-      t, md, reportType, startDate, endDate, theme,
+      t, md, nsd, reportType, startDate, endDate, theme,
     } = this.props;
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
+    const days = numberOfDays(finalStartDate, finalEndDate);
+    let tickFormatter = md;
+    if (days <= 30) {
+      tickFormatter = nsd;
+    }
     const reportsTimeSeriesVariables = {
       reportType: reportType || null,
       field: 'created_at',
@@ -98,7 +103,7 @@ class ReportsVerticalBars extends Component {
                     interval={interval}
                     angle={-45}
                     textAnchor="end"
-                    tickFormatter={md}
+                    tickFormatter={tickFormatter}
                   />
                   <YAxis stroke={theme.palette.text.primary} />
                   <Tooltip
@@ -112,7 +117,7 @@ class ReportsVerticalBars extends Component {
                       fontSize: 12,
                       borderRadius: 10,
                     }}
-                    labelFormatter={md}
+                    labelFormatter={tickFormatter}
                   />
                   <Bar
                     fill={theme.palette.primary.main}

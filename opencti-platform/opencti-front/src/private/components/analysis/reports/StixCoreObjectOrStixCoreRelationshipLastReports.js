@@ -111,22 +111,19 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
   render() {
     const {
       t,
-      nsd,
+      fsd,
       classes,
       stixCoreObjectOrStixCoreRelationshipId,
       authorId,
     } = this.props;
     const filters = [];
-
     if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
-
     if (stixCoreObjectOrStixCoreRelationshipId) {
       filters.push({
         key: 'objectContains',
         values: [stixCoreObjectOrStixCoreRelationshipId],
       });
     }
-
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -177,7 +174,7 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
                               {pathOr('', ['createdBy', 'name'], report)}
                             </div>
                             <div style={inlineStyles.itemDate}>
-                              {nsd(report.published)}
+                              {fsd(report.published)}
                             </div>
                             <div style={{ width: 110, paddingRight: 20 }}>
                               {markingDefinition ? (
@@ -271,7 +268,7 @@ StixCoreObjectOrStixCoreRelationshipLastReports.propTypes = {
   authorId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
 };
 
 export default compose(

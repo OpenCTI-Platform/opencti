@@ -352,7 +352,7 @@ class Dashboard extends Component {
 
   render() {
     const {
-      t, n, nsd, mtd, classes, theme,
+      t, n, fsd, mtd, classes, theme,
     } = this.props;
     return (
       <div className={classes.root}>
@@ -636,7 +636,7 @@ class Dashboard extends Component {
                                   fontSize: 12,
                                   borderRadius: 10,
                                 }}
-                                labelFormatter={nsd}
+                                labelFormatter={fsd}
                               />
                               <Area
                                 type="monotone"
@@ -813,7 +813,7 @@ class Dashboard extends Component {
                                     )}
                                   </div>
                                   <div className={classes.itemDate}>
-                                    {nsd(stixDomainObject.created_at)}
+                                    {fsd(stixDomainObject.created_at)}
                                   </div>
                                   <div
                                     style={{
@@ -984,7 +984,7 @@ Dashboard.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   n: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
   mtd: PropTypes.func,
   history: PropTypes.object,
 };

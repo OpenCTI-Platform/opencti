@@ -47,7 +47,7 @@ const styles = (theme) => ({
 class StixCyberObservableEntityLineComponent extends Component {
   render() {
     const {
-      nsd,
+      fsd,
       t,
       classes,
       dataColumns,
@@ -145,13 +145,13 @@ class StixCyberObservableEntityLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.start_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.start_time)}
+                {node.inferred ? '-' : fsd(node.start_time)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.stop_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.stop_time)}
+                {node.inferred ? '-' : fsd(node.stop_time)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -180,7 +180,7 @@ StixCyberObservableEntityLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
   displayRelation: PropTypes.bool,
   entityId: PropTypes.string,
 };

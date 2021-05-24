@@ -66,7 +66,7 @@ const styles = (theme) => ({
 class StixSightingRelationshipLineComponent extends Component {
   render() {
     const {
-      nsd, t, fd, classes, dataColumns, node, paginationOptions,
+      fsd, t, fd, classes, dataColumns, node, paginationOptions,
     } = this.props;
     return (
       <ListItem
@@ -127,13 +127,13 @@ class StixSightingRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.first_seen.width }}
               >
-                {nsd(node.first_seen)}
+                {fsd(node.first_seen)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.last_seen.width }}
               >
-                {nsd(node.last_seen)}
+                {fsd(node.last_seen)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -161,7 +161,7 @@ StixSightingRelationshipLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
 };
 
 const StixSightingRelationshipLineFragment = createFragmentContainer(

@@ -610,7 +610,7 @@ class StixCoreRelationshipCreation extends Component {
 
   renderSelectRelation() {
     const {
-      nsd, t, classes, from, to,
+      fsd, t, classes, from, to,
     } = this.props;
     const { existingRelations } = this.state;
 
@@ -683,9 +683,9 @@ class StixCoreRelationshipCreation extends Component {
                   >
                     {t(`relationship_${relation.node.relationship_type}`)}
                     <br />
-                    {t('First obs.')} {nsd(relation.node.start_time)}
+                    {t('First obs.')} {fsd(relation.node.start_time)}
                     <br />
-                    {t('Last obs.')} {nsd(relation.node.stop_time)}
+                    {t('Last obs.')} {fsd(relation.node.stop_time)}
                   </div>
                 </Tooltip>
               </div>
@@ -853,7 +853,7 @@ StixCoreRelationshipCreation.propTypes = {
   handleResult: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
   startTime: PropTypes.string,
   stopTime: PropTypes.string,
   confidence: PropTypes.number,

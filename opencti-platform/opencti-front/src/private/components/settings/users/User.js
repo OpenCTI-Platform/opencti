@@ -234,7 +234,7 @@ class UserComponent extends Component {
 
   render() {
     const {
-      classes, theme, user, t, mtd, nsd, nsdt,
+      classes, theme, user, t, mtd, fsd, nsdt,
     } = this.props;
     const orderedSessions = R.sort(
       (a, b) => timestamp(a.created) - timestamp(b.created),
@@ -461,7 +461,7 @@ class UserComponent extends Component {
                                 fontSize: 12,
                                 borderRadius: 10,
                               }}
-                              labelFormatter={nsd}
+                              labelFormatter={fsd}
                             />
                             <Area
                               type="monotone"

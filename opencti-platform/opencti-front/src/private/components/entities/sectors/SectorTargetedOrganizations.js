@@ -115,7 +115,7 @@ const sectorTargetedOrganizationsQuery = graphql`
 class SectorTargetedOrganizations extends Component {
   render() {
     const {
-      t, nsd, classes, sectorId,
+      t, fsd, classes, sectorId,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -159,7 +159,7 @@ class SectorTargetedOrganizations extends Component {
                                 {pathOr('', ['createdBy', 'name'], relation)}
                               </div>
                               <div style={inlineStyles.itemDate}>
-                                {nsd(relation.start_time)}
+                                {fsd(relation.start_time)}
                               </div>
                               <div style={{ width: 110, paddingRight: 20 }}>
                                 {markingDefinition ? (
@@ -256,7 +256,7 @@ SectorTargetedOrganizations.propTypes = {
   sectorId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
 };
 
 export default compose(

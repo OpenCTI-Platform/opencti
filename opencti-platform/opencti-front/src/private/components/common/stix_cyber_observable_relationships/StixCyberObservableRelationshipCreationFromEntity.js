@@ -758,7 +758,7 @@ StixCyberObservableRelationshipCreationFromEntity.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
   variant: PropTypes.string,
 };
 

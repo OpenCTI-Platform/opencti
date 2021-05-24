@@ -46,7 +46,7 @@ const styles = (theme) => ({
 class IndicatorEntityLineComponent extends Component {
   render() {
     const {
-      nsd,
+      fsd,
       t,
       classes,
       dataColumns,
@@ -120,13 +120,13 @@ class IndicatorEntityLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.start_time.width }}
               >
-                {nsd(node.start_time)}
+                {fsd(node.start_time)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.stop_time.width }}
               >
-                {nsd(node.stop_time)}
+                {fsd(node.stop_time)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -155,7 +155,7 @@ IndicatorEntityLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
   displayRelation: PropTypes.bool,
   entityId: PropTypes.string,
 };

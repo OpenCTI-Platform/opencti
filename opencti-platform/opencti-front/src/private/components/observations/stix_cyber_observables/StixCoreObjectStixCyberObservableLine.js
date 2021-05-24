@@ -45,7 +45,7 @@ const styles = (theme) => ({
 class StixCoreObjectStixCyberObservableLineComponent extends Component {
   render() {
     const {
-      nsd,
+      fsd,
       t,
       classes,
       dataColumns,
@@ -84,13 +84,13 @@ class StixCoreObjectStixCyberObservableLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.start_time.width }}
               >
-                {nsd(node.start_time)}
+                {fsd(node.start_time)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.stop_time.width }}
               >
-                {nsd(node.stop_time)}
+                {fsd(node.stop_time)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -119,7 +119,7 @@ StixCoreObjectStixCyberObservableLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
 };
 
 const StixCoreObjectStixCyberObservableLineFragment = createFragmentContainer(

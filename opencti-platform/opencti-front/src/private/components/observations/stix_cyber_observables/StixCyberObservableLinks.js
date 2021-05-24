@@ -78,7 +78,7 @@ class StixCyberObservableLinksComponent extends Component {
     const {
       stixCyberObservableId,
       t,
-      nsd,
+      fsd,
       stixCyberObservableType,
       paginationOptions,
       data,
@@ -147,7 +147,7 @@ class StixCyberObservableLinksComponent extends Component {
                               className={classes.bodyItem}
                               style={{ width: '15%' }}
                             >
-                              {nsd(
+                              {fsd(
                                 stixCyberObservableRelationshipId.start_time,
                               )}
                             </div>
@@ -155,7 +155,7 @@ class StixCyberObservableLinksComponent extends Component {
                               className={classes.bodyItem}
                               style={{ width: '15%' }}
                             >
-                              {nsd(stixCyberObservableRelationshipId.stop_time)}
+                              {fsd(stixCyberObservableRelationshipId.stop_time)}
                             </div>
                           </div>
                         }

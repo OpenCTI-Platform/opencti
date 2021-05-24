@@ -9,13 +9,14 @@ import {
   Area,
   XAxis,
   YAxis,
+  Tooltip,
 } from 'recharts';
 import { withTheme, withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
-import { monthsAgo, now } from '../../../../utils/Time';
+import { monthsAgo, now, numberOfDays } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 
 const styles = () => ({
@@ -79,6 +80,7 @@ class StixCoreRelationshipsAreaChart extends Component {
       t,
       toTypes,
       relationshipType,
+      md,
       nsd,
       field,
       startDate,
@@ -88,6 +90,11 @@ class StixCoreRelationshipsAreaChart extends Component {
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
+    const days = numberOfDays(finalStartDate, finalEndDate);
+    let tickFormatter = md;
+    if (days <= 30) {
+      tickFormatter = nsd;
+    }
     const stixCoreRelationshipsTimeSeriesVariables = {
       toTypes,
       relationship_type: relationshipType,
@@ -116,14 +123,30 @@ class StixCoreRelationshipsAreaChart extends Component {
                     left: -10,
                   }}
                 >
-                  <CartesianGrid strokeDasharray="2 2" stroke={theme.palette.action.grid} />
+                  <CartesianGrid
+                    strokeDasharray="2 2"
+                    stroke={theme.palette.action.grid}
+                  />
                   <XAxis
                     dataKey="date"
                     stroke={theme.palette.text.primary}
                     interval={interval}
                     angle={-45}
                     textAnchor="end"
-                    tickFormatter={nsd}
+                    tickFormatter={tickFormatter}
+                  />
+                  <Tooltip
+                    cursor={{
+                      fill: 'rgba(0, 0, 0, 0.2)',
+                      stroke: 'rgba(0, 0, 0, 0.2)',
+                      strokeWidth: 2,
+                    }}
+                    contentStyle={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      fontSize: 12,
+                      borderRadius: 10,
+                    }}
+                    labelFormatter={tickFormatter}
                   />
                   <YAxis stroke={theme.palette.text.primary} />
                   <Area

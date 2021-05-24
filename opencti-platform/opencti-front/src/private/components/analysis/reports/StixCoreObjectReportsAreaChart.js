@@ -17,7 +17,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { monthsAgo, now } from '../../../../utils/Time';
+import { monthsAgo, now, numberOfDays } from '../../../../utils/Time';
 
 const styles = () => ({
   paper: {
@@ -66,6 +66,7 @@ class StixCoreObjectReportsAreaChart extends Component {
     const {
       t,
       md,
+      nsd,
       reportType,
       startDate,
       endDate,
@@ -76,6 +77,11 @@ class StixCoreObjectReportsAreaChart extends Component {
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
+    const days = numberOfDays(finalStartDate, finalEndDate);
+    let tickFormatter = md;
+    if (days <= 30) {
+      tickFormatter = nsd;
+    }
     let reportsTimeSeriesVariables;
     if (authorId) {
       reportsTimeSeriesVariables = {
@@ -127,7 +133,7 @@ class StixCoreObjectReportsAreaChart extends Component {
                     interval={interval}
                     textAnchor="end"
                     angle={-30}
-                    tickFormatter={md}
+                    tickFormatter={tickFormatter}
                   />
                   <YAxis stroke={theme.palette.text.primary} />
                   <Tooltip
@@ -141,7 +147,7 @@ class StixCoreObjectReportsAreaChart extends Component {
                       fontSize: 12,
                       borderRadius: 10,
                     }}
-                    labelFormatter={md}
+                    labelFormatter={tickFormatter}
                   />
                   <Area
                     type="monotone"
@@ -216,6 +222,7 @@ StixCoreObjectReportsAreaChart.propTypes = {
   authorId: PropTypes.string,
   t: PropTypes.func,
   md: PropTypes.func,
+  nsd: PropTypes.func,
 };
 
 export default compose(

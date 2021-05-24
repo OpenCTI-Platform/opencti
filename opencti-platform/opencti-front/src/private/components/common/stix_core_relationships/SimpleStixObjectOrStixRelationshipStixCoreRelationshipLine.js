@@ -44,7 +44,7 @@ const styles = (theme) => ({
 class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extends Component {
   render() {
     const {
-      nsd,
+      fsd,
       t,
       classes,
       dataColumns,
@@ -105,7 +105,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
-                {nsd(node.created_at)}
+                {fsd(node.created_at)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -136,7 +136,7 @@ SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent.propTypes = 
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
   connectionKey: PropTypes.string,
 };
 

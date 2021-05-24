@@ -404,7 +404,7 @@ class Settings extends Component {
 Settings.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
 };
 
 export default compose(inject18n, withStyles(styles))(Settings);
