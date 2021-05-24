@@ -79,7 +79,7 @@ class StixCoreRelationshipsAreaChart extends Component {
       t,
       toTypes,
       relationshipType,
-      md,
+      nsd,
       field,
       startDate,
       endDate,
@@ -112,7 +112,7 @@ class StixCoreRelationshipsAreaChart extends Component {
                   margin={{
                     top: 20,
                     right: 50,
-                    bottom: 20,
+                    bottom: 35,
                     left: -10,
                   }}
                 >
@@ -123,7 +123,7 @@ class StixCoreRelationshipsAreaChart extends Component {
                     interval={interval}
                     angle={-45}
                     textAnchor="end"
-                    tickFormatter={md}
+                    tickFormatter={nsd}
                   />
                   <YAxis stroke={theme.palette.text.primary} />
                   <Area
@@ -203,7 +203,7 @@ StixCoreRelationshipsAreaChart.propTypes = {
   theme: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  md: PropTypes.func,
+  nsd: PropTypes.func,
 };
 
 export default compose(
