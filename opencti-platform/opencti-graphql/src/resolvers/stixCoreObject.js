@@ -53,7 +53,7 @@ const stixCoreObjectResolvers = {
     objectMarking: (stixCoreObject, _, { user }) => markingDefinitionsLoader.load(stixCoreObject.id, user),
     objectLabel: (stixCoreObject, _, { user }) => labelsLoader.load(stixCoreObject.id, user),
     externalReferences: (stixCoreObject, _, { user }) => externalReferencesLoader.load(stixCoreObject.id, user),
-    reports: (stixCoreObject, _, { user }) => reportsLoader.load(stixCoreObject.id, user),
+    reports: (stixCoreObject, args, { user }) => reportsLoader.load(stixCoreObject.id, user, args),
     notes: (stixCoreObject, _, { user }) => notesLoader.load(stixCoreObject.id, user),
     opinions: (stixCoreObject, _, { user }) => opinionsLoader.load(stixCoreObject.id, user),
   },

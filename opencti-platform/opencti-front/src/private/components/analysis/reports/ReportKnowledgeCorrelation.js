@@ -924,7 +924,7 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
             }
           }
         }
-        objects(all: true) {
+        objects(first: 100) {
           edges {
             node {
               ... on BasicObject {
@@ -949,12 +949,11 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
                     }
                   }
                 }
-                reports {
+                reports(first: 10) {
                   edges {
                     node {
                       id
                       name
-                      x_opencti_graph_data
                       published
                       confidence
                       entity_type
@@ -1050,12 +1049,11 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
               }
               ... on StixCyberObservable {
                 observable_value
-                reports {
+                reports(first: 10) {
                   edges {
                     node {
                       id
                       name
-                      x_opencti_graph_data
                       published
                       confidence
                       entity_type

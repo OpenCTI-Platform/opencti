@@ -6,11 +6,15 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import { Link } from 'react-router-dom';
-import Button from '@material-ui/core/Button';
+import Tooltip from '@material-ui/core/Tooltip';
+import IconButton from '@material-ui/core/IconButton';
+import { GraphOutline, VectorLink } from 'mdi-material-ui';
+import { ViewColumnOutlined } from '@material-ui/icons';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import ExportButtons from '../../../../components/ExportButtons';
 
 const styles = () => ({
   title: {
@@ -34,11 +38,15 @@ const styles = () => ({
     float: 'right',
   },
   modes: {
-    margin: '-2px 0 0 0',
+    margin: '-10px 0 0 0',
     float: 'right',
   },
   button: {
     marginRight: 20,
+  },
+  export: {
+    margin: '-10px 0 0 0',
+    float: 'right',
   },
 });
 
@@ -52,6 +60,7 @@ class ContainerHeaderComponent extends Component {
       fd,
       link,
       modes,
+      currentMode,
       t,
     } = this.props;
     return (
@@ -90,31 +99,49 @@ class ContainerHeaderComponent extends Component {
             {React.cloneElement(PopoverComponent, { id: container.id })}
           </div>
         </Security>
+        <div className={classes.export}>
+          <ExportButtons
+            domElementId="container"
+            name={t('Report representation')}
+          />
+        </div>
         {modes && (
           <div className={classes.modes}>
-            {modes.map((mode) => (mode.current ? (
-                <Button
-                  key={mode.key}
-                  size="small"
-                  variant="contained"
-                  color="primary"
-                  classes={{ root: classes.button }}
-                >
-                  {t(mode.label)}
-                </Button>
-            ) : (
-                <Button
-                  key={mode.key}
+            {modes.includes('graph') && (
+              <Tooltip title={t('Graph view')}>
+                <IconButton
+                  color={currentMode === 'graph' ? 'secondary' : 'primary'}
                   component={Link}
-                  to={`${link}/${mode.key}`}
-                  size="small"
-                  variant="text"
-                  color="inherit"
-                  classes={{ root: classes.button }}
+                  to={`${link}/graph`}
                 >
-                  {t(mode.label)}
-                </Button>
-            )))}
+                  <GraphOutline />
+                </IconButton>
+              </Tooltip>
+            )}
+            {modes.includes('correlation') && (
+              <Tooltip title={t('Correlation view')}>
+                <IconButton
+                  color={
+                    currentMode === 'correlation' ? 'secondary' : 'primary'
+                  }
+                  component={Link}
+                  to={`${link}/correlation`}
+                >
+                  <VectorLink />
+                </IconButton>
+              </Tooltip>
+            )}
+            {modes.includes('matrix') && (
+              <Tooltip title={t('Tactics matrix view')}>
+                <IconButton
+                  color={currentMode === 'matrix' ? 'secondary' : 'primary'}
+                  component={Link}
+                  to={`${link}/matrix`}
+                >
+                  <ViewColumnOutlined />
+                </IconButton>
+              </Tooltip>
+            )}
           </div>
         )}
         <div className="clearfix" />
@@ -132,6 +159,7 @@ ContainerHeaderComponent.propTypes = {
   fld: PropTypes.func,
   link: PropTypes.string,
   modes: PropTypes.array,
+  currentMode: PropTypes.string,
 };
 
 const ContainerHeader = createFragmentContainer(ContainerHeaderComponent, {

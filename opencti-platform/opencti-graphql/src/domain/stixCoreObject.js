@@ -65,16 +65,16 @@ export const batchCreatedBy = async (user, stixCoreObjectIds) => {
   return batchLoadThroughGetTo(user, stixCoreObjectIds, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
 };
 
-export const batchReports = async (user, stixCoreObjectIds) => {
-  return batchListThroughGetFrom(user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
+export const batchReports = async (user, stixCoreObjectIds, args = {}) => {
+  return batchListThroughGetFrom(user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT, args);
 };
 
-export const batchNotes = (user, stixCoreObjectIds) => {
-  return batchListThroughGetFrom(user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
+export const batchNotes = (user, stixCoreObjectIds, args = {}) => {
+  return batchListThroughGetFrom(user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE, args);
 };
 
-export const batchOpinions = (user, stixCoreObjectIds) => {
-  return batchListThroughGetFrom(user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
+export const batchOpinions = (user, stixCoreObjectIds, args = {}) => {
+  return batchListThroughGetFrom(user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION, args);
 };
 
 export const batchLabels = (user, stixCoreObjectIds) => {

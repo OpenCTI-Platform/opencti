@@ -385,7 +385,7 @@ class ToolBar extends Component {
         context: n.context
           ? {
             ...n.context,
-            values: R.map((o) => o.id || o.value, n.context.values),
+            values: R.map((o) => o.id || o.value || o, n.context.values),
           }
           : null,
       }),
@@ -469,6 +469,10 @@ class ToolBar extends Component {
         {
           label: t('Score'),
           value: 'x_opencti_score',
+        },
+        {
+          label: t('Confidence'),
+          value: 'confidence',
         },
       ];
     } else if (actionsInputs[i]?.type === 'REMOVE') {
@@ -691,6 +695,23 @@ class ToolBar extends Component {
             )}
           />
         );
+      case 'confidence':
+        return (
+          <FormControl style={{ width: '100%' }}>
+            <InputLabel>{t('Values')}</InputLabel>
+            <Select
+              onChange={this.handleChangeActionInputValuesReplace.bind(this, i)}
+              label={t('Values')}
+              fullWidth={true}
+            >
+              <MenuItem value="0">{t('None')}</MenuItem>
+              <MenuItem value="15">{t('Low')}</MenuItem>
+              <MenuItem value="50">{t('Moderate')}</MenuItem>
+              <MenuItem value="75">{t('Good')}</MenuItem>
+              <MenuItem value="85">{t('Strong')}</MenuItem>
+            </Select>
+          </FormControl>
+        );
       default:
         return (
           <TextField
@@ -897,7 +918,10 @@ class ToolBar extends Component {
                         style={{
                           padding: '2px 5px 2px 5px',
                           marginRight: 5,
-                          color: theme.palette.type === 'dark' ? '#000000' : '#ffffff',
+                          color:
+                            theme.palette.type === 'dark'
+                              ? '#000000'
+                              : '#ffffff',
                           backgroundColor: theme.palette.primary.main,
                         }}
                       >
@@ -989,7 +1013,10 @@ class ToolBar extends Component {
                             style={{
                               padding: '2px 5px 2px 5px',
                               marginRight: 5,
-                              color: theme.palette.type === 'dark' ? '#000000' : '#ffffff',
+                              color:
+                                theme.palette.type === 'dark'
+                                  ? '#000000'
+                                  : '#ffffff',
                               backgroundColor: theme.palette.primary.main,
                             }}
                           >

@@ -111,29 +111,22 @@ class ReportKnowledgeComponent extends Component {
     const {
       classes,
       report,
+      location,
       match: {
         params: { mode },
       },
     } = this.props;
     return (
-      <div className={classes.container}>
+      <div
+        className={classes.container}
+        id={location.pathname.includes('matrix') ? 'parent' : 'container'}
+      >
         <ContainerHeader
           container={report}
           PopoverComponent={<ReportPopover />}
           link={`/dashboard/analysis/reports/${report.id}/knowledge`}
-          modes={[
-            { key: 'graph', label: 'Entity Graph', current: mode === 'graph' },
-            {
-              key: 'correlation',
-              label: 'Correlation',
-              current: mode === 'correlation',
-            },
-            {
-              key: 'matrix',
-              label: 'Techniques matrix',
-              current: mode === 'matrix',
-            },
-          ]}
+          modes={['graph', 'correlation', 'matrix']}
+          currentMode={mode}
         />
         <Route
           exact

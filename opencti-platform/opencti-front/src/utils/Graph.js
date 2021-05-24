@@ -412,7 +412,6 @@ export const buildCorrelationData = (objects, graphData, t, filterAdjust) => {
     [],
     filterAdjust.selectedTimeRangeInterval,
   );
-
   const links = R.pipe(
     R.map((n) => R.map(
       (e) => ({

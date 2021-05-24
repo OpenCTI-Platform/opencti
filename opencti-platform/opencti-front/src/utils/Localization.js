@@ -316,6 +316,8 @@ const i18n = {
       'Cards view': 'Vue cartes',
       'Lines view': 'Vue lignes',
       'Kill chain view': 'Vue kill chain',
+      'Graph view': 'Vue graphe',
+      'Correlation view': 'Vue des corrélations',
       'Matrix view': 'Vue matricielle',
       'Exports panel': 'Volet exports',
       'Exports list': 'Liste des exports',
