@@ -141,6 +141,17 @@ export default {
           color: '#000000',
           backgroundColor: '#ffffff',
         },
+        '.react-grid-placeholder': {
+          backgroundColor: 'rgba(80, 123, 200, 0.8) !important',
+        },
+        '.react_time_range__track': {
+          backgroundColor: 'rgba(80, 123, 200, 0.1) !important',
+          borderLeft: '1px solid #507bc8 !important',
+          borderRight: '1px solid #507bc8 !important',
+        },
+        '.react_time_range__handle_marker': {
+          backgroundColor: '#507bc8 !important',
+        },
       },
     },
   },

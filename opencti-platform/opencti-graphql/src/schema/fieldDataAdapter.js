@@ -40,6 +40,7 @@ export const multipleAttributes = [
   'kill_chain_phases',
   'tags',
   'bookmarks',
+  'protocols',
 ];
 export const statsDateAttributes = [
   'created_at',

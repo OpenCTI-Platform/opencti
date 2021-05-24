@@ -109,7 +109,7 @@ export const booleanAttributes = [
   'can_escalate_privs',
 ];
 
-export const multipleAttributes = ['x_opencti_additional_names'];
+export const multipleAttributes = ['x_opencti_additional_names', 'protocols'];
 
 const styles = (theme) => ({
   drawerPaper: {

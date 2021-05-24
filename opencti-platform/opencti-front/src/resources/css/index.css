@@ -109,10 +109,6 @@ div.markdown p {
   border-bottom: 2px solid rgba(255, 255, 255, 0.4) !important;
 }
 
-.react-grid-placeholder {
-  background-color: rgba(0, 188, 212, 0.8) !important;
-}
-
 .layout {
   max-width: 100%;
   margin-bottom: 80px !important;
@@ -145,14 +141,4 @@ div.markdown p {
 
 .react_time_range__rail__inner {
   background-color: transparent !important;
-}
-
-.react_time_range__track {
-  background-color: rgba(1, 226, 255, 0.1) !important;
-  border-left: 1px solid #00bcd4 !important;
-  border-right: 1px solid #00bcd4 !important;
-}
-
-.react_time_range__handle_marker {
-  background-color: #00bcd4 !important;
 }

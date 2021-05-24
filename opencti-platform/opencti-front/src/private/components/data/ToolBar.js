@@ -785,6 +785,7 @@ class ToolBar extends Component {
                 padding: '2px 5px 2px 5px',
                 marginRight: 5,
                 backgroundColor: theme.palette.secondary.main,
+                color: '#ffffff',
               }}
             >
               {numberOfSelectedElements}
@@ -862,6 +863,7 @@ class ToolBar extends Component {
                   padding: '2px 5px 2px 5px',
                   marginRight: 5,
                   backgroundColor: theme.palette.secondary.main,
+                  color: '#ffffff',
                 }}
               >
                 {n(numberOfSelectedElements)}
@@ -895,7 +897,7 @@ class ToolBar extends Component {
                         style={{
                           padding: '2px 5px 2px 5px',
                           marginRight: 5,
-                          color: '#000000',
+                          color: theme.palette.type === 'dark' ? '#000000' : '#ffffff',
                           backgroundColor: theme.palette.primary.main,
                         }}
                       >
@@ -987,7 +989,7 @@ class ToolBar extends Component {
                             style={{
                               padding: '2px 5px 2px 5px',
                               marginRight: 5,
-                              color: '#000000',
+                              color: theme.palette.type === 'dark' ? '#000000' : '#ffffff',
                               backgroundColor: theme.palette.primary.main,
                             }}
                           >

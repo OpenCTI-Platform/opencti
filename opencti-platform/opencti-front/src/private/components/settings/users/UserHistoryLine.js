@@ -59,7 +59,7 @@ const styles = (theme) => ({
   paper: {
     width: '100%',
     height: '100%',
-    backgroundColor: theme.palette.background.navLight,
+    backgroundColor: theme.palette.background.paperLight,
     padding: '17px 15px 15px 15px',
   },
   description: {

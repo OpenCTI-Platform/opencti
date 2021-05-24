@@ -32,7 +32,7 @@ const styles = (theme) => ({
     marginBottom: 20,
   },
   line: {
-    backgroundColor: theme.palette.background.navLight,
+    backgroundColor: theme.palette.background.paperLight,
     content: ' ',
     display: 'block',
     position: 'absolute',

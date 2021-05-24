@@ -8,13 +8,13 @@ export default {
     header: { background: '#1b2226', text: '#ffffff' },
     navAlt: {
       background: '#14262c',
-      backgroundHeader: '#2d4b5b',
+      backgroundHeader: '#2d5161',
       backgroundHeaderText: '#ffffff',
     },
     navBottom: { background: '#0f181f' },
     background: {
       paper: '#28353a',
-      paperLight: '#265058',
+      paperLight: '#2d5161',
       nav: '#28353a',
       navLight: '#14262c',
       default: '#222c30',
@@ -92,7 +92,7 @@ export default {
           WebkitFontSmoothing: 'auto',
         },
         a: {
-          color: '#507bc8',
+          color: '#00bcd4',
         },
         'input:-webkit-autofill': {
           '-webkit-animation': 'autofill 0s forwards',
@@ -105,10 +105,10 @@ export default {
           borderTopRightRadius: 'inherit',
         },
         pre: {
-          background: 'rgba(64, 193, 255, 0.2)',
+          background: '#2d5161',
         },
         code: {
-          background: 'rgba(64, 193, 255, 0.2)',
+          background: '#2b6779',
         },
         '.react-mde': {
           border: '0 !important',
@@ -142,6 +142,17 @@ export default {
         '.mde-textarea-wrapper textarea': {
           color: '#ffffff',
           backgroundColor: '#14262c',
+        },
+        '.react-grid-placeholder': {
+          backgroundColor: 'rgba(0, 188, 212, 0.8) !important',
+        },
+        '.react_time_range__track': {
+          backgroundColor: 'rgba(1, 226, 255, 0.1) !important',
+          borderLeft: '1px solid #00bcd4 !important',
+          borderRight: '1px solid #00bcd4 !important',
+        },
+        '.react_time_range__handle_marker': {
+          backgroundColor: '#00bcd4 !important',
         },
       },
     },
