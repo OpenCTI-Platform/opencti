@@ -1514,6 +1514,7 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
 };
 
 export const elDeleteElements = async (user, elements) => {
+  if (elements.length === 0) return;
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(user, elements);
   // 02. Compute the id that needs to be remove from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));

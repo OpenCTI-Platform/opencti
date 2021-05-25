@@ -32,12 +32,20 @@ module.exports = (env, argv) => {
     output: {
       path: resolvePath('build'),
       libraryTarget: 'commonjs2',
+      devtoolModuleFilenameTemplate: isDev ? '[absolute-resource-path]' : '[resource-path]',
     },
-    devtool: isDev ? 'eval-source-map' : 'nosources-source-map',
+    devtool: 'eval-source-map',
     optimization: {
       emitOnErrors: false,
       minimize: true,
-      minimizer: [new TerserPlugin({ extractComments: false })],
+      minimizer: [
+        new TerserPlugin({
+          extractComments: false,
+          terserOptions: {
+            mangle: false,
+          },
+        }),
+      ],
     },
     stats: !isDev && {
       children: false,

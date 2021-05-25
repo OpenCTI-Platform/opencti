@@ -397,23 +397,29 @@ export const buildUpdateEvent = (user, instance, updateEvents) => {
   if (isEmptyField(dataPatch)) {
     return true;
   }
-  // else just continue as usual
+  // Build generic data
   const data = {
     standard_id: instance.standard_id,
     internal_id: instance.internal_id,
     entity_type: instance.entity_type,
+    confidence: instance.confidence,
     x_opencti_patch: dataPatch,
   };
-  if (instance.relationship_type) {
-    data.relationship_type = instance.relationship_type;
-    data.x_opencti_source_ref = instance.fromId;
-    data.x_opencti_target_ref = instance.toId;
-  }
   if (instance.identity_class) {
     data.identity_class = instance.identity_class;
   }
   if (instance.x_opencti_location_type) {
     data.x_opencti_location_type = instance.x_opencti_location_type;
+  }
+  // Need to put everything needed to identified a relationship
+  if (instance.relationship_type) {
+    data.relationship_type = instance.relationship_type;
+    data.x_opencti_source_ref = instance.fromId;
+    data.x_opencti_target_ref = instance.toId;
+    data.start_time = instance.start_time;
+    data.stop_time = instance.stop_time;
+    data.first_seen = instance.first_seen;
+    data.last_seen = instance.last_seen;
   }
   // Generate the message
   const operation = updateEvents.length === 1 ? R.head(Object.keys(R.head(updateEvents))) : UPDATE_OPERATION_CHANGE;

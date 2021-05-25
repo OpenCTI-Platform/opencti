@@ -29,7 +29,6 @@ import {
   elAggregationCount,
   elAggregationRelationsCount,
   elDeleteElements,
-  elDeleteInstanceIds,
   elFindByFromAndTo,
   elFindByIds,
   elHistogramCount,
@@ -485,7 +484,7 @@ const loadElementDependencies = async (user, element, args = {}) => {
     const entries = Object.entries(grouped);
     for (let index = 0; index < entries.length; index += 1) {
       const [key, values] = entries[index];
-      data[key] = R.map((v) => toResolved[v.toId], values);
+      data[key] = R.map((v) => ({ ...toResolved[v.toId], i_relation: v }), values);
     }
     if (fullResolve) {
       const flatRelations = fromRelations.map((rel) => ({ ...toResolved[rel.toId], i_relation: rel }));
@@ -1339,7 +1338,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
   if (operation !== UPDATE_OPERATION_REPLACE && elements.length > 1) {
     throw FunctionalError(`Unsupported operation`, { operation, elements });
   }
-  const instance = await loadById(user, id, type, options);
+  const instance = await markedLoadById(user, id, type, options);
   if (!instance) {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
@@ -1418,11 +1417,10 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     }
     // Only push event in stream if modifications really happens
     if (data.updatedInputs.length > 0) {
-      const updatedData =
-        operation === UPDATE_OPERATION_REPLACE
-          ? replacedInputsToData(data.updatedInputs)
-          : updatedInputsToData(data.updatedInputs);
-      await storeUpdateEvent(user, instance, [{ [operation]: updatedData }]);
+      const updateAsInstance = mergeInstanceWithInputs(instance, impactedInputs);
+      const isUpdate = operation === UPDATE_OPERATION_REPLACE;
+      const updatedData = isUpdate ? replacedInputsToData(data.updatedInputs) : updatedInputsToData(data.updatedInputs);
+      await storeUpdateEvent(user, updateAsInstance, [{ [operation]: updatedData }]);
     }
     // Return updated element after waiting for it.
     return updatedInstance;
@@ -1594,118 +1592,150 @@ const upsertIdentifiedFields = (user, element, input, fields) => {
   }
   return { upsertImpacted, upsertUpdated };
 };
+
+const ALIGN_OLDEST = 'oldest';
+const ALIGN_NEWEST = 'newest';
+const computeExtendedDateValues = (newValue, currentValue, mode) => {
+  if (isNotEmptyField(newValue)) {
+    const newValueDate = moment(newValue);
+    // If a first_seen already exists
+    if (isNotEmptyField(currentValue)) {
+      // If the new first_seen is before the existing one, we update
+      const currentValueDate = moment(currentValue);
+      if (mode === ALIGN_OLDEST) {
+        if (newValueDate.isBefore(currentValueDate)) {
+          return newValueDate.utc().toISOString();
+        }
+      }
+      if (mode === ALIGN_NEWEST) {
+        if (newValueDate.isAfter(currentValueDate)) {
+          return newValueDate.utc().toISOString();
+        }
+      }
+      // If no first_seen exists, we update
+    } else {
+      return newValueDate.utc().toISOString();
+    }
+  }
+  return null;
+};
+
 const upsertElementRaw = async (user, id, type, input) => {
   const element = await markedLoadById(user, id, type);
+  const isInferenceUpsert = isNotEmptyField(input.inferenceRule);
+  const isInferredElement = isInferredIndex(element._index);
   const forceUpdate = input.update === true;
   const updatedAddInputs = []; // Direct modified inputs (add)
   const updatedReplaceInputs = []; // Direct modified inputs (replace)
   const impactedInputs = []; // Inputs impacted by updated inputs + updated inputs
-  // Handle inference specific behavior
-  if (element.i_inference_rule) {
-    // The current instance is inferred, updating is only possible if the same
-    // rule is responsible for the update
-    const currentRuleName = element.i_inference_rule.name;
-    const ruleName = input.inferenceRule.name;
-    if (currentRuleName !== ruleName) {
-      throw UnsupportedError('Rule collision');
-    }
-    // If same rule, explanation should be the same, nothing to do
-  } else {
-    // Element already exists but not inferred, adding the inference.
-    const patch = { i_inference_rule: input.inferenceRule };
-    const patched = patchAttributeRaw(user, element, patch, { operation: UPDATE_OPERATION_REPLACE });
-    impactedInputs.push(...patched.impactedInputs);
-    updatedAddInputs.push(...patched.updatedInputs);
-  }
-  // Handle attributes updates
-  if (isNotEmptyField(input.stix_id)) {
-    const patch = { x_opencti_stix_ids: [input.stix_id] };
-    const patched = patchAttributeRaw(user, element, patch, { operation: UPDATE_OPERATION_ADD });
-    impactedInputs.push(...patched.impactedInputs);
-    updatedAddInputs.push(...patched.updatedInputs);
-  }
-  // Upsert the aliases
-  if (isStixObjectAliased(type)) {
-    const { name } = input;
-    const key = resolveAliasesField(type);
-    const aliases = [...(input[ATTRIBUTE_ALIASES] || []), ...(input[ATTRIBUTE_ALIASES_OPENCTI] || [])];
-    if (normalizeName(element.name) !== normalizeName(name)) aliases.push(name);
-    const patch = { [key]: aliases };
-    const patched = patchAttributeRaw(user, element, patch, { operation: UPDATE_OPERATION_ADD });
-    impactedInputs.push(...patched.impactedInputs);
-    updatedAddInputs.push(...patched.updatedInputs);
-  }
-  if (isStixSightingRelationship(type) && input.attribute_count) {
-    const patch = { attribute_count: element.attribute_count + input.attribute_count };
-    // If a first_seen is given
-    let newFirstSeen = null;
-    if (!R.isNil(input.first_seen)) {
-      const givenFirstSeen = moment(input.first_seen);
-      // If a first_seen already exists
-      if (!R.isNil(element.first_seen)) {
-        // If the new first_seen is before the existing one, we update
-        const existingFirstSeen = moment(element.first_seen);
-        if (givenFirstSeen.isBefore(existingFirstSeen)) {
-          newFirstSeen = givenFirstSeen.utc().toISOString();
-        }
-        // If no first_seen exists, we update
-      } else {
-        newFirstSeen = givenFirstSeen.utc().toISOString();
-      }
-      if (newFirstSeen !== null) {
-        patch.first_seen = newFirstSeen;
-      }
-    }
-    // If a last_seen is given
-    let newLastSeen = null;
-    if (!R.isNil(input.last_seen)) {
-      const givenLastSeen = moment(input.last_seen);
-      // If a last_seen already exists
-      if (!R.isNil(element.last_seen)) {
-        // If the new last_seen is after the existing one, we update
-        const existingLastSeen = moment(element.last_seen);
-        if (givenLastSeen.isAfter(existingLastSeen)) {
-          newLastSeen = givenLastSeen.utc().toISOString();
-        }
-        // If no last_seen exists, we update
-      } else {
-        newLastSeen = givenLastSeen.utc().toISOString();
-      }
-      if (newLastSeen !== null) {
-        patch.last_seen = newLastSeen;
-      }
-    }
-    const patched = patchAttributeRaw(user, element, patch);
-    impactedInputs.push(...patched.impactedInputs);
-    updatedReplaceInputs.push(...patched.updatedInputs);
-  }
-  if (isStixDomainObject(type) && forceUpdate) {
-    const fields = stixDomainObjectFieldsToBeUpdated[type];
-    const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(user, element, input, fields);
-    impactedInputs.push(...upsertImpacted);
-    updatedReplaceInputs.push(...upsertUpdated);
-  }
-  if (isStixCyberObservable(type) && forceUpdate) {
-    const fields = stixCyberObservableFieldsToBeUpdated[type];
-    const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(user, element, input, fields);
-    impactedInputs.push(...upsertImpacted);
-    updatedReplaceInputs.push(...upsertUpdated);
-  }
-  // Upsert markings
   const rawRelations = [];
   const targetsPerType = [];
-  if (input.objectMarking && input.objectMarking.length > 0) {
-    const markings = [];
-    const markingsIds = R.map((m) => m.internal_id, element.objectMarking || []);
-    const markingToCreate = R.filter((m) => !markingsIds.includes(m.internal_id), input.objectMarking);
-    for (let index = 0; index < markingToCreate.length; index += 1) {
-      const markingTo = markingToCreate[index];
-      const dataRels = buildInnerRelation(element, markingTo, RELATION_OBJECT_MARKING);
-      const builtQuery = R.head(dataRels);
-      rawRelations.push(builtQuery.relation);
-      markings.push(markingTo);
+  // Handle inference specific behavior
+  if (isInferenceUpsert) {
+    if (isNotEmptyField(element.i_inference_rule)) {
+      // The current instance is inferred, updating is only possible if the same
+      // rule is responsible for the update
+      if (element.i_inference_rule.name !== input.inferenceRule.name) {
+        throw UnsupportedError('Rule collision');
+      }
+    } else {
+      // Element already exists but not inferred, adding the inference.
+      const patch = { i_inference_rule: input.inferenceRule };
+      const patched = patchAttributeRaw(user, element, patch, { operation: UPDATE_OPERATION_REPLACE });
+      impactedInputs.push(...patched.impactedInputs);
+      updatedAddInputs.push(...patched.updatedInputs);
     }
-    targetsPerType.push({ objectMarking: markings });
+  }
+  if (isInferenceUpsert && !isInferredElement) {
+    // If inference upsert on stable element, nothing to update in term in fields
+  } else {
+    // Handle attributes updates
+    if (isNotEmptyField(input.stix_id)) {
+      const patch = { x_opencti_stix_ids: [input.stix_id] };
+      const patched = patchAttributeRaw(user, element, patch, { operation: UPDATE_OPERATION_ADD });
+      impactedInputs.push(...patched.impactedInputs);
+      updatedAddInputs.push(...patched.updatedInputs);
+    }
+    // Upsert the aliases
+    if (isStixObjectAliased(type)) {
+      const { name } = input;
+      const key = resolveAliasesField(type);
+      const aliases = [...(input[ATTRIBUTE_ALIASES] || []), ...(input[ATTRIBUTE_ALIASES_OPENCTI] || [])];
+      if (normalizeName(element.name) !== normalizeName(name)) aliases.push(name);
+      const patch = { [key]: aliases };
+      const patched = patchAttributeRaw(user, element, patch, { operation: UPDATE_OPERATION_ADD });
+      impactedInputs.push(...patched.impactedInputs);
+      updatedAddInputs.push(...patched.updatedInputs);
+    }
+    if (isStixSightingRelationship(type)) {
+      const patch = { attribute_count: element.attribute_count + input.attribute_count };
+      const firstSeen = computeExtendedDateValues(input.first_seen, element.first_seen, ALIGN_OLDEST);
+      if (firstSeen !== null) {
+        patch.first_seen = firstSeen;
+      }
+      const lastSeen = computeExtendedDateValues(input.last_seen, element.last_seen, ALIGN_NEWEST);
+      if (lastSeen !== null) {
+        patch.last_seen = lastSeen;
+      }
+      const patched = patchAttributeRaw(user, element, patch);
+      impactedInputs.push(...patched.impactedInputs);
+      updatedReplaceInputs.push(...patched.updatedInputs);
+    }
+    if (isStixCoreRelationship(type)) {
+      const patch = {};
+      if (input.confidence) patch.confidence = input.confidence;
+      if (input.description) patch.description = input.description;
+      if (isInferenceUpsert) {
+        // If updating an inference, start and stop was previously computed.
+        patch.start_time = input.start_time;
+        patch.stop_time = input.stop_time;
+      } else {
+        // We try to extend the start and end
+        const startTime = computeExtendedDateValues(input.start_time, element.start_time, ALIGN_OLDEST);
+        if (startTime !== null) {
+          patch.start_time = startTime;
+        }
+        const stopTime = computeExtendedDateValues(input.stop_time, element.stop_time, ALIGN_NEWEST);
+        if (stopTime !== null) {
+          patch.stop_time = stopTime;
+        }
+      }
+      const patched = patchAttributeRaw(user, element, patch);
+      impactedInputs.push(...patched.impactedInputs);
+      updatedReplaceInputs.push(...patched.updatedInputs);
+    }
+    if (isStixDomainObject(type) && forceUpdate) {
+      const fields = stixDomainObjectFieldsToBeUpdated[type];
+      const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(user, element, input, fields);
+      impactedInputs.push(...upsertImpacted);
+      updatedReplaceInputs.push(...upsertUpdated);
+    }
+    if (isStixCyberObservable(type) && forceUpdate) {
+      const fields = stixCyberObservableFieldsToBeUpdated[type];
+      const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(user, element, input, fields);
+      impactedInputs.push(...upsertImpacted);
+      updatedReplaceInputs.push(...upsertUpdated);
+    }
+    // Upsert markings
+    if (isInferenceUpsert) {
+      // When upsert inferences, we need to clear and recreate the markings
+      const markingRelations = (element.objectMarking || []).map((e) => e.i_relation);
+      await elDeleteElements(SYSTEM_USER, markingRelations);
+      const newRelations = (input.objectMarking || []).map(
+        (markingTo) => R.head(buildInnerRelation(element, markingTo, RELATION_OBJECT_MARKING)).relation
+      );
+      rawRelations.push(...newRelations);
+      targetsPerType.push({ objectMarking: input.objectMarking || [] });
+    } else if (input.objectMarking && input.objectMarking.length > 0) {
+      // When upsert stable relations, we decide to add the missing markins
+      const markingsIds = R.map((m) => m.internal_id, element.objectMarking || []);
+      const markingToCreate = R.filter((m) => !markingsIds.includes(m.internal_id), input.objectMarking);
+      const newRelations = markingToCreate.map(
+        (markingTo) => R.head(buildInnerRelation(element, markingTo, RELATION_OBJECT_MARKING)).relation
+      );
+      rawRelations.push(...newRelations);
+      targetsPerType.push({ objectMarking: markingToCreate });
+    }
   }
   // Build the stream input
   const streamInputs = [];
@@ -1761,13 +1791,8 @@ const createRelationRaw = async (user, input) => {
   const internalId = generateInternalId();
   const standardId = generateStandardId(relationshipType, input);
   // region 02. Check existing relationship
-  const timeFilters = buildRelationTimeFilter(input);
-  const listingArgs = {
-    fromId: from.internal_id,
-    toId: to.internal_id,
-    connectionFormat: false,
-    ...timeFilters,
-  };
+  const timeFilters = inferred ? {} : buildRelationTimeFilter(input);
+  const listingArgs = { fromId: from.internal_id, toId: to.internal_id, connectionFormat: false, ...timeFilters };
   // endregion
   const existingRelationships = await listRelations(SYSTEM_USER, relationshipType, listingArgs);
   let existingRelationship = null;
@@ -1931,7 +1956,11 @@ export const createInferredRelation = async (input) => {
   const { from, to } = resolvedInput;
   const dataRel = await createRelationRaw(SYSTEM_USER, resolvedInput);
   // Index the created element
-  await indexCreatedElement(dataRel);
+  try {
+    await indexCreatedElement(dataRel);
+  } catch (e) {
+    console.log(e);
+  }
   // Push the input in the stream
   let event;
   if (dataRel.type === TRX_CREATION) {
@@ -2192,7 +2221,7 @@ export const createEntity = async (user, input, type) => {
 export const deleteInferredElement = async (elements) => {
   // Element in inferences index can be deleted.
   const pureInferences = elements.filter((e) => isInferredIndex(e._index));
-  await elDeleteInstanceIds(pureInferences);
+  await elDeleteElements(SYSTEM_USER, pureInferences);
   // Element in standard index can only loose the inference link.
   const mixedInferences = elements.filter((e) => !isInferredIndex(e._index));
   const mixedHandler = (mixedInference) => {

@@ -1,4 +1,7 @@
-import moment from 'moment';
+import Moment from 'moment';
+import { extendMoment } from 'moment-range';
+
+const moment = extendMoment(Moment);
 
 export const FROM_START = 0;
 export const FROM_START_STR = '1970-01-01T00:00:00.000Z';
@@ -23,4 +26,9 @@ export const escape = (chars) => {
     return chars.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,');
   }
   return chars;
+};
+export const buildPeriodFromDates = (a, b) => moment.range(a, b);
+export const computeRangeIntersection = (a, b) => {
+  const range = a.intersect(b);
+  return { start: range.start.toISOString(), end: range.end.toISOString() };
 };

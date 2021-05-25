@@ -8,6 +8,7 @@
     "start": "webpack --mode development",
     "clean:relations": "babel-node ./script/script-clean-relations.js",
     "install:python": "pip3 install -r src/python/requirements.txt",
+    "build:api": "webpack --mode production",
     "build": "yarn install:python && webpack --mode production",
     "serv": "node build/index.js",
     "lint": "eslint --max-warnings 0 .",
@@ -25,13 +26,15 @@
     ]
   },
   "engines": {
-    "node": ">= 12.* <= 16.*"
+    "node": ">= 14.* <= 16.*"
   },
   "dependencies": {
     "@elastic/elasticsearch": "7.12.0",
+    "@graphql-tools/schema": "^7.1.5",
+    "@graphql-tools/utils": "7.10.0",
     "amqplib": "0.7.1",
     "apollo-errors": "1.9.0",
-    "apollo-server-express": "2.24.0",
+    "apollo-server-express": "2.24.1",
     "async-lock": "1.3.0",
     "await": "0.2.6",
     "axios": "0.21.1",
@@ -49,19 +52,18 @@
     "dotenv": "9.0.2",
     "express": "4.17.1",
     "express-rate-limit": "5.2.6",
-    "express-session": "1.17.1",
+    "express-session": "1.17.2",
     "github-api": "3.4.0",
     "graphql": "15.5.0",
     "graphql-constraint-directive": "2.1.1",
     "graphql-import": "1.0.2",
     "graphql-iso-date": "3.6.1",
-    "graphql-redis-subscriptions": "2.3.1",
+    "graphql-redis-subscriptions": "2.4.0",
     "graphql-relay": "0.6.0",
     "graphql-subscriptions": "1.2.1",
-    "graphql-tools": "7.0.5",
     "he": "1.2.0",
     "helmet": "4.6.0",
-    "ioredis": "4.27.2",
+    "ioredis": "4.27.3",
     "iterall": "1.3.0",
     "jsondiffpatch": "0.4.1",
     "jsonwebtoken": "8.5.1",
@@ -72,6 +74,7 @@
     "mime-types": "2.1.30",
     "minio": "7.0.18",
     "moment": "2.29.1",
+    "moment-range": "^4.0.2",
     "nconf": "0.11.2",
     "openid-client": "4.7.3",
     "passport": "0.4.1",
@@ -88,6 +91,7 @@
     "rxjs": "7.0.1",
     "sanitize-filename": "1.6.3",
     "set-interval-async": "2.0.3",
+    "source-map-support": "^0.5.19",
     "uuid": "8.3.2",
     "uuid-time": "1.0.0",
     "validator": "13.6.0",
@@ -95,14 +99,11 @@
     "winston-daily-rotate-file": "4.5.5"
   },
   "devDependencies": {
-    "@babel/cli": "7.13.16",
-    "@babel/core": "7.14.2",
+    "@babel/cli": "7.14.3",
+    "@babel/core": "7.14.3",
     "@babel/node": "7.14.2",
-    "@babel/plugin-proposal-optional-chaining": "7.14.2",
-    "@babel/plugin-transform-runtime": "7.14.2",
     "@babel/preset-env": "7.14.2",
-    "@babel/runtime": "7.14.0",
-    "apollo-server-testing": "2.24.0",
+    "apollo-server-testing": "2.24.1",
     "babel-eslint": "10.1.0",
     "babel-loader": "8.2.2",
     "babel-plugin-require-context-hook": "1.0.0",
@@ -125,6 +126,6 @@
     "webpack-node-externals": "3.0.0"
   },
   "resolutions": {
-    "fs-capacitor": "6.2.0"
+    "extract-files": "10.0.0"
   }
 }

@@ -1,6 +1,6 @@
 import { GraphQLDateTime } from 'graphql-iso-date';
 import { mergeResolvers } from 'merge-graphql-schemas';
-import { makeExecutableSchema } from 'graphql-tools';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 import { constraintDirective } from 'graphql-constraint-directive';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';

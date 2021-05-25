@@ -5,6 +5,7 @@ import { redisInitializeClients } from './database/redis';
 import initExpiredManager from './manager/expiredManager';
 import initTaskManager from './manager/taskManager';
 import initInferenceEngine from './manager/inferenceManager';
+import 'source-map-support/register';
 
 let server;
 if (DEV_MODE && module.hot) {
