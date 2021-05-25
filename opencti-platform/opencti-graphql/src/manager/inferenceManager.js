@@ -7,10 +7,11 @@ import { deleteInferredElement } from '../database/middleware';
 import { READ_DATA_INDICES } from '../database/utils';
 import { elList } from '../database/elasticSearch';
 import AttributionRule from '../inference/AttributionRule';
+import RelatedRule from '../inference/RelatedRule';
 
 const INFERENCE_ENGINE_KEY = conf.get('inference_engine:lock_key');
 
-const registerInferenceRules = [AttributionRule];
+const registerInferenceRules = [AttributionRule, RelatedRule];
 
 const executeInternalEvents = async (internalEvents) => {
   if (internalEvents.length === 0) return;
