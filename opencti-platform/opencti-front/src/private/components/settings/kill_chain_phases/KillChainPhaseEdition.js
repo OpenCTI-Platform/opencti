@@ -94,19 +94,16 @@ const killChainPhaseValidation = (t) => Yup.object().shape({
 });
 
 class KillChainPhaseEditionContainer extends Component {
-  componentDidMount() {
-    const sub = requestSubscription({
+  constructor(props) {
+    super(props);
+    this.sub = requestSubscription({
       subscription,
-      variables: {
-        // eslint-disable-next-line
-        id: this.props.killChainPhase.id,
-      },
+      variables: { id: props.killChainPhase.id },
     });
-    this.setState({ sub });
   }
 
   componentWillUnmount() {
-    this.state.sub.dispose();
+    this.sub.dispose();
   }
 
   handleChangeFocus(name) {

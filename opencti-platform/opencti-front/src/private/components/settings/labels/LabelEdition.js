@@ -87,16 +87,16 @@ const labelValidation = (t) => Yup.object().shape({
 });
 
 class LabelEditionContainer extends Component {
-  componentDidMount() {
-    const sub = requestSubscription({
+  constructor(props) {
+    super(props);
+    this.sub = requestSubscription({
       subscription,
-      variables: { id: this.props.label.id },
+      variables: { id: props.label.id },
     });
-    this.setState({ sub });
   }
 
   componentWillUnmount() {
-    this.state.sub.dispose();
+    this.sub.dispose();
   }
 
   handleChangeFocus(name) {

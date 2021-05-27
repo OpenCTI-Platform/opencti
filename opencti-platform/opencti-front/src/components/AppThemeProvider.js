@@ -22,9 +22,43 @@ const AppThemeProvider = (props) => {
   const theme = me && me.theme !== null && me.theme !== undefined && me.theme !== 'default'
     ? me.theme
     : platformTheme;
-  let muiTheme = createMuiTheme(themeDark);
+  const platformThemeDarkLogo = pathOr(
+    null,
+    ['settings', 'platform_theme_dark_logo'],
+    props,
+  );
+  const platformThemeDarkPrimary = pathOr(
+    null,
+    ['settings', 'platform_theme_dark_primary'],
+    props,
+  );
+  const platformThemeDarkSecondary = pathOr(
+    null,
+    ['settings', 'platform_theme_dark_secondary'],
+    props,
+  );
+  const platformThemeLightLogo = pathOr(
+    null,
+    ['settings', 'platform_theme_light_logo'],
+    props,
+  );
+  const platformThemeLightPrimary = pathOr(
+    null,
+    ['settings', 'platform_theme_light_primary'],
+    props,
+  );
+  const platformThemeLightSecondary = pathOr(
+    null,
+    ['settings', 'platform_theme_light_secondary'],
+    props,
+  );
+  let muiTheme = createMuiTheme(
+    themeDark(platformThemeDarkLogo, platformThemeDarkPrimary, platformThemeDarkSecondary),
+  );
   if (theme === 'light') {
-    muiTheme = createMuiTheme(themeLight);
+    muiTheme = createMuiTheme(
+      themeLight(platformThemeLightLogo, platformThemeLightPrimary, platformThemeLightSecondary),
+    );
   }
   return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;
 };
@@ -40,6 +74,12 @@ export const ConnectedThemeProvider = createFragmentContainer(
     settings: graphql`
       fragment AppThemeProvider_settings on Settings {
         platform_theme
+        platform_theme_dark_primary
+        platform_theme_dark_secondary
+        platform_theme_dark_logo
+        platform_theme_light_primary
+        platform_theme_light_secondary
+        platform_theme_light_logo
       }
     `,
   },

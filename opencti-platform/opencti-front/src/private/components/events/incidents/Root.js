@@ -53,21 +53,21 @@ const IncidentQuery = graphql`
 `;
 
 class RootIncident extends Component {
-  componentDidMount() {
+  constructor(props) {
+    super(props);
     const {
       match: {
-        params: { IncidentId },
+        params: { incidentId },
       },
-    } = this.props;
-    const sub = requestSubscription({
+    } = props;
+    this.sub = requestSubscription({
       subscription,
-      variables: { id: IncidentId },
+      variables: { id: incidentId },
     });
-    this.setState({ sub });
   }
 
   componentWillUnmount() {
-    this.state.sub.dispose();
+    this.sub.dispose();
   }
 
   render() {

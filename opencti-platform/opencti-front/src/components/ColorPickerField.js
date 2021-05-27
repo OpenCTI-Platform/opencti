@@ -45,12 +45,13 @@ const ColorPickerField = (props) => {
     [setTouched, onSubmit, name],
   );
   const handleChange = (color) => {
-    setFieldValue(name, color.hex);
+    setTouched(true);
+    setFieldValue(name, color && color.hex ? color.hex : '');
     if (typeof onChange === 'function') {
-      onChange(name, color.hex);
+      onChange(name, color && color.hex ? color.hex : '');
     }
     if (typeof onSubmit === 'function') {
-      onSubmit(name, color.hex);
+      onSubmit(name, color && color.hex ? color.hex : '');
     }
   };
 
@@ -86,7 +87,7 @@ const ColorPickerField = (props) => {
         }}
       >
         <SketchPicker
-          color={meta.value}
+          color={meta.value || ''}
           onChangeComplete={(color) => handleChange(color)}
         />
       </Popover>

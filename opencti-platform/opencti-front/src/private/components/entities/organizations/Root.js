@@ -71,6 +71,14 @@ class RootOrganization extends Component {
     this.state = {
       viewAs: propOr('knowledge', 'viewAs', params),
     };
+    this.sub = requestSubscription({
+      subscription,
+      variables: { id: organizationId },
+    });
+  }
+
+  componentWillUnmount() {
+    this.sub.dispose();
   }
 
   saveView() {
@@ -89,23 +97,6 @@ class RootOrganization extends Component {
 
   handleChangeViewAs(event) {
     this.setState({ viewAs: event.target.value }, () => this.saveView());
-  }
-
-  componentDidMount() {
-    const {
-      match: {
-        params: { organizationId },
-      },
-    } = this.props;
-    const sub = requestSubscription({
-      subscription,
-      variables: { id: organizationId },
-    });
-    this.setState({ sub });
-  }
-
-  componentWillUnmount() {
-    this.state.sub.dispose();
   }
 
   render() {

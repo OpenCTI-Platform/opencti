@@ -113,19 +113,16 @@ const stixCyberObservableRelationshipValidation = (t) => Yup.object().shape({
 });
 
 class StixCyberObservableRelationshipEditionContainer extends Component {
-  componentDidMount() {
-    const sub = requestSubscription({
+  constructor(props) {
+    super(props);
+    this.sub = requestSubscription({
       subscription,
-      variables: {
-        // eslint-disable-next-line
-        id: this.props.stixCyberObservableRelationship.id,
-      },
+      variables: { id: props.stixCyberObservableRelationship.id },
     });
-    this.setState({ sub });
   }
 
   componentWillUnmount() {
-    this.state.sub.dispose();
+    this.sub.dispose();
   }
 
   handleChangeFocus(name) {

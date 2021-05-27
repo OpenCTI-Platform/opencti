@@ -52,21 +52,21 @@ const countryQuery = graphql`
 `;
 
 class RootCountry extends Component {
-  componentDidMount() {
+  constructor(props) {
+    super(props);
     const {
       match: {
         params: { countryId },
       },
-    } = this.props;
-    const sub = requestSubscription({
+    } = props;
+    this.sub = requestSubscription({
       subscription,
       variables: { id: countryId },
     });
-    this.setState({ sub });
   }
 
   componentWillUnmount() {
-    this.state.sub.dispose();
+    this.sub.dispose();
   }
 
   render() {

@@ -95,19 +95,16 @@ const externalReferenceValidation = (t) => Yup.object().shape({
 });
 
 class ExternalReferenceEditionContainer extends Component {
-  componentDidMount() {
-    const sub = requestSubscription({
+  constructor(props) {
+    super(props);
+    this.sub = requestSubscription({
       subscription,
-      variables: {
-        // eslint-disable-next-line
-        id: this.props.externalReference.id,
-      },
+      variables: { id: props.externalReference.id },
     });
-    this.setState({ sub });
   }
 
   componentWillUnmount() {
-    this.state.sub.dispose();
+    this.sub.dispose();
   }
 
   handleChangeFocus(name) {

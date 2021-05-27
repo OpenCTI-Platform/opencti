@@ -17,7 +17,6 @@ import Divider from '@material-ui/core/Divider';
 import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
-import logo from '../../../resources/images/logo_text.png';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
@@ -159,7 +158,11 @@ const TopBar = ({
       <Toolbar>
         <div className={classes.logoContainer}>
           <Link to="/dashboard">
-            <img src={logo} alt="logo" className={classes.logo} />
+            <img
+              src={theme.logo}
+              alt="logo"
+              className={classes.logo}
+            />
           </Link>
         </div>
         <div className={classes.menuContainer}>

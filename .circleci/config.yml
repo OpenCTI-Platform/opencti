@@ -260,6 +260,43 @@ jobs:
           working_directory: ~/opencti/deploy
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master          
           
+  deploy_lab:
+    working_directory: ~/opencti
+    docker:
+      - image: circleci/node:15-stretch
+    steps:
+      - attach_workspace:
+          at: ~/
+      - add_ssh_keys
+      - run: ssh-keyscan -H opencti.io >> ~/.ssh/known_hosts
+      - run: sudo apt-get update -qq && sudo apt install rsync
+      - run: mkdir deploy
+      - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git clone ssh://opencti-ZuPs8Mvn@opencti.io:/~/opencti-ZuPs8Mvn.git .
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git submodule init && git submodule update --remote          
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-platform/opencti-graphql/public/
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/build/ ./opencti-platform/opencti-graphql/build/
+      - run:  
+          working_directory: ~/opencti/deploy 
+          command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/          
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git add -A
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master    
+                    
   docker_build:
     working_directory: ~/opencti_docker
     machine:

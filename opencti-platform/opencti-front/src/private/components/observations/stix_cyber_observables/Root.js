@@ -44,21 +44,21 @@ const stixCyberObservableQuery = graphql`
 `;
 
 class RootStixCyberObservable extends Component {
-  componentDidMount() {
+  constructor(props) {
+    super(props);
     const {
       match: {
         params: { observableId },
       },
-    } = this.props;
-    const sub = requestSubscription({
+    } = props;
+    this.sub = requestSubscription({
       subscription,
       variables: { id: observableId },
     });
-    this.setState({ sub });
   }
 
   componentWillUnmount() {
-    this.state.sub.dispose();
+    this.sub.dispose();
   }
 
   render() {

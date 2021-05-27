@@ -98,16 +98,16 @@ const markingDefinitionValidation = (t) => Yup.object().shape({
 });
 
 class MarkingDefinitionEditionContainer extends Component {
-  componentDidMount() {
-    const sub = requestSubscription({
+  constructor(props) {
+    super(props);
+    this.sub = requestSubscription({
       subscription,
-      variables: { id: this.props.markingDefinition.id },
+      variables: { id: props.markingDefinition.id },
     });
-    this.setState({ sub });
   }
 
   componentWillUnmount() {
-    this.state.sub.dispose();
+    this.sub.dispose();
   }
 
   handleChangeFocus(name) {

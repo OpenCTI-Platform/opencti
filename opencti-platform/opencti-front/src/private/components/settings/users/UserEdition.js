@@ -10,7 +10,6 @@ import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { Close } from '@material-ui/icons';
-import { requestSubscription } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import UserEditionOverview from './UserEditionOverview';
@@ -49,30 +48,10 @@ const styles = (theme) => ({
   },
 });
 
-const subscription = graphql`
-  subscription UserEditionSubscription($id: ID!) {
-    user(id: $id) {
-      ...UserEdition_user
-    }
-  }
-`;
-
 class UserEdition extends Component {
   constructor(props) {
     super(props);
     this.state = { currentTab: 0 };
-  }
-
-  componentDidMount() {
-    const sub = requestSubscription({
-      subscription,
-      variables: { id: this.props.user.id },
-    });
-    this.setState({ sub });
-  }
-
-  componentWillUnmount() {
-    this.state.sub.dispose();
   }
 
   handleChangeTab(event, value) {

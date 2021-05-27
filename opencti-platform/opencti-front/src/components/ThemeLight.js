@@ -1,14 +1,15 @@
-export default {
+export default (logo = null, primary = null, secondary = null) => ({
   fontFamily: 'Roboto, sans-serif',
+  logo: logo || `${window.BASE_PATH}/static/logo_text.png`,
   palette: {
     type: 'light',
     text: { secondary: 'rgba(0, 0, 0, 0.5)' },
-    primary: { main: '#507bc8' },
-    secondary: { main: '#d84315' },
-    header: { background: '#507bc8', text: '#ffffff' },
+    primary: { main: primary || '#507bc8' },
+    secondary: { main: secondary || '#d84315' },
+    header: { background: primary || '#507bc8', text: '#ffffff' },
     navAlt: {
       background: '#ffffff',
-      backgroundHeader: '#507bc8',
+      backgroundHeader: primary || '#507bc8',
       backgroundHeaderText: '#ffffff',
     },
     navBottom: { background: '#ffffff' },
@@ -33,7 +34,7 @@ export default {
     h1: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: '#507bc8',
+      color: primary || '#507bc8',
       fontWeight: 400,
       fontSize: 22,
     },
@@ -47,7 +48,7 @@ export default {
     h3: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: '#507bc8',
+      color: primary || '#507bc8',
       fontWeight: 400,
       fontSize: 13,
     },
@@ -91,7 +92,7 @@ export default {
           WebkitFontSmoothing: 'auto',
         },
         a: {
-          color: '#507bc8',
+          color: primary || '#507bc8',
         },
         'input:-webkit-autofill': {
           '-webkit-animation': 'autofill 0s forwards',
@@ -155,4 +156,4 @@ export default {
       },
     },
   },
-};
+});

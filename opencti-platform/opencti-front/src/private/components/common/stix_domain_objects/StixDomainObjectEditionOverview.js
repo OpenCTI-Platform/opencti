@@ -147,18 +147,16 @@ const stixDomainObjectValidation = (t) => Yup.object().shape({
 });
 
 class StixDomainObjectEditionContainer extends Component {
-  componentDidMount() {
-    const sub = requestSubscription({
+  constructor(props) {
+    super(props);
+    this.sub = requestSubscription({
       subscription,
-      variables: {
-        id: this.props.stixDomainObject.id,
-      },
+      variables: { id: props.stixDomainObject.id },
     });
-    this.setState({ sub });
   }
 
   componentWillUnmount() {
-    this.state.sub.dispose();
+    this.sub.dispose();
   }
 
   handleChangeCreatedBy(name, value) {

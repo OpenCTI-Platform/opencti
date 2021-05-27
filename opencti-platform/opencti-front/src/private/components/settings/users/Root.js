@@ -21,21 +21,21 @@ const subscription = graphql`
 `;
 
 class RootUser extends Component {
-  componentDidMount() {
+  constructor(props) {
+    super(props);
     const {
       match: {
         params: { userId },
       },
-    } = this.props;
-    const sub = requestSubscription({
+    } = props;
+    this.sub = requestSubscription({
       subscription,
       variables: { id: userId },
     });
-    this.setState({ sub });
   }
 
   componentWillUnmount() {
-    this.state.sub.dispose();
+    this.sub.dispose();
   }
 
   render() {

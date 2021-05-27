@@ -52,21 +52,21 @@ const regionQuery = graphql`
 `;
 
 class RootRegion extends Component {
-  componentDidMount() {
+  constructor(props) {
+    super(props);
     const {
       match: {
         params: { regionId },
       },
-    } = this.props;
-    const sub = requestSubscription({
+    } = props;
+    this.sub = requestSubscription({
       subscription,
       variables: { id: regionId },
     });
-    this.setState({ sub });
   }
 
   componentWillUnmount() {
-    this.state.sub.dispose();
+    this.sub.dispose();
   }
 
   render() {

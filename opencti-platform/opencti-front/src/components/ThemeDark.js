@@ -1,10 +1,11 @@
-export default {
+export default (logo = null, primary = null, secondary = null) => ({
   fontFamily: 'Roboto, sans-serif',
+  logo: logo || `${window.BASE_PATH}/static/logo_text.png`,
   palette: {
     type: 'dark',
     text: { secondary: 'rgba(255, 255, 255, 0.5)' },
-    primary: { main: '#00bcd4' },
-    secondary: { main: '#d84315' },
+    primary: { main: primary || '#00bcd4' },
+    secondary: { main: secondary || '#d84315' },
     header: { background: '#1b2226', text: '#ffffff' },
     navAlt: {
       background: '#14262c',
@@ -34,7 +35,7 @@ export default {
     h1: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: '#00bcd4',
+      color: primary || '#00bcd4',
       fontWeight: 400,
       fontSize: 22,
     },
@@ -48,7 +49,7 @@ export default {
     h3: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: '#00bcd4',
+      color: primary || '#00bcd4',
       fontWeight: 400,
       fontSize: 13,
     },
@@ -92,7 +93,7 @@ export default {
           WebkitFontSmoothing: 'auto',
         },
         a: {
-          color: '#00bcd4',
+          color: primary || '#00bcd4',
         },
         'input:-webkit-autofill': {
           '-webkit-animation': 'autofill 0s forwards',
@@ -157,4 +158,4 @@ export default {
       },
     },
   },
-};
+});

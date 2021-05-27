@@ -71,6 +71,14 @@ class RootIndividual extends Component {
     this.state = {
       viewAs: propOr('knowledge', 'viewAs', params),
     };
+    this.sub = requestSubscription({
+      subscription,
+      variables: { id: individualId },
+    });
+  }
+
+  componentWillUnmount() {
+    this.sub.dispose();
   }
 
   saveView() {
@@ -90,23 +98,6 @@ class RootIndividual extends Component {
 
   handleChangeViewAs(event) {
     this.setState({ viewAs: event.target.value }, () => this.saveView());
-  }
-
-  componentDidMount() {
-    const {
-      match: {
-        params: { individualId },
-      },
-    } = this.props;
-    const sub = requestSubscription({
-      subscription,
-      variables: { id: individualId },
-    });
-    this.setState({ sub });
-  }
-
-  componentWillUnmount() {
-    this.state.sub.dispose();
   }
 
   render() {
