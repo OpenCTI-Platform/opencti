@@ -37,7 +37,7 @@ class ThreatVulnerabilities extends Component {
         return (
           <EntityStixCoreRelationshipsDonut
             title={`${t('Vulnerabilities')} - ${widget.entity.name}`}
-            stixCoreObjectId={widget.entity.id}
+            entityId={widget.entity.id}
             toTypes={['Vulnerability']}
             relationshipType="targets"
             field="internal_id"

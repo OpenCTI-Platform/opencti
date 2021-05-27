@@ -37,7 +37,7 @@ class ThreatVictimologyAll extends Component {
         return (
           <EntityStixCoreRelationshipsDonut
             title={`${t('Victimology (sectors)')} - ${widget.entity.name}`}
-            stixCoreObjectId={widget.entity.id}
+            entityId={widget.entity.id}
             toTypes={['Sector']}
             relationshipType="targets"
             field="internal_id"
