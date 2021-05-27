@@ -501,6 +501,7 @@ enum TaskActionType {
   REMOVE
   REPLACE
   MERGE
+  SCAN
 }
 enum TaskContextType {
   ATTRIBUTE

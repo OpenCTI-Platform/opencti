@@ -45,9 +45,9 @@
       "token": "ChangeMe"
     }
   },
-  "inference_engine": {
+  "rule_engine": {
     "enabled": true,
-    "lock_key": "inference_engine_lock"
+    "lock_key": "rule_engine_lock"
   },
   "task_scheduler": {
     "enabled": true,

@@ -386,7 +386,8 @@ export const storeMergeEvent = async (user, initialInstance, mergedInstance, sou
   }
 };
 // Update
-export const buildUpdateEvent = (user, instance, updateEvents) => {
+export const buildUpdateEvent = (user, instance, updateEvents, opts = {}) => {
+  const { withoutMessage = false } = opts;
   const convertedInputs = updateEvents.map((i) => {
     const [k, v] = R.head(Object.entries(i));
     const convert = stixDataConverter(v, { patchGeneration: true });
@@ -397,34 +398,26 @@ export const buildUpdateEvent = (user, instance, updateEvents) => {
   if (isEmptyField(dataPatch)) {
     return true;
   }
-  // Build generic data
-  const data = {
+  // In update event we need to dispatch everything needed to identify the element
+  const identifiers = {
     standard_id: instance.standard_id,
     internal_id: instance.internal_id,
     entity_type: instance.entity_type,
-    confidence: instance.confidence,
-    x_opencti_patch: dataPatch,
+    identity_class: instance.identity_class,
+    x_opencti_location_type: instance.x_opencti_location_type,
+    // Need to put everything needed to identified a relationship
+    relationship_type: instance.relationship_type,
+    source_ref: instance.from?.standard_id,
+    x_opencti_source_ref: instance.fromId,
+    target_ref: instance.to?.standard_id,
+    x_opencti_target_ref: instance.toId,
   };
-  if (instance.identity_class) {
-    data.identity_class = instance.identity_class;
-  }
-  if (instance.x_opencti_location_type) {
-    data.x_opencti_location_type = instance.x_opencti_location_type;
-  }
-  // Need to put everything needed to identified a relationship
-  if (instance.relationship_type) {
-    data.relationship_type = instance.relationship_type;
-    data.x_opencti_source_ref = instance.fromId;
-    data.x_opencti_target_ref = instance.toId;
-    data.start_time = instance.start_time;
-    data.stop_time = instance.stop_time;
-    data.first_seen = instance.first_seen;
-    data.last_seen = instance.last_seen;
-  }
+  // Build the final data
+  const data = { ...identifiers, x_opencti_patch: dataPatch };
   // Generate the message
   const operation = updateEvents.length === 1 ? R.head(Object.keys(R.head(updateEvents))) : UPDATE_OPERATION_CHANGE;
   const messageInput = R.mergeAll(updateEvents.map((i) => stixDataConverter(R.head(Object.values(i)))));
-  const message = generateLogMessage(operation, instance, messageInput);
+  const message = withoutMessage ? '-' : generateLogMessage(operation, instance, messageInput);
   // Build and send the event
   const dataEvent = buildStixData(data);
   return buildEvent(EVENT_TYPE_UPDATE, user, instance.objectMarking, message, dataEvent);
@@ -442,7 +435,8 @@ export const storeUpdateEvent = async (user, instance, updateEvents) => {
   return true;
 };
 // Create
-export const buildCreateEvent = async (user, instance, input, stixLoader) => {
+export const buildCreateEvent = async (user, instance, input, stixLoader, opts = {}) => {
+  const { withoutMessage = false } = opts;
   // If internal relation, publish an update instead of a creation
   if (isStixCyberObservableRelationship(instance.entity_type) || isStixMetaRelationship(instance.entity_type)) {
     const field = relationTypeToInputName(instance.entity_type);
@@ -454,18 +448,15 @@ export const buildCreateEvent = async (user, instance, input, stixLoader) => {
     }
     return buildUpdateEvent(user, publishedInstance, [{ [UPDATE_OPERATION_ADD]: inputUpdate }]);
   }
-  // Create of an event for
-  const identifiers = {
-    standard_id: instance.standard_id,
-    internal_id: instance.internal_id,
-    entity_type: instance.entity_type,
-  };
   // Convert the input to data
-  const data = buildStixData({ ...identifiers, ...input }, { diffMode: false });
+  const data = buildStixData({ ...instance, ...input });
   // Generate the message
-  const message = generateLogMessage(EVENT_TYPE_CREATE, instance, data);
+  const message = withoutMessage ? '-' : generateLogMessage(EVENT_TYPE_CREATE, instance, data);
   // Build and send the event
   return buildEvent(EVENT_TYPE_CREATE, user, input.objectMarking, message, data);
+};
+export const buildScanEvent = async (user, instance, stixLoader) => {
+  return buildCreateEvent(user, instance, instance, stixLoader, { withoutMessage: true });
 };
 export const storeCreateEvent = async (user, instance, input, stixLoader) => {
   if (isStixSpecificationObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
@@ -483,7 +474,7 @@ export const buildDeleteEvent = async (user, instance, stixLoader, opts = {}) =>
   const { withoutMessage = false } = opts;
   if (isStixObject(instance.entity_type)) {
     const message = withoutMessage ? '-' : generateLogMessage(EVENT_TYPE_DELETE, instance);
-    const data = buildStixData(instance, { diffMode: false });
+    const data = buildStixData(instance);
     return buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
   }
   const isCore = isStixCoreRelationship(instance.entity_type);
@@ -500,7 +491,7 @@ export const buildDeleteEvent = async (user, instance, stixLoader, opts = {}) =>
   }
   // for other deletion, just produce a delete event
   const message = withoutMessage ? '-' : generateLogMessage(EVENT_TYPE_DELETE, instance);
-  const data = buildStixData(instance, { diffMode: false });
+  const data = buildStixData(instance);
   return buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
 };
 export const storeDeleteEvent = async (user, instance, stixLoader) => {

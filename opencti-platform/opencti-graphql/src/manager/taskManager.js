@@ -8,6 +8,7 @@ import {
   ACTION_TYPE_MERGE,
   ACTION_TYPE_REMOVE,
   ACTION_TYPE_REPLACE,
+  ACTION_TYPE_SCAN,
   executeTaskQuery,
   findAll,
   MAX_TASK_ELEMENTS,
@@ -32,6 +33,7 @@ import { elUpdate } from '../database/elasticSearch';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_BASIC_RELATIONSHIP } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
+import { reapplyRules } from './ruleManager';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -154,6 +156,10 @@ const executeMerge = async (user, context, element) => {
   await mergeEntities(user, element.internal_id, values);
 };
 
+const executeScan = async (user, context, element) => {
+  await reapplyRules(user, element);
+};
+
 const executeProcessing = async (user, processingElements) => {
   const errors = [];
   for (let index = 0; index < processingElements.length; index += 1) {
@@ -176,6 +182,9 @@ const executeProcessing = async (user, processingElements) => {
         }
         if (type === ACTION_TYPE_MERGE) {
           await executeMerge(user, context, element);
+        }
+        if (type === ACTION_TYPE_SCAN) {
+          await executeScan(user, context, element);
         }
       }
     } catch (err) {

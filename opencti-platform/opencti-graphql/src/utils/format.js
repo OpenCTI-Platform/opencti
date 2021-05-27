@@ -30,5 +30,5 @@ export const escape = (chars) => {
 export const buildPeriodFromDates = (a, b) => moment.range(a, b);
 export const computeRangeIntersection = (a, b) => {
   const range = a.intersect(b);
-  return { start: range.start.toISOString(), end: range.end.toISOString() };
+  return { start: range?.start.toISOString(), end: range?.end.toISOString() };
 };

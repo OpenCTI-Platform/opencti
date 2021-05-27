@@ -19,7 +19,7 @@ import {
   isNotEmptyField,
   READ_DATA_INDICES,
   READ_ENTITIES_INDICES,
-  READ_RELATIONSHIPS_INDICES,
+  READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_WITH_INFERENCES_INDICES,
   relationTypeToInputName,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
@@ -408,13 +408,17 @@ const buildThingsFilter = (thingsTypes, args) => {
   return R.assoc('types', thingsTypes, args);
 };
 export const listThings = async (user, thingsTypes, args = {}) => {
+  const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilter(thingsTypes, args);
-  return elPaginate(user, READ_DATA_INDICES, paginateArgs);
+  return elPaginate(user, indices, paginateArgs);
 };
 export const listAllThings = async (user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilter(thingsTypes, args);
-  const result = await elList(user, indices, paginateArgs);
+  return elList(user, indices, paginateArgs);
+};
+export const paginateAllThings = async (user, thingsTypes, args = {}) => {
+  const result = await listAllThings(user, thingsTypes, args);
   const nodeResult = result.map((n) => ({ node: n }));
   return buildPagination(0, null, nodeResult, nodeResult.length);
 };
@@ -422,16 +426,19 @@ const buildEntitiesFilter = (entityTypes, args) => {
   return R.assoc('types', entityTypes, args);
 };
 export const listEntities = async (user, entityTypes, args = {}) => {
+  const { indices = READ_ENTITIES_INDICES } = args;
   const paginateArgs = buildEntitiesFilter(entityTypes, args);
-  return elPaginate(user, READ_ENTITIES_INDICES, paginateArgs);
+  return elPaginate(user, indices, paginateArgs);
 };
 export const listRelations = async (user, relationshipType, args) => {
+  const { indices = READ_RELATIONSHIPS_WITH_INFERENCES_INDICES } = args;
   const paginateArgs = buildRelationsFilter(relationshipType, args);
-  return elPaginate(user, READ_RELATIONSHIPS_INDICES, paginateArgs);
+  return elPaginate(user, indices, paginateArgs);
 };
 export const listAllRelations = async (user, relationshipType, args) => {
+  const { indices = READ_RELATIONSHIPS_WITH_INFERENCES_INDICES } = args;
   const paginateArgs = buildRelationsFilter(relationshipType, args);
-  return elList(user, READ_RELATIONSHIPS_INDICES, paginateArgs);
+  return elList(user, indices, paginateArgs);
 };
 export const loadEntity = async (user, entityTypes, args = {}) => {
   const opts = { ...args, connectionFormat: false };
@@ -1266,7 +1273,7 @@ export const updateAttributeRaw = (user, instance, inputs, options = {}) => {
       impactedInputs.push(...ins);
     }
     // If named entity name updated, modify the aliases ids
-    if (isStixObjectAliased(instanceType) && isTypeHasAliasIDs(instanceType) && input.key === NAME_FIELD) {
+    if (input.key === NAME_FIELD && isStixObjectAliased(instanceType) && isTypeHasAliasIDs(instanceType)) {
       const name = R.head(input.value);
       const aliases = [name, ...(instance[ATTRIBUTE_ALIASES] || []), ...(instance[ATTRIBUTE_ALIASES_OPENCTI] || [])];
       let additionalFields = {};
@@ -1417,10 +1424,9 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     }
     // Only push event in stream if modifications really happens
     if (data.updatedInputs.length > 0) {
-      const updateAsInstance = mergeInstanceWithInputs(instance, impactedInputs);
       const isUpdate = operation === UPDATE_OPERATION_REPLACE;
       const updatedData = isUpdate ? replacedInputsToData(data.updatedInputs) : updatedInputsToData(data.updatedInputs);
-      await storeUpdateEvent(user, updateAsInstance, [{ [operation]: updatedData }]);
+      await storeUpdateEvent(user, instance, [{ [operation]: updatedData }]);
     }
     // Return updated element after waiting for it.
     return updatedInstance;
@@ -1621,9 +1627,9 @@ const computeExtendedDateValues = (newValue, currentValue, mode) => {
 };
 
 const upsertElementRaw = async (user, id, type, input) => {
-  const element = await markedLoadById(user, id, type);
+  const instance = await markedLoadById(user, id, type);
   const isInferenceUpsert = isNotEmptyField(input.inferenceRule);
-  const isInferredElement = isInferredIndex(element._index);
+  const isInferredElement = isInferredIndex(instance._index);
   const forceUpdate = input.update === true;
   const updatedAddInputs = []; // Direct modified inputs (add)
   const updatedReplaceInputs = []; // Direct modified inputs (replace)
@@ -1632,16 +1638,16 @@ const upsertElementRaw = async (user, id, type, input) => {
   const targetsPerType = [];
   // Handle inference specific behavior
   if (isInferenceUpsert) {
-    if (isNotEmptyField(element.i_inference_rule)) {
+    if (isNotEmptyField(instance.i_inference_rule)) {
       // The current instance is inferred, updating is only possible if the same
       // rule is responsible for the update
-      if (element.i_inference_rule.name !== input.inferenceRule.name) {
+      if (instance.i_inference_rule.name !== input.inferenceRule.name) {
         throw UnsupportedError('Rule collision');
       }
     } else {
       // Element already exists but not inferred, adding the inference.
       const patch = { i_inference_rule: input.inferenceRule };
-      const patched = patchAttributeRaw(user, element, patch, { operation: UPDATE_OPERATION_REPLACE });
+      const patched = patchAttributeRaw(user, instance, patch, { operation: UPDATE_OPERATION_REPLACE });
       impactedInputs.push(...patched.impactedInputs);
       updatedAddInputs.push(...patched.updatedInputs);
     }
@@ -1652,7 +1658,7 @@ const upsertElementRaw = async (user, id, type, input) => {
     // Handle attributes updates
     if (isNotEmptyField(input.stix_id)) {
       const patch = { x_opencti_stix_ids: [input.stix_id] };
-      const patched = patchAttributeRaw(user, element, patch, { operation: UPDATE_OPERATION_ADD });
+      const patched = patchAttributeRaw(user, instance, patch, { operation: UPDATE_OPERATION_ADD });
       impactedInputs.push(...patched.impactedInputs);
       updatedAddInputs.push(...patched.updatedInputs);
     }
@@ -1661,23 +1667,23 @@ const upsertElementRaw = async (user, id, type, input) => {
       const { name } = input;
       const key = resolveAliasesField(type);
       const aliases = [...(input[ATTRIBUTE_ALIASES] || []), ...(input[ATTRIBUTE_ALIASES_OPENCTI] || [])];
-      if (normalizeName(element.name) !== normalizeName(name)) aliases.push(name);
+      if (normalizeName(instance.name) !== normalizeName(name)) aliases.push(name);
       const patch = { [key]: aliases };
-      const patched = patchAttributeRaw(user, element, patch, { operation: UPDATE_OPERATION_ADD });
+      const patched = patchAttributeRaw(user, instance, patch, { operation: UPDATE_OPERATION_ADD });
       impactedInputs.push(...patched.impactedInputs);
       updatedAddInputs.push(...patched.updatedInputs);
     }
     if (isStixSightingRelationship(type)) {
-      const patch = { attribute_count: element.attribute_count + input.attribute_count };
-      const firstSeen = computeExtendedDateValues(input.first_seen, element.first_seen, ALIGN_OLDEST);
+      const patch = { attribute_count: instance.attribute_count + input.attribute_count };
+      const firstSeen = computeExtendedDateValues(input.first_seen, instance.first_seen, ALIGN_OLDEST);
       if (firstSeen !== null) {
         patch.first_seen = firstSeen;
       }
-      const lastSeen = computeExtendedDateValues(input.last_seen, element.last_seen, ALIGN_NEWEST);
+      const lastSeen = computeExtendedDateValues(input.last_seen, instance.last_seen, ALIGN_NEWEST);
       if (lastSeen !== null) {
         patch.last_seen = lastSeen;
       }
-      const patched = patchAttributeRaw(user, element, patch);
+      const patched = patchAttributeRaw(user, instance, patch);
       impactedInputs.push(...patched.impactedInputs);
       updatedReplaceInputs.push(...patched.updatedInputs);
     }
@@ -1687,51 +1693,47 @@ const upsertElementRaw = async (user, id, type, input) => {
       if (input.description) patch.description = input.description;
       if (isInferenceUpsert) {
         // If updating an inference, start and stop was previously computed.
-        patch.start_time = input.start_time;
-        patch.stop_time = input.stop_time;
+        if (input.start_time) patch.start_time = input.start_time;
+        if (input.stop_time) patch.stop_time = input.stop_time;
       } else {
         // We try to extend the start and end
-        const startTime = computeExtendedDateValues(input.start_time, element.start_time, ALIGN_OLDEST);
-        if (startTime !== null) {
-          patch.start_time = startTime;
-        }
-        const stopTime = computeExtendedDateValues(input.stop_time, element.stop_time, ALIGN_NEWEST);
-        if (stopTime !== null) {
-          patch.stop_time = stopTime;
-        }
+        const startTime = computeExtendedDateValues(input.start_time, instance.start_time, ALIGN_OLDEST);
+        if (startTime !== null) patch.start_time = startTime;
+        const stopTime = computeExtendedDateValues(input.stop_time, instance.stop_time, ALIGN_NEWEST);
+        if (stopTime !== null) patch.stop_time = stopTime;
       }
-      const patched = patchAttributeRaw(user, element, patch);
+      const patched = patchAttributeRaw(user, instance, patch);
       impactedInputs.push(...patched.impactedInputs);
       updatedReplaceInputs.push(...patched.updatedInputs);
     }
     if (isStixDomainObject(type) && forceUpdate) {
       const fields = stixDomainObjectFieldsToBeUpdated[type];
-      const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(user, element, input, fields);
+      const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(user, instance, input, fields);
       impactedInputs.push(...upsertImpacted);
       updatedReplaceInputs.push(...upsertUpdated);
     }
     if (isStixCyberObservable(type) && forceUpdate) {
       const fields = stixCyberObservableFieldsToBeUpdated[type];
-      const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(user, element, input, fields);
+      const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(user, instance, input, fields);
       impactedInputs.push(...upsertImpacted);
       updatedReplaceInputs.push(...upsertUpdated);
     }
     // Upsert markings
     if (isInferenceUpsert) {
       // When upsert inferences, we need to clear and recreate the markings
-      const markingRelations = (element.objectMarking || []).map((e) => e.i_relation);
+      const markingRelations = (instance.objectMarking || []).map((e) => e.i_relation);
       await elDeleteElements(SYSTEM_USER, markingRelations);
       const newRelations = (input.objectMarking || []).map(
-        (markingTo) => R.head(buildInnerRelation(element, markingTo, RELATION_OBJECT_MARKING)).relation
+        (markingTo) => R.head(buildInnerRelation(instance, markingTo, RELATION_OBJECT_MARKING)).relation
       );
       rawRelations.push(...newRelations);
       targetsPerType.push({ objectMarking: input.objectMarking || [] });
     } else if (input.objectMarking && input.objectMarking.length > 0) {
-      // When upsert stable relations, we decide to add the missing markins
-      const markingsIds = R.map((m) => m.internal_id, element.objectMarking || []);
+      // When upsert stable relations, we decide to only add the missing markings
+      const markingsIds = R.map((m) => m.internal_id, instance.objectMarking || []);
       const markingToCreate = R.filter((m) => !markingsIds.includes(m.internal_id), input.objectMarking);
       const newRelations = markingToCreate.map(
-        (markingTo) => R.head(buildInnerRelation(element, markingTo, RELATION_OBJECT_MARKING)).relation
+        (markingTo) => R.head(buildInnerRelation(instance, markingTo, RELATION_OBJECT_MARKING)).relation
       );
       rawRelations.push(...newRelations);
       targetsPerType.push({ objectMarking: markingToCreate });
@@ -1750,13 +1752,13 @@ const upsertElementRaw = async (user, id, type, input) => {
     streamInputs.push({ [UPDATE_OPERATION_ADD]: streamInput });
   }
   if (impactedInputs.length > 0) {
-    const merged = mergeInstanceWithInputs(element, impactedInputs);
+    const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
     // Build the input to reindex in elastic
-    const indexInput = partialInstanceWithInputs(merged, impactedInputs);
-    return { type: TRX_UPDATE, element: merged, relations: rawRelations, streamInputs, indexInput };
+    const indexInput = partialInstanceWithInputs(updatedInstance, impactedInputs);
+    return { type: TRX_UPDATE, element: updatedInstance, relations: rawRelations, streamInputs, indexInput };
   }
   // Return all elements requirement for stream and indexation
-  return { type: TRX_UPDATE, element, relations: rawRelations, streamInputs };
+  return { type: TRX_UPDATE, element: instance, relations: rawRelations, streamInputs };
 };
 
 export const buildRelationTimeFilter = (input) => {

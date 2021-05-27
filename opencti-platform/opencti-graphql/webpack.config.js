@@ -37,7 +37,7 @@ module.exports = (env, argv) => {
     devtool: 'eval-source-map',
     optimization: {
       emitOnErrors: false,
-      minimize: true,
+      minimize: !isDev,
       minimizer: [
         new TerserPlugin({
           extractComments: false,

@@ -6,7 +6,7 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   internalLoadById,
-  listAllThings,
+  paginateAllThings,
   listEntities,
   listThings,
   loadById,
@@ -36,7 +36,7 @@ export const objects = async (user, workspaceId, args) => {
   }
   const filters = [{ key, values: [workspaceId] }, ...(args.filters || [])];
   if (args.all) {
-    return listAllThings(user, types, R.assoc('filters', filters, args));
+    return paginateAllThings(user, types, R.assoc('filters', filters, args));
   }
   return listThings(user, types, R.assoc('filters', filters, args));
 };

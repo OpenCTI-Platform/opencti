@@ -57,6 +57,7 @@ import typeDefs from '../../config/schema/opencti.graphql';
 import organizationOrIndividualResolvers from '../resolvers/organizationOrIndividual';
 import taxiiResolvers from '../resolvers/taxii';
 import taskResolvers from '../resolvers/task';
+import ruleResolvers from '../resolvers/rule';
 import streamResolvers from '../resolvers/stream';
 
 const createSchema = () => {
@@ -76,6 +77,7 @@ const createSchema = () => {
     subTypeResolvers,
     fileResolvers,
     taskResolvers,
+    // ruleResolvers,
     // ENTITIES
     // INTERNAL OBJECT ENTITIES
     internalObjectResolvers,

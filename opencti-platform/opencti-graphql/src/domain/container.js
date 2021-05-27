@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { listAllThings, listEntities, listThings, loadById } from '../database/middleware';
+import { paginateAllThings, listEntities, listThings, loadById } from '../database/middleware';
 import { ENTITY_TYPE_CONTAINER, REL_INDEX_PREFIX } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination } from '../database/utils';
@@ -33,7 +33,7 @@ export const objects = async (user, containerId, args) => {
   }
   const filters = [{ key, values: [containerId] }, ...(args.filters || [])];
   if (args.all) {
-    return listAllThings(user, types, R.assoc('filters', filters, args));
+    return paginateAllThings(user, types, R.assoc('filters', filters, args));
   }
   return listThings(user, types, R.assoc('filters', filters, args));
 };

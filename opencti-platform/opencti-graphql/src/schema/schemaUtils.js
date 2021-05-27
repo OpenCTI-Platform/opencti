@@ -103,6 +103,11 @@ export const generateInternalType = (entity) => {
   }
 };
 
+export const getTypeFromStixId = (stixId) => {
+  const [type] = stixId.split('--');
+  return generateInternalType({ type });
+};
+
 export const parents = (type) => {
   // ENTITIES
   if (isStixDomainObject(type)) {

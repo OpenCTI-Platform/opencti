@@ -4,7 +4,7 @@ import { listenServer, restartServer, stopServer } from './httpServer';
 import { redisInitializeClients } from './database/redis';
 import initExpiredManager from './manager/expiredManager';
 import initTaskManager from './manager/taskManager';
-import initInferenceEngine from './manager/inferenceManager';
+import initRuleManager from './manager/ruleManager';
 import 'source-map-support/register';
 
 let server;
@@ -35,8 +35,8 @@ const ENABLED_EXPIRED_MANAGER = conf.get('expiration_scheduler:enabled');
 const expiredManager = initExpiredManager();
 const ENABLED_TASK_SCHEDULER = conf.get('task_scheduler:enabled');
 const taskManager = initTaskManager();
-const ENABLED_INFERENCE_ENGINE = conf.get('inference_engine:enabled');
-const inferenceEngine = initInferenceEngine();
+const ENABLED_RULE_ENGINE = conf.get('rule_engine:enabled');
+const ruleEngine = initRuleManager();
 (async () => {
   try {
     logApp.info(`[OPENCTI] Starting platform`);
@@ -67,15 +67,15 @@ const inferenceEngine = initInferenceEngine();
     }
     // endregion
     // region Inference engine
-    if (ENABLED_INFERENCE_ENGINE) {
-      const engineStarted = await inferenceEngine.start();
+    if (ENABLED_RULE_ENGINE) {
+      const engineStarted = await ruleEngine.start();
       if (engineStarted) {
-        logApp.info(`[OPENCTI] Inference engine started`);
+        logApp.info(`[OPENCTI] Rule engine started`);
       } else {
-        logApp.info('[OPENCTI] Inference engine not started (already started by another instance)');
+        logApp.info('[OPENCTI] Rule engine not started (already started by another instance)');
       }
     } else {
-      logApp.info(`[OPENCTI] Inference engine not started (disabled by configuration)`);
+      logApp.info(`[OPENCTI] Rule engine not started (disabled by configuration)`);
     }
   } catch (e) {
     process.exit(1);
@@ -89,5 +89,5 @@ process.on('SIGTERM', async () => {
   }
   await expiredManager.shutdown();
   await taskManager.shutdown();
-  await inferenceEngine.shutdown();
+  await ruleEngine.shutdown();
 });
