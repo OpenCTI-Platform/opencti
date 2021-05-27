@@ -431,7 +431,14 @@ workflows:
           filters:
             branches:
               only:
-                - master                                
+                - master              
+      - deploy_lab:
+          requires:
+            - build_platform
+          filters:
+            branches:
+              only:
+                - master                                          
       - docker_build_rolling:
           requires:
             - build_frontend  
