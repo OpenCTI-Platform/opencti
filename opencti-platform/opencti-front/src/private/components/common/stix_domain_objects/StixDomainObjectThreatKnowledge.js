@@ -130,6 +130,7 @@ class StixDomainObjectThreatKnowledge extends Component {
     let toTypes = [];
     if (viewType === 'timeline') {
       toTypes = [
+        'Attack-Pattern',
         'Campaign',
         'Incident',
         'Malware',
