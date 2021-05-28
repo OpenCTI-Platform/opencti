@@ -96,21 +96,6 @@ export const handleRuleDeleteElements = async (depElements) => {
   }
 };
 
-const ruleApplyClean = async (elements) => {
-  for (let index = 0; index < elements.length; index += 1) {
-    const element = elements[index];
-    for (let ruleIndex = 0; ruleIndex < activatedRules.length; ruleIndex += 1) {
-      const rule = activatedRules[ruleIndex];
-      try {
-        const derivedEvents = await rule.clean(element);
-        await ruleApplyHandler(derivedEvents);
-      } catch (e) {
-        console.log(e);
-      }
-    }
-  }
-};
-
 const ruleStreamHandler = async (streamEvents) => {
   const events = streamEvents
     .filter((event) => {
@@ -134,7 +119,7 @@ const initRuleManager = () => {
         // Lock the manager
         lock = await lockResource([RULE_ENGINE_KEY]);
         streamProcessor = await createStreamProcessor(SYSTEM_USER, ruleStreamHandler);
-        // await streamProcessor.start();
+        await streamProcessor.start();
         return true;
       } catch {
         return false;
