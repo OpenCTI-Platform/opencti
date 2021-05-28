@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
-import {INDEX_MARKINGS_FIELD, RULE_PREFIX} from '../../schema/general';
+import { INDEX_MARKINGS_FIELD, RULE_PREFIX } from '../../schema/general';
 import {
   createInferredRelation,
   deleteInferredRuleElement,
