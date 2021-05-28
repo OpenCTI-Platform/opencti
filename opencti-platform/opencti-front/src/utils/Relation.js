@@ -196,7 +196,7 @@ const stixCyberObservableRelationshipTypesMapping = {
   Directory_Directory: ['contains'],
   Directory_StixFile: ['contains'],
   Directory_Artifact: ['contains'],
-  'Email-Addr_User-Account': ['obs_belongsbelongs-to'],
+  'Email-Addr_User-Account': ['obs_belongs-to'],
   'Email-Message_Email-Addr': ['from', 'sender', 'to', 'bcc'],
   'Email-Message_Email-Mime-Part-Type': ['body-multipart'],
   'Email-Message_Artifact': ['raw-email'],
