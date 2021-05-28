@@ -14,13 +14,14 @@ export const MAX_TASK_ELEMENTS = 500;
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_LIST = 'LIST';
+export const TASK_TYPE_RULE = 'RULE';
 
 export const ACTION_TYPE_DELETE = 'DELETE';
 export const ACTION_TYPE_ADD = 'ADD';
 export const ACTION_TYPE_REMOVE = 'REMOVE';
 export const ACTION_TYPE_REPLACE = 'REPLACE';
 export const ACTION_TYPE_MERGE = 'MERGE';
-export const ACTION_TYPE_SCAN = 'SCAN';
+export const ACTION_TYPE_RESCAN = 'RESCAN';
 
 const createDefaultTask = (user, input, taskType, taskExpectedNumber) => {
   const taskId = generateInternalId();
@@ -93,6 +94,16 @@ const checkActionValidity = (user, actions) => {
       throw ForbiddenAccess();
     }
   }
+};
+
+export const createRuleTask = async (user, input) => {
+  const { rule } = input;
+  const countExpected = 0;
+  // TODO resolve the rule, get the filters to compute the count
+  const task = createDefaultTask(user, input, TASK_TYPE_RULE, countExpected);
+  const ruleTask = { ...task, rule };
+  await elIndex(INDEX_INTERNAL_OBJECTS, ruleTask);
+  return ruleTask;
 };
 
 export const createQueryTask = async (user, input) => {

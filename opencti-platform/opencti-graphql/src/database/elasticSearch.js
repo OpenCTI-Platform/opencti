@@ -13,7 +13,7 @@ import {
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_PLATFORM_INDICES,
-  READ_RELATIONSHIPS_INDICES,
+  READ_RELATIONSHIPS_INDICES, isEmptyField,
 } from './utils';
 import conf, { logApp } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
@@ -1404,9 +1404,19 @@ export const elUpdate = (indexName, documentId, documentBody, retry = ES_RETRY_O
 };
 export const elReplace = (indexName, documentId, documentBody) => {
   const doc = R.dissoc('_index', documentBody.doc);
-  const keys = R.keys(doc);
-  const rawSource = R.map((key) => `ctx._source['${key}'] = params['${key}']`, keys);
-  const source = R.join(';', rawSource);
+  const entries = Object.entries(doc);
+  const rawSources = [];
+  for (let index = 0; index < entries.length; index += 1) {
+    const [key, val] = entries[index];
+    if (isEmptyField(val)) {
+      rawSources.push(`ctx._source.remove('${key}')`);
+    } else {
+      rawSources.push(`ctx._source['${key}'] = params['${key}']`);
+    }
+  }
+  // const keys = R.keys(doc);
+  // const rawSources = R.map((key) => `ctx._source['${key}'] = params['${key}']`, keys);
+  const source = R.join(';', rawSources);
   return elUpdate(indexName, documentId, {
     script: { source, params: doc },
   });

@@ -8,12 +8,13 @@ import {
   ACTION_TYPE_MERGE,
   ACTION_TYPE_REMOVE,
   ACTION_TYPE_REPLACE,
-  ACTION_TYPE_SCAN,
+  ACTION_TYPE_RESCAN,
   executeTaskQuery,
   findAll,
   MAX_TASK_ELEMENTS,
   TASK_TYPE_LIST,
   TASK_TYPE_QUERY,
+  TASK_TYPE_RULE,
   updateTask,
 } from '../domain/task';
 import conf, { logApp } from '../config/conf';
@@ -28,12 +29,17 @@ import {
   patchAttribute,
 } from '../database/middleware';
 import { now } from '../utils/format';
-import { INDEX_INTERNAL_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
-import { elUpdate } from '../database/elasticSearch';
+import {
+  INDEX_INTERNAL_OBJECTS,
+  READ_STIX_INDICES,
+  UPDATE_OPERATION_ADD,
+  UPDATE_OPERATION_REMOVE,
+} from '../database/utils';
+import { elPaginate, elUpdate } from '../database/elasticSearch';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_BASIC_RELATIONSHIP } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
-import { reapplyRules } from './ruleManager';
+import { getRule, reapplyRules } from './ruleManager';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -56,6 +62,27 @@ const findTaskToExecute = async () => {
     return null;
   }
   return R.head(tasks);
+};
+const computeRuleTaskElements = async (user, task) => {
+  const { task_position, rule } = task;
+  const processingElements = [];
+  const ruleDefinition = getRule(rule);
+  const { scopeFilters } = ruleDefinition;
+  const options = {
+    first: MAX_TASK_ELEMENTS,
+    orderMode: 'asc',
+    orderBy: 'internal_id',
+    after: task_position,
+    ...scopeFilters,
+  };
+  const data = await elPaginate(user, READ_STIX_INDICES, options);
+  const elements = data.edges;
+  // Apply the actions for each element
+  for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
+    const element = elements[elementIndex];
+    processingElements.push({ element: element.node, actions: [{ type: ACTION_TYPE_RESCAN }], next: element.cursor });
+  }
+  return processingElements;
 };
 const computeQueryTaskElements = async (user, task) => {
   const { actions, task_position, task_filters } = task;
@@ -156,7 +183,7 @@ const executeMerge = async (user, context, element) => {
   await mergeEntities(user, element.internal_id, values);
 };
 
-const executeScan = async (user, context, element) => {
+const executeRuleRescan = async (user, element) => {
   await reapplyRules(user, element);
 };
 
@@ -183,8 +210,8 @@ const executeProcessing = async (user, processingElements) => {
         if (type === ACTION_TYPE_MERGE) {
           await executeMerge(user, context, element);
         }
-        if (type === ACTION_TYPE_SCAN) {
-          await executeScan(user, context, element);
+        if (type === ACTION_TYPE_RESCAN) {
+          await executeRuleRescan(user, element);
         }
       }
     } catch (err) {
@@ -209,7 +236,8 @@ const taskHandler = async () => {
     }
     const isQueryTask = task.type === TASK_TYPE_QUERY;
     const isListTask = task.type === TASK_TYPE_LIST;
-    if (!isQueryTask && !isListTask) {
+    const isRuleTask = task.type === TASK_TYPE_RULE;
+    if (!isQueryTask && !isListTask && !isRuleTask) {
       logApp.error(`[OPENCTI] Task manager can't process ${task.type} type`);
       return;
     }
@@ -223,6 +251,9 @@ const taskHandler = async () => {
     }
     if (isListTask) {
       processingElements = await computeListTaskElements(user, task);
+    }
+    if (isRuleTask) {
+      processingElements = await computeRuleTaskElements(user, task);
     }
     // Process the elements (empty = end of execution)
     if (processingElements.length > 0) {

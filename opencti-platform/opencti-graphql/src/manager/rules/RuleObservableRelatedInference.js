@@ -1,17 +1,19 @@
 /* eslint-disable camelcase */
 import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
-import { createInferredRelation, internalLoadById, listAllRelations } from '../../database/middleware';
+import {
+  createInferredRelation,
+  deleteInferredRuleElement,
+  internalLoadById,
+  listAllRelations,
+} from '../../database/middleware';
 import { SYSTEM_USER } from '../../utils/access';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../../database/rabbitmq';
 import { extractFieldsOfPatch } from '../../graphql/sseMiddleware';
-import { UnsupportedError } from '../../config/errors';
 import { getTypeFromStixId } from '../../schema/schemaUtils';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
-import { INDEX_MARKINGS_FIELD } from '../../schema/general';
-import { commonRuleDeletionHandler, commonRuleRelationMergeHandler } from './CommonRuleHandler';
+import {INDEX_MARKINGS_FIELD, RULE_PREFIX} from '../../schema/general';
 
-const name = 'rule_related';
+const name = 'observable_related';
 const description =
   'This rule will infer the following fact: if an Observable A is related to an entity B and the Observable' +
   ' A is related to an entity C, the entity B is also related to the entity C.';
@@ -43,13 +45,12 @@ const ruleRelatedObservableBuilder = () => {
           confidence: createdConfidence < confidence ? createdConfidence : confidence,
           start_time: range.start,
           stop_time: range.end,
-          inferenceRule: {
-            name,
+          [`${RULE_PREFIX}${name}`]: {
             explanation: [foundRelationId, createdId],
             dependencies: [sourceRef, createdId, targetRef, foundRelationId, toId],
           },
         };
-        const event = await createInferredRelation(input);
+        const event = await createInferredRelation(name, input);
         if (event) {
           events.push(event);
         }
@@ -59,42 +60,31 @@ const ruleRelatedObservableBuilder = () => {
     await listAllRelations(SYSTEM_USER, relationType, listFromArgs);
     return events;
   };
-  const applyDelete = async (event) => commonRuleDeletionHandler(event);
-  const applyMerge = async (data) => commonRuleRelationMergeHandler(relationType, data);
-  const clean = async (event) => applyDelete(event);
-  const apply = async (event) => {
-    const { type, markings, data } = event;
-    const isCorrectType = data.relationship_type === relationType;
-    const { source_ref: sourceRef } = data;
+  const clean = async (element) => deleteInferredRuleElement(name, element);
+  const insert = async (element) => {
+    const isCorrectType = element.relationship_type === relationType;
+    const { source_ref: sourceRef, object_marking_refs: markings } = element;
     const sourceType = sourceRef ? getTypeFromStixId(sourceRef) : null;
-    const isImpactedRelation = isCorrectType && sourceType && isStixCyberObservable(sourceType);
-    switch (type) {
-      case EVENT_TYPE_UPDATE: {
-        const patchedFields = extractFieldsOfPatch(data.x_opencti_patch);
-        const isImpactedFields = listenedFields.some((f) => patchedFields.includes(f));
-        if (isImpactedRelation && isImpactedFields) {
-          const rel = await internalLoadById(SYSTEM_USER, data.x_opencti_id);
-          return applyUpsert(markings, { ...data, ...rel });
-        }
-        return [];
-      }
-      case EVENT_TYPE_CREATE: {
-        if (isImpactedRelation) {
-          return applyUpsert(markings, data);
-        }
-        return [];
-      }
-      case EVENT_TYPE_DELETE: {
-        return applyDelete(event);
-      }
-      case EVENT_TYPE_MERGE: {
-        return applyMerge(data);
-      }
-      default:
-        throw UnsupportedError(`Event ${type} not supported`);
+    const isImpactedEvent = isCorrectType && sourceType && isStixCyberObservable(sourceType);
+    if (isImpactedEvent) {
+      return applyUpsert(markings, element);
     }
+    return [];
   };
-  return { name, description, apply, clean, scopeFields: '*', scopeFilters };
+  const update = async (element) => {
+    const isCorrectType = element.relationship_type === relationType;
+    const { source_ref: sourceRef, object_marking_refs: markings } = element;
+    const sourceType = sourceRef ? getTypeFromStixId(sourceRef) : null;
+    const isImpactedEvent = isCorrectType && sourceType && isStixCyberObservable(sourceType);
+    const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
+    const isImpactedFields = listenedFields.some((f) => patchedFields.includes(f));
+    if (isImpactedEvent && isImpactedFields) {
+      const rel = await internalLoadById(SYSTEM_USER, element.x_opencti_id);
+      return applyUpsert(markings, { ...element, ...rel });
+    }
+    return [];
+  };
+  return { name, description, insert, update, clean, scopeFields: '*', scopeFilters };
 };
-const RuleRelatedObservable = ruleRelatedObservableBuilder();
-export default RuleRelatedObservable;
+const RuleObservableRelatedObservable = ruleRelatedObservableBuilder();
+export default RuleObservableRelatedObservable;

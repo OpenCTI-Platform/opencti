@@ -2,6 +2,8 @@ import * as R from 'ramda';
 
 // Specific prefix
 export const REL_INDEX_PREFIX = 'rel_';
+export const INTERNAL_PREFIX = 'i_';
+export const RULE_PREFIX = 'i_rule_';
 export const INDEX_MARKINGS_FIELD = `${REL_INDEX_PREFIX}object-marking.internal_id`;
 
 // General

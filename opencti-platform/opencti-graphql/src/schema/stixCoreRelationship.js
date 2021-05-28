@@ -1,6 +1,5 @@
 import * as R from 'ramda';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, schemaTypes } from './general';
-import { ENTITY_TYPE_ATTACK_PATTERN } from './stixDomainObject';
 
 export const RELATION_DELIVERS = 'delivers';
 export const RELATION_TARGETS = 'targets';

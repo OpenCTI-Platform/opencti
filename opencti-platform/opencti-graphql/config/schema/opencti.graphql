@@ -489,6 +489,7 @@ type FileConnection {
 enum TaskType {
   QUERY
   LIST
+  RULE
 }
 type TaskError {
   id: ID!
@@ -501,7 +502,7 @@ enum TaskActionType {
   REMOVE
   REPLACE
   MERGE
-  SCAN
+  RESCAN
 }
 enum TaskContextType {
   ATTRIBUTE
@@ -545,6 +546,21 @@ interface Task {
   task_expected_number: Int
   task_processed_number: Int
   errors: [TaskError]
+}
+
+type RuleTask implements Task {
+  id: ID!
+  type: TaskType
+  initiator: User
+  actions: [TaskAction]
+  created_at: DateTime
+  last_execution_date: DateTime
+  completed: Boolean
+  task_expected_number: Int
+  task_processed_number: Int
+  errors: [TaskError]
+  # RuleTask
+  rule: ID!
 }
 
 type ListTask implements Task {
@@ -603,6 +619,9 @@ input ListTaskAddInput {
 input QueryTaskAddInput {
   filters: String!
   actions: [TaskActionInput]!
+}
+input RuleTaskAddInput {
+  rule: ID!
 }
 
 ###### ENTITIES
@@ -8793,6 +8812,7 @@ type Mutation {
   deleteTask(id: ID!): ID! @auth(for: [KNOWLEDGE_KNUPDATE])
   listTaskAdd(input: ListTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
   queryTaskAdd(input: QueryTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
+  ruleTaskAdd(input: RuleTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## INTERNAL OBJECT ENTITIES
   token(input: UserLoginInput): String

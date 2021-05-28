@@ -1,12 +1,14 @@
 /* eslint-disable camelcase */
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../../database/rabbitmq';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
-import { INDEX_MARKINGS_FIELD } from '../../schema/general';
-import { createInferredRelation, internalLoadById, listAllRelations } from '../../database/middleware';
+import {INDEX_MARKINGS_FIELD, RULE_PREFIX} from '../../schema/general';
+import {
+  createInferredRelation,
+  deleteInferredRuleElement,
+  internalLoadById,
+  listAllRelations,
+} from '../../database/middleware';
 import { SYSTEM_USER } from '../../utils/access';
-import { UnsupportedError } from '../../config/errors';
 import { extractFieldsOfPatch } from '../../graphql/sseMiddleware';
-import { commonRuleDeletionHandler, commonRuleRelationMergeHandler } from './CommonRuleHandler';
 
 const listenedFields = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];
 const buildRelationToRelationRule = (name, description, relationType, scopeFields, scopeFilters) => {
@@ -36,13 +38,12 @@ const buildRelationToRelationRule = (name, description, relationType, scopeField
           confidence: createdConfidence < confidence ? createdConfidence : confidence,
           start_time: range.start,
           stop_time: range.end,
-          inferenceRule: {
-            name,
+          [`${RULE_PREFIX}${name}`]: {
             explanation: [foundRelationId, createdId], // Free form, depending of the rules
             dependencies: [fromId, foundRelationId, sourceRef, createdId, targetRef], // Must contains all participants ids
           },
         };
-        const event = await createInferredRelation(input);
+        const event = await createInferredRelation(name, input);
         if (event) {
           events.push(event);
         }
@@ -70,13 +71,12 @@ const buildRelationToRelationRule = (name, description, relationType, scopeField
           confidence: createdConfidence < confidence ? createdConfidence : confidence,
           start_time: range.start,
           stop_time: range.end,
-          inferenceRule: {
-            name,
+          [`${RULE_PREFIX}${name}`]: {
             explanation: [createdId, foundRelationId], // Free form, depending of the rules
             dependencies: [sourceRef, createdId, toId, foundRelationId, targetRef], // Must contains all participants ids
           },
         };
-        const event = await createInferredRelation(input);
+        const event = await createInferredRelation(name, input);
         if (event) {
           events.push(event);
         }
@@ -86,39 +86,27 @@ const buildRelationToRelationRule = (name, description, relationType, scopeField
     await listAllRelations(SYSTEM_USER, relationType, listToArgs);
     return events;
   };
-  const applyDelete = async (event) => commonRuleDeletionHandler(event);
-  const applyMerge = async (data) => commonRuleRelationMergeHandler(relationType, data);
-  const clean = async (event) => applyDelete(event);
-  const apply = async (event) => {
-    const { type, markings, data } = event;
-    const isImpactedRelation = data.relationship_type === relationType;
-    switch (type) {
-      case EVENT_TYPE_UPDATE: {
-        const patchedFields = extractFieldsOfPatch(data.x_opencti_patch);
-        const isImpactedFields = listenedFields.some((f) => patchedFields.includes(f));
-        if (isImpactedRelation && isImpactedFields) {
-          const rel = await internalLoadById(SYSTEM_USER, data.x_opencti_id);
-          return applyUpsert(markings, { ...data, ...rel });
-        }
-        return [];
-      }
-      case EVENT_TYPE_CREATE: {
-        if (isImpactedRelation) {
-          return applyUpsert(markings, data);
-        }
-        return [];
-      }
-      case EVENT_TYPE_DELETE: {
-        return applyDelete(event);
-      }
-      case EVENT_TYPE_MERGE: {
-        return applyMerge(data);
-      }
-      default:
-        throw UnsupportedError(`Event ${type} not supported`);
+  const clean = async (element) => deleteInferredRuleElement(name, element);
+  const insert = async (element) => {
+    const { object_marking_refs: markings } = element;
+    const isImpactedRelation = element.relationship_type === relationType;
+    if (isImpactedRelation) {
+      return applyUpsert(markings, element);
     }
+    return [];
   };
-  return { name, description, apply, clean, scopeFields, scopeFilters };
+  const update = async (element) => {
+    const { object_marking_refs: markings } = element;
+    const isImpactedRelation = element.relationship_type === relationType;
+    const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
+    const isImpactedFields = listenedFields.some((f) => patchedFields.includes(f));
+    if (isImpactedRelation && isImpactedFields) {
+      const rel = await internalLoadById(SYSTEM_USER, element.x_opencti_id);
+      return applyUpsert(markings, { ...element, ...rel });
+    }
+    return [];
+  };
+  return { name, description, insert, update, clean, scopeFields, scopeFilters };
 };
 
 export default buildRelationToRelationRule;
