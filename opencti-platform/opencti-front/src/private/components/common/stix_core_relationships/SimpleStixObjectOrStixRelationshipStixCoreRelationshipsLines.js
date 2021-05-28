@@ -134,44 +134,44 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = createPagin
   SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesContainer,
   {
     data: graphql`
-      fragment SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data on Query
-      @argumentDefinitions(
-        elementId: { type: "String!" }
-        relationship_type: { type: "String" }
-        startTimeStart: { type: "DateTime" }
-        startTimeStop: { type: "DateTime" }
-        stopTimeStart: { type: "DateTime" }
-        stopTimeStop: { type: "DateTime" }
-        confidences: { type: "[Int]" }
-        orderBy: {
-          type: "StixCoreRelationshipsOrdering"
-          defaultValue: created_at
-        }
-        orderMode: { type: "OrderingMode", defaultValue: desc }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-      ) {
-        stixCoreRelationships(
-          elementId: $elementId
-          relationship_type: $relationship_type
-          startTimeStart: $startTimeStart
-          startTimeStop: $startTimeStop
-          stopTimeStart: $stopTimeStart
-          stopTimeStop: $stopTimeStop
-          confidences: $confidences
-          orderBy: $orderBy
-          orderMode: $orderMode
-          first: $count
-          after: $cursor
-        ) @connection(key: "Pagination_stixCoreRelationships") {
-          edges {
-            node {
-              ...SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node
+        fragment SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data on Query
+        @argumentDefinitions(
+          elementId: { type: "String!" }
+          relationship_type: { type: "String" }
+          startTimeStart: { type: "DateTime" }
+          startTimeStop: { type: "DateTime" }
+          stopTimeStart: { type: "DateTime" }
+          stopTimeStop: { type: "DateTime" }
+          confidences: { type: "[Int]" }
+          orderBy: {
+            type: "StixCoreRelationshipsOrdering"
+            defaultValue: created_at
+          }
+          orderMode: { type: "OrderingMode", defaultValue: desc }
+          count: { type: "Int", defaultValue: 25 }
+          cursor: { type: "ID" }
+        ) {
+          stixCoreRelationships(
+            elementId: $elementId
+            relationship_type: $relationship_type
+            startTimeStart: $startTimeStart
+            startTimeStop: $startTimeStop
+            stopTimeStart: $stopTimeStart
+            stopTimeStop: $stopTimeStop
+            confidences: $confidences
+            orderBy: $orderBy
+            orderMode: $orderMode
+            first: $count
+            after: $cursor
+          ) @connection(key: "Pagination_stixCoreRelationships") {
+            edges {
+              node {
+                ...SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node
+              }
             }
           }
         }
-      }
-    `,
+      `,
   },
   {
     direction: 'forward',

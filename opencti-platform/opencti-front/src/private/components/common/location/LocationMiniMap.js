@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import {
   compose, flatten, propOr, pluck, includes, uniq, pipe,
 } from 'ramda';
-import { withStyles } from '@material-ui/core';
+import { withTheme, withStyles } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import {
@@ -12,7 +12,6 @@ import {
 import L from 'leaflet';
 import countries from '../../../../resources/geo/countries.json';
 import inject18n from '../../../../components/i18n';
-import ThemeDark from '../../../../components/ThemeDark';
 import { UserContext } from '../../../../utils/Security';
 
 const styles = () => ({
@@ -43,7 +42,7 @@ const LocationMiniMap = (props) => {
   const getStyle = (feature) => {
     if (includes(feature.properties.ISO3, countriesAliases)) {
       return {
-        color: ThemeDark.palette.primary.main,
+        color: props.theme.palette.primary.main,
         weight: 1,
         fillOpacity: 0.1,
       };
@@ -51,7 +50,7 @@ const LocationMiniMap = (props) => {
     return { fillOpacity: 0, color: 'none' };
   };
   const {
-    t, center, zoom, classes, city,
+    t, center, zoom, classes, theme, city,
   } = props;
   const position = city && city.latitude ? [city.latitude, city.longitude] : null;
   return (
@@ -66,7 +65,13 @@ const LocationMiniMap = (props) => {
           attributionControl={false}
           zoomControl={false}
         >
-          <TileLayer url={settings.platform_map_tile_server} />
+          <TileLayer
+            url={
+              theme.palette.type === 'light'
+                ? settings.platform_map_tile_server_light
+                : settings.platform_map_tile_server_dark
+            }
+          />
           <GeoJSON data={countries} style={getStyle} />
           {position ? <Marker position={position} icon={pointerIcon} /> : ''}
         </Map>
@@ -85,4 +90,8 @@ LocationMiniMap.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(inject18n, withStyles(styles))(LocationMiniMap);
+export default compose(
+  inject18n,
+  withTheme,
+  withStyles(styles),
+)(LocationMiniMap);

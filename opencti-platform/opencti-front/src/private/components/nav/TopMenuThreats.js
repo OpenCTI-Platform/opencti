@@ -37,7 +37,7 @@ class TopMenuThreats extends Component {
           size="small"
           color={
             location.pathname.includes('/dashboard/threats/threat_actors')
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -56,7 +56,7 @@ class TopMenuThreats extends Component {
           size="small"
           color={
             location.pathname.includes('/dashboard/threats/intrusion_sets')
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -75,7 +75,7 @@ class TopMenuThreats extends Component {
           size="small"
           color={
             location.pathname === '/dashboard/threats/campaigns'
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

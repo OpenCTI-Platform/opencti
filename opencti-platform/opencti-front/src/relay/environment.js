@@ -8,6 +8,7 @@ import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import React, { Component } from 'react';
 import {
+  commitLocalUpdate as CLU,
   commitMutation as CM,
   QueryRenderer as QR,
   requestSubscription as RS,
@@ -97,6 +98,7 @@ export class QueryRenderer extends Component {
     return (
       <QR
         environment={environment}
+        fetchPolicy="store-and-network"
         query={query}
         variables={variables}
         render={(data) => {
@@ -138,7 +140,7 @@ export const commitMutation = ({
     if (setSubmitting) setSubmitting(false);
     if (error && error.res && error.res.errors) {
       const authRequired = filter(
-        (e) => e.data.type === 'authentication',
+        (e) => pathOr(e.message, ['data', 'type'], e) === 'authentication',
         error.res.errors,
       );
       if (!isEmpty(authRequired)) {
@@ -162,4 +164,6 @@ export const commitMutation = ({
 
 export const requestSubscription = (args) => RS(environment, args);
 
-export const fetchQuery = (query, args) => FQ(environment, query, args);
+export const fetchQuery = (query, args) => FQ(environment, query, args, { fetchPolicy: 'store-or-network' });
+
+export const commitLocalUpdate = (updater) => CLU(environment, updater);

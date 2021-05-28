@@ -116,10 +116,7 @@ class StixCyberObservableRelationshipPopover extends Component {
 
   render() {
     const {
-      classes,
-      t,
-      stixCyberObservableRelationshipId,
-      disabled,
+      classes, t, stixCyberObservableRelationshipId, disabled,
     } = this.props;
     return (
       <div className={classes.container}>

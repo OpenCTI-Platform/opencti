@@ -13,6 +13,7 @@ import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import StixDomainObjectAttackPatternsKillChainMatrix from './StixDomainObjectAttackPatternsKillChainMatrix';
 import StixDomainObjectAttackPatternsKillChainLines from './StixDomainObjectAttackPatternsKillChainLines';
+import ExportButtons from '../../../../components/ExportButtons';
 
 const styles = () => ({
   container: {
@@ -20,6 +21,9 @@ const styles = () => ({
     height: '100%',
     margin: 0,
     padding: 0,
+  },
+  export: {
+    float: 'right',
   },
 });
 
@@ -66,6 +70,12 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               <ViewListOutlined />
             </IconButton>
           </Tooltip>
+          <div className={classes.export}>
+            <ExportButtons
+              domElementId="container"
+              name={t('Attack patterns kill chain')}
+            />
+          </div>
         </div>
         {currentView === 'list' && (
           <StixDomainObjectAttackPatternsKillChainLines

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, withTheme } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import { KeyboardDatePicker } from '@material-ui/pickers';
 import Autocomplete from '@material-ui/lab/Autocomplete';
@@ -63,7 +63,7 @@ const styles = (theme) => ({
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: 'rgba(64, 193, 255, 0.2)',
+    backgroundColor: theme.palette.background.chip,
     margin: '0 10px 10px 0',
   },
 });
@@ -103,7 +103,7 @@ class Filters extends Component {
   }
 
   searchEntities(filterKey, event) {
-    const { t } = this.props;
+    const { t, theme } = this.props;
     if (event && event.target.value !== 0) {
       this.setState({
         inputValues: R.assoc(
@@ -221,10 +221,19 @@ class Filters extends Component {
             this.setState({
               entities: {
                 ...this.state.entities,
-                labelledBy: R.union(
-                  labelledByEntities,
-                  this.state.entities.labelledBy,
-                ),
+                labelledBy: [
+                  {
+                    label: t('No label'),
+                    value: null,
+                    type: 'Label',
+                    color:
+                      theme.palette.type === 'dark' ? '#ffffff' : '#000000',
+                  },
+                  ...R.union(
+                    labelledByEntities,
+                    this.state.entities.labelledBy,
+                  ),
+                ],
               },
             });
           });
@@ -810,7 +819,9 @@ class Filters extends Component {
   }
 
   renderDialogFilters() {
-    const { t, classes, disabled } = this.props;
+    const {
+      t, classes, theme, disabled,
+    } = this.props;
     const { open, filters } = this.state;
     return (
       <div style={{ float: 'left' }}>
@@ -818,6 +829,7 @@ class Filters extends Component {
           <IconButton
             onClick={this.handleOpenFilters.bind(this)}
             disabled={disabled}
+            style={{ color: theme.palette.header.text }}
           >
             <ToyBrickSearchOutline fontSize="default" />
           </IconButton>
@@ -909,6 +921,7 @@ class Filters extends Component {
 
 Filters.propTypes = {
   classes: PropTypes.object,
+  theme: PropTypes.object,
   t: PropTypes.func,
   availableFilterKeys: PropTypes.array,
   handleAddFilter: PropTypes.func,
@@ -918,4 +931,9 @@ Filters.propTypes = {
   noDirectFilters: PropTypes.bool,
 };
 
-export default R.compose(inject18n, withRouter, withStyles(styles))(Filters);
+export default R.compose(
+  inject18n,
+  withRouter,
+  withTheme,
+  withStyles(styles),
+)(Filters);

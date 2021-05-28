@@ -26,7 +26,7 @@ class InvestigationComponent extends Component {
   render() {
     const { classes, workspace } = this.props;
     return (
-      <div className={classes.container}>
+      <div className={classes.container} id="container">
         <WorkspaceHeader workspace={workspace} />
         <QueryRenderer
           query={investigationGraphQuery}

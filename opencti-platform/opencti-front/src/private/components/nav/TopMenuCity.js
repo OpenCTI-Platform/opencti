@@ -75,7 +75,7 @@ class TopMenuCity extends Component {
           size="small"
           color={
             location.pathname === `/dashboard/entities/cities/${cityId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -97,7 +97,7 @@ class TopMenuCity extends Component {
             location.pathname.includes(
               `/dashboard/entities/cities/${cityId}/knowledge`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -117,7 +117,7 @@ class TopMenuCity extends Component {
           color={
             location.pathname
             === `/dashboard/entities/cities/${cityId}/analysis`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -136,7 +136,7 @@ class TopMenuCity extends Component {
             size="small"
             color={
               location.pathname === `/dashboard/entities/cities/${cityId}/files`
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -155,7 +155,7 @@ class TopMenuCity extends Component {
           size="small"
           color={
             location.pathname === `/dashboard/entities/cities/${cityId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

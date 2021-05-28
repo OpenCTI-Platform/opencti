@@ -25,10 +25,7 @@ export const usersLinesSearchQuery = graphql`
 class UsersLines extends Component {
   render() {
     const {
-      initialLoading,
-      dataColumns,
-      relay,
-      paginationOptions,
+      initialLoading, dataColumns, relay, paginationOptions,
     } = this.props;
     return (
       <ListLinesContent

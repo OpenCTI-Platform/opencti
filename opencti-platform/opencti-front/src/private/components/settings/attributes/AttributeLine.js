@@ -9,6 +9,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVertOutlined, ShortTextOutlined } from '@material-ui/icons';
 import { compose } from 'ramda';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import AttributePopover from './AttributePopover';
 
@@ -105,7 +106,7 @@ class AttributeLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <ShortTextOutlined />
+          <Skeleton animation="wave" variant="circle" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -114,7 +115,12 @@ class AttributeLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.value.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height={20}
+                />
               </div>
             </div>
           }

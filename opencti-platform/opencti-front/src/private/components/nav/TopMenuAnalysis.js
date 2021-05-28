@@ -41,7 +41,7 @@ class TopMenuAnalysis extends Component {
           size="small"
           color={
             location.pathname === '/dashboard/analysis/reports'
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -60,7 +60,7 @@ class TopMenuAnalysis extends Component {
           size="small"
           color={
             location.pathname === '/dashboard/analysis/notes'
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -79,7 +79,7 @@ class TopMenuAnalysis extends Component {
           size="small"
           color={
             location.pathname === '/dashboard/analysis/opinions'
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -98,7 +98,7 @@ class TopMenuAnalysis extends Component {
           size="small"
           color={
             location.pathname === '/dashboard/analysis/external_references'
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

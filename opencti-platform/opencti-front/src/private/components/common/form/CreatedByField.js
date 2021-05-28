@@ -81,13 +81,7 @@ class CreatedByField extends Component {
 
   render() {
     const {
-      t,
-      name,
-      style,
-      classes,
-      setFieldValue,
-      onChange,
-      helpertext,
+      t, name, style, classes, setFieldValue, onChange, helpertext,
     } = this.props;
     return (
       <div>

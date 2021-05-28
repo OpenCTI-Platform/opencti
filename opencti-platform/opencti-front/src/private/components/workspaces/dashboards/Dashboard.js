@@ -413,7 +413,7 @@ class DashboardComponent extends Component {
     const manifest = this.decodeManifest();
     const relativeDate = R.propOr(null, 'relativeDate', manifest.config);
     return (
-      <div className={classes.container}>
+      <div className={classes.container} id="container">
         <WorkspaceHeader workspace={workspace} variant="dashboard" />
         <Drawer
           anchor="bottom"
@@ -426,7 +426,7 @@ class DashboardComponent extends Component {
                 <InputLabel id="relative">{t('Relative time')}</InputLabel>
                 <Select
                   labelId="relative"
-                  value={relativeDate}
+                  value={relativeDate === null ? '' : relativeDate}
                   onChange={this.handleDateChange.bind(this, 'relativeDate')}
                 >
                   <MenuItem value="none">{t('None')}</MenuItem>

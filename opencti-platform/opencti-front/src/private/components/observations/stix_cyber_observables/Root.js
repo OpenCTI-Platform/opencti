@@ -37,28 +37,25 @@ const stixCyberObservableQuery = graphql`
       ...StixCyberObservableIndicators_stixCyberObservable
       ...StixCyberObservableKnowledge_stixCyberObservable
     }
-    connectorsForImport {
-      ...StixCyberObservableEnrichment_connectorsForImport
-    }
   }
 `;
 
 class RootStixCyberObservable extends Component {
-  componentDidMount() {
+  constructor(props) {
+    super(props);
     const {
       match: {
         params: { observableId },
       },
-    } = this.props;
-    const sub = requestSubscription({
+    } = props;
+    this.sub = requestSubscription({
       subscription,
       variables: { id: observableId },
     });
-    this.setState({ sub });
   }
 
   componentWillUnmount() {
-    this.state.sub.dispose();
+    this.sub.dispose();
   }
 
   render() {

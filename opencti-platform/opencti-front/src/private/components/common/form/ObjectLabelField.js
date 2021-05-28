@@ -65,13 +65,7 @@ class ObjectLabelField extends Component {
 
   render() {
     const {
-      t,
-      name,
-      style,
-      classes,
-      setFieldValue,
-      values,
-      helpertext,
+      t, name, style, classes, setFieldValue, values, helpertext,
     } = this.props;
     return (
       <div>

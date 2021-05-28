@@ -74,7 +74,7 @@ class TopMenuSector extends Component {
           size="small"
           color={
             location.pathname === `/dashboard/entities/sectors/${sectorId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -96,7 +96,7 @@ class TopMenuSector extends Component {
             location.pathname.includes(
               `/dashboard/entities/sectors/${sectorId}/knowledge`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -116,7 +116,7 @@ class TopMenuSector extends Component {
           color={
             location.pathname
             === `/dashboard/entities/sectors/${sectorId}/analysis`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -137,7 +137,7 @@ class TopMenuSector extends Component {
             color={
               location.pathname
               === `/dashboard/entities/sectors/${sectorId}/files`
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -158,7 +158,7 @@ class TopMenuSector extends Component {
           color={
             location.pathname
             === `/dashboard/entities/sectors/${sectorId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

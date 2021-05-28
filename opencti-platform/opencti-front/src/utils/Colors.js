@@ -20,9 +20,9 @@ export const itemColor = (type, dark) => {
   switch (type) {
     case 'Attack-Pattern':
       if (dark) {
-        return '#827717';
+        return '#727926';
       }
-      return '#cddc39';
+      return '#7f8727';
     case 'Campaign':
       if (dark) {
         return '#4a148c';

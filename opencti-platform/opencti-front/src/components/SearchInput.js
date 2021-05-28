@@ -11,12 +11,25 @@ const styles = (theme) => ({
   searchRoot: {
     borderRadius: 5,
     padding: '0 10px 0 10px',
-    backgroundColor: theme.palette.background.paperLight,
+    backgroundColor: theme.palette.background.paper,
   },
   searchRootInDrawer: {
     borderRadius: 5,
     padding: '0 10px 0 10px',
     backgroundColor: theme.palette.navAlt.background,
+  },
+  searchRootInDrawer2: {
+    borderRadius: 5,
+    padding: '0 10px 0 10px',
+    backgroundColor:
+      theme.palette.type === 'light'
+        ? theme.palette.background.paperLight
+        : theme.palette.navAlt.background,
+  },
+  searchRootNoAnimation: {
+    borderRadius: 5,
+    padding: '0 10px 0 10px',
+    backgroundColor: theme.palette.background.default,
   },
   searchInput: {
     transition: theme.transitions.create('width'),
@@ -37,14 +50,16 @@ const styles = (theme) => ({
 class SearchInput extends Component {
   render() {
     const {
-      t,
-      classes,
-      onChange,
-      onSubmit,
-      variant,
-      keyword,
-      fullWidth,
+      t, classes, onChange, onSubmit, variant, keyword, fullWidth,
     } = this.props;
+    let classRoot = classes.searchRoot;
+    if (variant === 'inDrawer') {
+      classRoot = classes.searchRootInDrawer;
+    } else if (variant === 'inDrawer2') {
+      classRoot = classes.searchRootInDrawer2;
+    } else if (variant === 'noAnimation') {
+      classRoot = classes.searchRootNoAnimation;
+    }
     return (
       <Input
         fullWidth={fullWidth}
@@ -69,10 +84,7 @@ class SearchInput extends Component {
           </InputAdornment>
         }
         classes={{
-          root:
-            variant === 'inDrawer'
-              ? classes.searchRootInDrawer
-              : classes.searchRoot,
+          root: classRoot,
           input:
             // eslint-disable-next-line no-nested-ternary
             variant === 'small'

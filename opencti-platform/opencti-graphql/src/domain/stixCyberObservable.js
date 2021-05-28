@@ -20,8 +20,7 @@ import {
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
-import { createWork, workToExportFile } from './work';
-import { pushToConnector } from '../database/rabbitmq';
+import { workToExportFile } from './work';
 import { addIndicator } from './indicator';
 import { askEnrich } from './enrichment';
 import { FunctionalError } from '../config/errors';
@@ -48,7 +47,6 @@ import {
 } from '../schema/stixCyberObservable';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { apiAttributeToComplexFormat } from '../schema/fieldDataAdapter';
@@ -90,22 +88,6 @@ export const stixCyberObservablesTimeSeries = (user, args) => {
 // endregion
 
 // region mutations
-export const stixCyberObservableAskEnrichment = async (user, observableId, connectorId) => {
-  const connector = await loadById(user, connectorId, ENTITY_TYPE_CONNECTOR);
-  const work = await createWork(user, connector, 'Manual enrichment', observableId);
-  const message = {
-    internal: {
-      work_id: work.id, // Related action for history
-      applicant_id: user.id, // User asking for the import
-    },
-    event: {
-      entity_id: observableId,
-    },
-  };
-  await pushToConnector(connector, message);
-  return work;
-};
-
 export const batchIndicators = (user, stixCyberObservableIds) => {
   return batchListThroughGetFrom(user, stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
 };

@@ -304,6 +304,7 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
   const userToCreate = R.pipe(
     R.assoc('user_email', userEmail),
     R.assoc('password', bcrypt.hashSync(newUser.password ? newUser.password.toString() : uuid())),
+    R.assoc('theme', newUser.theme ? newUser.theme : 'default'),
     R.assoc('language', newUser.language ? newUser.language : 'auto'),
     R.assoc('external', newUser.external ? newUser.external : false),
     R.dissoc('roles')

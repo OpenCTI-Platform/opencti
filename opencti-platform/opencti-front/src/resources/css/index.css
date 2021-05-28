@@ -2,39 +2,10 @@
   font-size: 100%;
   font-family: "Roboto", sans-serif;
   scrollbar-width: thin;
-  scrollbar-color: #14262c #2d4b5b;
-}
-
-/* Works on Chrome, Edge, and Safari */
-*::-webkit-scrollbar {
-  width: 12px;
-}
-
-*::-webkit-scrollbar-track {
-  background: #2d4b5b;
-}
-
-*::-webkit-scrollbar-thumb {
-  background-color: #14262c;
-  border-radius: 20px;
-  border: 3px solid #2d4b5b;
 }
 
 :focus {
   outline: 0;
-}
-
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-  -webkit-animation: autofill 0s forwards;
-  animation: autofill 0s forwards;
-  -webkit-text-fill-color: #fff !important;
-  caret-color: transparent !important;
-  -webkit-box-shadow: 0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important;
-  border-top-left-radius: inherit;
-  border-top-right-radius: inherit;
 }
 
 @keyframes autofill {
@@ -64,19 +35,10 @@ a:focus {
   text-decoration: none;
 }
 
-a {
-  color: #00bcd4;
-}
-
-a .MuiListItemText-primary {
-  color: #ffffff;
-}
-
 pre {
   padding: 10px;
   font-family: Consolas, monaco, monospace;
   font-size: 12px;
-  background: rgba(64, 193, 255, 0.2);
   border-radius: 5px;
   white-space: pre-wrap;
   white-space: -moz-pre-wrap;
@@ -91,28 +53,6 @@ code {
   padding: 3px;
   font-size: 12px;
   font-weight: 400;
-  background: rgba(64, 193, 255, 0.2);
-}
-
-span.icon {
-  font-family: "Roboto", sans-serif;
-  display: block;
-  float: right;
-  padding: 2px 0 0 0;
-  color: #00bcd4;
-  font-weight: 400;
-}
-
-span.red {
-  color: #f44336;
-}
-
-span.green {
-  color: #4caf50;
-}
-
-span.teal {
-  color: #80cbc4;
 }
 
 span.raw {
@@ -158,90 +98,15 @@ div.markdown p {
   text-overflow: ellipsis;
 }
 
-.fakeItem {
-  display: inline-block;
-  position: relative;
-  height: 1em;
-  font-size: 13px;
-  background: #4f4f4f;
-  overflow: hidden;
-}
-
-.fakeItem:after {
-  overflow: hidden;
-  width: 50%;
-  height: 100%;
-  content: "";
-  position: absolute;
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0),
-    rgba(255, 255, 255, 0.18),
-    rgba(0, 0, 0, 0)
-  );
-  transform: translateX(-100%);
-  animation: loading 1s infinite;
-}
-
 .leaflet-container {
   width: 100%;
   height: 100%;
   border-radius: 6px;
 }
 
-.react-mde {
-  border: 0 !important;
-  border-bottom: 1px solid #b9bfc1 !important;
-}
-
-.error .react-mde {
-  border: 0 !important;
-  border-bottom: 2px solid #f44336 !important;
-  margin-bottom: -1px !important;
-}
-
-.react-mde:hover {
-  border-bottom: 2px solid #ffffff !important;
-  margin-bottom: -1px !important;
-}
-
-.error .react-mde:hover {
-  border: 0 !important;
-  border-bottom: 2px solid #f44336 !important;
-  margin-bottom: -1px !important;
-}
-
-.mde-header {
-  border: 0 !important;
-  background-color: transparent !important;
-  color: #ffffff !important;
-}
-
-.mde-header-item button {
-  color: #ffffff !important;
-}
-
-.mde-tabs button {
-  color: #ffffff !important;
-}
-
-.mde-textarea-wrapper textarea {
-  color: #ffffff;
-  background-color: #14262c;
-}
-
-.MuiDialog-container .mde-textarea-wrapper textarea {
-  color: #ffffff !important;
-  background-color: #28353a !important;
-}
-
 .react-grid-item > .react-resizable-handle::after {
   border-right: 2px solid rgba(255, 255, 255, 0.4) !important;
   border-bottom: 2px solid rgba(255, 255, 255, 0.4) !important;
-}
-
-.react-grid-placeholder {
-  background-color: rgba(0, 188, 212, 0.8) !important;
 }
 
 .layout {
@@ -276,14 +141,4 @@ div.markdown p {
 
 .react_time_range__rail__inner {
   background-color: transparent !important;
-}
-
-.react_time_range__track {
-  background-color: rgba(1, 226, 255, 0.1) !important;
-  border-left: 1px solid #00bcd4 !important;
-  border-right: 1px solid #00bcd4 !important;
-}
-
-.react_time_range__handle_marker {
-  background-color: #00bcd4 !important;
 }

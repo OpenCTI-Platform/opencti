@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import {
   YAxis,
@@ -60,7 +60,6 @@ import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
 import { dateFormat } from '../../../../utils/Time';
 import { parseDomain } from '../../../../utils/Graph';
-import ThemeDark from '../../../../components/ThemeDark';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -246,6 +245,7 @@ class InvestigationGraphBar extends Component {
       handleToggleDisplayTimeRange,
       handleTimeRangeChange,
       timeRangeValues,
+      theme,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -881,7 +881,7 @@ class InvestigationGraphBar extends Component {
                   />
                   <Scatter
                     data={timeRangeValues}
-                    fill={ThemeDark.palette.primary.main}
+                    fill={theme.palette.primary.main}
                   />
                 </ScatterChart>
               </ResponsiveContainer>
@@ -942,6 +942,11 @@ InvestigationGraphBar.propTypes = {
   timeRangeInterval: PropTypes.array,
   selectedTimeRangeInterval: PropTypes.array,
   timeRangeValues: PropTypes.array,
+  theme: PropTypes.object,
 };
 
-export default R.compose(inject18n, withStyles(styles))(InvestigationGraphBar);
+export default R.compose(
+  inject18n,
+  withTheme,
+  withStyles(styles),
+)(InvestigationGraphBar);

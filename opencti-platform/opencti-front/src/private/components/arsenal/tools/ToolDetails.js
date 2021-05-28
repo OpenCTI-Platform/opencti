@@ -16,7 +16,7 @@ import Chip from '@material-ui/core/Chip';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
-const styles = () => ({
+const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -27,7 +27,7 @@ const styles = () => ({
   chip: {
     fontSize: 12,
     lineHeight: '12px',
-    backgroundColor: 'rgba(0, 150, 136, 0.3)',
+    backgroundColor: theme.palette.background.chip,
     color: '#ffffff',
     textTransform: 'uppercase',
     borderRadius: '0',

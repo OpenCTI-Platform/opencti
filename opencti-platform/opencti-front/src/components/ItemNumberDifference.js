@@ -6,7 +6,7 @@ import { ArrowUpward, ArrowDownward, ArrowForward } from '@material-ui/icons';
 
 import inject18n from './i18n';
 
-const styles = () => ({
+const styles = (theme) => ({
   diff: {
     float: 'left',
     margin: '21px 0 0 10px',
@@ -17,7 +17,7 @@ const styles = () => ({
     margin: '2px 0 0 10px',
     float: 'left',
     fontSize: 9,
-    color: '#ffffff',
+    color: theme.palette.text.primary,
   },
   diffIcon: {
     float: 'left',

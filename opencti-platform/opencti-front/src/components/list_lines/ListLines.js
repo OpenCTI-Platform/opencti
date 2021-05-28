@@ -95,7 +95,7 @@ const styles = (theme) => ({
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: 'rgba(64, 193, 255, 0.2)',
+    backgroundColor: theme.palette.background.chip,
     marginRight: 10,
   },
 });
@@ -169,6 +169,7 @@ class ListLines extends Component {
       availableFilterKeys,
       noHeaders,
       iconExtension,
+      searchVariant,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -182,7 +183,7 @@ class ListLines extends Component {
           {typeof handleSearch === 'function' && (
             <div style={{ float: 'left', marginRight: 20 }}>
               <SearchInput
-                variant="small"
+                variant={searchVariant || 'small'}
                 onSubmit={handleSearch.bind(this)}
                 keyword={keyword}
               />
@@ -425,6 +426,7 @@ ListLines.propTypes = {
   availableFilterKeys: PropTypes.array,
   noHeaders: PropTypes.bool,
   iconExtension: PropTypes.bool,
+  searchVariant: PropTypes.string,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

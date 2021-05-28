@@ -11,6 +11,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVertOutlined, HelpOutlined } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
 import { Link } from 'react-router-dom';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
@@ -64,13 +65,7 @@ const styles = (theme) => ({
 class EntityStixSightingRelationshipLineComponent extends Component {
   render() {
     const {
-      nsd,
-      t,
-      classes,
-      dataColumns,
-      node,
-      paginationOptions,
-      isTo,
+      fsd, t, classes, dataColumns, node, paginationOptions, isTo,
     } = this.props;
     const entity = isTo ? node.from : node.to;
     const restricted = entity === null;
@@ -134,13 +129,13 @@ class EntityStixSightingRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.first_seen.width }}
               >
-                {nsd(node.first_seen)}
+                {fsd(node.first_seen)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.last_seen.width }}
               >
-                {nsd(node.last_seen)}
+                {fsd(node.last_seen)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -169,7 +164,7 @@ EntityStixSightingRelationshipLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
   isTo: PropTypes.bool,
   entityLink: PropTypes.string,
 };
@@ -344,43 +339,78 @@ class EntityStixSightingRelationshipLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.x_opencti_negative.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.attribute_count.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                <div className="fakeItem" style={{ width: '70%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.first_seen.width }}
               >
-                <div className="fakeItem" style={{ width: 140 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.last_seen.width }}
               >
-                <div className="fakeItem" style={{ width: 140 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.confidence.width }}
               >
-                <div className="fakeItem" style={{ width: 100 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={100}
+                  height="100%"
+                />
               </div>
             </div>
           }

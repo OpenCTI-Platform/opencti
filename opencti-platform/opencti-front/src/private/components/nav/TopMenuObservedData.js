@@ -79,7 +79,7 @@ class TopMenuObservedData extends Component {
           color={
             location.pathname
             === `/dashboard/events/observed_data/${observedDataId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -99,7 +99,7 @@ class TopMenuObservedData extends Component {
           color={
             location.pathname
             === `/dashboard/events/observed_data/${observedDataId}/entities`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -119,7 +119,7 @@ class TopMenuObservedData extends Component {
           color={
             location.pathname
             === `/dashboard/events/observed_data/${observedDataId}/observables`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -140,7 +140,7 @@ class TopMenuObservedData extends Component {
             color={
               location.pathname
               === `/dashboard/events/observed_data/${observedDataId}/files`
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -161,7 +161,7 @@ class TopMenuObservedData extends Component {
           color={
             location.pathname
             === `/dashboard/events/observed_data/${observedDataId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

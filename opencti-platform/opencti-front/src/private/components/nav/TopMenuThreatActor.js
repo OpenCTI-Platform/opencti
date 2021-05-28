@@ -76,7 +76,7 @@ class TopMenuThreatActor extends Component {
           color={
             location.pathname
             === `/dashboard/threats/threat_actors/${threatActorId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -98,7 +98,7 @@ class TopMenuThreatActor extends Component {
             location.pathname.includes(
               `/dashboard/threats/threat_actors/${threatActorId}/knowledge`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -118,7 +118,7 @@ class TopMenuThreatActor extends Component {
           color={
             location.pathname
             === `/dashboard/threats/threat_actors/${threatActorId}/analysis`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -140,7 +140,7 @@ class TopMenuThreatActor extends Component {
             location.pathname.includes(
               `/dashboard/threats/threat_actors/${threatActorId}/indicators`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -161,7 +161,7 @@ class TopMenuThreatActor extends Component {
             color={
               location.pathname
               === `/dashboard/threats/threat_actors/${threatActorId}/files`
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -182,7 +182,7 @@ class TopMenuThreatActor extends Component {
           color={
             location.pathname
             === `/dashboard/threats/threat_actors/${threatActorId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

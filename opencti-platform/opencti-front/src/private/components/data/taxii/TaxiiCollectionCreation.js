@@ -45,12 +45,14 @@ const styles = (theme) => ({
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
+    color: theme.palette.navAlt.backgroundHeaderText,
     padding: '20px 0px 20px 60px',
   },
   closeButton: {
     position: 'absolute',
     top: 12,
     left: 5,
+    color: 'inherit',
   },
   importButton: {
     position: 'absolute',
@@ -71,7 +73,7 @@ const styles = (theme) => ({
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: 'rgba(64, 193, 255, 0.2)',
+    backgroundColor: theme.palette.background.chip,
     margin: '0 10px 10px 0',
   },
 });
@@ -149,7 +151,7 @@ const TaxiiCollectionCreation = (props) => {
           key,
           isUniqFilter(key)
             ? [{ id, value }]
-            : R.uniqBy(R.prop('id'), [{ id, value }, filters[key]]),
+            : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
           filters,
         ),
       );

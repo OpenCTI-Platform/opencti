@@ -76,7 +76,7 @@ class TopMenuIndividual extends Component {
           color={
             location.pathname
             === `/dashboard/entities/individuals/${individualId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -98,7 +98,7 @@ class TopMenuIndividual extends Component {
             location.pathname.includes(
               `/dashboard/entities/individuals/${individualId}/knowledge`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -118,7 +118,7 @@ class TopMenuIndividual extends Component {
           color={
             location.pathname
             === `/dashboard/entities/individuals/${individualId}/analysis`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -139,7 +139,7 @@ class TopMenuIndividual extends Component {
             color={
               location.pathname
               === `/dashboard/entities/individuals/${individualId}/files`
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -160,7 +160,7 @@ class TopMenuIndividual extends Component {
           color={
             location.pathname
             === `/dashboard/entities/individuals/${individualId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

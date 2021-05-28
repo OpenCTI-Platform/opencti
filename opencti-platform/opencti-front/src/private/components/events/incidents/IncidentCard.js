@@ -12,6 +12,7 @@ import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
 import { Fire } from 'mdi-material-ui';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
@@ -88,7 +89,7 @@ class IncidentCardComponent extends Component {
       t, fsd, classes, node, onLabelClick,
     } = this.props;
     return (
-      <Card classes={{ root: classes.card }} raised={true}>
+      <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
@@ -171,7 +172,7 @@ class IncidentCardDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <Card classes={{ root: classes.cardDummy }} raised={true}>
+      <Card classes={{ root: classes.cardDummy }} raised={true} elevation={3}>
         <CardActionArea classes={{ root: classes.area }}>
           <CardHeader
             classes={{ root: classes.header }}
@@ -192,9 +193,24 @@ class IncidentCardDummyComponent extends Component {
             action={<Fire className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.contentDummy }}>
-            <div className="fakeItem" style={{ width: '90%' }} />
-            <div className="fakeItem" style={{ width: '95%' }} />
-            <div className="fakeItem" style={{ width: '90%' }} />
+            <Skeleton
+              animation="wave"
+              variant="rect"
+              width="90%"
+              style={{ marginBottom: 10 }}
+            />
+            <Skeleton
+              animation="wave"
+              variant="rect"
+              width="95%"
+              style={{ marginBottom: 10 }}
+            />
+            <Skeleton
+              animation="wave"
+              variant="rect"
+              width="90%"
+              style={{ marginBottom: 10 }}
+            />
           </CardContent>
         </CardActionArea>
       </Card>

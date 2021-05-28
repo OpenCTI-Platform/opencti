@@ -9,8 +9,8 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
-import Avatar from '@material-ui/core/Avatar';
 import { Add, Close } from '@material-ui/icons';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -42,12 +42,14 @@ const styles = (theme) => ({
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
+    color: theme.palette.navAlt.backgroundHeaderText,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
     position: 'absolute',
     top: 12,
     left: 5,
+    color: 'inherit',
   },
   container: {
     padding: 0,
@@ -83,10 +85,7 @@ class AddExternalReferences extends Component {
 
   render() {
     const {
-      t,
-      classes,
-      stixCoreObjectId,
-      stixCoreObjectExternalReferences,
+      t, classes, stixCoreObjectId, stixCoreObjectExternalReferences,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -153,21 +152,29 @@ class AddExternalReferences extends Component {
                     {Array.from(Array(20), (e, i) => (
                       <ListItem key={i} divider={true} button={false}>
                         <ListItemIcon>
-                          <Avatar classes={{ root: classes.avatar }}>
-                            {i}
-                          </Avatar>
+                          <Skeleton
+                            animation="wave"
+                            variant="circle"
+                            width={30}
+                            height={30}
+                          />
                         </ListItemIcon>
                         <ListItemText
                           primary={
-                            <span
-                              className="fakeItem"
-                              style={{ width: '80%' }}
+                            <Skeleton
+                              animation="wave"
+                              variant="rect"
+                              width="90%"
+                              height={15}
+                              style={{ marginBottom: 10 }}
                             />
                           }
                           secondary={
-                            <span
-                              className="fakeItem"
-                              style={{ width: '90%' }}
+                            <Skeleton
+                              animation="wave"
+                              variant="rect"
+                              width="90%"
+                              height={15}
                             />
                           }
                         />

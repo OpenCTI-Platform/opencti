@@ -3,7 +3,7 @@ import { compose, includes, map } from 'ramda';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { ApplicationError } from '../../relay/environment';
-import Login from '../../public/components/Login';
+import RootPublic from '../../public/Root';
 
 class AuthBoundaryComponent extends React.Component {
   constructor(props) {
@@ -23,7 +23,7 @@ class AuthBoundaryComponent extends React.Component {
         if (includes('ForbiddenAccess', types)) window.location.href = '/';
         // If user not authenticated, redirect to login with encoded path
         if (includes('AuthRequired', types)) {
-          return <Login />;
+          return <RootPublic />;
         }
       }
     }

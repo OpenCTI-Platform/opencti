@@ -24,12 +24,14 @@ import {
 const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
+    color: theme.palette.navAlt.backgroundHeaderText,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
     position: 'absolute',
     top: 12,
     left: 5,
+    color: 'inherit',
   },
   importButton: {
     position: 'absolute',
@@ -85,16 +87,16 @@ const labelValidation = (t) => Yup.object().shape({
 });
 
 class LabelEditionContainer extends Component {
-  componentDidMount() {
-    const sub = requestSubscription({
+  constructor(props) {
+    super(props);
+    this.sub = requestSubscription({
       subscription,
-      variables: { id: this.props.label.id },
+      variables: { id: props.label.id },
     });
-    this.setState({ sub });
   }
 
   componentWillUnmount() {
-    this.state.sub.dispose();
+    this.sub.dispose();
   }
 
   handleChangeFocus(name) {

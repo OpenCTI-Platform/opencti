@@ -7,8 +7,8 @@ import Paper from '@material-ui/core/Paper';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
-import { DescriptionOutlined } from '@material-ui/icons';
 import ListItemText from '@material-ui/core/ListItemText';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines, {
   simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery,
@@ -124,17 +124,31 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
                       divider={true}
                       button={false}
                     >
-                      <ListItemIcon
-                        classes={{ root: classes.itemIconDisabled }}
-                      >
-                        <DescriptionOutlined />
+                      <ListItemIcon classes={{ root: classes.itemIcon }}>
+                        <Skeleton
+                          animation="wave"
+                          variant="circle"
+                          width={30}
+                          height={30}
+                        />
                       </ListItemIcon>
                       <ListItemText
                         primary={
-                          <span className="fakeItem" style={{ width: '80%' }} />
+                          <Skeleton
+                            animation="wave"
+                            variant="rect"
+                            width="90%"
+                            height={15}
+                            style={{ marginBottom: 10 }}
+                          />
                         }
                         secondary={
-                          <span className="fakeItem" style={{ width: '90%' }} />
+                          <Skeleton
+                            animation="wave"
+                            variant="rect"
+                            width="90%"
+                            height={15}
+                          />
                         }
                       />
                     </ListItem>

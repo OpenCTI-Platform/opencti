@@ -8,9 +8,10 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVertOutlined, HelpOutlined } from '@material-ui/icons';
+import { MoreVertOutlined } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
 import { Link } from 'react-router-dom';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
@@ -65,13 +66,7 @@ const styles = (theme) => ({
 class StixSightingRelationshipLineComponent extends Component {
   render() {
     const {
-      nsd,
-      t,
-      fd,
-      classes,
-      dataColumns,
-      node,
-      paginationOptions,
+      fsd, t, fd, classes, dataColumns, node, paginationOptions,
     } = this.props;
     return (
       <ListItem
@@ -132,13 +127,13 @@ class StixSightingRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.first_seen.width }}
               >
-                {nsd(node.first_seen)}
+                {fsd(node.first_seen)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.last_seen.width }}
               >
-                {nsd(node.last_seen)}
+                {fsd(node.last_seen)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -166,7 +161,7 @@ StixSightingRelationshipLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
 };
 
 const StixSightingRelationshipLineFragment = createFragmentContainer(
@@ -301,8 +296,8 @@ class StixSightingRelationshipLineDummyComponent extends Component {
     const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <HelpOutlined />
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <Skeleton animation="wave" variant="circle" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -311,43 +306,78 @@ class StixSightingRelationshipLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.x_opencti_negative.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.attribute_count.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                <div className="fakeItem" style={{ width: '70%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.first_seen.width }}
               >
-                <div className="fakeItem" style={{ width: 140 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.last_seen.width }}
               >
-                <div className="fakeItem" style={{ width: 140 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.confidence.width }}
               >
-                <div className="fakeItem" style={{ width: 100 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={100}
+                  height="100%"
+                />
               </div>
             </div>
           }

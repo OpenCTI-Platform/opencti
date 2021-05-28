@@ -74,7 +74,7 @@ class TopMenuCountry extends Component {
           size="small"
           color={
             location.pathname === `/dashboard/entities/countries/${countryId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -96,7 +96,7 @@ class TopMenuCountry extends Component {
             location.pathname.includes(
               `/dashboard/entities/countries/${countryId}/knowledge`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -116,7 +116,7 @@ class TopMenuCountry extends Component {
           color={
             location.pathname
             === `/dashboard/entities/countries/${countryId}/analysis`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -137,7 +137,7 @@ class TopMenuCountry extends Component {
             color={
               location.pathname
               === `/dashboard/entities/countries/${countryId}/files`
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -158,7 +158,7 @@ class TopMenuCountry extends Component {
           color={
             location.pathname
             === `/dashboard/entities/countries/${countryId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

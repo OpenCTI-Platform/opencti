@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -56,7 +56,6 @@ import {
   fetchQuery,
   MESSAGING$,
 } from '../../../relay/environment';
-import ThemeDark from '../../../components/ThemeDark';
 import ItemMarking from '../../../components/ItemMarking';
 import ItemIcon from '../../../components/ItemIcon';
 import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
@@ -94,12 +93,14 @@ const styles = (theme) => ({
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
+    color: theme.palette.navAlt.backgroundHeaderText,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
     position: 'absolute',
     top: 12,
     left: 5,
+    color: 'inherit',
   },
   buttons: {
     marginTop: 20,
@@ -130,7 +131,7 @@ const styles = (theme) => ({
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: 'rgba(64, 193, 255, 0.2)',
+    backgroundColor: theme.palette.background.chip,
     margin: '5px 10px 5px 0',
   },
   step: {
@@ -384,7 +385,7 @@ class ToolBar extends Component {
         context: n.context
           ? {
             ...n.context,
-            values: R.map((o) => o.id || o.value, n.context.values),
+            values: R.map((o) => o.id || o.value || o, n.context.values),
           }
           : null,
       }),
@@ -468,6 +469,10 @@ class ToolBar extends Component {
         {
           label: t('Score'),
           value: 'x_opencti_score',
+        },
+        {
+          label: t('Confidence'),
+          value: 'confidence',
         },
       ];
     } else if (actionsInputs[i]?.type === 'REMOVE') {
@@ -690,6 +695,23 @@ class ToolBar extends Component {
             )}
           />
         );
+      case 'confidence':
+        return (
+          <FormControl style={{ width: '100%' }}>
+            <InputLabel>{t('Values')}</InputLabel>
+            <Select
+              onChange={this.handleChangeActionInputValuesReplace.bind(this, i)}
+              label={t('Values')}
+              fullWidth={true}
+            >
+              <MenuItem value="0">{t('None')}</MenuItem>
+              <MenuItem value="15">{t('Low')}</MenuItem>
+              <MenuItem value="50">{t('Moderate')}</MenuItem>
+              <MenuItem value="75">{t('Good')}</MenuItem>
+              <MenuItem value="85">{t('Strong')}</MenuItem>
+            </Select>
+          </FormControl>
+        );
       default:
         return (
           <TextField
@@ -723,6 +745,7 @@ class ToolBar extends Component {
       selectAll,
       filters,
       withPaddingRight,
+      theme,
     } = this.props;
     const {
       actions, keptEntityId, mergingElement, actionsInputs,
@@ -782,7 +805,8 @@ class ToolBar extends Component {
               style={{
                 padding: '2px 5px 2px 5px',
                 marginRight: 5,
-                backgroundColor: ThemeDark.palette.secondary.main,
+                backgroundColor: theme.palette.secondary.main,
+                color: '#ffffff',
               }}
             >
               {numberOfSelectedElements}
@@ -859,7 +883,8 @@ class ToolBar extends Component {
                 style={{
                   padding: '2px 5px 2px 5px',
                   marginRight: 5,
-                  backgroundColor: ThemeDark.palette.secondary.main,
+                  backgroundColor: theme.palette.secondary.main,
+                  color: '#ffffff',
                 }}
               >
                 {n(numberOfSelectedElements)}
@@ -893,8 +918,11 @@ class ToolBar extends Component {
                         style={{
                           padding: '2px 5px 2px 5px',
                           marginRight: 5,
-                          color: '#000000',
-                          backgroundColor: ThemeDark.palette.primary.main,
+                          color:
+                            theme.palette.type === 'dark'
+                              ? '#000000'
+                              : '#ffffff',
+                          backgroundColor: theme.palette.primary.main,
                         }}
                       >
                         1
@@ -985,8 +1013,11 @@ class ToolBar extends Component {
                             style={{
                               padding: '2px 5px 2px 5px',
                               marginRight: 5,
-                              color: '#000000',
-                              backgroundColor: ThemeDark.palette.primary.main,
+                              color:
+                                theme.palette.type === 'dark'
+                                  ? '#000000'
+                                  : '#ffffff',
+                              backgroundColor: theme.palette.primary.main,
                             }}
                           >
                             {number + 2}
@@ -1277,6 +1308,7 @@ class ToolBar extends Component {
 
 ToolBar.propTypes = {
   classes: PropTypes.object,
+  theme: PropTypes.object,
   t: PropTypes.func,
   numberOfSelectedElements: PropTypes.number,
   selectedElements: PropTypes.object,
@@ -1286,4 +1318,4 @@ ToolBar.propTypes = {
   withPaddingRight: PropTypes.bool,
 };
 
-export default R.compose(inject18n, withStyles(styles))(ToolBar);
+export default R.compose(inject18n, withTheme, withStyles(styles))(ToolBar);

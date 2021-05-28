@@ -18,6 +18,7 @@ import TextField from '../../../components/TextField';
 import inject18n from '../../../components/i18n';
 import Security, { EXPLORE_EXUPDATE } from '../../../utils/Security';
 import WorkspacePopover from './WorkspacePopover';
+import ExportButtons from '../../../components/ExportButtons';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -31,6 +32,10 @@ const styles = () => ({
   },
   popover: {
     float: 'left',
+    marginTop: '-13px',
+  },
+  export: {
+    float: 'right',
     marginTop: '-13px',
   },
   tags: {
@@ -144,17 +149,20 @@ class WorkspaceHeader extends Component {
             <WorkspacePopover id={workspace.id} type={workspace.type} />
           </div>
         </Security>
+        <div className={classes.export}>
+          <ExportButtons domElementId="container" name={workspace.name} />
+        </div>
         <div className={classes.tags}>
-          {take(5, tags).map((tag) => (tag.length > 0 ? (
-              <Chip
-                key={tag}
-                classes={{ root: classes.tag }}
-                label={tag}
-                onDelete={this.deleteTag.bind(this, tag)}
-              />
-          ) : (
-            ''
-          )))}
+          {take(5, tags).map(
+            (tag) => tag.length > 0 && (
+                <Chip
+                  key={tag}
+                  classes={{ root: classes.tag }}
+                  label={tag}
+                  onDelete={this.deleteTag.bind(this, tag)}
+                />
+            ),
+          )}
           <Security needs={[EXPLORE_EXUPDATE]}>
             {tags.length > 5 ? (
               <Button

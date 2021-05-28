@@ -38,7 +38,7 @@ const styles = (theme) => ({
     padding: '20px 0 20px 0',
   },
   expansionPanel: {
-    backgroundColor: '#193E45',
+    backgroundColor: theme.palette.action.expansion,
   },
   heading: {
     fontSize: theme.typography.pxToRem(15),
@@ -122,11 +122,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
 
   toggleStixCoreObject(stixCoreObject) {
     const {
-      containerId,
-      paginationOptions,
-      knowledgeGraph,
-      onAdd,
-      onDelete,
+      containerId, paginationOptions, knowledgeGraph, onAdd, onDelete,
     } = this.props;
     const { addedStixCoreObjects } = this.state;
     const containerStixCoreObjectsIds = this.getContainerStixCoreObjectsIds();

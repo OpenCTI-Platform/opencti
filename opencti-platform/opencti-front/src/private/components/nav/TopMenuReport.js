@@ -77,7 +77,7 @@ class TopMenuReport extends Component {
           size="small"
           color={
             location.pathname === `/dashboard/analysis/reports/${reportId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -97,7 +97,7 @@ class TopMenuReport extends Component {
           color={
             location.pathname
             === `/dashboard/analysis/reports/${reportId}/entities`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -117,7 +117,7 @@ class TopMenuReport extends Component {
           color={
             location.pathname
             === `/dashboard/analysis/reports/${reportId}/observables`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -139,7 +139,7 @@ class TopMenuReport extends Component {
             location.pathname.includes(
               `/dashboard/analysis/reports/${reportId}/knowledge`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -160,7 +160,7 @@ class TopMenuReport extends Component {
             color={
               location.pathname
               === `/dashboard/analysis/reports/${reportId}/files`
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -181,7 +181,7 @@ class TopMenuReport extends Component {
           color={
             location.pathname
             === `/dashboard/analysis/reports/${reportId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

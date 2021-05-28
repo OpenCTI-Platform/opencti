@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
+import StixCoreObjectCampaignsVerticalBars from '../../threats/campaigns/StixCoreObjectCampaignsVerticalBars';
+import StixCoreObjectCampaignsAreaChart from '../../threats/campaigns/StixCoreObjectCampaignsAreaChart';
 
 const styles = () => ({
   container: {
@@ -10,10 +12,32 @@ const styles = () => ({
   },
 });
 
-class ThreatVictimologyAll extends Component {
+class EntityActivityCampaigns extends Component {
   render() {
-    const { t, widget } = this.props;
+    const {
+      t, widget, startDate, endDate,
+    } = this.props;
     switch (widget.visualizationType) {
+      case 'area':
+        return (
+          <StixCoreObjectCampaignsAreaChart
+            title={`${t('Campaigns')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
+      case 'vertical-bar':
+        return (
+          <StixCoreObjectCampaignsVerticalBars
+            title={`${t('Campaigns')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
       case 'donut':
         return (
           <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -46,7 +70,7 @@ class ThreatVictimologyAll extends Component {
   }
 }
 
-ThreatVictimologyAll.propTypes = {
+EntityActivityCampaigns.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   widget: PropTypes.object,
@@ -54,4 +78,4 @@ ThreatVictimologyAll.propTypes = {
   t: PropTypes.func,
 };
 
-export default R.compose(inject18n, withStyles(styles))(ThreatVictimologyAll);
+export default R.compose(inject18n, withStyles(styles))(EntityActivityCampaigns);

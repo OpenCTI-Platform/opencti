@@ -11,6 +11,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { AccountBalanceOutlined } from '@material-ui/icons';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -51,7 +52,6 @@ const inlineStyles = {
     maxWidth: 80,
     marginRight: 24,
     marginLeft: 24,
-    color: '#ffffff',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -61,7 +61,6 @@ const inlineStyles = {
     minWidth: 80,
     maxWidth: 80,
     marginRight: 24,
-    color: '#ffffff',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -116,7 +115,7 @@ const sectorTargetedOrganizationsQuery = graphql`
 class SectorTargetedOrganizations extends Component {
   render() {
     const {
-      t, nsd, classes, sectorId,
+      t, fsd, classes, sectorId,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -160,7 +159,7 @@ class SectorTargetedOrganizations extends Component {
                                 {pathOr('', ['createdBy', 'name'], relation)}
                               </div>
                               <div style={inlineStyles.itemDate}>
-                                {nsd(relation.start_time)}
+                                {fsd(relation.start_time)}
                               </div>
                               <div style={{ width: 110, paddingRight: 20 }}>
                                 {markingDefinition ? (
@@ -214,17 +213,31 @@ class SectorTargetedOrganizations extends Component {
                       divider={true}
                       button={false}
                     >
-                      <ListItemIcon
-                        classes={{ root: classes.itemIconDisabled }}
-                      >
-                        <AccountBalanceOutlined />
+                      <ListItemIcon classes={{ root: classes.itemIcon }}>
+                        <Skeleton
+                          animation="wave"
+                          variant="circle"
+                          width={30}
+                          height={30}
+                        />
                       </ListItemIcon>
                       <ListItemText
                         primary={
-                          <span className="fakeItem" style={{ width: '80%' }} />
+                          <Skeleton
+                            animation="wave"
+                            variant="rect"
+                            width="90%"
+                            height={15}
+                            style={{ marginBottom: 10 }}
+                          />
                         }
                         secondary={
-                          <span className="fakeItem" style={{ width: '90%' }} />
+                          <Skeleton
+                            animation="wave"
+                            variant="rect"
+                            width="90%"
+                            height={15}
+                          />
                         }
                       />
                     </ListItem>
@@ -243,7 +256,7 @@ SectorTargetedOrganizations.propTypes = {
   sectorId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
 };
 
 export default compose(

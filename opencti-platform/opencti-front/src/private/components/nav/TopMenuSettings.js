@@ -42,7 +42,7 @@ class TopMenuSettings extends Component {
           color={
             location.pathname === '/dashboard/settings'
             || location.pathname === '/dashboard/settings/about'
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -61,7 +61,7 @@ class TopMenuSettings extends Component {
             size="small"
             color={
               location.pathname.includes('/dashboard/settings/accesses')
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -81,7 +81,7 @@ class TopMenuSettings extends Component {
             size="small"
             color={
               location.pathname === '/dashboard/settings/marking'
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -100,7 +100,7 @@ class TopMenuSettings extends Component {
           size="small"
           color={
             location.pathname.includes('/dashboard/settings/killchains')
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -119,7 +119,7 @@ class TopMenuSettings extends Component {
             size="small"
             color={
               location.pathname.includes('/dashboard/settings/attributes')
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}

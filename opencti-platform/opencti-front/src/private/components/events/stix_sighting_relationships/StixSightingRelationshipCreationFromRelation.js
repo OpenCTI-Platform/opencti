@@ -15,11 +15,11 @@ import { Add, ArrowRightAlt, Close } from '@material-ui/icons';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
-import Avatar from '@material-ui/core/Avatar';
 import ListItemText from '@material-ui/core/ListItemText';
 import Fab from '@material-ui/core/Fab';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
+import Skeleton from '@material-ui/lab/Skeleton';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -74,12 +74,14 @@ const styles = (theme) => ({
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
+    color: theme.palette.navAlt.backgroundHeaderText,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
     position: 'absolute',
     top: 12,
     left: 5,
+    color: 'inherit',
   },
   container: {
     padding: 0,
@@ -114,7 +116,7 @@ const styles = (theme) => ({
   type: {
     width: '100%',
     textAlign: 'center',
-    color: '#ffffff',
+    color: theme.palette.text.primary,
     fontSize: 11,
   },
   content: {
@@ -122,7 +124,7 @@ const styles = (theme) => ({
     height: 40,
     maxHeight: 40,
     lineHeight: '40px',
-    color: '#ffffff',
+    color: theme.palette.text.primary,
     textAlign: 'center',
   },
   name: {
@@ -161,7 +163,7 @@ const styles = (theme) => ({
     width: 200,
     textAlign: 'center',
     padding: 0,
-    color: '#ffffff',
+    color: theme.palette.text.primary,
   },
   buttonBack: {
     marginTop: 20,
@@ -436,17 +438,38 @@ class StixSightingRelationshipCreationFromRelation extends Component {
     this.setState({ step: 1, targetEntity: stixDomainObject });
   }
 
+  // eslint-disable-next-line class-methods-use-this
   renderFakeList() {
     return (
       <List>
         {Array.from(Array(20), (e, i) => (
           <ListItem key={i} divider={true} button={false}>
             <ListItemIcon>
-              <Avatar classes={{ root: this.props.classes.avatar }}>{i}</Avatar>
+              <Skeleton
+                animation="wave"
+                variant="circle"
+                width={30}
+                height={30}
+              />
             </ListItemIcon>
             <ListItemText
-              primary={<span className="fakeItem" style={{ width: '80%' }} />}
-              secondary={<span className="fakeItem" style={{ width: '90%' }} />}
+              primary={
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height={15}
+                  style={{ marginBottom: 10 }}
+                />
+              }
+              secondary={
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height={15}
+                />
+              }
             />
           </ListItem>
         ))}
@@ -456,10 +479,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
 
   renderSelectEntity() {
     const {
-      classes,
-      t,
-      targetStixDomainObjectTypes,
-      onlyObservables,
+      classes, t, targetStixDomainObjectTypes, onlyObservables,
     } = this.props;
     const stixDomainObjectsPaginationOptions = {
       search: this.state.search,
@@ -885,7 +905,7 @@ StixSightingRelationshipCreationFromRelation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
   variant: PropTypes.string,
   onCreate: PropTypes.func,
   paddingRight: PropTypes.bool,

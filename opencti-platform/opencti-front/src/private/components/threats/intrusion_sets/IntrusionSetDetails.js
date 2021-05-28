@@ -16,7 +16,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
 import IntrusionSetLocations from './IntrusionSetLocations';
 
-const styles = () => ({
+const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -27,10 +27,10 @@ const styles = () => ({
   chip: {
     fontSize: 12,
     lineHeight: '12px',
-    backgroundColor: 'rgba(0, 150, 136, 0.3)',
+    backgroundColor: theme.palette.background.chip,
+    borderRadius: 5,
     color: '#ffffff',
     textTransform: 'uppercase',
-    borderRadius: '0',
     margin: '0 5px 5px 0',
   },
 });

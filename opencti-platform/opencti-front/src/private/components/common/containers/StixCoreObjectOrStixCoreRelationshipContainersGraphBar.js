@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import {
   AspectRatio,
@@ -45,7 +45,6 @@ import { dateFormat } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
 import { parseDomain } from '../../../../utils/Graph';
-import ThemeDark from '../../../../components/ThemeDark';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -177,6 +176,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
       timeRangeValues,
       handleChangeView,
       disabled,
+      theme,
     } = this.props;
     if (disabled) {
       return (
@@ -210,7 +210,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
               >
                 <Tooltip title={t('Lines view')}>
                   <IconButton
-                    color='primary'
+                    color="primary"
                     onClick={handleChangeView.bind(this, 'lines')}
                   >
                     <TableChartOutlined />
@@ -218,7 +218,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                 </Tooltip>
                 <Tooltip title={t('Graph view')}>
                   <IconButton
-                    color='secondary'
+                    color="secondary"
                     onClick={handleChangeView.bind(this, 'graph')}
                   >
                     <GraphOutline />
@@ -421,7 +421,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
             >
               <Tooltip title={t('Lines view')}>
                 <IconButton
-                  color='primary'
+                  color="primary"
                   onClick={handleChangeView.bind(this, 'lines')}
                 >
                   <TableChartOutlined />
@@ -429,7 +429,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
               </Tooltip>
               <Tooltip title={t('Graph view')}>
                 <IconButton
-                  color='secondary'
+                  color="secondary"
                   onClick={handleChangeView.bind(this, 'graph')}
                 >
                   <GraphOutline />
@@ -780,7 +780,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                     />
                     <Scatter
                       data={timeRangeValues}
-                      fill={ThemeDark.palette.primary.main}
+                      fill={theme.palette.primary.main}
                     />
                   </ScatterChart>
                 </ResponsiveContainer>
@@ -838,9 +838,11 @@ StixCoreObjectOrStixCoreRelationshipContainersGraphBar.propTypes = {
   selectedTimeRangeInterval: PropTypes.array,
   timeRangeValues: PropTypes.array,
   disabled: PropTypes.bool,
+  theme: PropTypes.object,
 };
 
 export default R.compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(StixCoreObjectOrStixCoreRelationshipContainersGraphBar);

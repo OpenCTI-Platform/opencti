@@ -11,6 +11,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { DescriptionOutlined } from '@material-ui/icons';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -52,7 +53,6 @@ const inlineStyles = {
     maxWidth: 80,
     marginRight: 24,
     marginLeft: 24,
-    color: '#ffffff',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -62,7 +62,6 @@ const inlineStyles = {
     minWidth: 80,
     maxWidth: 80,
     marginRight: 24,
-    color: '#ffffff',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -112,22 +111,19 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
   render() {
     const {
       t,
-      nsd,
+      fsd,
       classes,
       stixCoreObjectOrStixCoreRelationshipId,
       authorId,
     } = this.props;
     const filters = [];
-
     if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
-
     if (stixCoreObjectOrStixCoreRelationshipId) {
       filters.push({
         key: 'objectContains',
         values: [stixCoreObjectOrStixCoreRelationshipId],
       });
     }
-
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -178,7 +174,7 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
                               {pathOr('', ['createdBy', 'name'], report)}
                             </div>
                             <div style={inlineStyles.itemDate}>
-                              {nsd(report.published)}
+                              {fsd(report.published)}
                             </div>
                             <div style={{ width: 110, paddingRight: 20 }}>
                               {markingDefinition ? (
@@ -228,17 +224,31 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
                       divider={true}
                       button={false}
                     >
-                      <ListItemIcon
-                        classes={{ root: classes.itemIconDisabled }}
-                      >
-                        <DescriptionOutlined />
+                      <ListItemIcon classes={{ root: classes.itemIcon }}>
+                        <Skeleton
+                          animation="wave"
+                          variant="circle"
+                          width={30}
+                          height={30}
+                        />
                       </ListItemIcon>
                       <ListItemText
                         primary={
-                          <span className="fakeItem" style={{ width: '80%' }} />
+                          <Skeleton
+                            animation="wave"
+                            variant="rect"
+                            width="90%"
+                            height={15}
+                            style={{ marginBottom: 10 }}
+                          />
                         }
                         secondary={
-                          <span className="fakeItem" style={{ width: '90%' }} />
+                          <Skeleton
+                            animation="wave"
+                            variant="rect"
+                            width="90%"
+                            height={15}
+                          />
                         }
                       />
                     </ListItem>
@@ -258,7 +268,7 @@ StixCoreObjectOrStixCoreRelationshipLastReports.propTypes = {
   authorId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
 };
 
 export default compose(

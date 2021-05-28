@@ -73,7 +73,7 @@ class TopMenuAttackPattern extends Component {
           color={
             location.pathname
             === `/dashboard/arsenal/attack_patterns/${attackPatternId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -95,7 +95,7 @@ class TopMenuAttackPattern extends Component {
             location.pathname.includes(
               `/dashboard/arsenal/attack_patterns/${attackPatternId}/knowledge`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -115,7 +115,7 @@ class TopMenuAttackPattern extends Component {
           color={
             location.pathname
             === `/dashboard/arsenal/attack_patterns/${attackPatternId}/analysis`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -137,7 +137,7 @@ class TopMenuAttackPattern extends Component {
             location.pathname.includes(
               `/dashboard/arsenal/attack_patterns/${attackPatternId}/indicators`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -157,7 +157,7 @@ class TopMenuAttackPattern extends Component {
           color={
             location.pathname
             === `/dashboard/arsenal/attack_patterns/${attackPatternId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

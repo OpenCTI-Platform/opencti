@@ -12,14 +12,13 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
-import Theme from '../../../../components/ThemeDark';
 import { truncate } from '../../../../utils/String';
 
 const styles = () => ({
@@ -64,7 +63,7 @@ const tickFormatter = (title) => truncate(title, 10);
 class ReportsHorizontalBars extends Component {
   renderContent() {
     const {
-      t, field, startDate, endDate,
+      t, field, startDate, endDate, theme,
     } = this.props;
     const reportsDistributionVariables = {
       field: field || 'report_types',
@@ -98,18 +97,21 @@ class ReportsHorizontalBars extends Component {
                   <XAxis
                     type="number"
                     dataKey="value"
-                    stroke="#ffffff"
+                    stroke={theme.palette.text.primary}
                     allowDecimals={false}
                   />
                   <YAxis
-                    stroke="#ffffff"
+                    stroke={theme.palette.text.primary}
                     dataKey={field.includes('.') ? 'entity.name' : 'label'}
                     type="category"
                     angle={-30}
                     textAnchor="end"
                     tickFormatter={tickFormatter}
                   />
-                  <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
+                  <CartesianGrid
+                    strokeDasharray="2 2"
+                    stroke={theme.palette.action.grid}
+                  />
                   <Tooltip
                     cursor={{
                       fill: 'rgba(0, 0, 0, 0.2)',
@@ -123,7 +125,7 @@ class ReportsHorizontalBars extends Component {
                     }}
                   />
                   <Bar
-                    fill={Theme.palette.primary.main}
+                    fill={theme.palette.primary.main}
                     dataKey="value"
                     barSize={15}
                   >
@@ -198,7 +200,12 @@ ReportsHorizontalBars.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   classes: PropTypes.object,
+  theme: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(ReportsHorizontalBars);
+export default compose(
+  inject18n,
+  withTheme,
+  withStyles(styles),
+)(ReportsHorizontalBars);

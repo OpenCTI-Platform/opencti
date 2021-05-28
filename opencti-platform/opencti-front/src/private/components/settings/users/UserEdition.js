@@ -10,7 +10,6 @@ import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { Close } from '@material-ui/icons';
-import { requestSubscription } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import UserEditionOverview from './UserEditionOverview';
@@ -20,12 +19,14 @@ import UserEditionGroups from './UserEditionGroups';
 const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
+    color: theme.palette.navAlt.backgroundHeaderText,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
     position: 'absolute',
     top: 12,
     left: 5,
+    color: 'inherit',
   },
   importButton: {
     position: 'absolute',
@@ -39,7 +40,7 @@ const styles = (theme) => ({
     width: '100%',
     zIndex: theme.zIndex.drawer + 1,
     backgroundColor: theme.palette.navAlt.background,
-    color: theme.palette.header.text,
+    color: theme.palette.text.primary,
     borderBottom: '1px solid #5c5c5c',
   },
   title: {
@@ -47,30 +48,10 @@ const styles = (theme) => ({
   },
 });
 
-const subscription = graphql`
-  subscription UserEditionSubscription($id: ID!) {
-    user(id: $id) {
-      ...UserEdition_user
-    }
-  }
-`;
-
 class UserEdition extends Component {
   constructor(props) {
     super(props);
     this.state = { currentTab: 0 };
-  }
-
-  componentDidMount() {
-    const sub = requestSubscription({
-      subscription,
-      variables: { id: this.props.user.id },
-    });
-    this.setState({ sub });
-  }
-
-  componentWillUnmount() {
-    this.state.sub.dispose();
   }
 
   handleChangeTab(event, value) {

@@ -35,7 +35,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Markdown from 'react-markdown';
-import Avatar from '@material-ui/core/Avatar';
+import Skeleton from '@material-ui/lab/Skeleton';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixDomainObjectsLinesSearchQuery } from '../../common/stix_domain_objects/StixDomainObjectsLines';
 import inject18n from '../../../../components/i18n';
@@ -89,8 +89,8 @@ const visualizationTypesMapping = {
   malwares: [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE],
   vulnerabilities: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, TIMELINE],
   campaigns: [AREA, TIMELINE, VERTICAL_BAR],
+  incidents: [AREA, TIMELINE, VERTICAL_BAR],
   indicators: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA],
-  incidents: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA],
   reports: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA],
 };
 
@@ -150,10 +150,7 @@ class WidgetCreation extends Component {
 
   completeSetup() {
     const {
-      perspective,
-      dataType,
-      visualizationType,
-      selectedEntity,
+      perspective, dataType, visualizationType, selectedEntity,
     } = this.state;
     this.props.onComplete({
       id: uuid(),
@@ -192,7 +189,6 @@ class WidgetCreation extends Component {
   }
 
   renderEntities() {
-    const { classes } = this.props;
     const { searchTerm, perspective } = this.state;
     let types = ['Threat-Actor', 'Intrusion-Set', 'Malware', 'Tool'];
     if (perspective === 'entity') {
@@ -237,14 +233,30 @@ class WidgetCreation extends Component {
               {Array.from(Array(20), (e, i) => (
                 <ListItem key={i} divider={true} button={false}>
                   <ListItemIcon>
-                    <Avatar classes={{ root: classes.avatar }}>{i}</Avatar>
+                    <Skeleton
+                      animation="wave"
+                      variant="circle"
+                      width={30}
+                      height={30}
+                    />
                   </ListItemIcon>
                   <ListItemText
                     primary={
-                      <span className="fakeItem" style={{ width: '80%' }} />
+                      <Skeleton
+                        animation="wave"
+                        variant="rect"
+                        width="90%"
+                        height={15}
+                        style={{ marginBottom: 10 }}
+                      />
                     }
                     secondary={
-                      <span className="fakeItem" style={{ width: '90%' }} />
+                      <Skeleton
+                        animation="wave"
+                        variant="rect"
+                        width="90%"
+                        height={15}
+                      />
                     }
                   />
                 </ListItem>

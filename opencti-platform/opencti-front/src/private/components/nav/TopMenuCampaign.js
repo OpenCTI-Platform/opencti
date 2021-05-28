@@ -75,7 +75,7 @@ class TopMenuCampaign extends Component {
           size="small"
           color={
             location.pathname === `/dashboard/threats/campaigns/${campaignId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -97,7 +97,7 @@ class TopMenuCampaign extends Component {
             location.pathname.includes(
               `/dashboard/threats/campaigns/${campaignId}/knowledge`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -117,7 +117,7 @@ class TopMenuCampaign extends Component {
           color={
             location.pathname
             === `/dashboard/threats/campaigns/${campaignId}/analysis`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -139,7 +139,7 @@ class TopMenuCampaign extends Component {
             location.pathname.includes(
               `/dashboard/threats/campaigns/${campaignId}/indicators`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -160,7 +160,7 @@ class TopMenuCampaign extends Component {
             color={
               location.pathname
               === `/dashboard/threats/campaigns/${campaignId}/files`
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -181,7 +181,7 @@ class TopMenuCampaign extends Component {
           color={
             location.pathname
             === `/dashboard/threats/campaigns/${campaignId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

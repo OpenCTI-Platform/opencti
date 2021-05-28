@@ -4,6 +4,7 @@ import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import * as R from 'ramda';
 import { Subject, timer } from 'rxjs';
+import { withTheme } from '@material-ui/core/styles';
 import { debounce } from 'rxjs/operators';
 import { withRouter } from 'react-router-dom';
 import ForceGraph3D from 'react-force-graph-3d';
@@ -23,7 +24,6 @@ import {
 } from '../../../../utils/Graph';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import Theme from '../../../../components/ThemeDark';
 import { stixDomainObjectMutationFieldPatch } from '../stix_domain_objects/StixDomainObjectEditionOverview';
 import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
 
@@ -41,7 +41,10 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     this.selectedLinks = new Set();
     const { params } = props;
     this.zoom = R.propOr(null, 'zoom', params);
-    this.graphObjects = R.map((n) => n.node, props.data.containersObjectsOfObject.edges);
+    this.graphObjects = R.map(
+      (n) => n.node,
+      props.data.containersObjectsOfObject.edges,
+    );
     this.graphData = buildGraphData(
       this.graphObjects,
       decodeGraphData(
@@ -214,9 +217,8 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
         () => this.saveParameters(true),
       );
     } else {
-      this.setState(
-        { createdBy: R.append(createdByRef, createdBy) }, () => this.saveParameters(true),
-      );
+      // eslint-disable-next-line max-len
+      this.setState({ createdBy: R.append(createdByRef, createdBy) }, () => this.saveParameters(true));
     }
   }
 
@@ -344,7 +346,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
   }
 
   render() {
-    const { handleChangeView } = this.props;
+    const { handleChangeView, theme } = this.props;
     const {
       mode3D,
       modeFixed,
@@ -419,13 +421,13 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
             ref={this.graph}
             width={width}
             height={height}
-            backgroundColor={Theme.palette.background.default}
+            backgroundColor={theme.palette.background.default}
             graphData={graphData}
             nodeThreeObjectExtend={true}
-            nodeThreeObject={nodeThreePaint}
+            nodeThreeObject={(node) => nodeThreePaint(node, theme.palette.text.primary)}
             linkColor={(link) => (this.selectedLinks.has(link)
-              ? Theme.palette.secondary.main
-              : Theme.palette.primary.main)
+              ? theme.palette.secondary.main
+              : theme.palette.primary.main)
             }
             linkWidth={0.2}
             linkDirectionalArrowLength={3}
@@ -514,10 +516,10 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
             // linkDirectionalParticleWidth={1}
             // linkDirectionalParticleSpeed={() => 0.004}
             linkCanvasObjectMode={() => 'after'}
-            linkCanvasObject={linkPaint}
+            linkCanvasObject={(link, ctx) => linkPaint(link, ctx, theme.palette.text.primary)}
             linkColor={(link) => (this.selectedLinks.has(link)
-              ? Theme.palette.secondary.main
-              : Theme.palette.primary.main)
+              ? theme.palette.secondary.main
+              : theme.palette.primary.main)
             }
             linkDirectionalArrowLength={3}
             linkDirectionalArrowRelPos={0.99}
@@ -577,6 +579,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
 
 StixCoreObjectOrStixCoreRelationshipContainersGraphComponent.propTypes = {
   stixDomainObjectOrStixCoreRelationship: PropTypes.object,
+  theme: PropTypes.object,
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   relay: PropTypes.object,
@@ -602,162 +605,163 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContain
   StixCoreObjectOrStixCoreRelationshipContainersGraphComponent,
   {
     data: graphql`
-      fragment StixCoreObjectOrStixCoreRelationshipContainersGraph_data on Query {
-        containersObjectsOfObject(id: $id, types: $types) {
-          edges {
-            node {
-              ... on BasicObject {
-                id
-                entity_type
-                parent_types
-              }
-              ... on StixCoreObject {
-                created_at
-                createdBy {
-                  ... on Identity {
-                    id
-                    name
-                    entity_type
-                  }
+        fragment StixCoreObjectOrStixCoreRelationshipContainersGraph_data on Query {
+          containersObjectsOfObject(id: $id, types: $types) {
+            edges {
+              node {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
                 }
-                objectMarking {
-                  edges {
-                    node {
+                ... on StixCoreObject {
+                  created_at
+                  createdBy {
+                    ... on Identity {
                       id
-                      definition
+                      name
+                      entity_type
+                    }
+                  }
+                  objectMarking {
+                    edges {
+                      node {
+                        id
+                        definition
+                      }
                     }
                   }
                 }
-              }
-              ... on StixDomainObject {
-                created
-              }
-              ... on AttackPattern {
-                name
-                x_mitre_id
-              }
-              ... on Campaign {
-                name
-                first_seen
-                last_seen
-              }
-              ... on CourseOfAction {
-                name
-              }
-              ... on Individual {
-                name
-              }
-              ... on Organization {
-                name
-              }
-              ... on Sector {
-                name
-              }
-              ... on Indicator {
-                name
-                valid_from
-              }
-              ... on Infrastructure {
-                name
-              }
-              ... on IntrusionSet {
-                name
-                first_seen
-                last_seen
-              }
-              ... on Position {
-                name
-              }
-              ... on City {
-                name
-              }
-              ... on Country {
-                name
-              }
-              ... on Region {
-                name
-              }
-              ... on Malware {
-                name
-                first_seen
-                last_seen
-              }
-              ... on ThreatActor {
-                name
-                first_seen
-                last_seen
-              }
-              ... on Tool {
-                name
-              }
-              ... on Vulnerability {
-                name
-              }
-              ... on Incident {
-                name
-                first_seen
-                last_seen
-              }
-              ... on StixCyberObservable {
-                observable_value
-              }
-              ... on StixFile {
-                observableName: name
-              }
-              ... on BasicRelationship {
-                id
-                entity_type
-                parent_types
-              }
-              ... on StixCoreRelationship {
-                relationship_type
-                start_time
-                stop_time
-                confidence
-                created
-                from {
-                  ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                  }
-                  ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                  }
-                  ... on StixCoreRelationship {
-                    relationship_type
-                  }
+                ... on StixDomainObject {
+                  created
                 }
-                to {
-                  ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                  }
-                  ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                  }
-                  ... on StixCoreRelationship {
-                    relationship_type
-                  }
+                ... on AttackPattern {
+                  name
+                  x_mitre_id
                 }
-                created_at
-                createdBy {
-                  ... on Identity {
-                    id
-                    name
-                    entity_type
-                  }
+                ... on Campaign {
+                  name
+                  first_seen
+                  last_seen
                 }
-                objectMarking {
-                  edges {
-                    node {
+                ... on CourseOfAction {
+                  name
+                }
+                ... on Individual {
+                  name
+                }
+                ... on Organization {
+                  name
+                }
+                ... on Sector {
+                  name
+                }
+                ... on Indicator {
+                  name
+                  valid_from
+                }
+                ... on Infrastructure {
+                  name
+                }
+                ... on IntrusionSet {
+                  name
+                  first_seen
+                  last_seen
+                }
+                ... on Position {
+                  name
+                }
+                ... on City {
+                  name
+                }
+                ... on Country {
+                  name
+                }
+                ... on Region {
+                  name
+                }
+                ... on Malware {
+                  name
+                  first_seen
+                  last_seen
+                }
+                ... on ThreatActor {
+                  name
+                  first_seen
+                  last_seen
+                }
+                ... on Tool {
+                  name
+                }
+                ... on Vulnerability {
+                  name
+                }
+                ... on Incident {
+                  name
+                  first_seen
+                  last_seen
+                }
+                ... on StixCyberObservable {
+                  observable_value
+                }
+                ... on StixFile {
+                  observableName: name
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                  start_time
+                  stop_time
+                  confidence
+                  created
+                  from {
+                    ... on BasicObject {
                       id
-                      definition
+                      entity_type
+                      parent_types
+                    }
+                    ... on BasicRelationship {
+                      id
+                      entity_type
+                      parent_types
+                    }
+                    ... on StixCoreRelationship {
+                      relationship_type
+                    }
+                  }
+                  to {
+                    ... on BasicObject {
+                      id
+                      entity_type
+                      parent_types
+                    }
+                    ... on BasicRelationship {
+                      id
+                      entity_type
+                      parent_types
+                    }
+                    ... on StixCoreRelationship {
+                      relationship_type
+                    }
+                  }
+                  created_at
+                  createdBy {
+                    ... on Identity {
+                      id
+                      name
+                      entity_type
+                    }
+                  }
+                  objectMarking {
+                    edges {
+                      node {
+                        id
+                        definition
+                      }
                     }
                   }
                 }
@@ -765,8 +769,7 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContain
             }
           }
         }
-      }
-    `,
+      `,
   },
   stixCoreObjectOrStixCoreRelationshipContainersGraphQuery,
 );
@@ -774,4 +777,5 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContain
 export default R.compose(
   inject18n,
   withRouter,
+  withTheme,
 )(StixCoreObjectOrStixCoreRelationshipContainersGraph);

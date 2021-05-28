@@ -165,15 +165,15 @@ export const REL_CONNECTED_SUFFIX = 'CONNECTED';
 export const batchLoader = (loader) => {
   const dataLoader = new DataLoader(
     (objects) => {
-      const { user } = R.head(objects);
+      const { user, args } = R.head(objects);
       const ids = objects.map((i) => i.id);
-      return loader(user, ids);
+      return loader(user, ids, args);
     },
     { maxBatchSize: MAX_BATCH_SIZE }
   );
   return {
-    load: (id, user) => {
-      return dataLoader.load({ id, user });
+    load: (id, user, args = {}) => {
+      return dataLoader.load({ id, user, args });
     },
   };
 };
@@ -201,7 +201,7 @@ export const queryAttributes = async (type) => {
 // region bulk loading method
 // Listing handle
 const batchListThrough = async (user, sources, sourceSide, relationType, targetEntityType, opts = {}) => {
-  const { paginate = true, batched = true } = opts;
+  const { paginate = true, batched = true, first = null } = opts;
   const opposite = sourceSide === 'from' ? 'to' : 'from';
   // USING ELASTIC
   const ids = Array.isArray(sources) ? sources : [sources];
@@ -234,14 +234,22 @@ const batchListThrough = async (user, sources, sourceSide, relationType, targetE
   const elGrouped = R.groupBy((e) => e[`${sourceSide}Id`], relations);
   if (paginate) {
     return ids.map((id) => {
-      const values = elGrouped[id];
+      let values = elGrouped[id];
       let edges = [];
-      if (values) edges = values.map((i) => ({ node: R.find((s) => s.internal_id === i[`${opposite}Id`], targets) }));
+      if (values) {
+        if (first) {
+          values = R.take(first, values);
+        }
+        edges = values.map((i) => ({ node: R.find((s) => s.internal_id === i[`${opposite}Id`], targets) }));
+      }
       return buildPagination(0, null, edges, edges.length);
     });
   }
   const elements = ids.map((id) => {
-    const values = elGrouped[id];
+    let values = elGrouped[id];
+    if (first) {
+      values = R.take(first, values);
+    }
     return values?.map((i) => R.find((s) => s.internal_id === i[`${opposite}Id`], targets)) || [];
   });
   if (batched) {

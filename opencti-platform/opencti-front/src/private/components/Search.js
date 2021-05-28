@@ -23,7 +23,7 @@ import {
 import Filters, { isUniqFilter } from './common/lists/Filters';
 import { truncate } from '../../utils/String';
 
-const styles = () => ({
+const styles = (theme) => ({
   linesContainer: {
     marginTop: 0,
     paddingTop: 0,
@@ -41,7 +41,7 @@ const styles = () => ({
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: 'rgba(64, 193, 255, 0.2)',
+    backgroundColor: theme.palette.background.chip,
     margin: '0 10px 10px 0',
   },
 });

@@ -20,9 +20,9 @@ const READ_QUERY = gql`
       id
       platform_title
       platform_url
-      platform_demo
       platform_email
       platform_language
+      platform_theme
       platform_providers {
         name
         provider
@@ -57,9 +57,9 @@ describe('Settings resolver standard behavior', () => {
     const { settings } = queryResult.data;
     expect(settings).not.toBeNull();
     expect(settings.platform_title).toEqual(PLATFORM_TITLE);
-    expect(settings.platform_demo).toEqual(false);
     expect(settings.platform_email).toEqual('admin@opencti.io');
     expect(settings.platform_language).toEqual('auto');
+    expect(settings.platform_theme).toEqual('dark');
     expect(settings.editContext.length).toEqual(0);
   });
   it('should update settings', async () => {

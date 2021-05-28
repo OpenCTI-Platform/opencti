@@ -19,12 +19,14 @@ import GroupEditionUsers from './GroupEditionUsers';
 const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
+    color: theme.palette.navAlt.backgroundHeaderText,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
     position: 'absolute',
     top: 12,
     left: 5,
+    color: 'inherit',
   },
   importButton: {
     position: 'absolute',
@@ -38,7 +40,7 @@ const styles = (theme) => ({
     width: '100%',
     zIndex: theme.zIndex.drawer + 1,
     backgroundColor: theme.palette.navAlt.background,
-    color: theme.palette.header.text,
+    color: theme.palette.text.primary,
     borderBottom: '1px solid #5c5c5c',
   },
   title: {

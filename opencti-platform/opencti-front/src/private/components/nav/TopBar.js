@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
@@ -17,7 +17,6 @@ import Divider from '@material-ui/core/Divider';
 import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
-import logo from '../../../resources/images/logo_text.png';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
@@ -124,7 +123,7 @@ const logoutMutation = graphql`
 `;
 
 const TopBar = ({
-  t, classes, location, history, keyword,
+  t, classes, location, history, keyword, theme,
 }) => {
   const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
   const handleOpenMenu = (event) => {
@@ -153,12 +152,17 @@ const TopBar = ({
     <AppBar
       position="fixed"
       className={classes.appBar}
-      style={{ backgroundColor: '#1b2226' }}
+      elevation={1}
+      style={{ backgroundColor: theme.palette.header.background }}
     >
       <Toolbar>
         <div className={classes.logoContainer}>
           <Link to="/dashboard">
-            <img src={logo} alt="logo" className={classes.logo} />
+            <img
+              src={theme.logo}
+              alt="logo"
+              className={classes.logo}
+            />
           </Link>
         </div>
         <div className={classes.menuContainer}>
@@ -322,7 +326,7 @@ const TopBar = ({
                     location.pathname.includes(
                       '/dashboard/workspaces/dashboards',
                     )
-                      ? 'primary'
+                      ? 'secondary'
                       : 'inherit'
                   }
                   classes={{ root: classes.button }}
@@ -345,7 +349,7 @@ const TopBar = ({
                     location.pathname.includes(
                       '/dashboard/workspaces/investigations',
                     )
-                      ? 'primary'
+                      ? 'secondary'
                       : 'inherit'
                   }
                   classes={{ root: classes.button }}
@@ -366,7 +370,7 @@ const TopBar = ({
                   }
                   color={
                     location.pathname === '/dashboard/import'
-                      ? 'primary'
+                      ? 'secondary'
                       : 'inherit'
                   }
                   classes={{ root: classes.button }}
@@ -410,10 +414,16 @@ const TopBar = ({
 
 TopBar.propTypes = {
   keyword: PropTypes.string,
+  theme: PropTypes.object,
   classes: PropTypes.object,
   location: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(TopBar);
+export default compose(
+  inject18n,
+  withRouter,
+  withTheme,
+  withStyles(styles),
+)(TopBar);

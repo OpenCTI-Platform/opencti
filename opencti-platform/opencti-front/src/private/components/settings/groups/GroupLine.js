@@ -9,6 +9,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert, GroupOutlined, Check } from '@material-ui/icons';
 import { compose } from 'ramda';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import GroupPopover from './GroupPopover';
 
@@ -126,7 +127,7 @@ class GroupLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <GroupOutlined />
+          <Skeleton animation="wave" variant="circle" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -135,25 +136,45 @@ class GroupLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.default_assignation.width }}
               >
-                <div className="fakeItem" style={{ width: 80 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={80}
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
-                <div className="fakeItem" style={{ width: 80 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={80}
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.updated_at.width }}
               >
-                <div className="fakeItem" style={{ width: 80 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={80}
+                  height="100%"
+                />
               </div>
             </div>
           }

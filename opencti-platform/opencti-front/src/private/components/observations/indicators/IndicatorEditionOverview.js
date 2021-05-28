@@ -29,6 +29,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -125,6 +126,7 @@ const indicatorValidation = (t) => Yup.object().shape({
   description: Yup.string(),
   x_opencti_detection: Yup.boolean(),
   x_mitre_platforms: Yup.array(),
+  indicator_types: Yup.array(),
 });
 
 class IndicatorEditionOverviewComponent extends Component {
@@ -301,6 +303,7 @@ class IndicatorEditionOverviewComponent extends Component {
       assoc('createdBy', createdBy),
       assoc('objectMarking', objectMarking),
       assoc('x_mitre_platforms', propOr([], 'x_mitre_platforms', indicator)),
+      assoc('indicator_types', propOr([], 'indicator_types', indicator)),
       pick([
         'name',
         'confidence',
@@ -310,6 +313,7 @@ class IndicatorEditionOverviewComponent extends Component {
         'valid_until',
         'x_opencti_score',
         'x_opencti_detection',
+        'indicator_types',
         'x_mitre_platforms',
         'killChainPhases',
         'createdBy',
@@ -386,6 +390,17 @@ class IndicatorEditionOverviewComponent extends Component {
               helperText={
                 <SubscriptionFocus context={context} fieldName="valid_until" />
               }
+            />
+            <OpenVocabField
+              label={t('Indicator types')}
+              type="indicator-type-ov"
+              name="indicator_types"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              containerstyle={{ marginTop: 20, width: '100%' }}
+              variant="edit"
+              multiple={true}
+              editContext={context}
             />
             <Field
               component={SelectField}
@@ -515,6 +530,7 @@ const IndicatorEditionOverview = createFragmentContainer(
         x_opencti_score
         x_opencti_detection
         x_mitre_platforms
+        indicator_types
         createdBy {
           ... on Identity {
             id

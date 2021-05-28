@@ -74,7 +74,7 @@ class TopMenuInfrastructure extends Component {
           color={
             location.pathname
             === `/dashboard/observations/infrastructures/${infrastructureId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -96,7 +96,7 @@ class TopMenuInfrastructure extends Component {
             location.pathname.includes(
               `/dashboard/observations/infrastructures/${infrastructureId}/knowledge`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -116,7 +116,7 @@ class TopMenuInfrastructure extends Component {
           color={
             location.pathname
             === `/dashboard/observations/infrastructures/${infrastructureId}/analysis`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -138,7 +138,7 @@ class TopMenuInfrastructure extends Component {
             location.pathname.includes(
               `/dashboard/observations/infrastructures/${infrastructureId}/indicators`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -159,7 +159,7 @@ class TopMenuInfrastructure extends Component {
             color={
               location.pathname
               === `/dashboard/observations/infrastructures/${infrastructureId}/files`
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -180,7 +180,7 @@ class TopMenuInfrastructure extends Component {
           color={
             location.pathname
             === `/dashboard/observations/infrastructures/${infrastructureId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

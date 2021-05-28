@@ -153,12 +153,7 @@ class EntityStixSightingRelationships extends Component {
       noPadding,
     } = this.props;
     const {
-      view,
-      searchTerm,
-      toType,
-      openToType,
-      sortBy,
-      orderAsc,
+      view, searchTerm, toType, openToType, sortBy, orderAsc,
     } = this.state;
     // Display types selection when target types are multiple
     const displayTypes = !isTo

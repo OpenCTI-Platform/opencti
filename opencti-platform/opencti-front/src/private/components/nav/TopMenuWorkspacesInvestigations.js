@@ -29,7 +29,7 @@ class TopMenuInvestigations extends Component {
           to="/dashboard/workspaces/investigations"
           variant="contained"
           size="small"
-          color="primary"
+          color="secondary"
           classes={{ root: classes.button }}
         >
           {t('Investigations')}

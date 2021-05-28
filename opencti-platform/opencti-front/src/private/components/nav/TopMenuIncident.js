@@ -75,7 +75,7 @@ class TopMenuIncident extends Component {
           size="small"
           color={
             location.pathname === `/dashboard/events/incidents/${incidentId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -97,7 +97,7 @@ class TopMenuIncident extends Component {
             location.pathname.includes(
               `/dashboard/events/incidents/${incidentId}/knowledge`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -117,7 +117,7 @@ class TopMenuIncident extends Component {
           color={
             location.pathname
             === `/dashboard/events/incidents/${incidentId}/analysis`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -138,7 +138,7 @@ class TopMenuIncident extends Component {
             color={
               location.pathname
               === `/dashboard/events/incidents/${incidentId}/files`
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -159,7 +159,7 @@ class TopMenuIncident extends Component {
           color={
             location.pathname
             === `/dashboard/events/incidents/${incidentId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

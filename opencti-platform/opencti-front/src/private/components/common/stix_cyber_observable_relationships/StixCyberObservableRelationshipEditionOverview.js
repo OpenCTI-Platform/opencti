@@ -25,12 +25,14 @@ import DatePickerField from '../../../../components/DatePickerField';
 const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
+    color: theme.palette.navAlt.backgroundHeaderText,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
     position: 'absolute',
     top: 12,
     left: 5,
+    color: 'inherit',
   },
   importButton: {
     position: 'absolute',
@@ -111,19 +113,16 @@ const stixCyberObservableRelationshipValidation = (t) => Yup.object().shape({
 });
 
 class StixCyberObservableRelationshipEditionContainer extends Component {
-  componentDidMount() {
-    const sub = requestSubscription({
+  constructor(props) {
+    super(props);
+    this.sub = requestSubscription({
       subscription,
-      variables: {
-        // eslint-disable-next-line
-        id: this.props.stixCyberObservableRelationship.id,
-      },
+      variables: { id: props.stixCyberObservableRelationship.id },
     });
-    this.setState({ sub });
   }
 
   componentWillUnmount() {
-    this.state.sub.dispose();
+    this.sub.dispose();
   }
 
   handleChangeFocus(name) {

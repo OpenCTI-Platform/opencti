@@ -77,12 +77,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
 
   render() {
     const {
-      t,
-      classes,
-      data,
-      entityLink,
-      paginationOptions,
-      searchTerm,
+      t, classes, data, entityLink, paginationOptions, searchTerm,
     } = this.props;
     const filterByKeyword = (n) => searchTerm === ''
       || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1

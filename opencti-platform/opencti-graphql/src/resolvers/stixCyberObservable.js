@@ -9,7 +9,6 @@ import {
   observableValue,
   stixCyberObservableAddRelation,
   stixCyberObservableAddRelations,
-  stixCyberObservableAskEnrichment,
   stixCyberObservableCleanContext,
   stixCyberObservableDelete,
   stixCyberObservableDeleteRelation,
@@ -28,8 +27,6 @@ import {
 } from '../domain/stixCyberObservable';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { worksForSource } from '../domain/work';
-import { connectorsForEnrichment } from '../domain/enrichment';
 import { convertDataToStix } from '../database/stix';
 import { stixCoreRelationships } from '../domain/stixCoreObject';
 import { filesListing } from '../database/minio';
@@ -68,9 +65,6 @@ const stixCyberObservableResolvers = {
     },
     observable_value: (stixCyberObservable) => observableValue(stixCyberObservable),
     indicators: (stixCyberObservable, _, { user }) => indicatorsLoader.load(stixCyberObservable.id, user),
-    jobs: (stixCyberObservable, args, { user }) => worksForSource(user, stixCyberObservable.id, args),
-    connectors: (stixCyberObservable, { onlyAlive = false }, { user }) =>
-      connectorsForEnrichment(user, stixCyberObservable.entity_type, onlyAlive),
     stixCoreRelationships: (rel, args, { user }) => stixCoreRelationships(user, rel.id, args),
     toStix: (stixCyberObservable) => JSON.stringify(convertDataToStix(stixCyberObservable)),
   },
@@ -90,7 +84,6 @@ const stixCyberObservableResolvers = {
         stixCyberObservableDeleteRelation(user, id, toId, relationshipType),
       exportAsk: (args) => stixCyberObservableExportAsk(user, assoc('stixCyberObservableId', id, args)),
       exportPush: ({ file }) => stixCyberObservableExportPush(user, id, file),
-      askEnrichment: ({ connectorId }) => stixCyberObservableAskEnrichment(user, id, connectorId),
       promote: () => promoteObservableToIndicator(user, id),
     }),
     stixCyberObservableAdd: (_, args, { user }) => addStixCyberObservable(user, args),

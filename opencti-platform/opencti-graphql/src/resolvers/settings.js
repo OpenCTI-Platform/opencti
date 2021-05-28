@@ -20,8 +20,8 @@ const settingsResolvers = {
   },
   Settings: {
     platform_providers: () => PROVIDERS,
-    platform_demo: () => nconf.get('app:platform_demo') || false,
-    platform_map_tile_server: () => nconf.get('app:map_tile_server'),
+    platform_map_tile_server_dark: () => nconf.get('app:map_tile_server_dark'),
+    platform_map_tile_server_light: () => nconf.get('app:map_tile_server_light'),
     editContext: (settings) => fetchEditContext(settings.id),
   },
   Mutation: {

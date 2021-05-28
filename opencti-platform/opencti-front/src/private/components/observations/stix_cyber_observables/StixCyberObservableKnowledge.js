@@ -3,12 +3,15 @@ import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
 import StixCyberObservableHeader from './StixCyberObservableHeader';
 import StixCyberObservableKnowledgeEntities from './StixCyberObservableKnowledgeEntities';
-import StixCyberObservableEnrichment from './StixCyberObservableEnrichment';
+import { QueryRenderer } from '../../../../relay/environment';
+import StixCyberObservableLinks, {
+  stixCyberObservableLinksQuery,
+} from './StixCyberObservableLinks';
+import StixCyberObservableIndicators from './StixCyberObservableIndicators';
 
 const styles = () => ({
   container: {
@@ -20,9 +23,12 @@ const styles = () => ({
 });
 
 const StixCyberObservableKnowledge = (props) => {
-  const {
-    stixCyberObservable, connectorsForImport, classes, t,
-  } = props;
+  const { stixCyberObservable, classes } = props;
+  const paginationOptions = {
+    elementId: stixCyberObservable.id,
+    orderBy: 'created_at',
+    orderMode: 'desc',
+  };
   return (
     <div className={classes.container}>
       <StixCyberObservableHeader stixCyberObservable={stixCyberObservable} />
@@ -31,18 +37,29 @@ const StixCyberObservableKnowledge = (props) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={8}>
-          <StixCyberObservableKnowledgeEntities
-            entityId={stixCyberObservable.id}
+        <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
+          <QueryRenderer
+            query={stixCyberObservableLinksQuery}
+            variables={{ count: 25, ...paginationOptions }}
+            render={({ props: queryProps }) => (
+              <StixCyberObservableLinks
+                stixCyberObservableId={stixCyberObservable.id}
+                stixCyberObservableType={stixCyberObservable.entity_type}
+                paginationOptions={paginationOptions}
+                data={queryProps}
+              />
+            )}
           />
         </Grid>
-        <Grid item={true} xs={4}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t('Enrichment connectors')}
-          </Typography>
-          <StixCyberObservableEnrichment
+        <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
+          <StixCyberObservableIndicators
+            paginationOptions={paginationOptions}
             stixCyberObservable={stixCyberObservable}
-            connectorsForImport={connectorsForImport}
+          />
+        </Grid>
+        <Grid item={true} xs={12}>
+          <StixCyberObservableKnowledgeEntities
+            entityId={stixCyberObservable.id}
           />
         </Grid>
       </Grid>
@@ -57,15 +74,8 @@ const StixCyberObservableKnowledgeFragment = createFragmentContainer(
       fragment StixCyberObservableKnowledge_stixCyberObservable on StixCyberObservable {
         id
         entity_type
-        ...StixCyberObservableEnrichment_stixCyberObservable
         ...StixCyberObservableHeader_stixCyberObservable
-      }
-    `,
-    connectorsForImport: graphql`
-      fragment StixCyberObservableKnowledge_connectorsForImport on Connector
-      @relay(plural: true) {
-        id
-        ...StixCyberObservableEnrichment_connectorsForImport
+        ...StixCyberObservableIndicators_stixCyberObservable
       }
     `,
   },

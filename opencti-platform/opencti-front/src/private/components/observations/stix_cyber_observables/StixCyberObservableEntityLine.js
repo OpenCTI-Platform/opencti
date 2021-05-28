@@ -9,7 +9,8 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { Help, MoreVert } from '@material-ui/icons';
+import { MoreVert } from '@material-ui/icons';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
@@ -46,7 +47,7 @@ const styles = (theme) => ({
 class StixCyberObservableEntityLineComponent extends Component {
   render() {
     const {
-      nsd,
+      fsd,
       t,
       classes,
       dataColumns,
@@ -144,13 +145,13 @@ class StixCyberObservableEntityLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.start_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.start_time)}
+                {node.inferred ? '-' : fsd(node.start_time)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.stop_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.stop_time)}
+                {node.inferred ? '-' : fsd(node.stop_time)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -179,7 +180,7 @@ StixCyberObservableEntityLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
   displayRelation: PropTypes.bool,
   entityId: PropTypes.string,
 };
@@ -743,50 +744,78 @@ class StixCyberObservableEntityLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Help />
+          <Skeleton animation="wave" variant="circle" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
-              {displayRelation ? (
+              {displayRelation && (
                 <div
                   className={classes.bodyItem}
                   style={{ width: dataColumns.relationship_type.width }}
                 >
-                  <div className="fakeItem" style={{ width: '80%' }} />
+                  <Skeleton
+                    animation="wave"
+                    variant="rect"
+                    width="90%"
+                    height="100%"
+                  />
                 </div>
-              ) : (
-                ''
               )}
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.start_time.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.stop_time.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.confidence.width }}
               >
-                <div className="fakeItem" style={{ width: 100 }} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={100}
+                  height="100%"
+                />
               </div>
             </div>
           }

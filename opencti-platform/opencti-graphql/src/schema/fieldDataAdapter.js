@@ -40,6 +40,8 @@ export const multipleAttributes = [
   'kill_chain_phases',
   'tags',
   'bookmarks',
+  'protocols',
+  'x_opencti_log_sources',
 ];
 export const statsDateAttributes = [
   'created_at',

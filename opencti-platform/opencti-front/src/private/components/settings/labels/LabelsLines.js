@@ -11,10 +11,7 @@ const nbOfRowsToLoad = 50;
 class LabelsLines extends Component {
   render() {
     const {
-      initialLoading,
-      dataColumns,
-      relay,
-      paginationOptions,
+      initialLoading, dataColumns, relay, paginationOptions,
     } = this.props;
     return (
       <ListLinesContent

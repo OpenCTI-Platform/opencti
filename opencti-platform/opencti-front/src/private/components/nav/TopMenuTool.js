@@ -75,7 +75,7 @@ class TopMenuTool extends Component {
           size="small"
           color={
             location.pathname === `/dashboard/arsenal/tools/${toolId}`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -97,7 +97,7 @@ class TopMenuTool extends Component {
             location.pathname.includes(
               `/dashboard/arsenal/tools/${toolId}/knowledge`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -115,7 +115,7 @@ class TopMenuTool extends Component {
           size="small"
           color={
             location.pathname === `/dashboard/arsenal/tools/${toolId}/analysis`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -137,7 +137,7 @@ class TopMenuTool extends Component {
             location.pathname.includes(
               `/dashboard/arsenal/tools/${toolId}/indicators`,
             )
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
@@ -156,7 +156,7 @@ class TopMenuTool extends Component {
             size="small"
             color={
               location.pathname === `/dashboard/arsenal/tools/${toolId}/files`
-                ? 'primary'
+                ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
@@ -175,7 +175,7 @@ class TopMenuTool extends Component {
           size="small"
           color={
             location.pathname === `/dashboard/arsenal/tools/${toolId}/history`
-              ? 'primary'
+              ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}

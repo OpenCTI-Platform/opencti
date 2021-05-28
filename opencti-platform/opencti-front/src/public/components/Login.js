@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { filter, pathOr } from 'ramda';
+import { filter } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import {
@@ -9,8 +8,7 @@ import {
 } from 'mdi-material-ui';
 import Markdown from 'react-markdown';
 import Paper from '@material-ui/core/Paper';
-import { APP_BASE_PATH, QueryRenderer } from '../../relay/environment';
-import { ConnectedIntlProvider } from '../../components/AppIntlProvider';
+import { APP_BASE_PATH } from '../../relay/environment';
 import logo from '../../resources/images/logo_opencti.png';
 import LoginForm from './LoginForm';
 
@@ -70,22 +68,7 @@ const styles = (theme) => ({
   },
 });
 
-const LoginQuery = graphql`
-  query LoginQuery {
-    settings {
-      platform_demo
-      platform_login_message
-      platform_providers {
-        name
-        type
-        provider
-      }
-      ...AppIntlProvider_settings
-    }
-  }
-`;
-
-const Login = ({ classes }) => {
+const Login = ({ classes, settings }) => {
   // eslint-disable-next-line max-len
   const [dimension, setDimension] = useState({
     width: window.innerWidth,
@@ -144,48 +127,31 @@ const Login = ({ classes }) => {
       ))}
     </div>
   );
-
+  const loginMessage = settings.platform_login_message;
+  const providers = settings.platform_providers;
+  const isAuthForm = filter((p) => p.type === 'FORM', providers).length > 0;
+  const authSSOs = filter((p) => p.type === 'SSO', providers);
+  const isAuthButtons = authSSOs.length > 0;
   return (
-    <QueryRenderer
-      query={LoginQuery}
-      variables={{}}
-      render={({ props }) => {
-        if (props && props.settings) {
-          const loginMessage = props.settings.platform_login_message;
-          const providers = props.settings.platform_providers;
-          const isAuthForm = filter((p) => p.type === 'FORM', providers).length > 0;
-          const authSSOs = filter((p) => p.type === 'SSO', providers);
-          const isAuthButtons = authSSOs.length > 0;
-          return (
-            <ConnectedIntlProvider settings={props.settings}>
-              <div className={classes.container} style={{ marginTop }}>
-                <img src={logo} alt="logo" className={classes.logo} />
-                {loginMessage && loginMessage.length > 0 && (
-                  <Paper classes={{ root: classes.paper }} elevation={2}>
-                    <Markdown>{loginMessage}</Markdown>
-                  </Paper>
-                )}
-                {isAuthForm && (
-                  <LoginForm
-                    demo={pathOr(false, ['settings', 'platform_demo'], props)}
-                  />
-                )}
-                {isAuthButtons && renderExternalAuth(authSSOs)}
-                {providers.length === 0 && (
-                  <div>No authentication provider available</div>
-                )}
-              </div>
-            </ConnectedIntlProvider>
-          );
-        }
-        return <div />;
-      }}
-    />
+    <div className={classes.container} style={{ marginTop }}>
+      <img src={logo} alt="logo" className={classes.logo} />
+      {loginMessage && loginMessage.length > 0 && (
+        <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Markdown>{loginMessage}</Markdown>
+        </Paper>
+      )}
+      {isAuthForm && <LoginForm />}
+      {isAuthButtons && renderExternalAuth(authSSOs)}
+      {providers.length === 0 && (
+        <div>No authentication provider available</div>
+      )}
+    </div>
   );
 };
 
 Login.propTypes = {
   classes: PropTypes.object,
+  settings: PropTypes.object,
 };
 
 export default withStyles(styles)(Login);

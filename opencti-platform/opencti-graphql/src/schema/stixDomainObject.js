@@ -148,7 +148,13 @@ export const stixDomainObjectFieldsToBeUpdated = {
   [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: ['description'],
   [ENTITY_TYPE_CONTAINER_OPINION]: ['opinion'],
   [ENTITY_TYPE_CONTAINER_REPORT]: ['name', 'revoked', 'description'],
-  [ENTITY_TYPE_COURSE_OF_ACTION]: ['name', 'revoked', 'description'],
+  [ENTITY_TYPE_COURSE_OF_ACTION]: [
+    'name',
+    'revoked',
+    'description',
+    'x_opencti_threat_hunting',
+    'x_opencti_log_sources',
+  ],
   [ENTITY_TYPE_IDENTITY_INDIVIDUAL]: ['name', 'revoked', 'description'],
   [ENTITY_TYPE_IDENTITY_ORGANIZATION]: ['name', 'revoked', 'description'],
   [ENTITY_TYPE_IDENTITY_SECTOR]: ['name', 'revoked', 'description'],
@@ -191,6 +197,7 @@ export const stixDomainObjectFieldsToBeUpdated = {
     'x_opencti_attack_vector',
     'x_opencti_integrity_impact',
     'x_opencti_availability_impact',
+    'x_opencti_confidentiality_impact',
   ],
   [ENTITY_TYPE_INCIDENT]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'objective'],
 };
@@ -363,6 +370,8 @@ export const stixDomainObjectsAttributes = {
     'x_opencti_aliases',
     'i_aliases_ids',
     'x_mitre_id',
+    'x_opencti_threat_hunting',
+    'x_opencti_log_sources',
     'x_opencti_graph_data',
   ],
   [ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [
@@ -770,6 +779,7 @@ export const stixDomainObjectsAttributes = {
     'x_opencti_attack_vector',
     'x_opencti_integrity_impact',
     'x_opencti_availability_impact',
+    'x_opencti_confidentiality_impact',
     'x_opencti_graph_data',
   ],
   [ENTITY_TYPE_INCIDENT]: [

@@ -144,116 +144,116 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
   StixCoreRelationshipStixCoreRelationshipsLinesContainer,
   {
     data: graphql`
-      fragment StixCoreRelationshipStixCoreRelationshipsLines_data on Query
-      @argumentDefinitions(
-        fromId: { type: "String" }
-        relationship_type: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: {
-          type: "StixCoreRelationshipsOrdering"
-          defaultValue: start_time
-        }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-      ) {
-        stixCoreRelationships(
-          fromId: $fromId
-          relationship_type: $relationship_type
-          first: $count
-          after: $cursor
-          orderBy: $orderBy
-          orderMode: $orderMode
-        ) @connection(key: "Pagination_stixCoreRelationships") {
-          edges {
-            node {
-              id
-              to {
-                ... on StixDomainObject {
-                  id
-                  entity_type
-                  parent_types
-                  ... on AttackPattern {
-                    name
+        fragment StixCoreRelationshipStixCoreRelationshipsLines_data on Query
+        @argumentDefinitions(
+          fromId: { type: "String" }
+          relationship_type: { type: "String" }
+          count: { type: "Int", defaultValue: 25 }
+          cursor: { type: "ID" }
+          orderBy: {
+            type: "StixCoreRelationshipsOrdering"
+            defaultValue: start_time
+          }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
+        ) {
+          stixCoreRelationships(
+            fromId: $fromId
+            relationship_type: $relationship_type
+            first: $count
+            after: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+          ) @connection(key: "Pagination_stixCoreRelationships") {
+            edges {
+              node {
+                id
+                to {
+                  ... on StixDomainObject {
+                    id
+                    entity_type
+                    parent_types
+                    ... on AttackPattern {
+                      name
+                    }
+                    ... on Opinion {
+                      opinion
+                    }
+                    ... on Report {
+                      name
+                    }
+                    ... on Note {
+                      attribute_abstract
+                      content
+                    }
+                    ... on Campaign {
+                      name
+                    }
+                    ... on CourseOfAction {
+                      name
+                    }
+                    ... on Individual {
+                      name
+                    }
+                    ... on Organization {
+                      name
+                    }
+                    ... on Sector {
+                      name
+                    }
+                    ... on Indicator {
+                      name
+                    }
+                    ... on Infrastructure {
+                      name
+                    }
+                    ... on IntrusionSet {
+                      name
+                    }
+                    ... on Position {
+                      name
+                    }
+                    ... on City {
+                      name
+                    }
+                    ... on Country {
+                      name
+                    }
+                    ... on Region {
+                      name
+                    }
+                    ... on Malware {
+                      name
+                    }
+                    ... on ThreatActor {
+                      name
+                    }
+                    ... on Tool {
+                      name
+                    }
+                    ... on Vulnerability {
+                      name
+                    }
+                    ... on Incident {
+                      name
+                    }
                   }
-                  ... on Opinion {
-                    opinion
+                  ... on StixCyberObservable {
+                    id
+                    entity_type
+                    parent_types
+                    observable_value
                   }
-                  ... on Report {
-                    name
-                  }
-                  ... on Note {
-                    attribute_abstract
-                    content
-                  }
-                  ... on Campaign {
-                    name
-                  }
-                  ... on CourseOfAction {
-                    name
-                  }
-                  ... on Individual {
-                    name
-                  }
-                  ... on Organization {
-                    name
-                  }
-                  ... on Sector {
-                    name
-                  }
-                  ... on Indicator {
-                    name
-                  }
-                  ... on Infrastructure {
-                    name
-                  }
-                  ... on IntrusionSet {
-                    name
-                  }
-                  ... on Position {
-                    name
-                  }
-                  ... on City {
-                    name
-                  }
-                  ... on Country {
-                    name
-                  }
-                  ... on Region {
-                    name
-                  }
-                  ... on Malware {
-                    name
-                  }
-                  ... on ThreatActor {
-                    name
-                  }
-                  ... on Tool {
-                    name
-                  }
-                  ... on Vulnerability {
-                    name
-                  }
-                  ... on Incident {
-                    name
-                  }
-                }
-                ... on StixCyberObservable {
-                  id
-                  entity_type
-                  parent_types
-                  observable_value
                 }
               }
             }
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-            globalCount
+            pageInfo {
+              endCursor
+              hasNextPage
+              globalCount
+            }
           }
         }
-      }
-    `,
+      `,
   },
   {
     direction: 'forward',

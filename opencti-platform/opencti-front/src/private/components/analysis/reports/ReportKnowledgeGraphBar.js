@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import {
   AspectRatio,
@@ -55,7 +55,6 @@ import StixCoreRelationshipEdition from '../../common/stix_core_relationships/St
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
 import { resolveLink } from '../../../../utils/Entity';
 import { parseDomain } from '../../../../utils/Graph';
-import ThemeDark from '../../../../components/ThemeDark';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -239,6 +238,7 @@ class ReportKnowledgeGraphBar extends Component {
       handleToggleDisplayTimeRange,
       handleTimeRangeChange,
       timeRangeValues,
+      theme,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -281,16 +281,38 @@ class ReportKnowledgeGraphBar extends Component {
         && numberOfSelectedLinks === 0
         && !selectedNodes[0].isObservable)
       || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
-    const relationEnabled = (numberOfSelectedNodes === 2 && numberOfSelectedLinks === 0)
+    const fromSelectedTypes = numberOfSelectedNodes >= 2
+      ? R.uniq(R.map((n) => n.entity_type, R.init(selectedNodes)))
+      : [];
+    const toSelectedTypes = numberOfSelectedNodes >= 2
+      ? R.uniq(R.map((n) => n.entity_type, R.tail(selectedNodes)))
+      : [];
+    const relationEnabled = (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
+      || (toSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1);
-    let relationFrom = null;
-    let relationTo = null;
-    if (numberOfSelectedNodes === 2) {
-      relationFrom = relationReversed ? selectedNodes[1] : selectedNodes[0];
-      relationTo = relationReversed ? selectedNodes[0] : selectedNodes[1];
+    let relationFromObjects = null;
+    let relationToObjects = null;
+    if (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0) {
+      relationFromObjects = relationReversed
+        ? [R.last(selectedNodes)]
+        : R.init(selectedNodes);
+      relationToObjects = relationReversed
+        ? R.init(selectedNodes)
+        : [R.last(selectedNodes)];
+    } else if (toSelectedTypes.length === 1 && numberOfSelectedLinks === 0) {
+      relationFromObjects = relationReversed
+        ? R.tail(selectedNodes)
+        : [R.head(selectedNodes)];
+      relationToObjects = relationReversed
+        ? [R.head(selectedNodes)]
+        : R.tail(selectedNodes);
     } else if (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1) {
-      relationFrom = relationReversed ? selectedNodes[0] : selectedLinks[0];
-      relationTo = relationReversed ? selectedLinks[0] : selectedNodes[0];
+      relationFromObjects = relationReversed
+        ? selectedNodes[0]
+        : selectedLinks[0];
+      relationToObjects = relationReversed
+        ? [selectedLinks[0]]
+        : [selectedNodes[0]];
     }
     return (
       <Drawer
@@ -613,22 +635,24 @@ class ReportKnowledgeGraphBar extends Component {
                   height: '100%',
                 }}
               >
-                <ContainerAddStixCoreObjects
-                  containerId={report.id}
-                  containerStixCoreObjects={report.objects.edges}
-                  knowledgeGraph={true}
-                  defaultCreatedBy={R.propOr(null, 'createdBy', report)}
-                  defaultMarkingDefinitions={R.map(
-                    (n) => n.node,
-                    R.pathOr([], ['objectMarking', 'edges'], report),
-                  )}
-                  targetStixCoreObjectTypes={[
-                    'Stix-Domain-Object',
-                    'Stix-Cyber-Observable',
-                  ]}
-                  onAdd={onAdd}
-                  onDelete={onDelete}
-                />
+                {onAdd && (
+                  <ContainerAddStixCoreObjects
+                    containerId={report.id}
+                    containerStixCoreObjects={report.objects.edges}
+                    knowledgeGraph={true}
+                    defaultCreatedBy={R.propOr(null, 'createdBy', report)}
+                    defaultMarkingDefinitions={R.map(
+                      (n) => n.node,
+                      R.pathOr([], ['objectMarking', 'edges'], report),
+                    )}
+                    targetStixCoreObjectTypes={[
+                      'Stix-Domain-Object',
+                      'Stix-Cyber-Observable',
+                    ]}
+                    onAdd={onAdd}
+                    onDelete={onDelete}
+                  />
+                )}
                 <Tooltip title={t('View the item')}>
                   <span>
                     <IconButton
@@ -666,47 +690,57 @@ class ReportKnowledgeGraphBar extends Component {
                   }
                   handleClose={this.handleCloseRelationEdition.bind(this)}
                 />
-                <Tooltip title={t('Create a relationship')}>
-                  <span>
-                    <IconButton
-                      color="primary"
-                      onClick={this.handleOpenCreateRelationship.bind(this)}
-                      disabled={!relationEnabled}
-                    >
-                      <LinkOutlined />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <StixCoreRelationshipCreation
-                  open={openCreatedRelation}
-                  from={relationFrom}
-                  to={relationTo}
-                  firstSeen={lastLinkFirstSeen || dateFormat(report.published)}
-                  lastSeen={lastLinkLastSeen || dateFormat(report.published)}
-                  weight={report.confidence}
-                  handleClose={this.handleCloseCreateRelationship.bind(this)}
-                  handleResult={onAddRelation}
-                  handleReverseRelation={this.handleReverseRelation.bind(this)}
-                  defaultCreatedBy={R.propOr(null, 'createdBy', report)}
-                  defaultMarkingDefinitions={R.map(
-                    (n) => n.node,
-                    R.pathOr([], ['objectMarking', 'edges'], report),
-                  )}
-                />
-                <Tooltip title={t('Remove selected items')}>
-                  <span>
-                    <IconButton
-                      color="primary"
-                      onClick={this.handleOpenRemove.bind(this)}
-                      disabled={
-                        numberOfSelectedNodes === 0
-                        && numberOfSelectedLinks === 0
-                      }
-                    >
-                      <DeleteOutlined />
-                    </IconButton>
-                  </span>
-                </Tooltip>
+                {onAddRelation && (
+                  <Tooltip title={t('Create a relationship')}>
+                    <span>
+                      <IconButton
+                        color="primary"
+                        onClick={this.handleOpenCreateRelationship.bind(this)}
+                        disabled={!relationEnabled}
+                      >
+                        <LinkOutlined />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                )}
+                {onAddRelation && (
+                  <StixCoreRelationshipCreation
+                    open={openCreatedRelation}
+                    fromObjects={relationFromObjects}
+                    toObjects={relationToObjects}
+                    firstSeen={
+                      lastLinkFirstSeen || dateFormat(report.published)
+                    }
+                    lastSeen={lastLinkLastSeen || dateFormat(report.published)}
+                    weight={report.confidence}
+                    handleClose={this.handleCloseCreateRelationship.bind(this)}
+                    handleResult={onAddRelation}
+                    handleReverseRelation={this.handleReverseRelation.bind(
+                      this,
+                    )}
+                    defaultCreatedBy={R.propOr(null, 'createdBy', report)}
+                    defaultMarkingDefinitions={R.map(
+                      (n) => n.node,
+                      R.pathOr([], ['objectMarking', 'edges'], report),
+                    )}
+                  />
+                )}
+                {handleDeleteSelected && (
+                  <Tooltip title={t('Remove selected items')}>
+                    <span>
+                      <IconButton
+                        color="primary"
+                        onClick={this.handleOpenRemove.bind(this)}
+                        disabled={
+                          numberOfSelectedNodes === 0
+                          && numberOfSelectedLinks === 0
+                        }
+                      >
+                        <DeleteOutlined />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                )}
                 <Dialog
                   open={this.state.displayRemove}
                   keepMounted={true}
@@ -777,7 +811,7 @@ class ReportKnowledgeGraphBar extends Component {
                     />
                     <Scatter
                       data={timeRangeValues}
-                      fill={ThemeDark.palette.primary.main}
+                      fill={theme.palette.primary.main}
                     />
                   </ScatterChart>
                 </ResponsiveContainer>
@@ -840,9 +874,11 @@ ReportKnowledgeGraphBar.propTypes = {
   timeRangeInterval: PropTypes.array,
   selectedTimeRangeInterval: PropTypes.array,
   timeRangeValues: PropTypes.array,
+  theme: PropTypes.object,
 };
 
 export default R.compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(ReportKnowledgeGraphBar);

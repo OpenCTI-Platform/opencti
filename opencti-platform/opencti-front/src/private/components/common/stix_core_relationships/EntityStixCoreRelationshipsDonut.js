@@ -5,7 +5,7 @@ import graphql from 'babel-plugin-relay/macro';
 import {
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from 'recharts';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, withTheme } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -144,18 +144,11 @@ class EntityStixCoreRelationshipsDonut extends Component {
     return props.value;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   renderLabel(props) {
+    const { theme } = this.props;
     const RADIAN = Math.PI / 180;
     const {
-      cx,
-      cy,
-      midAngle,
-      outerRadius,
-      fill,
-      payload,
-      percent,
-      value,
+      cx, cy, midAngle, outerRadius, fill, payload, percent, value,
     } = props;
     const sin = Math.sin(-RADIAN * midAngle);
     const cos = Math.cos(-RADIAN * midAngle);
@@ -179,7 +172,7 @@ class EntityStixCoreRelationshipsDonut extends Component {
           x={ex + (cos >= 0 ? 1 : -1) * 12}
           y={ey}
           textAnchor={textAnchor}
-          fill="#ffffff"
+          fill={theme.palette.text.primary}
           style={{ fontSize: 12 }}
         >
           {' '}
@@ -210,6 +203,7 @@ class EntityStixCoreRelationshipsDonut extends Component {
       startDate,
       endDate,
       isTo,
+      theme,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
       fromId: entityId,
@@ -288,7 +282,7 @@ class EntityStixCoreRelationshipsDonut extends Component {
                       <Cell
                         key={index}
                         fill={itemColor(entry.label)}
-                        stroke="#28353a"
+                        stroke={theme.palette.background.paper}
                       />
                     ))}
                   </Pie>
@@ -364,6 +358,7 @@ EntityStixCoreRelationshipsDonut.propTypes = {
   endDate: PropTypes.string,
   field: PropTypes.string,
   classes: PropTypes.object,
+  theme: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
   isTo: PropTypes.bool,
@@ -371,5 +366,6 @@ EntityStixCoreRelationshipsDonut.propTypes = {
 
 export default compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(EntityStixCoreRelationshipsDonut);

@@ -2,11 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
-import {
-  compose, map, pipe, pluck, head, assoc,
-} from 'ramda';
+import * as R from 'ramda';
 import * as Yup from 'yup';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
@@ -52,12 +50,14 @@ const styles = (theme) => ({
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
+    color: theme.palette.navAlt.backgroundHeaderText,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
     position: 'absolute',
     top: 12,
     left: 5,
+    color: 'inherit',
   },
   importButton: {
     position: 'absolute',
@@ -85,7 +85,7 @@ const styles = (theme) => ({
   type: {
     width: '100%',
     textAlign: 'center',
-    color: '#ffffff',
+    color: theme.palette.text.primary,
     fontSize: 11,
   },
   content: {
@@ -93,7 +93,7 @@ const styles = (theme) => ({
     height: 40,
     maxHeight: 40,
     lineHeight: '40px',
-    color: '#ffffff',
+    color: theme.palette.text.primary,
     textAlign: 'center',
   },
   name: {
@@ -132,7 +132,7 @@ const styles = (theme) => ({
     width: 200,
     textAlign: 'center',
     padding: 0,
-    color: '#ffffff',
+    color: theme.palette.text.primary,
   },
 });
 
@@ -291,60 +291,71 @@ class StixCoreRelationshipCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = pipe(
-      assoc('fromId', this.props.from.id),
-      assoc('toId', this.props.to.id),
-      assoc(
-        'start_time',
-        values.start_time ? parse(values.start_time).format() : null,
-      ),
-      assoc(
-        'stop_time',
-        values.stop_time ? parse(values.stop_time).format() : null,
-      ),
-      assoc('createdBy', values.createdBy.value),
-      assoc('killChainPhases', pluck('value', values.killChainPhases)),
-      assoc('objectMarking', pluck('value', values.objectMarking)),
-    )(values);
-    commitMutation({
-      mutation: stixCoreRelationshipCreationMutation,
-      variables: {
-        input: finalValues,
-      },
-      setSubmitting,
-      onCompleted: (response) => {
-        setSubmitting(false);
-        resetForm();
-        this.props.handleResult(response.stixCoreRelationshipAdd);
-        this.handleClose();
-      },
-    });
+    R.forEach((fromObject) => {
+      R.forEach((toObject) => {
+        const finalValues = R.pipe(
+          R.assoc('fromId', fromObject.id),
+          R.assoc('toId', toObject.id),
+          R.assoc(
+            'start_time',
+            values.start_time ? parse(values.start_time).format() : null,
+          ),
+          R.assoc(
+            'stop_time',
+            values.stop_time ? parse(values.stop_time).format() : null,
+          ),
+          R.assoc('createdBy', values.createdBy.value),
+          R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
+          R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+        )(values);
+        commitMutation({
+          mutation: stixCoreRelationshipCreationMutation,
+          variables: {
+            input: finalValues,
+          },
+          setSubmitting,
+          onCompleted: (response) => {
+            this.props.handleResult(response.stixCoreRelationshipAdd);
+          },
+        });
+      }, this.props.toObjects);
+    }, this.props.fromObjects);
+    setSubmitting(false);
+    resetForm();
+    this.handleClose();
   }
 
   componentDidUpdate(prevProps) {
     if (
       this.props.open === true
-      && this.props.from !== null
-      && this.props.to !== null
+      && this.props.fromObjects !== null
+      && this.props.toObjects !== null
       && (prevProps.open !== this.props.open
-        || prevProps.from !== this.props.from
-        || prevProps.to !== this.props.to)
+        || prevProps.fromObjects[0] !== this.props.fromObjects[0]
+        || prevProps.toObjects[0] !== this.props.toObjects[0])
     ) {
-      fetchQuery(stixCoreRelationshipCreationQuery, {
-        fromId: this.props.from.id,
-        toId: this.props.to.id,
-      })
-        .toPromise()
-        .then((data) => {
-          this.setState({
-            step:
-              data.stixCoreRelationships.edges
-              && data.stixCoreRelationships.edges.length > 0
-                ? 1
-                : 2,
-            existingRelations: data.stixCoreRelationships.edges,
+      if (
+        this.props.fromObjects.length === 1
+        && this.props.toObjects.length === 1
+      ) {
+        fetchQuery(stixCoreRelationshipCreationQuery, {
+          fromId: this.props.fromObjects[0].id,
+          toId: this.props.toObjects[0].id,
+        })
+          .toPromise()
+          .then((data) => {
+            this.setState({
+              step:
+                data.stixCoreRelationships.edges
+                && data.stixCoreRelationships.edges.length > 0
+                  ? 1
+                  : 2,
+              existingRelations: data.stixCoreRelationships.edges,
+            });
           });
-        });
+      } else {
+        this.setState({ step: 2, existingRelations: [] });
+      }
     }
   }
 
@@ -370,8 +381,8 @@ class StixCoreRelationshipCreation extends Component {
     const {
       t,
       classes,
-      from,
-      to,
+      fromObjects,
+      toObjects,
       confidence,
       startTime,
       stopTime,
@@ -379,12 +390,12 @@ class StixCoreRelationshipCreation extends Component {
       defaultMarkingDefinitions,
     } = this.props;
     const relationshipTypes = resolveRelationsTypes(
-      from.entity_type,
-      to.entity_type,
+      fromObjects[0].entity_type,
+      toObjects[0].entity_type,
     );
     // eslint-disable-next-line no-nested-ternary
-    const defaultRelationshipType = head(relationshipTypes)
-      ? head(relationshipTypes)
+    const defaultRelationshipType = R.head(relationshipTypes)
+      ? R.head(relationshipTypes)
       : relationshipTypes.includes('related-to')
         ? 'related-to'
         : '';
@@ -406,7 +417,7 @@ class StixCoreRelationshipCreation extends Component {
         }
         : '',
       objectMarking: defaultMarkingDefinitions
-        ? map(
+        ? R.map(
           (n) => ({
             label: n.definition,
             value: n.id,
@@ -440,7 +451,9 @@ class StixCoreRelationshipCreation extends Component {
                 <div
                   className={classes.item}
                   style={{
-                    border: `2px solid ${itemColor(from.entity_type)}`,
+                    border: `2px solid ${itemColor(
+                      fromObjects[0].entity_type,
+                    )}`,
                     top: 10,
                     left: 0,
                   }}
@@ -448,27 +461,34 @@ class StixCoreRelationshipCreation extends Component {
                   <div
                     className={classes.itemHeader}
                     style={{
-                      borderBottom: `1px solid ${itemColor(from.entity_type)}`,
+                      borderBottom: `1px solid ${itemColor(
+                        fromObjects[0].entity_type,
+                      )}`,
                     }}
                   >
                     <div className={classes.icon}>
                       <ItemIcon
-                        type={from.entity_type}
-                        color={itemColor(from.entity_type)}
+                        type={fromObjects[0].entity_type}
+                        color={itemColor(fromObjects[0].entity_type)}
                         size="small"
                       />
                     </div>
                     <div className={classes.type}>
-                      {from.relationship_type
+                      {fromObjects[0].relationship_type
                         ? t('Relationship')
-                        : t(`entity_${from.entity_type}`)}
+                        : t(`entity_${fromObjects[0].entity_type}`)}
                     </div>
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {from.relationship_type
-                        ? t(`relationship_${from.relationship_type}`)
-                        : truncate(from.name, 20)}
+                      {/* eslint-disable-next-line no-nested-ternary */}
+                      {fromObjects[0].relationship_type ? (
+                        t(`relationship_${fromObjects[0].relationship_type}`)
+                      ) : fromObjects.length > 1 ? (
+                        <em>{t('Multiple entities selected')}</em>
+                      ) : (
+                        truncate(fromObjects[0].name, 20)
+                      )}
                     </span>
                   </div>
                 </div>
@@ -487,7 +507,7 @@ class StixCoreRelationshipCreation extends Component {
                 <div
                   className={classes.item}
                   style={{
-                    border: `2px solid ${itemColor(to.entity_type)}`,
+                    border: `2px solid ${itemColor(toObjects[0].entity_type)}`,
                     top: 10,
                     right: 0,
                   }}
@@ -495,27 +515,34 @@ class StixCoreRelationshipCreation extends Component {
                   <div
                     className={classes.itemHeader}
                     style={{
-                      borderBottom: `1px solid ${itemColor(to.entity_type)}`,
+                      borderBottom: `1px solid ${itemColor(
+                        toObjects[0].entity_type,
+                      )}`,
                     }}
                   >
                     <div className={classes.icon}>
                       <ItemIcon
-                        type={to.entity_type}
-                        color={itemColor(to.entity_type)}
+                        type={toObjects[0].entity_type}
+                        color={itemColor(toObjects[0].entity_type)}
                         size="small"
                       />
                     </div>
                     <div className={classes.type}>
-                      {to.relationship_type
+                      {toObjects[0].relationship_type
                         ? t('Relationship')
-                        : t(`entity_${to.entity_type}`)}
+                        : t(`entity_${toObjects[0].entity_type}`)}
                     </div>
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {to.relationship_type
-                        ? t(`relationship_${to.relationship_type}`)
-                        : truncate(to.name, 20)}
+                      {/* eslint-disable-next-line no-nested-ternary */}
+                      {toObjects[0].relationship_type ? (
+                        t(`relationship_${toObjects[0].relationship_type}`)
+                      ) : toObjects.length > 1 ? (
+                        <em>{t('Multiple entities selected')}</em>
+                      ) : (
+                        truncate(toObjects[0].name, 20)
+                      )}
                     </span>
                   </div>
                 </div>
@@ -527,7 +554,7 @@ class StixCoreRelationshipCreation extends Component {
                 fullWidth={true}
                 containerstyle={{ marginTop: 20, width: '100%' }}
               >
-                {map(
+                {R.map(
                   (type) => (
                     <MenuItem key={type} value={type}>
                       {t(`relationship_${type}`)}
@@ -608,10 +635,9 @@ class StixCoreRelationshipCreation extends Component {
 
   renderSelectRelation() {
     const {
-      nsd, t, classes, from, to,
+      fsd, t, classes, fromObjects, toObjects, theme,
     } = this.props;
     const { existingRelations } = this.state;
-
     return (
       <div>
         <div className={classes.header}>
@@ -634,32 +660,40 @@ class StixCoreRelationshipCreation extends Component {
               <div
                 className={classes.item}
                 style={{
-                  border: `2px solid ${itemColor(from.entity_type)}`,
+                  border: `2px solid ${itemColor(fromObjects[0].entity_type)}`,
                   top: 10,
-                  left: 0,
+                  left: 10,
                 }}
               >
                 <div
                   className={classes.itemHeader}
                   style={{
-                    borderBottom: `1px solid ${itemColor(from.entity_type)}`,
+                    borderBottom: `1px solid ${itemColor(
+                      fromObjects[0].entity_type,
+                    )}`,
                   }}
                 >
                   <div className={classes.icon}>
                     <ItemIcon
-                      type={from.entity_type}
-                      color={itemColor(from.entity_type)}
+                      type={fromObjects[0].entity_type}
+                      color={itemColor(fromObjects[0].entity_type)}
                       size="small"
                     />
                   </div>
                   <div className={classes.type}>
-                    {from.relationship_type
+                    {fromObjects[0].relationship_type
                       ? t('Relationship')
-                      : t(`entity_${from.entity_type}`)}
+                      : t(`entity_${fromObjects[0].entity_type}`)}
                   </div>
                 </div>
                 <div className={classes.content}>
-                  <span className={classes.name}>{from.name}</span>
+                  <span className={classes.name}>
+                    {fromObjects.length > 1 ? (
+                      <em>{t('Multiple entities selected')}</em>
+                    ) : (
+                      truncate(fromObjects[0].name, 20)
+                    )}
+                  </span>
                 </div>
               </div>
               <div className={classes.middle}>
@@ -673,49 +707,53 @@ class StixCoreRelationshipCreation extends Component {
                   <div
                     style={{
                       padding: '5px 8px 5px 8px',
-                      backgroundColor: '#14262c',
-                      color: '#ffffff',
+                      backgroundColor: theme.palette.background.paperLight,
+                      color: theme.palette.text.primary,
                       fontSize: 12,
                       display: 'inline-block',
                     }}
                   >
                     {t(`relationship_${relation.node.relationship_type}`)}
                     <br />
-                    {t('First obs.')} {nsd(relation.node.start_time)}
+                    {t('First obs.')} {fsd(relation.node.start_time)}
                     <br />
-                    {t('Last obs.')} {nsd(relation.node.stop_time)}
+                    {t('Last obs.')} {fsd(relation.node.stop_time)}
                   </div>
                 </Tooltip>
               </div>
               <div
                 className={classes.item}
                 style={{
-                  border: `2px solid ${itemColor(to.entity_type)}`,
+                  border: `2px solid ${itemColor(toObjects[0].entity_type)}`,
                   top: 10,
-                  right: 0,
+                  right: 10,
                 }}
               >
                 <div
                   className={classes.itemHeader}
                   style={{
-                    borderBottom: `1px solid ${itemColor(to.entity_type)}`,
+                    borderBottom: `1px solid ${itemColor(
+                      toObjects[0].entity_type,
+                    )}`,
                   }}
                 >
                   <div className={classes.icon}>
                     <ItemIcon
-                      type={to.entity_type}
-                      color={itemColor(to.entity_type)}
+                      type={toObjects[0].entity_type}
+                      color={itemColor(toObjects[0].entity_type)}
                       size="small"
                     />
                   </div>
                   <div className={classes.type}>
-                    {to.relationship_type
+                    {toObjects[0].relationship_type
                       ? t('Relationship')
-                      : t(`entity_${to.entity_type}`)}
+                      : t(`entity_${toObjects[0].entity_type}`)}
                   </div>
                 </div>
                 <div className={classes.content}>
-                  <span className={classes.name}>{to.name}</span>
+                  <span className={classes.name}>
+                    {truncate(toObjects[0].name, 20)}
+                  </span>
                 </div>
               </div>
               <div className="clearfix" />
@@ -728,9 +766,9 @@ class StixCoreRelationshipCreation extends Component {
             <div
               className={classes.item}
               style={{
-                backgroundColor: '#607d8b',
+                backgroundColor: theme.palette.background.paperLight,
                 top: 10,
-                left: 0,
+                left: 10,
               }}
             >
               <div
@@ -741,17 +779,23 @@ class StixCoreRelationshipCreation extends Component {
               >
                 <div className={classes.icon}>
                   <ItemIcon
-                    type={from.entity_type}
+                    type={fromObjects[0].entity_type}
                     color="#263238"
                     size="small"
                   />
                 </div>
                 <div className={classes.type}>
-                  {t(`entity_${from.entity_type}`)}
+                  {t(`entity_${fromObjects[0].entity_type}`)}
                 </div>
               </div>
               <div className={classes.content}>
-                <span className={classes.name}>{from.name}</span>
+                <span className={classes.name}>
+                  {fromObjects.length > 1 ? (
+                    <em>{t('Multiple entities selected')}</em>
+                  ) : (
+                    truncate(fromObjects[0].name)
+                  )}
+                </span>
               </div>
             </div>
             <div className={classes.middle} style={{ paddingTop: 15 }}>
@@ -760,8 +804,8 @@ class StixCoreRelationshipCreation extends Component {
               <div
                 style={{
                   padding: '5px 8px 5px 8px',
-                  backgroundColor: '#607d8b',
-                  color: '#ffffff',
+                  backgroundColor: theme.palette.background.paperLight,
+                  color: theme.palette.text.primary,
                   fontSize: 12,
                   display: 'inline-block',
                 }}
@@ -772,9 +816,9 @@ class StixCoreRelationshipCreation extends Component {
             <div
               className={classes.item}
               style={{
-                backgroundColor: '#607d8b',
+                backgroundColor: theme.palette.background.paperLight,
                 top: 10,
-                right: 0,
+                right: 10,
               }}
             >
               <div
@@ -785,17 +829,23 @@ class StixCoreRelationshipCreation extends Component {
               >
                 <div className={classes.icon}>
                   <ItemIcon
-                    type={to.entity_type}
+                    type={toObjects[0].entity_type}
                     color="#263238"
                     size="small"
                   />
                 </div>
                 <div className={classes.type}>
-                  {t(`entity_${to.entity_type}`)}
+                  {t(`entity_${toObjects[0].entity_type}`)}
                 </div>
               </div>
               <div className={classes.content}>
-                <span className={classes.name}>{to.name}</span>
+                <span className={classes.name}>
+                  {toObjects.length > 1 ? (
+                    <em>{t('Multiple entities selected')}</em>
+                  ) : (
+                    truncate(toObjects[0].name, 20)
+                  )}
+                </span>
               </div>
             </div>
             <div className="clearfix" />
@@ -824,7 +874,7 @@ class StixCoreRelationshipCreation extends Component {
 
   render() {
     const {
-      open, from, to, classes,
+      open, fromObject, toObjects, classes,
     } = this.props;
     const { step } = this.state;
     return (
@@ -834,7 +884,10 @@ class StixCoreRelationshipCreation extends Component {
         classes={{ paper: classes.drawerPaper }}
         onClose={this.handleClose.bind(this)}
       >
-        {step === 0 || step === undefined || from === null || to === null
+        {step === 0
+        || step === undefined
+        || fromObject === null
+        || toObjects === null
           ? this.renderLoader()
           : ''}
         {step === 1 ? this.renderSelectRelation() : ''}
@@ -846,12 +899,13 @@ class StixCoreRelationshipCreation extends Component {
 
 StixCoreRelationshipCreation.propTypes = {
   open: PropTypes.bool,
-  from: PropTypes.object,
-  to: PropTypes.object,
+  fromObjects: PropTypes.object,
+  toObjects: PropTypes.array,
   handleResult: PropTypes.func,
   classes: PropTypes.object,
+  theme: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
   startTime: PropTypes.string,
   stopTime: PropTypes.string,
   confidence: PropTypes.number,
@@ -861,7 +915,8 @@ StixCoreRelationshipCreation.propTypes = {
   handleReverseRelation: PropTypes.func,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(StixCoreRelationshipCreation);

@@ -5,7 +5,7 @@ import graphql from 'babel-plugin-relay/macro';
 import {
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from 'recharts';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -63,18 +63,11 @@ class StixCoreObjectReportsDonut extends Component {
     return props.value;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   renderLabel(props) {
+    const { theme } = this.props;
     const RADIAN = Math.PI / 180;
     const {
-      cx,
-      cy,
-      midAngle,
-      outerRadius,
-      fill,
-      payload,
-      percent,
-      value,
+      cx, cy, midAngle, outerRadius, fill, payload, percent, value,
     } = props;
     const sin = Math.sin(-RADIAN * midAngle);
     const cos = Math.cos(-RADIAN * midAngle);
@@ -98,7 +91,7 @@ class StixCoreObjectReportsDonut extends Component {
           x={ex + (cos >= 0 ? 1 : -1) * 12}
           y={ey}
           textAnchor={textAnchor}
-          fill="#ffffff"
+          fill={theme.palette.text.primary}
           style={{ fontSize: 12 }}
         >
           {' '}
@@ -120,7 +113,7 @@ class StixCoreObjectReportsDonut extends Component {
 
   renderContent() {
     const {
-      t, stixCoreObjectId, field, variant,
+      t, stixCoreObjectId, field, variant, theme,
     } = this.props;
     const reportsDistributionVariables = {
       objectId: stixCoreObjectId,
@@ -176,7 +169,7 @@ class StixCoreObjectReportsDonut extends Component {
                       <Cell
                         key={index}
                         fill={itemColor(entry.label)}
-                        stroke="#28353a"
+                        stroke={theme.palette.background.paper}
                       />
                     ))}
                   </Pie>
@@ -244,10 +237,12 @@ StixCoreObjectReportsDonut.propTypes = {
   title: PropTypes.string,
   field: PropTypes.string,
   classes: PropTypes.object,
+  theme: PropTypes.object,
   t: PropTypes.func,
 };
 
 export default compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(StixCoreObjectReportsDonut);

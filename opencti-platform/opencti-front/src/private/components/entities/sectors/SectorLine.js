@@ -8,6 +8,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRightOutlined, DomainOutlined } from '@material-ui/icons';
 import { compose, map } from 'ramda';
 import List from '@material-ui/core/List';
+import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
@@ -122,11 +123,13 @@ class SectorLineDummyComponent extends Component {
     const { classes } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <DomainOutlined />
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <Skeleton animation="wave" variant="circle" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
-          primary={<span className="fakeItem" style={{ width: '80%' }} />}
+          primary={
+            <Skeleton animation="wave" variant="rect" width="90%" height={20} />
+          }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <KeyboardArrowRightOutlined />

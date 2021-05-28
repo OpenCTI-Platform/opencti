@@ -5,7 +5,7 @@ import {
   compose, head, pathOr, assoc, map, pluck, last,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
@@ -37,7 +37,6 @@ import { QueryRenderer } from '../../relay/environment';
 import {
   yearsAgo, dayAgo, now, monthsAgo,
 } from '../../utils/Time';
-import Theme from '../../components/ThemeDark';
 import inject18n from '../../components/i18n';
 import ItemNumberDifference from '../../components/ItemNumberDifference';
 import Loader from '../../components/Loader';
@@ -92,7 +91,7 @@ const styles = (theme) => ({
     textTransform: 'uppercase',
     fontSize: 12,
     fontWeight: 500,
-    color: '#a8a8a8',
+    color: theme.palette.text.secondary,
   },
   icon: {
     position: 'absolute',
@@ -120,15 +119,11 @@ const styles = (theme) => ({
   labelValue: {
     fontSize: 15,
   },
-});
-
-const inlineStyles = {
   itemAuthor: {
     width: 200,
     minWidth: 200,
     maxWidth: 200,
     paddingRight: 24,
-    color: '#ffffff',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -139,7 +134,6 @@ const inlineStyles = {
     minWidth: 100,
     maxWidth: 100,
     paddingRight: 24,
-    color: '#ffffff',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -150,13 +144,12 @@ const inlineStyles = {
     minWidth: 120,
     maxWidth: 120,
     paddingRight: 24,
-    color: '#ffffff',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     textAlign: 'left',
   },
-};
+});
 
 const dashboardStixMetaRelationshipsDistributionQuery = graphql`
   query DashboardStixMetaRelationshipsDistributionQuery(
@@ -359,7 +352,7 @@ class Dashboard extends Component {
 
   render() {
     const {
-      t, n, nsd, mtd, classes,
+      t, n, fsd, mtd, classes, theme,
     } = this.props;
     return (
       <div className={classes.root}>
@@ -622,16 +615,16 @@ class Dashboard extends Component {
                             >
                               <CartesianGrid
                                 strokeDasharray="2 2"
-                                stroke="#0f181f"
+                                stroke={theme.palette.action.grid}
                               />
                               <XAxis
                                 dataKey="date"
-                                stroke="#ffffff"
+                                stroke={theme.palette.text.primary}
                                 interval={0}
                                 textAnchor="end"
                                 tickFormatter={mtd}
                               />
-                              <YAxis stroke="#ffffff" />
+                              <YAxis stroke={theme.palette.text.primary} />
                               <Tooltip
                                 cursor={{
                                   fill: 'rgba(0, 0, 0, 0.2)',
@@ -643,14 +636,14 @@ class Dashboard extends Component {
                                   fontSize: 12,
                                   borderRadius: 10,
                                 }}
-                                labelFormatter={nsd}
+                                labelFormatter={fsd}
                               />
                               <Area
                                 type="monotone"
                                 dataKey="value"
-                                stroke={Theme.palette.primary.main}
+                                stroke={theme.palette.primary.main}
                                 strokeWidth={2}
-                                fill={Theme.palette.primary.main}
+                                fill={theme.palette.primary.main}
                                 fillOpacity={0.1}
                               />
                             </AreaChart>
@@ -791,10 +784,10 @@ class Dashboard extends Component {
                                   <ListItemIcon>
                                     <ItemIcon
                                       type={stixDomainObject.entity_type}
-                                      color="#00bcd4"
+                                      color={theme.palette.primary.main}
                                     />
                                   </ListItemIcon>
-                                  <div style={inlineStyles.itemType}>
+                                  <div className={classes.itemType}>
                                     {t(
                                       `entity_${stixDomainObject.entity_type}`,
                                     )}
@@ -812,15 +805,15 @@ class Dashboard extends Component {
                                       </div>
                                     }
                                   />
-                                  <div style={inlineStyles.itemAuthor}>
+                                  <div className={classes.itemAuthor}>
                                     {pathOr(
                                       '',
                                       ['createdBy', 'name'],
                                       stixDomainObject,
                                     )}
                                   </div>
-                                  <div style={inlineStyles.itemDate}>
-                                    {nsd(stixDomainObject.created_at)}
+                                  <div className={classes.itemDate}>
+                                    {fsd(stixDomainObject.created_at)}
                                   </div>
                                   <div
                                     style={{
@@ -907,11 +900,11 @@ class Dashboard extends Component {
                               <XAxis
                                 type="number"
                                 dataKey="value"
-                                stroke="#ffffff"
+                                stroke={theme.palette.text.primary}
                                 allowDecimals={false}
                               />
                               <YAxis
-                                stroke="#ffffff"
+                                stroke={theme.palette.text.primary}
                                 dataKey="label"
                                 type="category"
                                 angle={-30}
@@ -920,7 +913,7 @@ class Dashboard extends Component {
                               />
                               <CartesianGrid
                                 strokeDasharray="2 2"
-                                stroke="#0f181f"
+                                stroke={theme.palette.action.grid}
                               />
                               <Tooltip
                                 cursor={{
@@ -935,7 +928,7 @@ class Dashboard extends Component {
                                 }}
                               />
                               <Bar
-                                fill={Theme.palette.primary.main}
+                                fill={theme.palette.primary.main}
                                 dataKey="value"
                                 barSize={15}
                               >
@@ -987,12 +980,13 @@ class Dashboard extends Component {
 }
 
 Dashboard.propTypes = {
+  theme: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   n: PropTypes.func,
-  nsd: PropTypes.func,
+  fsd: PropTypes.func,
   mtd: PropTypes.func,
   history: PropTypes.object,
 };
 
-export default compose(inject18n, withStyles(styles))(Dashboard);
+export default compose(inject18n, withTheme, withStyles(styles))(Dashboard);
