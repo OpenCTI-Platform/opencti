@@ -2344,6 +2344,8 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   description: String
   x_opencti_aliases: [String]
   x_mitre_id: String
+  x_opencti_threat_hunting: String
+  x_opencti_log_sources: [String]
   attackPatterns: AttackPatternConnection
   # Technical
   creator: User
