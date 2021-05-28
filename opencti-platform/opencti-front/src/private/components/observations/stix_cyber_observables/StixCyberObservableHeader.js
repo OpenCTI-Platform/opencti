@@ -8,6 +8,7 @@ import Typography from '@material-ui/core/Typography';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCyberObservablePopover from './StixCyberObservablePopover';
 import { truncate } from '../../../../utils/String';
+import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 
 const styles = () => ({
   title: {
@@ -44,7 +45,8 @@ class StixCyberObservableHeaderComponent extends Component {
             isArtifact={isArtifact}
           />
         </div>
-        {variant !== 'noMarking' ? (
+        <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
+        {variant !== 'noMarking' && (
           <div className={classes.marking}>
             {pathOr([], ['objectMarking', 'edges'], stixCyberObservable).map(
               (markingDefinition) => (
@@ -56,8 +58,6 @@ class StixCyberObservableHeaderComponent extends Component {
               ),
             )}
           </div>
-        ) : (
-          ''
         )}
         <div className="clearfix" />
       </div>

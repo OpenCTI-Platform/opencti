@@ -1248,6 +1248,8 @@ interface StixCoreObject {
   creator: User
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 
 ########## STIX DOMAIN OBJECT ENTITIES
@@ -1358,6 +1360,8 @@ interface StixDomainObject {
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input StixDomainObjectAddInput {
   stix_id: String
@@ -1485,6 +1489,8 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input AttackPatternAddInput {
   stix_id: String
@@ -1606,6 +1612,8 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input CampaignAddInput {
   stix_id: String
@@ -1833,6 +1841,8 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input NoteAddInput {
   stix_id: String
@@ -1961,6 +1971,8 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input ObservedDataAddInput {
   stix_id: String
@@ -2087,6 +2099,8 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input OpinionAddInput {
   stix_id: String
@@ -2219,6 +2233,8 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input ReportAddInput {
   stix_id: String
@@ -2335,6 +2351,8 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input CourseOfActionAddInput {
   stix_id: String
@@ -2457,6 +2475,8 @@ interface Identity {
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input IdentityAddInput {
   type: IdentityType!
@@ -2578,6 +2598,8 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input IndividualAddInput {
   stix_id: String
@@ -2709,6 +2731,8 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input OrganizationAddInput {
   stix_id: String
@@ -2834,6 +2858,8 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input SectorAddInput {
   stix_id: String
@@ -2975,6 +3001,8 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input IndicatorAddInput {
   stix_id: String
@@ -3105,6 +3133,8 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input InfrastructureAddInput {
   stix_id: String
@@ -3226,6 +3256,8 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input IntrusionSetAddInput {
   stix_id: String
@@ -3349,6 +3381,8 @@ interface Location {
   longitude: Float
   precision: Float
   x_opencti_aliases: [String]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input LocationAddInput {
   type: LocationType!
@@ -3470,6 +3504,8 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input PositionAddInput {
   stix_id: String
@@ -3593,6 +3629,8 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input CityAddInput {
   stix_id: String
@@ -3709,6 +3747,8 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input CountryAddInput {
   stix_id: String
@@ -3828,6 +3868,8 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input RegionAddInput {
   stix_id: String
@@ -3958,6 +4000,8 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input MalwareAddInput {
   stix_id: String
@@ -4087,6 +4131,8 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input ThreatActorAddInput {
   stix_id: String
@@ -4208,6 +4254,8 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input ToolAddInput {
   stix_id: String
@@ -4330,6 +4378,8 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input VulnerabilityAddInput {
   stix_id: String
@@ -4448,6 +4498,8 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   exportFiles(first: Int): FileConnection
   toStix: String
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
 }
 input IncidentAddInput {
   stix_id: String
@@ -7810,7 +7862,8 @@ type Query {
     search: String
     toStix: Boolean
   ): ContainerConnection @auth(for: [KNOWLEDGE])
-  containersObjectsOfObject(id: String!, types: [String]): StixObjectOrStixRelationshipConnection @auth(for: [KNOWLEDGE])
+  containersObjectsOfObject(id: String!, types: [String]): StixObjectOrStixRelationshipConnection
+    @auth(for: [KNOWLEDGE])
   note(id: String): Note @auth(for: [KNOWLEDGE])
   notes(
     first: Int
@@ -8516,6 +8569,7 @@ type StixCoreObjectEditMutations {
   relationsAdd(input: StixMetaRelationshipsAddInput): StixCoreObject
   relationDelete(toId: String!, relationship_type: String!): StixCoreObject
   merge(stixCoreObjectsIds: [String]!): StixCoreObject
+  askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
 }
 
 ######## STIX DOMAIN OBJECT ENTITIES
@@ -8748,7 +8802,6 @@ type StixCyberObservableEditMutations {
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationsAdd(input: StixMetaRelationshipsAddInput): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: String!, relationship_type: String!): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
-  askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
   promote: StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 

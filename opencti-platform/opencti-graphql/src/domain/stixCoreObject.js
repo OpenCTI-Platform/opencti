@@ -47,6 +47,7 @@ import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
+import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 
 export const findAll = async (user, args) => {
   let types = [];
@@ -166,6 +167,22 @@ export const stixCoreObjectMerge = async (user, targetId, sourceIds) => {
   return mergeEntities(user, targetId, sourceIds);
 };
 // endregion
+
+export const stixCoreObjectAskEnrichment = async (user, stixCoreObjectId, connectorId) => {
+  const connector = await loadById(user, connectorId, ENTITY_TYPE_CONNECTOR);
+  const work = await createWork(user, connector, 'Manual enrichment', stixCoreObjectId);
+  const message = {
+    internal: {
+      work_id: work.id, // Related action for history
+      applicant_id: user.id, // User asking for the import
+    },
+    event: {
+      entity_id: stixCoreObjectId,
+    },
+  };
+  await pushToConnector(connector, message);
+  return work;
+};
 
 export const askEntityExport = async (user, format, entity, type = 'simple', maxMarkingId = null) => {
   const connectors = await connectorsForExport(user, format, true);

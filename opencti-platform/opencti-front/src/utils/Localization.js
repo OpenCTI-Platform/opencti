@@ -346,8 +346,8 @@ const i18n = {
       Modified: 'Modifié',
       'No import connectors on this platform':
         "Aucun connecteur d'import sur cette plateforme",
-      'No connectors for this type of observable':
-        "Aucun connecteur pour ce type d'observable",
+      'No connectors for this type of entity':
+        "Aucun connecteur pour ce type d'entité",
       'This connector is active': 'Ce connecteur est actif',
       'This connector is disconnected': 'Ce connecteur est déconnecté',
       'Reset the connector state': "Réinitialiser l'état du connecteur",

@@ -106,7 +106,7 @@ const TaxiiCollectionEditionContainer = (props) => {
         key,
         isUniqFilter(key)
           ? [{ id, value }]
-          : R.uniqBy(R.prop('id'), [{ id, value }, filters[key]]),
+          : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
         filters,
       );
     } else {

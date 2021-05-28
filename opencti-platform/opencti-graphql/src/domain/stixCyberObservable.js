@@ -90,22 +90,6 @@ export const stixCyberObservablesTimeSeries = (user, args) => {
 // endregion
 
 // region mutations
-export const stixCyberObservableAskEnrichment = async (user, observableId, connectorId) => {
-  const connector = await loadById(user, connectorId, ENTITY_TYPE_CONNECTOR);
-  const work = await createWork(user, connector, 'Manual enrichment', observableId);
-  const message = {
-    internal: {
-      work_id: work.id, // Related action for history
-      applicant_id: user.id, // User asking for the import
-    },
-    event: {
-      entity_id: observableId,
-    },
-  };
-  await pushToConnector(connector, message);
-  return work;
-};
-
 export const batchIndicators = (user, stixCyberObservableIds) => {
   return batchListThroughGetFrom(user, stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
 };

@@ -8,13 +8,13 @@ import { CONNECTOR_INTERNAL_ENRICHMENT } from '../schema/general';
 export const connectorsForEnrichment = async (user, scope, onlyAlive = false, onlyAuto = false) =>
   connectorsFor(user, CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive, onlyAuto);
 
-export const askEnrich = async (user, observableId, scope) => {
+export const askEnrich = async (user, stixCoreObjectId, scope) => {
   // Get the list of compatible connectors
   const targetConnectors = await connectorsForEnrichment(user, scope, true, true);
   // Create a work for each connector
   const workList = await Promise.all(
     map((connector) => {
-      return createWork(user, connector, `Enrichment (${observableId})`, observableId).then((work) => {
+      return createWork(user, connector, `Enrichment (${stixCoreObjectId})`, stixCoreObjectId).then((work) => {
         return { connector, work };
       });
     }, targetConnectors)
@@ -29,7 +29,7 @@ export const askEnrich = async (user, observableId, scope) => {
           applicant_id: null, // User asking for the import
         },
         event: {
-          entity_id: observableId,
+          entity_id: stixCoreObjectId,
         },
       };
       return pushToConnector(connector, message);

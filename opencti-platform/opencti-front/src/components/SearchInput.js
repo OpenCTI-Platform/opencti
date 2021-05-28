@@ -18,6 +18,14 @@ const styles = (theme) => ({
     padding: '0 10px 0 10px',
     backgroundColor: theme.palette.navAlt.background,
   },
+  searchRootInDrawer2: {
+    borderRadius: 5,
+    padding: '0 10px 0 10px',
+    backgroundColor:
+      theme.palette.type === 'light'
+        ? theme.palette.background.paperLight
+        : theme.palette.navAlt.background,
+  },
   searchRootNoAnimation: {
     borderRadius: 5,
     padding: '0 10px 0 10px',
@@ -47,6 +55,8 @@ class SearchInput extends Component {
     let classRoot = classes.searchRoot;
     if (variant === 'inDrawer') {
       classRoot = classes.searchRootInDrawer;
+    } else if (variant === 'inDrawer2') {
+      classRoot = classes.searchRootInDrawer2;
     } else if (variant === 'noAnimation') {
       classRoot = classes.searchRootNoAnimation;
     }

@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import StixCyberObservableRelationCreationFromEntity from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipCreationFromEntity';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -85,7 +86,7 @@ class StixCyberObservableLinksComponent extends Component {
       classes,
     } = this.props;
     return (
-      <div>
+      <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Linked observables')}
         </Typography>
@@ -96,19 +97,21 @@ class StixCyberObservableLinksComponent extends Component {
           entityType={stixCyberObservableType}
         />
         <div className="clearfix" />
-        <List style={{ marginTop: -10 }}>
-          {data && data.stixCyberObservableRelationships
-            ? data.stixCyberObservableRelationships.edges.map(
-              (stixCyberObservableRelationEdge) => {
-                const stixCyberObservableRelationshipId = stixCyberObservableRelationEdge.node;
-                const stixCyberObservable = stixCyberObservableRelationshipId.from.id
+        <Paper classes={{ root: classes.paper }} elevation={2}>
+          <List style={{ marginTop: -10 }}>
+            {data
+              && data.stixCyberObservableRelationships
+              && data.stixCyberObservableRelationships.edges.map(
+                (stixCyberObservableRelationEdge) => {
+                  const stixCyberObservableRelationshipId = stixCyberObservableRelationEdge.node;
+                  const stixCyberObservable = stixCyberObservableRelationshipId.from.id
                     === stixCyberObservableId
-                  ? stixCyberObservableRelationshipId.to
-                  : stixCyberObservableRelationshipId.from;
-                const link = `${resolveLink(
-                  stixCyberObservable.entity_type,
-                )}/${stixCyberObservable.id}`;
-                return (
+                    ? stixCyberObservableRelationshipId.to
+                    : stixCyberObservableRelationshipId.from;
+                  const link = `${resolveLink(
+                    stixCyberObservable.entity_type,
+                  )}/${stixCyberObservable.id}`;
+                  return (
                     <ListItem
                       key={stixCyberObservable.id}
                       classes={{ root: classes.item }}
@@ -169,11 +172,11 @@ class StixCyberObservableLinksComponent extends Component {
                         />
                       </ListItemSecondaryAction>
                     </ListItem>
-                );
-              },
-            )
-            : ''}
-        </List>
+                  );
+                },
+              )}
+          </List>
+        </Paper>
       </div>
     );
   }

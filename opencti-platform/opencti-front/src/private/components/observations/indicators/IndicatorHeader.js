@@ -8,6 +8,7 @@ import Typography from '@material-ui/core/Typography';
 import ItemMarking from '../../../../components/ItemMarking';
 import IndicatorPopover from './IndicatorPopover';
 import { truncate } from '../../../../utils/String';
+import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 
 const styles = () => ({
   title: {
@@ -39,7 +40,8 @@ class IndicatorHeaderComponent extends Component {
         <div className={classes.popover}>
           <IndicatorPopover indicatorId={indicator.id} />
         </div>
-        {variant !== 'noMarking' ? (
+        <StixCoreObjectEnrichment stixCoreObjectId={indicator.id} />
+        {variant !== 'noMarking' && (
           <div className={classes.marking}>
             {pathOr([], ['objectMarking', 'edges'], indicator).map(
               (markingDefinition) => (
@@ -51,8 +53,6 @@ class IndicatorHeaderComponent extends Component {
               ),
             )}
           </div>
-        ) : (
-          ''
         )}
         <div className="clearfix" />
       </div>

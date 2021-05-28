@@ -13,12 +13,15 @@ import {
   batchNotes,
   batchOpinions,
   batchReports,
+  stixCoreObjectAskEnrichment,
 } from '../domain/stixCoreObject';
 import { creator } from '../domain/log';
 import { fetchEditContext } from '../database/redis';
 import { convertDataToStix } from '../database/stix';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import { batchLoader, stixElementLoader } from '../database/middleware';
+import { worksForSource } from '../domain/work';
+import { connectorsForEnrichment } from '../domain/enrichment';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -56,6 +59,9 @@ const stixCoreObjectResolvers = {
     reports: (stixCoreObject, args, { user }) => reportsLoader.load(stixCoreObject.id, user, args),
     notes: (stixCoreObject, _, { user }) => notesLoader.load(stixCoreObject.id, user),
     opinions: (stixCoreObject, _, { user }) => opinionsLoader.load(stixCoreObject.id, user),
+    jobs: (stixCyberObservable, args, { user }) => worksForSource(user, stixCyberObservable.id, args),
+    connectors: (stixCyberObservable, { onlyAlive = false }, { user }) =>
+      connectorsForEnrichment(user, stixCyberObservable.entity_type, onlyAlive),
   },
   Mutation: {
     stixCoreObjectEdit: (_, { id }, { user }) => ({
@@ -64,6 +70,7 @@ const stixCoreObjectResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType }) =>
         stixCoreObjectDeleteRelation(user, id, toId, relationshipType),
       merge: ({ stixCoreObjectsIds }) => stixCoreObjectMerge(user, id, stixCoreObjectsIds),
+      askEnrichment: ({ connectorId }) => stixCoreObjectAskEnrichment(user, id, connectorId),
     }),
   },
 };

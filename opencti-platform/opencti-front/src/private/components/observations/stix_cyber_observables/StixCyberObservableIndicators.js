@@ -21,6 +21,7 @@ import Button from '@material-ui/core/Button';
 import Slide from '@material-ui/core/Slide';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import Paper from '@material-ui/core/Paper';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -29,8 +30,8 @@ const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '6px 0 0 0',
-    padding: '15px 15px 15px 15px',
+    margin: 0,
+    padding: '25px 15px 15px 15px',
     borderRadius: 6,
   },
   itemHead: {
@@ -182,83 +183,90 @@ class StixCyberObservableIndicatorsComponent extends Component {
           </MenuItem>
         </Menu>
         <div className="clearfix" />
-        <List style={{ marginTop: -10 }}>
-          {indicators.map((indicator) => (
-            <ListItem
-              key={indicator.id}
-              classes={{ root: classes.item }}
-              divider={true}
-              button={true}
-              component={Link}
-              to={`/dashboard/observations/indicators/${indicator.id}`}
-            >
-              <ListItemIcon classes={{ root: classes.itemIcon }}>
-                <ShieldSearch />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <div>
-                    <div
-                      className={classes.bodyItem}
-                      style={inlineStyles.pattern_type}
-                    >
-                      <ItemPatternType
-                        variant="inList"
-                        label={indicator.pattern_type}
-                      />
+        <Paper classes={{ root: classes.paper }} elevation={2}>
+          <List style={{ marginTop: -10 }}>
+            {indicators.map((indicator) => (
+              <ListItem
+                key={indicator.id}
+                classes={{ root: classes.item }}
+                divider={true}
+                button={true}
+                component={Link}
+                to={`/dashboard/observations/indicators/${indicator.id}`}
+              >
+                <ListItemIcon classes={{ root: classes.itemIcon }}>
+                  <ShieldSearch />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.pattern_type}
+                      >
+                        <ItemPatternType
+                          variant="inList"
+                          label={indicator.pattern_type}
+                        />
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.name}
+                      >
+                        {indicator.name}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.valid_from}
+                      >
+                        {fd(indicator.valid_from)}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.valid_until}
+                      >
+                        {fd(indicator.valid_until)}
+                      </div>
                     </div>
-                    <div className={classes.bodyItem} style={inlineStyles.name}>
-                      {indicator.name}
-                    </div>
-                    <div
-                      className={classes.bodyItem}
-                      style={inlineStyles.valid_from}
-                    >
-                      {fd(indicator.valid_from)}
-                    </div>
-                    <div
-                      className={classes.bodyItem}
-                      style={inlineStyles.valid_until}
-                    >
-                      {fd(indicator.valid_until)}
-                    </div>
-                  </div>
-                }
-              />
-              <ListItemIcon classes={{ root: classes.goIcon }}>
-                <KeyboardArrowRight />
-              </ListItemIcon>
-            </ListItem>
-          ))}
-        </List>
-        <Dialog
-          open={this.state.displayPromoteStix}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={this.handleClosePromoteStix.bind(this)}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to create a STIX Indcator from this observable?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={this.handleClosePromoteStix.bind(this)}
-              color="primary"
-              disabled={this.state.promotingStix}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.submitPromoteStix.bind(this)}
-              color="primary"
-              disabled={this.state.promotingStix}
-            >
-              {t('Create')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+                  }
+                />
+                <ListItemIcon classes={{ root: classes.goIcon }}>
+                  <KeyboardArrowRight />
+                </ListItemIcon>
+              </ListItem>
+            ))}
+          </List>
+          <Dialog
+            open={this.state.displayPromoteStix}
+            keepMounted={true}
+            TransitionComponent={Transition}
+            onClose={this.handleClosePromoteStix.bind(this)}
+          >
+            <DialogContent>
+              <DialogContentText>
+                {t(
+                  'Do you want to create a STIX Indcator from this observable?',
+                )}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={this.handleClosePromoteStix.bind(this)}
+                color="primary"
+                disabled={this.state.promotingStix}
+              >
+                {t('Cancel')}
+              </Button>
+              <Button
+                onClick={this.submitPromoteStix.bind(this)}
+                color="primary"
+                disabled={this.state.promotingStix}
+              >
+                {t('Create')}
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </Paper>
       </div>
     );
   }

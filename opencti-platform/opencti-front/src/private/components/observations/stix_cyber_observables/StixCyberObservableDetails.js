@@ -12,13 +12,9 @@ import Grid from '@material-ui/core/Grid';
 import { GetAppOutlined } from '@material-ui/icons';
 import Button from '@material-ui/core/Button';
 import inject18n from '../../../../components/i18n';
-import StixCyberObservableLinks, {
-  stixCyberObservableLinksQuery,
-} from './StixCyberObservableLinks';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { ignoredAttributes } from './StixCyberObservableCreation';
-import { APP_BASE_PATH, QueryRenderer } from '../../../../relay/environment';
-import StixCyberObservableIndicators from './StixCyberObservableIndicators';
+import { APP_BASE_PATH } from '../../../../relay/environment';
 
 const styles = () => ({
   paper: {
@@ -46,11 +42,6 @@ class StixCyberObservableDetailsComponent extends Component {
           && !n.key.startsWith('__'),
       ),
     )(stixCyberObservable);
-    const paginationOptions = {
-      elementId: stixCyberObservable.id,
-      orderBy: 'created_at',
-      orderMode: 'desc',
-    };
     const file = stixCyberObservable.importFiles
       && stixCyberObservable.importFiles.edges.length > 0
       ? stixCyberObservable.importFiles.edges[0].node
@@ -117,23 +108,6 @@ class StixCyberObservableDetailsComponent extends Component {
               );
             })}
           </Grid>
-          <QueryRenderer
-            query={stixCyberObservableLinksQuery}
-            variables={{ count: 25, ...paginationOptions }}
-            render={({ props }) => (
-              <StixCyberObservableLinks
-                stixCyberObservableId={stixCyberObservable.id}
-                stixCyberObservableType={stixCyberObservable.entity_type}
-                paginationOptions={paginationOptions}
-                data={props}
-              />
-            )}
-          />
-          <br />
-          <StixCyberObservableIndicators
-            paginationOptions={paginationOptions}
-            stixCyberObservable={stixCyberObservable}
-          />
         </Paper>
       </div>
     );
@@ -347,7 +321,6 @@ const StixCyberObservableDetails = createFragmentContainer(
         ... on XOpenCTIUserAgent {
           value
         }
-        ...StixCyberObservableIndicators_stixCyberObservable
       }
     `,
   },

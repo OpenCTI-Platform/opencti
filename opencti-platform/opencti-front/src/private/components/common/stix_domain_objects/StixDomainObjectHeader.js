@@ -29,6 +29,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -219,7 +220,7 @@ class StixDomainObjectHeader extends Component {
             })}
           </div>
         </Security>
-        {typeof onViewAs === 'function' ? (
+        {typeof onViewAs === 'function' && (
           <div>
             <InputLabel classes={{ root: classes.viewAsFieldLabel }}>
               {t('Display as')}
@@ -239,21 +240,20 @@ class StixDomainObjectHeader extends Component {
               </Select>
             </FormControl>
           </div>
-        ) : (
-          ''
         )}
+        <StixCoreObjectEnrichment stixCoreObjectId={stixDomainObject.id} />
         {variant !== 'noaliases' ? (
           <div className={classes.aliases}>
-            {take(5, aliases).map((label) => (label.length > 0 ? (
-                <Chip
-                  key={label}
-                  classes={{ root: classes.alias }}
-                  label={label}
-                  onDelete={this.deleteAlias.bind(this, label)}
-                />
-            ) : (
-              ''
-            )))}
+            {take(5, aliases).map(
+              (label) => label.length > 0 && (
+                  <Chip
+                    key={label}
+                    classes={{ root: classes.alias }}
+                    label={label}
+                    onDelete={this.deleteAlias.bind(this, label)}
+                  />
+              ),
+            )}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               {aliases.length > 5 ? (
                 <Button
