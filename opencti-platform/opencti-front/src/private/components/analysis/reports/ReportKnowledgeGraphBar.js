@@ -281,16 +281,38 @@ class ReportKnowledgeGraphBar extends Component {
         && numberOfSelectedLinks === 0
         && !selectedNodes[0].isObservable)
       || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
-    const relationEnabled = (numberOfSelectedNodes === 2 && numberOfSelectedLinks === 0)
+    const fromSelectedTypes = numberOfSelectedNodes >= 2
+      ? R.uniq(R.map((n) => n.entity_type, R.init(selectedNodes)))
+      : [];
+    const toSelectedTypes = numberOfSelectedNodes >= 2
+      ? R.uniq(R.map((n) => n.entity_type, R.tail(selectedNodes)))
+      : [];
+    const relationEnabled = (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
+      || (toSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1);
-    let relationFrom = null;
-    let relationTo = null;
-    if (numberOfSelectedNodes === 2) {
-      relationFrom = relationReversed ? selectedNodes[1] : selectedNodes[0];
-      relationTo = relationReversed ? selectedNodes[0] : selectedNodes[1];
+    let relationFromObjects = null;
+    let relationToObjects = null;
+    if (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0) {
+      relationFromObjects = relationReversed
+        ? [R.last(selectedNodes)]
+        : R.init(selectedNodes);
+      relationToObjects = relationReversed
+        ? R.init(selectedNodes)
+        : [R.last(selectedNodes)];
+    } else if (toSelectedTypes.length === 1 && numberOfSelectedLinks === 0) {
+      relationFromObjects = relationReversed
+        ? R.tail(selectedNodes)
+        : [R.head(selectedNodes)];
+      relationToObjects = relationReversed
+        ? [R.head(selectedNodes)]
+        : R.tail(selectedNodes);
     } else if (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1) {
-      relationFrom = relationReversed ? selectedNodes[0] : selectedLinks[0];
-      relationTo = relationReversed ? selectedLinks[0] : selectedNodes[0];
+      relationFromObjects = relationReversed
+        ? selectedNodes[0]
+        : selectedLinks[0];
+      relationToObjects = relationReversed
+        ? [selectedLinks[0]]
+        : [selectedNodes[0]];
     }
     return (
       <Drawer
@@ -684,8 +706,8 @@ class ReportKnowledgeGraphBar extends Component {
                 {onAddRelation && (
                   <StixCoreRelationshipCreation
                     open={openCreatedRelation}
-                    from={relationFrom}
-                    to={relationTo}
+                    fromObjects={relationFromObjects}
+                    toObjects={relationToObjects}
                     firstSeen={
                       lastLinkFirstSeen || dateFormat(report.published)
                     }

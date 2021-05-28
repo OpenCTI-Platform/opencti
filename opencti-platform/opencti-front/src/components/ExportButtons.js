@@ -7,8 +7,8 @@ import * as R from 'ramda';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Dialog from '@material-ui/core/Dialog';
-import ThemeLight from './ThemeLight';
-import ThemeDark from './ThemeDark';
+import themeLight from './ThemeLight';
+import themeDark from './ThemeDark';
 import { commitLocalUpdate } from '../relay/environment';
 import { exportImage, exportPdf } from '../utils/Image';
 import inject18n from './i18n';
@@ -61,8 +61,8 @@ class ExportButtons extends Component {
         // eslint-disable-next-line no-nested-ternary
         background
           ? theme === 'light'
-            ? ThemeLight().palette.background.default
-            : ThemeDark().palette.background.default
+            ? themeLight().palette.background.default
+            : themeDark().palette.background.default
           : null,
       ).then(() => {
         commitLocalUpdate((store) => {
@@ -99,8 +99,8 @@ class ExportButtons extends Component {
         // eslint-disable-next-line no-nested-ternary
         background
           ? theme === 'light'
-            ? ThemeLight().palette.background.default
-            : ThemeDark().palette.background.default
+            ? themeLight().palette.background.default
+            : themeDark().palette.background.default
           : null,
       ).then(() => {
         commitLocalUpdate((store) => {

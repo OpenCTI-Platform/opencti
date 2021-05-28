@@ -29,7 +29,7 @@ import Incident from '../resources/images/entities/incident_dark.svg';
 import StixCyberObservable from '../resources/images/entities/stix-cyber-observable_dark.svg';
 import relationship from '../resources/images/entities/relationship.svg';
 import { itemColor } from './Colors';
-import Theme from '../components/ThemeDark';
+import themeDark from '../components/ThemeDark';
 import {
   dateFormat,
   dayEndDate,
@@ -629,7 +629,7 @@ export const nodePaint = (
   ctx.fill();
   if (selected) {
     ctx.lineWidth = 0.8;
-    ctx.strokeStyle = Theme.palette.secondary.main;
+    ctx.strokeStyle = themeDark().palette.secondary.main;
     ctx.stroke();
   }
   const size = 8;
