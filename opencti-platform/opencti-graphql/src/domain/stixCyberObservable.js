@@ -20,8 +20,7 @@ import {
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
-import { createWork, workToExportFile } from './work';
-import { pushToConnector } from '../database/rabbitmq';
+import { workToExportFile } from './work';
 import { addIndicator } from './indicator';
 import { askEnrich } from './enrichment';
 import { FunctionalError } from '../config/errors';
@@ -48,7 +47,6 @@ import {
 } from '../schema/stixCyberObservable';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { apiAttributeToComplexFormat } from '../schema/fieldDataAdapter';
