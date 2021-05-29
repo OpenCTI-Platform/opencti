@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import platformInit from '../../../src/initialization';
-// import { listenServer, stopServer } from '../../../src/httpServer';
+import { listenServer, stopServer } from '../../../src/httpServer';
 import { FIVE_MINUTES, PYTHON_PATH, API_TOKEN, API_URI } from '../../utils/testQuery';
 import { execPython3 } from '../../../src/python/pythonBridge';
 
@@ -16,11 +16,11 @@ describe('Database provision', () => {
   it(
     'Should import creation succeed',
     async () => {
-      // const httpServer = await listenServer();
+      const httpServer = await listenServer();
       const execution = await execPython3(PYTHON_PATH, 'local_importer.py', importOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
-      // await stopServer(httpServer);
+      await stopServer(httpServer);
     },
     FIVE_MINUTES
   );
@@ -28,11 +28,11 @@ describe('Database provision', () => {
   it(
     'Should import update succeed',
     async () => {
-      // const httpServer = await listenServer();
+      const httpServer = await listenServer();
       const execution = await execPython3(PYTHON_PATH, 'local_importer.py', importOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
-      // await stopServer(httpServer);
+      await stopServer(httpServer);
     },
     FIVE_MINUTES
   );
