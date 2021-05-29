@@ -102,6 +102,7 @@
     "@babel/cli": "7.14.3",
     "@babel/core": "7.14.3",
     "@babel/node": "7.14.2",
+    "@babel/plugin-transform-runtime": "^7.14.3",
     "@babel/preset-env": "7.14.2",
     "apollo-server-testing": "2.24.1",
     "babel-eslint": "10.1.0",
@@ -121,7 +122,7 @@
     "prettier": "2.3.0",
     "run-script-webpack-plugin": "0.0.11",
     "terser-webpack-plugin": "5.1.2",
-    "webpack": "5.37.0",
+    "webpack": "5.38.1",
     "webpack-cli": "4.7.0",
     "webpack-node-externals": "3.0.0"
   },

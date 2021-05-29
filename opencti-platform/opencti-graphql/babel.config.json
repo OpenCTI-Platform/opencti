@@ -1,12 +1,20 @@
 {
   "presets": [
-    [
-      "@babel/preset-env",
-      {
-        "targets": {
-          "node": "14"
-        }
+    ["@babel/env", {
+      "targets": {
+        "node": "current"
       }
-    ]
-  ]
+    }]
+  ],
+  "plugins": [
+    ["@babel/transform-runtime"], ["@babel/transform-parameters", {
+      "loose": true
+    }]
+  ],
+  "env": {
+    "development": {
+      "sourceMaps": true,
+      "retainLines": true,
+    }
+  },
 }

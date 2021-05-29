@@ -92,9 +92,11 @@ export const batchIndicators = (user, stixCyberObservableIds) => {
   return batchListThroughGetFrom(user, stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
 };
 
+const hashes = ['SHA-256', 'SHA-1', 'MD5'];
 export const hashValue = (stixCyberObservable) => {
   if (stixCyberObservable.hashes) {
-    for (const algo of ['SHA-256', 'SHA-1', 'MD5']) {
+    for (let index = 0; index < hashes.length; index += 1) {
+      const algo = hashes[index];
       if (stixCyberObservable.hashes[algo]) {
         return stixCyberObservable.hashes[algo];
       }

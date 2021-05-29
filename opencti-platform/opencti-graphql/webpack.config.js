@@ -16,7 +16,7 @@ module.exports = (env, argv) => {
   const buildDate = new Date().toISOString();
   return {
     entry: {
-      index: [resolvePath('src/index'), ...addIf(isDev, [`${require.resolve('webpack/hot/poll')}?1000`])],
+      index: [resolvePath('src/index')], // , ...addIf(isDev, [`${require.resolve('webpack/hot/poll')}?1000`])],
     },
     resolve: {
       extensions: ['.wasm', '.mjs', '.js', '.json', '.graphql'],
@@ -31,10 +31,9 @@ module.exports = (env, argv) => {
     target: 'node',
     output: {
       path: resolvePath('build'),
-      libraryTarget: 'commonjs2',
       devtoolModuleFilenameTemplate: isDev ? '[absolute-resource-path]' : '[resource-path]',
     },
-    devtool: 'eval-source-map',
+    devtool: 'inline-source-map',
     optimization: {
       emitOnErrors: false,
       minimize: !isDev,

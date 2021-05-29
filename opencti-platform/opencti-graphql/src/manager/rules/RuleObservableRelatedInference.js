@@ -11,7 +11,7 @@ import { extractFieldsOfPatch } from '../../graphql/sseMiddleware';
 import { getTypeFromStixId } from '../../schema/schemaUtils';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
-import {INDEX_MARKINGS_FIELD, RULE_PREFIX} from '../../schema/general';
+import { INDEX_MARKINGS_FIELD, RULE_PREFIX } from '../../schema/general';
 
 const name = 'observable_related';
 const description =

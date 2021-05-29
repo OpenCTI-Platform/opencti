@@ -1644,6 +1644,30 @@ const computeExtendedDateValues = (newValue, currentValue, mode) => {
   return null;
 };
 
+const handleRelationTimeUpdate = (input, instance, startField, stopField, extendRelationTime) => {
+  const patch = {};
+  if (input[startField]) {
+    if (extendRelationTime) {
+      const extendedStart = computeExtendedDateValues(input[startField], instance[startField], ALIGN_OLDEST);
+      if (extendedStart) {
+        patch[startField] = extendedStart;
+      }
+    } else {
+      patch[startField] = input[startField];
+    }
+  }
+  if (input[stopField]) {
+    if (extendRelationTime) {
+      const extendedStop = computeExtendedDateValues(input[stopField], instance[stopField], ALIGN_NEWEST);
+      if (extendedStop) {
+        patch[stopField] = extendedStop;
+      }
+    } else {
+      patch[stopField] = input[stopField];
+    }
+  }
+  return patch;
+};
 const upsertElementRaw = async (user, id, type, input, opts = {}) => {
   const { extendRelationTime = true, overrideMarkings = false } = opts;
   const instance = await markedLoadById(user, id, type);
@@ -1673,39 +1697,23 @@ const upsertElementRaw = async (user, id, type, input, opts = {}) => {
   }
   // Upsert relationships
   if (isStixSightingRelationship(type)) {
-    const patch = { attribute_count: instance.attribute_count + input.attribute_count };
-    if (input.first_seen) {
-      patch.first_seen = extendRelationTime
-        ? computeExtendedDateValues(input.first_seen, instance.first_seen, ALIGN_OLDEST)
-        : input.first_seen;
-    }
-    if (input.last_seen) {
-      patch.last_seen = extendRelationTime
-        ? computeExtendedDateValues(input.last_seen, instance.last_seen, ALIGN_NEWEST)
-        : input.last_seen;
-    }
+    const basePatch = { attribute_count: instance.attribute_count + input.attribute_count };
+    const timePatch = handleRelationTimeUpdate(input, instance, 'first_seen', 'last_seen', extendRelationTime);
+    const patch = { ...basePatch, ...timePatch };
     const patched = patchAttributeRaw(user, instance, patch);
     impactedInputs.push(...patched.impactedInputs);
     updatedReplaceInputs.push(...patched.updatedInputs);
   }
   if (isStixCoreRelationship(type)) {
-    const patch = {};
+    const basePatch = {};
     if (input.confidence) {
-      patch.confidence = input.confidence;
+      basePatch.confidence = input.confidence;
     }
     if (input.description) {
-      patch.description = input.description;
+      basePatch.description = input.description;
     }
-    if (input.start_time) {
-      patch.start_time = extendRelationTime
-        ? computeExtendedDateValues(input.start_time, instance.start_time, ALIGN_OLDEST)
-        : input.start_time;
-    }
-    if (input.stop_time) {
-      patch.stop_time = extendRelationTime
-        ? computeExtendedDateValues(input.stop_time, instance.stop_time, ALIGN_NEWEST)
-        : input.stop_time;
-    }
+    const timePatch = handleRelationTimeUpdate(input, instance, 'start_time', 'stop_time', extendRelationTime);
+    const patch = { ...basePatch, ...timePatch };
     const patched = patchAttributeRaw(user, instance, patch);
     impactedInputs.push(...patched.impactedInputs);
     updatedReplaceInputs.push(...patched.updatedInputs);
@@ -1725,13 +1733,11 @@ const upsertElementRaw = async (user, id, type, input, opts = {}) => {
   }
   // Upsert rules
   const rulesKeys = Object.keys(input).filter((k) => k.startsWith(RULE_PREFIX));
-  if (rulesKeys.length > 0) {
-    for (let indexKey = 0; indexKey < rulesKeys.length; indexKey += 1) {
-      const rulesKey = rulesKeys[indexKey];
-      const ruleDefinition = input[rulesKey];
-      const patched = patchAttributeRaw(user, instance, { [rulesKey]: ruleDefinition });
-      impactedInputs.push(...patched.impactedInputs);
-    }
+  for (let indexKey = 0; indexKey < rulesKeys.length; indexKey += 1) {
+    const rulesKey = rulesKeys[indexKey];
+    const ruleDefinition = input[rulesKey];
+    const patched = patchAttributeRaw(user, instance, { [rulesKey]: ruleDefinition });
+    impactedInputs.push(...patched.impactedInputs);
   }
   // Upsert markings
   if (input.objectMarking && input.objectMarking.length > 0) {
@@ -1971,11 +1977,7 @@ export const createInferredRelation = async (rule, input) => {
   const { from, to } = resolvedInput;
   const dataRel = await createRelationRaw(SYSTEM_USER, resolvedInput, opts);
   // Index the created element
-  try {
-    await indexCreatedElement(dataRel);
-  } catch (e) {
-    console.log(e);
-  }
+  await indexCreatedElement(dataRel);
   // Push the input in the stream
   let event;
   if (dataRel.type === TRX_CREATION) {

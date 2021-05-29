@@ -13,7 +13,8 @@ import {
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_PLATFORM_INDICES,
-  READ_RELATIONSHIPS_INDICES, isEmptyField,
+  READ_RELATIONSHIPS_INDICES,
+  isEmptyField,
 } from './utils';
 import conf, { logApp } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
@@ -68,7 +69,9 @@ const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_KILL_CHAIN_PHASE}_${ROLE_TO}`,
   `${RELATION_INDICATES}_${ROLE_TO}`,
 ];
-export const isImpactedTypeAndSide = (type, side) => !UNIMPACTED_ENTITIES_ROLE.includes(`${type}_${side}`);
+export const isImpactedTypeAndSide = (type, side) => {
+  return !UNIMPACTED_ENTITIES_ROLE.includes(`${type}_${side}`);
+};
 export const isImpactedRole = (role) => !UNIMPACTED_ENTITIES_ROLE.includes(role);
 const computeRelsExclude = () => {
   // Exclude every rel except markings

@@ -1,18 +1,19 @@
 /* eslint-disable camelcase */
-import { isStixObject } from '../../schema/stixCoreObject';
 import { generateInternalType } from '../../schema/schemaUtils';
 import { internalLoadById, listAllThings, patchAttribute } from '../../database/middleware';
 import { SYSTEM_USER } from '../../utils/access';
 import { extractFieldsOfPatch, rebuildInstanceWithPatch } from '../../graphql/sseMiddleware';
 import { READ_DATA_INDICES_WITHOUT_INFERRED } from '../../database/utils';
 import { RULE_PREFIX } from '../../schema/general';
+import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
+import { isStixDomainObject } from '../../schema/stixDomainObject';
 
 const name = 'label';
 const description =
   'This rule will compute the confidence level of any entity or relation. ' +
   'It will translate the reliability of the creator to a confidence ';
 const scopeFields = ['confidence'];
-const scopeFilters = { types: ['Stix-Core-Object', 'stix-core-relationship'] };
+const scopeFilters = { types: ['Stix-Domain-Object', 'stix-core-relationship'] };
 const reliabilityMapping = { A: 80, B: 60, C: 40, D: 20, E: 0, F: 0 };
 const ruleConfidenceLevelBuilder = () => {
   // utils
@@ -54,7 +55,7 @@ const ruleConfidenceLevelBuilder = () => {
   // basics
   const insert = async (element) => {
     const entityType = generateInternalType(element);
-    if (isStixObject(entityType)) {
+    if (isStixDomainObject(entityType) || isStixCoreRelationship(entityType)) {
       return applyUpsert(element);
     }
     return [];

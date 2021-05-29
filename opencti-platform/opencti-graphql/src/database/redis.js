@@ -4,7 +4,7 @@ import Redlock from 'redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
 import { create as createJsonDiff } from 'jsondiffpatch';
-import conf, { configureCA, logApp } from '../config/conf';
+import conf, { configureCA, DEV_MODE, logApp } from '../config/conf';
 import {
   generateLogMessage,
   isEmptyField,
@@ -47,7 +47,7 @@ const redisOptions = (database) => ({
   password: conf.get('redis:password'),
   retryStrategy: /* istanbul ignore next */ (times) => Math.min(times * 50, 2000),
   maxRetriesPerRequest: 2,
-  showFriendlyErrorStack: true,
+  showFriendlyErrorStack: DEV_MODE,
 });
 
 export const pubsub = new RedisPubSub({
@@ -380,7 +380,7 @@ const buildMergeEvent = (user, initialInstance, mergedInstance, sourceEntities) 
 export const storeMergeEvent = async (user, initialInstance, mergedInstance, sourceEntities) => {
   try {
     const event = buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities);
-    return pushToStream(clientBase, event);
+    await pushToStream(clientBase, event);
   } catch (e) {
     throw DatabaseError('Error in store merge event', { error: e });
   }
@@ -427,7 +427,7 @@ export const storeUpdateEvent = async (user, instance, updateEvents) => {
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     try {
       const event = buildUpdateEvent(user, instance, updateEvents);
-      return pushToStream(clientBase, event);
+      await pushToStream(clientBase, event);
     } catch (e) {
       throw DatabaseError('Error in store update event', { error: e });
     }
@@ -462,7 +462,7 @@ export const storeCreateEvent = async (user, instance, input, stixLoader) => {
   if (isStixSpecificationObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     try {
       const event = await buildCreateEvent(user, instance, input, stixLoader);
-      return pushToStream(clientBase, event);
+      await pushToStream(clientBase, event);
     } catch (e) {
       throw DatabaseError('Error in store create event', { error: e });
     }
@@ -498,7 +498,7 @@ export const storeDeleteEvent = async (user, instance, stixLoader) => {
   try {
     if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
       const event = await buildDeleteEvent(user, instance, stixLoader);
-      return pushToStream(clientBase, event);
+      await pushToStream(clientBase, event);
     }
   } catch (e) {
     throw DatabaseError('Error in store delete event', { error: e });

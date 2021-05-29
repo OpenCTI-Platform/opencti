@@ -1,15 +1,15 @@
-import { declaredRules } from '../manager/ruleManager';
+import { declaredRules, getRule } from '../manager/ruleManager';
 
 const ruleResolvers = {
   Query: {
-    rule: (_, { id }, { user }) => "",
+    rule: (_, { id }) => getRule(id),
     rules: () => declaredRules,
   },
   Mutation: {
-    changeActivation: (_, { id }, { user }) => console.log(id, user),
+    changeActivation: () => ({}),
   },
   Rule: {
-    activated: (rule, _, { user }) => console.log(rule, user),
+    activated: () => ({}),
   },
 };
 

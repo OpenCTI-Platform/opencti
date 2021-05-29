@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import {ADMIN_USER, queryAsAdmin} from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
 import { elLoadByIds } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
