@@ -16,6 +16,7 @@ export const exportImage = (domElementId, name, backgroundColor = null) => {
       .toBlob(container, {
         useCORS: true,
         allowTaint: true,
+        pixelRatio: 2,
         backgroundColor,
         style: { margin: 0 },
         filter: (domNode) => {
@@ -43,6 +44,7 @@ export const exportPdf = (domElementId, name, backgroundColor = null) => {
       .toPng(container, {
         useCORS: true,
         allowTaint: true,
+        pixelRatio: 2,
         backgroundColor,
         style: { margin: 0 },
         filter: (domNode) => {

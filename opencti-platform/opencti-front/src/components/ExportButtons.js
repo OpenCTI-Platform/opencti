@@ -69,7 +69,7 @@ class ExportButtons extends Component {
           const me = store.getRoot().getLinkedRecord('me');
           me.setValue(currentTheme.palette.type, 'theme');
           me.setValue(false, 'exporting');
-          setTimeout(() => this.setState({ exporting: false }, 1000));
+          setTimeout(() => this.setState({ exporting: false }), 1000);
         });
       });
     }, 4000);
@@ -107,7 +107,7 @@ class ExportButtons extends Component {
           const me = store.getRoot().getLinkedRecord('me');
           me.setValue(currentTheme.palette.type, 'theme');
           me.setValue(false, 'exporting');
-          setTimeout(() => this.setState({ exporting: false }, 1000));
+          setTimeout(() => this.setState({ exporting: false }), 1000);
         });
       });
     }, 4000);
