@@ -29,7 +29,7 @@ import Loader from '../../../../components/Loader';
 
 const interval$ = interval(FIVE_SECONDS);
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -67,7 +67,8 @@ const styles = () => ({
     height: 30,
     float: 'left',
     margin: '0 10px 10px 0',
-    backgroundColor: '#607d8b',
+    backgroundColor: theme.palette.background.chip,
+    color: '#ffffff',
   },
   number: {
     fontWeight: 600,
