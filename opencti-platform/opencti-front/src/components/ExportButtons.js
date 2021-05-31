@@ -106,8 +106,8 @@ class ExportButtons extends Component {
         commitLocalUpdate((store) => {
           const me = store.getRoot().getLinkedRecord('me');
           me.setValue(currentTheme.palette.type, 'theme');
+          this.setState({ exporting: false });
           me.setValue(false, 'exporting');
-          setTimeout(() => this.setState({ exporting: false }), 1000);
         });
       });
     }, 4000);

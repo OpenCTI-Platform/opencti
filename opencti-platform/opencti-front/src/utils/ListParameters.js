@@ -77,6 +77,12 @@ export const buildViewParamsFromUrlAndStorage = (
   if (finalParams.modeFixed) {
     finalParams.modeFixed = finalParams.modeFixed.toString() === 'true';
   }
+  if (finalParams.currentModeOnlyActive) {
+    finalParams.currentModeOnlyActive = finalParams.currentModeOnlyActive.toString() === 'true';
+  }
+  if (finalParams.currentColorsReversed) {
+    finalParams.currentColorsReversed = finalParams.currentColorsReversed.toString() === 'true';
+  }
   if (finalParams.displayTimeRange) {
     finalParams.displayTimeRange = finalParams.displayTimeRange.toString() === 'true';
   }

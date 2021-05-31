@@ -22,7 +22,16 @@ const styles = () => ({
 class AttackPatternsMatrix extends Component {
   render() {
     const {
-      classes, attackPatterns, marginRight, searchTerm,
+      classes,
+      attackPatterns,
+      marginRight,
+      searchTerm,
+      handleChangeKillChain,
+      handleToggleModeOnlyActive,
+      handleToggleColorsReversed,
+      currentKillChain,
+      currentColorsReversed,
+      currentModeOnlyActive,
     } = this.props;
     return (
       <div className={classes.container}>
@@ -40,6 +49,12 @@ class AttackPatternsMatrix extends Component {
                   attackPatterns={attackPatterns}
                   marginRight={marginRight}
                   searchTerm={searchTerm}
+                  handleChangeKillChain={handleChangeKillChain}
+                  handleToggleModeOnlyActive={handleToggleModeOnlyActive}
+                  handleToggleColorsReversed={handleToggleColorsReversed}
+                  currentKillChain={currentKillChain}
+                  currentColorsReversed={currentColorsReversed}
+                  currentModeOnlyActive={currentModeOnlyActive}
                 />
               );
             }
@@ -59,6 +74,12 @@ AttackPatternsMatrix.propTypes = {
   classes: PropTypes.object,
   attackPatterns: PropTypes.array,
   searchTerm: PropTypes.string,
+  handleChangeKillChain: PropTypes.func,
+  handleToggleModeOnlyActive: PropTypes.func,
+  handleToggleColorsReversed: PropTypes.func,
+  currentKillChain: PropTypes.bool,
+  currentColorsReversed: PropTypes.bool,
+  currentModeOnlyActive: PropTypes.bool,
 };
 
 export default compose(
