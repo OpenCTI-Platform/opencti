@@ -451,11 +451,11 @@ class OpenCTIConnectorHelper:
             pass
         return None
 
-    def listen(self, message_callback: Callable[[str, Dict], str]) -> None:
+    def listen(self, message_callback: Callable[[Dict], str]) -> None:
         """listen for messages and register callback function
 
         :param message_callback: callback function to process messages
-        :type message_callback: Callable[[Dict], List[str]]
+        :type message_callback: Callable[[Dict], str]
         """
 
         listen_queue = ListenQueue(self, self.config, message_callback)
