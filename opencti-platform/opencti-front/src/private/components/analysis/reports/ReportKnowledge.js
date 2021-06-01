@@ -175,6 +175,7 @@ class ReportKnowledgeComponent extends Component {
           link={`/dashboard/analysis/reports/${report.id}/knowledge`}
           modes={['graph', 'correlation', 'matrix']}
           currentMode={mode}
+          knowledge={true}
         />
         <Route
           exact
