@@ -103,6 +103,7 @@ class ContainerHeaderComponent extends Component {
           <ExportButtons
             domElementId="container"
             name={t('Report representation')}
+            pixelRatio={currentMode === 'graph' ? 4 : 2}
           />
         </div>
         {modes && (

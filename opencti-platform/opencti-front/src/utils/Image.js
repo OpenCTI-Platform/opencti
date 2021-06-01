@@ -9,14 +9,14 @@ const ignoredClasses = [
   'MuiInputBase-root',
 ];
 
-export const exportImage = (domElementId, name, backgroundColor = null) => {
+export const exportImage = (domElementId, name, backgroundColor = null, pixelRatio = 2) => {
   const container = document.getElementById(domElementId);
   return new Promise((resolve) => {
     htmlToImage
       .toBlob(container, {
         useCORS: true,
         allowTaint: true,
-        pixelRatio: 2,
+        pixelRatio,
         backgroundColor,
         style: { margin: 0 },
         filter: (domNode) => {
@@ -37,14 +37,14 @@ export const exportImage = (domElementId, name, backgroundColor = null) => {
   });
 };
 
-export const exportPdf = (domElementId, name, backgroundColor = null) => {
+export const exportPdf = (domElementId, name, backgroundColor = null, pixelRatio = 2) => {
   const container = document.getElementById(domElementId);
   return new Promise((resolve) => {
     htmlToImage
       .toPng(container, {
         useCORS: true,
         allowTaint: true,
-        pixelRatio: 2,
+        pixelRatio,
         backgroundColor,
         style: { margin: 0 },
         filter: (domNode) => {
