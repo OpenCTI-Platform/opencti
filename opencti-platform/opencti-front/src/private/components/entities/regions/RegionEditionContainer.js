@@ -60,7 +60,7 @@ class RegionEditionContainer extends Component {
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update an region')}
+            {t('Update a region')}
           </Typography>
           <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
