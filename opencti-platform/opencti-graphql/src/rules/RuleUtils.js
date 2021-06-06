@@ -1,5 +1,5 @@
-import { isNotEmptyField } from '../../database/utils';
-import { RULE_PREFIX } from '../../schema/general';
+import { isNotEmptyField } from '../database/utils';
+import { RULE_PREFIX } from '../schema/general';
 
 export const createRulePatch = (rule, dependencies, explanation, inferred = {}) => {
   const content = { explanation, dependencies };

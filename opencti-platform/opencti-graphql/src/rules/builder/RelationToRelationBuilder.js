@@ -1,14 +1,14 @@
 /* eslint-disable camelcase */
-import { buildPeriodFromDates, computeRangeIntersection } from '../../../utils/format';
-import { INDEX_MARKINGS_FIELD } from '../../../schema/general';
+import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
+import { INDEX_MARKINGS_FIELD } from '../../schema/general';
 import {
   createInferredRelation,
   deleteInferredRuleElement,
   internalLoadById,
   listAllRelations,
-} from '../../../database/middleware';
-import { SYSTEM_USER } from '../../../utils/access';
-import { extractFieldsOfPatch } from '../../../graphql/sseMiddleware';
+} from '../../database/middleware';
+import { SYSTEM_USER } from '../../utils/access';
+import { extractFieldsOfPatch } from '../../graphql/sseMiddleware';
 import { createRulePatch } from '../RuleUtils';
 
 const listenedFields = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];

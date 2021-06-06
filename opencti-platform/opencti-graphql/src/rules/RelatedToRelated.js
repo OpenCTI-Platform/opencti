@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import buildRelationToRelationRule from './builder/RelationToRelationBuilder';
-import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
+import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 
 // region configuration
 const id = 'related_related';

@@ -1,17 +1,17 @@
 /* eslint-disable camelcase */
-import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
+import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import {
   createInferredRelation,
   deleteInferredRuleElement,
   internalLoadById,
   listAllRelations,
-} from '../../database/middleware';
-import { SYSTEM_USER } from '../../utils/access';
-import { extractFieldsOfPatch } from '../../graphql/sseMiddleware';
-import { getTypeFromStixId } from '../../schema/schemaUtils';
-import { isStixCyberObservable } from '../../schema/stixCyberObservable';
-import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
-import { INDEX_MARKINGS_FIELD } from '../../schema/general';
+} from '../database/middleware';
+import { SYSTEM_USER } from '../utils/access';
+import { extractFieldsOfPatch } from '../graphql/sseMiddleware';
+import { getTypeFromStixId } from '../schema/schemaUtils';
+import { isStixCyberObservable } from '../schema/stixCyberObservable';
+import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format';
+import { INDEX_MARKINGS_FIELD } from '../schema/general';
 import { createRulePatch } from './RuleUtils';
 
 // region configuration

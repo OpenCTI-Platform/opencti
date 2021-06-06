@@ -10,11 +10,14 @@ import { elList } from '../database/elasticSearch';
 import { STIX_RELATIONSHIPS } from '../schema/stixRelationship';
 import { RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE } from '../schema/internalObject';
-import AttributedToAttributed from './rules/AttributedToAttributed';
-import ObservableRelated from './rules/ObservableRelated';
-import ConfidenceLevel from './rules/ConfidenceLevel';
-import RelatedToRelated from './rules/RelatedToRelated';
 import { UnsupportedError } from '../config/errors';
+
+// region rules import
+import AttributedToAttributed from '../rules/AttributedToAttributed';
+import ObservableRelated from '../rules/ObservableRelated';
+import ConfidenceLevel from '../rules/ConfidenceLevel';
+import RelatedToRelated from '../rules/RelatedToRelated';
+// endregion
 
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
 

@@ -1,12 +1,12 @@
 /* eslint-disable camelcase */
-import { generateInternalType } from '../../schema/schemaUtils';
-import { internalLoadById, listAllThings, patchAttribute } from '../../database/middleware';
-import { SYSTEM_USER } from '../../utils/access';
-import { extractFieldsOfPatch, rebuildInstanceWithPatch } from '../../graphql/sseMiddleware';
-import { READ_DATA_INDICES_WITHOUT_INFERRED } from '../../database/utils';
-import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
-import { isStixDomainObject } from '../../schema/stixDomainObject';
 import { createClearRulePatch, createRulePatch } from './RuleUtils';
+import { generateInternalType } from '../schema/schemaUtils';
+import { internalLoadById, listAllThings, patchAttribute } from '../database/middleware';
+import { SYSTEM_USER } from '../utils/access';
+import { READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
+import { isStixDomainObject } from '../schema/stixDomainObject';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { extractFieldsOfPatch, rebuildInstanceWithPatch } from '../graphql/sseMiddleware';
 
 // region configuration
 const id = 'rule_confidence';
