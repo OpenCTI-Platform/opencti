@@ -58,6 +58,7 @@ import organizationOrIndividualResolvers from '../resolvers/organizationOrIndivi
 import taxiiResolvers from '../resolvers/taxii';
 import taskResolvers from '../resolvers/task';
 import streamResolvers from '../resolvers/stream';
+import ruleResolvers from '../resolvers/rule';
 
 const createSchema = () => {
   const globalResolvers = {
@@ -111,6 +112,7 @@ const createSchema = () => {
     indicatorResolvers,
     infrastructureResolvers,
     intrusionSetResolvers,
+    ruleResolvers,
     // Locations
     locationResolvers,
     cityResolvers,

@@ -106,7 +106,7 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
-import { isDatedInternalObject } from '../schema/internalObject';
+import { internalObjectsFieldsToBeUpdated, isDatedInternalObject, isInternalObject } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
@@ -1719,6 +1719,12 @@ const upsertElementRaw = async (user, id, type, input, opts = {}) => {
     updatedReplaceInputs.push(...patched.updatedInputs);
   }
   // Upsert entities
+  if (isInternalObject(type) && forceUpdate) {
+    const fields = internalObjectsFieldsToBeUpdated[type];
+    const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(user, instance, input, fields);
+    impactedInputs.push(...upsertImpacted);
+    updatedReplaceInputs.push(...upsertUpdated);
+  }
   if (isStixDomainObject(type) && forceUpdate) {
     const fields = stixDomainObjectFieldsToBeUpdated[type];
     const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(user, instance, input, fields);
@@ -2266,12 +2272,12 @@ export const deleteElementById = async (user, elementId, type) => {
   // Return id
   return elementId;
 };
-export const deleteInferredRuleElement = async (ruleName, element) => {
+export const deleteInferredRuleElement = async (rule, element) => {
   const events = [];
   const rules = Object.keys(element).filter((k) => k.startsWith(RULE_PREFIX));
-  const completeRuleName = RULE_PREFIX + ruleName;
+  const completeRuleName = RULE_PREFIX + rule;
   if (!rules.includes(completeRuleName)) {
-    throw UnsupportedError('Cant ask a deletion on element not inferred by this rule', { ruleName });
+    throw UnsupportedError('Cant ask a deletion on element not inferred by this rule', { rule });
   }
   const isPurelyInferred = isInferredIndex(element._index);
   const monoRule = rules.length === 1;

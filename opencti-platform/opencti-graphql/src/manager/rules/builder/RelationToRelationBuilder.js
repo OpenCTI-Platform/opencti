@@ -1,17 +1,18 @@
 /* eslint-disable camelcase */
-import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
-import { INDEX_MARKINGS_FIELD, RULE_PREFIX } from '../../schema/general';
+import { buildPeriodFromDates, computeRangeIntersection } from '../../../utils/format';
+import { INDEX_MARKINGS_FIELD } from '../../../schema/general';
 import {
   createInferredRelation,
   deleteInferredRuleElement,
   internalLoadById,
   listAllRelations,
-} from '../../database/middleware';
-import { SYSTEM_USER } from '../../utils/access';
-import { extractFieldsOfPatch } from '../../graphql/sseMiddleware';
+} from '../../../database/middleware';
+import { SYSTEM_USER } from '../../../utils/access';
+import { extractFieldsOfPatch } from '../../../graphql/sseMiddleware';
+import { createRulePatch } from '../RuleUtils';
 
 const listenedFields = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];
-const buildRelationToRelationRule = (name, description, relationType, scopeFields, scopeFilters) => {
+const buildRelationToRelationRule = (id, name, description, relationType, scopeFields, scopeFilters) => {
   const applyUpsert = async (markings, data) => {
     const events = [];
     const { x_opencti_id: createdId } = data;
@@ -30,6 +31,8 @@ const buildRelationToRelationRule = (name, description, relationType, scopeField
         const relInternalMarkings = relationships[sIndex][INDEX_MARKINGS_FIELD];
         // We do not need to propagate the creation here.
         // Because created relation have the same type.
+        const explanation = [foundRelationId, createdId];
+        const dependencies = [fromId, foundRelationId, sourceRef, createdId, targetRef];
         const input = {
           fromId,
           toId: targetRef,
@@ -38,12 +41,9 @@ const buildRelationToRelationRule = (name, description, relationType, scopeField
           confidence: createdConfidence < confidence ? createdConfidence : confidence,
           start_time: range.start,
           stop_time: range.end,
-          [`${RULE_PREFIX}${name}`]: {
-            explanation: [foundRelationId, createdId], // Free form, depending of the rules
-            dependencies: [fromId, foundRelationId, sourceRef, createdId, targetRef], // Must contains all participants ids
-          },
+          ...createRulePatch(id, dependencies, explanation),
         };
-        const event = await createInferredRelation(name, input);
+        const event = await createInferredRelation(id, input);
         if (event) {
           events.push(event);
         }
@@ -63,6 +63,8 @@ const buildRelationToRelationRule = (name, description, relationType, scopeField
         const relInternalMarkings = relationships[sIndex][INDEX_MARKINGS_FIELD];
         // We do not need to propagate the creation here.
         // Because created relation have the same type.
+        const explanation = [createdId, foundRelationId];
+        const dependencies = [sourceRef, createdId, toId, foundRelationId, targetRef];
         const input = {
           fromId: sourceRef,
           toId,
@@ -71,12 +73,9 @@ const buildRelationToRelationRule = (name, description, relationType, scopeField
           confidence: createdConfidence < confidence ? createdConfidence : confidence,
           start_time: range.start,
           stop_time: range.end,
-          [`${RULE_PREFIX}${name}`]: {
-            explanation: [createdId, foundRelationId], // Free form, depending of the rules
-            dependencies: [sourceRef, createdId, toId, foundRelationId, targetRef], // Must contains all participants ids
-          },
+          ...createRulePatch(id, dependencies, explanation),
         };
-        const event = await createInferredRelation(name, input);
+        const event = await createInferredRelation(id, input);
         if (event) {
           events.push(event);
         }
@@ -86,7 +85,7 @@ const buildRelationToRelationRule = (name, description, relationType, scopeField
     await listAllRelations(SYSTEM_USER, relationType, listToArgs);
     return events;
   };
-  const clean = async (element) => deleteInferredRuleElement(name, element);
+  const clean = async (element) => deleteInferredRuleElement(id, element);
   const insert = async (element) => {
     const { object_marking_refs: markings } = element;
     const isImpactedRelation = element.relationship_type === relationType;
@@ -106,7 +105,7 @@ const buildRelationToRelationRule = (name, description, relationType, scopeField
     }
     return [];
   };
-  return { name, description, insert, update, clean, scopeFields, scopeFilters };
+  return { id, name, description, insert, update, clean, scopeFields, scopeFilters };
 };
 
 export default buildRelationToRelationRule;

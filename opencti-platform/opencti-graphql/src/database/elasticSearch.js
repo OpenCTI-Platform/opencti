@@ -33,6 +33,7 @@ import {
   INTERNAL_IDS_ALIASES,
   isAbstract,
   REL_INDEX_PREFIX,
+  RULE_PREFIX,
 } from '../schema/general';
 import {
   dateAttributes,
@@ -729,12 +730,26 @@ export const elFindByIds = async (user, ids, opts = {}) => {
     });
     for (let j = 0; j < data.body.hits.hits.length; j += 1) {
       const hit = data.body.hits.hits[j];
-      let loadedElement = R.assoc('_index', hit._index, hit._source);
+      const elementWithIndex = R.assoc('_index', hit._index, hit._source);
+      // Analyse rules to add extra elements
+      const ruleKeys = Object.keys(elementWithIndex).filter((e) => e.startsWith(RULE_PREFIX));
+      const ruleAttributesInferences = R.flatten(
+        ruleKeys.map((r) =>
+          R.toPairs(elementWithIndex[r].inferred).map((s) => ({
+            field: R.head(s),
+            value: String(R.last(s)),
+            rule: r.substr(RULE_PREFIX.length),
+          }))
+        )
+      );
+      const elementExtended = { ...elementWithIndex, x_opencti_inferences: ruleAttributesInferences };
       // And a specific processing for a relation
-      if (loadedElement.base_type === BASE_TYPE_RELATION) {
-        loadedElement = elReconstructRelation(loadedElement);
+      if (elementExtended.base_type === BASE_TYPE_RELATION) {
+        const relation = elReconstructRelation(elementExtended);
+        hits[relation.internal_id] = relation;
+      } else {
+        hits[elementExtended.internal_id] = elementExtended;
       }
-      hits[loadedElement.internal_id] = loadedElement;
     }
   }
   return toMap ? hits : Object.values(hits);

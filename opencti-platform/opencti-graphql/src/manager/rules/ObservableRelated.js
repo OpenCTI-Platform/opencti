@@ -11,16 +11,21 @@ import { extractFieldsOfPatch } from '../../graphql/sseMiddleware';
 import { getTypeFromStixId } from '../../schema/schemaUtils';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
-import { INDEX_MARKINGS_FIELD, RULE_PREFIX } from '../../schema/general';
+import { INDEX_MARKINGS_FIELD } from '../../schema/general';
+import { createRulePatch } from './RuleUtils';
 
-const name = 'observable_related';
+// region configuration
+const id = 'observable_related';
+const name = 'Observable connection';
 const description =
   'This rule will infer the following fact: if an Observable A is related to an entity B and the Observable' +
   ' A is related to an entity C, the entity B is also related to the entity C.';
-// const type = RELATION_RELATED_TO;
 const listenedFields = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];
+const scopeFields = [];
 const scopeFilters = { types: [RELATION_RELATED_TO] };
 const relationType = RELATION_RELATED_TO;
+// endregion
+
 const ruleRelatedObservableBuilder = () => {
   const applyUpsert = async (markings, data) => {
     const events = [];
@@ -37,6 +42,8 @@ const ruleRelatedObservableBuilder = () => {
         const relInternalMarkings = relationships[relIndex][INDEX_MARKINGS_FIELD];
         // We do not need to propagate the creation here.
         // Because created relation have the same type.
+        const dependencies = [sourceRef, createdId, targetRef, foundRelationId, toId];
+        const explanation = [foundRelationId, createdId];
         const input = {
           fromId: targetRef,
           toId,
@@ -45,10 +52,7 @@ const ruleRelatedObservableBuilder = () => {
           confidence: createdConfidence < confidence ? createdConfidence : confidence,
           start_time: range.start,
           stop_time: range.end,
-          [`${RULE_PREFIX}${name}`]: {
-            explanation: [foundRelationId, createdId],
-            dependencies: [sourceRef, createdId, targetRef, foundRelationId, toId],
-          },
+          ...createRulePatch(id, dependencies, explanation),
         };
         const event = await createInferredRelation(name, input);
         if (event) {
@@ -84,7 +88,7 @@ const ruleRelatedObservableBuilder = () => {
     }
     return [];
   };
-  return { name, description, insert, update, clean, scopeFields: '*', scopeFilters };
+  return { id, name, description, insert, update, clean, scopeFields, scopeFilters };
 };
 const RuleObservableRelatedObservable = ruleRelatedObservableBuilder();
 export default RuleObservableRelatedObservable;

@@ -7,6 +7,7 @@ export const ENTITY_TYPE_MIGRATION_REFERENCE = 'MigrationReference';
 export const ENTITY_TYPE_TOKEN = 'Token';
 export const ENTITY_TYPE_GROUP = 'Group';
 export const ENTITY_TYPE_USER = 'User';
+export const ENTITY_TYPE_RULE = 'Rule';
 export const ENTITY_TYPE_ROLE = 'Role';
 export const ENTITY_TYPE_CAPABILITY = 'Capability';
 export const ENTITY_TYPE_CONNECTOR = 'Connector';
@@ -37,6 +38,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_USER,
   ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_RULE,
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_ATTRIBUTE,
@@ -135,6 +137,7 @@ export const internalObjectsAttributes = {
     'i_created_at_year',
     'updated_at',
   ],
+  [ENTITY_TYPE_RULE]: ['internal_id', 'standard_id', 'entity_type', 'active'],
   [ENTITY_TYPE_CAPABILITY]: [
     'internal_id',
     'standard_id',
@@ -197,4 +200,9 @@ export const internalObjectsAttributes = {
     'completed',
   ],
 };
+
+export const internalObjectsFieldsToBeUpdated = {
+  [ENTITY_TYPE_RULE]: ['active'],
+};
+
 R.forEachObjIndexed((value, key) => schemaTypes.registerAttributes(key, value), internalObjectsAttributes);

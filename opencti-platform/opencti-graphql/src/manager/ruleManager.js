@@ -2,29 +2,51 @@
 import * as R from 'ramda';
 import { buildDeleteEvent, buildScanEvent, createStreamProcessor, lockResource } from '../database/redis';
 import conf, { logApp } from '../config/conf';
-import RuleAttributedInference from './rules/RuleAttributedInference';
-import RuleObservableRelatedObservable from './rules/RuleObservableRelatedInference';
-import { listAllRelations, stixLoadById } from '../database/middleware';
+import { createEntity, listAllRelations, listEntities, stixLoadById } from '../database/middleware';
 import { SYSTEM_USER } from '../utils/access';
-import RuleConfidenceLevel from './rules/RuleConfidenceLevel';
-import { isEmptyField, READ_DATA_INDICES } from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/rabbitmq';
 import { elList } from '../database/elasticSearch';
 import { STIX_RELATIONSHIPS } from '../schema/stixRelationship';
 import { RULE_PREFIX } from '../schema/general';
-import RuleRelatedInference from './rules/RuleRelatedInference';
+import { ENTITY_TYPE_RULE } from '../schema/internalObject';
+import AttributedToAttributed from './rules/AttributedToAttributed';
+import ObservableRelated from './rules/ObservableRelated';
+import ConfidenceLevel from './rules/ConfidenceLevel';
+import RelatedToRelated from './rules/RelatedToRelated';
+import { UnsupportedError } from '../config/errors';
 
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
 
-export const declaredRules = [
-  RuleAttributedInference,
-  RuleObservableRelatedObservable,
-  RuleConfidenceLevel,
-  RuleRelatedInference,
-];
-export const getRule = (name) => R.find((e) => e.name === name)(declaredRules);
+export const declaredRules = [AttributedToAttributed, ObservableRelated, ConfidenceLevel, RelatedToRelated];
 
-const activatedRules = declaredRules;
+export const getRules = async () => {
+  const args = { connectionFormat: false, filters: [{ key: 'active', values: [true] }] };
+  const rules = await listEntities(SYSTEM_USER, [ENTITY_TYPE_RULE], args);
+  return declaredRules.map((d) => {
+    const esRule = R.find((e) => e.internal_id === d.id)(rules);
+    const isActivated = isNotEmptyField(esRule) && esRule.active;
+    return { ...d, activated: isActivated };
+  });
+};
+const getActivatedRules = async () => {
+  const rules = await getRules();
+  return rules.filter((r) => r.activated);
+};
+
+export const getRule = async (id) => {
+  const rules = await getRules();
+  return R.find((e) => e.id === id)(rules);
+};
+
+export const setRuleActivation = async (ruleId, active) => {
+  const resolvedRule = await getRule(ruleId);
+  if (isEmptyField(resolvedRule)) {
+    throw UnsupportedError(`Cant ${active ? 'enable' : 'disable'} undefined rule ${ruleId}`);
+  }
+  await createEntity(SYSTEM_USER, { internal_id: ruleId, active, update: true }, ENTITY_TYPE_RULE);
+  return getRule(ruleId);
+};
 
 const ruleMergeHandler = async (event) => {
   const { data } = event;
@@ -42,6 +64,7 @@ const ruleMergeHandler = async (event) => {
 
 const ruleApplyHandler = async (events) => {
   if (isEmptyField(events) || events.length === 0) return;
+  const activatedRules = await getActivatedRules();
   for (let index = 0; index < events.length; index += 1) {
     const event = events[index];
     try {
@@ -82,6 +105,7 @@ const ruleApplyHandler = async (events) => {
 };
 
 export const handleRuleDeleteElements = async (depElements) => {
+  const activatedRules = await getActivatedRules();
   for (let i = 0; i < depElements.length; i += 1) {
     const depElement = depElements[i];
     const elementRules = Object.keys(depElement)
@@ -94,6 +118,13 @@ export const handleRuleDeleteElements = async (depElements) => {
       await ruleApplyHandler(derivedEvents);
     }
   }
+};
+
+export const reapplyRules = async (user, element) => {
+  await handleRuleDeleteElements([element]);
+  // Execute rules over one element, act as element creation
+  const event = await buildScanEvent(user, element, stixLoadById);
+  await ruleApplyHandler([event]);
 };
 
 const ruleStreamHandler = async (streamEvents) => {
@@ -134,13 +165,6 @@ const initRuleManager = () => {
       return true;
     },
   };
-};
-
-export const reapplyRules = async (user, element) => {
-  await handleRuleDeleteElements([element]);
-  // Execute rules over one element, act as element creation
-  const event = await buildScanEvent(user, element, stixLoadById);
-  await ruleApplyHandler([event]);
 };
 
 export default initRuleManager;
