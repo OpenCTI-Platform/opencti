@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import ssl
+import sys
 import threading
 import time
 import uuid
@@ -17,10 +18,13 @@ from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 
+TRUTHY: List[str] = ["yes", "true", "True"]
+FALSY: List[str] = ["no", "false", "False"]
+
 
 def get_config_variable(
     env_var: str,
-    yaml_path: list,
+    yaml_path: List,
     config: Dict = {},
     isNumber: Optional[bool] = False,
     default=None,
@@ -43,14 +47,14 @@ def get_config_variable(
     else:
         return default
 
-    if result == "yes" or result == "true" or result == "True":
+    if result in TRUTHY:
         return True
-    elif result == "no" or result == "false" or result == "False":
+    if result in FALSY:
         return False
-    elif isNumber:
+    if isNumber:
         return int(result)
-    else:
-        return result
+
+    return result
 
 
 def create_ssl_context() -> ssl.SSLContext:
@@ -83,12 +87,12 @@ class ListenQueue(threading.Thread):
     :param helper: instance of a `OpenCTIConnectorHelper` class
     :type helper: OpenCTIConnectorHelper
     :param config: dict containing client config
-    :type config: dict
+    :type config: Dict
     :param callback: callback function to process queue
     :type callback: callable
     """
 
-    def __init__(self, helper, config: dict, callback):
+    def __init__(self, helper, config: Dict, callback) -> None:
         threading.Thread.__init__(self)
         self.pika_credentials = None
         self.pika_parameters = None
@@ -104,7 +108,7 @@ class ListenQueue(threading.Thread):
         self.queue_name = config["listen"]
 
     # noinspection PyUnusedLocal
-    def _process_message(self, channel, method, properties, body):
+    def _process_message(self, channel, method, properties, body) -> None:
         """process a message from the rabbit queue
 
         :param channel: channel instance
@@ -121,15 +125,18 @@ class ListenQueue(threading.Thread):
         thread = threading.Thread(target=self._data_handler, args=[json_data])
         thread.start()
         while thread.is_alive():  # Loop while the thread is processing
+            assert self.pika_connection is not None
             self.pika_connection.sleep(1.0)
         logging.info(
-            "Message (delivery_tag="
-            + str(method.delivery_tag)
-            + ") processed, thread terminated"
+            "%s",
+            (
+                f"Message (delivery_tag={method.delivery_tag}) processed"
+                ", thread terminated"
+            ),
         )
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
-    def _data_handler(self, json_data):
+    def _data_handler(self, json_data) -> None:
         # Set the API headers
         work_id = json_data["internal"]["work_id"]
         applicant_id = json_data["internal"]["applicant_id"]
@@ -144,14 +151,14 @@ class ListenQueue(threading.Thread):
             )
             message = self.callback(json_data["event"])
             self.helper.api.work.to_processed(work_id, message)
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-except
             logging.exception("Error in message processing, reporting error to API")
             try:
                 self.helper.api.work.to_processed(work_id, str(e), True)
-            except:
+            except:  # pylint: disable=bare-except
                 logging.error("Failing reporting the processing")
 
-    def run(self):
+    def run(self) -> None:
         while True:
             try:
                 # Connect the broker
@@ -166,6 +173,7 @@ class ListenQueue(threading.Thread):
                     else None,
                 )
                 self.pika_connection = pika.BlockingConnection(self.pika_parameters)
+                assert self.channel is not None
                 self.channel = self.pika_connection.channel()
                 self.channel.basic_consume(
                     queue=self.queue_name, on_message_callback=self._process_message
@@ -173,14 +181,14 @@ class ListenQueue(threading.Thread):
                 self.channel.start_consuming()
             except (KeyboardInterrupt, SystemExit):
                 self.helper.log_info("Connector stop")
-                exit(0)
-            except Exception as e:
+                sys.exit(0)
+            except Exception as e:  # pylint: disable=broad-except
                 self.helper.log_error(str(e))
                 time.sleep(10)
 
 
 class PingAlive(threading.Thread):
-    def __init__(self, connector_id, api, get_state, set_state):
+    def __init__(self, connector_id, api, get_state, set_state) -> None:
         threading.Thread.__init__(self)
         self.connector_id = connector_id
         self.in_error = False
@@ -188,7 +196,7 @@ class PingAlive(threading.Thread):
         self.get_state = get_state
         self.set_state = set_state
 
-    def ping(self):
+    def ping(self) -> None:
         while True:
             try:
                 initial_state = self.get_state()
@@ -201,25 +209,29 @@ class PingAlive(threading.Thread):
                 if initial_state != remote_state:
                     self.set_state(result["connector_state"])
                     logging.info(
-                        'Connector state has been remotely reset to: "'
-                        + self.get_state()
-                        + '"'
+                        "%s",
+                        (
+                            "Connector state has been remotely reset to: "
+                            f'"{self.get_state()}"'
+                        ),
                     )
                 if self.in_error:
                     self.in_error = False
                     logging.error("API Ping back to normal")
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 self.in_error = True
                 logging.error("Error pinging the API")
             time.sleep(40)
 
-    def run(self):
+    def run(self) -> None:
         logging.info("Starting ping alive thread")
         self.ping()
 
 
 class ListenStream(threading.Thread):
-    def __init__(self, helper, callback, url, token, verify_ssl, start_timestamp):
+    def __init__(
+        self, helper, callback, url, token, verify_ssl, start_timestamp
+    ) -> None:
         threading.Thread.__init__(self)
         self.helper = helper
         self.callback = callback
@@ -228,11 +240,11 @@ class ListenStream(threading.Thread):
         self.verify_ssl = verify_ssl
         self.start_timestamp = start_timestamp
 
-    def run(self):
+    def run(self) -> None:  # pylint: disable=too-many-branches
         current_state = self.helper.get_state()
         if current_state is None:
             current_state = {
-                "connectorLastEventId": str(self.start_timestamp) + "-0"
+                "connectorLastEventId": f"{self.start_timestamp}-0"
                 if self.start_timestamp is not None and len(self.start_timestamp) > 0
                 else "-"
             }
@@ -242,14 +254,14 @@ class ListenStream(threading.Thread):
         if self.url is not None and self.token is not None:
             # If a live stream ID, appending the URL
             live_stream_uri = (
-                ("/" + self.helper.connect_live_stream_id)
+                f"/{self.helper.connect_live_stream_id}"
                 if self.helper.connect_live_stream_id is not None
                 else ""
             )
             # Live stream "from" should be empty if start from the beginning
             if self.helper.connect_live_stream_id is not None:
                 live_stream_from = (
-                    ("?from=" + current_state["connectorLastEventId"])
+                    f"?from={current_state['connectorLastEventId']}"
                     if current_state["connectorLastEventId"] != "-"
                     else ""
                 )
@@ -260,31 +272,31 @@ class ListenStream(threading.Thread):
                     if current_state["connectorLastEventId"] != "-"
                     else "0"
                 )
-            live_stream_url = self.url + "/stream" + live_stream_uri + live_stream_from
+            live_stream_url = f"{self.url}/stream{live_stream_uri}{live_stream_from}"
             opencti_ssl_verify = (
                 self.verify_ssl if self.verify_ssl is not None else True
             )
             logging.info(
-                "Starting listening stream events (URL: "
-                + live_stream_url
-                + ", SSL verify: "
-                + str(opencti_ssl_verify)
-                + ")"
+                "%s",
+                (
+                    "Starting listening stream events (URL: "
+                    f"{live_stream_url}, SSL verify: {opencti_ssl_verify})"
+                ),
             )
             messages = SSEClient(
                 live_stream_url,
-                headers={"Authorization": "Bearer " + self.token},
+                headers={"authorization": "Bearer " + self.token},
                 verify=opencti_ssl_verify,
             )
         else:
             live_stream_uri = (
-                ("/" + self.helper.connect_live_stream_id)
+                f"/{self.helper.connect_live_stream_id}"
                 if self.helper.connect_live_stream_id is not None
                 else ""
             )
             if self.helper.connect_live_stream_id is not None:
                 live_stream_from = (
-                    ("?from=" + current_state["connectorLastEventId"])
+                    f"?from={current_state['connectorLastEventId']}"
                     if current_state["connectorLastEventId"] != "-"
                     else ""
                 )
@@ -296,25 +308,25 @@ class ListenStream(threading.Thread):
                     else "0"
                 )
             live_stream_url = (
-                self.helper.opencti_url + "/stream" + live_stream_uri + live_stream_from
+                f"{self.helper.opencti_url}/stream{live_stream_uri}{live_stream_from}"
             )
             logging.info(
-                "Starting listening stream events (URL: "
-                + live_stream_url
-                + ", SSL verify: "
-                + str(self.helper.opencti_ssl_verify)
-                + ")"
+                "%s",
+                (
+                    f"Starting listening stream events (URL: {live_stream_url}"
+                    f", SSL verify: {self.helper.opencti_ssl_verify})"
+                ),
             )
             messages = SSEClient(
                 live_stream_url,
-                headers={"Authorization": "Bearer " + self.helper.opencti_token},
+                headers={"authorization": "Bearer " + self.helper.opencti_token},
                 verify=self.helper.opencti_ssl_verify,
             )
 
         for msg in messages:
             if msg.event == "heartbeat" or msg.event == "connected":
                 continue
-            elif msg.event == "sync":
+            if msg.event == "sync":
                 if msg.id is not None:
                     state = self.helper.get_state()
                     state["connectorLastEventId"] = str(msg.id)
@@ -327,14 +339,14 @@ class ListenStream(threading.Thread):
                     self.helper.set_state(state)
 
 
-class OpenCTIConnectorHelper:
+class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     """Python API for OpenCTI connector
 
-    :param config: Dict standard config
-    :type config: dict
+    :param config: dict standard config
+    :type config: Dict
     """
 
-    def __init__(self, config: dict):
+    def __init__(self, config: Dict) -> None:
         # Load API config
         self.opencti_url = get_config_variable(
             "OPENCTI_URL", ["opencti", "url"], config
@@ -390,7 +402,7 @@ class OpenCTIConnectorHelper:
             logging, self.log_level.upper() if self.log_level else "INFO", None
         )
         if not isinstance(numeric_level, int):
-            raise ValueError("Invalid log level: " + self.log_level)
+            raise ValueError(f"Invalid log level: {self.log_level}")
         logging.basicConfig(level=numeric_level)
 
         # Initialize configuration
@@ -407,7 +419,7 @@ class OpenCTIConnectorHelper:
             self.connect_only_contextual,
         )
         connector_configuration = self.api.connector.register(self.connector)
-        logging.info("Connector registered with ID:" + self.connect_id)
+        logging.info("%s", f"Connector registered with ID: {self.connect_id}")
         self.connector_id = connector_configuration["id"]
         self.work_id = None
         self.applicant_id = connector_configuration["connector_user"]["id"]
@@ -420,22 +432,22 @@ class OpenCTIConnectorHelper:
         )
         self.ping.start()
 
-    def get_name(self):
+    def get_name(self) -> Optional[Union[bool, int, str]]:
         return self.connect_name
 
-    def get_only_contextual(self):
+    def get_only_contextual(self) -> Optional[Union[bool, int, str]]:
         return self.connect_only_contextual
 
     def set_state(self, state) -> None:
         """sets the connector state
 
         :param state: state object
-        :type state: dict
+        :type state: Dict
         """
 
         self.connector_state = json.dumps(state)
 
-    def get_state(self):
+    def get_state(self) -> Optional[Dict]:
         """get the connector state
 
         :return: returns the current state of the connector if there is any
@@ -445,9 +457,9 @@ class OpenCTIConnectorHelper:
         try:
             if self.connector_state:
                 state = json.loads(self.connector_state)
-                if isinstance(state, dict) and state:
+                if isinstance(state, Dict) and state:
                     return state
-        except:
+        except:  # pylint: disable=bare-except
             pass
         return None
 
@@ -479,25 +491,25 @@ class OpenCTIConnectorHelper:
         )
         listen_stream.start()
 
-    def get_opencti_url(self):
+    def get_opencti_url(self) -> Optional[Union[bool, int, str]]:
         return self.opencti_url
 
-    def get_opencti_token(self):
+    def get_opencti_token(self) -> Optional[Union[bool, int, str]]:
         return self.opencti_token
 
-    def get_connector(self):
+    def get_connector(self) -> OpenCTIConnector:
         return self.connector
 
-    def log_error(self, msg):
+    def log_error(self, msg: str) -> None:
         logging.error(msg)
 
-    def log_info(self, msg):
+    def log_info(self, msg: str) -> None:
         logging.info(msg)
 
-    def log_debug(self, msg):
+    def log_debug(self, msg: str) -> None:
         logging.debug(msg)
 
-    def log_warning(self, msg):
+    def log_warning(self, msg: str) -> None:
         logging.warning(msg)
 
     def date_now(self) -> str:
@@ -619,7 +631,7 @@ class OpenCTIConnectorHelper:
             )
             logging.info("Bundle has been sent")
         except (UnroutableError, NackError) as e:
-            logging.error("Unable to send bundle, retry...", e)
+            logging.error("Unable to send bundle, retry...%s", e)
             self._send_bundle(channel, bundle, **kwargs)
 
     def split_stix2_bundle(self, bundle) -> list:
@@ -636,8 +648,8 @@ class OpenCTIConnectorHelper:
         self.cache_added = []
         try:
             bundle_data = json.loads(bundle)
-        except:
-            raise Exception("File data is not a valid JSON")
+        except Exception as e:
+            raise Exception("File data is not a valid JSON") from e
 
         # validation = validate_parsed_json(bundle_data)
         # if not validation.is_valid:
@@ -680,13 +692,13 @@ class OpenCTIConnectorHelper:
 
         return bundles
 
-    def stix2_get_embedded_objects(self, item) -> dict:
+    def stix2_get_embedded_objects(self, item) -> Dict:
         """gets created and marking refs for a stix2 item
 
         :param item: valid stix2 item
         :type item:
         :return: returns a dict of created_by of object_marking_refs
-        :rtype: dict
+        :rtype: Dict
         """
         # Marking definitions
         object_marking_refs = []
@@ -793,7 +805,7 @@ class OpenCTIConnectorHelper:
         return final_items
 
     @staticmethod
-    def stix2_create_bundle(items):
+    def stix2_create_bundle(items) -> Optional[str]:
         """create a stix2 bundle with items
 
         :param items: valid stix2 items
@@ -804,30 +816,29 @@ class OpenCTIConnectorHelper:
 
         bundle = {
             "type": "bundle",
-            "id": "bundle--" + str(uuid.uuid4()),
+            "id": f"bundle--{uuid.uuid4()}",
             "spec_version": "2.0",
             "objects": items,
         }
         return json.dumps(bundle)
 
     @staticmethod
-    def check_max_tlp(tlp, max_tlp) -> bool:
+    def check_max_tlp(tlp: str, max_tlp: str) -> bool:
         """check the allowed TLP levels for a TLP string
 
         :param tlp: string for TLP level to check
         :type tlp: str
         :param max_tlp: the highest allowed TLP level
         :type max_tlp: str
-        :return: list of allowed TLP levels
+        :return: TLP level in allowed TLPs
         :rtype: bool
         """
 
-        allowed_tlps = ["TLP:WHITE"]
-        if max_tlp == "TLP:RED":
-            allowed_tlps = ["TLP:WHITE", "TLP:GREEN", "TLP:AMBER", "TLP:RED"]
-        elif max_tlp == "TLP:AMBER":
-            allowed_tlps = ["TLP:WHITE", "TLP:GREEN", "TLP:AMBER"]
-        elif max_tlp == "TLP:GREEN":
-            allowed_tlps = ["TLP:WHITE", "TLP:GREEN"]
+        allowed_tlps: Dict[str, List[str]] = {
+            "TLP:RED": ["TLP:WHITE", "TLP:GREEN", "TLP:AMBER", "TLP:RED"],
+            "TLP:AMBER": ["TLP:WHITE", "TLP:GREEN", "TLP:AMBER"],
+            "TLP:GREEN": ["TLP:WHITE", "TLP:GREEN"],
+            "TLP:WHITE": ["TLP:WHITE"],
+        }
 
-        return tlp in allowed_tlps
+        return tlp in allowed_tlps[max_tlp]
