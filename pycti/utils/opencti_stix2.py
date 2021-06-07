@@ -5,12 +5,13 @@ import datetime
 import json
 import os
 import uuid
-from typing import List
+from typing import List, Any, Dict, Optional, Union
 
 import datefinder
 import dateutil.parser
 import pytz
 
+from pycti.entities.opencti_identity import Identity
 from pycti.utils.constants import IdentityTypes, LocationTypes, StixCyberObservableTypes
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from pycti.utils.opencti_stix2_update import OpenCTIStix2Update
@@ -35,13 +36,13 @@ class OpenCTIStix2:
 
     ######### UTILS
     # region utils
-    def unknown_type(self, stix_object):
+    def unknown_type(self, stix_object: Dict) -> None:
         self.opencti.log(
             "error",
             'Unknown object type "' + stix_object["type"] + '", doing nothing...',
         )
 
-    def convert_markdown(self, text) -> str:
+    def convert_markdown(self, text: str) -> str:
         """converts input text to markdown style code annotation
 
         :param text: input text
@@ -52,31 +53,33 @@ class OpenCTIStix2:
 
         return text.replace("<code>", "`").replace("</code>", "`")
 
-    def format_date(self, date):
+    def format_date(self, date: Any = None) -> str:
         """converts multiple input date formats to OpenCTI style dates
 
         :param date: input date
-        :type date:
+        :type date: Any [datetime, date, str or none]
         :return: OpenCTI style date
-        :rtype: datetime
+        :rtype: string
         """
-
-        if isinstance(date, datetime.date):
-            return date.isoformat(timespec="milliseconds").replace("+00:00", "Z")
-        if date is not None:
-            return (
-                dateutil.parser.parse(date)
-                .isoformat(timespec="milliseconds")
-                .replace("+00:00", "Z")
-            )
+        if isinstance(date, datetime.datetime):
+            date_value = date
+        elif isinstance(date, datetime.date):
+            date_value = datetime.datetime.combine(date, datetime.datetime.min.time())
+        elif isinstance(date, str):
+            try:
+                date_value = dateutil.parser.parse(date)
+            except (dateutil.parser.ParserError, TypeError, OverflowError) as e:
+                raise ValueError(f"{e}: {date} does not contain a valid date string")
         else:
-            return (
-                datetime.datetime.utcnow()
-                .isoformat(timespec="milliseconds")
-                .replace("+00:00", "Z")
-            )
+            date_value = datetime.datetime.utcnow()
 
-    def filter_objects(self, uuids: list, objects: list) -> list:
+        if not date_value.tzinfo:
+            self.opencti.log("No timezone found. Setting to UTC", "info")
+            date_value = date_value.replace(tzinfo=datetime.timezone.utc)
+
+        return date_value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+    def filter_objects(self, uuids: List, objects: List) -> List:
         """filters objects based on UUIDs
 
         :param uuids: list of UUIDs
@@ -94,7 +97,7 @@ class OpenCTIStix2:
                     result.append(item)
         return result
 
-    def pick_aliases(self, stix_object) -> list:
+    def pick_aliases(self, stix_object: Dict) -> Optional[List]:
         """check stix2 object for multiple aliases and return a list
 
         :param stix_object: valid stix2 object
@@ -115,7 +118,7 @@ class OpenCTIStix2:
         return None
 
     def check_max_marking_definition(
-        self, max_marking_definition_entity: str, entity_marking_definitions: list
+        self, max_marking_definition_entity: Dict, entity_marking_definitions: List
     ) -> bool:
         """checks if a list of marking definitions conforms with a given max level
 
@@ -151,7 +154,9 @@ class OpenCTIStix2:
                 return True
         return False
 
-    def import_bundle_from_file(self, file_path: str, update=False, types=None) -> List:
+    def import_bundle_from_file(
+        self, file_path: str, update: bool = False, types: List = None
+    ) -> Optional[List]:
         """import a stix2 bundle from a file
 
         :param file_path: valid path to the file
@@ -171,7 +176,11 @@ class OpenCTIStix2:
         return self.import_bundle(data, update, types)
 
     def import_bundle_from_json(
-        self, json_data, update=False, types=None, retry_number=None
+        self,
+        json_data: Union[str, bytes],
+        update: bool = False,
+        types: List = None,
+        retry_number: int = None,
     ) -> List:
         """import a stix2 bundle from JSON data
 
@@ -192,7 +201,7 @@ class OpenCTIStix2:
             types,
         )
 
-    def resolve_author(self, title):
+    def resolve_author(self, title: str) -> Optional[Identity]:
         if "fireeye" in title.lower() or "mandiant" in title.lower():
             return self.get_author("FireEye")
         if "eset" in title.lower():
@@ -233,7 +242,7 @@ class OpenCTIStix2:
             return self.get_author("The MITRE Corporation")
         return None
 
-    def get_author(self, name):
+    def get_author(self, name: str) -> Identity:
         if name in self.mapping_cache:
             return self.mapping_cache[name]
         else:
@@ -245,7 +254,9 @@ class OpenCTIStix2:
             self.mapping_cache[name] = author
             return author
 
-    def extract_embedded_relationships(self, stix_object, types=None) -> dict:
+    def extract_embedded_relationships(
+        self, stix_object: Dict, types: List = None
+    ) -> Dict:
         """extracts embedded relationship objects from a stix2 entity
 
         :param stix_object: valid stix2 object
@@ -462,7 +473,9 @@ class OpenCTIStix2:
     # endregion
 
     # region import
-    def import_object(self, stix_object, update=False, types=None) -> list:
+    def import_object(
+        self, stix_object: Dict, update: bool = False, types: List = None
+    ) -> Optional[List]:
         """import a stix2 object
 
         :param stix_object: valid stix2 object
@@ -539,7 +552,7 @@ class OpenCTIStix2:
         )
 
         if stix_object_results is None:
-            return stix_object_results
+            return None
 
         if not isinstance(stix_object_results, list):
             stix_object_results = [stix_object_results]
@@ -629,7 +642,9 @@ class OpenCTIStix2:
 
         return stix_object_results
 
-    def import_observable(self, stix_object, update=False, types=None):
+    def import_observable(
+        self, stix_object: Dict, update: bool = False, types: List = None
+    ) -> None:
         # Extract
         embedded_relationships = self.extract_embedded_relationships(stix_object, types)
         created_by_id = embedded_relationships["created_by"]
@@ -708,7 +723,9 @@ class OpenCTIStix2:
         else:
             return None
 
-    def import_relationship(self, stix_relation, update=False, types=None):
+    def import_relationship(
+        self, stix_relation: Dict, update: bool = False, types: List = None
+    ) -> None:
         # Extract
         embedded_relationships = self.extract_embedded_relationships(
             stix_relation, types
@@ -792,7 +809,14 @@ class OpenCTIStix2:
                     stixObjectOrStixRelationshipId=stix_relation["target_ref"],
                 )
 
-    def import_sighting(self, stix_sighting, from_id, to_id, update=False, types=None):
+    def import_sighting(
+        self,
+        stix_sighting: Dict,
+        from_id: str,
+        to_id: str,
+        update: bool = False,
+        types: List = None,
+    ) -> None:
         # Extract
         embedded_relationships = self.extract_embedded_relationships(
             stix_sighting, types
@@ -900,7 +924,7 @@ class OpenCTIStix2:
     # endregion
 
     # region export
-    def generate_export(self, entity):
+    def generate_export(self, entity: Dict) -> Dict:
         # Handle model deviation
         # Identities
         if IdentityTypes.has_value(entity["entity_type"]):
@@ -996,11 +1020,11 @@ class OpenCTIStix2:
 
     def prepare_export(
         self,
-        entity,
-        mode="simple",
-        max_marking_definition_entity=None,
-        no_custom_attributes=False,
-    ):
+        entity: Dict,
+        mode: str = "simple",
+        max_marking_definition_entity: Dict = None,
+        no_custom_attributes: bool = False,
+    ) -> List:
         if (
             self.check_max_marking_definition(
                 max_marking_definition_entity,
@@ -1333,12 +1357,12 @@ class OpenCTIStix2:
 
     def export_entity(
         self,
-        entity_type,
-        entity_id,
-        mode="simple",
-        max_marking_definition=None,
-        no_custom_attributes=False,
-    ):
+        entity_type: Dict,
+        entity_id: str,
+        mode: str = "simple",
+        max_marking_definition: Dict = None,
+        no_custom_attributes: bool = False,
+    ) -> Dict:
         max_marking_definition_entity = (
             self.opencti.marking_definition.read(id=max_marking_definition)
             if max_marking_definition is not None
@@ -1394,14 +1418,14 @@ class OpenCTIStix2:
 
     def export_list(
         self,
-        entity_type,
-        search=None,
-        filters=None,
-        order_by=None,
-        order_mode=None,
-        max_marking_definition=None,
-        types=None,
-    ):
+        entity_type: Dict,
+        search: Dict = None,
+        filters: List = None,
+        order_by: str = None,
+        order_mode: str = None,
+        max_marking_definition: Dict = None,
+        types: List = None,
+    ) -> Dict:
         max_marking_definition_entity = (
             self.opencti.marking_definition.read(id=max_marking_definition)
             if max_marking_definition is not None
@@ -1484,7 +1508,9 @@ class OpenCTIStix2:
                     bundle["objects"] = bundle["objects"] + entity_bundle_filtered
         return bundle
 
-    def import_bundle(self, stix_bundle, update=False, types=None) -> List:
+    def import_bundle(
+        self, stix_bundle: Dict, update: bool = False, types: List = None
+    ) -> List:
         # Check if the bundle is correctly formatted
         if "type" not in stix_bundle or stix_bundle["type"] != "bundle":
             raise ValueError("JSON data type is not a STIX2 bundle")
