@@ -1357,7 +1357,7 @@ class OpenCTIStix2:
 
     def export_entity(
         self,
-        entity_type: Dict,
+        entity_type: str,
         entity_id: str,
         mode: str = "simple",
         max_marking_definition: Dict = None,
@@ -1418,7 +1418,7 @@ class OpenCTIStix2:
 
     def export_list(
         self,
-        entity_type: Dict,
+        entity_type: str,
         search: Dict = None,
         filters: List = None,
         order_by: str = None,
