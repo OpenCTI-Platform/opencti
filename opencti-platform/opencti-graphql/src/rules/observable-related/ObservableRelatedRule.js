@@ -47,7 +47,7 @@ const ruleRelatedObservableBuilder = () => {
           stop_time: range.end,
           ...createRulePatch(def.id, dependencies, explanation),
         };
-        const event = await createInferredRelation(def.name, input);
+        const event = await createInferredRelation(def.id, input);
         if (event) {
           events.push(event);
         }
@@ -57,7 +57,7 @@ const ruleRelatedObservableBuilder = () => {
     await listAllRelations(SYSTEM_USER, relationType, listFromArgs);
     return events;
   };
-  const clean = async (element) => deleteInferredRuleElement(def.name, element);
+  const clean = async (element) => deleteInferredRuleElement(def.id, element);
   const insert = async (element) => {
     const isCorrectType = element.relationship_type === relationType;
     const { source_ref: sourceRef, object_marking_refs: markings } = element;

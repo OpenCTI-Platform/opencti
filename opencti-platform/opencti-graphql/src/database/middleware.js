@@ -61,9 +61,7 @@ import {
   VALID_UNTIL,
 } from '../schema/identifier';
 import {
-  buildCreateEvent,
   buildDeleteEvent,
-  buildUpdateEvent,
   lockResource,
   notify,
   redisAddDeletions,
@@ -1809,7 +1807,7 @@ export const buildRelationTimeFilter = (input) => {
   return args;
 };
 
-const createRelationRaw = async (user, input, opts = {}) => {
+const buildRelationData = async (user, input, opts = {}) => {
   const { fromRule } = opts;
   const { from, to, relationship_type: relationshipType } = input;
   // 01. Generate the ID
@@ -1975,28 +1973,7 @@ const checkRelationConsistency = (relationshipType, fromType, toType) => {
   }
 };
 
-export const createInferredRelation = async (rule, input) => {
-  // Inference creation is created in a single stream
-  const opts = { fromRule: rule, extendRelationTime: false, overrideMarkings: true };
-  // For this reason we do not need to lock the participants
-  const resolvedInput = await inputResolveRefs(SYSTEM_USER, input);
-  const { from, to } = resolvedInput;
-  const dataRel = await createRelationRaw(SYSTEM_USER, resolvedInput, opts);
-  // Index the created element
-  await indexCreatedElement(dataRel);
-  // Push the input in the stream
-  let event;
-  if (dataRel.type === TRX_CREATION) {
-    const relWithConnections = { ...dataRel.element, from, to };
-    event = await buildCreateEvent(SYSTEM_USER, relWithConnections, resolvedInput, stixLoadById);
-  } else if (dataRel.streamInputs.length > 0) {
-    // If upsert with new data
-    event = buildUpdateEvent(SYSTEM_USER, dataRel.element, dataRel.streamInputs);
-  }
-  return event;
-};
-
-export const createRelation = async (user, input) => {
+export const createRelationRaw = async (user, input, opts = {}) => {
   let lock;
   const { fromId, toId, relationship_type: relationshipType } = input;
   if (fromId === toId) {
@@ -2017,19 +1994,20 @@ export const createRelation = async (user, input) => {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
     // - TRANSACTION PART
-    const dataRel = await createRelationRaw(user, resolvedInput);
+    const dataRel = await buildRelationData(user, resolvedInput, opts);
     // Index the created element
     await indexCreatedElement(dataRel);
     // Push the input in the stream
+    let event;
     if (dataRel.type === TRX_CREATION) {
       const relWithConnections = { ...dataRel.element, from, to };
-      await storeCreateEvent(user, relWithConnections, resolvedInput, stixLoadById);
+      event = await storeCreateEvent(user, relWithConnections, resolvedInput, stixLoadById);
     } else if (dataRel.streamInputs.length > 0) {
       // If upsert with new data
-      await storeUpdateEvent(user, dataRel.element, dataRel.streamInputs);
+      event = await storeUpdateEvent(user, dataRel.element, dataRel.streamInputs);
     }
     // - TRANSACTION END
-    return dataRel.element;
+    return { element: dataRel.element, event };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -2039,6 +2017,18 @@ export const createRelation = async (user, input) => {
     if (lock) await lock.unlock();
   }
 };
+
+export const createRelation = async (user, input) => {
+  const data = await createRelationRaw(user, input);
+  return data.element;
+};
+
+export const createInferredRelation = async (rule, input) => {
+  const opts = { fromRule: rule, extendRelationTime: false, overrideMarkings: true };
+  const data = await createRelationRaw(SYSTEM_USER, input, opts);
+  return data.event;
+};
+
 /* istanbul ignore next */
 export const createRelations = async (user, inputs) => {
   const createdRelations = [];
