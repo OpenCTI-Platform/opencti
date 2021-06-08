@@ -1,28 +1,17 @@
 /* eslint-disable camelcase */
-import { createClearRulePatch, createRulePatch } from './RuleUtils';
-import { generateInternalType } from '../schema/schemaUtils';
-import { internalLoadById, listAllThings, patchAttribute } from '../database/middleware';
-import { SYSTEM_USER } from '../utils/access';
-import { READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
-import { isStixDomainObject } from '../schema/stixDomainObject';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import { extractFieldsOfPatch, rebuildInstanceWithPatch } from '../graphql/sseMiddleware';
-
-// region configuration
-const id = 'rule_confidence';
-const name = 'Confidence manager';
-const description =
-  'This rule will compute the confidence level of any entity or relation. ' +
-  'It will translate the reliability of the creator to a confidence ';
-const scopeFields = [`confidence`];
-const scopeFilters = { types: ['Stix-Domain-Object', 'stix-core-relationship'] };
-// endregion
-
-// region rule config
-const reliabilityMapping = { A: 80, B: 60, C: 40, D: 20, E: 0, F: 0 };
-// endregion
+import { generateInternalType } from '../../schema/schemaUtils';
+import { SYSTEM_USER } from '../../utils/access';
+import { internalLoadById, listAllThings, patchAttribute } from '../../database/middleware';
+import { READ_DATA_INDICES_WITHOUT_INFERRED } from '../../database/utils';
+import { isStixDomainObject } from '../../schema/stixDomainObject';
+import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
+import { extractFieldsOfPatch, rebuildInstanceWithPatch } from '../../graphql/sseMiddleware';
+import def from './ConfidenceLevelDefinition';
+import { createClearRulePatch, createRulePatch } from '../RuleUtils';
 
 const ruleConfidenceLevelBuilder = () => {
+  // config
+  const reliabilityMapping = { A: 80, B: 60, C: 40, D: 20, E: 0, F: 0 };
   // utils
   const applyUpsert = async (element) => {
     const { created_by_ref, x_opencti_id } = element;
@@ -31,7 +20,7 @@ const ruleConfidenceLevelBuilder = () => {
       const creator = await internalLoadById(SYSTEM_USER, created_by_ref);
       const { x_opencti_reliability: reliability } = creator;
       const confidence = reliabilityMapping[reliability] || 0;
-      const patch = createRulePatch(id, [created_by_ref], [created_by_ref], { confidence });
+      const patch = createRulePatch(def.id, [created_by_ref], [created_by_ref], { confidence });
       await patchAttribute(SYSTEM_USER, x_opencti_id, entityType, patch);
     }
   };
@@ -41,7 +30,7 @@ const ruleConfidenceLevelBuilder = () => {
       for (let index = 0; index < elements.length; index += 1) {
         const element = elements[index];
         const confidence = reliabilityMapping[reliability] || 0;
-        const patch = createRulePatch(id, [x_opencti_id], [x_opencti_id], { confidence });
+        const patch = createRulePatch(def.id, [x_opencti_id], [x_opencti_id], { confidence });
         await patchAttribute(SYSTEM_USER, element.id, element.entity_type, patch);
       }
     };
@@ -80,10 +69,10 @@ const ruleConfidenceLevelBuilder = () => {
   const clean = async (element) => {
     const { x_opencti_id } = element;
     const entityType = generateInternalType(element);
-    const patch = createClearRulePatch(id);
+    const patch = createClearRulePatch(def.id);
     await patchAttribute(SYSTEM_USER, x_opencti_id, entityType, patch);
   };
-  return { id, name, description, insert, update, clean, scopeFields, scopeFilters };
+  return { ...def, insert, update, clean };
 };
 const ConfidenceLevel = ruleConfidenceLevelBuilder();
 export default ConfidenceLevel;

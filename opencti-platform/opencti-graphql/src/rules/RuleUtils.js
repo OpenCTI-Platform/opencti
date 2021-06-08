@@ -1,5 +1,12 @@
-import { isNotEmptyField } from '../database/utils';
+import * as R from 'ramda';
 import { RULE_PREFIX } from '../schema/general';
+import { isNotEmptyField } from '../database/utils';
+import declaredDef from './RuleDefinitions';
+
+export const getAttributesRulesFor = (attrKey) => {
+  const attrRules = declaredDef.filter((d) => d.scopeFields.includes(attrKey));
+  return R.flatten(attrRules.map((r) => `${RULE_PREFIX + r.id}.inferred.${attrKey}`));
+};
 
 export const createRulePatch = (rule, dependencies, explanation, inferred = {}) => {
   const content = { explanation, dependencies };

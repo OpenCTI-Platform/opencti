@@ -11,17 +11,9 @@ import { STIX_RELATIONSHIPS } from '../schema/stixRelationship';
 import { RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE } from '../schema/internalObject';
 import { UnsupportedError } from '../config/errors';
-
-// region rules import
-import AttributedToAttributed from '../rules/AttributedToAttributed';
-import ObservableRelated from '../rules/ObservableRelated';
-import ConfidenceLevel from '../rules/ConfidenceLevel';
-import RelatedToRelated from '../rules/RelatedToRelated';
-// endregion
+import declaredRules from '../rules/RuleDeclarations';
 
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
-
-export const declaredRules = [AttributedToAttributed, ObservableRelated, ConfidenceLevel, RelatedToRelated];
 
 export const getRules = async () => {
   const args = { connectionFormat: false, filters: [{ key: 'active', values: [true] }] };

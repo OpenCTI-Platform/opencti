@@ -49,6 +49,7 @@ import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
 import { INTERNAL_RELATIONSHIPS } from '../schema/internalRelationship';
+import { getAttributesRulesFor } from '../rules/RuleUtils';
 
 const MIN_DATA_FIELDS = ['name', 'value', 'internal_id', 'standard_id', 'base_type', 'entity_type', 'connections'];
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
@@ -1110,6 +1111,8 @@ export const elPaginate = async (user, indexName, options = {}) => {
         };
         mustFilters = R.append({ nested: nestedQuery }, mustFilters);
       } else {
+        const rulesKeys = getAttributesRulesFor(key);
+        // TODO IF KEY is PART OF Rules
         for (let i = 0; i < values.length; i += 1) {
           if (values[i] === null) {
             mustnot = R.append({ exists: { field: key } }, mustnot);

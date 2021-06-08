@@ -1,32 +1,25 @@
 /* eslint-disable camelcase */
-import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import {
   createInferredRelation,
   deleteInferredRuleElement,
   internalLoadById,
   listAllRelations,
-} from '../database/middleware';
-import { SYSTEM_USER } from '../utils/access';
-import { extractFieldsOfPatch } from '../graphql/sseMiddleware';
-import { getTypeFromStixId } from '../schema/schemaUtils';
-import { isStixCyberObservable } from '../schema/stixCyberObservable';
-import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format';
-import { INDEX_MARKINGS_FIELD } from '../schema/general';
-import { createRulePatch } from './RuleUtils';
-
-// region configuration
-const id = 'observable_related';
-const name = 'Observable connection';
-const description =
-  'This rule will infer the following fact: if an Observable A is related to an entity B and the Observable' +
-  ' A is related to an entity C, the entity B is also related to the entity C.';
-const listenedFields = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];
-const scopeFields = [];
-const scopeFilters = { types: [RELATION_RELATED_TO] };
-const relationType = RELATION_RELATED_TO;
-// endregion
+} from '../../database/middleware';
+import { SYSTEM_USER } from '../../utils/access';
+import { extractFieldsOfPatch } from '../../graphql/sseMiddleware';
+import { getTypeFromStixId } from '../../schema/schemaUtils';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
+import { INDEX_MARKINGS_FIELD } from '../../schema/general';
+import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
+import def from './ObservableRelatedDefinition';
+import { createRulePatch } from '../RuleUtils';
 
 const ruleRelatedObservableBuilder = () => {
+  // config
+  const relationType = RELATION_RELATED_TO;
+  const listenedFields = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];
+  // execution
   const applyUpsert = async (markings, data) => {
     const events = [];
     const { x_opencti_source_ref: sourceRef, x_opencti_target_ref: targetRef, x_opencti_id: createdId } = data;
@@ -52,9 +45,9 @@ const ruleRelatedObservableBuilder = () => {
           confidence: createdConfidence < confidence ? createdConfidence : confidence,
           start_time: range.start,
           stop_time: range.end,
-          ...createRulePatch(id, dependencies, explanation),
+          ...createRulePatch(def.id, dependencies, explanation),
         };
-        const event = await createInferredRelation(name, input);
+        const event = await createInferredRelation(def.name, input);
         if (event) {
           events.push(event);
         }
@@ -64,7 +57,7 @@ const ruleRelatedObservableBuilder = () => {
     await listAllRelations(SYSTEM_USER, relationType, listFromArgs);
     return events;
   };
-  const clean = async (element) => deleteInferredRuleElement(name, element);
+  const clean = async (element) => deleteInferredRuleElement(def.name, element);
   const insert = async (element) => {
     const isCorrectType = element.relationship_type === relationType;
     const { source_ref: sourceRef, object_marking_refs: markings } = element;
@@ -88,7 +81,7 @@ const ruleRelatedObservableBuilder = () => {
     }
     return [];
   };
-  return { id, name, description, insert, update, clean, scopeFields, scopeFilters };
+  return { ...def, insert, update, clean };
 };
 const RuleObservableRelatedObservable = ruleRelatedObservableBuilder();
 export default RuleObservableRelatedObservable;
