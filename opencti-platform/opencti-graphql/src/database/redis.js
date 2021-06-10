@@ -32,8 +32,7 @@ const USE_SSL = conf.get('redis:use_ssl');
 const REDIS_CA = conf.get('redis:ca').map((path) => readFileSync(path));
 
 const BASE_DATABASE = 0; // works key for tracking / stream
-export const CONTEXT_DATABASE = 1; // locks / user context
-export const SESSION_DATABASE = 2; // locks / user context
+const CONTEXT_DATABASE = 1; // locks / user context
 const OPENCTI_STREAM = 'stream.opencti';
 const REDIS_EXPIRE_TIME = 90;
 
