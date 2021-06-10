@@ -8,12 +8,12 @@ import {
   isNotEmptyField,
   offsetToCursor,
   pascalize,
-  WRITE_PLATFORM_INDICES,
   READ_DATA_INDICES,
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_PLATFORM_INDICES,
   READ_RELATIONSHIPS_INDICES,
+  WRITE_PLATFORM_INDICES,
 } from './utils';
 import conf, { logApp } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
@@ -1796,4 +1796,8 @@ export const elUpdateElement = async (instance) => {
   if (esData.name && isStixObject(instance.entity_type)) {
     await elUpdateConnectionsOfElement(instance.internal_id, { name: esData.name });
   }
+};
+
+export const getStats = () => {
+  return el.indices.stats({ index: READ_PLATFORM_INDICES }).then((result) => result.body._all.total);
 };

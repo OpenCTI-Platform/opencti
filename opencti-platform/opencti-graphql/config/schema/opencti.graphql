@@ -183,6 +183,26 @@ type RabbitMQMetrics {
   queues: [QueueMetrics]
   overview: OverviewMetrics
 }
+type SearchMetrics {
+  query_total: Int
+  fetch_total: Int
+}
+type IndexingMetrics {
+  index_total: Int
+  delete_total: Int
+}
+type GetMetrics {
+  total: Int
+}
+type DocsMetrics {
+  count: Int
+}
+type ElasticSearchMetrics {
+  docs: DocsMetrics
+  search: SearchMetrics
+  get: GetMetrics
+  indexing: IndexingMetrics
+}
 enum StatsOperation {
   count
   sum
@@ -7612,6 +7632,7 @@ type Query {
   about: AppInfo @auth(for: [SETTINGS])
   logsWorkerConfig: LogsWorkerConfig @auth(for: [MODULES])
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: [MODULES])
+  elasticSearchMetrics: ElasticSearchMetrics @auth(for: [MODULES])
   logs(
     first: Int
     after: ID
