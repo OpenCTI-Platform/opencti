@@ -268,7 +268,7 @@ export const addUser = async (user, newUser) => {
   // Create the user
   const userToCreate = R.pipe(
     R.assoc('user_email', userEmail),
-    R.assoc('api_token', uuid()),
+    R.assoc('api_token', newUser.api_token ? newUser.api_token : uuid()),
     R.assoc('password', bcrypt.hashSync(newUser.password ? newUser.password.toString() : uuid())),
     R.assoc('theme', newUser.theme ? newUser.theme : 'default'),
     R.assoc('language', newUser.language ? newUser.language : 'auto'),
@@ -567,6 +567,7 @@ export const initAdmin = async (email, password, tokenValue) => {
       firstname: 'Admin',
       lastname: 'OpenCTI',
       description: 'Principal admin account',
+      api_token: tokenValue,
       password,
     };
     await addUser(SYSTEM_USER, userToCreate);
