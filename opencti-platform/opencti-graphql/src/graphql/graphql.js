@@ -4,7 +4,7 @@ import { GraphQLError } from 'graphql';
 import { dissocPath } from 'ramda';
 import createSchema from './schema';
 import conf, { DEV_MODE } from '../config/conf';
-import { authenticateUser, userWithOrigin } from '../domain/user';
+import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
 import { UnknownError, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
@@ -33,8 +33,8 @@ const createApolloServer = () => {
       if (connection) {
         return { req, res, user: connection.context.user };
       }
-      // If session already open
-      const user = await authenticateUser(req);
+      // Get user session from request
+      const user = await authenticateUserFromRequest(req);
       // Return the context
       return buildContext(user, req, res);
     },

@@ -87,6 +87,7 @@
     "redlock": "4.2.0",
     "rxjs": "7.0.1",
     "sanitize-filename": "1.6.3",
+    "semver": "^7.3.5",
     "set-interval-async": "2.0.3",
     "uuid": "8.3.2",
     "uuid-time": "1.0.0",

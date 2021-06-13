@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { MigrationSet } from 'migrate';
 import Migration from 'migrate/lib/migration';
-import { logApp } from '../config/conf';
+import { logApp, PLATFORM_VERSION } from '../config/conf';
 import { DatabaseError } from '../config/errors';
 import { RELATION_MIGRATES } from '../schema/internalRelationship';
 import { ENTITY_TYPE_MIGRATION_REFERENCE, ENTITY_TYPE_MIGRATION_STATUS } from '../schema/internalObject';
@@ -49,6 +49,8 @@ const migrationStorage = {
     logApp.info(`[MIGRATION] Read ${migrations.length} migrations from the database`);
     const migrationStatus = {
       lastRun: migration.lastRun,
+      internal_id: migration.internal_id,
+      platformVersion: migration.platformVersion,
       migrations: R.map(
         (record) => ({
           title: record.title,
@@ -120,9 +122,14 @@ const applyMigration = () => {
           return;
         }
         logApp.info('[MIGRATION] Migration process completed');
-        resolve();
+        resolve(state);
       });
     });
+  }).then(async (state) => {
+    // After migration, path the current version runtime
+    const statusPatch = { platformVersion: PLATFORM_VERSION };
+    await patchAttribute(SYSTEM_USER, state.internal_id, ENTITY_TYPE_MIGRATION_STATUS, statusPatch);
+    logApp.info(`[MIGRATION] Platform version updated to ${PLATFORM_VERSION}`);
   });
 };
 

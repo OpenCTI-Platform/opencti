@@ -2,7 +2,6 @@ import * as R from 'ramda';
 import { withFilter } from 'graphql-subscriptions';
 import {
   addUser,
-  authenticateUser,
   batchGroups,
   batchRoleCapabilities,
   batchRoles,
@@ -26,18 +25,18 @@ import {
   roleDeleteRelation,
   roleEditContext,
   roleEditField,
-  token,
   userAddRelation,
   userCleanContext,
   userDelete,
   userDeleteRelation,
   userEditContext,
   userEditField,
-  userRenewToken,
   userWithOrigin,
   bookmarks,
   addBookmark,
   deleteBookmark,
+  userRenewToken,
+  authenticateUser,
 } from '../domain/user';
 import { BUS_TOPICS, logApp, logAudit } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
@@ -69,7 +68,6 @@ const userResolvers = {
     roles: (current, _, { user }) => rolesLoader.load(current.id, user),
     allowed_marking: (current, _, { user }) => getMarkings(current.id, user.capabilities),
     capabilities: (current) => getCapabilities(current.id),
-    token: (current, _, { user }) => token(user, current.id),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
   },
@@ -94,24 +92,24 @@ const userResolvers = {
       for (let index = 0; index < formProviders.length; index += 1) {
         const auth = formProviders[index];
         const body = { username: input.email, password: input.password };
-        const { userToken, userProvider } = await new Promise((resolve) => {
-          passport.authenticate(auth.provider, {}, (err, authInfo, info) => {
+        const { user, provider } = await new Promise((resolve) => {
+          passport.authenticate(auth.provider, {}, (err, authUser, info) => {
             if (err || info) {
               logApp.warn(`[AUTH] ${auth.provider}`, { error: err, info });
               const auditUser = userWithOrigin(req, { user_email: input.email });
               logAudit.error(auditUser, LOGIN_ACTION, { provider: auth.provider });
             }
-            resolve({ userToken: authInfo?.token, userProvider: auth.provider });
+            resolve({ user: authUser, provider: auth.provider });
           })({ body });
         });
         // As soon as credential is validated, stop looking for another provider
-        if (userToken) {
-          loggedUser = await authenticateUser(req, { providerToken: userToken.uuid, provider: userProvider });
+        if (user) {
+          loggedUser = await authenticateUser(req, user, provider);
           break;
         }
       }
       if (loggedUser) {
-        return loggedUser.token_uuid;
+        return loggedUser.api_token;
       }
       // User cannot be authenticated in any providers
       throw AuthenticationFailure();
@@ -140,6 +138,7 @@ const userResolvers = {
         userDeleteRelation(user, id, toId, relationshipType),
     }),
     meEdit: (_, { input }, { user }) => meEditField(user, user.id, input),
+    meTokenRenew: (_, __, { user }) => userRenewToken(user, user.id),
     userAdd: (_, { input }, { user }) => addUser(user, input),
     bookmarkAdd: (_, { id, type }, { user }) => addBookmark(user, id, type),
     bookmarkDelete: (_, { id }, { user }) => deleteBookmark(user, id),

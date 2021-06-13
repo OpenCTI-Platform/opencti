@@ -14,7 +14,7 @@ import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
 import { basePath, DEV_MODE, logApp, logAudit } from './config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from './config/providers';
-import { authenticateUser, loginFromProvider, userWithOrigin } from './domain/user';
+import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
 import { checkSystemDependencies } from './initialization';
 import { getSettings } from './domain/settings';
@@ -95,7 +95,7 @@ const createApp = async (apolloServer) => {
   // -- File download
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res, next) => {
     try {
-      const auth = await authenticateUser(req);
+      const auth = await authenticateUserFromRequest(req);
       if (!auth) res.sendStatus(403);
       const { file } = req.params;
       const stream = await downloadFile(file);
@@ -109,7 +109,7 @@ const createApp = async (apolloServer) => {
   // -- File view
   app.get(`${basePath}/storage/view/:file(*)`, async (req, res, next) => {
     try {
-      const auth = await authenticateUser(req);
+      const auth = await authenticateUserFromRequest(req);
       if (!auth) res.sendStatus(403);
       const { file } = req.params;
       const data = await loadFile(auth, file);
@@ -138,8 +138,8 @@ const createApp = async (apolloServer) => {
             res.redirect(req.headers.referer);
           } else {
             loginFromProvider(emailAddress, empty(CN) ? emailAddress : CN)
-              .then(async ({ token }) => {
-                await authenticateUser(req, { providerToken: token.uuid, provider: 'cert' });
+              .then(async (user) => {
+                await authenticateUser(req, user, 'cert');
                 res.redirect(req.headers.referer);
               })
               .catch((err) => {
@@ -169,14 +169,14 @@ const createApp = async (apolloServer) => {
   app.get(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), (req, res, next) => {
     const { provider } = req.params;
     const { referer } = req.session;
-    passport.authenticate(provider, {}, async (err, token) => {
-      if (err || !token) {
+    passport.authenticate(provider, {}, async (err, user) => {
+      if (err || !user) {
         logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
         setCookieError(res, err?.message);
         return res.redirect(referer);
       }
       // noinspection UnnecessaryLocalVariableJS
-      await authenticateUser(req, { providerToken: token.uuid, provider });
+      await authenticateUser(req, user, provider);
       req.session.referer = null;
       return res.redirect(referer);
     })(req, res, next);

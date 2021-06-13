@@ -114,6 +114,8 @@ export const BUS_TOPICS = {
   },
 };
 
+export const PLATFORM_VERSION = pjson.version;
+
 // Environment from NODE_ENV environment variable
 nconf.env({ separator: '__', lowerCase: true, parseValues: true });
 
@@ -210,7 +212,7 @@ if (environment === 'test') {
   });
 }
 const LOG_APP = 'APP';
-const addBasicMetaInformation = (category, meta) => ({ ...meta, category, version: pjson.version });
+const addBasicMetaInformation = (category, meta) => ({ ...meta, category, version: PLATFORM_VERSION });
 export const logApp = {
   _log: (level, message, meta = {}) => {
     if (appLogTransports.length > 0) {

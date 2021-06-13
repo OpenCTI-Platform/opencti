@@ -96,8 +96,8 @@ const providers = [];
 const providerLoginHandler = (email, name, roles, done) => {
   const finalName = empty(name) ? email : name;
   loginFromProvider(email, finalName, roles)
-    .then(({ token }) => {
-      done(null, token);
+    .then((user) => {
+      done(null, user);
     })
     .catch((err) => {
       done(err);
@@ -127,8 +127,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const localStrategy = new LocalStrategy({}, (username, password, done) => {
         logApp.debug(`[LOCAL] Successfully logged`, { username });
         return login(username, password)
-          .then((token) => {
-            return done(null, token);
+          .then((info) => {
+            return done(null, info);
           })
           .catch((err) => {
             done(err);

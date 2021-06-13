@@ -3,6 +3,7 @@ import { filter, includes, map } from 'ramda';
 
 export const UserContext = React.createContext({});
 
+export const OPENCTI_ADMIN_UUID = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
 export const BYPASS = 'BYPASS';
 export const KNOWLEDGE = 'KNOWLEDGE';
 export const KNOWLEDGE_KNUPDATE = 'KNOWLEDGE_KNUPDATE';

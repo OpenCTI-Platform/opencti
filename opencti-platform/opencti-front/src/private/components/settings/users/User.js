@@ -277,7 +277,7 @@ class UserComponent extends Component {
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Token')}
                   </Typography>
-                  <pre style={{ margin: 0 }}>{user.token}</pre>
+                  <pre style={{ margin: 0 }}>{user.api_token}</pre>
                 </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -604,7 +604,7 @@ const User = createRefetchContainer(
         firstname
         lastname
         language
-        token
+        api_token
         roles {
           id
           name

@@ -1,6 +1,7 @@
 // Admin user initialization
 import { ApolloError } from 'apollo-errors';
-import { logApp } from './config/conf';
+import semver from 'semver';
+import { logApp, PLATFORM_VERSION } from './config/conf';
 import { elCreateIndexes, elIndexExists, elIsAlive } from './database/elasticSearch';
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
@@ -16,7 +17,7 @@ import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import applyMigration, { lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity, patchAttribute } from './database/middleware';
 import { INDEX_INTERNAL_OBJECTS } from './database/utils';
-import { ConfigurationError, TYPE_LOCK_ERROR } from './config/errors';
+import { ConfigurationError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
 import { BYPASS, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
 
 // region Platform constants
@@ -259,6 +260,19 @@ const isExistingPlatform = async () => {
   }
 };
 
+const isCompatiblePlatform = async () => {
+  const migration = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
+  const { platformVersion } = migration;
+  // For old platform, version is not set yet, continue
+  if (!platformVersion) return;
+  // Runtime version must be >= of the stored runtime
+  if (semver.lt(PLATFORM_VERSION, platformVersion)) {
+    throw UnsupportedError(
+      `Your platform data (${PLATFORM_VERSION}) are too old to start on version ${platformVersion}`
+    );
+  }
+};
+
 // eslint-disable-next-line
 const platformInit = async (testMode = false) => {
   let lock;
@@ -276,7 +290,7 @@ const platformInit = async (testMode = false) => {
       await initializeAdminUser();
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
-      // Always reset the admin user
+      await isCompatiblePlatform();
       await initializeAdminUser();
       if (!testMode) {
         await alignMigrationLastRun();

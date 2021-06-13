@@ -1,11 +1,10 @@
 import { getHeapStatistics } from 'v8';
 import { createEntity, loadById, updateAttribute, loadEntity } from '../database/middleware';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, PLATFORM_VERSION } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { elVersion } from '../database/elasticSearch';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { getMinIOVersion } from '../database/minio';
-import pjson from '../../package.json';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 
@@ -14,7 +13,7 @@ export const getMemoryStatistics = () => {
 };
 
 export const getApplicationInfo = () => ({
-  version: pjson.version,
+  version: PLATFORM_VERSION,
   memory: getMemoryStatistics(),
   dependencies: [
     { name: 'Elasticsearch', version: elVersion() },
