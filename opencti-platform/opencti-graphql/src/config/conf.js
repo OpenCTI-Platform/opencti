@@ -1,5 +1,6 @@
 import { lstatSync, readFileSync } from 'fs';
 import nconf from 'nconf';
+import * as R from 'ramda';
 import winston, { format } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
@@ -118,7 +119,7 @@ export const PLATFORM_VERSION = pjson.version;
 
 export const booleanConf = (key, defaultValue = true) => {
   const configValue = nconf.get(key);
-  if (!configValue) {
+  if (R.isEmpty(configValue) || R.isNil(configValue)) {
     return defaultValue;
   }
   return configValue === true || configValue === 'true';
