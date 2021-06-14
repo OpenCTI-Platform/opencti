@@ -116,6 +116,14 @@ export const BUS_TOPICS = {
 
 export const PLATFORM_VERSION = pjson.version;
 
+export const booleanConf = (key, defaultValue = true) => {
+  const configValue = nconf.get(key);
+  if (!configValue) {
+    return defaultValue;
+  }
+  return configValue === true || configValue === 'true';
+};
+
 // Environment from NODE_ENV environment variable
 nconf.env({ separator: '__', lowerCase: true, parseValues: true });
 
@@ -150,8 +158,8 @@ nconf.file('default', resolveEnvFile('default'));
 
 // Setup application logApp
 const appLogLevel = nconf.get('app:app_logs:logs_level');
-const appLogFileTransport = nconf.get('app:app_logs:logs_files');
-const appLogConsoleTransport = nconf.get('app:app_logs:logs_console');
+const appLogFileTransport = booleanConf('app:app_logs:logs_files', true);
+const appLogConsoleTransport = booleanConf('app:app_logs:logs_console', true);
 const appLogTransports = [];
 if (appLogFileTransport) {
   const dirname = nconf.get('app:app_logs:logs_directory');
@@ -182,8 +190,8 @@ const appLogger = winston.createLogger({
 });
 
 // Setup audit log logApp
-const auditLogFileTransport = nconf.get('app:audit_logs:logs_files');
-const auditLogConsoleTransport = nconf.get('app:audit_logs:logs_console');
+const auditLogFileTransport = booleanConf('app:audit_logs:logs_files', true);
+const auditLogConsoleTransport = booleanConf('app:audit_logs:logs_console', true);
 const auditLogTransports = [];
 if (auditLogFileTransport) {
   const dirname = nconf.get('app:audit_logs:logs_directory');
