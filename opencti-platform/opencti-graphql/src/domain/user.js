@@ -259,6 +259,16 @@ const assignRoleToUser = async (user, userId, roleName) => {
   return createRelation(user, assignInput);
 };
 
+const assignGroupToUser = async (user, userId, groupName) => {
+  const generateToId = generateStandardId(ENTITY_TYPE_GROUP, { name: groupName });
+  const assignInput = {
+    fromId: userId,
+    toId: generateToId,
+    relationship_type: RELATION_MEMBER_OF,
+  };
+  return createRelation(user, assignInput);
+};
+
 export const addUser = async (user, newUser) => {
   const userEmail = newUser.user_email.toLowerCase();
   const existingUser = await elLoadBy(SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
@@ -401,7 +411,17 @@ export const userAddRelation = async (user, userId, input) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, relationData, user);
 };
 
-export const userDeleteRelation = async (user, userId, toId, relationshipType) => {
+export const userDeleteRelation = async (user, targetUser, toId, relationshipType) => {
+  if (!isInternalRelationship(relationshipType)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+  }
+  await deleteRelationsByFromAndTo(user, targetUser.id, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+  const operation = convertRelationToAction(relationshipType, false);
+  logAudit.info(user, operation, { from: targetUser.id, to: toId, type: relationshipType });
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
+};
+
+export const userIdDeleteRelation = async (user, userId, toId, relationshipType) => {
   const userData = await loadById(user, userId, ENTITY_TYPE_USER);
   if (!userData) {
     throw FunctionalError('Cannot delete the relation, User cannot be found.');
@@ -409,20 +429,21 @@ export const userDeleteRelation = async (user, userId, toId, relationshipType) =
   if (!isInternalRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
   }
-  await deleteRelationsByFromAndTo(user, userId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
-  const operation = convertRelationToAction(relationshipType, false);
-  logAudit.info(user, operation, { from: userId, to: toId, type: relationshipType });
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user);
+  return userDeleteRelation(user, userData, toId, relationshipType);
 };
 
-export const loginFromProvider = async (email, name, providerRoles = []) => {
+export const loginFromProvider = async (email, name, providerRoles = [], providerGroups = []) => {
   if (!email) {
     throw Error('User email not provided');
   }
   const user = await elLoadBy(SYSTEM_USER, 'user_email', email, ENTITY_TYPE_USER);
   if (!user) {
+    // If user doesnt exists, create it. Providers are trusted
     const newUser = { name, user_email: email.toLowerCase(), external: true };
-    return addUser(SYSTEM_USER, newUser).then(() => loginFromProvider(email, name));
+    return addUser(SYSTEM_USER, newUser).then(() => {
+      // After user creation, reapply login to manage roles and groups
+      return loginFromProvider(email, name, providerRoles, providerGroups);
+    });
   }
   // Update the basic information
   const inputName = { key: 'name', value: [name] };
@@ -437,11 +458,25 @@ export const loginFromProvider = async (email, name, providerRoles = []) => {
     const userRoles = await listThroughGetTo(SYSTEM_USER, user.id, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, opts);
     for (let index = 0; index < userRoles.length; index += 1) {
       const userRole = userRoles[index];
-      await userDeleteRelation(SYSTEM_USER, user.id, userRole.id, RELATION_HAS_ROLE);
+      await userDeleteRelation(SYSTEM_USER, user, userRole.id, RELATION_HAS_ROLE);
     }
     // 02 - Create roles from providers
     const rolesCreation = R.map((role) => assignRoleToUser(SYSTEM_USER, user.id, role), providerRoles);
     await Promise.all(rolesCreation);
+  }
+  // Update the groups
+  // If groups are specified here, that overwrite the default assignation
+  if (providerGroups.length > 0) {
+    // 01 - Delete all groups from the user
+    const opts = { paginate: false };
+    const userGroups = await listThroughGetTo(SYSTEM_USER, user.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
+    for (let index = 0; index < userGroups.length; index += 1) {
+      const userGroup = userGroups[index];
+      await userDeleteRelation(SYSTEM_USER, user, userGroup.id, RELATION_MEMBER_OF);
+    }
+    // 02 - Create groups from providers
+    const groupsCreation = R.map((group) => assignGroupToUser(SYSTEM_USER, user.id, group), providerGroups);
+    await Promise.all(groupsCreation);
   }
   return user;
 };

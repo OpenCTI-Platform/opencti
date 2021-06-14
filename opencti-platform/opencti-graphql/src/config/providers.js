@@ -93,9 +93,9 @@ const AUTH_SSO = 'SSO';
 const AUTH_FORM = 'FORM';
 
 const providers = [];
-const providerLoginHandler = (email, name, roles, done) => {
+const providerLoginHandler = (email, name, roles, groups, done) => {
   const finalName = empty(name) ? email : name;
-  loginFromProvider(email, finalName, roles)
+  loginFromProvider(email, finalName, roles, groups)
     .then((user) => {
       done(null, user);
     })
@@ -103,13 +103,13 @@ const providerLoginHandler = (email, name, roles, done) => {
       done(err);
     });
 };
-const genRolesMapper = (elements) => {
+const genConfigMapper = (elements) => {
   return R.mergeAll(
     elements.map((r) => {
       const data = r.split(':');
       if (data.length !== 2) return {};
-      const [remoteRole, octiRole] = data;
-      return { [remoteRole]: octiRole };
+      const [remote, octi] = data;
+      return { [remote]: octi };
     })
   );
 };
@@ -144,39 +144,46 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const ldapOptions = { server: mappedConfig };
       const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
         logApp.debug(`[LDAP] Successfully logged`, { user });
-        const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
-        let groupsMapping = [];
-        let userGroups = [];
-        if (isRoleBaseAccess) {
-          groupsMapping = mappedConfig.roles_management.groups_mapping || [];
-          userGroups = (user._groups || [])
-            .map((g) => g[mappedConfig.roles_management.group_attribute || 'cn'])
-            .filter((g) => isNotEmptyField(g));
-        }
         const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
         const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
+        // region roles mapping
+        const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
+        const computeRolesMapping = () => {
+          const rolesGroupsMapping = mappedConfig.roles_management?.groups_mapping || [];
+          const userRolesGroups = (user._groups || [])
+            .map((g) => g[mappedConfig.roles_management?.group_attribute || 'cn'])
+            .filter((g) => isNotEmptyField(g));
+          const rolesMapper = genConfigMapper(rolesGroupsMapping);
+          return userRolesGroups.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
+        };
+        const rolesToAssociate = computeRolesMapping();
+        // endregion
+        // region groups mapping
+        const computeGroupsMapping = () => {
+          const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
+          const userGroups = (user._groups || [])
+            .map((g) => g[mappedConfig.groups_management?.group_attribute || 'cn'])
+            .filter((g) => isNotEmptyField(g));
+          const groupsMapper = genConfigMapper(groupsMapping);
+          return userGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
+        };
+        const groupsToAssociate = computeGroupsMapping();
+        // endregion
         if (!userMail) {
           logApp.warn(`[LDAP] Configuration error, cant map mail and username`, { user, userMail, userName });
           done({ message: 'Configuration error, ask your administrator' });
+        } else if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
+          logApp.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
+          const loginName = empty(userName) ? userMail : userName;
+          loginFromProvider(userMail, loginName, rolesToAssociate, groupsToAssociate)
+            .then((info) => {
+              done(null, info);
+            })
+            .catch((err) => {
+              done(err);
+            });
         } else {
-          let rolesToAssociate = [];
-          // Find roles to give to the user
-          if (isRoleBaseAccess) {
-            const rolesMapper = genRolesMapper(groupsMapping);
-            rolesToAssociate = userGroups.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
-          }
-          if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
-            logApp.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
-            loginFromProvider(userMail, empty(userName) ? userMail : userName, rolesToAssociate)
-              .then((info) => {
-                done(null, info);
-              })
-              .catch((err) => {
-                done(err);
-              });
-          } else {
-            done({ message: 'Restricted access, ask your administrator' });
-          }
+          done({ message: 'Restricted access, ask your administrator' });
         }
       });
       passport.use('ldapauth', ldapStrategy);
@@ -189,31 +196,43 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       OpenIDIssuer.discover(config.issuer).then((issuer) => {
         const { Client } = issuer;
         const client = new Client(config);
-        // Roles
-        let additionalScope = '';
-        let rolesPath = [];
-        let rolesMapping = [];
-        const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
-        if (isRoleBaseAccess) {
-          additionalScope += mappedConfig.roles_management.roles_scope || '';
-          rolesPath = mappedConfig.roles_management.roles_path || [];
-          rolesMapping = mappedConfig.roles_management.roles_mapping || [];
-        }
-        const openIdScope = `openid email profile ${additionalScope}`;
+        // region additional scopes
+        const additionalScope = [];
+        const rolesScope = mappedConfig.roles_management?.roles_scope;
+        if (rolesScope) additionalScope.push(rolesScope);
+        const groupsScope = mappedConfig.groups_management?.groups_scope;
+        if (groupsScope) additionalScope.push(groupsScope);
+        // endregion
+        const openIdScope = `openid email profile ${R.uniq(additionalScope).join(' ')}`;
         const options = { client, passReqToCallback: true, params: { scope: openIdScope } };
         const openIDStrategy = new OpenIDStrategy(options, (req, tokenset, userinfo, done) => {
           logApp.debug(`[OPENID] Successfully logged`, { userinfo });
-          let rolesToAssociate = [];
-          if (isRoleBaseAccess) {
+          // region roles mapping
+          const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
+          const computeRolesMapping = () => {
+            const rolesPath = mappedConfig.roles_management?.roles_path || [];
+            const rolesMapping = mappedConfig.roles_management?.roles_mapping || [];
             const decodedUser = jwtDecode(tokenset.access_token);
             const availableRoles = R.flatten(rolesPath.map((path) => R.path(path.split('.'), decodedUser) || []));
-            const rolesMapper = genRolesMapper(rolesMapping);
-            // Find roles to give to the user
-            rolesToAssociate = availableRoles.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
-          }
+            const rolesMapper = genConfigMapper(rolesMapping);
+            return availableRoles.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
+          };
+          const rolesToAssociate = computeRolesMapping();
+          // endregion
+          // region groups mapping
+          const computeGroupsMapping = () => {
+            const groupsPath = mappedConfig.groups_management?.groups_path || [];
+            const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
+            const decodedUser = jwtDecode(tokenset.access_token);
+            const availableGroups = R.flatten(groupsPath.map((path) => R.path(path.split('.'), decodedUser) || []));
+            const groupsMapper = genConfigMapper(groupsMapping);
+            return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
+          };
+          const groupsToAssociate = computeGroupsMapping();
+          // endregion
           if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
             const { email, name } = userinfo;
-            providerLoginHandler(email, name, rolesToAssociate, done);
+            providerLoginHandler(email, name, rolesToAssociate, groupsToAssociate, done);
           } else {
             done({ message: 'Restricted access, ask your administrator' });
           }
@@ -231,7 +250,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const data = profile._json;
           logApp.debug(`[FACEBOOK] Successfully logged`, { profile: data });
           const { email } = data;
-          providerLoginHandler(email, data.first_name, [], done);
+          providerLoginHandler(email, data.first_name, [], [], done);
         }
       );
       passport.use('facebook', facebookStrategy);
@@ -251,7 +270,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           authorized = domains.includes(domain);
         }
         if (authorized) {
-          providerLoginHandler(email, name, [], done);
+          providerLoginHandler(email, name, [], [], done);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
@@ -279,7 +298,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             done({ message: 'You need a public email in your github account' });
           } else {
             const email = R.head(profile.emails).value;
-            providerLoginHandler(email, displayName, [], done);
+            providerLoginHandler(email, displayName, [], [], done);
           }
         } else {
           done({ message: 'Restricted access, ask your administrator' });
@@ -296,7 +315,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           logApp.debug(`[AUTH0] Successfully logged`, { profile });
           const userName = profile.displayName;
           const email = R.head(profile.emails).value;
-          providerLoginHandler(email, userName, [], done);
+          providerLoginHandler(email, userName, [], [], done);
         }
       );
       passport.use('auth0', auth0Strategy);

@@ -28,7 +28,7 @@ import {
   userAddRelation,
   userCleanContext,
   userDelete,
-  userDeleteRelation,
+  userIdDeleteRelation,
   userEditContext,
   userEditField,
   userWithOrigin,
@@ -135,7 +135,7 @@ const userResolvers = {
       tokenRenew: () => userRenewToken(user, id),
       relationAdd: ({ input }) => userAddRelation(user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) =>
-        userDeleteRelation(user, id, toId, relationshipType),
+        userIdDeleteRelation(user, id, toId, relationshipType),
     }),
     meEdit: (_, { input }, { user }) => meEditField(user, user.id, input),
     meTokenRenew: (_, __, { user }) => userRenewToken(user, user.id),
