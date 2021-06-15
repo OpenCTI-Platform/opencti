@@ -7,7 +7,8 @@ import GithubStrategy from 'passport-github';
 import LocalStrategy from 'passport-local';
 import LdapStrategy from 'passport-ldapauth';
 import Auth0Strategy from 'passport-auth0';
-import { Strategy as OpenIDStrategy, Issuer as OpenIDIssuer } from 'openid-client';
+import { Strategy as SamlStrategy } from 'passport-saml';
+import { Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
 import { initAdmin, login, loginFromProvider } from '../domain/user';
@@ -65,6 +66,14 @@ const configurationMapping = {
   group_search_base: 'groupSearchBase',
   group_search_filter: 'groupSearchFilter',
   group_search_attributes: 'groupSearchAttributes',
+  // SAML
+  saml_callback_url: 'callbackUrl',
+  identifier_format: 'identifierFormat',
+  entry_point: 'entryPoint',
+  private_key: 'privateKey',
+  signing_cert: 'signingCert',
+  signature_algorithm: 'signatureAlgorithm',
+  digest_algorithm: 'digestAlgorithm',
   // OpenID Client - everything is already in snake case
 };
 const configRemapping = (config) => {
@@ -86,6 +95,7 @@ export const STRATEGY_CERT = 'ClientCertStrategy';
 const STRATEGY_LDAP = 'LdapStrategy';
 const STRATEGY_OPENID = 'OpenIDConnectStrategy';
 const STRATEGY_FACEBOOK = 'FacebookStrategy';
+const STRATEGY_SAML = 'SamlStrategy';
 const STRATEGY_GOOGLE = 'GoogleStrategy';
 const STRATEGY_GITHUB = 'GithubStrategy';
 const STRATEGY_AUTH0 = 'Auth0Strategy';
@@ -190,6 +200,30 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       providers.push({ name: providerName, type: AUTH_FORM, strategy, provider: 'ldapauth' });
     }
     // SSO Strategies
+    if (strategy === STRATEGY_SAML) {
+      const samlOptions = { ...mappedConfig };
+      const samlStrategy = new SamlStrategy(samlOptions, (profile, done) => {
+        const roleAttributes = mappedConfig.roles_management?.role_attributes || ['Role'];
+        const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
+        const computeRolesMapping = () => {
+          const samlRoles = R.flatten(
+            roleAttributes.map((a) => (Array.isArray(profile[a]) ? profile[a] : [profile[a]]))
+          ).filter((v) => isNotEmptyField(v));
+          const rolesMapping = mappedConfig.roles_management?.roles_mapping || [];
+          const rolesMapper = genConfigMapper(rolesMapping);
+          return samlRoles.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
+        };
+        const rolesToAssociate = computeRolesMapping();
+        if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
+          const { nameID: email } = profile;
+          providerLoginHandler(email, email, rolesToAssociate, [], done);
+        } else {
+          done({ message: 'Restricted access, ask your administrator' });
+        }
+      });
+      passport.use('saml', samlStrategy);
+      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'saml' });
+    }
     if (strategy === STRATEGY_OPENID) {
       // Here we use directly the config and not the mapped one.
       // All config of openid lib use snake case.
