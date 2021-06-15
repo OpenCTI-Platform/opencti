@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import json
+import os
+import magic
 
 
 class StixCyberObservable:
@@ -1060,6 +1062,170 @@ class StixCyberObservable:
             result = self.opencti.query(query, input_variables)
             return self.opencti.process_multiple_fields(
                 result["data"]["stixCyberObservableAdd"]
+            )
+        else:
+            self.opencti.log("error", "Missing parameters: type")
+
+    """
+        Upload an artifact
+
+        :param file_path: the file path
+        :return Stix-Observable object
+    """
+
+    def upload_artifact(self, **kwargs):
+        file_name = kwargs.get("file_name", None)
+        data = kwargs.get("data", None)
+        mime_type = kwargs.get("mime_type", "text/plain")
+        x_opencti_description = kwargs.get("x_opencti_description", False)
+        created_by = kwargs.get("createdBy", None)
+        object_marking = kwargs.get("objectMarking", None)
+        object_label = kwargs.get("objectLabel", None)
+        create_indicator = kwargs.get("createIndicator", False)
+
+        if file_name is not None and mime_type is not None:
+            final_file_name = os.path.basename(file_name)
+            self.opencti.log(
+                "info",
+                "Creating Stix-Cyber-Observable {artifact}} with indicator at "
+                + str(create_indicator)
+                + ".",
+            )
+            query = """
+                mutation ArtifactImport($file: Upload!, $x_opencti_description: String, $createdBy: String, $objectMarking: [String], $objectLabel: [String]) {
+                    artifactImport(file: $file, x_opencti_description: $x_opencti_description, createdBy: $createdBy, objectMarking: $objectMarking, objectLabel: $objectLabel) {
+                        id
+                        standard_id
+                        entity_type
+                        parent_types
+                        spec_version
+                        created_at
+                        updated_at
+                        createdBy {
+                            ... on Identity {
+                                id
+                                standard_id
+                                entity_type
+                                parent_types
+                                spec_version
+                                name
+                                description
+                                roles
+                                contact_information
+                                x_opencti_aliases
+                                created
+                                modified
+                                objectLabel {
+                                    edges {
+                                        node {
+                                            id
+                                            value
+                                            color
+                                        }
+                                    }
+                                }
+                            }
+                            ... on Organization {
+                                x_opencti_organization_type
+                                x_opencti_reliability
+                            }
+                            ... on Individual {
+                                x_opencti_firstname
+                                x_opencti_lastname
+                            }
+                        }
+                        objectMarking {
+                            edges {
+                                node {
+                                    id
+                                    standard_id
+                                    entity_type
+                                    definition_type
+                                    definition
+                                    created
+                                    modified
+                                    x_opencti_order
+                                    x_opencti_color
+                                }
+                            }
+                        }
+                        objectLabel {
+                            edges {
+                                node {
+                                    id
+                                    value
+                                    color
+                                }
+                            }
+                        }
+                        externalReferences {
+                            edges {
+                                node {
+                                    id
+                                    standard_id
+                                    entity_type
+                                    source_name
+                                    description
+                                    url
+                                    hash
+                                    external_id
+                                    created
+                                    modified
+                                }
+                            }
+                        }
+                        observable_value
+                        x_opencti_description
+                        x_opencti_score
+                        indicators {
+                            edges {
+                                node {
+                                    id
+                                    pattern
+                                    pattern_type
+                                }
+                            }
+                        }
+                        mime_type
+                        payload_bin
+                        url
+                        encryption_algorithm
+                        decryption_key
+                        hashes {
+                            algorithm
+                            hash
+                        }
+                        importFiles {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    size
+                                }
+                            }
+                        }
+                    }
+                }
+            """
+            if data is None:
+                data = open(file_name, "rb")
+                if file_name.endswith(".json"):
+                    mime_type = "application/json"
+                else:
+                    mime_type = magic.from_file(file_name, mime=True)
+
+            result = self.opencti.query(
+                query,
+                {
+                    "file": (self.file(final_file_name, data, mime_type)),
+                    "x_opencti_description": x_opencti_description,
+                    "createdBy": created_by,
+                    "objectMarking": object_marking,
+                    "objectLabel": object_label,
+                },
+            )
+            return self.opencti.process_multiple_fields(
+                result["data"]["artifactImport"]
             )
         else:
             self.opencti.log("error", "Missing parameters: type")
