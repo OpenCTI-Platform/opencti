@@ -88,6 +88,7 @@ class RootThreatActor extends Component {
             stixCoreObjectLink={link}
             availableSections={[
               'victimology',
+              'threat_actors',
               'intrusion_sets',
               'campaigns',
               'incidents',

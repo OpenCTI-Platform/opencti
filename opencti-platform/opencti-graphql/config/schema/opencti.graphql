@@ -8327,6 +8327,7 @@ type Query {
     toRole: String
     toTypes: [String]
     relationship_type: String
+    relationshipTypes: [String]
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime

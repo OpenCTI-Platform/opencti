@@ -403,7 +403,7 @@ const buildRelationsFilter = (relationshipType, args) => {
   if (endDate) finalFilters.push({ key: 'created_at', values: [endDate], operator: 'lt' });
   if (confidences && confidences.length > 0) finalFilters.push({ key: 'confidence', values: confidences });
   return R.pipe(
-    R.assoc('types', relationshipTypes.length > 0 ? relationshipTypes : [relationToGet]),
+    R.assoc('types', relationshipTypes && relationshipTypes.length > 0 ? relationshipTypes : [relationToGet]),
     R.assoc('filters', finalFilters)
   )(args);
 };
