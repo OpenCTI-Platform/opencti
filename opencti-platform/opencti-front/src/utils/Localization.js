@@ -860,6 +860,8 @@ const i18n = {
       'Total processed messages': 'Total de messages traités',
       'Read operations': 'Opérations de lecture',
       'Write operations': "Opérations d'écriture",
+      Write: 'Ecrire',
+      Preview: 'Aperçu',
       'Graph type': 'Type de graphique',
       'Table (top 10)': 'Tableau (top 10)',
       'Workers statistics': 'Statistiques des workers',
