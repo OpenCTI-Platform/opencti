@@ -651,6 +651,7 @@ class ReportKnowledgeGraphBar extends Component {
                     ]}
                     onAdd={onAdd}
                     onDelete={onDelete}
+                    confidence={report.confidence}
                   />
                 )}
                 <Tooltip title={t('View the item')}>
@@ -712,7 +713,7 @@ class ReportKnowledgeGraphBar extends Component {
                       lastLinkFirstSeen || dateFormat(report.published)
                     }
                     lastSeen={lastLinkLastSeen || dateFormat(report.published)}
-                    weight={report.confidence}
+                    confidence={report.confidence}
                     handleClose={this.handleCloseCreateRelationship.bind(this)}
                     handleResult={onAddRelation}
                     handleReverseRelation={this.handleReverseRelation.bind(
