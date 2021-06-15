@@ -68,7 +68,12 @@ const styles = (theme) => ({
   },
 });
 
-const directFilters = ['report_types', 'x_opencti_detection', 'sightedBy'];
+const directFilters = [
+  'report_types',
+  'x_opencti_detection',
+  'sightedBy',
+  'container_type',
+];
 const uniqFilters = [
   'revoked',
   'x_opencti_detection',
@@ -560,6 +565,30 @@ class Filters extends Component {
             entity_type: R.union(
               entitiesTypes,
               this.state.entities.entity_type,
+            ),
+          },
+        });
+        break;
+      case 'container_type':
+        // eslint-disable-next-line no-case-declarations
+        const containersTypes = R.pipe(
+          R.map((n) => ({
+            label: t(
+              n.toString()[0] === n.toString()[0].toUpperCase()
+                ? `entity_${n.toString()}`
+                : `relationship_${n.toString()}`,
+            ),
+            value: n,
+            type: n,
+          })),
+          R.sortWith([R.ascend(R.prop('label'))]),
+        )(['Note', 'Observed-Data', 'Opinion', 'Report']);
+        this.setState({
+          entities: {
+            ...this.state.entities,
+            container_type: R.union(
+              containersTypes,
+              this.state.entities.container_type,
             ),
           },
         });

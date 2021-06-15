@@ -132,7 +132,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       this.setState(
         {
           filters: R.assoc(
-            key,
+            key === 'container_type' ? 'entity_type' : key,
             isUniqFilter(key)
               ? [{ id, value }]
               : R.uniqBy(R.prop('id'), [
@@ -147,7 +147,11 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
     } else {
       this.setState(
         {
-          filters: R.assoc(key, [{ id, value }], this.state.filters),
+          filters: R.assoc(
+            key === 'container_type' ? 'entity_type' : key,
+            [{ id, value }],
+            this.state.filters,
+          ),
         },
         () => this.saveView(),
       );
@@ -230,6 +234,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
           'markedBy',
           'created_start_date',
           'created_end_date',
+          'container_type',
         ]}
       >
         <QueryRenderer

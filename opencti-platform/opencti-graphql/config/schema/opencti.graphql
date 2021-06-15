@@ -1667,6 +1667,7 @@ enum ContainersOrdering {
   createdBy
 }
 enum ContainersFilter {
+  entity_type
   attribute_abstract
   content
   authors
