@@ -4,7 +4,7 @@ import Redlock from 'redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
 import { create as createJsonDiff } from 'jsondiffpatch';
-import conf, { configureCA, DEV_MODE, logApp } from '../config/conf';
+import conf, { booleanConf, configureCA, DEV_MODE, logApp } from '../config/conf';
 import {
   generateLogMessage,
   isEmptyField,
@@ -28,7 +28,7 @@ import SessionStoreMemory from './sessionStore-memory';
 import { isStixMetaRelationship, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 
-const USE_SSL = conf.get('redis:use_ssl');
+const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path) => readFileSync(path));
 
 const BASE_DATABASE = 0; // works key for tracking / stream

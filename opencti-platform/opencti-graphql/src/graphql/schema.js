@@ -9,6 +9,7 @@ import workspaceResolvers from '../resolvers/workspace';
 import subTypeResolvers from '../resolvers/subType';
 import labelResolvers from '../resolvers/label';
 import rabbitmqMetricsResolvers from '../resolvers/rabbitmqMetrics';
+import elasticSearchMetricsResolvers from '../resolvers/elasticSearchMetrics';
 import internalObjectResolvers from '../resolvers/internalObject';
 import stixObjectOrStixRelationshipResolvers from '../resolvers/stixObjectOrStixRelationship';
 import stixCoreObjectResolvers from '../resolvers/stixCoreObject';
@@ -72,6 +73,7 @@ const createSchema = () => {
     streamResolvers,
     logResolvers,
     rabbitmqMetricsResolvers,
+    elasticSearchMetricsResolvers,
     attributeResolvers,
     workspaceResolvers,
     subTypeResolvers,

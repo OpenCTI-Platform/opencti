@@ -4,7 +4,10 @@ import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
-import { FilterListOutlined } from '@material-ui/icons';
+import {
+  FilterListOutlined,
+  InvertColorsOffOutlined,
+} from '@material-ui/icons';
 import Drawer from '@material-ui/core/Drawer';
 import Slide from '@material-ui/core/Slide';
 import Select from '@material-ui/core/Select';
@@ -39,9 +42,11 @@ class AttackPtternsMatrixBar extends Component {
       t,
       classes,
       currentModeOnlyActive,
+      currentColorsReversed,
       currentKillChain,
       handleChangeKillChain,
       handleToggleModeOnlyActive,
+      handleToggleColorsReversed,
       killChains,
     } = this.props;
     return (
@@ -103,6 +108,22 @@ class AttackPtternsMatrixBar extends Component {
                   </IconButton>
                 </span>
               </Tooltip>
+              <Tooltip
+                title={
+                  currentColorsReversed
+                    ? t('Disable invert colors')
+                    : t('Enable invert colors')
+                }
+              >
+                <span>
+                  <IconButton
+                    color={currentColorsReversed ? 'secondary' : 'primary'}
+                    onClick={handleToggleColorsReversed.bind(this)}
+                  >
+                    <InvertColorsOffOutlined />
+                  </IconButton>
+                </span>
+              </Tooltip>
             </div>
           </div>
         </div>
@@ -116,6 +137,8 @@ AttackPtternsMatrixBar.propTypes = {
   t: PropTypes.func,
   currentModeOnlyActive: PropTypes.bool,
   handleToggleModeOnlyActive: PropTypes.func,
+  currentColorsReversed: PropTypes.bool,
+  handleToggleColorsReversed: PropTypes.func,
   currentKillChain: PropTypes.string,
   handleChangeKillChain: PropTypes.func,
   killChains: PropTypes.array,

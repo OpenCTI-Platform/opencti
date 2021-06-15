@@ -46,9 +46,21 @@ const styles = (theme) => ({
 });
 
 class WorkersStatusComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.lastReadOperations = 0;
+    this.lastWriteOperations = 0;
+  }
+
   componentDidMount() {
     this.subscription = interval$.subscribe(() => {
       this.props.relay.refetch();
+      const { data } = this.props;
+      const { search, indexing } = data.elasticSearchMetrics;
+      const currentReadOperations = search.query_total;
+      const currentWriteOperations = indexing.index_total + indexing.delete_total;
+      this.lastReadOperations = currentReadOperations;
+      this.lastWriteOperations = currentWriteOperations;
     });
   }
 
@@ -61,6 +73,15 @@ class WorkersStatusComponent extends Component {
       classes, t, n, data,
     } = this.props;
     const { consumers, overview } = data.rabbitMQMetrics;
+    const { docs, search, indexing } = data.elasticSearchMetrics;
+    const currentReadOperations = search.query_total;
+    const currentWriteOperations = indexing.index_total + indexing.delete_total;
+    let readOperations = null;
+    let writeOperations = null;
+    if (this.lastReadOperations !== 0) {
+      readOperations = (currentReadOperations - this.lastReadOperations) / 5;
+      writeOperations = (currentWriteOperations - this.lastWriteOperations) / 5;
+    }
     return (
       <Card
         classes={{ root: classes.card }}
@@ -77,21 +98,21 @@ class WorkersStatusComponent extends Component {
             spacing={3}
             style={{ paddingBottom: 0, height: '100%' }}
           >
-            <Grid item={true} xs={3} style={{ height: '25%' }}>
+            <Grid item={true} xs={2} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>{n(consumers)}</div>
                 <div className={classes.title}>{t('Connected workers')}</div>
               </div>
             </Grid>
-            <Grid item={true} xs={3} style={{ height: '25%' }}>
+            <Grid item={true} xs={2} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>
                   {n(pathOr(0, ['queue_totals', 'messages'], overview))}
                 </div>
-                <div className={classes.title}>{t('Queued messages')}</div>
+                <div className={classes.title}>{t('Queued bundles')}</div>
               </div>
             </Grid>
-            <Grid item={true} xs={3} style={{ height: '25%' }}>
+            <Grid item={true} xs={2} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>
                   {n(
@@ -103,16 +124,26 @@ class WorkersStatusComponent extends Component {
                   )}
                   /s
                 </div>
-                <div className={classes.title}>{t('Messages processed')}</div>
+                <div className={classes.title}>{t('Bundles processed')}</div>
               </div>
             </Grid>
-            <Grid item={true} xs={3} style={{ height: '25%' }}>
+            <Grid item={true} xs={2} style={{ height: '25%' }}>
               <div className={classes.metric}>
-                <div className={classes.number}>
-                  {n(pathOr(0, ['message_stats', 'ack'], overview))}
-                </div>
+                <div className={classes.number}>{n(readOperations)}/s</div>
+                <div className={classes.title}>{t('Read operations')}</div>
+              </div>
+            </Grid>
+            <Grid item={true} xs={2} style={{ height: '25%' }}>
+              <div className={classes.metric}>
+                <div className={classes.number}>{n(writeOperations)}/s</div>
+                <div className={classes.title}>{t('Write operations')}</div>
+              </div>
+            </Grid>
+            <Grid item={true} xs={2} style={{ height: '25%' }}>
+              <div className={classes.metric}>
+                <div className={classes.number}>{n(docs.count)}</div>
                 <div className={classes.title}>
-                  {t('Total processed messages')}
+                  {t('Total number of documents')}
                 </div>
               </div>
             </Grid>
@@ -142,6 +173,22 @@ const WorkersStatus = createRefetchContainer(
   {
     data: graphql`
       fragment WorkersStatus_data on Query {
+        elasticSearchMetrics {
+          docs {
+            count
+          }
+          search {
+            query_total
+            fetch_total
+          }
+          indexing {
+            index_total
+            delete_total
+          }
+          get {
+            total
+          }
+        }
         rabbitMQMetrics {
           consumers
           overview {

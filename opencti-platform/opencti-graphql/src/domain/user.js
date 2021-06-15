@@ -1,19 +1,10 @@
 import * as R from 'ramda';
 import { map } from 'ramda';
-import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
-import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
-import {
-  BUS_TOPICS,
-  logApp,
-  logAudit,
-  OPENCTI_DEFAULT_DURATION,
-  OPENCTI_ISSUER,
-  OPENCTI_SESSION,
-  OPENCTI_WEB_TOKEN,
-} from '../config/conf';
+import { AuthenticationFailure, FunctionalError } from '../config/errors';
+import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION } from '../config/conf';
 import {
   batchListThroughGetTo,
   createEntity,
@@ -21,10 +12,8 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   listEntities,
-  listThroughGetFrom,
   listThroughGetTo,
   loadById,
-  loadThroughGetTo,
   patchAttribute,
   updateAttribute,
 } from '../database/middleware';
@@ -32,13 +21,11 @@ import {
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_ROLE,
-  ENTITY_TYPE_TOKEN,
   ENTITY_TYPE_USER,
 } from '../schema/internalObject';
 import {
   isInternalRelationship,
   RELATION_ACCESSES_TO,
-  RELATION_AUTHORIZED_BY,
   RELATION_HAS_CAPABILITY,
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
@@ -74,11 +61,11 @@ export const userWithOrigin = (req, user) => {
   // - In stream message to also identifier the user
   // - In logging system to know the level of the error message
   const origin = {
-    ip: req.ip,
-    user_id: user.id,
-    referer: req.headers.referer,
-    applicant_id: req.headers['opencti-applicant-id'],
-    call_retry_number: req.headers['opencti-retry-number'],
+    ip: req?.ip,
+    user_id: user?.id,
+    referer: req?.headers.referer,
+    applicant_id: req?.headers['opencti-applicant-id'],
+    call_retry_number: req?.headers['opencti-retry-number'],
   };
   return { ...user, origin };
 };
@@ -100,15 +87,6 @@ const extractTokenFromBasicAuth = async (authorization) => {
   return null;
 };
 
-export const generateOpenCTIWebToken = (tokenValue = uuid()) => ({
-  uuid: tokenValue,
-  name: OPENCTI_WEB_TOKEN,
-  created_at: now(),
-  issuer: OPENCTI_ISSUER,
-  revoked: false,
-  duration: OPENCTI_DEFAULT_DURATION, // 99 years per default
-});
-
 export const findById = async (user, userId) => {
   const data = await loadById(user, userId, ENTITY_TYPE_USER);
   return data ? R.dissoc('password', data) : data;
@@ -120,19 +98,6 @@ export const findAll = (user, args) => {
 
 export const batchGroups = async (user, userIds) => {
   return batchListThroughGetTo(user, userIds, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
-};
-
-export const token = async (user, userId) => {
-  const capabilities = R.map((n) => n.name, user.capabilities);
-  if (userId !== user.id && !R.includes('SETACCESSES', capabilities) && !R.includes(BYPASS, capabilities)) {
-    throw ForbiddenAccess();
-  }
-  const userToken = await loadThroughGetTo(SYSTEM_USER, userId, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
-  return userToken && userToken.uuid;
-};
-
-const internalGetToken = async (userId) => {
-  return loadThroughGetTo(SYSTEM_USER, userId, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
 };
 
 export const batchRoles = async (user, userId) => {
@@ -294,7 +259,17 @@ const assignRoleToUser = async (user, userId, roleName) => {
   return createRelation(user, assignInput);
 };
 
-export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken()) => {
+const assignGroupToUser = async (user, userId, groupName) => {
+  const generateToId = generateStandardId(ENTITY_TYPE_GROUP, { name: groupName });
+  const assignInput = {
+    fromId: userId,
+    toId: generateToId,
+    relationship_type: RELATION_MEMBER_OF,
+  };
+  return createRelation(user, assignInput);
+};
+
+export const addUser = async (user, newUser) => {
   const userEmail = newUser.user_email.toLowerCase();
   const existingUser = await elLoadBy(SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
   if (existingUser) {
@@ -303,6 +278,7 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
   // Create the user
   const userToCreate = R.pipe(
     R.assoc('user_email', userEmail),
+    R.assoc('api_token', newUser.api_token ? newUser.api_token : uuid()),
     R.assoc('password', bcrypt.hashSync(newUser.password ? newUser.password.toString() : uuid())),
     R.assoc('theme', newUser.theme ? newUser.theme : 'default'),
     R.assoc('language', newUser.language ? newUser.language : 'auto'),
@@ -310,14 +286,6 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
     R.dissoc('roles')
   )(newUser);
   const userCreated = await createEntity(user, userToCreate, ENTITY_TYPE_USER);
-  // Create token and link it to the user
-  const defaultToken = await createEntity(user, newToken, ENTITY_TYPE_TOKEN);
-  const input = {
-    fromId: userCreated.id,
-    toId: defaultToken.id,
-    relationship_type: RELATION_AUTHORIZED_BY,
-  };
-  await createRelation(user, input);
   // Link to the roles
   let userRoles = newUser.roles || []; // Expected roles name
   const defaultRoles = await findRoles(user, { filters: [{ key: 'default_assignation', values: [true] }] });
@@ -348,7 +316,6 @@ export const roleEditField = async (user, roleId, input) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
 
-// TO DELETE ?
 export const roleAddRelation = async (user, roleId, input) => {
   const role = await loadById(user, roleId, ENTITY_TYPE_ROLE);
   if (!role) {
@@ -363,7 +330,7 @@ export const roleAddRelation = async (user, roleId, input) => {
     return relationData;
   });
 };
-// TO DELETE ?
+
 export const roleDeleteRelation = async (user, roleId, toId, relationshipType) => {
   const role = await loadById(user, roleId, ENTITY_TYPE_ROLE);
   if (!role) {
@@ -424,10 +391,6 @@ export const meEditField = (user, userId, input) => {
 };
 
 export const userDelete = async (user, userId) => {
-  const userToken = await internalGetToken(userId);
-  if (userToken) {
-    await deleteElementById(user, userToken.id, ENTITY_TYPE_TOKEN);
-  }
   await deleteElementById(user, userId, ENTITY_TYPE_USER);
   logAudit.info(user, USER_DELETION, { user: userId });
   return userId;
@@ -448,7 +411,17 @@ export const userAddRelation = async (user, userId, input) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, relationData, user);
 };
 
-export const userDeleteRelation = async (user, userId, toId, relationshipType) => {
+export const userDeleteRelation = async (user, targetUser, toId, relationshipType) => {
+  if (!isInternalRelationship(relationshipType)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+  }
+  await deleteRelationsByFromAndTo(user, targetUser.id, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+  const operation = convertRelationToAction(relationshipType, false);
+  logAudit.info(user, operation, { from: targetUser.id, to: toId, type: relationshipType });
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
+};
+
+export const userIdDeleteRelation = async (user, userId, toId, relationshipType) => {
   const userData = await loadById(user, userId, ENTITY_TYPE_USER);
   if (!userData) {
     throw FunctionalError('Cannot delete the relation, User cannot be found.');
@@ -456,23 +429,23 @@ export const userDeleteRelation = async (user, userId, toId, relationshipType) =
   if (!isInternalRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
   }
-  await deleteRelationsByFromAndTo(user, userId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
-  const operation = convertRelationToAction(relationshipType, false);
-  logAudit.info(user, operation, { from: userId, to: toId, type: relationshipType });
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user);
+  return userDeleteRelation(user, userData, toId, relationshipType);
 };
 
-export const loginFromProvider = async (email, name, providerRoles = []) => {
+export const loginFromProvider = async (email, name, providerRoles = [], providerGroups = []) => {
   if (!email) {
     throw Error('User email not provided');
   }
   const user = await elLoadBy(SYSTEM_USER, 'user_email', email, ENTITY_TYPE_USER);
   if (!user) {
+    // If user doesnt exists, create it. Providers are trusted
     const newUser = { name, user_email: email.toLowerCase(), external: true };
-    return addUser(SYSTEM_USER, newUser).then(() => loginFromProvider(email, name));
+    return addUser(SYSTEM_USER, newUser).then(() => {
+      // After user creation, reapply login to manage roles and groups
+      return loginFromProvider(email, name, providerRoles, providerGroups);
+    });
   }
   // Update the basic information
-  const userToken = await loadThroughGetTo(SYSTEM_USER, user.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
   const inputName = { key: 'name', value: [name] };
   await userEditField(SYSTEM_USER, user.id, inputName);
   const inputExternal = { key: 'external', value: [true] };
@@ -485,25 +458,36 @@ export const loginFromProvider = async (email, name, providerRoles = []) => {
     const userRoles = await listThroughGetTo(SYSTEM_USER, user.id, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, opts);
     for (let index = 0; index < userRoles.length; index += 1) {
       const userRole = userRoles[index];
-      await userDeleteRelation(SYSTEM_USER, user.id, userRole.id, RELATION_HAS_ROLE);
+      await userDeleteRelation(SYSTEM_USER, user, userRole.id, RELATION_HAS_ROLE);
     }
     // 02 - Create roles from providers
     const rolesCreation = R.map((role) => assignRoleToUser(SYSTEM_USER, user.id, role), providerRoles);
     await Promise.all(rolesCreation);
   }
-  return { token: userToken, user };
+  // Update the groups
+  // If groups are specified here, that overwrite the default assignation
+  if (providerGroups.length > 0) {
+    // 01 - Delete all groups from the user
+    const opts = { paginate: false };
+    const userGroups = await listThroughGetTo(SYSTEM_USER, user.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
+    for (let index = 0; index < userGroups.length; index += 1) {
+      const userGroup = userGroups[index];
+      await userDeleteRelation(SYSTEM_USER, user, userGroup.id, RELATION_MEMBER_OF);
+    }
+    // 02 - Create groups from providers
+    const groupsCreation = R.map((group) => assignGroupToUser(SYSTEM_USER, user.id, group), providerGroups);
+    await Promise.all(groupsCreation);
+  }
+  return user;
 };
 
 export const login = async (email, password) => {
   const user = await elLoadBy(SYSTEM_USER, 'user_email', email, ENTITY_TYPE_USER);
   if (!user) throw AuthenticationFailure();
-  const userToken = await loadThroughGetTo(SYSTEM_USER, user.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
-  if (!userToken) throw AuthenticationFailure();
   const dbPassword = user.password;
   const match = bcrypt.compareSync(password, dbPassword);
   if (!match) throw AuthenticationFailure();
-  // await clearUsersSession(userToken.uuid);
-  return { token: userToken, user };
+  return user;
 };
 
 export const logout = async (user, req, res) => {
@@ -514,40 +498,10 @@ export const logout = async (user, req, res) => {
   return user.id;
 };
 
-// Token related
-const internalGetTokenByUUID = async (tokenUUID) => {
-  return elLoadBy(SYSTEM_USER, 'uuid', tokenUUID, ENTITY_TYPE_TOKEN);
-};
-
-export const userRenewToken = async (user, userId, newToken = generateOpenCTIWebToken()) => {
-  // 01. Get current token
-  const currentToken = await internalGetToken(userId);
-  // 02. Remove the token
-  if (currentToken) {
-    await deleteElementById(user, currentToken.id, ENTITY_TYPE_TOKEN);
-  } else {
-    logApp.error(`[INIT] ${userId} user have no token to renew, please report this problem in github`);
-    const detachedToken = await internalGetTokenByUUID(newToken.uuid);
-    if (detachedToken) {
-      await deleteElementById(user, detachedToken.id, ENTITY_TYPE_TOKEN);
-    }
-  }
-  // 03. Create a new one
-  const defaultToken = await createEntity(user, newToken, ENTITY_TYPE_TOKEN);
-  // 04. Associate new token to user.
-  const input = {
-    fromId: userId,
-    toId: defaultToken.id,
-    relationship_type: RELATION_AUTHORIZED_BY,
-  };
-  await createRelation(user, input);
-  return loadById(user, userId, ENTITY_TYPE_USER);
-};
-
-const buildSessionUser = (user, tokenUUID = null) => {
+const buildSessionUser = (user) => {
   return {
     id: user.id,
-    token_uuid: tokenUUID,
+    api_token: user.api_token,
     session_creation: now(),
     internal_id: user.internal_id,
     user_email: user.user_email,
@@ -566,62 +520,59 @@ const buildSessionUser = (user, tokenUUID = null) => {
     })),
   };
 };
-const resolveUserByToken = async (tokenValue) => {
-  const userToken = await elLoadBy(SYSTEM_USER, 'uuid', tokenValue, ENTITY_TYPE_TOKEN);
-  // Check token
-  if (!userToken || userToken.revoked === true) return undefined;
-  const { created_at: createdAt, duration } = userToken;
-  const maxDuration = moment.duration(duration);
-  const currentDuration = moment.duration(moment().diff(createdAt));
-  if (currentDuration > maxDuration) return undefined;
-  // Build user
-  const users = await listThroughGetFrom(SYSTEM_USER, userToken.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_USER);
-  if (users.length === 0 || users.length > 1) return undefined;
-  const client = R.head(users);
-  const capabilities = await getCapabilities(client.id);
-  const marking = await getUserAndGlobalMarkings(client.id, capabilities);
-  const user = { ...client, capabilities, allowed_marking: marking.user, all_marking: marking.all };
-  return buildSessionUser(user, tokenValue);
-};
 
-export const resolveUserById = async (id) => {
-  const client = await loadById(SYSTEM_USER, id, ENTITY_TYPE_USER);
+const buildCompleteUser = async (client) => {
+  if (!client) return undefined;
   const capabilities = await getCapabilities(client.id);
   const marking = await getUserAndGlobalMarkings(client.id, capabilities);
   const user = { ...client, capabilities, allowed_marking: marking.user, all_marking: marking.all };
   return buildSessionUser(user);
 };
 
-// Authentication process
+export const resolveUserById = async (id) => {
+  const client = await loadById(SYSTEM_USER, id, ENTITY_TYPE_USER);
+  return buildCompleteUser(client);
+};
 
-export const authenticateUser = async (req, opts = {}) => {
-  const { providerToken = null, provider = null } = opts;
+const resolveUserByToken = async (tokenValue) => {
+  const client = await elLoadBy(SYSTEM_USER, 'api_token', tokenValue, ENTITY_TYPE_USER);
+  return buildCompleteUser(client);
+};
+
+export const userRenewToken = async (user, userId) => {
+  const patch = { api_token: uuid() };
+  await patchAttribute(user, userId, ENTITY_TYPE_USER, patch);
+  return loadById(user, userId, ENTITY_TYPE_USER);
+};
+
+export const authenticateUser = async (req, user, provider) => {
+  // Build the user session with only required fields
+  const sessionUser = await buildCompleteUser(user);
+  logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider });
+  req.session.user = sessionUser;
+  return sessionUser;
+};
+
+export const authenticateUserFromRequest = async (req) => {
   const auth = req?.session?.user;
-  let loginProvider = provider;
   if (auth) {
     // User already identified
     return auth;
   }
-  // If user not identified, try to extract token from request
-  let tokenUUID = providerToken;
-  // If no specified token, try first the bearer
-  if (!tokenUUID) {
-    tokenUUID = extractTokenFromBearer(req?.headers.authorization);
-    loginProvider = 'Bearer';
-  }
+  // If user not identified, try to extract token from bearer
+  let loginProvider = 'Bearer';
+  let tokenUUID = extractTokenFromBearer(req?.headers.authorization);
   // If no bearer specified, try with basic auth
   if (!tokenUUID) {
-    tokenUUID = await extractTokenFromBasicAuth(req?.headers.authorization);
     loginProvider = 'BasicAuth';
+    tokenUUID = await extractTokenFromBasicAuth(req?.headers.authorization);
   }
   // Get user from the token if found
   if (tokenUUID) {
     try {
       const user = await resolveUserByToken(tokenUUID);
       if (req && user) {
-        // Build the user session with only required fields
-        logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider: loginProvider });
-        req.session.user = user;
+        await authenticateUser(req, user, loginProvider);
       }
       return user;
     } catch (err) {
@@ -632,14 +583,16 @@ export const authenticateUser = async (req, opts = {}) => {
 };
 
 export const initAdmin = async (email, password, tokenValue) => {
-  const admin = await findById(SYSTEM_USER, OPENCTI_ADMIN_UUID);
-  const tokenAdmin = generateOpenCTIWebToken(tokenValue);
-  if (admin) {
-    // Update admin fields
-    const patch = { user_email: email, password: bcrypt.hashSync(password, 10), external: true };
-    await patchAttribute(SYSTEM_USER, admin.id, ENTITY_TYPE_USER, patch);
-    // Renew the token
-    await userRenewToken(SYSTEM_USER, admin.id, tokenAdmin);
+  const existingAdmin = await findById(SYSTEM_USER, OPENCTI_ADMIN_UUID);
+  if (existingAdmin) {
+    // If admin user exists, just patch the fields
+    const patch = {
+      user_email: email,
+      password: bcrypt.hashSync(password, 10),
+      api_token: tokenValue,
+      external: true,
+    };
+    await patchAttribute(SYSTEM_USER, existingAdmin.id, ENTITY_TYPE_USER, patch);
   } else {
     const userToCreate = {
       internal_id: OPENCTI_ADMIN_UUID,
@@ -649,9 +602,10 @@ export const initAdmin = async (email, password, tokenValue) => {
       firstname: 'Admin',
       lastname: 'OpenCTI',
       description: 'Principal admin account',
+      api_token: tokenValue,
       password,
     };
-    await addUser(SYSTEM_USER, userToCreate, tokenAdmin);
+    await addUser(SYSTEM_USER, userToCreate);
   }
 };
 

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
@@ -15,6 +15,7 @@ import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
+import { OPENCTI_ADMIN_UUID } from '../../../utils/Security';
 
 const styles = () => ({
   panel: {
@@ -30,6 +31,14 @@ const styles = () => ({
 const profileOverviewFieldPatch = graphql`
   mutation ProfileOverviewFieldPatchMutation($input: EditInput!) {
     meEdit(input: $input) {
+      ...UserEditionOverview_user
+    }
+  }
+`;
+
+const renewTokenPatch = graphql`
+  mutation ProfileOverviewTokenRenewMutation {
+    meTokenRenew {
       ...UserEditionOverview_user
     }
   }
@@ -54,9 +63,30 @@ const passwordValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-class ProfileOverviewComponent extends Component {
-  handleSubmitField(name, value) {
-    userValidation(this.props.t)
+const ProfileOverviewComponent = (props) => {
+  const { t, me, classes } = props;
+  const external = me.external === true;
+  const initialValues = pick(
+    [
+      'name',
+      'description',
+      'user_email',
+      'firstname',
+      'lastname',
+      'theme',
+      'language',
+    ],
+    me,
+  );
+
+  const renewToken = () => {
+    commitMutation({
+      mutation: renewTokenPatch,
+    });
+  };
+
+  const handleSubmitField = (name, value) => {
+    userValidation(t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
@@ -65,10 +95,9 @@ class ProfileOverviewComponent extends Component {
         });
       })
       .catch(() => false);
-  }
+  };
 
-  // eslint-disable-next-line class-methods-use-this
-  handleSubmitPasswords(values, { setSubmitting, resetForm }) {
+  const handleSubmitPasswords = (values, { setSubmitting, resetForm }) => {
     const field = { key: 'password', value: values.password };
     commitMutation({
       mutation: profileOverviewFieldPatch,
@@ -82,34 +111,17 @@ class ProfileOverviewComponent extends Component {
         resetForm();
       },
     });
-  }
+  };
 
-  render() {
-    const { t, me, classes } = this.props;
-    const external = me.external === true;
-    const initialValues = pick(
-      [
-        'name',
-        'description',
-        'user_email',
-        'firstname',
-        'lastname',
-        'theme',
-        'language',
-      ],
-      me,
-    );
-    return (
+  return (
       <div>
         <Paper classes={{ root: classes.panel }} elevation={2}>
           <Typography variant="h1" gutterBottom={true}>
             {t('Profile')} {external && `(${t('external')})`}
           </Typography>
-          <Formik
-            enableReinitialize={true}
+          <Formik enableReinitialize={true}
             initialValues={initialValues}
-            validationSchema={userValidation(t)}
-          >
+            validationSchema={userValidation(t)}>
             {() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
@@ -118,7 +130,7 @@ class ProfileOverviewComponent extends Component {
                   disabled={external}
                   label={t('Name')}
                   fullWidth={true}
-                  onSubmit={this.handleSubmitField.bind(this)}
+                  onSubmit={handleSubmitField}
                 />
                 <Field
                   component={TextField}
@@ -127,7 +139,7 @@ class ProfileOverviewComponent extends Component {
                   label={t('Email address')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
-                  onSubmit={this.handleSubmitField.bind(this)}
+                  onSubmit={handleSubmitField}
                 />
                 <Field
                   component={TextField}
@@ -135,7 +147,7 @@ class ProfileOverviewComponent extends Component {
                   label={t('Firstname')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
-                  onSubmit={this.handleSubmitField.bind(this)}
+                  onSubmit={handleSubmitField}
                 />
                 <Field
                   component={TextField}
@@ -143,7 +155,7 @@ class ProfileOverviewComponent extends Component {
                   label={t('Lastname')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
-                  onSubmit={this.handleSubmitField.bind(this)}
+                  onSubmit={handleSubmitField}
                 />
                 <Field
                   component={SelectField}
@@ -155,7 +167,7 @@ class ProfileOverviewComponent extends Component {
                     id: 'theme',
                   }}
                   containerstyle={{ marginTop: 20, width: '100%' }}
-                  onChange={this.handleSubmitField.bind(this)}
+                  onChange={handleSubmitField}
                 >
                   <MenuItem value="default">{t('Default')}</MenuItem>
                   <MenuItem value="dark">{t('Dark')}</MenuItem>
@@ -171,7 +183,7 @@ class ProfileOverviewComponent extends Component {
                     id: 'language',
                   }}
                   containerstyle={{ marginTop: 20, width: '100%' }}
-                  onChange={this.handleSubmitField.bind(this)}
+                  onChange={handleSubmitField}
                 >
                   <MenuItem value="auto">
                     <em>{t('Automatic')}</em>
@@ -187,7 +199,7 @@ class ProfileOverviewComponent extends Component {
                   multiline={true}
                   rows={4}
                   style={{ marginTop: 20 }}
-                  onSubmit={this.handleSubmitField.bind(this)}
+                  onSubmit={handleSubmitField}
                 />
               </Form>
             )}
@@ -201,14 +213,23 @@ class ProfileOverviewComponent extends Component {
             <Typography variant="h4" gutterBottom={true}>
               {t('API key')}
             </Typography>
-            <pre>{me.token}</pre>
+            <pre>{me.api_token}</pre>
+            { me.id !== OPENCTI_ADMIN_UUID
+            && <Button
+                variant="contained"
+                color="primary"
+                onClick={renewToken}
+                style={{ marginBottom: 20 }}>
+              {t('Renew')}
+            </Button>
+            }
             <Typography variant="h4" gutterBottom={true}>
               {t('Required headers')}
             </Typography>
             <pre>
               Content-Type: application/json
               <br />
-              Authorization: Bearer {me.token}
+              Authorization: Bearer {me.api_token}
             </pre>
             <Button
               variant="contained"
@@ -216,7 +237,6 @@ class ProfileOverviewComponent extends Component {
               component={Link}
               to="/graphql"
               target="_blank"
-              style={{ marginTop: 20 }}
             >
               {t('Playground')}
             </Button>
@@ -231,7 +251,7 @@ class ProfileOverviewComponent extends Component {
               enableReinitialize={true}
               initialValues={{ password: '', confirmation: '' }}
               validationSchema={passwordValidation(t)}
-              onSubmit={this.handleSubmitPasswords.bind(this)}
+              onSubmit={handleSubmitPasswords}
             >
               {({ submitForm, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
@@ -268,9 +288,8 @@ class ProfileOverviewComponent extends Component {
           </Paper>
         )}
       </div>
-    );
-  }
-}
+  );
+};
 
 ProfileOverviewComponent.propTypes = {
   classes: PropTypes.object,
@@ -282,6 +301,7 @@ ProfileOverviewComponent.propTypes = {
 const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
   me: graphql`
     fragment ProfileOverview_me on User {
+      id
       name
       user_email
       external
@@ -289,7 +309,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       lastname
       language
       theme
-      token
+      api_token
       description
     }
   `,

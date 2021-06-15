@@ -4,7 +4,7 @@ import https from 'https';
 import http from 'http';
 // noinspection NodeCoreCodingAssistance
 import { readFileSync } from 'fs';
-import conf, { logApp } from './config/conf';
+import conf, { booleanConf, logApp } from './config/conf';
 import createApp from './app';
 import createApolloServer from './graphql/graphql';
 import { isStrategyActivated, STRATEGY_CERT } from './config/providers';
@@ -14,8 +14,7 @@ const REQ_TIMEOUT = conf.get('app:request_timeout');
 const CERT_KEY_PATH = conf.get('app:https_cert:key');
 const CERT_KEY_CERT = conf.get('app:https_cert:crt');
 const CA_CERTS = conf.get('app:https_cert:ca');
-const rejectUnauthorized = conf.get('app:https_cert:reject_unauthorized');
-
+const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', true);
 const createHttpServer = async () => {
   const apolloServer = createApolloServer();
   const { app, seeMiddleware } = await createApp(apolloServer);

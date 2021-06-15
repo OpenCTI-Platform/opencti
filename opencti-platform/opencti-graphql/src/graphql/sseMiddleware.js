@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import conf, { basePath, logApp } from '../config/conf';
-import { authenticateUser, STREAMAPI } from '../domain/user';
+import { authenticateUserFromRequest, STREAMAPI } from '../domain/user';
 import { createStreamProcessor } from '../database/redis';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { generateInternalId } from '../schema/identifier';
@@ -403,7 +403,7 @@ const createHeartbeatProcessor = () => {
 };
 
 const authenticate = async (req, res, next) => {
-  const auth = await authenticateUser(req);
+  const auth = await authenticateUserFromRequest(req);
   const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;
   const isUserGranted = auth && R.find(capabilityControl, auth.capabilities || []) !== undefined;
   if (isUserGranted) {

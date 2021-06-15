@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core';
+import { withTheme, withStyles } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
 import { attackPatternsLinesQuery } from './AttackPatternsLines';
 import { computeLevel } from '../../../../utils/Number';
@@ -74,8 +74,8 @@ const styles = (theme) => ({
   },
 });
 
-const colors = [
-  ['#265058', 'transparent'],
+const colors = (defaultColor) => [
+  [defaultColor, 'transparent'],
   ['#fff59d', 'rgba(255,245,157,0.2)'],
   ['#ffe082', 'rgba(255,224,130,0.2)'],
   ['#ffb300', 'rgba(255,179,0,0.2)'],
@@ -88,17 +88,36 @@ const colors = [
   ['#b71c1c', 'rgba(183,28,28,0.2)'],
 ];
 
+const colorsReversed = (defaultColor) => [
+  [defaultColor, 'transparent'],
+  ['#c5e1a5', 'rgba(197,225,165,0.2)'],
+  ['#aed581', 'rgba(174,213,129,0.2)'],
+  ['#9ccc65', 'rgba(156,204,101,0.2)'],
+  ['#8bc34a', 'rgba(139,195,74,0.2)'],
+  ['#66bb6a', 'rgba(102,187,106,0.2)'],
+  ['#4caf50', 'rgba(76,175,80,0.2)'],
+  ['#43a047', 'rgba(67,160,71,0.2)'],
+  ['#388e3c', 'rgba(56,142,60,0.2)'],
+  ['#2e7d32', 'rgba(46,125,50,0.2)'],
+  ['#1b5e20', 'rgba(27,94,32,0.2)'],
+];
+
 class AttackPatternsMatrixColumnsComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
       currentModeOnlyActive: false,
+      currentColorsReversed: false,
       currentKillChain: 'mitre-attack',
     };
   }
 
   handleToggleModeOnlyActive() {
     this.setState({ currentModeOnlyActive: !this.state.currentModeOnlyActive });
+  }
+
+  handleToggleColorsReversed() {
+    this.setState({ currentColorsReversed: !this.state.currentColorsReversed });
   }
 
   handleChangeKillChain(event) {
@@ -128,11 +147,41 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       t,
       data,
       classes,
+      theme,
       attackPatterns: selectedPatterns,
       marginRight,
       searchTerm,
+      handleChangeKillChain,
+      handleToggleModeOnlyActive,
+      handleToggleColorsReversed,
+      currentKillChain,
+      currentColorsReversed,
+      currentModeOnlyActive,
     } = this.props;
-    const { currentModeOnlyActive, currentKillChain } = this.state;
+    let changeKillChain = handleChangeKillChain;
+    if (typeof changeKillChain !== 'function') {
+      changeKillChain = this.handleChangeKillChain;
+    }
+    let toggleModeOnlyActive = handleToggleModeOnlyActive;
+    if (typeof toggleModeOnlyActive !== 'function') {
+      toggleModeOnlyActive = this.handleToggleModeOnlyActive;
+    }
+    let toggleColorsReversed = handleToggleColorsReversed;
+    if (typeof toggleColorsReversed !== 'function') {
+      toggleColorsReversed = this.handleToggleColorsReversed;
+    }
+    let killChain = currentKillChain;
+    if (R.isNil(killChain)) {
+      killChain = this.state.currentKillChain;
+    }
+    let modeOnlyActive = currentModeOnlyActive;
+    if (R.isNil(modeOnlyActive)) {
+      modeOnlyActive = this.state.currentModeOnlyActive;
+    }
+    let modeColorsReversed = currentColorsReversed;
+    if (R.isNil(modeColorsReversed)) {
+      modeColorsReversed = this.state.currentColorsReversed;
+    }
     const sortByOrder = R.sortBy(R.prop('x_opencti_order'));
     const sortByName = R.sortBy(R.prop('name'));
     const filterByKeyword = (n) => searchTerm === ''
@@ -183,13 +232,13 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       })),
       R.filter(filterSubattackPattern),
       R.filter(filterByKeyword),
-      R.filter((o) => (currentModeOnlyActive ? o.level > 0 : o.level >= 0)),
+      R.filter((o) => (modeOnlyActive ? o.level > 0 : o.level >= 0)),
     )(data.attackPatterns.edges);
     const killChainPhases = R.pipe(
       R.map((n) => R.map((o) => o.node, n.node.killChainPhases.edges)),
       R.flatten,
       R.uniq,
-      R.filter((n) => n.kill_chain_name === currentKillChain),
+      R.filter((n) => n.kill_chain_name === killChain),
       sortByOrder,
     )(data.attackPatterns.edges);
     const killChains = R.uniq([
@@ -217,15 +266,18 @@ class AttackPatternsMatrixColumnsComponent extends Component {
         }
       >
         <AttackPtternsMatrixBar
-          currentModeOnlyActive={currentModeOnlyActive}
-          handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
-            this,
-          )}
-          currentKillChain={currentKillChain}
-          handleChangeKillChain={this.handleChangeKillChain.bind(this)}
+          currentModeOnlyActive={modeOnlyActive}
+          handleToggleModeOnlyActive={toggleModeOnlyActive.bind(this)}
+          currentColorsReversed={modeColorsReversed}
+          handleToggleColorsReversed={toggleColorsReversed.bind(this)}
+          currentKillChain={killChain}
+          handleChangeKillChain={changeKillChain.bind(this)}
           killChains={killChains}
         />
-        <div id="container">
+        <div
+          id="container"
+          style={{ width: attackPatternsOfPhases.length * 161 }}
+        >
           <div className={classes.header}>
             {attackPatternsOfPhases.map((k) => (
               <div key={k.id} className={classes.headerElement}>
@@ -246,8 +298,18 @@ class AttackPatternsMatrixColumnsComponent extends Component {
                     key={a.id}
                     className={classes.element}
                     style={{
-                      border: `1px solid ${colors[a.level][0]}`,
-                      backgroundColor: colors[a.level][1],
+                      border: `1px solid ${
+                        modeColorsReversed
+                          ? colorsReversed(theme.palette.background.chip)[
+                            a.level
+                          ][0]
+                          : colors(theme.palette.background.chip)[a.level][0]
+                      }`,
+                      backgroundColor: modeColorsReversed
+                        ? colorsReversed(theme.palette.background.chip)[
+                          a.level
+                        ][1]
+                        : colors(theme.palette.background.chip)[a.level][1],
                     }}
                   >
                     <div className={classes.name}>{a.name}</div>
@@ -265,11 +327,18 @@ class AttackPatternsMatrixColumnsComponent extends Component {
 AttackPatternsMatrixColumnsComponent.propTypes = {
   data: PropTypes.object,
   classes: PropTypes.object,
+  theme: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
   attackPatterns: PropTypes.array,
   marginRight: PropTypes.bool,
   searchTerm: PropTypes.string,
+  handleChangeKillChain: PropTypes.func,
+  handleToggleModeOnlyActive: PropTypes.func,
+  handleToggleColorsReversed: PropTypes.func,
+  currentKillChain: PropTypes.bool,
+  currentColorsReversed: PropTypes.bool,
+  currentModeOnlyActive: PropTypes.bool,
 };
 
 export const attackPatternsMatrixColumnsQuery = graphql`
@@ -348,5 +417,6 @@ const AttackPatternsMatrixColumns = createRefetchContainer(
 
 export default R.compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(AttackPatternsMatrixColumns);

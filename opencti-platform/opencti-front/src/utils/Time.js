@@ -4,6 +4,7 @@ import { isNone } from '../components/i18n';
 const defaultDateFormat = 'YYYY-MM-DD';
 const yearDateFormat = 'YYYY';
 
+export const TWO_SECONDS = 2000;
 export const FIVE_SECONDS = 5000;
 export const TEN_SECONDS = FIVE_SECONDS * 2;
 

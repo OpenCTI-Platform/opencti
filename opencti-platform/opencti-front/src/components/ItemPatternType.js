@@ -77,7 +77,7 @@ class ItemPatternType extends Component {
             backgroundColor: this.props.color,
             color: this.props.color === '#ffffff' ? '#2b2b2b' : 'inherit',
           }}
-          label={this.props.label}
+          label={t(this.props.label)}
         />
       );
     }
@@ -88,7 +88,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.stix}
-            label={label}
+            label={t(label)}
           />
         );
       case 'pcre':
@@ -96,7 +96,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.pcre}
-            label={label}
+            label={t(label)}
           />
         );
       case 'sigma':
@@ -104,7 +104,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.sigma}
-            label={label}
+            label={t(label)}
           />
         );
       case 'snort':
@@ -112,7 +112,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.snort}
-            label={label}
+            label={t(label)}
           />
         );
       case 'suricata':
@@ -120,7 +120,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.suricata}
-            label={label}
+            label={t(label)}
           />
         );
       case 'yara':
@@ -128,7 +128,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.yara}
-            label={label}
+            label={t(label)}
           />
         );
       case 'tanium-signal':
@@ -136,7 +136,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles['tanium-signal']}
-            label={label}
+            label={t(label)}
           />
         );
       default:

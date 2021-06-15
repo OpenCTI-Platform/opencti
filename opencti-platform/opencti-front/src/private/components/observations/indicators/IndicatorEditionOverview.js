@@ -218,7 +218,8 @@ class IndicatorEditionOverviewComponent extends Component {
         mutation: indicatorMutationRelationDelete,
         variables: {
           id: this.props.indicator.id,
-          relationId: currentCreatedBy.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
         onCompleted: () => {
           if (value.value) {

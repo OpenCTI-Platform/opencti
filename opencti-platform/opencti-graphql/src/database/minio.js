@@ -2,7 +2,7 @@ import * as Minio from 'minio';
 import * as He from 'he';
 import { assoc, concat, map, sort } from 'ramda';
 import querystring from 'querystring';
-import conf, { logApp, logAudit } from '../config/conf';
+import conf, { booleanConf, logApp, logAudit } from '../config/conf';
 import { buildPagination } from './utils';
 import { loadExportWorksAsProgressFiles, deleteWorkForFile } from '../domain/work';
 import { sinceNowInMinutes } from '../utils/format';
@@ -15,7 +15,7 @@ const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
 const minioClient = new Minio.Client({
   endPoint: conf.get('minio:endpoint'),
   port: conf.get('minio:port') || 9000,
-  useSSL: conf.get('minio:use_ssl') || false,
+  useSSL: booleanConf('minio:use_ssl', false),
   accessKey: String(conf.get('minio:access_key')),
   secretKey: String(conf.get('minio:secret_key')),
 });

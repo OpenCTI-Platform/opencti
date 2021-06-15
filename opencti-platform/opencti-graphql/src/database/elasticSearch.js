@@ -8,15 +8,15 @@ import {
   isNotEmptyField,
   offsetToCursor,
   pascalize,
-  WRITE_PLATFORM_INDICES,
   READ_DATA_INDICES,
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_PLATFORM_INDICES,
   READ_RELATIONSHIPS_INDICES,
+  WRITE_PLATFORM_INDICES,
   isEmptyField,
 } from './utils';
-import conf, { logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
 import {
   RELATION_CREATED_BY,
@@ -87,14 +87,14 @@ export const el = new Client({
   auth: {
     username: conf.get('elasticsearch:username') || null,
     password: conf.get('elasticsearch:password') || null,
-    apiKey: conf.get('elasticsearch:api_Key') || null,
+    apiKey: conf.get('elasticsearch:api_key') || null,
   },
   maxRetries: conf.get('elasticsearch:max_retries') || 3,
   requestTimeout: conf.get('elasticsearch:request_timeout') || 30000,
-  sniffOnStart: conf.get('elasticsearch:sniff_on_start') || false,
+  sniffOnStart: booleanConf('elasticsearch:sniff_on_start', false),
   ssl: {
     ca: conf.get('elasticsearch:ssl:ca') || null,
-    rejectUnauthorized: conf.get('elasticsearch:ssl:reject_unauthorized') || true,
+    rejectUnauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
   },
 });
 
@@ -165,13 +165,13 @@ export const elIsAlive = async () => {
     .then((info) => {
       /* istanbul ignore if */
       if (info.meta.connection.status !== 'alive') {
-        throw ConfigurationError('ElasticSearch seems down');
+        throw ConfigurationError('ElasticSearch seems down (status not alive)');
       }
       return true;
     })
     .catch(
-      /* istanbul ignore next */ () => {
-        throw ConfigurationError('ElasticSearch seems down');
+      /* istanbul ignore next */ (e) => {
+        throw ConfigurationError('ElasticSearch seems down', { error: e.message });
       }
     );
 };
@@ -1833,4 +1833,8 @@ export const elUpdateElement = async (instance) => {
   if (esData.name && isStixObject(instance.entity_type)) {
     await elUpdateConnectionsOfElement(instance.internal_id, { name: esData.name });
   }
+};
+
+export const getStats = () => {
+  return el.indices.stats({ index: READ_PLATFORM_INDICES }).then((result) => result.body._all.total);
 };

@@ -61,6 +61,7 @@ class ContainerHeaderComponent extends Component {
       link,
       modes,
       currentMode,
+      knowledge,
       t,
     } = this.props;
     return (
@@ -99,12 +100,15 @@ class ContainerHeaderComponent extends Component {
             {React.cloneElement(PopoverComponent, { id: container.id })}
           </div>
         </Security>
-        <div className={classes.export}>
-          <ExportButtons
-            domElementId="container"
-            name={t('Report representation')}
-          />
-        </div>
+        {knowledge && (
+          <div className={classes.export}>
+            <ExportButtons
+              domElementId="container"
+              name={t('Report representation')}
+              pixelRatio={currentMode === 'graph' ? 4 : 2}
+            />
+          </div>
+        )}
         {modes && (
           <div className={classes.modes}>
             {modes.includes('graph') && (
@@ -160,6 +164,7 @@ ContainerHeaderComponent.propTypes = {
   link: PropTypes.string,
   modes: PropTypes.array,
   currentMode: PropTypes.string,
+  knowledge: PropTypes.bool,
 };
 
 const ContainerHeader = createFragmentContainer(ContainerHeaderComponent, {
