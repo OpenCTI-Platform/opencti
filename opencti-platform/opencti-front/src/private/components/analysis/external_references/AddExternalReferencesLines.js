@@ -75,7 +75,7 @@ const sharedUpdater = (store, stixCoreObjectId, newEdge) => {
 };
 
 class AddExternalReferencesLinesContainer extends Component {
-  toggleExternalReference(externalReference) {
+  toggleExternalReference(externalReference, onlyCreate = false) {
     const { stixCoreObjectId, stixCoreObjectExternalReferences } = this.props;
     const stixCoreObjectExternalReferencesIds = map(
       (n) => n.node.id,
@@ -84,8 +84,7 @@ class AddExternalReferencesLinesContainer extends Component {
     const alreadyAdded = stixCoreObjectExternalReferencesIds.includes(
       externalReference.id,
     );
-
-    if (alreadyAdded) {
+    if (alreadyAdded && !onlyCreate) {
       const existingExternalReference = head(
         filter(
           (n) => n.node.id === externalReference.id,
@@ -108,7 +107,7 @@ class AddExternalReferencesLinesContainer extends Component {
           ConnectionHandler.deleteNode(conn, externalReference.id);
         },
       });
-    } else {
+    } else if (!alreadyAdded) {
       const input = {
         fromId: stixCoreObjectId,
         relationship_type: 'external-reference',
@@ -167,6 +166,7 @@ class AddExternalReferencesLinesContainer extends Component {
                 onClick={this.toggleExternalReference.bind(
                   this,
                   externalReference,
+                  false,
                 )}
               >
                 <ListItemIcon>
