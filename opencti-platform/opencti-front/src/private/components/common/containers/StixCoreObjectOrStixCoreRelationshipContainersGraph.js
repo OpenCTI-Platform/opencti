@@ -59,7 +59,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
       modeFixed: R.propOr(false, 'modeFixed', params),
-      modeTree: R.propOr(false, 'modeTree', params),
+      modeTree: R.propOr(null, 'modeTree', params),
       selectedTimeRangeInterval: timeRangeInterval,
       stixCoreObjectsTypes,
       markedBy,
@@ -151,8 +151,22 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     this.setState({ mode3D: !this.state.mode3D }, () => this.saveParameters());
   }
 
-  handleToggleTreeMode() {
-    this.setState({ modeTree: !this.state.modeTree }, () => this.saveParameters());
+  handleToggleTreeMode(modeTree) {
+    if (modeTree === 'horizontal') {
+      this.setState(
+        {
+          modeTree: this.state.modeTree === 'horizontal' ? null : 'horizontal',
+        },
+        () => this.saveParameters(),
+      );
+    } else if (modeTree === 'vertical') {
+      this.setState(
+        {
+          modeTree: this.state.modeTree === 'vertical' ? null : 'vertical',
+        },
+        () => this.saveParameters(),
+      );
+    }
   }
 
   handleToggleFixedMode() {
@@ -424,7 +438,8 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
             backgroundColor={theme.palette.background.default}
             graphData={graphData}
             nodeThreeObjectExtend={true}
-            nodeThreeObject={(node) => nodeThreePaint(node, theme.palette.text.primary)}
+            nodeThreeObject={(node) => nodeThreePaint(node, theme.palette.text.primary)
+            }
             linkColor={(link) => (this.selectedLinks.has(link)
               ? theme.palette.secondary.main
               : theme.palette.primary.main)
@@ -498,7 +513,14 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
             onLinkClick={this.handleLinkClick.bind(this)}
             onBackgroundClick={this.handleBackgroundClick.bind(this)}
             cooldownTicks={modeFixed ? 0 : 'Infinity'}
-            dagMode={modeTree ? 'td' : undefined}
+            dagMode={
+              // eslint-disable-next-line no-nested-ternary
+              modeTree === 'horizontal'
+                ? 'lr'
+                : modeTree === 'vertical'
+                  ? 'td'
+                  : undefined
+            }
           />
         ) : (
           <ForceGraph2D
@@ -516,7 +538,8 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
             // linkDirectionalParticleWidth={1}
             // linkDirectionalParticleSpeed={() => 0.004}
             linkCanvasObjectMode={() => 'after'}
-            linkCanvasObject={(link, ctx) => linkPaint(link, ctx, theme.palette.text.primary)}
+            linkCanvasObject={(link, ctx) => linkPaint(link, ctx, theme.palette.text.primary)
+            }
             linkColor={(link) => (this.selectedLinks.has(link)
               ? theme.palette.secondary.main
               : theme.palette.primary.main)
@@ -569,7 +592,14 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
             onLinkClick={this.handleLinkClick.bind(this)}
             onBackgroundClick={this.handleBackgroundClick.bind(this)}
             cooldownTicks={modeFixed ? 0 : 'Infinity'}
-            dagMode={modeTree ? 'td' : undefined}
+            dagMode={
+              // eslint-disable-next-line no-nested-ternary
+              modeTree === 'horizontal'
+                ? 'lr'
+                : modeTree === 'vertical'
+                  ? 'td'
+                  : undefined
+            }
           />
         )}
       </div>

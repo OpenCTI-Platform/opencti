@@ -502,7 +502,8 @@ const i18n = {
       'Enable 3D mode': 'Activer le mode 3D',
       'Disable 3D mode': 'Désactiver le mode 3D',
       'Enable tree mode': 'Activer le mode arbre',
-      'Disable tree mode': 'Désactiver le mode arbre',
+      'Disable tree horizontal mode': 'Désactiver le mode arbre horizontal',
+      'Disable tree vertical mode': 'Désactiver le mode arbre vertical',
       'Enable forces': 'Activer les forces',
       'Disable forces': 'Désactiver les forces',
       'Display time range selector':
