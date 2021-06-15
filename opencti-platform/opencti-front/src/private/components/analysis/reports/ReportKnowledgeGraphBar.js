@@ -709,10 +709,10 @@ class ReportKnowledgeGraphBar extends Component {
                     open={openCreatedRelation}
                     fromObjects={relationFromObjects}
                     toObjects={relationToObjects}
-                    firstSeen={
+                    startTime={
                       lastLinkFirstSeen || dateFormat(report.published)
                     }
-                    lastSeen={lastLinkLastSeen || dateFormat(report.published)}
+                    stopTime={lastLinkLastSeen || dateFormat(report.published)}
                     confidence={report.confidence}
                     handleClose={this.handleCloseCreateRelationship.bind(this)}
                     handleResult={onAddRelation}
