@@ -107,7 +107,7 @@ const campaignMutationRelationDelete = graphql`
 
 const campaignValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  confidence: Yup.number(),
+  confidence: Yup.number().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))

@@ -21,6 +21,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -77,6 +78,7 @@ const IncidentMutation = graphql`
 
 const IncidentValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  confidence: Yup.number(),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
@@ -163,6 +165,7 @@ class IncidentCreation extends Component {
             <Formik
               initialValues={{
                 name: '',
+                confidence: 15,
                 description: '',
                 createdBy: '',
                 objectMarking: [],
@@ -186,6 +189,12 @@ class IncidentCreation extends Component {
                     label={t('Name')}
                     fullWidth={true}
                     detectDuplicate={['Incident']}
+                  />
+                  <ConfidenceField
+                    name="confidence"
+                    label={t('Confidence')}
+                    fullWidth={true}
+                    containerstyle={{ width: '100%', marginTop: 20 }}
                   />
                   <Field
                     component={MarkDownField}
