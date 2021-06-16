@@ -417,7 +417,11 @@ class EntityStixCoreRelationships extends Component {
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
-    if (relationshipTypes.length > 0 && selectedRelationshipType === 'All') {
+    if (
+      relationshipTypes
+      && relationshipTypes.length > 0
+      && selectedRelationshipType === 'All'
+    ) {
       paginationOptions = pipe(assoc('relationshipTypes', relationshipTypes))(
         paginationOptions,
       );
