@@ -26,6 +26,7 @@ class StixSightingRelationship:
                     standard_id
                     entity_type
                     parent_types
+                    identity_class
                     name
                     description
                     roles

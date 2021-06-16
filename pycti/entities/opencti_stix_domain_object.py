@@ -25,6 +25,7 @@ class StixDomainObject:
                     entity_type
                     parent_types
                     spec_version
+                    identity_class
                     name
                     description
                     roles
