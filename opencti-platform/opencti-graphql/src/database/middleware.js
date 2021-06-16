@@ -1597,7 +1597,7 @@ const upsertElementRaw = async (user, id, type, data) => {
     impactedInputs.push(...patched.impactedInputs);
     updatedAddInputs.push(...patched.updatedInputs);
   }
-  // Upsert the aliases
+  // Upsert relationships
   if (isStixObjectAliased(type)) {
     const { name } = data;
     const key = resolveAliasesField(type);
@@ -1607,6 +1607,17 @@ const upsertElementRaw = async (user, id, type, data) => {
     const patched = await patchAttributeRaw(user, element, patch, { operation: UPDATE_OPERATION_ADD });
     impactedInputs.push(...patched.impactedInputs);
     updatedAddInputs.push(...patched.updatedInputs);
+  }
+  if (isStixCoreRelationship(type) && data.update === true) {
+    const patch = {};
+    if (data.confidence) {
+      patch.confidence = data.confidence;
+    }
+    if (!R.isEmpty(patch)) {
+      const patched = await patchAttributeRaw(user, element, patch);
+      impactedInputs.push(...patched.impactedInputs);
+      updatedReplaceInputs.push(...patched.updatedInputs);
+    }
   }
   if (isStixSightingRelationship(type) && data.attribute_count) {
     const patch = { attribute_count: element.attribute_count + data.attribute_count };
