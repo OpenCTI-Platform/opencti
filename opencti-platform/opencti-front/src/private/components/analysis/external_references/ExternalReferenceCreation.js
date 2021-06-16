@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { ConnectionHandler } from 'relay-runtime';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -20,6 +19,7 @@ import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
+import { insertNode } from '../../../../utils/Store';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -94,16 +94,6 @@ const externalReferenceValidation = (t) => Yup.object().shape({
   description: Yup.string(),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_externalReferences',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 class ExternalReferenceCreation extends Component {
   constructor(props) {
     super(props);
@@ -124,24 +114,19 @@ class ExternalReferenceCreation extends Component {
       variables: {
         input: values,
       },
-      updater: (store) => {
-        const payload = store.getRootField('externalReferenceAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          this.props.paginationOptions,
-          newEdge,
-        );
-      },
+      updater: (store) => insertNode(
+        store,
+        'Pagination_externalReferences',
+        this.props.paginationOptions,
+        'externalReferenceAdd',
+      ),
       setSubmitting,
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
         this.handleClose();
         if (this.props.onCreate) {
-          this.props.onCreate(response.externalReferenceAdd);
+          this.props.onCreate(response.externalReferenceAdd, true);
         }
       },
     });

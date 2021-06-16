@@ -46,7 +46,7 @@ import {
   USER_CREATION,
   USER_DELETION,
 } from '../config/audit';
-import { buildPagination } from '../database/utils';
+import { buildPagination, isEmptyField } from '../database/utils';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
 
 const BEARER = 'Bearer ';
@@ -432,24 +432,24 @@ export const userIdDeleteRelation = async (user, userId, toId, relationshipType)
   return userDeleteRelation(user, userData, toId, relationshipType);
 };
 
-export const loginFromProvider = async (email, name, providerRoles = [], providerGroups = []) => {
-  if (!email) {
+export const loginFromProvider = async (userInfo, providerRoles = [], providerGroups = []) => {
+  const { email, name: providedName, firstname, lastname } = userInfo;
+  if (isEmptyField(email)) {
     throw Error('User email not provided');
   }
+  const name = isEmptyField(providedName) ? email : providedName;
   const user = await elLoadBy(SYSTEM_USER, 'user_email', email, ENTITY_TYPE_USER);
   if (!user) {
     // If user doesnt exists, create it. Providers are trusted
-    const newUser = { name, user_email: email.toLowerCase(), external: true };
+    const newUser = { name, firstname, lastname, user_email: email.toLowerCase(), external: true };
     return addUser(SYSTEM_USER, newUser).then(() => {
       // After user creation, reapply login to manage roles and groups
-      return loginFromProvider(email, name, providerRoles, providerGroups);
+      return loginFromProvider(userInfo, providerRoles, providerGroups);
     });
   }
   // Update the basic information
-  const inputName = { key: 'name', value: [name] };
-  await userEditField(SYSTEM_USER, user.id, inputName);
-  const inputExternal = { key: 'external', value: [true] };
-  await userEditField(SYSTEM_USER, user.id, inputExternal);
+  const patch = { name, firstname, lastname, external: true };
+  await patchAttribute(SYSTEM_USER, user.id, ENTITY_TYPE_USER, patch);
   // Update the roles
   // If roles are specified here, that overwrite the default assignation
   if (providerRoles.length > 0) {

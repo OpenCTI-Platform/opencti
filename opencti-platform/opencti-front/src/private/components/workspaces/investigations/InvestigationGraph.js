@@ -811,8 +811,22 @@ class InvestigationGraphComponent extends Component {
     this.setState({ mode3D: !this.state.mode3D }, () => this.saveParameters());
   }
 
-  handleToggleTreeMode() {
-    this.setState({ modeTree: !this.state.modeTree }, () => this.saveParameters());
+  handleToggleTreeMode(modeTree) {
+    if (modeTree === 'horizontal') {
+      this.setState(
+        {
+          modeTree: this.state.modeTree === 'horizontal' ? null : 'horizontal',
+        },
+        () => this.saveParameters(),
+      );
+    } else if (modeTree === 'vertical') {
+      this.setState(
+        {
+          modeTree: this.state.modeTree === 'vertical' ? null : 'vertical',
+        },
+        () => this.saveParameters(),
+      );
+    }
   }
 
   handleToggleFixedMode() {
@@ -1379,7 +1393,8 @@ class InvestigationGraphComponent extends Component {
             backgroundColor={theme.palette.background.default}
             graphData={graphData}
             nodeThreeObjectExtend={true}
-            nodeThreeObject={(node) => nodeThreePaint(node, theme.palette.text.primary)}
+            nodeThreeObject={(node) => nodeThreePaint(node, theme.palette.text.primary)
+            }
             linkColor={(link) => (this.selectedLinks.has(link)
               ? theme.palette.secondary.main
               : theme.palette.primary.main)
@@ -1453,7 +1468,14 @@ class InvestigationGraphComponent extends Component {
             onLinkClick={this.handleLinkClick.bind(this)}
             onBackgroundClick={this.handleBackgroundClick.bind(this)}
             cooldownTicks={modeFixed ? 0 : 'Infinity'}
-            dagMode={modeTree ? 'td' : undefined}
+            dagMode={
+              // eslint-disable-next-line no-nested-ternary
+              modeTree === 'horizontal'
+                ? 'lr'
+                : modeTree === 'vertical'
+                  ? 'td'
+                  : undefined
+            }
           />
         ) : (
           <ForceGraph2D
@@ -1471,7 +1493,8 @@ class InvestigationGraphComponent extends Component {
             // linkDirectionalParticleWidth={1}
             // linkDirectionalParticleSpeed={() => 0.004}
             linkCanvasObjectMode={() => 'after'}
-            linkCanvasObject={(link, ctx) => linkPaint(link, ctx, theme.palette.text.primary)}
+            linkCanvasObject={(link, ctx) => linkPaint(link, ctx, theme.palette.text.primary)
+            }
             linkColor={(link) => (this.selectedLinks.has(link)
               ? theme.palette.secondary.main
               : theme.palette.primary.main)
@@ -1524,7 +1547,14 @@ class InvestigationGraphComponent extends Component {
             onLinkClick={this.handleLinkClick.bind(this)}
             onBackgroundClick={this.handleBackgroundClick.bind(this)}
             cooldownTicks={modeFixed ? 0 : 'Infinity'}
-            dagMode={modeTree ? 'td' : undefined}
+            dagMode={
+              // eslint-disable-next-line no-nested-ternary
+              modeTree === 'horizontal'
+                ? 'lr'
+                : modeTree === 'vertical'
+                  ? 'td'
+                  : undefined
+            }
           />
         )}
       </div>

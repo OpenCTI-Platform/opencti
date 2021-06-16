@@ -409,7 +409,7 @@ const buildRelationsFilter = (relationshipType, args) => {
   if (endDate) finalFilters.push({ key: 'created_at', values: [endDate], operator: 'lt' });
   if (confidences && confidences.length > 0) finalFilters.push({ key: 'confidence', values: confidences });
   return R.pipe(
-    R.assoc('types', relationshipTypes.length > 0 ? relationshipTypes : [relationToGet]),
+    R.assoc('types', relationshipTypes && relationshipTypes.length > 0 ? relationshipTypes : [relationToGet]),
     R.assoc('filters', finalFilters)
   )(args);
 };
@@ -1702,12 +1702,13 @@ const upsertElementRaw = async (user, id, type, input, opts = {}) => {
     impactedInputs.push(...patched.impactedInputs);
     updatedReplaceInputs.push(...patched.updatedInputs);
   }
+  // Upsert SDOs
   if (isStixCoreRelationship(type)) {
     const basePatch = {};
-    if (input.confidence) {
+    if (input.confidence && forceUpdate) {
       basePatch.confidence = input.confidence;
     }
-    if (input.description) {
+    if (input.description && forceUpdate) {
       basePatch.description = input.description;
     }
     const timePatch = handleRelationTimeUpdate(input, instance, 'start_time', 'stop_time', extendRelationTime);
@@ -1729,6 +1730,7 @@ const upsertElementRaw = async (user, id, type, input, opts = {}) => {
     impactedInputs.push(...upsertImpacted);
     updatedReplaceInputs.push(...upsertUpdated);
   }
+  // Upsert SCOs
   if (isStixCyberObservable(type) && forceUpdate) {
     const fields = stixCyberObservableFieldsToBeUpdated[type];
     const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(user, instance, input, fields);

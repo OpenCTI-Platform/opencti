@@ -128,6 +128,7 @@ class ContainerAddStixCoreObjects extends Component {
     const {
       defaultCreatedBy,
       defaultMarkingDefinitions,
+      confidence,
       targetStixCoreObjectTypes,
     } = this.props;
     const { open, search } = this.state;
@@ -138,6 +139,7 @@ class ContainerAddStixCoreObjects extends Component {
         inputValue={search}
         paginationKey="Pagination_stixCoreObjects"
         paginationOptions={paginationOptions}
+        confidence={confidence}
         defaultCreatedBy={defaultCreatedBy}
         defaultMarkingDefinitions={defaultMarkingDefinitions}
         targetStixDomainObjectTypes={
@@ -461,6 +463,7 @@ ContainerAddStixCoreObjects.propTypes = {
   withPadding: PropTypes.bool,
   defaultCreatedBy: PropTypes.object,
   defaultMarkingDefinitions: PropTypes.array,
+  confidence: PropTypes.number,
   containerStixCoreObjects: PropTypes.array,
   simple: PropTypes.bool,
   targetStixCoreObjectTypes: PropTypes.array,

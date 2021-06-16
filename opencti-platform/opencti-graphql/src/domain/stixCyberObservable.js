@@ -158,6 +158,12 @@ const createIndicatorFromObservable = async (user, input, observable) => {
     if (observable.pid) {
       key = `${entityType}_pid`;
     }
+    if (observable.subject) {
+      key = `${entityType}_subject`;
+    }
+    if (observable.body) {
+      key = `${entityType}_body`;
+    }
     const indicatorName = observableValue(observable);
     if (key.includes('StixFile')) {
       key = key.replace('StixFile', 'File');

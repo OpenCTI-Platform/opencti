@@ -102,6 +102,7 @@ const createApp = async (apolloServer) => {
       res.attachment(file);
       stream.pipe(res);
     } catch (e) {
+      setCookieError(res, e?.message);
       next(e);
     }
   });
@@ -118,6 +119,7 @@ const createApp = async (apolloServer) => {
       const stream = await downloadFile(file);
       stream.pipe(res);
     } catch (e) {
+      setCookieError(res, e?.message);
       next(e);
     }
   });
@@ -137,7 +139,8 @@ const createApp = async (apolloServer) => {
             setCookieError(res, 'Client certificate need a correct emailAddress');
             res.redirect(req.headers.referer);
           } else {
-            loginFromProvider(emailAddress, empty(CN) ? emailAddress : CN)
+            const userInfo = { email: emailAddress, name: empty(CN) ? emailAddress : CN };
+            loginFromProvider(userInfo)
               .then(async (user) => {
                 await authenticateUser(req, user, 'cert');
                 res.redirect(req.headers.referer);
@@ -153,33 +156,47 @@ const createApp = async (apolloServer) => {
         }
       }
     } catch (e) {
+      setCookieError(res, e?.message);
       next(e);
     }
   });
 
   // -- Passport login
   app.get(`${basePath}/auth/:provider`, (req, res, next) => {
-    const { provider } = req.params;
-    req.session.referer = req.headers.referer;
-    passport.authenticate(provider, {}, () => {})(req, res, next);
+    try {
+      const { provider } = req.params;
+      req.session.referer = req.headers.referer;
+      passport.authenticate(provider, {}, (err) => {
+        setCookieError(res, err?.message);
+        next(err);
+      })(req, res, next);
+    } catch (e) {
+      setCookieError(res, e?.message);
+      next(e);
+    }
   });
 
   // -- Passport callback
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
-  app.get(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), (req, res, next) => {
-    const { provider } = req.params;
-    const { referer } = req.session;
-    passport.authenticate(provider, {}, async (err, user) => {
-      if (err || !user) {
-        logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
-        setCookieError(res, err?.message);
+  app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), (req, res, next) => {
+    try {
+      const { provider } = req.params;
+      const { referer } = req.session;
+      passport.authenticate(provider, {}, async (err, user) => {
+        if (err || !user) {
+          logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
+          setCookieError(res, err?.message);
+          return res.redirect(referer);
+        }
+        // noinspection UnnecessaryLocalVariableJS
+        await authenticateUser(req, user, provider);
+        req.session.referer = null;
         return res.redirect(referer);
-      }
-      // noinspection UnnecessaryLocalVariableJS
-      await authenticateUser(req, user, provider);
-      req.session.referer = null;
-      return res.redirect(referer);
-    })(req, res, next);
+      })(req, res, next);
+    } catch (e) {
+      setCookieError(res, e?.message);
+      next(e);
+    }
   });
 
   // Other routes - Render index.html

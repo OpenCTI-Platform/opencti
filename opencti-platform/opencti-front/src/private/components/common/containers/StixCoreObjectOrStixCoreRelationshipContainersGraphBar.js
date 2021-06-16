@@ -241,16 +241,38 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                 <Tooltip
                   title={
                     currentModeTree
-                      ? t('Disable tree mode')
-                      : t('Enable tree mode')
+                      ? t('Disable vertical tree mode')
+                      : t('Enable vertical tree mode')
                   }
                 >
                   <span>
                     <IconButton
-                      color={currentModeTree ? 'secondary' : 'primary'}
+                      color={
+                        currentModeTree === 'vertical' ? 'secondary' : 'primary'
+                      }
                       disabled={true}
                     >
                       <FamilyTree />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+                <Tooltip
+                  title={
+                    currentModeTree
+                      ? t('Disable horizontal tree mode')
+                      : t('Enable horizontal tree mode')
+                  }
+                >
+                  <span>
+                    <IconButton
+                      color={
+                        currentModeTree === 'horizontal'
+                          ? 'secondary'
+                          : 'primary'
+                      }
+                      disabled={true}
+                    >
+                      <FamilyTree style={{ transform: 'rotate(-90deg)' }} />
                     </IconButton>
                   </span>
                 </Tooltip>
@@ -452,17 +474,38 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
               <Tooltip
                 title={
                   currentModeTree
-                    ? t('Disable tree mode')
-                    : t('Enable tree mode')
+                    ? t('Disable vertical tree mode')
+                    : t('Enable vertical tree mode')
                 }
               >
                 <span>
                   <IconButton
-                    color={currentModeTree ? 'secondary' : 'primary'}
-                    onClick={handleToggleTreeMode.bind(this)}
+                    color={
+                      currentModeTree === 'vertical' ? 'secondary' : 'primary'
+                    }
+                    onClick={handleToggleTreeMode.bind(this, 'vertical')}
                     disabled={currentModeFixed}
                   >
                     <FamilyTree />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip
+                title={
+                  currentModeTree
+                    ? t('Disable horizontal tree mode')
+                    : t('Enable horizontal tree mode')
+                }
+              >
+                <span>
+                  <IconButton
+                    color={
+                      currentModeTree === 'horizontal' ? 'secondary' : 'primary'
+                    }
+                    onClick={handleToggleTreeMode.bind(this, 'horizontal')}
+                    disabled={currentModeFixed}
+                  >
+                    <FamilyTree style={{ transform: 'rotate(-90deg)' }} />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -809,7 +852,7 @@ StixCoreObjectOrStixCoreRelationshipContainersGraphBar.propTypes = {
   handleToggle3DMode: PropTypes.func,
   currentMode3D: PropTypes.bool,
   handleToggleTreeMode: PropTypes.func,
-  currentModeTree: PropTypes.bool,
+  currentModeTree: PropTypes.string,
   currentModeFixed: PropTypes.bool,
   handleToggleFixedMode: PropTypes.func,
   handleZoomToFit: PropTypes.func,

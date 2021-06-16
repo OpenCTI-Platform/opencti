@@ -22,6 +22,7 @@ import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -249,6 +250,7 @@ class IncidentEditionOverviewComponent extends Component {
       assoc('objectMarking', objectMarking),
       pick([
         'name',
+        'confidence',
         'description',
         'createdBy',
         'killChainPhases',
@@ -274,6 +276,16 @@ class IncidentEditionOverviewComponent extends Component {
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
               }
+            />
+            <ConfidenceField
+              name="confidence"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Confidence')}
+              fullWidth={true}
+              containerstyle={{ width: '100%', marginTop: 20 }}
+              editContext={context}
+              variant="edit"
             />
             <Field
               component={MarkDownField}
@@ -331,6 +343,7 @@ const IncidentEditionOverview = createFragmentContainer(
       fragment IncidentEditionOverview_incident on Incident {
         id
         name
+        confidence
         description
         createdBy {
           ... on Identity {

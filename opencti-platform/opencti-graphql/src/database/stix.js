@@ -486,6 +486,7 @@ export const stixCoreRelationshipsMapping = {
   'Threat-Actor_Position': ['located-at', 'targets'],
   'Threat-Actor_Attack-Pattern': ['uses'],
   'Threat-Actor_Malware': ['uses'],
+  'Threat-Actor_Threat-Actor': ['part-of'],
   'Threat-Actor_Tool': ['uses'],
   'Threat-Actor_Vulnerability': ['targets'],
   'Tool_Attack-Pattern': ['uses', 'drops', 'delivers'],

@@ -22,6 +22,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import DatePickerField from '../../../../components/DatePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -101,6 +102,9 @@ const noteMutationRelationDelete = graphql`
 const noteValidation = (t) => Yup.object().shape({
   attribute_abstract: Yup.string(),
   content: Yup.string().required(t('This field is required')),
+  created: Yup.date()
+    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .required(t('This field is required')),
   confidence: Yup.number(),
 });
 
@@ -231,6 +235,7 @@ class NoteEditionOverviewComponent extends Component {
       assoc('objectMarking', objectMarking),
       pick([
         'attribute_abstract',
+        'created',
         'content',
         'confidence',
         'createdBy',
@@ -247,9 +252,22 @@ class NoteEditionOverviewComponent extends Component {
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
+                component={DatePickerField}
+                name="created"
+                label={t('Date')}
+                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+                fullWidth={true}
+                onFocus={this.handleChangeFocus.bind(this)}
+                onSubmit={this.handleSubmitField.bind(this)}
+                helperText={
+                  <SubscriptionFocus context={context} fieldName="created" />
+                }
+              />
+              <Field
                 component={MarkDownField}
                 name="attribute_abstract"
                 label={t('Abstract')}
+                style={{ marginTop: 20 }}
                 fullWidth={true}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}

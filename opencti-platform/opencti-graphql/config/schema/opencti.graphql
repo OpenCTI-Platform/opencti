@@ -1714,6 +1714,7 @@ enum ContainersOrdering {
   createdBy
 }
 enum ContainersFilter {
+  entity_type
   attribute_abstract
   content
   authors
@@ -4497,6 +4498,7 @@ input VulnerabilityAddInput {
   x_opencti_attack_vector: String
   x_opencti_integrity_impact: String
   x_opencti_availability_impact: String
+  x_opencti_confidentiality_impact: String
   confidence: Int
   revoked: Boolean
   lang: String
@@ -8467,6 +8469,7 @@ type Query {
     toRole: String
     toTypes: [String]
     relationship_type: String
+    relationshipTypes: [String]
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
