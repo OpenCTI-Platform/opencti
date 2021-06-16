@@ -139,7 +139,8 @@ const createApp = async (apolloServer) => {
             setCookieError(res, 'Client certificate need a correct emailAddress');
             res.redirect(req.headers.referer);
           } else {
-            loginFromProvider(emailAddress, empty(CN) ? emailAddress : CN)
+            const userInfo = { email: emailAddress, name: empty(CN) ? emailAddress : CN };
+            loginFromProvider(userInfo)
               .then(async (user) => {
                 await authenticateUser(req, user, 'cert');
                 res.redirect(req.headers.referer);

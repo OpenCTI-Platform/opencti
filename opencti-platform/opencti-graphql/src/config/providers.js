@@ -103,9 +103,8 @@ const AUTH_SSO = 'SSO';
 const AUTH_FORM = 'FORM';
 
 const providers = [];
-const providerLoginHandler = (email, name, roles, groups, done) => {
-  const finalName = empty(name) ? email : name;
-  loginFromProvider(email, finalName, roles, groups)
+const providerLoginHandler = (userInfo, roles, groups, done) => {
+  loginFromProvider(userInfo, roles, groups)
     .then((user) => {
       done(null, user);
     })
@@ -156,6 +155,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         logApp.debug(`[LDAP] Successfully logged`, { user });
         const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
         const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
+        const firstname = user[mappedConfig.firstname_attribute] || '';
+        const lastname = user[mappedConfig.lastname_attribute] || '';
         // region roles mapping
         const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
         const computeRolesMapping = () => {
@@ -184,8 +185,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done({ message: 'Configuration error, ask your administrator' });
         } else if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
           logApp.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
-          const loginName = empty(userName) ? userMail : userName;
-          loginFromProvider(userMail, loginName, rolesToAssociate, groupsToAssociate)
+          const userInfo = { email: userMail, name: userName, firstname, lastname };
+          loginFromProvider(userInfo, rolesToAssociate, groupsToAssociate)
             .then((info) => {
               done(null, info);
             })
@@ -204,6 +205,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const samlOptions = { ...mappedConfig };
       const samlStrategy = new SamlStrategy(samlOptions, (profile, done) => {
         const roleAttributes = mappedConfig.roles_management?.role_attributes || ['Role'];
+        const userName = profile[mappedConfig.account_attribute] || '';
+        const firstname = profile[mappedConfig.firstname_attribute] || '';
+        const lastname = profile[mappedConfig.lastname_attribute] || '';
         const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
         const computeRolesMapping = () => {
           const samlRoles = R.flatten(
@@ -216,7 +220,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const rolesToAssociate = computeRolesMapping();
         if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
           const { nameID: email } = profile;
-          providerLoginHandler(email, email, rolesToAssociate, [], done);
+          providerLoginHandler({ email, name: userName, firstname, lastname }, rolesToAssociate, [], done);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
@@ -266,7 +270,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           // endregion
           if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
             const { email, name } = userinfo;
-            providerLoginHandler(email, name, rolesToAssociate, groupsToAssociate, done);
+            providerLoginHandler({ email, name }, rolesToAssociate, groupsToAssociate, done);
           } else {
             done({ message: 'Restricted access, ask your administrator' });
           }
@@ -284,7 +288,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const data = profile._json;
           logApp.debug(`[FACEBOOK] Successfully logged`, { profile: data });
           const { email } = data;
-          providerLoginHandler(email, data.first_name, [], [], done);
+          providerLoginHandler({ email, name: data.first_name }, [], [], done);
         }
       );
       passport.use('facebook', facebookStrategy);
@@ -304,7 +308,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           authorized = domains.includes(domain);
         }
         if (authorized) {
-          providerLoginHandler(email, name, [], [], done);
+          providerLoginHandler({ email, name }, [], [], done);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
@@ -332,7 +336,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             done({ message: 'You need a public email in your github account' });
           } else {
             const email = R.head(profile.emails).value;
-            providerLoginHandler(email, displayName, [], [], done);
+            providerLoginHandler({ email, name: displayName }, [], [], done);
           }
         } else {
           done({ message: 'Restricted access, ask your administrator' });
@@ -347,9 +351,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         auth0Options,
         (req, accessToken, refreshToken, extraParams, profile, done) => {
           logApp.debug(`[AUTH0] Successfully logged`, { profile });
-          const userName = profile.displayName;
           const email = R.head(profile.emails).value;
-          providerLoginHandler(email, userName, [], [], done);
+          const name = profile.displayName;
+          providerLoginHandler({ email, name }, [], [], done);
         }
       );
       passport.use('auth0', auth0Strategy);
