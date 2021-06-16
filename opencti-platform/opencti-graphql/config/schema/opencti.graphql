@@ -4413,6 +4413,7 @@ input VulnerabilityAddInput {
   x_opencti_attack_vector: String
   x_opencti_integrity_impact: String
   x_opencti_availability_impact: String
+  x_opencti_confidentiality_impact: String
   confidence: Int
   revoked: Boolean
   lang: String

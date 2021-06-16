@@ -1597,7 +1597,7 @@ const upsertElementRaw = async (user, id, type, data) => {
     impactedInputs.push(...patched.impactedInputs);
     updatedAddInputs.push(...patched.updatedInputs);
   }
-  // Upsert relationships
+  // Upsert the aliases
   if (isStixObjectAliased(type)) {
     const { name } = data;
     const key = resolveAliasesField(type);
@@ -1608,6 +1608,7 @@ const upsertElementRaw = async (user, id, type, data) => {
     impactedInputs.push(...patched.impactedInputs);
     updatedAddInputs.push(...patched.updatedInputs);
   }
+  // Upsert relationships
   if (isStixCoreRelationship(type) && data.update === true) {
     const patch = {};
     if (data.confidence) {
@@ -1666,6 +1667,7 @@ const upsertElementRaw = async (user, id, type, data) => {
     impactedInputs.push(...patched.impactedInputs);
     updatedReplaceInputs.push(...patched.updatedInputs);
   }
+  // Upsert SDOs
   if (isStixDomainObject(type) && data.update === true) {
     const fields = stixDomainObjectFieldsToBeUpdated[type];
     if (fields) {
@@ -1684,6 +1686,7 @@ const upsertElementRaw = async (user, id, type, data) => {
       }
     }
   }
+  // Upsert SCOs
   if (isStixCyberObservable(type) && data.update === true) {
     const fields = stixCyberObservableFieldsToBeUpdated[type];
     if (fields) {
