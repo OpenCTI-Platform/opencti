@@ -1613,6 +1613,9 @@ const upsertElementRaw = async (user, id, type, data) => {
     if (data.confidence) {
       patch.confidence = data.confidence;
     }
+    if (data.description) {
+      patch.description = data.description;
+    }
     if (!R.isEmpty(patch)) {
       const patched = await patchAttributeRaw(user, element, patch);
       impactedInputs.push(...patched.impactedInputs);
