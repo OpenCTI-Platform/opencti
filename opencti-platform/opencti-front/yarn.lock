@@ -1971,7 +1971,7 @@
     ramda "^0.26.1"
     svg-arc-to-cubic-bezier "^3.2.0"
 
-"@react-pdf/renderer@^2.0.12":
+"@react-pdf/renderer@2.0.15":
   version "2.0.15"
   resolved "https://registry.yarnpkg.com/@react-pdf/renderer/-/renderer-2.0.15.tgz#a3ad4cf2ecbe0ce0994ba5abeef7e7c1dcc08f78"
   integrity sha512-mmVpRiG5Iak5IsKJxFNo/k8/I/GCdq0FTEVdJ8f7k3jog5/XeuJYVUZb/m/8LsKRUwdFH+rEDzu2Hpb3zEcjqQ==
@@ -10261,7 +10261,7 @@ jsonwebtoken@8.5.1:
     ms "^2.1.1"
     semver "^5.6.0"
 
-jspdf@^2.3.1:
+jspdf@2.3.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/jspdf/-/jspdf-2.3.1.tgz#313d117234b546469694a1fd81a1e02411647576"
   integrity sha512-1vp0USP1mQi1h7NKpwxjFgQkJ5ncZvtH858aLpycUc/M+r/RpWJT8PixAU7Cw/3fPd4fpC8eB/Bj42LnsR21YQ==
