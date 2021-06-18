@@ -11,7 +11,7 @@ opencti_api_client = OpenCTIApiClient(api_url, api_token)
 
 # Get the intrusion set APT28
 intrusion_set = opencti_api_client.intrusion_set.read(
-    filters=[{"key": "name", "values": ["APT28"]}]
+    filters=[{"key": "name", "values": ["Sandworm Team"]}]
 )
 
 # Get all reports
@@ -22,13 +22,16 @@ reports = opencti_api_client.report.list(
 )
 
 # Print
-for report in reports:
-    print(
-        "["
-        + report["stix_id"]
-        + "] "
-        + report["name"]
-        + " ("
-        + report["published"]
-        + ")"
-    )
+if not reports:
+    print(f"No {intrusion_set['name']} reports available")
+else:
+    for report in reports:
+        print(
+            "["
+            + report["standard_id"]
+            + "] "
+            + report["name"]
+            + " ("
+            + report["published"]
+            + ")"
+        )
