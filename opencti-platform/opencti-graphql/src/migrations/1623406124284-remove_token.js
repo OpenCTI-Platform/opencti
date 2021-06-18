@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid';
 import { findAll } from '../domain/user';
 import { SYSTEM_USER } from '../utils/access';
 import { deleteElementById, loadThroughGetTo, patchAttribute } from '../database/middleware';
@@ -10,10 +11,17 @@ export const up = async (next) => {
   for (let index = 0; index < users.length; index += 1) {
     const user = users[index];
     const userToken = await loadThroughGetTo(SYSTEM_USER, user.id, 'authorized-by', 'Token');
-    const patch = { api_token: userToken.uuid };
-    await patchAttribute(SYSTEM_USER, user.id, ENTITY_TYPE_USER, patch);
-    // Remove token
-    await deleteElementById(SYSTEM_USER, userToken.id, 'Token');
+    if (userToken) {
+      // Update the token of the client with existing  token
+      const patch = { api_token: userToken.uuid };
+      await patchAttribute(SYSTEM_USER, user.id, ENTITY_TYPE_USER, patch);
+      // Remove token
+      await deleteElementById(SYSTEM_USER, userToken.id, 'Token');
+    } else {
+      // No token found, just create a new uuid
+      const patch = { api_token: uuid() };
+      await patchAttribute(SYSTEM_USER, user.id, ENTITY_TYPE_USER, patch);
+    }
   }
   next();
 };
