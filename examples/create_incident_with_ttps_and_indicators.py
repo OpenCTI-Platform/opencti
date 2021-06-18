@@ -37,7 +37,7 @@ report = opencti_api_client.report.create(
 
 # Spearphishing Attachment
 ttp1 = opencti_api_client.attack_pattern.read(
-    filters=[{"key": "external_id", "values": ["T1193"]}]
+    filters=[{"key": "x_mitre_id", "values": ["T1193"]}]
 )
 ttp1_relation = opencti_api_client.stix_core_relationship.create(
     fromId=incident["id"],
@@ -53,10 +53,13 @@ for kill_chain_phase_id in ttp1["killChainPhasesIds"]:
         id=ttp1_relation["id"], kill_chain_phase_id=kill_chain_phase_id
     )
 
+
 # Create the observable and indicator and indicates to the relation
 # Create the observable
 observable_ttp1 = opencti_api_client.stix_cyber_observable.create(
-    type="Email-Address", observable_value="phishing@mail.com", createIndicator=True
+    simple_observable_key="Email-Addr.value",
+    simple_observable_value="phishing@mail.com",
+    createIndicator=True,
 )
 # Get the indicator
 indicator_ttp1 = observable_ttp1["indicators"][0]
@@ -83,7 +86,7 @@ observable_refs.append(observable_ttp1["id"])
 
 # Registry Run Keys / Startup Folder
 ttp2 = opencti_api_client.attack_pattern.read(
-    filters=[{"key": "external_id", "values": ["T1060"]}]
+    filters=[{"key": "x_mitre_id", "values": ["T1060"]}]
 )
 # Create the relation
 ttp2_relation = opencti_api_client.stix_core_relationship.create(
@@ -103,7 +106,9 @@ for kill_chain_phase_id in ttp2["killChainPhasesIds"]:
 # Create the observable and indicator and indicates to the relation
 # Create the observable
 observable_ttp2 = opencti_api_client.stix_cyber_observable.create(
-    type="Registry-Key", observable_value="Disk security", createIndicator=True
+    simple_observable_key="Windows-Registry-Key.key",
+    simple_observable_value="HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run",
+    createIndicator=True,
 )
 # Get the indicator
 indicator_ttp2 = observable_ttp2["indicators"][0]
@@ -129,7 +134,7 @@ observable_refs.append(observable_ttp2["id"])
 
 # Data Encrypted
 ttp3 = opencti_api_client.attack_pattern.read(
-    filters=[{"key": "external_id", "values": ["T1022"]}]
+    filters=[{"key": "x_mitre_id", "values": ["T1022"]}]
 )
 ttp3_relation = opencti_api_client.stix_core_relationship.create(
     fromId=incident["id"],
@@ -149,12 +154,12 @@ object_refs.extend([ttp3["id"], ttp3_relation["id"]])
 
 # Add all element to the report
 for object_ref in object_refs:
-    opencti_api_client.report.add_opencti_stix_object_or_stix_relationship(
-        id=report["id"], report=report, entity_id=object_ref
+    opencti_api_client.report.add_stix_object_or_stix_relationship(
+        id=report["id"], stixObjectOrStixRelationshipId=object_ref
     )
 for observable_ref in observable_refs:
-    opencti_api_client.report.add_stix_observable(
-        id=report["id"], report=report, stix_observable_id=observable_ref
+    opencti_api_client.report.add_stix_object_or_stix_relationship(
+        id=report["id"], stixObjectOrStixRelationshipId=observable_ref
     )
     opencti_api_client.stix_core_relationship.create(
         fromId=observable_ref,

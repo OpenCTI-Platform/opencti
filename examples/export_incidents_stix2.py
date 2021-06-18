@@ -12,7 +12,7 @@ api_token = "YOUR_TOKEN"
 opencti_api_client = OpenCTIApiClient(api_url, api_token)
 
 # Create the bundle
-bundle = opencti_api_client.stix2.export_list("incident")
+bundle = opencti_api_client.stix2.export_list("Incident")
 json_bundle = json.dumps(bundle, indent=4)
 
 # Write the bundle

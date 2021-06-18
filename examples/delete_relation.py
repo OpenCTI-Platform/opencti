@@ -9,14 +9,18 @@ api_token = "YOUR_TOKEN"
 # OpenCTI initialization
 opencti_api_client = OpenCTIApiClient(api_url, api_token)
 
-# Get the intrusion set APT28
-intrusion_set = opencti_api_client.intrusion_set.read(
-    filters=[{"key": "name", "values": ["APT28"]}]
+intrusion_set = opencti_api_client.intrusion_set.create(name="EvilSET123")
+
+malware = opencti_api_client.malware.create(
+    name="TheWorm", description="A new evil worm."
 )
 
-# Get the malware DealersChoice
-malware = opencti_api_client.intrusion_set.read(
-    filters=[{"key": "name", "values": ["DealersChoice"]}]
+opencti_api_client.stix_core_relationship.create(
+    fromId=intrusion_set["id"],
+    fromTypes=["Intrusion-Set"],
+    toId=malware["id"],
+    toTypes=["Malware"],
+    relationship_type="uses",
 )
 
 # Get the relations between APT28 and DealersChoice

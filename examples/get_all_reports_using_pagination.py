@@ -21,7 +21,8 @@ final_reports = []
 data = {"pagination": {"hasNextPage": True, "endCursor": None}}
 while data["pagination"]["hasNextPage"]:
     after = data["pagination"]["endCursor"]
-    print("Listing reports after " + after)
+    if after:
+        print("Listing reports after " + after)
     data = opencti_api_client.report.list(
         first=50,
         after=after,

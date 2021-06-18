@@ -19,7 +19,7 @@ observable = opencti_api_client.stix_cyber_observable.create(
             "SHA-1": "486e7e66c3a098c1c8f42e26c78f259d6b3108a6",
             "SHA-256": "42c5e1fe01e689e550ba700b3c5dd4a04a84798c1868ba53c02abcbe21491515",
         },
-        "x_opencti_score": "90",
+        #        "x_opencti_score": "90",
     }
 )
 
