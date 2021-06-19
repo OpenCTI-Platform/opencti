@@ -82,7 +82,7 @@ const ruleApplyHandler = async (events) => {
       if (type === EVENT_TYPE_DELETE) {
         const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: [data.x_opencti_id], operator: 'wildcard' }];
         // eslint-disable-next-line no-use-before-define
-        const opts = { filters, callback: handleRuleDeleteElements };
+        const opts = { filters, callback: handleRuleClean };
         await elList(SYSTEM_USER, READ_DATA_INDICES, opts);
       }
       // In case of update apply the event on every rules
@@ -107,14 +107,14 @@ const ruleApplyHandler = async (events) => {
   }
 };
 
-export const handleRuleDeleteElements = async (depElements) => {
-  const activatedRules = await getActivatedRules();
+export const handleRuleClean = async (depElements) => {
+  const rules = await getRules();
   for (let i = 0; i < depElements.length; i += 1) {
     const depElement = depElements[i];
     const elementRules = Object.keys(depElement)
       .filter((k) => k.startsWith(RULE_PREFIX))
       .map((k) => k.substr(RULE_PREFIX.length));
-    const rulesToClean = activatedRules.filter((d) => elementRules.includes(d.name));
+    const rulesToClean = rules.filter((d) => elementRules.includes(d.id));
     for (let ruleIndex = 0; ruleIndex < rulesToClean.length; ruleIndex += 1) {
       const rule = rulesToClean[ruleIndex];
       const derivedEvents = await rule.clean(depElement);
@@ -123,7 +123,7 @@ export const handleRuleDeleteElements = async (depElements) => {
   }
 };
 
-export const elementApplyRule = async (user, element) => {
+export const handleRuleApply = async (user, element) => {
   // Execute rules over one element, act as element creation
   const event = await buildScanEvent(user, element, stixLoadById);
   await ruleApplyHandler([event]);

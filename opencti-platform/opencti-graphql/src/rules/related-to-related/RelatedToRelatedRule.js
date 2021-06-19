@@ -7,7 +7,7 @@ const RelatedToRelatedRule = buildRelationToRelationRule(
   def.id,
   def.name,
   def.description,
-  RELATION_RELATED_TO,
+  { leftType: RELATION_RELATED_TO, rightType: RELATION_RELATED_TO, creationType: RELATION_RELATED_TO },
   def.scopeFields,
   def.scopeFilters
 );

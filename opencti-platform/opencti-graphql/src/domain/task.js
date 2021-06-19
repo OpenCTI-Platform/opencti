@@ -22,6 +22,7 @@ export const ACTION_TYPE_REMOVE = 'REMOVE';
 export const ACTION_TYPE_REPLACE = 'REPLACE';
 export const ACTION_TYPE_MERGE = 'MERGE';
 export const ACTION_TYPE_RULE_APPLY = 'RULE_APPLY';
+export const ACTION_TYPE_RULE_CLEAR = 'RULE_CLEAR';
 
 const createDefaultTask = (user, input, taskType, taskExpectedNumber) => {
   const taskId = generateInternalId();
