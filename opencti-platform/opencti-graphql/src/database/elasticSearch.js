@@ -663,6 +663,24 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
   return hits;
 };
 
+const ruleElementEnricher = (element) => {
+  const data = { ...element };
+  // Analyse rules to add extra elements
+  const ruleKeys = Object.keys(data).filter((e) => e.startsWith(RULE_PREFIX));
+  const ruleInferences = R.flatten(
+    ruleKeys.map((r) => {
+      const rule = r.substr(RULE_PREFIX.length);
+      const { inferred, explanation } = data[r];
+      const attributes = R.toPairs(inferred).map((s) => ({ field: R.head(s), value: String(R.last(s)) }));
+      return { rule, explanation, attributes };
+    })
+  );
+  if (ruleInferences.length > 0) {
+    data.x_opencti_inferences = ruleInferences;
+  }
+  return data;
+};
+
 export const elFindByIds = async (user, ids, opts = {}) => {
   const { indices = READ_DATA_INDICES, toMap = false, type = null } = opts;
   const { minSource = false } = opts;
@@ -731,25 +749,13 @@ export const elFindByIds = async (user, ids, opts = {}) => {
     for (let j = 0; j < data.body.hits.hits.length; j += 1) {
       const hit = data.body.hits.hits[j];
       const elementWithIndex = R.assoc('_index', hit._index, hit._source);
-      // Analyse rules to add extra elements
-      const ruleKeys = Object.keys(elementWithIndex).filter((e) => e.startsWith(RULE_PREFIX));
-      const ruleInferences = R.flatten(
-        ruleKeys.map((r) => {
-          const rule = r.substr(RULE_PREFIX.length);
-          const { inferred, explanation } = elementWithIndex[r];
-          const attributes = R.toPairs(inferred).map((s) => ({ field: R.head(s), value: String(R.last(s)) }));
-          return { rule, explanation, attributes };
-        })
-      );
-      if (ruleInferences.length > 0) {
-        elementWithIndex.x_opencti_inferences = ruleInferences;
-      }
+      const element = ruleElementEnricher(elementWithIndex);
       // And a specific processing for a relation
-      if (elementWithIndex.base_type === BASE_TYPE_RELATION) {
-        const relation = elReconstructRelation(elementWithIndex);
+      if (element.base_type === BASE_TYPE_RELATION) {
+        const relation = elReconstructRelation(element);
         hits[relation.internal_id] = relation;
       } else {
-        hits[elementWithIndex.internal_id] = elementWithIndex;
+        hits[element.internal_id] = element;
       }
     }
   }
@@ -1259,13 +1265,14 @@ export const elPaginate = async (user, indexName, options = {}) => {
     .then((data) => {
       const dataWithIds = R.map((n) => {
         const loadedElement = { ...n._source, _index: n._index, id: n._source.internal_id, sort: n.sort };
-        if (loadedElement.base_type === BASE_TYPE_RELATION) {
-          return elReconstructRelation(loadedElement);
+        const element = ruleElementEnricher(loadedElement);
+        if (element.base_type === BASE_TYPE_RELATION) {
+          return elReconstructRelation(element);
         }
-        if (loadedElement.event_data) {
-          return { ...loadedElement, event_data: JSON.stringify(loadedElement.event_data) };
+        if (element.event_data) {
+          return { ...element, event_data: JSON.stringify(element.event_data) };
         }
-        return loadedElement;
+        return element;
       }, data.body.hits.hits);
       if (connectionFormat) {
         const nodeHits = R.map((n) => ({ node: n, sort: n.sort }), dataWithIds);
