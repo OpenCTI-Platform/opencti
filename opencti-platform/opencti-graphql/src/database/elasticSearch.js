@@ -464,7 +464,7 @@ export const elCount = (user, indexName, options = {}) => {
             path: 'connections',
             query: {
               bool: {
-                must: [{ match_phrase: { [`connections.internal_id`]: fromId } }],
+                must: [{ match_phrase: { [`connections.internal_id.keyword`]: fromId } }],
               },
             },
           },
@@ -477,7 +477,7 @@ export const elCount = (user, indexName, options = {}) => {
     const filters = [];
     for (let index = 0; index < toTypes.length; index += 1) {
       filters.push({
-        match_phrase: { 'connections.types': toTypes[index] },
+        match_phrase: { 'connections.types.keyword': toTypes[index] },
       });
     }
     must = R.append(
@@ -614,7 +614,7 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
       path: 'connections',
       query: {
         bool: {
-          must: [{ match_phrase: { 'connections.internal_id': fromId } }],
+          must: [{ match_phrase: { 'connections.internal_id.keyword': fromId } }],
         },
       },
     },
@@ -624,7 +624,7 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
       path: 'connections',
       query: {
         bool: {
-          must: [{ match_phrase: { 'connections.internal_id': toId } }],
+          must: [{ match_phrase: { 'connections.internal_id.keyword': toId } }],
         },
       },
     },
@@ -979,7 +979,7 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
   const typesFilters = [];
   for (let index = 0; index < toTypes.length; index += 1) {
     typesFilters.push({
-      match_phrase: { 'connections.types': toTypes[index] },
+      match_phrase: { 'connections.types.keyword': toTypes[index] },
     });
   }
   if (typesFilters.length > 0) {
@@ -1062,7 +1062,10 @@ export const elPaginate = async (user, indexName, options = {}) => {
   if (types !== null && types.length > 0) {
     const should = R.flatten(
       types.map((typeValue) => {
-        return [{ match_phrase: { entity_type: typeValue } }, { match_phrase: { parent_types: typeValue } }];
+        return [
+          { match_phrase: { 'entity_type.keyword': typeValue } },
+          { match_phrase: { 'parent_types.keyword': typeValue } },
+        ];
       })
     );
     must = R.append({ bool: { should, minimum_should_match: 1 } }, must);
@@ -1741,7 +1744,7 @@ export const elUpdateAttributeValue = (key, previousValue, value) => {
         } 
         index++; 
        }`;
-  const query = { match_phrase: { [key]: previousValue } };
+  const query = { match_phrase: { [`${key}.keyword`]: previousValue } };
   return el
     .updateByQuery({
       index: READ_DATA_INDICES,
@@ -1814,7 +1817,7 @@ export const elUpdateConnectionsOfElement = (documentId, documentBody) => {
             path: 'connections',
             query: {
               bool: {
-                must: [{ match_phrase: { [`connections.internal_id`]: documentId } }],
+                must: [{ match_phrase: { [`connections.internal_id.keyword`]: documentId } }],
               },
             },
           },
