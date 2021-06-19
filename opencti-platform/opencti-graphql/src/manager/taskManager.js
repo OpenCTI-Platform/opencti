@@ -41,7 +41,8 @@ import { elPaginate, elUpdate } from '../database/elasticSearch';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_BASIC_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
-import { getRule, handleRuleApply, handleRuleClean } from './ruleManager';
+import { handleRuleApply, handleRuleClean } from './ruleManager';
+import { getRule } from '../domain/rule';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -69,7 +70,7 @@ const computeRuleTaskElements = async (user, task) => {
   const { task_position, rule, enable } = task;
   const processingElements = [];
   if (enable) {
-    const ruleDefinition = getRule(rule);
+    const ruleDefinition = await getRule(rule);
     const { scopeFilters } = ruleDefinition;
     const options = {
       first: MAX_TASK_ELEMENTS,

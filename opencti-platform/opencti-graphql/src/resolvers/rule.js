@@ -1,4 +1,5 @@
-import { getRules, getRule, setRuleActivation } from '../manager/ruleManager';
+import { setRuleActivation } from '../manager/ruleManager';
+import { getRule, getRules } from '../domain/rule';
 
 const ruleResolvers = {
   Query: {

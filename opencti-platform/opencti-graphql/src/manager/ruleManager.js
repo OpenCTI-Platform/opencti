@@ -1,39 +1,19 @@
 /* eslint-disable camelcase */
-import * as R from 'ramda';
 import { buildDeleteEvent, buildScanEvent, createStreamProcessor, lockResource } from '../database/redis';
 import conf, { logApp } from '../config/conf';
-import { createEntity, listAllRelations, listEntities, stixLoadById } from '../database/middleware';
+import { createEntity, listAllRelations, stixLoadById } from '../database/middleware';
 import { SYSTEM_USER } from '../utils/access';
-import { isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
+import { isEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/rabbitmq';
 import { elList } from '../database/elasticSearch';
 import { STIX_RELATIONSHIPS } from '../schema/stixRelationship';
 import { RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE } from '../schema/internalObject';
 import { UnsupportedError } from '../config/errors';
-import declaredRules from '../rules/RuleDeclarations';
-import { findAll, deleteTask, createRuleTask } from '../domain/task';
+import { createRuleTask, deleteTask, findAll } from '../domain/task';
+import { getActivatedRules, getRule, getRules } from '../domain/rule';
 
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
-
-export const getRules = async () => {
-  const args = { connectionFormat: false, filters: [{ key: 'active', values: [true] }] };
-  const rules = await listEntities(SYSTEM_USER, [ENTITY_TYPE_RULE], args);
-  return declaredRules.map((d) => {
-    const esRule = R.find((e) => e.internal_id === d.id)(rules);
-    const isActivated = isNotEmptyField(esRule) && esRule.active;
-    return { ...d, activated: isActivated };
-  });
-};
-const getActivatedRules = async () => {
-  const rules = await getRules();
-  return rules.filter((r) => r.activated);
-};
-
-export const getRule = async (id) => {
-  const rules = await getRules();
-  return R.find((e) => e.id === id)(rules);
-};
 
 export const setRuleActivation = async (user, ruleId, active) => {
   const resolvedRule = await getRule(ruleId);

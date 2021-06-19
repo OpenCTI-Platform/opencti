@@ -2,13 +2,15 @@ import * as R from 'ramda';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { now } from '../utils/format';
 import { elIndex, elPaginate } from '../database/elasticSearch';
-import { INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES } from '../database/utils';
+import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_STIX_INDICES } from '../database/utils';
 import { ENTITY_TYPE_TASK } from '../schema/internalObject';
 import { deleteElementById, listEntities, loadById, patchAttribute } from '../database/middleware';
 import { GlobalFilters } from '../utils/filtering';
 import { ForbiddenAccess } from '../config/errors';
 import { KNOWLEDGE_DELETE } from '../initialization';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
+import { RULE_PREFIX } from '../schema/general';
+import { getRule } from './rule';
 
 export const MAX_TASK_ELEMENTS = 500;
 
@@ -99,8 +101,11 @@ const checkActionValidity = (user, actions) => {
 
 export const createRuleTask = async (user, input) => {
   const { rule, enable } = input;
-  const countExpected = 0;
-  // TODO resolve the rule, get the filters to compute the count
+  const ruleDefinition = await getRule(rule);
+  const { scopeFilters } = ruleDefinition;
+  const opts = enable ? scopeFilters : { filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }] };
+  const queryData = await elPaginate(user, READ_DATA_INDICES, { ...opts, first: 1 });
+  const countExpected = queryData.pageInfo.globalCount;
   const task = createDefaultTask(user, input, TASK_TYPE_RULE, countExpected);
   const ruleTask = { ...task, rule, enable };
   await elIndex(INDEX_INTERNAL_OBJECTS, ruleTask);
