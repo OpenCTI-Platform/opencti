@@ -4,7 +4,6 @@ import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Slide from '@material-ui/core/Slide';
-import AccessesMenu from './AccessesMenu';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import RulesList, { rulesListQuery } from './RulesList';
@@ -20,10 +19,6 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const styles = () => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
   parameters: {
     float: 'left',
     marginTop: -10,
@@ -62,7 +57,6 @@ class Rules extends Component {
     const { classes } = this.props;
     return (
       <div className={classes.container}>
-        <AccessesMenu />
         <div className={classes.parameters}>
           <div style={{ float: 'left', marginRight: 20 }}>
             <SearchInput

@@ -5,11 +5,9 @@ import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
 import { interval } from 'rxjs';
-import { Sync } from '@material-ui/icons';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import CardActions from '@material-ui/core/CardActions';
-import IconButton from '@material-ui/core/IconButton';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
@@ -21,9 +19,10 @@ import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
+import LinearProgress from '@material-ui/core/LinearProgress';
 import { FIVE_SECONDS } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
-import { commitMutation } from '../../../relay/environment';
+import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -35,11 +34,28 @@ Transition.displayName = 'TransitionSlide';
 const styles = (theme) => ({
   card: {
     width: '100%',
-    height: '100%',
+    height: 180,
     borderRadius: 6,
+    position: 'relative',
   },
   avatar: {
     backgroundColor: theme.palette.primary.main,
+  },
+  cardContent: {
+    paddingTop: 0,
+    height: 60,
+    overflow: 'hidden',
+  },
+  cardActions: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    padding: '0 10px 20px 10px',
+  },
+  progress: {
+    width: '100%',
+    borderRadius: 5,
+    height: 10,
   },
 });
 
@@ -60,7 +76,6 @@ class RulesListComponent extends Component {
     this.state = {
       displayDisable: false,
       displayEnable: false,
-      displayRescan: false,
       selectedRule: null,
       processing: false,
     };
@@ -92,14 +107,6 @@ class RulesListComponent extends Component {
     this.setState({ displayDisable: false, selectedRule: null });
   }
 
-  handleOpenRescan(rule) {
-    this.setState({ displayRescan: true, selectedRule: rule });
-  }
-
-  handleCloseRescan() {
-    this.setState({ displayRescan: false, selectedRule: null });
-  }
-
   submitEnableRule() {
     this.setState({ processing: true });
     commitMutation({
@@ -110,7 +117,30 @@ class RulesListComponent extends Component {
       },
       onCompleted: () => {
         this.setState({ processing: false });
+        MESSAGING$.notifySuccess(
+          this.props.t(
+            'The rule has been enabled, rescan of platform data launched...',
+          ),
+        );
         this.handleCloseEnable();
+      },
+    });
+  }
+
+  submitDisableRule() {
+    this.setState({ processing: true });
+    commitMutation({
+      mutation: rulesListRuleActivationMutation,
+      variables: {
+        id: this.state.selectedRule,
+        enable: false,
+      },
+      onCompleted: () => {
+        this.setState({ processing: false });
+        MESSAGING$.notifySuccess(
+          this.props.t('The rule has been disabled, clean-up launched...'),
+        );
+        this.handleCloseDisable();
       },
     });
   }
@@ -130,45 +160,92 @@ class RulesListComponent extends Component {
       R.filter(filterByKeyword),
       sortByNameCaseInsensitive,
     )(data);
+    const tasks = R.pathOr([], ['tasks', 'edges'], data);
     return (
       <div>
         <Grid container={true} spacing={3}>
-          {rules.map((rule) => (
-            <Grid key={rule.id} item={true} xs={4}>
-              <Card
-                classes={{ root: classes.card }}
-                raised={false}
-                variant="outlined"
-              >
-                <CardHeader
-                  avatar={
-                    <Avatar aria-label="recipe" className={classes.avatar}>
-                      {rule.name.charAt(0)}
-                    </Avatar>
-                  }
-                  action={
-                    <Switch
-                      checked={rule.activated}
-                      color="primary"
-                      onChange={
-                        rule.activated
-                          ? this.handleOpenDisable.bind(this, rule.id)
-                          : this.handleOpenEnable.bind(this, rule.id)
-                      }
-                    />
-                  }
-                  title={rule.name}
-                  subheader={rule.name}
-                />
-                <CardContent>{rule.description}</CardContent>
-                <CardActions disableSpacing>
-                  <IconButton>
-                    <Sync />
-                  </IconButton>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
+          {rules.map((rule) => {
+            const task = R.head(
+              R.map(
+                (n) => n.node,
+                R.filter((n) => n.node.rule === rule.id, tasks),
+              ),
+            );
+            return (
+              <Grid key={rule.id} item={true} xs={4}>
+                <Card
+                  classes={{ root: classes.card }}
+                  raised={false}
+                  variant="outlined"
+                >
+                  <CardHeader
+                    avatar={
+                      <Avatar aria-label="recipe" className={classes.avatar}>
+                        {rule.name.charAt(0)}
+                      </Avatar>
+                    }
+                    action={
+                      <Switch
+                        checked={rule.activated}
+                        color="primary"
+                        onChange={
+                          rule.activated
+                            ? this.handleOpenDisable.bind(this, rule.id)
+                            : this.handleOpenEnable.bind(this, rule.id)
+                        }
+                      />
+                    }
+                    title={rule.name}
+                    subheader={rule.name}
+                  />
+                  <CardContent classes={{ root: classes.cardContent }}>
+                    {rule.description}
+                  </CardContent>
+                  <CardActions classes={{ root: classes.cardActions }}>
+                    {task && (
+                      <div
+                        style={{
+                          width: '100%',
+                          textAlign: 'center',
+                          fontSize: 9,
+                          fontFamily: 'Consolas, monaco, monospace',
+                        }}
+                      >
+                        {task.enable
+                          ? t(
+                            task.completed
+                              ? 'This rule has been applied on the existing data'
+                              : 'Applying this rule on the existing data',
+                          )
+                          : t(
+                            task.completed
+                              ? 'Rule has been cleaned up on the existing data'
+                              : 'Cleaning up this rule on the existing data',
+                          )}
+                        <LinearProgress
+                          classes={{ root: classes.progress }}
+                          disabled={!task || (task && task.completed)}
+                          variant="determinate"
+                          value={
+                            // eslint-disable-next-line no-nested-ternary
+                            task.task_expected_number === 0
+                              ? 0
+                              : task.completed
+                                ? 100
+                                : Math.round(
+                                  (task.task_processed_number
+                                    / task.task_expected_number)
+                                    * 100,
+                                )
+                          }
+                        />
+                      </div>
+                    )}
+                  </CardActions>
+                </Card>
+              </Grid>
+            );
+          })}
         </Grid>
         <Dialog
           open={this.state.displayEnable}
@@ -194,6 +271,33 @@ class RulesListComponent extends Component {
               disabled={this.state.processing}
             >
               {t('Enable')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          open={this.state.displayDisable}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseDisable.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to disable this rule?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseDisable.bind(this)}
+              disabled={this.state.processing}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              onClick={this.submitDisableRule.bind(this)}
+              color="primary"
+              disabled={this.state.processing}
+            >
+              {t('Disable')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -227,6 +331,25 @@ const RulesList = createRefetchContainer(
           name
           description
           activated
+        }
+        tasks(
+          orderBy: created_at
+          orderMode: desc
+          filters: { key: type, values: ["RULE"] }
+        ) {
+          edges {
+            node {
+              id
+              created_at
+              task_expected_number
+              task_processed_number
+              completed
+              ... on RuleTask {
+                rule
+                enable
+              }
+            }
+          }
         }
       }
     `,

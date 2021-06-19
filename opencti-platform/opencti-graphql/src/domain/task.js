@@ -21,7 +21,7 @@ export const ACTION_TYPE_ADD = 'ADD';
 export const ACTION_TYPE_REMOVE = 'REMOVE';
 export const ACTION_TYPE_REPLACE = 'REPLACE';
 export const ACTION_TYPE_MERGE = 'MERGE';
-export const ACTION_TYPE_RESCAN = 'RESCAN';
+export const ACTION_TYPE_RULE_APPLY = 'RULE_APPLY';
 
 const createDefaultTask = (user, input, taskType, taskExpectedNumber) => {
   const taskId = generateInternalId();
@@ -97,11 +97,11 @@ const checkActionValidity = (user, actions) => {
 };
 
 export const createRuleTask = async (user, input) => {
-  const { rule } = input;
+  const { rule, enable } = input;
   const countExpected = 0;
   // TODO resolve the rule, get the filters to compute the count
   const task = createDefaultTask(user, input, TASK_TYPE_RULE, countExpected);
-  const ruleTask = { ...task, rule };
+  const ruleTask = { ...task, rule, enable };
   await elIndex(INDEX_INTERNAL_OBJECTS, ruleTask);
   return ruleTask;
 };

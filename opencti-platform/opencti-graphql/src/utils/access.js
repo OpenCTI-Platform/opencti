@@ -19,6 +19,7 @@ export const filterElementsAccordingToUser = (user, elements) => {
 
 export const SYSTEM_USER = {
   id: OPENCTI_SYSTEM_UUID,
+  internal_id: OPENCTI_SYSTEM_UUID,
   name: 'SYSTEM',
   user_email: 'SYSTEM',
   origin: {},

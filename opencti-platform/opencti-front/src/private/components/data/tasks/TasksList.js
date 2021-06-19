@@ -275,35 +275,42 @@ class TasksListComponent extends Component {
                       <Typography variant="h3" gutterBottom={true}>
                         {t('Actions')}
                       </Typography>
-                      {R.map(
-                        (action) => (
-                          <div key={task.actions.indexOf(action)}>
-                            <Chip
-                              classes={{ root: classes.operator }}
-                              label={action.type}
-                            />
-                            {action.context && (
+                      {task.actions
+                        && R.map(
+                          (action) => (
+                            <div key={task.actions.indexOf(action)}>
                               <Chip
-                                classes={{ root: classes.filter }}
-                                label={
-                                  <div>
-                                    {action.context.field && (
-                                      <span>
-                                        <strong>{action.context.field}</strong>:{' '}
-                                      </span>
-                                    )}
-                                    {truncate(
-                                      R.join(', ', action.context.values || []),
-                                      80,
-                                    )}
-                                  </div>
-                                }
+                                classes={{ root: classes.operator }}
+                                label={action.type}
                               />
-                            )}
-                          </div>
-                        ),
-                        task.actions,
-                      )}
+                              {action.context && (
+                                <Chip
+                                  classes={{ root: classes.filter }}
+                                  label={
+                                    <div>
+                                      {action.context.field && (
+                                        <span>
+                                          <strong>
+                                            {action.context.field}
+                                          </strong>
+                                          :{' '}
+                                        </span>
+                                      )}
+                                      {truncate(
+                                        R.join(
+                                          ', ',
+                                          action.context.values || [],
+                                        ),
+                                        80,
+                                      )}
+                                    </div>
+                                  }
+                                />
+                              )}
+                            </div>
+                          ),
+                          task.actions,
+                        )}
                     </Grid>
                   </Grid>
                 </Grid>
@@ -313,7 +320,7 @@ class TasksListComponent extends Component {
                       <Typography variant="h3" gutterBottom={true}>
                         {t('Initiator')}
                       </Typography>
-                      {task.initiator.name}
+                      {task.initiator?.name}
                     </Grid>
                     <Grid item={true} xs={3}>
                       <Typography variant="h3" gutterBottom={true}>

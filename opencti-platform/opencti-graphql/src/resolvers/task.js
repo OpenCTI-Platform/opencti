@@ -1,4 +1,4 @@
-import { deleteTask, createListTask, createQueryTask, findAll, findById, createRuleTask } from '../domain/task';
+import { deleteTask, createListTask, createQueryTask, findAll, findById } from '../domain/task';
 import { findById as findUser } from '../domain/user';
 
 const taskResolvers = {
@@ -9,7 +9,6 @@ const taskResolvers = {
   Mutation: {
     listTaskAdd: (_, { input }, { user }) => createListTask(user, input),
     queryTaskAdd: (_, { input }, { user }) => createQueryTask(user, input),
-    ruleTaskAdd: (_, { input }, { user }) => createRuleTask(user, input),
     deleteTask: (_, { id }, { user }) => deleteTask(user, id),
   },
   Task: {

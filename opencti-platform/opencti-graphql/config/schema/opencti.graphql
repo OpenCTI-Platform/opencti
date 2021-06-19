@@ -536,6 +536,7 @@ enum TasksOrdering {
   last_execution_date
 }
 enum TasksFilter {
+  type
   initiator
   completed
 }
@@ -581,6 +582,7 @@ type RuleTask implements Task {
   errors: [TaskError]
   # RuleTask
   rule: ID!
+  enable: Boolean
 }
 
 type ListTask implements Task {
@@ -639,9 +641,6 @@ input ListTaskAddInput {
 input QueryTaskAddInput {
   filters: String!
   actions: [TaskActionInput]!
-}
-input RuleTaskAddInput {
-  rule: ID!
 }
 
 ###### ENTITIES
@@ -9022,7 +9021,6 @@ type Mutation {
   deleteTask(id: ID!): ID! @auth(for: [KNOWLEDGE_KNUPDATE])
   listTaskAdd(input: ListTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
   queryTaskAdd(input: QueryTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
-  ruleTaskAdd(input: RuleTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ### RULE
   ruleSetActivation(id: ID!, enable: Boolean!): Rule!

@@ -12,6 +12,7 @@ import { RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE } from '../schema/internalObject';
 import { UnsupportedError } from '../config/errors';
 import declaredRules from '../rules/RuleDeclarations';
+import { findAll, deleteTask, createRuleTask } from '../domain/task';
 
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
 
@@ -34,12 +35,19 @@ export const getRule = async (id) => {
   return R.find((e) => e.id === id)(rules);
 };
 
-export const setRuleActivation = async (ruleId, active) => {
+export const setRuleActivation = async (user, ruleId, active) => {
   const resolvedRule = await getRule(ruleId);
   if (isEmptyField(resolvedRule)) {
     throw UnsupportedError(`Cant ${active ? 'enable' : 'disable'} undefined rule ${ruleId}`);
   }
-  await createEntity(SYSTEM_USER, { internal_id: ruleId, active, update: true }, ENTITY_TYPE_RULE);
+  await createEntity(user, { internal_id: ruleId, active, update: true }, ENTITY_TYPE_RULE);
+  const tasksFilters = [
+    { key: 'type', values: ['RULE'] },
+    { key: 'rule', values: [ruleId] },
+  ];
+  const tasks = await findAll(user, { filters: tasksFilters, connectionFormat: false });
+  await Promise.all(tasks.map((t) => deleteTask(user, t.id)));
+  await createRuleTask(user, { rule: ruleId, enable: active });
   return getRule(ruleId);
 };
 
@@ -115,8 +123,7 @@ export const handleRuleDeleteElements = async (depElements) => {
   }
 };
 
-export const reapplyRules = async (user, element) => {
-  await handleRuleDeleteElements([element]);
+export const elementApplyRule = async (user, element) => {
   // Execute rules over one element, act as element creation
   const event = await buildScanEvent(user, element, stixLoadById);
   await ruleApplyHandler([event]);

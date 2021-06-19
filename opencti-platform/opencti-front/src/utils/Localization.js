@@ -125,9 +125,25 @@ const i18n = {
         'Souhaitez-vous supprimer ce stream live ?',
       'Do you want to create a STIX Indcator from this observable?':
         'Souhaitez-vous créer un indicateur STIX depuis cet observable ?',
-      'Do you want to enable this rule?': 'Souhaitez-vous activer cette règle ?',
+      'Do you want to enable this rule?':
+        'Souhaitez-vous activer cette règle ?',
+      'Do you want to disable this rule?':
+        'Souhaitez-vous désactiver cette règle ?',
+      'Applying this rule on the existing data':
+        "En cours d'application de cette règle sur les données de la plateforme",
+      'This rule has been applied on the existing data':
+        'Cette règle a été appliquée sur les données de la plateforme',
+      'Cleaning up this rule on the existing data':
+        'En cours de purge de cette règle des données de la plateforme',
+      'Rule has been cleaned up on the existing data':
+        'Cette règle a été purgée des données de la plateforme',
       'Confirmation required': 'Confirmation requise',
+      'The rule has been enabled, rescan of platform data launched...':
+        'La règle a été activée, re-scan des données de la plateforme lancé....',
+      'The rule has been disabled, clean-up launched...':
+        'La règle a été déséactivée, purge lancée...',
       'Rules engine': 'Moteur de règles',
+      'Launch rescan': 'Lancer le re-scan',
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
       Enable: 'Activer',

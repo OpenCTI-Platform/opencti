@@ -8,7 +8,7 @@ import {
   ACTION_TYPE_MERGE,
   ACTION_TYPE_REMOVE,
   ACTION_TYPE_REPLACE,
-  ACTION_TYPE_RESCAN,
+  ACTION_TYPE_RULE_APPLY,
   executeTaskQuery,
   findAll,
   MAX_TASK_ELEMENTS,
@@ -39,7 +39,7 @@ import { elPaginate, elUpdate } from '../database/elasticSearch';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_BASIC_RELATIONSHIP } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
-import { getRule, reapplyRules } from './ruleManager';
+import { getRule, elementApplyRule } from './ruleManager';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -64,23 +64,31 @@ const findTaskToExecute = async () => {
   return R.head(tasks);
 };
 const computeRuleTaskElements = async (user, task) => {
-  const { task_position, rule } = task;
+  const { task_position, rule, enable } = task;
   const processingElements = [];
-  const ruleDefinition = getRule(rule);
-  const { scopeFilters } = ruleDefinition;
-  const options = {
-    first: MAX_TASK_ELEMENTS,
-    orderMode: 'asc',
-    orderBy: 'internal_id',
-    after: task_position,
-    ...scopeFilters,
-  };
-  const data = await elPaginate(user, READ_STIX_INDICES, options);
-  const elements = data.edges;
-  // Apply the actions for each element
-  for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
-    const element = elements[elementIndex];
-    processingElements.push({ element: element.node, actions: [{ type: ACTION_TYPE_RESCAN }], next: element.cursor });
+  if (enable) {
+    const ruleDefinition = getRule(rule);
+    const { scopeFilters } = ruleDefinition;
+    const options = {
+      first: MAX_TASK_ELEMENTS,
+      orderMode: 'asc',
+      orderBy: 'internal_id',
+      after: task_position,
+      ...scopeFilters,
+    };
+    const data = await elPaginate(user, READ_STIX_INDICES, options);
+    const elements = data.edges;
+    // Apply the actions for each element
+    for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
+      const element = elements[elementIndex];
+      processingElements.push({
+        element: element.node,
+        actions: [{ type: ACTION_TYPE_RULE_APPLY }],
+        next: element.cursor,
+      });
+    }
+  } else {
+    // TODO
   }
   return processingElements;
 };
@@ -183,8 +191,8 @@ const executeMerge = async (user, context, element) => {
   await mergeEntities(user, element.internal_id, values);
 };
 
-const executeRuleRescan = async (user, element) => {
-  await reapplyRules(user, element);
+const executeRuleApply = async (user, element) => {
+  await elementApplyRule(user, element);
 };
 
 const executeProcessing = async (user, processingElements) => {
@@ -210,8 +218,8 @@ const executeProcessing = async (user, processingElements) => {
         if (type === ACTION_TYPE_MERGE) {
           await executeMerge(user, context, element);
         }
-        if (type === ACTION_TYPE_RESCAN) {
-          await executeRuleRescan(user, element);
+        if (type === ACTION_TYPE_RULE_APPLY) {
+          await executeRuleApply(user, element);
         }
       }
     } catch (err) {

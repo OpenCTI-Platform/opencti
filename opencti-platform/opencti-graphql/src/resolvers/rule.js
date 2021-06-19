@@ -6,7 +6,7 @@ const ruleResolvers = {
     rules: () => getRules(),
   },
   Mutation: {
-    ruleSetActivation: (_, { id, enable }) => setRuleActivation(id, enable),
+    ruleSetActivation: (_, { id, enable }, { user }) => setRuleActivation(user, id, enable),
   },
 };
 
