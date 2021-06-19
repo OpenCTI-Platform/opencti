@@ -7,6 +7,7 @@ import Groups from './Groups';
 import Roles from './Roles';
 import Sessions from './Sessions';
 import MarkingDefinitions from './MarkingDefinitions';
+import Rules from './Rules';
 import KillChainPhases from './KillChainPhases';
 import Attributes from './Attributes';
 import Labels from './Labels';
@@ -49,11 +50,7 @@ const Root = () => (
       path="/dashboard/settings/marking"
       component={MarkingDefinitions}
     />
-    <BoundaryRoute
-      exact
-      path="/dashboard/settings/killchains"
-      component={KillChainPhases}
-    />
+    <BoundaryRoute exact path="/dashboard/settings/rules" component={Rules} />
     <BoundaryRoute
       exact
       path="/dashboard/settings/attributes"
@@ -63,6 +60,11 @@ const Root = () => (
       exact
       path="/dashboard/settings/attributes/labels"
       component={Labels}
+    />
+    <BoundaryRoute
+      exact
+      path="/dashboard/settings/attributes/kill_chain_phases"
+      component={KillChainPhases}
     />
     <BoundaryRoute
       exact

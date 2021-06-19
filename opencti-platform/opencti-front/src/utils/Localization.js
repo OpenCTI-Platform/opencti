@@ -125,9 +125,14 @@ const i18n = {
         'Souhaitez-vous supprimer ce stream live ?',
       'Do you want to create a STIX Indcator from this observable?':
         'Souhaitez-vous créer un indicateur STIX depuis cet observable ?',
+      'Do you want to enable this rule?': 'Souhaitez-vous activer cette règle ?',
       'Confirmation required': 'Confirmation requise',
+      'Rules engine': 'Moteur de règles',
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
+      Enable: 'Activer',
+      Disable: 'Désactiver',
+      Rescan: 'Rescanner',
       'Last notes': 'Dernières notes',
       'Latest reports written by this entity':
         'Derniers rapports écrits par cette entité',

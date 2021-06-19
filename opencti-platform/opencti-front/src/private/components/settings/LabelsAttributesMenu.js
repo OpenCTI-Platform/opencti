@@ -44,6 +44,17 @@ class LabelsAttributesMenu extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
+            to={'/dashboard/settings/attributes/kill_chain_phases'}
+            selected={
+              location.pathname
+              === '/dashboard/settings/attributes/kill_chain_phases'
+            }
+            dense={false}
+          >
+            <ListItemText primary={t('Kill chain phases')} />
+          </MenuItem>
+          <MenuItem
+            component={Link}
             to={'/dashboard/settings/attributes/report_types'}
             selected={
               location.pathname

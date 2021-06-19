@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "7.13.0",
-    "@graphql-tools/schema": "^7.1.5",
+    "@graphql-tools/schema": "7.1.5",
     "@graphql-tools/utils": "7.10.0",
     "amqplib": "0.8.0",
     "apollo-errors": "1.9.0",
@@ -92,7 +92,7 @@
     "sanitize-filename": "1.6.3",
     "semver": "^7.3.5",
     "set-interval-async": "2.0.3",
-    "source-map-support": "^0.5.19",
+    "source-map-support": "0.5.19",
     "uuid": "8.3.2",
     "uuid-time": "1.0.0",
     "validator": "13.6.0",
@@ -130,6 +130,7 @@
     "webpack-node-externals": "3.0.0"
   },
   "resolutions": {
+    "fs-capacitor": "6.2.0",
     "extract-files": "10.0.0",
     "lodash": "4.17.21",
     "node-fetch": "2.6.1",
