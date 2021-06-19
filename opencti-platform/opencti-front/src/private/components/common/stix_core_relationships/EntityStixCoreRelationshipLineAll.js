@@ -152,6 +152,19 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
         start_time
         stop_time
         description
+        x_opencti_inferences {
+          rule {
+            id
+          }
+          explanation {
+            ... on StixObject {
+              id
+            }
+            ... on StixRelationship {
+              id
+            }
+          }
+        }
         from {
           ... on StixDomainObject {
             id

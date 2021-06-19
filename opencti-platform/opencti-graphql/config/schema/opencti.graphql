@@ -936,8 +936,8 @@ type InferenceAttribute {
   value: String!
 }
 type Inference {
-  rule: String!
-  explanation: [String]!
+  rule: Rule!
+  explanation: [StixObjectOrStixRelationship]!
   attributes: [InferenceAttribute]
 }
 
