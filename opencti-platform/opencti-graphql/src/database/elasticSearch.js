@@ -49,7 +49,6 @@ import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
 import { INTERNAL_RELATIONSHIPS } from '../schema/internalRelationship';
-import { getAttributesRulesFor } from '../rules/RuleUtils';
 
 const MIN_DATA_FIELDS = ['name', 'value', 'internal_id', 'standard_id', 'base_type', 'entity_type', 'connections'];
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
@@ -743,13 +742,15 @@ export const elFindByIds = async (user, ids, opts = {}) => {
           }))
         )
       );
-      const elementExtended = { ...elementWithIndex, x_opencti_inferences: ruleAttributesInferences };
+      if (ruleAttributesInferences.length > 0) {
+        elementWithIndex.x_opencti_inferences = ruleAttributesInferences;
+      }
       // And a specific processing for a relation
-      if (elementExtended.base_type === BASE_TYPE_RELATION) {
-        const relation = elReconstructRelation(elementExtended);
+      if (elementWithIndex.base_type === BASE_TYPE_RELATION) {
+        const relation = elReconstructRelation(elementWithIndex);
         hits[relation.internal_id] = relation;
       } else {
-        hits[elementExtended.internal_id] = elementExtended;
+        hits[elementWithIndex.internal_id] = elementWithIndex;
       }
     }
   }
@@ -1114,8 +1115,8 @@ export const elPaginate = async (user, indexName, options = {}) => {
         };
         mustFilters = R.append({ nested: nestedQuery }, mustFilters);
       } else {
-        const rulesKeys = getAttributesRulesFor(key);
-        // TODO IF KEY is PART OF Rules
+        // const rulesKeys = getAttributesRulesFor(key);
+        // TODO IF KEY is PART OF Rule we need to add extra fields search
         for (let i = 0; i < values.length; i += 1) {
           if (values[i] === null) {
             mustnot = R.append({ exists: { field: key } }, mustnot);
