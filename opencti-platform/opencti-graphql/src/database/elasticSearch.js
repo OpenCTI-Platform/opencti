@@ -733,17 +733,16 @@ export const elFindByIds = async (user, ids, opts = {}) => {
       const elementWithIndex = R.assoc('_index', hit._index, hit._source);
       // Analyse rules to add extra elements
       const ruleKeys = Object.keys(elementWithIndex).filter((e) => e.startsWith(RULE_PREFIX));
-      const ruleAttributesInferences = R.flatten(
-        ruleKeys.map((r) =>
-          R.toPairs(elementWithIndex[r].inferred).map((s) => ({
-            field: R.head(s),
-            value: String(R.last(s)),
-            rule: r.substr(RULE_PREFIX.length),
-          }))
-        )
+      const ruleInferences = R.flatten(
+        ruleKeys.map((r) => {
+          const rule = r.substr(RULE_PREFIX.length);
+          const { inferred, explanation } = elementWithIndex[r];
+          const attributes = R.toPairs(inferred).map((s) => ({ field: R.head(s), value: String(R.last(s)) }));
+          return { rule, explanation, attributes };
+        })
       );
-      if (ruleAttributesInferences.length > 0) {
-        elementWithIndex.x_opencti_inferences = ruleAttributesInferences;
+      if (ruleInferences.length > 0) {
+        elementWithIndex.x_opencti_inferences = ruleInferences;
       }
       // And a specific processing for a relation
       if (elementWithIndex.base_type === BASE_TYPE_RELATION) {
