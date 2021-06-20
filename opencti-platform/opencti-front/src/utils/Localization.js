@@ -144,6 +144,8 @@ const i18n = {
         'La règle a été déséactivée, purge lancée...',
       'Rules engine': 'Moteur de règles',
       'Launch rescan': 'Lancer le re-scan',
+      'Enabled the ': 'Activée le ',
+      'Never enabled': 'Jamais activée',
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
       Enable: 'Activer',

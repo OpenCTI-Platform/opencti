@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import * as R from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -11,6 +11,8 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVertOutlined } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
+import { AutoFix } from 'mdi-material-ui';
+import Tooltip from '@material-ui/core/Tooltip';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
@@ -117,11 +119,26 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <StixCoreRelationshipPopover
-            stixCoreRelationshipId={node.id}
-            paginationOptions={paginationOptions}
-            disabled={restricted}
-          />
+          {node.x_opencti_inferences !== null ? (
+            <Tooltip
+              title={
+                t('Inferred knowledge based on the rule ')
+                + R.head(node.x_opencti_inferences).rule.name
+              }
+            >
+              <AutoFix
+                fontSize="small"
+                style={{ marginLeft: -30 }}
+                color="secondary"
+              />
+            </Tooltip>
+          ) : (
+            <StixCoreRelationshipPopover
+              stixCoreRelationshipId={node.id}
+              paginationOptions={paginationOptions}
+              disabled={restricted}
+            />
+          )}
         </ListItemSecondaryAction>
       </ListItem>
     );
@@ -155,14 +172,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
         x_opencti_inferences {
           rule {
             id
-          }
-          explanation {
-            ... on StixObject {
-              id
-            }
-            ... on StixRelationship {
-              id
-            }
+            name
           }
         }
         from {
@@ -517,7 +527,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
   },
 );
 
-export const EntityStixCoreRelationshipLineAll = compose(
+export const EntityStixCoreRelationshipLineAll = R.compose(
   inject18n,
   withStyles(styles),
 )(EntityStixCoreRelationshipLineAllFragment);
@@ -615,7 +625,7 @@ EntityStixCoreRelationshipLineAllDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const EntityStixCoreRelationshipLineAllDummy = compose(
+export const EntityStixCoreRelationshipLineAllDummy = R.compose(
   inject18n,
   withStyles(styles),
 )(EntityStixCoreRelationshipLineAllDummyComponent);

@@ -20,6 +20,7 @@ import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import Markdown from 'react-markdown';
 import { FIVE_SECONDS } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
@@ -34,7 +35,7 @@ Transition.displayName = 'TransitionSlide';
 const styles = (theme) => ({
   card: {
     width: '100%',
-    height: 180,
+    height: 200,
     borderRadius: 6,
     position: 'relative',
   },
@@ -42,9 +43,11 @@ const styles = (theme) => ({
     backgroundColor: theme.palette.primary.main,
   },
   cardContent: {
+    marginTop: -20,
     paddingTop: 0,
-    height: 60,
+    height: 80,
     overflow: 'hidden',
+    lineHeight: 2.5,
   },
   cardActions: {
     position: 'absolute',
@@ -147,7 +150,7 @@ class RulesListComponent extends Component {
 
   render() {
     const {
-      classes, t, data, keyword,
+      classes, t, data, keyword, nsdt,
     } = this.props;
     const sortByNameCaseInsensitive = R.sortBy(
       R.compose(R.toLower, R.prop('name')),
@@ -196,10 +199,14 @@ class RulesListComponent extends Component {
                       />
                     }
                     title={rule.name}
-                    subheader={rule.name}
+                    subheader={
+                      task
+                        ? t('Enabled the ') + nsdt(task.created_at)
+                        : t('Never enabled')
+                    }
                   />
                   <CardContent classes={{ root: classes.cardContent }}>
-                    {rule.description}
+                    <Markdown>{rule.description}</Markdown>
                   </CardContent>
                   <CardActions classes={{ root: classes.cardActions }}>
                     {task && (
@@ -224,12 +231,13 @@ class RulesListComponent extends Component {
                           )}
                         <LinearProgress
                           classes={{ root: classes.progress }}
-                          disabled={!task || (task && task.completed)}
                           variant="determinate"
                           value={
                             // eslint-disable-next-line no-nested-ternary
                             task.task_expected_number === 0
-                              ? 0
+                              ? task.completed
+                                ? 100
+                                : 0
                               : task.completed
                                 ? 100
                                 : Math.round(
