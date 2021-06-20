@@ -12,7 +12,6 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import Slide from '@material-ui/core/Slide';
-import Avatar from '@material-ui/core/Avatar';
 import Switch from '@material-ui/core/Switch';
 import { createRefetchContainer } from 'react-relay';
 import Grid from '@material-ui/core/Grid';
@@ -21,6 +20,7 @@ import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Markdown from 'react-markdown';
+import { AutoFix } from 'mdi-material-ui';
 import { FIVE_SECONDS } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
@@ -43,7 +43,7 @@ const styles = (theme) => ({
     backgroundColor: theme.palette.primary.main,
   },
   cardContent: {
-    marginTop: -20,
+    marginTop: -10,
     paddingTop: 0,
     height: 80,
     overflow: 'hidden',
@@ -182,15 +182,11 @@ class RulesListComponent extends Component {
                   variant="outlined"
                 >
                   <CardHeader
-                    avatar={
-                      <Avatar aria-label="recipe" className={classes.avatar}>
-                        {rule.name.charAt(0)}
-                      </Avatar>
-                    }
+                    avatar={<AutoFix />}
                     action={
                       <Switch
                         checked={rule.activated}
-                        color="primary"
+                        color="secondary"
                         onChange={
                           rule.activated
                             ? this.handleOpenDisable.bind(this, rule.id)

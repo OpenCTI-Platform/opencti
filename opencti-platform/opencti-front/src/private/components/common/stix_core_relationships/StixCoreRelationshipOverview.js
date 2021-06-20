@@ -483,6 +483,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               created_at
             }
             ... on StixCoreRelationship {
+              relationship_type
               created_at
             }
             ... on AttackPattern {
@@ -541,6 +542,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             }
             ... on StixCoreRelationship {
               id
+              relationship_type
               from {
                 ... on BasicObject {
                   id
@@ -556,6 +558,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   created_at
                 }
                 ... on StixCoreRelationship {
+                  relationship_type
                   created_at
                 }
                 ... on AttackPattern {
@@ -777,6 +780,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 }
                 ... on StixCoreRelationship {
                   created_at
+                  relationship_type
                 }
                 ... on AttackPattern {
                   name

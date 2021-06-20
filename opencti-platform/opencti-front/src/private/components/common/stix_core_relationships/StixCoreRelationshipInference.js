@@ -40,7 +40,7 @@ class StixCoreRelationshipInference extends Component {
   initialize() {
     if (this.initialized) return;
     if (this.graph && this.graph.current) {
-      this.graph.current.d3Force('link').distance(50);
+      this.graph.current.d3Force('link').distance(80);
       const currentContext = this;
       setTimeout(
         () => currentContext.graph
