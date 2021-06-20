@@ -517,6 +517,7 @@ export const stixCoreRelationshipsMapping = {
   Region_Region: ['located-at'],
   Country_Region: ['located-at'],
   City_Country: ['located-at'],
+  City_Region: ['located-at'],
   Position_City: ['located-at'],
   'IPv4-Addr_Region': ['located-at'],
   'IPv4-Addr_Country': ['located-at'],

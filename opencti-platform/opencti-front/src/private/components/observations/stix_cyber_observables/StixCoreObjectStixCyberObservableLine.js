@@ -52,6 +52,7 @@ class StixCoreObjectStixCyberObservableLineComponent extends Component {
       node,
       paginationOptions,
       entityLink,
+      isTo,
     } = this.props;
     const link = `${entityLink}/relations/${node.id}`;
     return (
@@ -72,13 +73,15 @@ class StixCoreObjectStixCyberObservableLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {t(`entity_${node.from.entity_type}`)}
+                {isTo
+                  ? t(`entity_${node.to.entity_type}`)
+                  : t(`entity_${node.from.entity_type}`)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.observable_value.width }}
               >
-                {node.from.observable_value}
+                {isTo ? node.to.observable_value : node.from.observable_value}
               </div>
               <div
                 className={classes.bodyItem}
@@ -120,6 +123,7 @@ StixCoreObjectStixCyberObservableLineComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
+  isTo: PropTypes.bool,
 };
 
 const StixCoreObjectStixCyberObservableLineFragment = createFragmentContainer(
@@ -133,6 +137,15 @@ const StixCoreObjectStixCyberObservableLineFragment = createFragmentContainer(
         stop_time
         description
         from {
+          ... on StixCyberObservable {
+            id
+            entity_type
+            observable_value
+            created_at
+            updated_at
+          }
+        }
+        to {
           ... on StixCyberObservable {
             id
             entity_type

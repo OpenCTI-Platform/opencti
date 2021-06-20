@@ -76,7 +76,7 @@ class StixCoreObjectStixCyberObservables extends Component {
 
   renderLines(paginationOptions) {
     const { sortBy, orderAsc, numberOfElements } = this.state;
-    const { stixCoreObjectLink } = this.props;
+    const { stixCoreObjectLink, isRelationReversed } = this.props;
     const dataColumns = {
       entity_type: {
         label: 'Type',
@@ -125,6 +125,7 @@ class StixCoreObjectStixCyberObservables extends Component {
               dataColumns={dataColumns}
               initialLoading={props === null}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
+              isRelationReversed={isRelationReversed}
             />
           )}
         />
@@ -134,25 +135,38 @@ class StixCoreObjectStixCyberObservables extends Component {
 
   render() {
     const {
-      classes, stixCoreObjectId, relationshipType, noRightBar,
+      classes,
+      stixCoreObjectId,
+      relationshipType,
+      noRightBar,
+      isRelationReversed,
     } = this.props;
     const {
       view, targetStixCyberObservableTypes, sortBy, orderAsc,
     } = this.state;
-    const paginationOptions = {
+    let paginationOptions = {
       fromTypes: targetStixCyberObservableTypes,
       toId: stixCoreObjectId,
       relationship_type: relationshipType || 'stix-core-relationship',
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
+    if (isRelationReversed) {
+      paginationOptions = {
+        toTypes: targetStixCyberObservableTypes,
+        fromId: stixCoreObjectId,
+        relationship_type: relationshipType || 'stix-core-relationship',
+        orderBy: sortBy,
+        orderMode: orderAsc ? 'asc' : 'desc',
+      };
+    }
     return (
       <div className={classes.container}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <StixCoreRelationshipCreationFromEntity
           entityId={stixCoreObjectId}
           targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
-          isRelationReversed={true}
+          isRelationReversed={!isRelationReversed}
           allowedRelationshipTypes={
             relationshipType ? [relationshipType] : null
           }
@@ -179,6 +193,7 @@ StixCoreObjectStixCyberObservables.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  isRelationReversed: PropTypes.bool,
 };
 
 export default compose(

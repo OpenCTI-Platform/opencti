@@ -15,6 +15,7 @@ import {
   READ_RELATIONSHIPS_INDICES,
   WRITE_PLATFORM_INDICES,
   isEmptyField,
+  READ_RELATIONSHIPS_WITH_INFERENCES_INDICES,
 } from './utils';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
@@ -841,7 +842,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
   const markingRestrictions = buildMarkingRestriction(user);
   must.push(...markingRestrictions.must);
   const query = {
-    index: READ_RELATIONSHIPS_INDICES,
+    index: READ_RELATIONSHIPS_WITH_INFERENCES_INDICES,
     ignore_throttled: ES_IGNORE_THROTTLED,
     body: {
       size: MAX_SEARCH_AGGREGATION_SIZE,

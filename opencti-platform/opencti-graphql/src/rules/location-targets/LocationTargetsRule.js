@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
 import { RELATION_LOCATED_AT, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import def from './LocationTargetsDefinition';
-import buildRelationWithRelationRule from '../relation-with-relation/RelationWithRelationBuilder';
+import buildRelationToRelationRule from '../relation-to-relation/RelationToRelationBuilder';
 
-const LocationTargetsRule = buildRelationWithRelationRule(
+const LocationTargetsRule = buildRelationToRelationRule(
   def.id,
   def.name,
   def.description,
