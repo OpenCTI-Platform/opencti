@@ -4,10 +4,10 @@ import https from 'https';
 import http from 'http';
 // noinspection NodeCoreCodingAssistance
 import { readFileSync } from 'fs';
-import conf, { booleanConf, logApp } from './config/conf';
-import createApp from './app';
-import createApolloServer from './graphql/graphql';
-import { isStrategyActivated, STRATEGY_CERT } from './config/providers';
+import conf, { booleanConf, logApp } from '../config/conf';
+import createApp from './httpPlatform';
+import createApolloServer from '../graphql/graphql';
+import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 
 const PORT = conf.get('app:port');
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -33,7 +33,7 @@ const createHttpServer = async () => {
   return { httpServer, seeMiddleware };
 };
 
-export const listenServer = async () => {
+const listenServer = async () => {
   return new Promise((resolve, reject) => {
     try {
       const serverPromise = createHttpServer();
@@ -51,18 +51,8 @@ export const listenServer = async () => {
     }
   });
 };
-export const restartServer = async (httpServer) => {
-  return new Promise((resolve, reject) => {
-    httpServer.close(() => {
-      logApp.info('[OPENCTI] GraphQL server stopped');
-      listenServer()
-        .then((server) => resolve(server))
-        .catch((e) => reject(e));
-    });
-    httpServer.emit('close'); // force server close
-  });
-};
-export const stopServer = async (httpServer) => {
+
+const stopServer = async (httpServer) => {
   return new Promise((resolve) => {
     httpServer.close(() => {
       resolve();
@@ -70,3 +60,25 @@ export const stopServer = async (httpServer) => {
     httpServer.emit('close'); // force server close
   });
 };
+
+const initHttpServer = () => {
+  let server;
+  return {
+    start: async () => {
+      server = await listenServer();
+      // Handle hot module replacement resource dispose
+      if (module.hot) {
+        module.hot.dispose(async () => {
+          await stopServer(server);
+        });
+      }
+    },
+    shutdown: async () => {
+      if (server) {
+        await stopServer(server);
+      }
+    },
+  };
+};
+
+export default initHttpServer;

@@ -1,9 +1,9 @@
 import { head } from 'ramda';
 import { deleteFile, downloadFile, filesListing, loadFile } from '../../../src/database/minio';
-import { listenServer, stopServer } from '../../../src/httpServer';
 import { execPython3 } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
 import { elLoadByIds } from '../../../src/database/elasticSearch';
+import { startModules, shutdownModules } from '../../../src/modules';
 
 const streamConverter = (stream) => {
   return new Promise((resolve) => {
@@ -30,12 +30,12 @@ describe('Minio file listing', () => {
     importOpts = [API_URI, API_TOKEN, malwareId, exportFileName];
   });
   it('should file upload succeed', async () => {
-    const httpServer = await listenServer();
+    await startModules();
     // local exporter create an export and also upload the file as an import
     const execution = await execPython3(PYTHON_PATH, 'local_exporter.py', importOpts);
     expect(execution).not.toBeNull();
     expect(execution.status).toEqual('success');
-    await stopServer(httpServer);
+    await shutdownModules();
   });
   it('should file listing', async () => {
     const entity = { id: malwareId };

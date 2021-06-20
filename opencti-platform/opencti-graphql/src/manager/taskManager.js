@@ -325,6 +325,12 @@ const initTaskManager = () => {
       scheduler = setIntervalAsync(async () => {
         await taskHandler();
       }, SCHEDULE_TIME);
+      // Handle hot module replacement resource dispose
+      if (module.hot) {
+        module.hot.dispose(async () => {
+          await clearIntervalAsync(scheduler);
+        });
+      }
     },
     shutdown: async () => {
       if (scheduler) {

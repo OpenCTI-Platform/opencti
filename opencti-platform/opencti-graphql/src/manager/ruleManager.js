@@ -131,8 +131,14 @@ const initRuleManager = () => {
       try {
         // Lock the manager
         lock = await lockResource([RULE_ENGINE_KEY]);
-        streamProcessor = await createStreamProcessor(SYSTEM_USER, ruleStreamHandler);
+        streamProcessor = await createStreamProcessor(SYSTEM_USER, 'Rule manager', ruleStreamHandler);
         await streamProcessor.start();
+        // Handle hot module replacement resource dispose
+        if (module.hot) {
+          module.hot.dispose(async () => {
+            await streamProcessor.shutdown();
+          });
+        }
         return true;
       } catch {
         return false;

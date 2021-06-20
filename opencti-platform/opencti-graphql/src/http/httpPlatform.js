@@ -12,16 +12,16 @@ import nconf from 'nconf';
 import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
-import { basePath, DEV_MODE, logApp, logAudit } from './config/conf';
-import passport, { empty, isStrategyActivated, STRATEGY_CERT } from './config/providers';
-import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from './domain/user';
-import { downloadFile, loadFile } from './database/minio';
-import { checkSystemDependencies } from './initialization';
-import { getSettings } from './domain/settings';
-import createSeeMiddleware from './graphql/sseMiddleware';
-import initTaxiiApi from './taxiiApi';
-import { initializeSession } from './database/session';
-import { LOGIN_ACTION } from './config/audit';
+import { basePath, DEV_MODE, logApp, logAudit } from '../config/conf';
+import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
+import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
+import { downloadFile, loadFile } from '../database/minio';
+import { checkSystemDependencies } from '../initialization';
+import { getSettings } from '../domain/settings';
+import createSeeMiddleware from '../graphql/sseMiddleware';
+import initTaxiiApi from './httpTaxii';
+import { initializeSession } from '../database/session';
+import { LOGIN_ACTION } from '../config/audit';
 
 const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 
@@ -74,12 +74,12 @@ const createApp = async (apolloServer) => {
   // -- Generated CSS with correct base path
   app.get(`${basePath}/static/css/*`, (req, res) => {
     const cssFileName = R.last(req.url.split('/'));
-    const data = readFileSync(path.join(__dirname, `../public/static/css/${sanitize(cssFileName)}`), 'utf8');
+    const data = readFileSync(path.join(__dirname, `../../public/static/css/${sanitize(cssFileName)}`), 'utf8');
     const withBasePath = data.replace(/%BASE_PATH%/g, basePath);
     res.header('Content-Type', 'text/css');
     res.send(withBasePath);
   });
-  app.use(`${basePath}/static`, express.static(path.join(__dirname, '../public/static')));
+  app.use(`${basePath}/static`, express.static(path.join(__dirname, '../../public/static')));
 
   app.use(appSessionHandler.session);
   // app.use(refreshSessionMiddleware);
@@ -201,7 +201,7 @@ const createApp = async (apolloServer) => {
 
   // Other routes - Render index.html
   app.get('*', (req, res) => {
-    const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
+    const data = readFileSync(`${__dirname}/../../public/index.html`, 'utf8');
     const withOptionValued = data.replace(/%BASE_PATH%/g, basePath);
     res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
     res.header('Expires', '-1');

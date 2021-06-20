@@ -45,7 +45,7 @@ const redisOptions = (database) => ({
   username: conf.get('redis:username'),
   password: conf.get('redis:password'),
   retryStrategy: /* istanbul ignore next */ (times) => Math.min(times * 50, 2000),
-  maxRetriesPerRequest: 2,
+  maxRetriesPerRequest: 30,
   showFriendlyErrorStack: DEV_MODE,
 });
 
@@ -53,23 +53,16 @@ export const pubsub = new RedisPubSub({
   publisher: new Redis(redisOptions()),
   subscriber: new Redis(redisOptions()),
 });
-export const createRedisClient = async (database = BASE_DATABASE) => {
+const createRedisClient = (provider, database = BASE_DATABASE) => {
   const client = new Redis(redisOptions(database));
-  if (client.status !== 'ready') {
-    await client.connect().catch(() => {
-      throw DatabaseError('Redis seems down');
-    });
-  }
-  client.on('connect', () => logApp.debug('[REDIS] Redis client connected'));
+  client.on('close', () => logApp.info(`[REDIS] Redis '${provider}' client closed`));
+  client.on('ready', () => logApp.info(`[REDIS] Redis '${provider}' client ready`));
+  client.on('reconnecting', () => logApp.info(`[REDIS] '${provider}' Redis client reconnecting`));
   return client;
 };
+const clientBase = createRedisClient('Client base', BASE_DATABASE);
+const clientContext = createRedisClient('Client context', CONTEXT_DATABASE);
 
-let clientBase = null;
-let clientContext = null;
-export const redisInitializeClients = async () => {
-  clientBase = await createRedisClient(BASE_DATABASE);
-  clientContext = await createRedisClient(CONTEXT_DATABASE);
-};
 export const createMemorySessionStore = () => {
   return new SessionStoreMemory({
     checkPeriod: 3600000, // prune expired entries every 1h
@@ -80,8 +73,9 @@ export const createRedisSessionStore = () => {
 };
 
 export const redisIsAlive = async () => {
-  if (clientBase.status !== 'ready' || clientContext.status !== 'ready') {
-    /* istanbul ignore next */
+  try {
+    await clientBase.get('test-key');
+  } catch {
     throw DatabaseError('Redis seems down');
   }
   return true;
@@ -537,7 +531,7 @@ const processStreamResult = async (results, callback) => {
 let processingLoopPromise;
 const WAIT_TIME = 1000;
 const MAX_RANGE_MESSAGES = 500;
-export const createStreamProcessor = (user, callback, maxRange = MAX_RANGE_MESSAGES) => {
+export const createStreamProcessor = (user, provider, callback, maxRange = MAX_RANGE_MESSAGES) => {
   let client;
   let startEventId;
   let streamListening = true;
@@ -578,8 +572,8 @@ export const createStreamProcessor = (user, callback, maxRange = MAX_RANGE_MESSA
       let fromStart = start;
       if (isEmptyField(fromStart)) fromStart = 'live';
       startEventId = fromStart === 'live' ? '$' : fromStart;
-      client = await createRedisClient(); // Create client for this processing loop
-      logApp.info(`[STREAM] Starting stream processor for ${user.user_email}`);
+      client = await createRedisClient(provider); // Create client for this processing loop
+      logApp.info(`[STREAM] Starting stream processor for ${provider}`);
       processingLoopPromise = processingLoop();
     },
     shutdown: async () => {

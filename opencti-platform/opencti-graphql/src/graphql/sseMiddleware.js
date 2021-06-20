@@ -477,7 +477,7 @@ const createSeeMiddleware = () => {
   };
   const genericStreamHandler = async (req, res) => {
     const { client } = createSseChannel(req, res);
-    const processor = createStreamProcessor(req.session.user, async (elements) => {
+    const processor = createStreamProcessor(req.session.user, req.session.user.user_email, async (elements) => {
       for (let index = 0; index < elements.length; index += 1) {
         const { id: eventId, topic, data } = elements[index];
         client.sendEvent(eventId, topic, data);
@@ -548,6 +548,7 @@ const createSeeMiddleware = () => {
     const compactDepth = conf.get('redis:live_depth_compact');
     const processor = createStreamProcessor(
       req.session.user,
+      req.session.user.user_email,
       async (elements) => {
         // We need to build all elements that have change during the last call
         const processingMessages = buildProcessingMessages(streamFilters, req.session.user, elements);
