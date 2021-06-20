@@ -140,7 +140,8 @@ const initRuleManager = () => {
           });
         }
         return true;
-      } catch {
+      } catch (e) {
+        logApp.error('Rule engine failed to start', { error: e });
         return false;
       } finally {
         if (lock) await lock.unlock();
