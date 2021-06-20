@@ -82,6 +82,7 @@ export const redisIsAlive = async () => {
   return true;
 };
 export const getRedisVersion = async () => {
+  await clientBase.call('INFO');
   return clientBase.serverInfo.redis_version;
 };
 
