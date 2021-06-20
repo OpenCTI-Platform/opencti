@@ -1,10 +1,16 @@
-import AttributedToAttributedDef from './attributed-to-attributed/AttributedToAttributedDefinition';
-import ObservableRelatedDef from './observable-related/ObservableRelatedDefinition';
-import AttributionUseDef from './attribution-use/AttributionUseDefinition';
+import AttributedToAttributedDefinition from './attributed-to-attributed/AttributedToAttributedDefinition';
+import ObservableRelatedDefinition from './observable-related/ObservableRelatedDefinition';
+import AttributionUseDefinition from './attribution-use/AttributionUseDefinition';
+import AttributionTargetsD from './attribution-targets/AttributionTargetsDefinition';
+import LocationTargetsDefinition from './location-targets/LocationTargetsDefinition';
+import LocatedAtLocatedDefinition from './located-at-located/LocatedAtLocatedDefinition';
 
 const declaredDef = [
-  AttributionUseDef,
-  AttributedToAttributedDef,
-  ObservableRelatedDef,
+  AttributedToAttributedDefinition,
+  ObservableRelatedDefinition,
+  AttributionUseDefinition,
+  AttributionTargetsD,
+  LocationTargetsDefinition,
+  LocatedAtLocatedDefinition,
 ];
 export default declaredDef;
