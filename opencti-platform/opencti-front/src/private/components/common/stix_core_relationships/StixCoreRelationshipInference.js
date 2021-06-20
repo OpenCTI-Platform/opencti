@@ -5,6 +5,7 @@ import { withStyles, withTheme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import ForceGraph2D from 'react-force-graph-2d';
+import Markdown from 'react-markdown';
 import inject18n from '../../../../components/i18n';
 import {
   buildGraphData,
@@ -25,6 +26,7 @@ const styles = () => ({
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
+    textAlign: 'center',
   },
 });
 
@@ -80,10 +82,11 @@ class StixCoreRelationshipInference extends Component {
         <Typography variant="h3" gutterBottom={true}>
           {t(inference.rule.name)}
         </Typography>
+        <Markdown className="markdown">{inference.rule.description}</Markdown>
         <ForceGraph2D
           ref={this.graph}
           width={width}
-          height={450}
+          height={440}
           graphData={graphData}
           nodeRelSize={4}
           nodeCanvasObject={(node, ctx) => nodePaint(node, node.color, ctx, false)

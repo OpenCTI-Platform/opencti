@@ -129,7 +129,6 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
               <AutoFix
                 fontSize="small"
                 style={{ marginLeft: -30 }}
-                color="secondary"
               />
             </Tooltip>
           ) : (

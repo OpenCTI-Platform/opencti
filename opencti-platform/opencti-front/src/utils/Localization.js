@@ -605,6 +605,8 @@ const i18n = {
       Inferences: 'Inférences',
       'Action type': "Type d'action",
       'Inference rules': "Règles d'inférence",
+      'Inferred knowledge based on the rule ':
+        'Connaissance inférée basée sur la règle ',
       'View the item': "Voir l'object",
       'CSV file': 'Fichier CSV',
       'Export data in CSV': 'Exporter les données en CSV',
@@ -952,6 +954,7 @@ const i18n = {
       'No notes about this entity yet.':
         'Aucune note concernant cette entité pour le moment',
       'Notes about this entity': 'Notes à propos de cette entité',
+      'Notes about this relationship': 'Notes à propos de cette relation',
       'No history about this entity.':
         'Aucun historique à propos cette entité.',
       'No relations history about this entity.':

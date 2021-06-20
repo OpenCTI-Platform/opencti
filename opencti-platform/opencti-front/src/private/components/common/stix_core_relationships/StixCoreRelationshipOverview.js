@@ -306,16 +306,24 @@ class StixCoreRelationshipContainer extends Component {
                 {t('Modification date')}
               </Typography>
               {nsdt(stixCoreRelationship.updated_at)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Author')}
-              </Typography>
-              <ItemAuthor
-                createdBy={R.propOr(null, 'createdBy', stixCoreRelationship)}
-              />
+              {stixCoreRelationship.x_opencti_inferences === null && (
+                <div>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Author')}
+                  </Typography>
+                  <ItemAuthor
+                    createdBy={R.propOr(
+                      null,
+                      'createdBy',
+                      stixCoreRelationship,
+                    )}
+                  />
+                </div>
+              )}
             </Paper>
           </Grid>
           <Grid item={true} xs={6}>
@@ -343,18 +351,20 @@ class StixCoreRelationshipContainer extends Component {
                 {t('Stop time')}
               </Typography>
               {nsdt(stixCoreRelationship.stop_time)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Description')}
-              </Typography>
-              <Markdown className="markdown">
-                {stixCoreRelationship.x_opencti_inferences !== null
-                  ? R.head(stixCoreRelationship.x_opencti_inferences).rule.description
-                  : stixCoreRelationship.description}
-              </Markdown>
+              {stixCoreRelationship.x_opencti_inferences === null && (
+                <div>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Description')}
+                  </Typography>
+                  <Markdown className="markdown">
+                    {stixCoreRelationship.description}
+                  </Markdown>
+                </div>
+              )}
             </Paper>
           </Grid>
         </Grid>

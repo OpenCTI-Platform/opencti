@@ -20,7 +20,6 @@ import {
   READ_DATA_INDICES,
   READ_ENTITIES_INDICES,
   READ_RELATIONSHIPS_INDICES,
-  READ_RELATIONSHIPS_WITH_INFERENCES_INDICES,
   relationTypeToInputName,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
@@ -440,12 +439,12 @@ export const listEntities = async (user, entityTypes, args = {}) => {
   return elPaginate(user, indices, paginateArgs);
 };
 export const listRelations = async (user, relationshipType, args) => {
-  const { indices = READ_RELATIONSHIPS_WITH_INFERENCES_INDICES } = args;
+  const { indices = READ_RELATIONSHIPS_INDICES } = args;
   const paginateArgs = buildRelationsFilter(relationshipType, args);
   return elPaginate(user, indices, paginateArgs);
 };
 export const listAllRelations = async (user, relationshipType, args) => {
-  const { indices = READ_RELATIONSHIPS_WITH_INFERENCES_INDICES } = args;
+  const { indices = READ_RELATIONSHIPS_INDICES } = args;
   const paginateArgs = buildRelationsFilter(relationshipType, args);
   return elList(user, indices, paginateArgs);
 };
