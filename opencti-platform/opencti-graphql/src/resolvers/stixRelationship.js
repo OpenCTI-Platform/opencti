@@ -5,7 +5,7 @@ import {
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
   ABSTRACT_STIX_META_RELATIONSHIP,
 } from '../schema/general';
-import {STIX_SIGHTING_RELATIONSHIP} from "../schema/stixSightingRelationship";
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 
 const stixRelationshipResolvers = {
   Query: {
