@@ -1,24 +1,24 @@
-import conf, { logApp } from './config/conf';
+import conf, { booleanConf, logApp } from './config/conf';
 import initExpiredManager from './manager/expiredManager';
 import initTaskManager from './manager/taskManager';
 import initRuleManager from './manager/ruleManager';
 import initHttpServer from './http/httpServer';
 
 // Http server
-const httpServer = initHttpServer();
+const ENABLED_API = booleanConf('app:enabled', true);
 const API_PORT = conf.get('app:port');
-const ENABLED_API = conf.get('app:enabled');
+const httpServer = initHttpServer();
 
 // Expire manager
-const ENABLED_EXPIRED_MANAGER = conf.get('expiration_scheduler:enabled');
+const ENABLED_EXPIRED_MANAGER = booleanConf('expiration_scheduler:enabled', false);
 const expiredManager = initExpiredManager();
 
 // Task manager
-const ENABLED_TASK_SCHEDULER = conf.get('task_scheduler:enabled');
+const ENABLED_TASK_SCHEDULER = booleanConf('task_scheduler:enabled', false);
 const taskManager = initTaskManager();
 
 // Rule manager
-const ENABLED_RULE_ENGINE = conf.get('rule_engine:enabled');
+const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
 const ruleEngine = initRuleManager();
 
 export const startModules = async () => {

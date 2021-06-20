@@ -7,6 +7,7 @@ import {
   settingsEditContext,
   settingsCleanContext,
   getApplicationInfo,
+  getModules,
 } from '../domain/settings';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -20,6 +21,7 @@ const settingsResolvers = {
   },
   Settings: {
     platform_providers: () => PROVIDERS,
+    platform_modules: () => getModules(),
     platform_map_tile_server_dark: () => nconf.get('app:map_tile_server_dark'),
     platform_map_tile_server_light: () => nconf.get('app:map_tile_server_light'),
     editContext: (settings) => fetchEditContext(settings.id),

@@ -1,6 +1,6 @@
 import { getHeapStatistics } from 'v8';
 import { createEntity, loadById, updateAttribute, loadEntity } from '../database/middleware';
-import { BUS_TOPICS, PLATFORM_VERSION } from '../config/conf';
+import { booleanConf, BUS_TOPICS, PLATFORM_VERSION } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { elVersion } from '../database/elasticSearch';
 import { getRabbitMQVersion } from '../database/rabbitmq';
@@ -10,6 +10,15 @@ import { SYSTEM_USER } from '../utils/access';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
+};
+
+export const getModules = () => {
+  const modules = [];
+  modules.push({ id: 'GRAPHQL_API', enable: booleanConf('app:enabled', true) });
+  modules.push({ id: 'EXPIRATION_SCHEDULER', enable: booleanConf('expiration_scheduler:enabled', false) });
+  modules.push({ id: 'TASK_MANAGER', enable: booleanConf('task_scheduler:enabled', false) });
+  modules.push({ id: 'RULE_ENGINE', enable: booleanConf('rule_engine:enabled', false) });
+  return modules;
 };
 
 export const getApplicationInfo = () => ({
