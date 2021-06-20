@@ -37,14 +37,15 @@ const OPENCTI_STREAM = 'stream.opencti';
 const REDIS_EXPIRE_TIME = 90;
 
 const redisOptions = (database) => ({
-  lazyConnect: true,
   db: database,
   port: conf.get('redis:port'),
   host: conf.get('redis:hostname'),
-  tls: USE_SSL ? configureCA(REDIS_CA) : null,
   username: conf.get('redis:username'),
   password: conf.get('redis:password'),
+  tls: USE_SSL ? configureCA(REDIS_CA) : null,
   retryStrategy: /* istanbul ignore next */ (times) => Math.min(times * 50, 2000),
+  lazyConnect: true,
+  enableOfflineQueue: true,
   maxRetriesPerRequest: 30,
   showFriendlyErrorStack: DEV_MODE,
 });
