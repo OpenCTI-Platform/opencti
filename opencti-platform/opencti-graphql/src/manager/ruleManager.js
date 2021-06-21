@@ -2,7 +2,6 @@
 import { buildDeleteEvent, buildScanEvent, createStreamProcessor, lockResource } from '../database/redis';
 import conf, { ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import { createEntity, listAllRelations, stixLoadById } from '../database/middleware';
-import { SYSTEM_USER } from '../utils/access';
 import { isEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/rabbitmq';
 import { elList } from '../database/elasticSearch';
@@ -12,6 +11,7 @@ import { ENTITY_TYPE_RULE } from '../schema/internalObject';
 import { UnsupportedError } from '../config/errors';
 import { createRuleTask, deleteTask, findAll } from '../domain/task';
 import { getActivatedRules, getRule, getRules } from '../domain/rule';
+import { RULE_MANAGER_USER } from '../rules/RuleUtils';
 
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
 
@@ -36,14 +36,14 @@ export const setRuleActivation = async (user, ruleId, active) => {
 const ruleMergeHandler = async (event) => {
   const { data } = event;
   // Need to generate events for deletion
-  const events = data.sources.map((s) => buildDeleteEvent(SYSTEM_USER, s, stixLoadById));
+  const events = data.sources.map((s) => buildDeleteEvent(RULE_MANAGER_USER, s, stixLoadById));
   // Need to generate event for redo rule on updated element
   const mergeCallback = async (relationships) => {
-    const creationEvents = relationships.map((r) => buildScanEvent(SYSTEM_USER, r, stixLoadById));
+    const creationEvents = relationships.map((r) => buildScanEvent(RULE_MANAGER_USER, r, stixLoadById));
     events.push(...creationEvents);
   };
   const listToArgs = { elementId: data.x_opencti_id, callback: mergeCallback };
-  await listAllRelations(SYSTEM_USER, STIX_RELATIONSHIPS, listToArgs);
+  await listAllRelations(RULE_MANAGER_USER, STIX_RELATIONSHIPS, listToArgs);
   return events;
 };
 
@@ -65,7 +65,7 @@ const ruleApplyHandler = async (events) => {
         const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: [data.x_opencti_id], operator: 'wildcard' }];
         // eslint-disable-next-line no-use-before-define
         const opts = { filters, callback: handleRuleClean };
-        await elList(SYSTEM_USER, READ_DATA_INDICES, opts);
+        await elList(RULE_MANAGER_USER, READ_DATA_INDICES, opts);
       }
       // In case of update apply the event on every rules
       if (type === EVENT_TYPE_UPDATE) {
@@ -133,7 +133,7 @@ const initRuleManager = () => {
       try {
         // Lock the manager
         lock = await lockResource([RULE_ENGINE_KEY]);
-        streamProcessor = await createStreamProcessor(SYSTEM_USER, 'Rule manager', ruleStreamHandler);
+        streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler);
         await streamProcessor.start();
         // Handle hot module replacement resource dispose
         if (module.hot) {

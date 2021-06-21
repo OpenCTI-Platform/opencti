@@ -216,7 +216,7 @@ const executeRuleApply = async (user, element) => {
   await handleRuleApply(user, element);
 };
 
-const executeRuleClean = async (user, element) => {
+const executeRuleClean = async (element) => {
   await handleRuleClean([element]);
 };
 
@@ -247,7 +247,7 @@ const executeProcessing = async (user, processingElements) => {
           await executeRuleApply(user, element);
         }
         if (type === ACTION_TYPE_RULE_CLEAR) {
-          await executeRuleClean(user, element);
+          await executeRuleClean(element);
         }
       }
     } catch (err) {

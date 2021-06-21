@@ -3,7 +3,12 @@ import * as R from 'ramda';
 import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { basePath } from '../config/conf';
 import { AuthRequired, ForbiddenAccess, UnsupportedError } from '../config/errors';
-import { restAllCollections, restCollectionManifest, restCollectionStix, restLoadCollectionById } from '../domain/taxii';
+import {
+  restAllCollections,
+  restCollectionManifest,
+  restCollectionStix,
+  restLoadCollectionById,
+} from '../domain/taxii';
 import { BYPASS } from '../utils/access';
 
 const TAXII_VERSION = 'application/taxii+json;version=2.1';

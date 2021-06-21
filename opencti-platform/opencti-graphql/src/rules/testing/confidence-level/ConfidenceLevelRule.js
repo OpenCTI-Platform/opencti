@@ -30,7 +30,7 @@ const ruleConfidenceLevelBuilder = () => {
       await patchAttribute(RULE_MANAGER_USER, x_opencti_id, entityType, patch);
     }
   };
-  const applyCreatorUpdate = async (markings, data) => {
+  const applyCreatorUpdate = async (data) => {
     const { x_opencti_id, x_opencti_reliability: reliability } = data;
     const elementsCallback = async (elements) => {
       for (let index = 0; index < elements.length; index += 1) {
@@ -57,7 +57,6 @@ const ruleConfidenceLevelBuilder = () => {
     return [];
   };
   const update = async (element) => {
-    const { object_marking_refs: markings } = element;
     // If update is related to created_by_ref
     // Element confidence must be recomputed
     const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
@@ -68,7 +67,7 @@ const ruleConfidenceLevelBuilder = () => {
     // or related to x_opencti_reliability
     // Elements related to this creator must be recomputed
     if (patchedFields.includes('x_opencti_reliability')) {
-      await applyCreatorUpdate(markings, instance);
+      await applyCreatorUpdate(instance);
     }
     return [];
   };
