@@ -15,6 +15,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Chip from '@material-ui/core/Chip';
 import Avatar from '@material-ui/core/Avatar';
 import { ListItemAvatar } from '@material-ui/core';
+import { deepPurple } from '@material-ui/core/colors';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
@@ -35,12 +36,24 @@ const styles = (theme) => ({
     textAlign: 'left',
     borderRadius: 6,
   },
+  purple: {
+    color: theme.palette.getContrastText(deepPurple[500]),
+    backgroundColor: deepPurple[500],
+  },
   button: {
     float: 'right',
     margin: '20px 0 0 0',
   },
   nested: {
     paddingLeft: theme.spacing(4),
+  },
+  enabled: {
+    backgroundColor: '#2e7d32',
+    color: '#ffffff',
+  },
+  disabled: {
+    backgroundColor: '#c62828',
+    color: '#ffffff',
   },
 });
 
@@ -351,7 +364,9 @@ class Settings extends Component {
                             return (
                               <ListItem key={provider.strategy} divider={true}>
                                 <ListItemAvatar>
-                                  <Avatar>{i}</Avatar>
+                                  <Avatar className={classes.purple}>
+                                    {i}
+                                  </Avatar>
                                 </ListItemAvatar>
                                 <ListItemText
                                   primary={provider.name}
@@ -575,7 +590,7 @@ class Settings extends Component {
                                   <List>
                                     <ListItem divider={true}>
                                       <ListItemText primary={'OpenCTI'} />
-                                      <Chip label={version} />
+                                      <Chip label={version} color="primary" />
                                     </ListItem>
                                     <List component="div" disablePadding>
                                       {modules.map((module) => (
@@ -593,6 +608,11 @@ class Settings extends Component {
                                                 ? t('Enabled')
                                                 : t('Disabled')
                                             }
+                                            className={
+                                              module.enable
+                                                ? classes.enabled
+                                                : classes.disabled
+                                            }
                                           />
                                         </ListItem>
                                       ))}
@@ -600,7 +620,10 @@ class Settings extends Component {
                                     {dependencies.map((dep) => (
                                       <ListItem key={dep.name} divider={true}>
                                         <ListItemText primary={t(dep.name)} />
-                                        <Chip label={dep.version} />
+                                        <Chip
+                                          label={dep.version}
+                                          color="primary"
+                                        />
                                       </ListItem>
                                     ))}
                                   </List>
