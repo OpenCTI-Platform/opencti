@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
-import { compose, map, propOr } from 'ramda';
+import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
@@ -27,6 +27,7 @@ import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipSti
 import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixCoreRelationshipInference from './StixCoreRelationshipInference';
 
 const styles = (theme) => ({
   container: {
@@ -276,7 +277,7 @@ class StixCoreRelationshipContainer extends Component {
                 {t('Marking')}
               </Typography>
               {stixCoreRelationship.objectMarking.edges.length > 0 ? (
-                map(
+                R.map(
                   (markingDefinition) => (
                     <ItemMarking
                       key={markingDefinition.node.id}
@@ -305,16 +306,24 @@ class StixCoreRelationshipContainer extends Component {
                 {t('Modification date')}
               </Typography>
               {nsdt(stixCoreRelationship.updated_at)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Author')}
-              </Typography>
-              <ItemAuthor
-                createdBy={propOr(null, 'createdBy', stixCoreRelationship)}
-              />
+              {stixCoreRelationship.x_opencti_inferences === null && (
+                <div>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Author')}
+                  </Typography>
+                  <ItemAuthor
+                    createdBy={R.propOr(
+                      null,
+                      'createdBy',
+                      stixCoreRelationship,
+                    )}
+                  />
+                </div>
+              )}
             </Paper>
           </Grid>
           <Grid item={true} xs={6}>
@@ -342,60 +351,83 @@ class StixCoreRelationshipContainer extends Component {
                 {t('Stop time')}
               </Typography>
               {nsdt(stixCoreRelationship.stop_time)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Description')}
-              </Typography>
-              <Markdown className="markdown">
-                {stixCoreRelationship.description}
-              </Markdown>
+              {stixCoreRelationship.x_opencti_inferences === null && (
+                <div>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Description')}
+                  </Typography>
+                  <Markdown className="markdown">
+                    {stixCoreRelationship.description}
+                  </Markdown>
+                </div>
+              )}
             </Paper>
           </Grid>
         </Grid>
         <div>
-          <div style={{ margin: '40px 0 0px 0' }}>
-            <Grid container={true} spacing={3}>
-              <Grid item={true} xs={6}>
-                <StixCoreRelationshipStixCoreRelationships
-                  entityId={stixCoreRelationship.id}
+          {stixCoreRelationship.x_opencti_inferences !== null ? (
+            <div style={{ marginTop: 40 }}>
+              <Typography variant="h4" gutterBottom={true}>
+                {t('Inference explanation')}
+              </Typography>
+              {stixCoreRelationship.x_opencti_inferences.map((inference) => (
+                <StixCoreRelationshipInference
+                  key={inference.rule.id}
+                  inference={inference}
+                  stixCoreRelationship={stixCoreRelationship}
                 />
+              ))}
+            </div>
+          ) : (
+            <div style={{ margin: '40px 0 0px 0' }}>
+              <Grid container={true} spacing={3}>
+                <Grid item={true} xs={6}>
+                  <StixCoreRelationshipStixCoreRelationships
+                    entityId={stixCoreRelationship.id}
+                  />
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <StixCoreObjectOrStixCoreRelationshipLastReports
+                    stixCoreObjectOrStixCoreRelationshipId={
+                      stixCoreRelationship.id
+                    }
+                  />
+                </Grid>
               </Grid>
-              <Grid item={true} xs={6}>
-                <StixCoreObjectOrStixCoreRelationshipLastReports
-                  stixCoreObjectOrStixCoreRelationshipId={
-                    stixCoreRelationship.id
-                  }
-                />
-              </Grid>
-            </Grid>
-            <StixCoreObjectOrStixCoreRelationshipNotes
-              marginTop={55}
-              stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
-              isRelationship={true}
+              <StixCoreObjectOrStixCoreRelationshipNotes
+                marginTop={55}
+                stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
+                isRelationship={true}
+              />
+            </div>
+          )}
+        </div>
+        {stixCoreRelationship.x_opencti_inferences === null && (
+          <div>
+            <Fab
+              onClick={this.handleOpenEdition.bind(this)}
+              color="secondary"
+              aria-label="Edit"
+              className={
+                paddingRight
+                  ? classes.editButtonWithPadding
+                  : classes.editButton
+              }
+            >
+              <Edit />
+            </Fab>
+            <StixCoreRelationshipEdition
+              open={this.state.openEdit}
+              stixCoreRelationshipId={stixCoreRelationship.id}
+              handleClose={this.handleCloseEdition.bind(this)}
+              handleDelete={this.handleDelete.bind(this)}
             />
           </div>
-        </div>
-        <div>
-          <Fab
-            onClick={this.handleOpenEdition.bind(this)}
-            color="secondary"
-            aria-label="Edit"
-            className={
-              paddingRight ? classes.editButtonWithPadding : classes.editButton
-            }
-          >
-            <Edit />
-          </Fab>
-          <StixCoreRelationshipEdition
-            open={this.state.openEdit}
-            stixCoreRelationshipId={stixCoreRelationship.id}
-            handleClose={this.handleCloseEdition.bind(this)}
-            handleDelete={this.handleDelete.bind(this)}
-          />
-        </div>
+        )}
       </div>
     );
   }
@@ -419,6 +451,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
     stixCoreRelationship: graphql`
       fragment StixCoreRelationshipOverview_stixCoreRelationship on StixCoreRelationship {
         id
+        entity_type
+        parent_types
         relationship_type
         confidence
         start_time
@@ -428,6 +462,542 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         toRole
         created_at
         updated_at
+        x_opencti_inferences {
+          rule {
+            id
+            name
+            description
+          }
+          explanation {
+            ... on BasicObject {
+              id
+              entity_type
+              parent_types
+            }
+            ... on BasicRelationship {
+              id
+              entity_type
+              parent_types
+            }
+            ... on StixCoreObject {
+              created_at
+            }
+            ... on StixCoreRelationship {
+              relationship_type
+              created_at
+            }
+            ... on AttackPattern {
+              name
+            }
+            ... on Campaign {
+              name
+            }
+            ... on CourseOfAction {
+              name
+            }
+            ... on Individual {
+              name
+            }
+            ... on Organization {
+              name
+            }
+            ... on Sector {
+              name
+            }
+            ... on Indicator {
+              name
+            }
+            ... on Infrastructure {
+              name
+            }
+            ... on IntrusionSet {
+              name
+            }
+            ... on Position {
+              name
+            }
+            ... on City {
+              name
+            }
+            ... on Country {
+              name
+            }
+            ... on Region {
+              name
+            }
+            ... on Malware {
+              name
+            }
+            ... on ThreatActor {
+              name
+            }
+            ... on Tool {
+              name
+            }
+            ... on Vulnerability {
+              name
+            }
+            ... on Incident {
+              name
+            }
+            ... on StixCoreRelationship {
+              id
+              relationship_type
+              from {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreObject {
+                  created_at
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                  created_at
+                }
+                ... on AttackPattern {
+                  name
+                }
+                ... on Campaign {
+                  name
+                }
+                ... on CourseOfAction {
+                  name
+                }
+                ... on Individual {
+                  name
+                }
+                ... on Organization {
+                  name
+                }
+                ... on Sector {
+                  name
+                }
+                ... on Indicator {
+                  name
+                }
+                ... on Infrastructure {
+                  name
+                }
+                ... on IntrusionSet {
+                  name
+                }
+                ... on Position {
+                  name
+                }
+                ... on City {
+                  name
+                }
+                ... on Country {
+                  name
+                }
+                ... on Region {
+                  name
+                }
+                ... on Malware {
+                  name
+                }
+                ... on ThreatActor {
+                  name
+                }
+                ... on Tool {
+                  name
+                }
+                ... on Vulnerability {
+                  name
+                }
+                ... on Incident {
+                  name
+                }
+                ... on StixCyberObservable {
+                  observable_value
+                }
+                ... on StixCoreRelationship {
+                  id
+                  entity_type
+                  relationship_type
+                  from {
+                    ... on BasicObject {
+                      id
+                      entity_type
+                    }
+                    ... on BasicRelationship {
+                      id
+                      entity_type
+                    }
+                    ... on StixCoreObject {
+                      created_at
+                    }
+                    ... on StixCoreRelationship {
+                      created_at
+                    }
+                    ... on AttackPattern {
+                      name
+                    }
+                    ... on Campaign {
+                      name
+                    }
+                    ... on CourseOfAction {
+                      name
+                    }
+                    ... on Individual {
+                      name
+                    }
+                    ... on Organization {
+                      name
+                    }
+                    ... on Sector {
+                      name
+                    }
+                    ... on Indicator {
+                      name
+                    }
+                    ... on Infrastructure {
+                      name
+                    }
+                    ... on IntrusionSet {
+                      name
+                    }
+                    ... on Position {
+                      name
+                    }
+                    ... on City {
+                      name
+                    }
+                    ... on Country {
+                      name
+                    }
+                    ... on Region {
+                      name
+                    }
+                    ... on Malware {
+                      name
+                    }
+                    ... on ThreatActor {
+                      name
+                    }
+                    ... on Tool {
+                      name
+                    }
+                    ... on Vulnerability {
+                      name
+                    }
+                    ... on Incident {
+                      name
+                    }
+                  }
+                  to {
+                    ... on BasicObject {
+                      id
+                      entity_type
+                    }
+                    ... on BasicRelationship {
+                      id
+                      entity_type
+                    }
+                    ... on StixCoreObject {
+                      created_at
+                    }
+                    ... on StixCoreRelationship {
+                      created_at
+                    }
+                    ... on AttackPattern {
+                      name
+                    }
+                    ... on Campaign {
+                      name
+                    }
+                    ... on CourseOfAction {
+                      name
+                    }
+                    ... on Individual {
+                      name
+                    }
+                    ... on Organization {
+                      name
+                    }
+                    ... on Sector {
+                      name
+                    }
+                    ... on Indicator {
+                      name
+                    }
+                    ... on Infrastructure {
+                      name
+                    }
+                    ... on IntrusionSet {
+                      name
+                    }
+                    ... on Position {
+                      name
+                    }
+                    ... on City {
+                      name
+                    }
+                    ... on Country {
+                      name
+                    }
+                    ... on Region {
+                      name
+                    }
+                    ... on Malware {
+                      name
+                    }
+                    ... on ThreatActor {
+                      name
+                    }
+                    ... on Tool {
+                      name
+                    }
+                    ... on Vulnerability {
+                      name
+                    }
+                    ... on Incident {
+                      name
+                    }
+                  }
+                }
+              }
+              to {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreObject {
+                  created_at
+                }
+                ... on StixCoreRelationship {
+                  created_at
+                  relationship_type
+                }
+                ... on AttackPattern {
+                  name
+                }
+                ... on Campaign {
+                  name
+                }
+                ... on CourseOfAction {
+                  name
+                }
+                ... on Individual {
+                  name
+                }
+                ... on Organization {
+                  name
+                }
+                ... on Sector {
+                  name
+                }
+                ... on Indicator {
+                  name
+                }
+                ... on Infrastructure {
+                  name
+                }
+                ... on IntrusionSet {
+                  name
+                }
+                ... on Position {
+                  name
+                }
+                ... on City {
+                  name
+                }
+                ... on Country {
+                  name
+                }
+                ... on Region {
+                  name
+                }
+                ... on Malware {
+                  name
+                }
+                ... on ThreatActor {
+                  name
+                }
+                ... on Tool {
+                  name
+                }
+                ... on Vulnerability {
+                  name
+                }
+                ... on Incident {
+                  name
+                }
+                ... on StixCyberObservable {
+                  observable_value
+                }
+                ... on StixCoreRelationship {
+                  id
+                  entity_type
+                  relationship_type
+                  from {
+                    ... on BasicObject {
+                      id
+                      entity_type
+                      parent_types
+                    }
+                    ... on BasicRelationship {
+                      id
+                      entity_type
+                      parent_types
+                    }
+                    ... on StixCoreObject {
+                      created_at
+                    }
+                    ... on StixCoreRelationship {
+                      created_at
+                    }
+                    ... on AttackPattern {
+                      name
+                    }
+                    ... on Campaign {
+                      name
+                    }
+                    ... on CourseOfAction {
+                      name
+                    }
+                    ... on Individual {
+                      name
+                    }
+                    ... on Organization {
+                      name
+                    }
+                    ... on Sector {
+                      name
+                    }
+                    ... on Indicator {
+                      name
+                    }
+                    ... on Infrastructure {
+                      name
+                    }
+                    ... on IntrusionSet {
+                      name
+                    }
+                    ... on Position {
+                      name
+                    }
+                    ... on City {
+                      name
+                    }
+                    ... on Country {
+                      name
+                    }
+                    ... on Region {
+                      name
+                    }
+                    ... on Malware {
+                      name
+                    }
+                    ... on ThreatActor {
+                      name
+                    }
+                    ... on Tool {
+                      name
+                    }
+                    ... on Vulnerability {
+                      name
+                    }
+                    ... on Incident {
+                      name
+                    }
+                    ... on StixCyberObservable {
+                      observable_value
+                    }
+                  }
+                  to {
+                    ... on BasicObject {
+                      id
+                      entity_type
+                      parent_types
+                    }
+                    ... on BasicRelationship {
+                      id
+                      entity_type
+                      parent_types
+                    }
+                    ... on StixCoreObject {
+                      created_at
+                    }
+                    ... on StixCoreRelationship {
+                      created_at
+                    }
+                    ... on AttackPattern {
+                      name
+                    }
+                    ... on Campaign {
+                      name
+                    }
+                    ... on CourseOfAction {
+                      name
+                    }
+                    ... on Individual {
+                      name
+                    }
+                    ... on Organization {
+                      name
+                    }
+                    ... on Sector {
+                      name
+                    }
+                    ... on Indicator {
+                      name
+                    }
+                    ... on Infrastructure {
+                      name
+                    }
+                    ... on IntrusionSet {
+                      name
+                    }
+                    ... on Position {
+                      name
+                    }
+                    ... on City {
+                      name
+                    }
+                    ... on Country {
+                      name
+                    }
+                    ... on Region {
+                      name
+                    }
+                    ... on Malware {
+                      name
+                    }
+                    ... on ThreatActor {
+                      name
+                    }
+                    ... on Tool {
+                      name
+                    }
+                    ... on Vulnerability {
+                      name
+                    }
+                    ... on Incident {
+                      name
+                    }
+                    ... on StixCyberObservable {
+                      observable_value
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
         createdBy {
           ... on Identity {
             id
@@ -454,6 +1024,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             id
             entity_type
             parent_types
+          }
+          ... on StixCoreObject {
+            created_at
+          }
+          ... on StixCoreRelationship {
+            created_at
           }
           ... on AttackPattern {
             name
@@ -525,6 +1101,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 id
                 entity_type
               }
+              ... on StixCoreObject {
+                created_at
+              }
+              ... on StixCoreRelationship {
+                created_at
+              }
               ... on AttackPattern {
                 name
               }
@@ -588,6 +1170,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               ... on BasicRelationship {
                 id
                 entity_type
+              }
+              ... on StixCoreObject {
+                created_at
+              }
+              ... on StixCoreRelationship {
+                created_at
               }
               ... on AttackPattern {
                 name
@@ -656,6 +1244,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             id
             entity_type
             parent_types
+          }
+          ... on StixCoreObject {
+            created_at
+          }
+          ... on StixCoreRelationship {
+            created_at
           }
           ... on AttackPattern {
             name
@@ -863,7 +1457,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withRouter,
   withStyles(styles),

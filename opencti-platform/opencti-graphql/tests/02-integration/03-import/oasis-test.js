@@ -1,8 +1,8 @@
 /* eslint-disable prettier/prettier */
 import platformInit from '../../../src/initialization';
-import { listenServer, stopServer } from '../../../src/httpServer';
 import { FIVE_MINUTES, PYTHON_PATH, API_TOKEN, API_URI } from '../../utils/testQuery';
 import { execPython3 } from '../../../src/python/pythonBridge';
+import { shutdownModules, startModules } from "../../../src/modules";
 
 describe('Database provision', () => {
   const importOpts = [API_URI, API_TOKEN, '/tests/data/poisonivy.json'];
@@ -16,11 +16,11 @@ describe('Database provision', () => {
   it(
     'Should import creation succeed',
     async () => {
-      const httpServer = await listenServer();
+      await startModules();
       const execution = await execPython3(PYTHON_PATH, 'local_importer.py', importOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
-      await stopServer(httpServer);
+      await shutdownModules();
     },
     FIVE_MINUTES
   );

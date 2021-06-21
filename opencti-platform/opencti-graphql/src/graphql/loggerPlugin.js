@@ -1,6 +1,6 @@
 import { dissoc, filter, head, includes, isEmpty, isNil } from 'ramda';
 import { stripIgnoredCharacters } from 'graphql';
-import { booleanConf, logApp } from '../config/conf';
+import { booleanConf, DEV_MODE, logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
 import { getMemoryStatistics } from '../domain/settings';
 import { AUTH_FAILURE, AUTH_REQUIRED, FORBIDDEN_ACCESS, UNSUPPORTED_ERROR } from '../config/errors';
@@ -88,6 +88,10 @@ export default {
           } else {
             // Every other uses cases are logged with error level
             logApp.error(API_CALL_MESSAGE, { ...callMetaData, error });
+            if (DEV_MODE) {
+              // eslint-disable-next-line no-console
+              console.error(stack);
+            }
           }
         } else if (perfLog) {
           logApp.info(API_CALL_MESSAGE, { ...callMetaData, memory: getMemoryStatistics() });

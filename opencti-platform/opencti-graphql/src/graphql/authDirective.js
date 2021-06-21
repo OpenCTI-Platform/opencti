@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle,no-param-reassign */
-import { SchemaDirectiveVisitor } from 'graphql-tools';
+import { SchemaDirectiveVisitor } from '@graphql-tools/utils';
 import { includes, map, filter } from 'ramda';
 import { defaultFieldResolver, responsePathAsArray } from 'graphql';
 import { AuthRequired, ForbiddenAccess } from '../config/errors';

@@ -117,11 +117,27 @@ export const stixDataConverter = (data, args = {}) => {
   const { patchGeneration = false } = args;
   let finalData = data;
   // Relationships
+  if (isDefinedValue(finalData.fromId)) {
+    finalData = R.pipe(
+      R.dissoc('fromId'),
+      R.dissoc('fromRole'),
+      R.dissoc('fromType'),
+      R.assoc('x_opencti_source_ref', data.fromId)
+    )(finalData);
+  }
   if (isDefinedValue(finalData.from)) {
     finalData = R.pipe(
       R.dissoc('from'),
       R.assoc('source_ref', data.from.standard_id),
       R.assoc('x_opencti_source_ref', data.from.internal_id)
+    )(finalData);
+  }
+  if (isDefinedValue(finalData.toId)) {
+    finalData = R.pipe(
+      R.dissoc('toId'),
+      R.dissoc('toRole'),
+      R.dissoc('toType'),
+      R.assoc('x_opencti_target_ref', data.toId)
     )(finalData);
   }
   if (isDefinedValue(finalData.to)) {
@@ -264,13 +280,6 @@ export const buildStixData = (data, args = {}) => {
     R.dissoc('base_type'),
     R.dissoc('entity_type'),
     R.dissoc('update'),
-    // Relations
-    R.dissoc('fromId'),
-    R.dissoc('fromRole'),
-    R.dissoc('fromType'),
-    R.dissoc('toId'),
-    R.dissoc('toRole'),
-    R.dissoc('toType'),
     R.dissoc('connections')
   )(data);
   const stixData = stixDataConverter(rawData, args);
@@ -508,6 +517,7 @@ export const stixCoreRelationshipsMapping = {
   Region_Region: ['located-at'],
   Country_Region: ['located-at'],
   City_Country: ['located-at'],
+  City_Region: ['located-at'],
   Position_City: ['located-at'],
   'IPv4-Addr_Region': ['located-at'],
   'IPv4-Addr_Country': ['located-at'],

@@ -8,7 +8,7 @@ export const RELATION_HAS_ROLE = 'has-role';
 export const RELATION_HAS_CAPABILITY = 'has-capability';
 export const RELATION_ACCESSES_TO = 'accesses-to';
 export const RELATION_HAS_REFERENCE = 'has-reference';
-const INTERNAL_RELATIONSHIPS = [
+export const INTERNAL_RELATIONSHIPS = [
   RELATION_MIGRATES,
   RELATION_MEMBER_OF,
   RELATION_ALLOWED_BY,

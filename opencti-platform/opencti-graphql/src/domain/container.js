@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { listAllThings, listEntities, listThings, loadById } from '../database/middleware';
-import { ENTITY_TYPE_CONTAINER, REL_INDEX_PREFIX } from '../schema/general';
+import { paginateAllThings, listEntities, listThings, loadById } from '../database/middleware';
+import { buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination } from '../database/utils';
 
@@ -26,14 +26,14 @@ export const findAll = async (user, args) => {
 
 // Entities tab
 export const objects = async (user, containerId, args) => {
-  const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`;
+  const key = buildRefRelationKey(RELATION_OBJECT);
   let types = ['Stix-Core-Object', 'stix-core-relationship'];
   if (args.types) {
     types = args.types;
   }
   const filters = [{ key, values: [containerId] }, ...(args.filters || [])];
   if (args.all) {
-    return listAllThings(user, types, R.assoc('filters', filters, args));
+    return paginateAllThings(user, types, R.assoc('filters', filters, args));
   }
   return listThings(user, types, R.assoc('filters', filters, args));
 };
@@ -43,7 +43,7 @@ export const containersObjectsOfObject = async (user, id, types) => {
   const containers = await findAll(user, {
     connectionFormat: false,
     first: 500,
-    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`, values: [id] }],
+    filters: [{ key: buildRefRelationKey(RELATION_OBJECT), values: [id] }],
   });
   const containersObjects = await Promise.all(R.map((n) => objects(user, n.id, { first: 1000, types }), containers));
   const containersObjectsResult = R.uniqBy(R.path(['node', 'id']), R.flatten(R.map((n) => n.edges, containersObjects)));

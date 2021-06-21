@@ -5,6 +5,7 @@ import {
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
   ABSTRACT_STIX_META_RELATIONSHIP,
 } from '../schema/general';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 
 const stixRelationshipResolvers = {
   Query: {
@@ -19,6 +20,9 @@ const stixRelationshipResolvers = {
       }
       if (includes(ABSTRACT_STIX_CORE_RELATIONSHIP, obj.parent_types)) {
         return 'StixCoreRelationship';
+      }
+      if (STIX_SIGHTING_RELATIONSHIP === obj.entity_type) {
+        return 'StixSightingRelationship';
       }
       if (includes(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, obj.parent_types)) {
         return 'StixCyberObservableRelationship';

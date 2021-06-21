@@ -564,6 +564,7 @@ export const buildGraphData = (objects, graphData, t) => {
       }`,
       source_id: n.from.id,
       target_id: n.to.id,
+      inferred: n.inferred,
       defaultDate: jsDate(defaultDate(n)),
     })),
   )(objects);

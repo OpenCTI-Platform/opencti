@@ -16,6 +16,7 @@ const taskResolvers = {
     __resolveType(obj) {
       if (obj.type === 'QUERY') return 'QueryTask';
       if (obj.type === 'LIST') return 'ListTask';
+      if (obj.type === 'RULE') return 'RuleTask';
       /* istanbul ignore next */
       return 'Unknown';
     },

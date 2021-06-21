@@ -56,7 +56,7 @@ export const taxiiCollectionEditContext = async (user, collectionId, input) => {
 // Taxii rest API
 const prepareStixElement = async (user, data) => {
   const element = await stixLoadById(user, data.internal_id);
-  return buildStixData(element, { diffMode: false });
+  return buildStixData(element);
 };
 const prepareManifestElement = async (data) => {
   return {

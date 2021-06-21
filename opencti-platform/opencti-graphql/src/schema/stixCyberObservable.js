@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE,
-  REL_INDEX_PREFIX,
+  buildRefRelationKey,
   schemaTypes,
 } from './general';
 import {
@@ -85,14 +85,14 @@ export const isStixCyberObservable = (type) =>
 
 export const stixCyberObservableOptions = {
   StixCyberObservablesFilter: {
-    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
-    relatedTo: `${REL_INDEX_PREFIX}${RELATION_RELATED_TO}.internal_id`,
-    objectContained: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
-    containedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
-    hasExternalReference: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id`,
-    sightedBy: `${REL_INDEX_PREFIX}${STIX_SIGHTING_RELATIONSHIP}.internal_id`,
+    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
+    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
+    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    relatedTo: buildRefRelationKey(RELATION_RELATED_TO),
+    objectContained: buildRefRelationKey(RELATION_OBJECT),
+    containedBy: buildRefRelationKey(RELATION_OBJECT), // ASK SAM
+    hasExternalReference: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
+    sightedBy: buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP),
     hashes_MD5: 'hashes.MD5',
     hashes_SHA1: 'hashes.SHA-1',
     hashes_SHA256: 'hashes.SHA-256',

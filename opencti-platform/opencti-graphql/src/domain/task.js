@@ -2,24 +2,29 @@ import * as R from 'ramda';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { now } from '../utils/format';
 import { elIndex, elPaginate } from '../database/elasticSearch';
-import { INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES } from '../database/utils';
+import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_STIX_INDICES } from '../database/utils';
 import { ENTITY_TYPE_TASK } from '../schema/internalObject';
 import { deleteElementById, listEntities, loadById, patchAttribute } from '../database/middleware';
 import { GlobalFilters } from '../utils/filtering';
 import { ForbiddenAccess } from '../config/errors';
 import { KNOWLEDGE_DELETE } from '../initialization';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
+import { RULE_PREFIX } from '../schema/general';
+import { getRule } from './rule';
 
 export const MAX_TASK_ELEMENTS = 500;
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_LIST = 'LIST';
+export const TASK_TYPE_RULE = 'RULE';
 
 export const ACTION_TYPE_DELETE = 'DELETE';
 export const ACTION_TYPE_ADD = 'ADD';
 export const ACTION_TYPE_REMOVE = 'REMOVE';
 export const ACTION_TYPE_REPLACE = 'REPLACE';
 export const ACTION_TYPE_MERGE = 'MERGE';
+export const ACTION_TYPE_RULE_APPLY = 'RULE_APPLY';
+export const ACTION_TYPE_RULE_CLEAR = 'RULE_CLEAR';
 
 const createDefaultTask = (user, input, taskType, taskExpectedNumber) => {
   const taskId = generateInternalId();
@@ -92,6 +97,19 @@ const checkActionValidity = (user, actions) => {
       throw ForbiddenAccess();
     }
   }
+};
+
+export const createRuleTask = async (user, input) => {
+  const { rule, enable } = input;
+  const ruleDefinition = await getRule(rule);
+  const { scopeFilters } = ruleDefinition;
+  const opts = enable ? scopeFilters : { filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }] };
+  const queryData = await elPaginate(user, READ_DATA_INDICES, { ...opts, first: 1 });
+  const countExpected = queryData.pageInfo.globalCount;
+  const task = createDefaultTask(user, input, TASK_TYPE_RULE, countExpected);
+  const ruleTask = { ...task, rule, enable };
+  await elIndex(INDEX_INTERNAL_OBJECTS, ruleTask);
+  return ruleTask;
 };
 
 export const createQueryTask = async (user, input) => {

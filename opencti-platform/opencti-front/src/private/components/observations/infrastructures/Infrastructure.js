@@ -57,7 +57,7 @@ class InfrastructureComponent extends Component {
           <Grid item={true} xs={6}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={infrastructure.id}
-              stixObjectOrStixRelationshipLink={`/dashboard/threats/intrusion_sets/${infrastructure.id}/knowledge`}
+              stixObjectOrStixRelationshipLink={`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`}
             />
           </Grid>
           <Grid item={true} xs={6}>

@@ -12,7 +12,7 @@ import { ROLE_DEFAULT, STREAMAPI, TAXIIAPI } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
-import { lockResource, redisInitializeClients, redisIsAlive } from './database/redis';
+import { lockResource, redisIsAlive } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import applyMigration, { lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity, patchAttribute } from './database/middleware';
@@ -277,7 +277,6 @@ const isCompatiblePlatform = async () => {
 const platformInit = async (testMode = false) => {
   let lock;
   try {
-    await redisInitializeClients();
     await checkSystemDependencies();
     lock = await lockResource([PLATFORM_LOCK_ID]);
     logApp.info(`[INIT] Starting platform initialization`);

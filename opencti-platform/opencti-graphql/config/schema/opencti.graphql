@@ -509,6 +509,7 @@ type FileConnection {
 enum TaskType {
   QUERY
   LIST
+  RULE
 }
 type TaskError {
   id: ID!
@@ -521,6 +522,7 @@ enum TaskActionType {
   REMOVE
   REPLACE
   MERGE
+  RESCAN
 }
 enum TaskContextType {
   ATTRIBUTE
@@ -534,6 +536,7 @@ enum TasksOrdering {
   last_execution_date
 }
 enum TasksFilter {
+  type
   initiator
   completed
 }
@@ -564,6 +567,22 @@ interface Task {
   task_expected_number: Int
   task_processed_number: Int
   errors: [TaskError]
+}
+
+type RuleTask implements Task {
+  id: ID!
+  type: TaskType
+  initiator: User
+  actions: [TaskAction]
+  created_at: DateTime
+  last_execution_date: DateTime
+  completed: Boolean
+  task_expected_number: Int
+  task_processed_number: Int
+  errors: [TaskError]
+  # RuleTask
+  rule: ID!
+  enable: Boolean
 }
 
 type ListTask implements Task {
@@ -641,6 +660,10 @@ interface InternalObject {
 }
 
 ############## Settings
+type Module {
+  id: ID!
+  enable: Boolean!
+}
 type Provider {
   name: String!
   type: String
@@ -656,6 +679,7 @@ type Settings implements InternalObject & BasicObject {
   platform_title: String
   platform_email: String
   platform_url: String
+  platform_modules: [Module]
   platform_providers: [Provider]
   platform_language: String
   platform_theme: String
@@ -903,7 +927,24 @@ type Connector implements BasicObject & InternalObject {
   works(status: String): [Work]
 }
 
+############## Rules
+type Rule {
+  id: ID! # internal_id
+  name: String!
+  description: String!
+  activated: Boolean!
+}
+
 ######## STIX OBJECT ENTITIES
+type InferenceAttribute {
+  field: String!
+  value: String!
+}
+type Inference {
+  rule: Rule!
+  explanation: [StixObjectOrStixRelationship]!
+  attributes: [InferenceAttribute]
+}
 
 interface StixObject {
   id: ID! # internal_id
@@ -915,6 +956,8 @@ interface StixObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
 }
 
 ######## STIX META OBJECT ENTITIES
@@ -974,6 +1017,8 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixMetaObject
   created: DateTime
   modified: DateTime
@@ -1035,6 +1080,8 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixMetaObject
   created: DateTime
   modified: DateTime
@@ -1095,6 +1142,8 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixMetaObject
   created: DateTime
   modified: DateTime
@@ -1158,6 +1207,8 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixMetaObject
   created: DateTime
   modified: DateTime
@@ -1452,6 +1503,8 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -1581,6 +1634,8 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -1802,6 +1857,8 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -1932,6 +1989,8 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -2060,6 +2119,8 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -2192,6 +2253,8 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -2322,6 +2385,8 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -2566,6 +2631,8 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -2699,6 +2766,8 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -2825,6 +2894,8 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -2965,6 +3036,8 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -3104,6 +3177,8 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -3224,6 +3299,8 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -3472,6 +3549,8 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -3599,6 +3678,8 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -3717,6 +3798,8 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -3835,6 +3918,8 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -3967,6 +4052,8 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -4095,6 +4182,8 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -4226,6 +4315,8 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -4348,6 +4439,8 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -4471,6 +4564,8 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -4676,6 +4771,8 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -4761,6 +4858,8 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -4850,6 +4949,8 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -4931,6 +5032,8 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -5014,6 +5117,8 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -5107,6 +5212,8 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -5279,6 +5386,8 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -5374,6 +5483,8 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -5476,6 +5587,8 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -5580,6 +5693,8 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -5661,6 +5776,8 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -5742,6 +5859,8 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -5823,6 +5942,8 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -5904,6 +6025,8 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -6005,6 +6128,8 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -6098,6 +6223,8 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -6189,6 +6316,8 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -6270,6 +6399,8 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -6379,6 +6510,8 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -6464,6 +6597,8 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -6549,6 +6684,8 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -6660,6 +6797,8 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -6741,6 +6880,8 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -6822,6 +6963,8 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -6903,6 +7046,8 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -6984,6 +7129,8 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
@@ -7291,6 +7438,7 @@ interface StixRelationship {
   x_opencti_stix_ids: [String]
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
+  x_opencti_inferences: [Inference]
 }
 
 ############## StixCoreRelationships
@@ -7354,6 +7502,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   spec_version: String!
+  x_opencti_inferences: [Inference]
   # StixCoreRelationship
   relationship_type: String!
   description: String
@@ -7483,6 +7632,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   spec_version: String!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
+  x_opencti_inferences: [Inference]
   # StixSightingRelationship
   description: String
   first_seen: DateTime
@@ -7572,6 +7722,7 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   spec_version: String!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
+  x_opencti_inferences: [Inference]
   # StixCyberObservableRelationship
   relationship_type: String!
   start_time: DateTime
@@ -7612,6 +7763,7 @@ type StixMetaRelationship implements BasicRelationship & StixRelationship {
   spec_version: String!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
+  x_opencti_inferences: [Inference]
 }
 input StixMetaRelationshipAddInput {
   relationship_type: String!
@@ -7748,6 +7900,8 @@ type Query {
     filterMode: FilterMode
     search: String
   ): TaskConnection @auth(for: [KNOWLEDGE])
+  rule(id: String!): Rule @auth(for: [KNOWLEDGE])
+  rules: [Rule] @auth(for: [KNOWLEDGE])
 
   ######## STIX OBJECT ENTITIES
 
@@ -8881,6 +9035,9 @@ type Mutation {
   deleteTask(id: ID!): ID! @auth(for: [KNOWLEDGE_KNUPDATE])
   listTaskAdd(input: ListTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
   queryTaskAdd(input: QueryTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
+
+  ### RULE
+  ruleSetActivation(id: ID!, enable: Boolean!): Rule! @auth(for: [SETTINGS])
 
   ######## INTERNAL OBJECT ENTITIES
   token(input: UserLoginInput): String

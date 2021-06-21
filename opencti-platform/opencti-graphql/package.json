@@ -1,13 +1,14 @@
 {
   "name": "opencti-graphql",
-  "version": "4.5.5",
-  "main": "src/server.js",
+  "version": "4.6.0",
+  "main": "http/httpServer.js",
   "author": "Luatix",
   "license": "Apache-2.0",
   "scripts": {
     "start": "webpack --mode development",
     "clean:relations": "babel-node ./script/script-clean-relations.js",
     "install:python": "pip3 install -r src/python/requirements.txt",
+    "build:api": "webpack --mode production",
     "build": "yarn install:python && webpack --mode production",
     "serv": "node build/index.js",
     "lint": "eslint --max-warnings 0 .",
@@ -25,10 +26,12 @@
     ]
   },
   "engines": {
-    "node": ">= 12.* <= 16.*"
+    "node": ">= 14.* <= 16.*"
   },
   "dependencies": {
     "@elastic/elasticsearch": "7.13.0",
+    "@graphql-tools/schema": "7.1.5",
+    "@graphql-tools/utils": "7.10.0",
     "amqplib": "0.8.0",
     "apollo-errors": "1.9.0",
     "apollo-server-express": "2.25.1",
@@ -58,7 +61,6 @@
     "graphql-redis-subscriptions": "2.4.0",
     "graphql-relay": "0.7.0",
     "graphql-subscriptions": "1.2.1",
-    "graphql-tools": "7.0.5",
     "he": "1.2.0",
     "helmet": "4.6.0",
     "ioredis": "4.27.6",
@@ -72,6 +74,7 @@
     "mime-types": "2.1.31",
     "minio": "7.0.18",
     "moment": "2.29.1",
+    "moment-range": "^4.0.2",
     "nconf": "0.11.2",
     "openid-client": "4.7.4",
     "passport": "0.4.1",
@@ -89,6 +92,7 @@
     "sanitize-filename": "1.6.3",
     "semver": "^7.3.5",
     "set-interval-async": "2.0.3",
+    "source-map-support": "0.5.19",
     "uuid": "8.3.2",
     "uuid-time": "1.0.0",
     "validator": "13.6.0",
@@ -127,6 +131,7 @@
   },
   "resolutions": {
     "fs-capacitor": "6.2.0",
+    "extract-files": "10.0.0",
     "lodash": "4.17.21",
     "node-fetch": "2.6.1",
     "ws": "7.4.6"

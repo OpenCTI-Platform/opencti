@@ -6,7 +6,7 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   internalLoadById,
-  listAllThings,
+  paginateAllThings,
   listEntities,
   listThings,
   loadById,
@@ -16,7 +16,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_WORKSPACE } from '../schema/internalObject';
 import { FunctionalError } from '../config/errors';
-import { ABSTRACT_INTERNAL_RELATIONSHIP, REL_INDEX_PREFIX } from '../schema/general';
+import { ABSTRACT_INTERNAL_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { isInternalRelationship, RELATION_HAS_REFERENCE } from '../schema/internalRelationship';
 import { generateInternalId } from '../schema/identifier';
 
@@ -29,14 +29,14 @@ export const findAll = (user, args) => {
 };
 
 export const objects = async (user, workspaceId, args) => {
-  const key = `${REL_INDEX_PREFIX}${RELATION_HAS_REFERENCE}.internal_id`;
+  const key = buildRefRelationKey(RELATION_HAS_REFERENCE);
   let types = ['Stix-Meta-Object', 'Stix-Core-Object', 'stix-relationship'];
   if (args.types) {
     types = args.types;
   }
   const filters = [{ key, values: [workspaceId] }, ...(args.filters || [])];
   if (args.all) {
-    return listAllThings(user, types, R.assoc('filters', filters, args));
+    return paginateAllThings(user, types, R.assoc('filters', filters, args));
   }
   return listThings(user, types, R.assoc('filters', filters, args));
 };

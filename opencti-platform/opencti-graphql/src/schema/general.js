@@ -1,9 +1,5 @@
 import * as R from 'ramda';
 
-// Specific prefix
-export const REL_INDEX_PREFIX = 'rel_';
-export const INDEX_MARKINGS_FIELD = `${REL_INDEX_PREFIX}object-marking.internal_id`;
-
 // General
 export const ID_INTERNAL = 'internal_id';
 export const ID_STANDARD = 'standard_id';
@@ -11,6 +7,13 @@ export const INTERNAL_IDS_ALIASES = 'i_aliases_ids';
 export const IDS_STIX = 'x_opencti_stix_ids';
 export const BASE_TYPE_RELATION = 'RELATION';
 export const BASE_TYPE_ENTITY = 'ENTITY';
+
+// Specific prefix
+export const REL_INDEX_PREFIX = 'rel_';
+export const INTERNAL_PREFIX = 'i_';
+export const RULE_PREFIX = 'i_rule_';
+export const buildRefRelationKey = (type, field = ID_INTERNAL) => `${REL_INDEX_PREFIX}${type}.${field}`;
+export const buildRefRelationSearchKey = (type) => `${buildRefRelationKey(type)}.keyword`;
 
 // Connectors
 export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-

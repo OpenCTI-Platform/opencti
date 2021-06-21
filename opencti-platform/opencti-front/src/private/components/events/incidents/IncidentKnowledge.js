@@ -57,6 +57,20 @@ class IncidentKnowledgeComponent extends Component {
         />
         <Route
           exact
+          path="/dashboard/events/incidents/:incidentId/knowledge/related"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={incident.id}
+              relationshipTypes={['related-to']}
+              targetStixDomainObjectTypes={['Stix-Domain-Object']}
+              entityLink={link}
+              allDirections={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/events/incidents/:incidentId/knowledge/attribution"
           render={(routeProps) => (
             <EntityStixCoreRelationships

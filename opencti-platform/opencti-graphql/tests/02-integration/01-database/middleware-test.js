@@ -13,7 +13,6 @@ import {
   mergeEntities,
   patchAttribute,
   querySubTypes,
-  REL_CONNECTED_SUFFIX,
   markedLoadById,
   timeSeriesEntities,
   timeSeriesRelations,
@@ -33,11 +32,7 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR,
 } from '../../../src/schema/stixDomainObject';
-import {
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_META_RELATIONSHIP,
-  REL_INDEX_PREFIX,
-} from '../../../src/schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP } from '../../../src/schema/general';
 import { RELATION_MITIGATES, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCyberObservable';
 import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixMetaRelationship';
@@ -368,12 +363,6 @@ describe('Relations listing', () => {
     };
     const stixRelationsWithInternalId = await listRelations(ADMIN_USER, 'stix-core-relationship', argsWithRelationId);
     expect(stixRelationsWithInternalId.edges.length).toEqual(1);
-  });
-  it.each(noCacheCases)('should list relations with to attribute filtering (noCache = %s)', async (noCache) => {
-    const options = { orderBy: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`, orderMode: 'asc', noCache };
-    const stixRelations = await listRelations(ADMIN_USER, 'uses', options);
-    // TODO Fix that test
-    expect(stixRelations).not.toBeNull();
   });
   it.each(noCacheCases)('should list relations with search (noCache = %s)', async (noCache) => {
     const malware = await elLoadByIds(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
@@ -846,10 +835,10 @@ describe('Upsert and merge entities', () => {
       RELATION_OBJECT_MARKING,
       ABSTRACT_STIX_META_RELATIONSHIP
     );
-    const checkers = await elFindByIds(ADMIN_USER, loadMalware.id, { relExclude: false });
+    const checkers = await elFindByIds(ADMIN_USER, loadMalware.id);
     const test = await internalLoadById(ADMIN_USER, testMarking);
     const mitre = await internalLoadById(ADMIN_USER, mitreMarking);
-    const rawMarkings = R.head(checkers)['rel_object-marking.internal_id'];
+    const rawMarkings = R.head(checkers).object_marking_refs;
     expect(rawMarkings.length).toEqual(2);
     expect(rawMarkings.includes(test.internal_id)).toBeTruthy();
     expect(rawMarkings.includes(mitre.internal_id)).toBeTruthy();

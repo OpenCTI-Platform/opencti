@@ -38,7 +38,7 @@ export const RELATION_BELONGS_TO = 'belongs-to';
 export const RELATION_PART_OF = 'part-of'; // Extension
 export const RELATION_SUBTECHNIQUE_OF = 'subtechnique-of'; // Extension
 export const RELATION_REVOKED_BY = 'revoked-by'; // Extension
-const STIX_CORE_RELATIONSHIPS = [
+export const STIX_CORE_RELATIONSHIPS = [
   RELATION_DELIVERS,
   RELATION_TARGETS,
   RELATION_USES,
@@ -108,6 +108,7 @@ export const stixCoreRelationshipsAttributes = [
   'i_stop_time_day',
   'i_stop_time_month',
   'i_stop_time_year',
+  'i_inference_rule',
 ];
 R.map(
   (stixCoreRelationshipType) =>

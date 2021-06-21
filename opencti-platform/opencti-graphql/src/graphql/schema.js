@@ -1,6 +1,6 @@
 import { GraphQLDateTime } from 'graphql-iso-date';
 import { mergeResolvers } from 'merge-graphql-schemas';
-import { makeExecutableSchema } from 'graphql-tools';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 import { constraintDirective } from 'graphql-constraint-directive';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
@@ -59,6 +59,7 @@ import organizationOrIndividualResolvers from '../resolvers/organizationOrIndivi
 import taxiiResolvers from '../resolvers/taxii';
 import taskResolvers from '../resolvers/task';
 import streamResolvers from '../resolvers/stream';
+import ruleResolvers from '../resolvers/rule';
 
 const createSchema = () => {
   const globalResolvers = {
@@ -78,6 +79,7 @@ const createSchema = () => {
     subTypeResolvers,
     fileResolvers,
     taskResolvers,
+    // ruleResolvers,
     // ENTITIES
     // INTERNAL OBJECT ENTITIES
     internalObjectResolvers,
@@ -112,6 +114,7 @@ const createSchema = () => {
     indicatorResolvers,
     infrastructureResolvers,
     intrusionSetResolvers,
+    ruleResolvers,
     // Locations
     locationResolvers,
     cityResolvers,

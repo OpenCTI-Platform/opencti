@@ -4,7 +4,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_NOTE } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, REL_INDEX_PREFIX } from '../schema/general';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 
@@ -20,7 +20,7 @@ export const noteContainsStixObjectOrStixRelationship = async (user, noteId, thi
   const args = {
     filters: [
       { key: 'internal_id', values: [noteId] },
-      { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`, values: [thingId] },
+      { key: buildRefRelationKey(RELATION_OBJECT), values: [thingId] },
     ],
   };
   const noteFound = await findAll(user, args);

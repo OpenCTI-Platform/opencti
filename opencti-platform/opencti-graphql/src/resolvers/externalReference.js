@@ -14,7 +14,7 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { RELATION_EXTERNAL_REFERENCE } from '../schema/stixMetaRelationship';
-import { REL_INDEX_PREFIX } from '../schema/general';
+import { buildRefRelationKey } from '../schema/general';
 
 const externalReferenceResolvers = {
   Query: {
@@ -22,7 +22,7 @@ const externalReferenceResolvers = {
     externalReferences: (_, args, { user }) => findAll(user, args),
   },
   ExternalReferencesFilter: {
-    usedBy: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id`,
+    usedBy: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
   },
   ExternalReference: {
     editContext: (externalReference) => fetchEditContext(externalReference.id),
