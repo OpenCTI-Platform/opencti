@@ -30,7 +30,7 @@ import {
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
 } from '../schema/internalRelationship';
-import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
+import {ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID, OPENCTI_SYSTEM_UUID} from '../schema/general';
 import { findAll as allMarkings } from './markingDefinition';
 import { findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
@@ -530,6 +530,9 @@ const buildCompleteUser = async (client) => {
 };
 
 export const resolveUserById = async (id) => {
+  if (id === OPENCTI_SYSTEM_UUID) {
+    return SYSTEM_USER;
+  }
   const client = await loadById(SYSTEM_USER, id, ENTITY_TYPE_USER);
   return buildCompleteUser(client);
 };

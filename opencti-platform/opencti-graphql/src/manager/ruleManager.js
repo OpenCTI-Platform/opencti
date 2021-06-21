@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { buildDeleteEvent, buildScanEvent, createStreamProcessor, lockResource } from '../database/redis';
-import conf, { logApp } from '../config/conf';
+import conf, { ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import { createEntity, listAllRelations, stixLoadById } from '../database/middleware';
 import { SYSTEM_USER } from '../utils/access';
 import { isEmptyField, READ_DATA_INDICES } from '../database/utils';
@@ -21,13 +21,15 @@ export const setRuleActivation = async (user, ruleId, active) => {
     throw UnsupportedError(`Cant ${active ? 'enable' : 'disable'} undefined rule ${ruleId}`);
   }
   await createEntity(user, { internal_id: ruleId, active, update: true }, ENTITY_TYPE_RULE);
-  const tasksFilters = [
-    { key: 'type', values: ['RULE'] },
-    { key: 'rule', values: [ruleId] },
-  ];
-  const tasks = await findAll(user, { filters: tasksFilters, connectionFormat: false });
-  await Promise.all(tasks.map((t) => deleteTask(user, t.id)));
-  await createRuleTask(user, { rule: ruleId, enable: active });
+  if (ENABLED_RULE_ENGINE) {
+    const tasksFilters = [
+      { key: 'type', values: ['RULE'] },
+      { key: 'rule', values: [ruleId] },
+    ];
+    const tasks = await findAll(user, { filters: tasksFilters, connectionFormat: false });
+    await Promise.all(tasks.map((t) => deleteTask(user, t.id)));
+    await createRuleTask(user, { rule: ruleId, enable: active });
+  }
   return getRule(ruleId);
 };
 
