@@ -9037,7 +9037,7 @@ type Mutation {
   queryTaskAdd(input: QueryTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ### RULE
-  ruleSetActivation(id: ID!, enable: Boolean!): Rule!
+  ruleSetActivation(id: ID!, enable: Boolean!): Rule! @auth(for: [SETTINGS])
 
   ######## INTERNAL OBJECT ENTITIES
   token(input: UserLoginInput): String
