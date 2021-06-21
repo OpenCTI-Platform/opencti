@@ -1598,7 +1598,7 @@ const buildInnerRelation = (from, to, type) => {
   }
   return relations;
 };
-const upsertIdentifiedFields = (user, element, input, fields) => {
+const upsertIdentifiedFields = (element, input, fields) => {
   const upsertUpdated = [];
   const upsertImpacted = [];
   if (fields) {
@@ -1742,20 +1742,20 @@ const upsertElementRaw = async (user, id, type, input, opts = {}) => {
   // Upsert entities
   if (isInternalObject(type) && forceUpdate) {
     const fields = internalObjectsFieldsToBeUpdated[type];
-    const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(user, instance, input, fields);
+    const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(instance, input, fields);
     impactedInputs.push(...upsertImpacted);
     updatedReplaceInputs.push(...upsertUpdated);
   }
   if (isStixDomainObject(type) && forceUpdate) {
     const fields = stixDomainObjectFieldsToBeUpdated[type];
-    const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(user, instance, input, fields);
+    const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(instance, input, fields);
     impactedInputs.push(...upsertImpacted);
     updatedReplaceInputs.push(...upsertUpdated);
   }
   // Upsert SCOs
   if (isStixCyberObservable(type) && forceUpdate) {
     const fields = stixCyberObservableFieldsToBeUpdated[type];
-    const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(user, instance, input, fields);
+    const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(instance, input, fields);
     impactedInputs.push(...upsertImpacted);
     updatedReplaceInputs.push(...upsertUpdated);
   }
