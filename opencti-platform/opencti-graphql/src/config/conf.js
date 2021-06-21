@@ -125,11 +125,6 @@ export const booleanConf = (key, defaultValue = true) => {
   return configValue === true || configValue === 'true';
 };
 
-export const ENABLED_API = booleanConf('app:enabled', true);
-export const ENABLED_EXPIRED_MANAGER = booleanConf('expiration_scheduler:enabled', false);
-export const ENABLED_TASK_SCHEDULER = booleanConf('task_scheduler:enabled', false);
-export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
-
 // Environment from NODE_ENV environment variable
 nconf.env({ separator: '__', lowerCase: true, parseValues: true });
 
@@ -277,5 +272,11 @@ export const configureCA = (certificates) => {
   }
   return { ca: [] };
 };
+
+// Expose global configuration
+export const ENABLED_API = booleanConf('app:enabled', true);
+export const ENABLED_EXPIRED_MANAGER = booleanConf('expiration_scheduler:enabled', false);
+export const ENABLED_TASK_SCHEDULER = booleanConf('task_scheduler:enabled', false);
+export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
 
 export default nconf;
