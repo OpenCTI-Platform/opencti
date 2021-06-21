@@ -24,7 +24,7 @@ import Loader from '../../../components/Loader';
 import MarkDownField from '../../../components/MarkDownField';
 import ColorPickerField from '../../../components/ColorPickerField';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -38,6 +38,9 @@ const styles = () => ({
   button: {
     float: 'right',
     margin: '20px 0 0 0',
+  },
+  nested: {
+    paddingLeft: theme.spacing(4),
   },
 });
 
@@ -60,6 +63,10 @@ const settingsQuery = graphql`
       platform_providers {
         name
         strategy
+      }
+      platform_modules {
+        id
+        enable
       }
       editContext {
         name
@@ -188,6 +195,7 @@ class Settings extends Component {
                 settings,
               );
               const authProviders = settings.platform_providers;
+              const modules = settings.platform_modules;
               let i = 0;
               return (
                 <div>
@@ -562,13 +570,33 @@ class Settings extends Component {
                               return (
                                 <div>
                                   <Typography variant="h1" gutterBottom={true}>
-                                    {t('Tools versions')}
+                                    {t('Tools')}
                                   </Typography>
                                   <List>
                                     <ListItem divider={true}>
                                       <ListItemText primary={'OpenCTI'} />
                                       <Chip label={version} />
                                     </ListItem>
+                                    <List component="div" disablePadding>
+                                      {modules.map((module) => (
+                                        <ListItem
+                                          key={module.id}
+                                          divider={true}
+                                          className={classes.nested}
+                                        >
+                                          <ListItemText
+                                            primary={t(module.id)}
+                                          />
+                                          <Chip
+                                            label={
+                                              module.enable
+                                                ? t('Enabled')
+                                                : t('Disabled')
+                                            }
+                                          />
+                                        </ListItem>
+                                      ))}
+                                    </List>
                                     {dependencies.map((dep) => (
                                       <ListItem key={dep.name} divider={true}>
                                         <ListItemText primary={t(dep.name)} />

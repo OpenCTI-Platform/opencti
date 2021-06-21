@@ -164,6 +164,10 @@ class RulesListComponent extends Component {
       sortByNameCaseInsensitive,
     )(data);
     const tasks = R.pathOr([], ['tasks', 'edges'], data);
+    const modules = R.pathOr([], ['settings', 'platform_modules'], data);
+    const isEngineEnabled = R.head(
+      R.filter((n) => n.id === 'RULE_ENGINE', modules),
+    )?.enable;
     return (
       <div>
         <Grid container={true} spacing={3}>
@@ -185,7 +189,8 @@ class RulesListComponent extends Component {
                     avatar={<AutoFix />}
                     action={
                       <Switch
-                        checked={rule.activated}
+                        disabled={!isEngineEnabled}
+                        checked={isEngineEnabled && rule.activated}
                         color="secondary"
                         onChange={
                           rule.activated
@@ -205,7 +210,7 @@ class RulesListComponent extends Component {
                     <Markdown>{rule.description}</Markdown>
                   </CardContent>
                   <CardActions classes={{ root: classes.cardActions }}>
-                    {task && (
+                    {isEngineEnabled && task && (
                       <div
                         style={{
                           width: '100%',
@@ -330,6 +335,12 @@ const RulesList = createRefetchContainer(
   {
     data: graphql`
       fragment RulesList_rules on Query {
+        settings {
+          platform_modules {
+            id
+            enable
+          }
+        }
         rules {
           id
           name
