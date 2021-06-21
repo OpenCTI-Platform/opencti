@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
+  buildRefRelationKey,
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
   ENTITY_TYPE_LOCATION,
-  REL_INDEX_PREFIX,
   schemaTypes,
 } from './general';
 import {
@@ -14,6 +14,7 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
 } from './stixMetaRelationship';
+import { RELATION_INDICATES } from './stixCoreRelationship';
 
 export const ATTRIBUTE_ALIASES = 'aliases';
 export const ATTRIBUTE_ALIASES_OPENCTI = 'x_opencti_aliases';
@@ -124,13 +125,13 @@ export const resolveAliasesField = (type) => {
 
 export const stixDomainObjectOptions = {
   StixDomainObjectsFilter: {
-    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
-    objectContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
-    containedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
-    hasExternalReference: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id`,
-    indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
+    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
+    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
+    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    objectContains: buildRefRelationKey(RELATION_OBJECT),
+    containedBy: buildRefRelationKey(RELATION_OBJECT),
+    hasExternalReference: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
+    indicates: buildRefRelationKey(RELATION_INDICATES),
   },
 };
 

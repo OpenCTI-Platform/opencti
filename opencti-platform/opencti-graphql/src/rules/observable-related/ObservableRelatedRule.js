@@ -5,15 +5,13 @@ import {
   internalLoadById,
   listAllRelations,
 } from '../../database/middleware';
-import { SYSTEM_USER } from '../../utils/access';
 import { extractFieldsOfPatch } from '../../graphql/sseMiddleware';
 import { getTypeFromStixId } from '../../schema/schemaUtils';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
-import { INDEX_MARKINGS_FIELD } from '../../schema/general';
 import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
 import def from './ObservableRelatedDefinition';
-import { createRulePatch } from '../RuleUtils';
+import { createRulePatch, RULE_MANAGER_USER } from '../RuleUtils';
 
 const ruleRelatedObservableBuilder = () => {
   // config
@@ -29,10 +27,9 @@ const ruleRelatedObservableBuilder = () => {
     const listFromCallback = async (relationships) => {
       const rels = relationships.filter((r) => r.internal_id !== createdId);
       for (let relIndex = 0; relIndex < rels.length; relIndex += 1) {
-        const { id: foundRelationId, toId, confidence, start_time, stop_time } = rels[relIndex];
+        const { id: foundRelationId, toId, confidence, start_time, stop_time, object_marking_refs } = rels[relIndex];
         const existingRange = buildPeriodFromDates(start_time, stop_time);
         const range = computeRangeIntersection(creationRange, existingRange);
-        const relInternalMarkings = relationships[relIndex][INDEX_MARKINGS_FIELD];
         // We do not need to propagate the creation here.
         // Because created relation have the same type.
         const dependencies = [sourceRef, createdId, targetRef, foundRelationId, toId];
@@ -41,7 +38,7 @@ const ruleRelatedObservableBuilder = () => {
           fromId: targetRef,
           toId,
           relationship_type: relationType,
-          objectMarking: [...(markings || []), ...(relInternalMarkings || [])],
+          objectMarking: [...(markings || []), ...(object_marking_refs || [])],
           confidence: createdConfidence < confidence ? createdConfidence : confidence,
           start_time: range.start,
           stop_time: range.end,
@@ -54,7 +51,7 @@ const ruleRelatedObservableBuilder = () => {
       }
     };
     const listFromArgs = { fromId: sourceRef, callback: listFromCallback };
-    await listAllRelations(SYSTEM_USER, relationType, listFromArgs);
+    await listAllRelations(RULE_MANAGER_USER, relationType, listFromArgs);
     return events;
   };
   const clean = async (element) => deleteInferredRuleElement(def.id, element);
@@ -76,7 +73,7 @@ const ruleRelatedObservableBuilder = () => {
     const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
     const isImpactedFields = listenedFields.some((f) => patchedFields.includes(f));
     if (isImpactedEvent && isImpactedFields) {
-      const rel = await internalLoadById(SYSTEM_USER, element.x_opencti_id);
+      const rel = await internalLoadById(RULE_MANAGER_USER, element.x_opencti_id);
       return applyUpsert(markings, { ...element, ...rel });
     }
     return [];

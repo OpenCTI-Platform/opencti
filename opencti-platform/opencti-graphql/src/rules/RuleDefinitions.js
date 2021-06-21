@@ -5,6 +5,9 @@ import AttributionTargetsD from './attribution-targets/AttributionTargetsDefinit
 import LocationTargetsDefinition from './location-targets/LocationTargetsDefinition';
 import LocatedAtLocatedDefinition from './located-at-located/LocatedAtLocatedDefinition';
 import LocalizationOfTargetsDefinition from './localization-of-targets/LocalizationOfTargetsDefinition';
+import ConfidenceLevelDefinition from './testing/confidence-level/ConfidenceLevelDefinition';
+import RelatedToRelatedDefinition from './testing/related-to-related/RelatedToRelatedDefinition';
+import { DEV_MODE } from '../config/conf';
 
 const declaredDef = [
   AttributedToAttributedDefinition,
@@ -14,5 +17,9 @@ const declaredDef = [
   LocationTargetsDefinition,
   LocatedAtLocatedDefinition,
   LocalizationOfTargetsDefinition,
+  ConfidenceLevelDefinition,
 ];
+if (DEV_MODE) {
+  declaredDef.push(...[ConfidenceLevelDefinition, RelatedToRelatedDefinition]);
+}
 export default declaredDef;

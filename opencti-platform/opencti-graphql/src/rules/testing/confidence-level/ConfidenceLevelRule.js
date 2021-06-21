@@ -1,13 +1,19 @@
 /* eslint-disable camelcase */
 import { generateInternalType } from '../../../schema/schemaUtils';
-import { SYSTEM_USER } from '../../../utils/access';
-import { internalLoadById, listAllThings, patchAttribute } from '../../../database/middleware';
+import {
+  deleteInferredRuleElement,
+  internalLoadById,
+  listAllThings,
+  patchAttribute,
+} from '../../../database/middleware';
 import { READ_DATA_INDICES_WITHOUT_INFERRED } from '../../../database/utils';
 import { isStixDomainObject } from '../../../schema/stixDomainObject';
 import { isStixCoreRelationship } from '../../../schema/stixCoreRelationship';
 import { extractFieldsOfPatch, rebuildInstanceWithPatch } from '../../../graphql/sseMiddleware';
 import def from './ConfidenceLevelDefinition';
-import { createClearRulePatch, createRulePatch } from '../../RuleUtils';
+import { createRulePatch, RULE_MANAGER_USER } from '../../RuleUtils';
+import { buildRefRelationKey } from '../../../schema/general';
+import { RELATION_CREATED_BY } from '../../../schema/stixMetaRelationship';
 
 const ruleConfidenceLevelBuilder = () => {
   // config
@@ -17,11 +23,11 @@ const ruleConfidenceLevelBuilder = () => {
     const { created_by_ref, x_opencti_id } = element;
     const entityType = generateInternalType(element);
     if (created_by_ref) {
-      const creator = await internalLoadById(SYSTEM_USER, created_by_ref);
+      const creator = await internalLoadById(RULE_MANAGER_USER, created_by_ref);
       const { x_opencti_reliability: reliability } = creator;
       const confidence = reliabilityMapping[reliability] || 0;
-      const patch = createRulePatch(def.id, [created_by_ref], [created_by_ref], { confidence });
-      await patchAttribute(SYSTEM_USER, x_opencti_id, entityType, patch);
+      const patch = createRulePatch(def.id, [creator.id], [creator.id], { confidence });
+      await patchAttribute(RULE_MANAGER_USER, x_opencti_id, entityType, patch);
     }
   };
   const applyCreatorUpdate = async (markings, data) => {
@@ -31,12 +37,12 @@ const ruleConfidenceLevelBuilder = () => {
         const element = elements[index];
         const confidence = reliabilityMapping[reliability] || 0;
         const patch = createRulePatch(def.id, [x_opencti_id], [x_opencti_id], { confidence });
-        await patchAttribute(SYSTEM_USER, element.id, element.entity_type, patch);
+        await patchAttribute(RULE_MANAGER_USER, element.id, element.entity_type, patch);
       }
     };
     const types = ['Stix-Core-Object', 'stix-core-relationship'];
-    const filters = [{ key: 'rel_created-by.internal_id', values: [data.x_opencti_id] }];
-    await listAllThings(SYSTEM_USER, types, {
+    const filters = [{ key: buildRefRelationKey(RELATION_CREATED_BY), values: [data.x_opencti_id] }];
+    await listAllThings(RULE_MANAGER_USER, types, {
       indices: READ_DATA_INDICES_WITHOUT_INFERRED, // No need to compute on inferences
       filters,
       callback: elementsCallback,
@@ -66,12 +72,7 @@ const ruleConfidenceLevelBuilder = () => {
     }
     return [];
   };
-  const clean = async (element) => {
-    const { x_opencti_id } = element;
-    const entityType = generateInternalType(element);
-    const patch = createClearRulePatch(def.id);
-    await patchAttribute(SYSTEM_USER, x_opencti_id, entityType, patch);
-  };
+  const clean = async (element) => deleteInferredRuleElement(def.id, element);
   return { ...def, insert, update, clean };
 };
 const ConfidenceLevel = ruleConfidenceLevelBuilder();

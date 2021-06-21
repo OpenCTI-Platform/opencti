@@ -5,11 +5,9 @@ import {
   internalLoadById,
   listAllRelations,
 } from '../../database/middleware';
-import { SYSTEM_USER } from '../../utils/access';
 import { extractFieldsOfPatch } from '../../graphql/sseMiddleware';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
-import { INDEX_MARKINGS_FIELD } from '../../schema/general';
-import { createRulePatch } from '../RuleUtils';
+import { createRulePatch, RULE_MANAGER_USER } from '../RuleUtils';
 
 const buildRelationWithRelationRule = (id, name, description, relationTypes, scopeFields, scopeFilters) => {
   const { leftType, rightType, creationType } = relationTypes;
@@ -27,14 +25,14 @@ const buildRelationWithRelationRule = (id, name, description, relationTypes, sco
     const listFromCallback = async (relationships) => {
       const rels = relationships.filter((r) => r.internal_id !== createdId);
       for (let relIndex = 0; relIndex < rels.length; relIndex += 1) {
-        const { id: foundRelationId, toId, confidence, start_time, stop_time } = rels[relIndex];
+        const { id: foundRelationId, toId, confidence } = rels[relIndex];
+        const { start_time, stop_time, object_marking_refs } = rels[relIndex];
         // If we looking for left side relation, relation toId of found rel will be the to of the creation
         // If we looking for right side, relation toId of found rel will be the from of the creation
         const inferenceFromId = relationTypeToFind === leftType ? targetRef : toId;
         const inferenceToId = relationTypeToFind === leftType ? toId : targetRef;
         const existingRange = buildPeriodFromDates(start_time, stop_time);
         const range = computeRangeIntersection(creationRange, existingRange);
-        const relInternalMarkings = relationships[relIndex][INDEX_MARKINGS_FIELD];
         // We do not need to propagate the creation here.
         // Because created relation have the same type.
         const dependencies = [sourceRef, createdId, targetRef, foundRelationId, toId];
@@ -43,7 +41,7 @@ const buildRelationWithRelationRule = (id, name, description, relationTypes, sco
           fromId: inferenceFromId,
           toId: inferenceToId,
           relationship_type: creationType,
-          objectMarking: [...(markings || []), ...(relInternalMarkings || [])],
+          objectMarking: [...(markings || []), ...(object_marking_refs || [])],
           confidence: createdConfidence < confidence ? createdConfidence : confidence,
           start_time: range.start,
           stop_time: range.end,
@@ -56,7 +54,7 @@ const buildRelationWithRelationRule = (id, name, description, relationTypes, sco
       }
     };
     const listFromArgs = { fromId: sourceRef, callback: listFromCallback };
-    await listAllRelations(SYSTEM_USER, relationTypeToFind, listFromArgs);
+    await listAllRelations(RULE_MANAGER_USER, relationTypeToFind, listFromArgs);
     return events;
   };
   const clean = async (element) => deleteInferredRuleElement(id, element);
@@ -77,7 +75,7 @@ const buildRelationWithRelationRule = (id, name, description, relationTypes, sco
     // When updating, only some fields have impacts
     const isImpactedFields = listenedFields.some((f) => patchedFields.includes(f));
     if (isImpactedEvent && isImpactedFields) {
-      const rel = await internalLoadById(SYSTEM_USER, element.x_opencti_id);
+      const rel = await internalLoadById(RULE_MANAGER_USER, element.x_opencti_id);
       return applyUpsert(markings, { ...element, ...rel });
     }
     return [];

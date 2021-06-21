@@ -1,15 +1,13 @@
 /* eslint-disable camelcase */
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
-import { INDEX_MARKINGS_FIELD } from '../../schema/general';
 import {
   createInferredRelation,
   deleteInferredRuleElement,
   internalLoadById,
   listAllRelations,
 } from '../../database/middleware';
-import { SYSTEM_USER } from '../../utils/access';
 import { extractFieldsOfPatch } from '../../graphql/sseMiddleware';
-import { createRulePatch } from '../RuleUtils';
+import { createRulePatch, RULE_MANAGER_USER } from '../RuleUtils';
 
 const listenedFields = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];
 const buildRelationToRelationRule = (id, name, description, relationTypes, scopeFields, scopeFilters) => {
@@ -28,10 +26,10 @@ const buildRelationToRelationRule = (id, name, description, relationTypes, scope
     if (relationship_type === rightType) {
       const listFromCallback = async (relationships) => {
         for (let sIndex = 0; sIndex < relationships.length; sIndex += 1) {
-          const { id: foundRelationId, fromId, confidence, start_time, stop_time } = relationships[sIndex];
+          const { id: foundRelationId, fromId, confidence } = relationships[sIndex];
+          const { start_time, stop_time, object_marking_refs } = relationships[sIndex];
           const existingRange = buildPeriodFromDates(start_time, stop_time);
           const range = computeRangeIntersection(creationRange, existingRange);
-          const relInternalMarkings = relationships[sIndex][INDEX_MARKINGS_FIELD];
           // We do not need to propagate the creation here.
           // Because created relation have the same type.
           const explanation = [foundRelationId, createdId];
@@ -40,7 +38,7 @@ const buildRelationToRelationRule = (id, name, description, relationTypes, scope
             fromId,
             toId: targetRef,
             relationship_type: creationType,
-            objectMarking: [...(markings || []), ...(relInternalMarkings || [])],
+            objectMarking: [...(markings || []), ...(object_marking_refs || [])],
             confidence: createdConfidence < confidence ? createdConfidence : confidence,
             start_time: range.start,
             stop_time: range.end,
@@ -53,7 +51,7 @@ const buildRelationToRelationRule = (id, name, description, relationTypes, scope
         }
       };
       const listFromArgs = { toId: sourceRef, callback: listFromCallback };
-      await listAllRelations(SYSTEM_USER, leftType, listFromArgs);
+      await listAllRelations(RULE_MANAGER_USER, leftType, listFromArgs);
     }
     // Need to discover on the from and the to if attributed-to also exists
     // (A) -> leftType -> (B)
@@ -62,10 +60,10 @@ const buildRelationToRelationRule = (id, name, description, relationTypes, scope
     if (relationship_type === leftType) {
       const listToCallback = async (relationships) => {
         for (let sIndex = 0; sIndex < relationships.length; sIndex += 1) {
-          const { id: foundRelationId, confidence, toId, start_time, stop_time } = relationships[sIndex];
+          const { id: foundRelationId, toId, confidence } = relationships[sIndex];
+          const { start_time, stop_time, object_marking_refs } = relationships[sIndex];
           const existingRange = buildPeriodFromDates(start_time, stop_time);
           const range = computeRangeIntersection(creationRange, existingRange);
-          const relInternalMarkings = relationships[sIndex][INDEX_MARKINGS_FIELD];
           // We do not need to propagate the creation here.
           // Because created relation have the same type.
           const explanation = [createdId, foundRelationId];
@@ -74,7 +72,7 @@ const buildRelationToRelationRule = (id, name, description, relationTypes, scope
             fromId: sourceRef,
             toId,
             relationship_type: creationType,
-            objectMarking: [...(markings || []), ...(relInternalMarkings || [])],
+            objectMarking: [...(markings || []), ...(object_marking_refs || [])],
             confidence: createdConfidence < confidence ? createdConfidence : confidence,
             start_time: range.start,
             stop_time: range.end,
@@ -87,7 +85,7 @@ const buildRelationToRelationRule = (id, name, description, relationTypes, scope
         }
       };
       const listToArgs = { fromId: targetRef, callback: listToCallback };
-      await listAllRelations(SYSTEM_USER, rightType, listToArgs);
+      await listAllRelations(RULE_MANAGER_USER, rightType, listToArgs);
     }
     return events;
   };
@@ -106,7 +104,7 @@ const buildRelationToRelationRule = (id, name, description, relationTypes, scope
     const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
     const isImpactedFields = listenedFields.some((f) => patchedFields.includes(f));
     if (isImpactedRelation && isImpactedFields) {
-      const rel = await internalLoadById(SYSTEM_USER, element.x_opencti_id);
+      const rel = await internalLoadById(RULE_MANAGER_USER, element.x_opencti_id);
       return applyUpsert(markings, { ...element, ...rel });
     }
     return [];

@@ -36,7 +36,6 @@ import {
   elList,
   elLoadByIds,
   elPaginate,
-  elUpdate,
   elUpdateElement,
   elUpdateEntityConnections,
   elUpdateRelationConnections,
@@ -83,6 +82,7 @@ import {
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
+  buildRefRelationKey,
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
@@ -152,10 +152,10 @@ import {
 import { checkObservableSyntax } from '../utils/syntax';
 import { deleteAllFiles } from './minio';
 import { filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
+import { createClearRulePatch, isRuleUser, RULE_MANAGER_USER } from '../rules/RuleUtils';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
-export const REL_CONNECTED_SUFFIX = 'CONNECTED';
 // endregion
 
 // region Loader common
@@ -174,7 +174,6 @@ export const batchLoader = (loader) => {
     },
   };
 };
-
 export const querySubTypes = async ({ type }) => {
   const sortByLabel = R.sortBy(R.toLower);
   const types = schemaTypes.get(type);
@@ -192,6 +191,13 @@ export const queryAttributes = async (type) => {
     R.map((n) => ({ node: { id: n, key: n, value: n } }))
   )(attributes);
   return buildPagination(0, null, finalResult, finalResult.length);
+};
+const checkInferenceRight = (user, element) => {
+  const isRuleManaged = isRuleUser(user);
+  const isPurelyInferred = isInferredIndex(element._index);
+  if (isPurelyInferred && !isRuleManaged) {
+    throw UnsupportedError('Manual inference update/deletion is not allowed', { id: element.id });
+  }
 };
 // endregion
 
@@ -343,7 +349,7 @@ const buildRelationsFilter = (relationshipType, args) => {
   const finalFilters = filters;
   if (relationFilter) {
     const { relation, id, relationId } = relationFilter;
-    finalFilters.push({ key: `${REL_INDEX_PREFIX}${relation}.internal_id`, values: [id] });
+    finalFilters.push({ key: buildRefRelationKey(relation), values: [id] });
     if (relationId) {
       finalFilters.push({ key: `internal_id`, values: [relationId] });
     }
@@ -1607,7 +1613,6 @@ const upsertIdentifiedFields = (user, element, input, fields) => {
     if (!R.isEmpty(patch)) {
       const patched = patchAttributeRaw(user, element, patch);
       upsertImpacted.push(...patched.impactedInputs);
-      // TODO dwadwadwad
       upsertUpdated.push(...patched.updatedInputs);
     }
   }
@@ -1665,9 +1670,27 @@ const handleRelationTimeUpdate = (input, instance, startField, stopField, extend
   }
   return patch;
 };
+const upsertElementRule = async (user, id, type, input) => {
+  const impactedInputs = []; // Inputs impacted by updated inputs + updated inputs
+  const instance = await markedLoadById(user, id, type);
+  const rulesKeys = Object.keys(input).filter((k) => k.startsWith(RULE_PREFIX));
+  for (let indexKey = 0; indexKey < rulesKeys.length; indexKey += 1) {
+    const rulesKey = rulesKeys[indexKey];
+    const ruleDefinition = input[rulesKey];
+    const patched = patchAttributeRaw(user, instance, { [rulesKey]: ruleDefinition });
+    impactedInputs.push(...patched.impactedInputs);
+  }
+  const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
+  // Build the input to reindex in elastic
+  const indexInput = partialInstanceWithInputs(updatedInstance, impactedInputs);
+  return { type: TRX_UPDATE, element: updatedInstance, relations: [], streamInputs: [], indexInput };
+};
 const upsertElementRaw = async (user, id, type, input, opts = {}) => {
   const { extendRelationTime = true, overrideMarkings = false } = opts;
   const instance = await markedLoadById(user, id, type);
+  // Check consistency
+  checkInferenceRight(user, instance);
+  // Upsert relation
   const forceUpdate = input.update === true;
   const updatedAddInputs = []; // Direct modified inputs (add)
   const updatedReplaceInputs = []; // Direct modified inputs (replace)
@@ -1814,10 +1837,9 @@ const buildRelationData = async (user, input, opts = {}) => {
   // 01. Generate the ID
   const internalId = generateInternalId();
   const standardId = generateStandardId(relationshipType, input);
-  // region 02. Check existing relationship
+  // 02. Check existing relationship
   const timeFilters = fromRule ? {} : buildRelationTimeFilter(input);
   const listingArgs = { fromId: from.internal_id, toId: to.internal_id, connectionFormat: false, ...timeFilters };
-  // endregion
   const existingRelationships = await listRelations(SYSTEM_USER, relationshipType, listingArgs);
   let existingRelationship = null;
   if (existingRelationships.length > 0) {
@@ -1835,10 +1857,36 @@ const buildRelationData = async (user, input, opts = {}) => {
         fromId: from.internal_id,
       });
     }
+    // TODO Handling merging relation when updating to prevent multiple relations finding
     existingRelationship = R.head(filteredRelations);
   }
   if (existingRelationship) {
-    return upsertElementRaw(user, existingRelationship.id, relationshipType, input, opts);
+    // If user try to create an existing inferred relationship but she's already exists
+    // we need to delete the inference and create the real relation.
+    const isDirectCreation = isEmptyField(fromRule);
+    const isRuleCreation = !isDirectCreation;
+    const wasCreatedByRule = isInferredIndex(existingRelationship._index);
+    if (wasCreatedByRule) {
+      // If the element was created by a rule
+      if (isDirectCreation) {
+        // If the creation is asked by a user.
+        // We can delete the current element. It will be recreated as manual creation
+        // eslint-disable-next-line no-use-before-define
+        await deleteElementById(RULE_MANAGER_USER, existingRelationship.id, existingRelationship.entity_type);
+      } else {
+        // Rule reapply on existing element, simple upsert to execute
+        return upsertElementRaw(user, existingRelationship.id, relationshipType, input, opts);
+      }
+    } else {
+      // If the element was directly created
+      if (isRuleCreation) {
+        // If the creation is asked by a rule.
+        // We ust update the rule element without touching the rest
+        return upsertElementRule(user, existingRelationship.id, relationshipType, input);
+      }
+      // User reapply on existing element, simple upsert to execute
+      return upsertElementRaw(user, existingRelationship.id, relationshipType, input, opts);
+    }
   }
   // 03. Prepare the relation to be created
   const today = now();
@@ -2026,7 +2074,7 @@ export const createRelation = async (user, input) => {
 
 export const createInferredRelation = async (rule, input) => {
   const opts = { fromRule: rule, extendRelationTime: false, overrideMarkings: true };
-  const data = await createRelationRaw(SYSTEM_USER, input, opts);
+  const data = await createRelationRaw(RULE_MANAGER_USER, input, opts);
   return data.event;
 };
 
@@ -2243,6 +2291,8 @@ export const deleteElementById = async (user, elementId, type) => {
   if (!element) {
     throw FunctionalError('Cant find element to delete', { elementId });
   }
+  checkInferenceRight(user, element);
+  // Apply deletion
   const participantIds = [element.internal_id];
   try {
     // Try to get the lock in redis
@@ -2274,18 +2324,13 @@ export const deleteInferredRuleElement = async (rule, element) => {
   const monoRule = rules.length === 1;
   // If purely inferred and mono rule we can safely delete it.
   if (isPurelyInferred && monoRule) {
-    await deleteElementById(SYSTEM_USER, element.id, element.entity_type);
-    const event = await buildDeleteEvent(SYSTEM_USER, element, stixLoadById, { withoutMessage: true });
+    await deleteElementById(RULE_MANAGER_USER, element.id, element.entity_type);
+    const event = await buildDeleteEvent(RULE_MANAGER_USER, element, stixLoadById, { withoutMessage: true });
     events.push(event);
   } else {
     // In others case you need to clean the rule and keep the element
-    await elUpdate(element._index, element.id, {
-      script: {
-        source: 'ctx._source.remove(params.del_field_name)',
-        lang: 'painless',
-        params: { del_field_name: completeRuleName },
-      },
-    });
+    const patch = createClearRulePatch(rule);
+    await patchAttribute(RULE_MANAGER_USER, element.id, element.entity_type, patch);
   }
   return events;
 };

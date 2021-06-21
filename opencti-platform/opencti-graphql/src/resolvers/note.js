@@ -24,7 +24,7 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
-import { REL_INDEX_PREFIX } from '../schema/general';
+import { buildRefRelationKey } from '../schema/general';
 import { UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 const noteResolvers = {
@@ -57,13 +57,13 @@ const noteResolvers = {
     },
   },
   NotesOrdering: {
-    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.name`,
+    createdBy: buildRefRelationKey(RELATION_CREATED_BY, 'name'),
   },
   NotesFilter: {
-    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
-    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-    objectContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
+    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
+    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
+    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    objectContains: buildRefRelationKey(RELATION_OBJECT),
   },
   Mutation: {
     noteEdit: (_, { id }, { user }) => ({

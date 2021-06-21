@@ -22,12 +22,12 @@ import {
 } from '../domain/stixSightingRelationship';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { distributionRelations, timeSeriesRelations, REL_CONNECTED_SUFFIX, batchLoader } from '../database/middleware';
+import { distributionRelations, timeSeriesRelations, batchLoader } from '../database/middleware';
 import { convertDataToStix } from '../database/stix';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { creator } from '../domain/log';
-import { REL_INDEX_PREFIX } from '../schema/general';
+import { buildRefRelationKey } from '../schema/general';
 import { elBatchIds } from '../database/elasticSearch';
 
 const createdByLoader = batchLoader(batchCreatedBy);
@@ -52,15 +52,10 @@ const stixSightingRelationshipResolvers = {
       ),
     stixSightingRelationshipsNumber: (_, args, { user }) => stixSightingRelationshipsNumber(user, args),
   },
-  StixSightingRelationshipsOrdering: {
-    toName: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`,
-  },
   StixSightingRelationshipsFilter: {
-    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
-    toPatternType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.pattern_type`,
-    toMainObservableType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.main_observable_type`,
+    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
+    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
+    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   StixSightingRelationship: {
     from: (rel, _, { user }) => loadByIdLoader.load(rel.fromId, user),

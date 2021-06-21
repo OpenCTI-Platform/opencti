@@ -19,6 +19,7 @@ import {
 import conf, { booleanConf, logApp } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
 import {
+  EXTERNAL_META_TO_STIX_ATTRIBUTE,
   RELATION_CREATED_BY,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_LABEL,
@@ -27,6 +28,8 @@ import {
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   BASE_TYPE_RELATION,
+  buildRefRelationKey,
+  buildRefRelationSearchKey,
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
@@ -49,7 +52,6 @@ import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
 import { INTERNAL_RELATIONSHIPS } from '../schema/internalRelationship';
-import { getAttributesRulesFor } from '../rules/RuleUtils';
 
 const MIN_DATA_FIELDS = ['name', 'value', 'internal_id', 'standard_id', 'base_type', 'entity_type', 'connections'];
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
@@ -76,9 +78,10 @@ export const isImpactedTypeAndSide = (type, side) => {
 };
 export const isImpactedRole = (role) => !UNIMPACTED_ENTITIES_ROLE.includes(role);
 const computeRelsExclude = () => {
-  // Exclude every rel except markings
+  // Exclude every internal refs except markings and creator
+  const toKeep = [RELATION_CREATED_BY, RELATION_OBJECT_MARKING];
   const allRels = [...STIX_RELATIONSHIPS, ...INTERNAL_RELATIONSHIPS];
-  return allRels.filter((r) => r !== RELATION_OBJECT_MARKING).map((r) => REL_INDEX_PREFIX + r);
+  return allRels.filter((r) => !toKeep.includes(r)).map((r) => REL_INDEX_PREFIX + r);
 };
 
 export const el = new Client({
@@ -107,7 +110,7 @@ const buildMarkingRestriction = (user) => {
   if (!isBypass) {
     if (user.allowed_marking.length === 0) {
       // If user have no marking, he can only access to data with no markings.
-      must_not.push({ exists: { field: 'rel_object-marking.internal_id' } });
+      must_not.push({ exists: { field: buildRefRelationKey(RELATION_OBJECT_MARKING) } });
     } else {
       // Markings should be group by types for restriction
       const userGroupedMarkings = R.groupBy((m) => m.definition_type, user.allowed_marking);
@@ -128,7 +131,7 @@ const buildMarkingRestriction = (user) => {
       const mustNotMarkingTerms = [];
       for (let i = 0; i < mustNotHaveOneOf.length; i += 1) {
         const markings = mustNotHaveOneOf[i];
-        const should = markings.map((m) => ({ match: { 'rel_object-marking.internal_id': m } }));
+        const should = markings.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: m } }));
         mustNotMarkingTerms.push({
           bool: {
             should,
@@ -141,7 +144,7 @@ const buildMarkingRestriction = (user) => {
           should: [
             {
               bool: {
-                must_not: [{ exists: { field: 'rel_object-marking.internal_id' } }],
+                must_not: [{ exists: { field: buildRefRelationSearchKey(RELATION_OBJECT_MARKING) } }],
               },
             },
             {
@@ -438,7 +441,7 @@ export const elCount = (user, indexName, options = {}) => {
       {
         bool: {
           should: {
-            match_phrase: { [`${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id.keyword`]: authorId },
+            match_phrase: { [buildRefRelationSearchKey(RELATION_CREATED_BY)]: authorId },
           },
         },
       },
@@ -451,7 +454,7 @@ export const elCount = (user, indexName, options = {}) => {
         {
           bool: {
             should: {
-              match_phrase: { [`${REL_INDEX_PREFIX}${relationshipType}.internal_id.keyword`]: fromId },
+              match_phrase: { [buildRefRelationSearchKey(relationshipType)]: fromId },
             },
           },
         },
@@ -531,7 +534,7 @@ export const elAggregationCount = (user, type, aggregationField, start, end, fil
     });
   }
   const histoFilters = R.map((f) => {
-    const key = f.isRelation ? `${REL_INDEX_PREFIX}${f.type ? f.type : '*'}.internal_id.keyword` : `${f.type}.keyword`;
+    const key = f.isRelation ? buildRefRelationSearchKey(f.type || '*') : `${f.type}.keyword`;
     return {
       multi_match: {
         fields: [key],
@@ -664,18 +667,27 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
   return hits;
 };
 
-const ruleElementEnricher = (element) => {
-  const data = { ...element };
-  // Analyse rules to add extra elements
-  const ruleKeys = Object.keys(data).filter((e) => e.startsWith(RULE_PREFIX));
-  const ruleInferences = R.flatten(
-    ruleKeys.map((r) => {
-      const rule = r.substr(RULE_PREFIX.length);
-      const { inferred, explanation } = data[r];
+const rawDataElementConverter = (element) => {
+  const data = {};
+  const entries = Object.entries(element);
+  const ruleInferences = [];
+  for (let index = 0; index < entries.length; index += 1) {
+    const [key, val] = entries[index];
+    if (key.startsWith(RULE_PREFIX)) {
+      const rule = key.substr(RULE_PREFIX.length);
+      const { inferred, explanation } = val;
       const attributes = R.toPairs(inferred).map((s) => ({ field: R.head(s), value: String(R.last(s)) }));
-      return { rule, explanation, attributes };
-    })
-  );
+      ruleInferences.push({ rule, explanation, attributes });
+      data[key] = val;
+    } else if (key.startsWith(REL_INDEX_PREFIX)) {
+      const rel = key.substr(REL_INDEX_PREFIX.length);
+      const [relType] = rel.split('.');
+      const stixType = EXTERNAL_META_TO_STIX_ATTRIBUTE[relType];
+      data[stixType] = stixType.endsWith('_refs') ? val : R.head(val);
+    } else {
+      data[key] = val;
+    }
+  }
   if (ruleInferences.length > 0) {
     data.x_opencti_inferences = ruleInferences;
   }
@@ -750,7 +762,7 @@ export const elFindByIds = async (user, ids, opts = {}) => {
     for (let j = 0; j < data.body.hits.hits.length; j += 1) {
       const hit = data.body.hits.hits[j];
       const elementWithIndex = R.assoc('_index', hit._index, hit._source);
-      const element = ruleElementEnricher(elementWithIndex);
+      const element = rawDataElementConverter(elementWithIndex);
       // And a specific processing for a relation
       if (element.base_type === BASE_TYPE_RELATION) {
         const relation = elReconstructRelation(element);
@@ -935,7 +947,7 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
       key = `${filterType}`;
     }
     if (isRelation) {
-      key = filterType ? `${REL_INDEX_PREFIX}${f.type}.internal_id` : `${REL_INDEX_PREFIX}*.internal_id`;
+      key = buildRefRelationSearchKey(filterType || '*');
     }
     return {
       multi_match: {
@@ -1083,7 +1095,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
     for (let index = 0; index < validFilters.length; index += 1) {
       const valuesFiltering = [];
       const { key, values, nested, operator = 'eq', filterMode: localFilterMode = 'or' } = validFilters[index];
-      const rulesKeys = getAttributesRulesFor(key);
+      // const rulesKeys = getAttributesRulesFor(key);
       // TODO IF KEY is PART OF Rule we need to add extra fields search
       if (nested) {
         const nestedMust = [];
@@ -1266,7 +1278,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
     .then((data) => {
       const dataWithIds = R.map((n) => {
         const loadedElement = { ...n._source, _index: n._index, id: n._source.internal_id, sort: n.sort };
-        const element = ruleElementEnricher(loadedElement);
+        const element = rawDataElementConverter(loadedElement);
         if (element.base_type === BASE_TYPE_RELATION) {
           return elReconstructRelation(element);
         }
@@ -1524,7 +1536,7 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
   const dataIds = await elFindByIds(user, idsToResolve, { minSource: true });
   const indexCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._index })));
   const bodyUpdateRaw = relsFromTo.map(({ relation, isFromCleanup, isToCleanup }) => {
-    const type = `${REL_INDEX_PREFIX + relation.entity_type}.internal_id`;
+    const type = buildRefRelationKey(relation.entity_type);
     const updates = [];
     const fromIndex = indexCache[relation.fromId];
     if (isFromCleanup && fromIndex) {
@@ -1702,7 +1714,6 @@ export const elIndexElements = async (elements) => {
       const entity = cache[entityId];
       const targets = impactedEntities[entityId];
       // Build document fields to update ( per relation type )
-      // rel_membership: [{ internal_id: ID, types: [] }]
       const targetsByRelation = R.groupBy((i) => i.relationshipType, targets);
       const targetsElements = await Promise.all(
         R.map(async (relType) => {
@@ -1718,7 +1729,7 @@ export const elIndexElements = async (elements) => {
       // Create params and scripted update
       const params = {};
       const sources = R.map((t) => {
-        const field = `${REL_INDEX_PREFIX + t.relation}.internal_id`;
+        const field = buildRefRelationKey(t.relation);
         const createIfNotExist = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
         const addAllElements = `ctx._source['${field}'].addAll(params['${field}'])`;
         return `${createIfNotExist} ${addAllElements}`;
@@ -1726,7 +1737,7 @@ export const elIndexElements = async (elements) => {
       const source = sources.length > 1 ? R.join(';', sources) : `${R.head(sources)};`;
       for (let index = 0; index < targetsElements.length; index += 1) {
         const targetElement = targetsElements[index];
-        params[`${REL_INDEX_PREFIX + targetElement.relation}.internal_id`] = targetElement.elements;
+        params[buildRefRelationKey(targetElement.relation)] = targetElement.elements;
       }
       return { _index: entity._index, id: entityId, data: { script: { source, params } } };
     }, Object.keys(impactedEntities))
@@ -1804,7 +1815,7 @@ export const elUpdateEntityConnections = (elements) => {
     {
       script: {
         source,
-        params: { key: `rel_${doc.relationType}.internal_id`, from: doc.toReplace, to: addMultipleFormat(doc) },
+        params: { key: buildRefRelationKey(doc.relationType), from: doc.toReplace, to: addMultipleFormat(doc) },
       },
     },
   ]);
