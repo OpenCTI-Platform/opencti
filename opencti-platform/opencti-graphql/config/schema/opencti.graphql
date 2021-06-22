@@ -953,6 +953,7 @@ interface StixObject {
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -969,6 +970,7 @@ interface StixMetaObject {
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1014,6 +1016,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1077,6 +1080,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1139,6 +1143,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1204,6 +1209,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1281,6 +1287,7 @@ interface StixCoreObject {
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1384,6 +1391,7 @@ interface StixDomainObject {
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1500,6 +1508,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1631,6 +1640,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1756,6 +1766,7 @@ interface Container {
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1854,6 +1865,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1986,6 +1998,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -2116,6 +2129,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -2250,6 +2264,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -2382,6 +2397,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -2509,6 +2525,7 @@ interface Identity {
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -2628,6 +2645,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -2763,6 +2781,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -2891,6 +2910,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -3033,6 +3053,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -3174,6 +3195,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -3296,6 +3318,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -3433,6 +3456,7 @@ interface Location {
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -3546,6 +3570,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -3675,6 +3700,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -3795,6 +3821,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -3915,6 +3942,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4049,6 +4077,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4179,6 +4208,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4312,6 +4342,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4436,6 +4467,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4561,6 +4593,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4692,6 +4725,7 @@ interface StixCyberObservable {
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4768,6 +4802,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4855,6 +4890,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4946,6 +4982,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5029,6 +5066,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5114,6 +5152,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5209,6 +5248,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5305,6 +5345,7 @@ interface HashedObservable {
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5383,6 +5424,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5480,6 +5522,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5584,6 +5627,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5690,6 +5734,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5773,6 +5818,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5856,6 +5902,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5939,6 +5986,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6022,6 +6070,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6125,6 +6174,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6220,6 +6270,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6313,6 +6364,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6396,6 +6448,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6507,6 +6560,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6594,6 +6648,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6681,6 +6736,7 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6794,6 +6850,7 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6877,6 +6934,7 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6960,6 +7018,7 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -7043,6 +7102,7 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -7126,6 +7186,7 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
   parent_types: [String]!
   # StixObject
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -7436,6 +7497,7 @@ interface StixRelationship {
   # StixRelationship
   standard_id: String!
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   x_opencti_inferences: [Inference]
@@ -7499,6 +7561,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   # StixRelationship
   standard_id: String!
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   spec_version: String!
@@ -7629,6 +7692,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   # StixRelationship
   standard_id: String!
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
@@ -7719,6 +7783,7 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   # StixRelationship
   standard_id: String!
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
@@ -7760,6 +7825,7 @@ type StixMetaRelationship implements BasicRelationship & StixRelationship {
   # StixRelationship
   standard_id: String!
   x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
   spec_version: String!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship

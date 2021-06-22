@@ -1860,6 +1860,10 @@ const buildRelationData = async (user, input, opts = {}) => {
     // TODO Handling merging relation when updating to prevent multiple relations finding
     existingRelationship = R.head(filteredRelations);
   }
+  // 03. Prepare the relation to be created
+  const today = now();
+  let data = {};
+  // Check existing
   if (existingRelationship) {
     // If user try to create an existing inferred relationship but she's already exists
     // we need to delete the inference and create the real relation.
@@ -1871,6 +1875,10 @@ const buildRelationData = async (user, input, opts = {}) => {
       if (isDirectCreation) {
         // If the creation is asked by a user.
         // We can delete the current element. It will be recreated as manual creation
+        const rulesToKeep = Object.keys(existingRelationship)
+          .filter((k) => k.startsWith(RULE_PREFIX))
+          .map((key) => ({ [key]: existingRelationship[key] }));
+        data = R.mergeAll(rulesToKeep);
         // eslint-disable-next-line no-use-before-define
         await deleteElementById(RULE_MANAGER_USER, existingRelationship.id, existingRelationship.entity_type);
       } else {
@@ -1888,9 +1896,6 @@ const buildRelationData = async (user, input, opts = {}) => {
       return upsertElementRaw(user, existingRelationship.id, relationshipType, input, opts);
     }
   }
-  // 03. Prepare the relation to be created
-  const today = now();
-  let data = {};
   // Default attributes
   // basic-relationship
   const inferred = isNotEmptyField(fromRule);
