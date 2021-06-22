@@ -1862,7 +1862,7 @@ const buildRelationData = async (user, input, opts = {}) => {
   }
   // 03. Prepare the relation to be created
   const today = now();
-  let data = {};
+  const data = {};
   // Check existing
   if (existingRelationship) {
     // If user try to create an existing inferred relationship but she's already exists
@@ -1877,8 +1877,11 @@ const buildRelationData = async (user, input, opts = {}) => {
         // We can delete the current element. It will be recreated as manual creation
         const rulesToKeep = Object.keys(existingRelationship)
           .filter((k) => k.startsWith(RULE_PREFIX))
-          .map((key) => ({ [key]: existingRelationship[key] }));
-        data = R.mergeAll(rulesToKeep);
+          .map((key) => ({ key, val: existingRelationship[key] }));
+        for (let index = 0; index < rulesToKeep.length; index += 1) {
+          const rulesToKeepElement = rulesToKeep[index];
+          data[rulesToKeepElement.key] = rulesToKeepElement.val;
+        }
         // eslint-disable-next-line no-use-before-define
         await deleteElementById(RULE_MANAGER_USER, existingRelationship.id, existingRelationship.entity_type);
       } else {
@@ -1968,11 +1971,9 @@ const buildRelationData = async (user, input, opts = {}) => {
       const dayValue = dayFormat(data[dataKeys[index]]);
       const monthValue = monthFormat(data[dataKeys[index]]);
       const yearValue = yearFormat(data[dataKeys[index]]);
-      data = R.pipe(
-        R.assoc(`i_${dataKeys[index]}_day`, dayValue),
-        R.assoc(`i_${dataKeys[index]}_month`, monthValue),
-        R.assoc(`i_${dataKeys[index]}_year`, yearValue)
-      )(data);
+      data[`i_${dataKeys[index]}_day`] = dayValue;
+      data[`i_${dataKeys[index]}_month`] = monthValue;
+      data[`i_${dataKeys[index]}_year`] = yearValue;
     }
   }
   // 04. Create the relation
