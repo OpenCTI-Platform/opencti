@@ -850,6 +850,7 @@ class ReportKnowledgeGraphComponent extends Component {
       timeRangeInterval,
       this.graphObjects,
     );
+    const displayLabels = graphData.links.length < 200;
     return (
       <div>
         <ReportKnowledgeGraphBar
@@ -915,6 +916,7 @@ class ReportKnowledgeGraphComponent extends Component {
             linkDirectionalArrowRelPos={0.99}
             linkThreeObjectExtend={true}
             linkThreeObject={(link) => {
+              if (!displayLabels) return null;
               const sprite = new SpriteText(link.label);
               sprite.color = 'lightgrey';
               sprite.textHeight = 1.5;
@@ -1004,7 +1006,14 @@ class ReportKnowledgeGraphComponent extends Component {
             // linkDirectionalParticleWidth={1}
             // linkDirectionalParticleSpeed={() => 0.004}
             linkCanvasObjectMode={() => 'after'}
-            linkCanvasObject={(link, ctx) => linkPaint(link, ctx, theme.palette.text.primary)
+            linkCanvasObject={(link, ctx) => (displayLabels
+              ? linkPaint(
+                link,
+                ctx,
+                theme.palette.text.primary,
+                displayLabels,
+              )
+              : null)
             }
             linkColor={(link) => (this.selectedLinks.has(link)
               ? theme.palette.secondary.main
