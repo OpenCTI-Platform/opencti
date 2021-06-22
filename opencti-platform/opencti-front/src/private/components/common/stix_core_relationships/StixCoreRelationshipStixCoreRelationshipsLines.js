@@ -96,7 +96,7 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
                       )}
                     />
                     <ListItemSecondaryAction>
-                      {stixCoreRelationship.x_opencti_inferences !== null ? (
+                      {stixCoreRelationship.is_inferred ? (
                         <Tooltip
                           title={
                             t('Inferred knowledge based on the rule ')
@@ -185,6 +185,7 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
             edges {
               node {
                 id
+                is_inferred
                 x_opencti_inferences {
                   rule {
                     id

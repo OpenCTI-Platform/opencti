@@ -155,7 +155,7 @@ class StixCyberObservableEntityLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          {node.x_opencti_inferences !== null ? (
+          {node.is_inferred ? (
             <Tooltip
               title={
                 t('Inferred knowledge based on the rule ')
@@ -199,6 +199,7 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
         start_time
         stop_time
         description
+        is_inferred
         x_opencti_inferences {
           rule {
             id

@@ -407,7 +407,7 @@ class StixCoreRelationshipContainer extends Component {
             </div>
           )}
         </div>
-        {stixCoreRelationship.x_opencti_inferences === null && (
+        {!stixCoreRelationship.is_inferred && (
           <div>
             <Fab
               onClick={this.handleOpenEdition.bind(this)}
@@ -463,6 +463,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         toRole
         created_at
         updated_at
+        is_inferred
         x_opencti_inferences {
           rule {
             id

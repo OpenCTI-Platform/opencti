@@ -119,7 +119,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
           }
         />
         <ListItemSecondaryAction>
-          {node.x_opencti_inferences !== null ? (
+          {node.is_inferred ? (
             <Tooltip
               title={
                 t('Inferred knowledge based on the rule ')
@@ -169,6 +169,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
           start_time
           stop_time
           description
+          is_inferred
           x_opencti_inferences {
             rule {
               id
