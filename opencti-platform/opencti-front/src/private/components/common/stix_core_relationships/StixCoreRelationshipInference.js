@@ -6,6 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import ForceGraph2D from 'react-force-graph-2d';
 import Markdown from 'react-markdown';
+import { withRouter } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 import {
   buildGraphData,
@@ -13,6 +14,7 @@ import {
   nodeAreaPaint,
   nodePaint,
 } from '../../../../utils/Graph';
+import { resolveLink } from '../../../../utils/Entity';
 
 const styles = () => ({
   container: {
@@ -56,11 +58,18 @@ class StixCoreRelationshipInference extends Component {
     this.initialize();
   }
 
+  handleLinkClick(link) {
+    const permalink = `${resolveLink(link.source.entity_type)}/${
+      link.source_id
+    }/knowledge/relations/${link.id}`;
+    this.props.history.push(permalink);
+  }
+
   render() {
     const {
-      t, classes, inference, theme, stixCoreRelationship,
+      t, classes, inference, theme, stixCoreRelationship, paddingRight,
     } = this.props;
-    const width = window.innerWidth - 450;
+    const width = window.innerWidth - (paddingRight ? 450 : 250);
     const graphObjects = [
       R.assoc('inferred', true, stixCoreRelationship),
       stixCoreRelationship.from,
@@ -100,10 +109,11 @@ class StixCoreRelationshipInference extends Component {
             : theme.palette.primary.main)
           }
           linkDirectionalParticles={(link) => (link.inferred ? 20 : 0)}
-          linkDirectionalParticleWidth={1}
+          linkDirectionalParticleWidth={2}
           linkDirectionalParticleSpeed={() => 0.004}
           linkDirectionalArrowLength={3}
           linkDirectionalArrowRelPos={0.99}
+          onLinkClick={this.handleLinkClick.bind(this)}
           cooldownTicks={'Infinity'}
           enableZoomInteraction={false}
           enablePanInteraction={false}
@@ -116,11 +126,13 @@ class StixCoreRelationshipInference extends Component {
 
 StixCoreRelationshipInference.propTypes = {
   inference: PropTypes.object,
+  paddingRight: PropTypes.bool,
   stixCoreRelationship: PropTypes.object,
 };
 
 export default R.compose(
   inject18n,
   withStyles(styles),
+  withRouter,
   withTheme,
 )(StixCoreRelationshipInference);

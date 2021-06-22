@@ -379,6 +379,7 @@ class StixCoreRelationshipContainer extends Component {
                   key={inference.rule.id}
                   inference={inference}
                   stixCoreRelationship={stixCoreRelationship}
+                  paddingRight={paddingRight}
                 />
               ))}
             </div>

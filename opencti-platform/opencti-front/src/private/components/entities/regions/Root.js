@@ -85,6 +85,7 @@ class RootRegion extends Component {
             stixCoreObjectLink={link}
             availableSections={[
               'countries',
+              'cities',
               'threat_actors',
               'intrusion_sets',
               'campaigns',
