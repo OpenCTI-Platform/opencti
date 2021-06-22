@@ -683,7 +683,9 @@ const rawDataElementConverter = (element) => {
       const rel = key.substr(REL_INDEX_PREFIX.length);
       const [relType] = rel.split('.');
       const stixType = EXTERNAL_META_TO_STIX_ATTRIBUTE[relType];
-      data[stixType] = stixType.endsWith('_refs') ? val : R.head(val);
+      if (stixType) {
+        data[stixType] = stixType.endsWith('_refs') ? val : R.head(val);
+      }
     } else {
       data[key] = val;
     }
