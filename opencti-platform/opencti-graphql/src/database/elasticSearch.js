@@ -22,6 +22,7 @@ import {
   EXTERNAL_META_TO_STIX_ATTRIBUTE,
   RELATION_CREATED_BY,
   RELATION_KILL_CHAIN_PHASE,
+  RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
@@ -47,11 +48,10 @@ import {
 import { getParentTypes } from '../schema/schemaUtils';
 import { isStixObjectAliased } from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
-import { isBasicRelationship, STIX_RELATIONSHIPS } from '../schema/stixRelationship';
+import { isBasicRelationship } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
-import { INTERNAL_RELATIONSHIPS } from '../schema/internalRelationship';
 
 const MIN_DATA_FIELDS = ['name', 'value', 'internal_id', 'standard_id', 'base_type', 'entity_type', 'connections'];
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
@@ -73,16 +73,11 @@ const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_KILL_CHAIN_PHASE}_${ROLE_TO}`,
   `${RELATION_INDICATES}_${ROLE_TO}`,
 ];
+const SOURCE_EXCLUDED_FIELDS = [`${REL_INDEX_PREFIX}${RELATION_OBJECT}`];
 export const isImpactedTypeAndSide = (type, side) => {
   return !UNIMPACTED_ENTITIES_ROLE.includes(`${type}_${side}`);
 };
 export const isImpactedRole = (role) => !UNIMPACTED_ENTITIES_ROLE.includes(role);
-const computeRelsExclude = () => {
-  // Exclude every internal refs except markings and creator
-  const toKeep = [RELATION_CREATED_BY, RELATION_OBJECT_MARKING];
-  const allRels = [...STIX_RELATIONSHIPS, ...INTERNAL_RELATIONSHIPS];
-  return allRels.filter((r) => !toKeep.includes(r)).map((r) => REL_INDEX_PREFIX + r);
-};
 
 export const el = new Client({
   node: conf.get('elasticsearch:url'),
@@ -644,7 +639,7 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
   const query = {
     index: READ_RELATIONSHIPS_INDICES,
     size: MAX_SEARCH_SIZE,
-    _source_excludes: computeRelsExclude(),
+    _source_excludes: SOURCE_EXCLUDED_FIELDS,
     ignore_throttled: ES_IGNORE_THROTTLED,
     body: {
       query: {
@@ -720,7 +715,6 @@ export const elFindByIds = async (user, ids, opts = {}) => {
         idsTermsPerType.push({ term });
       }
     }
-    // const idsTermsPerType = map((e) => ({ [`${e}.keyword`]: id }), elementTypes);
     const should = {
       bool: {
         should: idsTermsPerType,
@@ -745,9 +739,9 @@ export const elFindByIds = async (user, ids, opts = {}) => {
     const query = {
       index: indices,
       size: MAX_SEARCH_SIZE,
+      _source_excludes: SOURCE_EXCLUDED_FIELDS,
+      _source_includes: minSource ? MIN_DATA_FIELDS : null,
       ignore_throttled: ES_IGNORE_THROTTLED,
-      _source_excludes: computeRelsExclude(),
-      _source_includes: minSource ? MIN_DATA_FIELDS : '*',
       body: {
         query: {
           bool: {
@@ -831,7 +825,6 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
         path: 'connections',
         query: {
           bool: {
-            // must: toRoleFilter,
             should: typesFilters,
             minimum_should_match: 1,
           },
@@ -926,10 +919,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
     });
 };
 export const elHistogramCount = async (user, type, field, interval, start, end, toTypes, filters) => {
-  // const tzStart = moment.parseZone(start).format('Z');
-  // Filter: { type: 'relation/attribute/nested' }
   const histogramFilters = R.map((f) => {
-    // isRelation: false, isNested: true, type: 'connections.internal_id', value: fromId
     const { isRelation = false, isNested = false, type: filterType, value, operator = 'eq' } = f;
     if (isNested) {
       const [path] = filterType.split('.');
@@ -1009,7 +999,6 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
         path: 'connections',
         query: {
           bool: {
-            // must: toRoleFilter,
             should: typesFilters,
             minimum_should_match: 1,
           },
@@ -1268,9 +1257,9 @@ export const elPaginate = async (user, indexName, options = {}) => {
   }
   const query = {
     index: indexName,
+    _source_excludes: SOURCE_EXCLUDED_FIELDS,
+    _source_includes: minSource ? MIN_DATA_FIELDS : null,
     ignore_throttled: ES_IGNORE_THROTTLED,
-    _source_excludes: computeRelsExclude(),
-    _source_includes: minSource ? MIN_DATA_FIELDS : '*',
     track_total_hits: true,
     body,
   };
@@ -1370,8 +1359,8 @@ export const elAttributeValues = async (user, field) => {
   };
   const query = {
     index: [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS],
+    _source_excludes: SOURCE_EXCLUDED_FIELDS,
     ignore_throttled: ES_IGNORE_THROTTLED,
-    _source_excludes: computeRelsExclude(),
     body,
   };
   const data = await el.search(query);
@@ -1460,8 +1449,6 @@ export const elReplace = (indexName, documentId, documentBody) => {
       rawSources.push(`ctx._source['${key}'] = params['${key}']`);
     }
   }
-  // const keys = R.keys(doc);
-  // const rawSources = R.map((key) => `ctx._source['${key}'] = params['${key}']`, keys);
   const source = R.join(';', rawSources);
   return elUpdate(indexName, documentId, {
     script: { source, params: doc },
