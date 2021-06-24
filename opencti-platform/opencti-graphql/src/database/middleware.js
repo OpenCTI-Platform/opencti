@@ -484,20 +484,20 @@ const transformRawRelationsToAttributes = (data) => {
 };
 const loadElementDependencies = async (user, element, args = {}) => {
   const { dependencyType = ABSTRACT_STIX_RELATIONSHIP } = args;
-  const { onlyMarking = true, fullResolve = false, minSource = true } = args;
+  const { onlyMarking = true, fullResolve = false } = args;
   const elementId = element.internal_id;
   const relType = onlyMarking ? RELATION_OBJECT_MARKING : dependencyType;
   // Resolve all relations
   // noinspection ES6MissingAwait
-  const toRelationsPromise = fullResolve ? listAllRelations(user, relType, { toId: elementId, minSource }) : [];
-  const fromRelationsPromise = listAllRelations(user, relType, { fromId: elementId, minSource });
+  const toRelationsPromise = fullResolve ? listAllRelations(user, relType, { toId: elementId }) : [];
+  const fromRelationsPromise = listAllRelations(user, relType, { fromId: elementId });
   const [fromRelations, toRelations] = await Promise.all([fromRelationsPromise, toRelationsPromise]);
   const data = {};
   // Parallel resolutions
   const toResolvedIds = R.uniq(fromRelations.map((rel) => rel.toId));
   const fromResolvedIds = R.uniq(toRelations.map((rel) => rel.fromId));
-  const toResolvedPromise = elFindByIds(user, toResolvedIds, { toMap: true, minSource });
-  const fromResolvedPromise = elFindByIds(user, fromResolvedIds, { toMap: true, minSource });
+  const toResolvedPromise = elFindByIds(user, toResolvedIds, { toMap: true });
+  const fromResolvedPromise = elFindByIds(user, fromResolvedIds, { toMap: true });
   const [toResolved, fromResolved] = await Promise.all([toResolvedPromise, fromResolvedPromise]);
   if (fromRelations.length > 0) {
     // Build the flatten view inside the data
@@ -559,7 +559,6 @@ export const stixLoadById = async (user, id, type = null) => {
     dependencyType: ABSTRACT_STIX_META_RELATIONSHIP,
     onlyMarking: false,
     fullResolve: false,
-    minSource: false,
   });
 };
 export const stixLoadByQuery = async (user, query) => {
@@ -567,7 +566,6 @@ export const stixLoadByQuery = async (user, query) => {
     dependencyType: ABSTRACT_STIX_META_RELATIONSHIP,
     onlyMarking: false,
     fullResolve: false,
-    minSource: false,
   });
 };
 export const stixElementLoader = async (user, id, type) => {

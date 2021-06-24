@@ -54,7 +54,6 @@ import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
 import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
 
-const MIN_DATA_FIELDS = ['name', 'value', 'internal_id', 'standard_id', 'base_type', 'entity_type', 'connections'];
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result');
@@ -727,7 +726,6 @@ const loadFromCache = async (user, id, type) => {
 };
 export const elFindByIds = async (user, ids, opts = {}) => {
   const { indices = READ_DATA_INDICES, toMap = false, type = null } = opts;
-  const { minSource = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
   if (processIds.length === 0) {
@@ -781,7 +779,6 @@ export const elFindByIds = async (user, ids, opts = {}) => {
         index: indices,
         size: MAX_SEARCH_SIZE,
         _source_excludes: SOURCE_EXCLUDED_FIELDS,
-        _source_includes: minSource ? MIN_DATA_FIELDS : null,
         ignore_throttled: ES_IGNORE_THROTTLED,
         body: {
           query: {
@@ -1085,7 +1082,7 @@ export const specialElasticCharsEscape = (query) => {
 };
 export const elPaginate = async (user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
-  const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', minSource = false } = options;
+  const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc' } = options;
   const { types = null, filters = [], filterMode = 'and', search = null, connectionFormat = true } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let must = [];
@@ -1296,7 +1293,6 @@ export const elPaginate = async (user, indexName, options = {}) => {
   const query = {
     index: indexName,
     _source_excludes: SOURCE_EXCLUDED_FIELDS,
-    _source_includes: minSource ? MIN_DATA_FIELDS : null,
     ignore_throttled: ES_IGNORE_THROTTLED,
     track_total_hits: true,
     body,
@@ -1486,7 +1482,7 @@ export const elReplace = (indexName, documentId, documentBody) => {
 const getRelatedRelations = async (user, targetIds, elements, level, cache) => {
   const elementIds = Array.isArray(targetIds) ? targetIds : [targetIds];
   const filters = [{ nested: [{ key: 'internal_id', values: elementIds }], key: 'connections' }];
-  const opts = { filters, connectionFormat: false, types: [ABSTRACT_BASIC_RELATIONSHIP], minSource: true };
+  const opts = { filters, connectionFormat: false, types: [ABSTRACT_BASIC_RELATIONSHIP] };
   const hits = await elList(user, READ_RELATIONSHIPS_INDICES, opts);
   const groupResults = R.splitEvery(MAX_JS_PARAMS, hits);
   const foundRelations = [];
@@ -1538,7 +1534,7 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
         })
         .flat()
     );
-    const dataIds = await elFindByIds(user, idsToResolve, { minSource: true });
+    const dataIds = await elFindByIds(user, idsToResolve);
     const indexCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._index })));
     const bodyUpdateRaw = relsFromTo.map(({ relation, isFromCleanup, isToCleanup }) => {
       const type = buildRefRelationKey(relation.entity_type);

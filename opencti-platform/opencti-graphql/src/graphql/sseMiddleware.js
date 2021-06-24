@@ -626,7 +626,6 @@ const createSeeMiddleware = () => {
           }
           return channel.connected();
         };
-        queryOptions.minSource = true;
         queryOptions.callback = callback;
         await elList(req.session.user, READ_DATA_INDICES, queryOptions);
         // We need to sent a special event to mark the end of init with the current timestamp
