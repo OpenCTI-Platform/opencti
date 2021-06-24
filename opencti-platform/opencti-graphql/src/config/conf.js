@@ -278,5 +278,6 @@ export const ENABLED_API = booleanConf('app:enabled', true);
 export const ENABLED_EXPIRED_MANAGER = booleanConf('expiration_scheduler:enabled', false);
 export const ENABLED_TASK_SCHEDULER = booleanConf('task_scheduler:enabled', false);
 export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
+export const ENABLED_CACHING = booleanConf('redis:use_as_cache', false);
 
 export default nconf;

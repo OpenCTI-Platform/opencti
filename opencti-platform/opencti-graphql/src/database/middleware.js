@@ -34,7 +34,7 @@ import {
   elHistogramCount,
   elIndexElements,
   elList,
-  elLoadByIds,
+  elLoadById,
   elPaginate,
   elUpdateElement,
   elUpdateEntityConnections,
@@ -470,7 +470,7 @@ export const internalFindByIds = (user, ids, args = {}) => {
 };
 export const internalLoadById = (user, id, args = {}) => {
   const { type } = args;
-  return elLoadByIds(user, id, type);
+  return elLoadById(user, id, type);
 };
 export const loadById = async (user, id, type, args = {}) => {
   if (R.isNil(type) || R.isEmpty(type)) {

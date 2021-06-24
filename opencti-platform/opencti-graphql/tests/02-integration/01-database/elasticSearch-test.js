@@ -6,14 +6,14 @@ import {
   elAggregationRelationsCount,
   elCount,
   elCreateIndexes,
-  elDeleteByField,
+  elDeleteElements,
   elDeleteIndexes,
   elHistogramCount,
   elIndex,
   elIndexElements,
   elIndexExists,
   elIsAlive,
-  elLoadByIds,
+  elLoadById,
   elPaginate,
   elReconstructRelation,
   elVersion,
@@ -84,14 +84,14 @@ describe('Elasticsearch document loader', () => {
     expect(indexedData).toEqual(documentBody);
     const documentWithIndex = assoc('_index', 'test_index-000001', documentBody);
     // Load by internal Id
-    const dataThroughInternal = await elLoadByIds(ADMIN_USER, internalId, null, ['test_index']);
+    const dataThroughInternal = await elLoadById(ADMIN_USER, internalId, null, ['test_index']);
     expect(dataThroughInternal).toEqual(documentWithIndex);
     // Load by stix id
-    const dataThroughStix = await elLoadByIds(ADMIN_USER, standardId, null, ['test_index']);
+    const dataThroughStix = await elLoadById(ADMIN_USER, standardId, null, ['test_index']);
     expect(dataThroughStix).toEqual(documentWithIndex);
     // Try to delete
-    await elDeleteByField('test_index', 'internal_id', internalId);
-    const removedInternal = await elLoadByIds(ADMIN_USER, internalId, null, ['test_index']);
+    await elDeleteElements(ADMIN_USER, [dataThroughStix]);
+    const removedInternal = await elLoadById(ADMIN_USER, internalId, null, ['test_index']);
     expect(removedInternal).toBeUndefined();
   });
 });
@@ -103,7 +103,7 @@ describe('Elasticsearch computation', () => {
     expect(malwaresCount).toEqual(2);
   });
   it('should count accurate with date filter', async () => {
-    const mostRecentMalware = await elLoadByIds(ADMIN_USER, 'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
+    const mostRecentMalware = await elLoadById(ADMIN_USER, 'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
     const malwaresCount = await elCount(ADMIN_USER, READ_ENTITIES_INDICES, {
       types: ['Malware'],
       endDate: mostRecentMalware.created_at,
@@ -127,7 +127,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('Indicator')).toEqual(3);
   });
   it('should entity aggregation with date accurate', async () => {
-    const mostRecentMalware = await elLoadByIds(ADMIN_USER, 'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
+    const mostRecentMalware = await elLoadById(ADMIN_USER, 'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
     const malwaresAggregation = await elAggregationCount(
       ADMIN_USER,
       'Stix-Domain-Object',
@@ -147,7 +147,7 @@ describe('Elasticsearch computation', () => {
   });
   it('should entity aggregation with relation accurate', async () => {
     // Aggregate with relation filter on marking definition TLP:RED
-    const marking = await elLoadByIds(ADMIN_USER, 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27');
+    const marking = await elLoadById(ADMIN_USER, 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27');
     const malwaresAggregation = await elAggregationCount(
       ADMIN_USER,
       'Stix-Domain-Object',
@@ -167,7 +167,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('Report')).toEqual(1);
   });
   it('should relation aggregation accurate', async () => {
-    const testingReport = await elLoadByIds(ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
+    const testingReport = await elLoadById(ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
     const opts = {
       toTypes: ['Stix-Domain-Object'],
       fromId: testingReport.internal_id,
@@ -202,7 +202,7 @@ describe('Elasticsearch computation', () => {
   it('should relation aggregation with date accurate', async () => {
     // "target_ref": "location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c", City -> Hietzing
     // "target_ref": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c"
-    const intrusionSet = await elLoadByIds(ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
+    const intrusionSet = await elLoadById(ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
     // "target_ref": "identity--c017f212-546b-4f21-999d-97d3dc558f7b", organization -> Allied Universal
     const opts = {
       start: '2020-02-29T00:00:00Z',
@@ -279,7 +279,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('2020')).toEqual(14);
   });
   it('should year histogram with relation filter accurate', async () => {
-    const attackPattern = await elLoadByIds(ADMIN_USER, 'attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');
+    const attackPattern = await elLoadById(ADMIN_USER, 'attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');
     const data = await elHistogramCount(
       ADMIN_USER,
       'Stix-Domain-Object',
@@ -301,7 +301,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('2019')).toEqual(1);
   });
   it('should year histogram with relation filter accurate', async () => {
-    const attackPattern = await elLoadByIds(ADMIN_USER, 'attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');
+    const attackPattern = await elLoadById(ADMIN_USER, 'attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');
     const data = await elHistogramCount(
       ADMIN_USER,
       'Stix-Domain-Object',
@@ -572,12 +572,8 @@ describe('Elasticsearch pagination', () => {
 
 describe('Elasticsearch basic loader', () => {
   it('should entity load by internal id', async () => {
-    const malware = await elLoadByIds(
-      ADMIN_USER,
-      'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c',
-      'Stix-Domain-Object'
-    );
-    const data = await elLoadByIds(ADMIN_USER, malware.internal_id);
+    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Stix-Domain-Object');
+    const data = await elLoadById(ADMIN_USER, malware.internal_id);
     expect(data).not.toBeNull();
     expect(data.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
     expect(data.revoked).toBeFalsy();
@@ -585,14 +581,14 @@ describe('Elasticsearch basic loader', () => {
     expect(data.entity_type).toEqual('Malware');
   });
   it('should entity load by stix id', async () => {
-    const data = await elLoadByIds(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Stix-Domain-Object');
+    const data = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Stix-Domain-Object');
     expect(data).not.toBeNull();
     expect(data.revoked).toBeFalsy();
     expect(data.name).toEqual('Paradise Ransomware');
     expect(data.entity_type).toEqual('Malware');
   });
   it('should relation reconstruct', async () => {
-    const data = await elLoadByIds(ADMIN_USER, 'relationship--8d2200a8-f9ef-4345-95d1-ba3ed49606f9');
+    const data = await elLoadById(ADMIN_USER, 'relationship--8d2200a8-f9ef-4345-95d1-ba3ed49606f9');
     expect(data).not.toBeNull();
     expect(data.fromRole).toEqual('indicates_from');
     expect(data.toRole).toEqual('indicates_to');
@@ -602,14 +598,14 @@ describe('Elasticsearch basic loader', () => {
 
 describe('Elasticsearch reindex', () => {
   it('should relation correctly indexed', async () => {
-    const malware = await elLoadByIds(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const malwareInternalId = malware.internal_id;
-    const attackPattern = await elLoadByIds(ADMIN_USER, 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17');
+    const attackPattern = await elLoadById(ADMIN_USER, 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17');
     const attackPatternId = attackPattern.internal_id;
     // relationship_type -> uses
     // source_ref -> malware--faa5b705-cf44-4e50-8472-29e5fec43c3c
     // target_ref -> attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17
-    const data = await elLoadByIds(ADMIN_USER, 'relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de');
+    const data = await elLoadById(ADMIN_USER, 'relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de');
     expect(data).not.toBeNull();
     expect(data.fromId === malwareInternalId).toBeTruthy(); // malware--faa5b705-cf44-4e50-8472-29e5fec43c3c
     expect(data.toId === attackPatternId).toBeTruthy(); // attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17

@@ -8684,8 +8684,8 @@ type Query {
   stixCyberObservableRelationshipsNumber(fromId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
 
   ####### ALL
-  stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
-  stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
+  stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship @auth(for: [KNOWLEDGE, EXPLORE])
 }
 
 ### SUBSCRIPTIONS

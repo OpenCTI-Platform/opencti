@@ -1,5 +1,6 @@
 // Admin user initialization
 import { ApolloError } from 'apollo-errors';
+import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { logApp, PLATFORM_VERSION } from './config/conf';
 import { elCreateIndexes, elIndexExists, elIsAlive } from './database/elasticSearch';
@@ -140,7 +141,7 @@ const initializeMigration = async (testMode = false) => {
   logApp.info('[INIT] Creating migration structure');
   const time = testMode ? new Date().getTime() : lastAvailableMigrationTime();
   const lastRun = `${time}-init`;
-  const migrationStatus = { lastRun };
+  const migrationStatus = { internal_id: uuidv4(), lastRun };
   await createEntity(SYSTEM_USER, migrationStatus, ENTITY_TYPE_MIGRATION_STATUS);
 };
 

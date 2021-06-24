@@ -5,6 +5,7 @@ import * as R from 'ramda';
 import {
   buildPagination,
   cursorToOffset,
+  isEmptyField,
   isNotEmptyField,
   offsetToCursor,
   pascalize,
@@ -14,7 +15,6 @@ import {
   READ_PLATFORM_INDICES,
   READ_RELATIONSHIPS_INDICES,
   WRITE_PLATFORM_INDICES,
-  isEmptyField,
 } from './utils';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
@@ -52,6 +52,7 @@ import { isBasicRelationship } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
+import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
 
 const MIN_DATA_FIELDS = ['name', 'value', 'internal_id', 'standard_id', 'base_type', 'entity_type', 'connections'];
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
@@ -691,90 +692,123 @@ const rawDataElementConverter = (element) => {
   return data;
 };
 
+const loadFromCache = async (user, id, type) => {
+  const data = await cacheGet(id);
+  const cached = data ? Object.keys(R.filter((instance) => instance, data)) : [];
+  const accessible = R.filter((instance) => {
+    if (!instance) {
+      return false;
+    }
+    const isBypass = R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
+    if (!isBypass) {
+      const dataMarkings = instance.object_marking_refs || [];
+      const userMarkings = (user.allowed_marking || []).map((a) => a.internal_id);
+      const isUserHaveAccess = dataMarkings.length === 0 || dataMarkings.every((m) => userMarkings.includes(m));
+      if (!isUserHaveAccess) {
+        return false;
+      }
+    }
+    // Check type
+    const dataTypes = [instance.entity_type, ...getParentTypes(instance.entity_type)];
+    return !(type && !dataTypes.includes(type));
+  }, data || {});
+  return { cached, accessible };
+};
 export const elFindByIds = async (user, ids, opts = {}) => {
   const { indices = READ_DATA_INDICES, toMap = false, type = null } = opts;
   const { minSource = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
-  if (processIds.length === 0) return [];
-  const groupIds = R.splitEvery(MAX_SPLIT, processIds);
-  const hits = {};
-  for (let index = 0; index < groupIds.length; index += 1) {
-    const mustTerms = [];
-    const workingIds = groupIds[index];
-    const idsTermsPerType = [];
-    const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
-    if (isStixObjectAliased(type)) {
-      elementTypes.push(INTERNAL_IDS_ALIASES);
-    }
-    for (let i = 0; i < workingIds.length; i += 1) {
-      const id = workingIds[i];
-      for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
-        const elementType = elementTypes[indexType];
-        const term = { [`${elementType}.keyword`]: id };
-        idsTermsPerType.push({ term });
+  if (processIds.length === 0) {
+    return toMap ? {} : [];
+  }
+  const { cached, accessible } = await loadFromCache(user, ids, type);
+  const cacheHits = { ...accessible };
+  const remainingIds = processIds.filter((id) => !cached.includes(id));
+  const elasticHits = {};
+  if (remainingIds.length > 0) {
+    // const startTime = Date.now();
+    const groupIds = R.splitEvery(MAX_SPLIT, remainingIds);
+    for (let index = 0; index < groupIds.length; index += 1) {
+      const mustTerms = [];
+      const workingIds = groupIds[index];
+      const idsTermsPerType = [];
+      const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
+      if (isStixObjectAliased(type)) {
+        elementTypes.push(INTERNAL_IDS_ALIASES);
       }
-    }
-    const should = {
-      bool: {
-        should: idsTermsPerType,
-        minimum_should_match: 1,
-      },
-    };
-    mustTerms.push(should);
-    if (type) {
-      const shouldType = {
+      for (let i = 0; i < workingIds.length; i += 1) {
+        const id = workingIds[i];
+        for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
+          const elementType = elementTypes[indexType];
+          const term = { [`${elementType}.keyword`]: id };
+          idsTermsPerType.push({ term });
+        }
+      }
+      const should = {
         bool: {
-          should: [
-            { match_phrase: { 'entity_type.keyword': type } },
-            { match_phrase: { 'parent_types.keyword': type } },
-          ],
+          should: idsTermsPerType,
           minimum_should_match: 1,
         },
       };
-      mustTerms.push(shouldType);
-    }
-    const markingRestrictions = buildMarkingRestriction(user);
-    mustTerms.push(...markingRestrictions.must);
-    const query = {
-      index: indices,
-      size: MAX_SEARCH_SIZE,
-      _source_excludes: SOURCE_EXCLUDED_FIELDS,
-      _source_includes: minSource ? MIN_DATA_FIELDS : null,
-      ignore_throttled: ES_IGNORE_THROTTLED,
-      body: {
-        query: {
+      mustTerms.push(should);
+      if (type) {
+        const shouldType = {
           bool: {
-            must: mustTerms,
-            must_not: markingRestrictions.must_not,
+            should: [
+              { match_phrase: { 'entity_type.keyword': type } },
+              { match_phrase: { 'parent_types.keyword': type } },
+            ],
+            minimum_should_match: 1,
+          },
+        };
+        mustTerms.push(shouldType);
+      }
+      const markingRestrictions = buildMarkingRestriction(user);
+      mustTerms.push(...markingRestrictions.must);
+      const query = {
+        index: indices,
+        size: MAX_SEARCH_SIZE,
+        _source_excludes: SOURCE_EXCLUDED_FIELDS,
+        _source_includes: minSource ? MIN_DATA_FIELDS : null,
+        ignore_throttled: ES_IGNORE_THROTTLED,
+        body: {
+          query: {
+            bool: {
+              must: mustTerms,
+              must_not: markingRestrictions.must_not,
+            },
           },
         },
-      },
-    };
-    logApp.debug(`[ELASTICSEARCH] elInternalLoadById`, { query });
-    const data = await el.search(query).catch((err) => {
-      throw DatabaseError('Error loading ids', { error: err, query });
-    });
-    for (let j = 0; j < data.body.hits.hits.length; j += 1) {
-      const hit = data.body.hits.hits[j];
-      const elementWithIndex = R.assoc('_index', hit._index, hit._source);
-      const element = rawDataElementConverter(elementWithIndex);
-      // And a specific processing for a relation
-      if (element.base_type === BASE_TYPE_RELATION) {
-        const relation = elReconstructRelation(element);
-        hits[relation.internal_id] = relation;
-      } else {
-        hits[element.internal_id] = element;
+      };
+      logApp.debug(`[ELASTICSEARCH] elInternalLoadById`, { query });
+      const data = await el.search(query).catch((err) => {
+        throw DatabaseError('Error loading ids', { error: err, query });
+      });
+      for (let j = 0; j < data.body.hits.hits.length; j += 1) {
+        const hit = data.body.hits.hits[j];
+        const elementWithIndex = R.assoc('_index', hit._index, hit._source);
+        const element = rawDataElementConverter(elementWithIndex);
+        // And a specific processing for a relation
+        if (element.base_type === BASE_TYPE_RELATION) {
+          const relation = elReconstructRelation(element);
+          elasticHits[relation.internal_id] = relation;
+        } else {
+          elasticHits[element.internal_id] = element;
+        }
       }
+      await cacheSet(Object.values(elasticHits));
     }
   }
+  const hits = { ...cacheHits, ...elasticHits };
   return toMap ? hits : Object.values(hits);
 };
-export const elLoadByIds = async (user, ids, type = null, indices = READ_DATA_INDICES) => {
-  const hits = await elFindByIds(user, ids, { type, indices });
+
+export const elLoadById = async (user, id, type = null, indices = READ_DATA_INDICES) => {
+  const hits = await elFindByIds(user, id, { type, indices });
   /* istanbul ignore if */
   if (hits.length > 1) {
-    const errorMeta = { ids, type, hits: hits.length };
+    const errorMeta = { id, type, hits: hits.length };
     throw DatabaseError('Expect only one response', errorMeta);
   }
   return R.head(hits);
@@ -896,7 +930,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
       }
       let fromType = null;
       if (fromId) {
-        const fromEntity = await elLoadByIds(user, fromId);
+        const fromEntity = await elLoadById(user, fromId);
         fromType = fromEntity.entity_type;
       }
       const types = R.pipe(
@@ -1454,21 +1488,6 @@ export const elReplace = (indexName, documentId, documentBody) => {
     script: { source, params: doc },
   });
 };
-export const elDeleteByField = async (indexName, fieldName, value) => {
-  const query = {
-    match: { [fieldName]: value },
-  };
-  await el
-    .deleteByQuery({
-      index: indexName,
-      refresh: true,
-      body: { query },
-    })
-    .catch((err) => {
-      throw DatabaseError('Delete by field fail', { error: err, fieldName, value });
-    });
-  return value;
-};
 
 const getRelatedRelations = async (user, targetIds, elements, level, cache) => {
   const elementIds = Array.isArray(targetIds) ? targetIds : [targetIds];
@@ -1503,57 +1522,63 @@ export const getRelationsToRemove = async (user, elements) => {
 };
 export const elDeleteInstanceIds = async (instances) => {
   // If nothing to delete, return immediately to prevent elastic to delete everything
-  if (instances.length === 0) return Promise.resolve(0);
-  logApp.debug(`[ELASTICSEARCH] Deleting ${instances.length} instances`);
-  const bodyDelete = instances.flatMap((doc) => {
-    return [{ delete: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
-  });
-  return elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyDelete });
+  if (instances.length > 0) {
+    logApp.debug(`[ELASTICSEARCH] Deleting ${instances.length} instances`);
+    const bodyDelete = instances.flatMap((doc) => {
+      return [{ delete: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
+    });
+    const cachePromise = cacheDel(instances);
+    const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyDelete });
+    await Promise.all([cachePromise, bulkPromise]);
+  }
 };
 const elRemoveRelationConnection = async (user, relsFromTo) => {
-  if (relsFromTo.length === 0) return true;
-  const idsToResolve = R.uniq(
-    relsFromTo
-      .map(({ relation, isFromCleanup, isToCleanup }) => {
-        const ids = [];
-        if (isFromCleanup) ids.push(relation.fromId);
-        if (isToCleanup) ids.push(relation.toId);
-        return ids;
-      })
-      .flat()
-  );
-  const dataIds = await elFindByIds(user, idsToResolve, { minSource: true });
-  const indexCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._index })));
-  const bodyUpdateRaw = relsFromTo.map(({ relation, isFromCleanup, isToCleanup }) => {
-    const type = buildRefRelationKey(relation.entity_type);
-    const updates = [];
-    const fromIndex = indexCache[relation.fromId];
-    if (isFromCleanup && fromIndex) {
-      const script = {
-        source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
-        params: { key: relation.toId },
-      };
-      updates.push([
-        { update: { _index: fromIndex, _id: relation.fromId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-        { script },
-      ]);
-    }
-    // Update to to entity
-    const toIndex = indexCache[relation.toId];
-    if (isToCleanup && toIndex) {
-      const script = {
-        source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
-        params: { key: relation.fromId },
-      };
-      updates.push([
-        { update: { _index: toIndex, _id: relation.toId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-        { script },
-      ]);
-    }
-    return updates;
-  });
-  const bodyUpdate = R.flatten(bodyUpdateRaw);
-  return elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+  if (relsFromTo.length > 0) {
+    const idsToResolve = R.uniq(
+      relsFromTo
+        .map(({ relation, isFromCleanup, isToCleanup }) => {
+          const ids = [];
+          if (isFromCleanup) ids.push(relation.fromId);
+          if (isToCleanup) ids.push(relation.toId);
+          return ids;
+        })
+        .flat()
+    );
+    const dataIds = await elFindByIds(user, idsToResolve, { minSource: true });
+    const indexCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._index })));
+    const bodyUpdateRaw = relsFromTo.map(({ relation, isFromCleanup, isToCleanup }) => {
+      const type = buildRefRelationKey(relation.entity_type);
+      const updates = [];
+      const fromIndex = indexCache[relation.fromId];
+      if (isFromCleanup && fromIndex) {
+        const script = {
+          source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
+          params: { key: relation.toId },
+        };
+        updates.push([
+          { update: { _index: fromIndex, _id: relation.fromId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+          { script },
+        ]);
+      }
+      // Update to to entity
+      const toIndex = indexCache[relation.toId];
+      if (isToCleanup && toIndex) {
+        const script = {
+          source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
+          params: { key: relation.fromId },
+        };
+        updates.push([
+          { update: { _index: toIndex, _id: relation.toId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+          { script },
+        ]);
+      }
+      return updates;
+    });
+    const bodyUpdate = R.flatten(bodyUpdateRaw);
+    const cachePromise = cacheDel(dataIds);
+    const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+    await Promise.all([cachePromise, bulkPromise]);
+  }
 };
 
 export const elDeleteElements = async (user, elements) => {
@@ -1736,12 +1761,14 @@ export const elIndexElements = async (elements) => {
     R.dissoc('_index', doc.data),
   ]);
   if (bodyUpdate.length > 0) {
-    await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+    const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+    const cachePromise = cacheDel(elements);
+    await Promise.all([cachePromise, bulkPromise]);
   }
   return transformedElements.length;
 };
 
-export const elUpdateAttributeValue = (key, previousValue, value) => {
+export const elUpdateAttributeValue = async (key, previousValue, value) => {
   const isMultiple = isMultipleAttribute(key);
   const source = !isMultiple
     ? 'ctx._source[params.key] = params.value'
@@ -1753,32 +1780,37 @@ export const elUpdateAttributeValue = (key, previousValue, value) => {
         index++; 
        }`;
   const query = { match_phrase: { [`${key}.keyword`]: previousValue } };
-  return el
-    .updateByQuery({
-      index: READ_DATA_INDICES,
-      refresh: false,
-      body: {
-        script: { source, params: { key, value, previousValue } },
-        query,
-      },
-    })
-    .catch((err) => {
-      throw DatabaseError('Updating attribute value fail', { error: err, key, value });
-    });
+  const params = {
+    index: READ_DATA_INDICES,
+    refresh: false,
+    body: {
+      script: { source, params: { key, value, previousValue } },
+      query,
+    },
+  };
+  const cachePromise = cachePurge();
+  const updatePromise = el.updateByQuery(params).catch((err) => {
+    throw DatabaseError('Updating attribute value fail', { error: err, key, value });
+  });
+  await Promise.all([cachePromise, updatePromise]);
 };
-export const elUpdateRelationConnections = (elements) => {
-  if (elements.length === 0) return Promise.resolve();
-  const source =
-    'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); ' +
-    'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
-  const bodyUpdate = elements.flatMap((doc) => [
-    { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-    { script: { source, params: { id: doc.toReplace, changes: doc.data } } },
-  ]);
-  return elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+export const elUpdateRelationConnections = async (elements) => {
+  if (elements.length > 0) {
+    const source =
+      'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); ' +
+      'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
+    const bodyUpdate = elements.flatMap((doc) => [
+      { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+      { script: { source, params: { id: doc.toReplace, changes: doc.data } } },
+    ]);
+    const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+    const cachePromise = cacheDel(elements);
+    await Promise.all([cachePromise, bulkPromise]);
+  }
 };
-export const elUpdateEntityConnections = (elements) => {
-  const source = `if (ctx._source[params.key] == null) { 
+export const elUpdateEntityConnections = async (elements) => {
+  if (elements.length > 0) {
+    const source = `if (ctx._source[params.key] == null) { 
       ctx._source[params.key] = [params.to];
     } else if (params.from == null) {
       ctx._source[params.key].addAll(params.to);
@@ -1790,27 +1822,28 @@ export const elUpdateEntityConnections = (elements) => {
       ctx._source[params.key] = values;
     }
   `;
-  if (elements.length === 0) {
-    return Promise.resolve();
-  }
-  const addMultipleFormat = (doc) => {
-    if (doc.toReplace === null && !Array.isArray(doc.data.internal_id)) {
-      return [doc.data.internal_id];
-    }
-    return doc.data.internal_id;
-  };
-  const bodyUpdate = elements.flatMap((doc) => [
-    { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-    {
-      script: {
-        source,
-        params: { key: buildRefRelationKey(doc.relationType), from: doc.toReplace, to: addMultipleFormat(doc) },
+    const addMultipleFormat = (doc) => {
+      if (doc.toReplace === null && !Array.isArray(doc.data.internal_id)) {
+        return [doc.data.internal_id];
+      }
+      return doc.data.internal_id;
+    };
+    const bodyUpdate = elements.flatMap((doc) => [
+      { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+      {
+        script: {
+          source,
+          params: { key: buildRefRelationKey(doc.relationType), from: doc.toReplace, to: addMultipleFormat(doc) },
+        },
       },
-    },
-  ]);
-  return elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+    ]);
+    const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+    const cachePromise = cacheDel(elements);
+    await Promise.all([cachePromise, bulkPromise]);
+  }
 };
-export const elUpdateConnectionsOfElement = (documentId, documentBody) => {
+
+export const elUpdateConnectionsOfElement = async (documentId, documentBody) => {
   const source =
     'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); ' +
     'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
@@ -1839,11 +1872,15 @@ export const elUpdateConnectionsOfElement = (documentId, documentBody) => {
 export const elUpdateElement = async (instance) => {
   // Update the element it self
   const esData = prepareElementForIndexing(instance);
-  await elReplace(instance._index, instance.internal_id, { doc: esData });
+  // Set the cache
+  const cachePromise = cacheDel([esData]);
+  const replacePromise = elReplace(instance._index, instance.internal_id, { doc: esData });
   // If entity with a name, must update connections
+  let connectionPromise = Promise.resolve();
   if (esData.name && isStixObject(instance.entity_type)) {
-    await elUpdateConnectionsOfElement(instance.internal_id, { name: esData.name });
+    connectionPromise = elUpdateConnectionsOfElement(instance.internal_id, { name: esData.name });
   }
+  await Promise.all([cachePromise, replacePromise, connectionPromise]);
 };
 
 export const getStats = () => {

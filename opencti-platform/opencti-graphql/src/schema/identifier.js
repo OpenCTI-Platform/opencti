@@ -123,7 +123,7 @@ const stixEntityContribution = {
   definition: {
     // Internal
     [I.ENTITY_TYPE_SETTINGS]: OPENCTI_PLATFORM_UUID,
-    [I.ENTITY_TYPE_MIGRATION_STATUS]: [], // ALL
+    [I.ENTITY_TYPE_MIGRATION_STATUS]: [{ src: 'internal_id' }],
     [I.ENTITY_TYPE_MIGRATION_REFERENCE]: [], // ALL
     [I.ENTITY_TYPE_GROUP]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_USER]: [{ src: 'user_email' }],

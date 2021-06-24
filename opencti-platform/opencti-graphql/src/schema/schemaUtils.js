@@ -43,7 +43,7 @@ import { isBasicObject, isStixCoreObject, isStixObject } from './stixCoreObject'
 import { STIX_SIGHTING_RELATIONSHIP } from './stixSightingRelationship';
 
 const isStixId = (id) => id.match(/[a-z-]+--[\w-]{36}/g);
-const isInternalId = (id) => validator.isUUID(id);
+export const isInternalId = (id) => validator.isUUID(id);
 export const isAnId = (id) => {
   return isStixId(id) || isInternalId(id);
 };

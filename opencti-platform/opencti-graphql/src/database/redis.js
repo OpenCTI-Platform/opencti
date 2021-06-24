@@ -4,7 +4,7 @@ import Redlock from 'redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
 import { create as createJsonDiff } from 'jsondiffpatch';
-import conf, { booleanConf, configureCA, DEV_MODE, logApp } from '../config/conf';
+import conf, { booleanConf, configureCA, DEV_MODE, ENABLED_CACHING, logApp } from '../config/conf';
 import {
   generateLogMessage,
   isEmptyField,
@@ -45,6 +45,7 @@ const redisOptions = (database) => ({
   tls: USE_SSL ? configureCA(REDIS_CA) : null,
   retryStrategy: /* istanbul ignore next */ (times) => Math.min(times * 50, 2000),
   lazyConnect: true,
+  enableAutoPipelining: false,
   enableOfflineQueue: true,
   maxRetriesPerRequest: 30,
   showFriendlyErrorStack: DEV_MODE,
@@ -59,9 +60,20 @@ const createRedisClient = (provider, database = BASE_DATABASE) => {
   client.on('close', () => logApp.info(`[REDIS] Redis '${provider}' client closed`));
   client.on('ready', () => logApp.info(`[REDIS] Redis '${provider}' client ready`));
   client.on('reconnecting', () => logApp.info(`[REDIS] '${provider}' Redis client reconnecting`));
+  client.defineCommand('cacheGet', {
+    numberOfKeys: 1,
+    lua:
+      "local resolvedKey = redis.call('get', KEYS[1])\n" +
+      'if resolvedKey then \n' +
+      "    return redis.call('get', resolvedKey)\n" +
+      'else \n' +
+      '    return resolvedKey\n' +
+      'end\n',
+  });
   return client;
 };
-const clientBase = createRedisClient('Client base', BASE_DATABASE);
+const clientBase = createRedisClient('Client base');
+const clientCache = createRedisClient('Client cache');
 const clientContext = createRedisClient('Client context', CONTEXT_DATABASE);
 
 export const createMemorySessionStore = () => {
@@ -251,6 +263,64 @@ export const lockResource = async (resources, automaticExtension = true) => {
       }
     },
   };
+};
+// endregion
+
+// region cache
+export const cacheSet = async (elements) => {
+  if (ENABLED_CACHING) {
+    const CACHE_TTL = 60;
+    // const { internal_id: id, standard_id: standard, x_opencti_stix_ids: stix } = data;
+    // const { internal_id: id } = data;
+    // const stixIds = stix || [];
+    // await clientCache.set(`cache:${id}`, JSON.stringify(data), 'ex', CACHE_TTL);
+    await redisTx(clientCache, (tx) => {
+      // tx.call('SET', `cache:${id}`, JSON.stringify(data), 'ex', CACHE_TTL);
+      // tx.call('SET', `cache:${standard}`, `cache:${id}`, 'ex', CACHE_TTL);
+      for (let index = 0; index < elements.length; index += 1) {
+        const element = elements[index];
+        tx.call('SET', `cache:${element.internal_id}`, JSON.stringify(element), 'ex', CACHE_TTL);
+      }
+    });
+  }
+};
+export const cacheDel = async (elements) => {
+  if (ENABLED_CACHING) {
+    const ids = elements.map((e) => `cache:${e.internal_id}`);
+    await clientCache.del(ids);
+  }
+};
+export const cachePurge = async () => {
+  if (ENABLED_CACHING) {
+    const keys = await clientCache.keys('cache:*');
+    if (keys && keys.length > 0) {
+      await clientCache.del(keys);
+    }
+  }
+};
+export const cacheGet = async (id) => {
+  const ids = Array.isArray(id) ? id : [id];
+  if (ENABLED_CACHING) {
+    // const idsToGet = ids.filter((i) => isInternalId(i));
+    const result = {};
+    if (ids.length > 0) {
+      // const startTime = Date.now();
+      const keyValues = await clientCache.mget(ids.map((i) => `cache:${i}`));
+      for (let index = 0; index < ids.length; index += 1) {
+        const val = keyValues[index];
+        result[ids[index]] = val ? JSON.parse(val) : val;
+      }
+      // console.log(`CACHE -PATH- IN ${Date.now() - startTime} ms`);
+    }
+    return result;
+    // const rawData = await clientCache.cacheGet(`cache:${id}`);
+    // if (rawData) {
+    //   console.log(`CACHE -PATH- IN ${Date.now() - startTime} ms`);
+    //   return JSON.parse(rawData);
+    // }
+    // return rawData;
+  }
+  return undefined;
 };
 // endregion
 

@@ -2,7 +2,7 @@ import { head } from 'ramda';
 import { deleteFile, downloadFile, filesListing, loadFile } from '../../../src/database/minio';
 import { execPython3 } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
-import { elLoadByIds } from '../../../src/database/elasticSearch';
+import { elLoadById } from '../../../src/database/elasticSearch';
 import { startModules, shutdownModules } from '../../../src/modules';
 
 const streamConverter = (stream) => {
@@ -22,7 +22,7 @@ describe('Minio file listing', () => {
   let importFileId;
   let importOpts;
   it('should resolve the malware', async () => {
-    const malware = await elLoadByIds(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     malwareId = malware.internal_id;
     exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
     exportFileId = `export/Malware/${malwareId}/${exportFileName}`;
