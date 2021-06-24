@@ -15,7 +15,7 @@ import {
   elIsAlive,
   elLoadById,
   elPaginate,
-  elReconstructRelation,
+  elRebuildRelation,
   elVersion,
   specialElasticCharsEscape,
 } from '../../../src/database/elasticSearch';
@@ -34,6 +34,7 @@ import {
 } from '../../../src/database/utils';
 import { utcDate } from '../../../src/utils/format';
 import { ADMIN_USER } from '../../utils/testQuery';
+import { BASE_TYPE_RELATION } from '../../../src/schema/general';
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
@@ -85,10 +86,10 @@ describe('Elasticsearch document loader', () => {
     const documentWithIndex = assoc('_index', 'test_index-000001', documentBody);
     // Load by internal Id
     const dataThroughInternal = await elLoadById(ADMIN_USER, internalId, null, ['test_index']);
-    expect(dataThroughInternal).toEqual(documentWithIndex);
+    expect(dataThroughInternal.standard_id).toEqual(documentWithIndex.standard_id);
     // Load by stix id
     const dataThroughStix = await elLoadById(ADMIN_USER, standardId, null, ['test_index']);
-    expect(dataThroughStix).toEqual(documentWithIndex);
+    expect(dataThroughStix.standard_id).toEqual(documentWithIndex.standard_id);
     // Try to delete
     await elDeleteElements(ADMIN_USER, [dataThroughStix]);
     const removedInternal = await elLoadById(ADMIN_USER, internalId, null, ['test_index']);
@@ -348,6 +349,7 @@ describe('Elasticsearch relation reconstruction', () => {
   const CONN_MARKING_ROLE = 'object-marking_to';
   const buildRelationConcept = (relationshipType) => ({
     internal_id: RELATION_ID,
+    base_type: BASE_TYPE_RELATION,
     entity_type: 'object-marking',
     relationship_type: relationshipType,
     connections: [
@@ -365,7 +367,7 @@ describe('Elasticsearch relation reconstruction', () => {
   });
   it('Relation reconstruct natural', async () => {
     const concept = buildRelationConcept('object-marking');
-    const relation = elReconstructRelation(concept);
+    const relation = elRebuildRelation(concept);
     expect(relation.fromId).toEqual(CONN_MALWARE_ID);
     expect(relation.fromRole).toEqual(CONN_MALWARE_ROLE);
     expect(relation.toId).toEqual(CONN_MARKING_ID);
@@ -373,7 +375,7 @@ describe('Elasticsearch relation reconstruction', () => {
   });
   it('Relation reconstruct with internal_id', async () => {
     const concept = buildRelationConcept('object-marking');
-    const relation = elReconstructRelation(concept);
+    const relation = elRebuildRelation(concept);
     expect(relation.internal_id).toEqual(concept.internal_id);
     expect(relation.fromId).toEqual(CONN_MALWARE_ID);
     expect(relation.fromRole).toEqual(CONN_MALWARE_ROLE);
@@ -382,19 +384,19 @@ describe('Elasticsearch relation reconstruction', () => {
   });
   it('Relation reconstruct with no info', async () => {
     const concept = buildRelationConcept('object-marking');
-    const relation = elReconstructRelation(concept);
+    const relation = elRebuildRelation(concept);
     expect(relation.fromId).toEqual(CONN_MALWARE_ID);
     expect(relation.toId).toEqual(CONN_MARKING_ID);
   });
   it('Relation reconstruct from reverse id', async () => {
     const concept = buildRelationConcept('object-marking');
-    const relation = elReconstructRelation(concept);
+    const relation = elRebuildRelation(concept);
     expect(relation.fromId).toEqual(CONN_MALWARE_ID);
     expect(relation.toId).toEqual(CONN_MARKING_ID);
   });
   it('Relation reconstruct from roles', async () => {
     const concept = buildRelationConcept('object-marking');
-    const relation = elReconstructRelation(concept);
+    const relation = elRebuildRelation(concept);
     expect(relation.fromId).toEqual(CONN_MALWARE_ID);
     expect(relation.toId).toEqual(CONN_MARKING_ID);
   });

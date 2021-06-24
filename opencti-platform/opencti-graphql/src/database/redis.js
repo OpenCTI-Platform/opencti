@@ -269,17 +269,10 @@ export const lockResource = async (resources, automaticExtension = true) => {
 // region cache
 export const cacheSet = async (elements) => {
   if (ENABLED_CACHING) {
-    const CACHE_TTL = 60;
-    // const { internal_id: id, standard_id: standard, x_opencti_stix_ids: stix } = data;
-    // const { internal_id: id } = data;
-    // const stixIds = stix || [];
-    // await clientCache.set(`cache:${id}`, JSON.stringify(data), 'ex', CACHE_TTL);
     await redisTx(clientCache, (tx) => {
-      // tx.call('SET', `cache:${id}`, JSON.stringify(data), 'ex', CACHE_TTL);
-      // tx.call('SET', `cache:${standard}`, `cache:${id}`, 'ex', CACHE_TTL);
       for (let index = 0; index < elements.length; index += 1) {
         const element = elements[index];
-        tx.call('SET', `cache:${element.internal_id}`, JSON.stringify(element), 'ex', CACHE_TTL);
+        tx.call('SET', `cache:${element.internal_id}`, JSON.stringify(element), 'ex', 5 * 60);
       }
     });
   }
@@ -301,24 +294,15 @@ export const cachePurge = async () => {
 export const cacheGet = async (id) => {
   const ids = Array.isArray(id) ? id : [id];
   if (ENABLED_CACHING) {
-    // const idsToGet = ids.filter((i) => isInternalId(i));
     const result = {};
     if (ids.length > 0) {
-      // const startTime = Date.now();
       const keyValues = await clientCache.mget(ids.map((i) => `cache:${i}`));
       for (let index = 0; index < ids.length; index += 1) {
         const val = keyValues[index];
         result[ids[index]] = val ? JSON.parse(val) : val;
       }
-      // console.log(`CACHE -PATH- IN ${Date.now() - startTime} ms`);
     }
     return result;
-    // const rawData = await clientCache.cacheGet(`cache:${id}`);
-    // if (rawData) {
-    //   console.log(`CACHE -PATH- IN ${Date.now() - startTime} ms`);
-    //   return JSON.parse(rawData);
-    // }
-    // return rawData;
   }
   return undefined;
 };

@@ -595,14 +595,55 @@ const elMergeRelation = (concept, fromConnection, toConnection) => {
   const to = elBuildRelation('to', toConnection);
   return R.mergeAll([concept, from, to]);
 };
-export const elReconstructRelation = (concept) => {
-  const { connections } = concept;
-  const entityType = concept.entity_type;
-  const fromConnection = R.find((connection) => connection.role === `${entityType}_from`, connections);
-  const toConnection = R.find((connection) => connection.role === `${entityType}_to`, connections);
-  const relation = elMergeRelation(concept, fromConnection, toConnection);
-  return R.dissoc('connections', relation);
+export const elRebuildRelation = (concept) => {
+  if (concept.base_type === BASE_TYPE_RELATION) {
+    const { connections } = concept;
+    const entityType = concept.entity_type;
+    const fromConnection = R.find((connection) => connection.role === `${entityType}_from`, connections);
+    const toConnection = R.find((connection) => connection.role === `${entityType}_to`, connections);
+    const relation = elMergeRelation(concept, fromConnection, toConnection);
+    return R.dissoc('connections', relation);
+  }
+  return concept;
 };
+const elDataConverter = (esHit) => {
+  const elementData = esHit._source;
+  const data = {
+    _index: esHit._index,
+    id: elementData.internal_id,
+    sort: esHit.sort,
+    ...elRebuildRelation(elementData),
+  };
+  const entries = Object.entries(data);
+  const ruleInferences = [];
+  for (let index = 0; index < entries.length; index += 1) {
+    const [key, val] = entries[index];
+    if (key.startsWith(RULE_PREFIX)) {
+      const rule = key.substr(RULE_PREFIX.length);
+      const { inferred, explanation } = val;
+      const attributes = R.toPairs(inferred).map((s) => ({ field: R.head(s), value: String(R.last(s)) }));
+      ruleInferences.push({ rule, explanation, attributes });
+      data[key] = val;
+    } else if (key.startsWith(REL_INDEX_PREFIX)) {
+      const rel = key.substr(REL_INDEX_PREFIX.length);
+      const [relType] = rel.split('.');
+      const stixType = EXTERNAL_META_TO_STIX_ATTRIBUTE[relType];
+      if (stixType) {
+        data[stixType] = stixType.endsWith('_refs') ? val : R.head(val);
+      }
+    } else {
+      data[key] = val;
+    }
+  }
+  if (ruleInferences.length > 0) {
+    data.x_opencti_inferences = ruleInferences;
+  }
+  if (data.event_data) {
+    data.event_data = JSON.stringify(data.event_data);
+  }
+  return data;
+};
+
 // endregion
 export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) => {
   const mustTerms = [];
@@ -657,39 +698,9 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
   const hits = [];
   for (let index = 0; index < data.body.hits.hits.length; index += 1) {
     const hit = data.body.hits.hits[index];
-    const loadedElement = R.assoc('_index', hit._index, hit._source);
-    hits.push(elReconstructRelation(loadedElement));
+    hits.push(elDataConverter(hit));
   }
   return hits;
-};
-
-const rawDataElementConverter = (element) => {
-  const data = {};
-  const entries = Object.entries(element);
-  const ruleInferences = [];
-  for (let index = 0; index < entries.length; index += 1) {
-    const [key, val] = entries[index];
-    if (key.startsWith(RULE_PREFIX)) {
-      const rule = key.substr(RULE_PREFIX.length);
-      const { inferred, explanation } = val;
-      const attributes = R.toPairs(inferred).map((s) => ({ field: R.head(s), value: String(R.last(s)) }));
-      ruleInferences.push({ rule, explanation, attributes });
-      data[key] = val;
-    } else if (key.startsWith(REL_INDEX_PREFIX)) {
-      const rel = key.substr(REL_INDEX_PREFIX.length);
-      const [relType] = rel.split('.');
-      const stixType = EXTERNAL_META_TO_STIX_ATTRIBUTE[relType];
-      if (stixType) {
-        data[stixType] = stixType.endsWith('_refs') ? val : R.head(val);
-      }
-    } else {
-      data[key] = val;
-    }
-  }
-  if (ruleInferences.length > 0) {
-    data.x_opencti_inferences = ruleInferences;
-  }
-  return data;
 };
 
 const loadFromCache = async (user, id, type) => {
@@ -787,15 +798,8 @@ export const elFindByIds = async (user, ids, opts = {}) => {
       });
       for (let j = 0; j < data.body.hits.hits.length; j += 1) {
         const hit = data.body.hits.hits[j];
-        const elementWithIndex = R.assoc('_index', hit._index, hit._source);
-        const element = rawDataElementConverter(elementWithIndex);
-        // And a specific processing for a relation
-        if (element.base_type === BASE_TYPE_RELATION) {
-          const relation = elReconstructRelation(element);
-          elasticHits[relation.internal_id] = relation;
-        } else {
-          elasticHits[element.internal_id] = element;
-        }
+        const element = elDataConverter(hit);
+        elasticHits[element.internal_id] = element;
       }
       await cacheSet(Object.values(elasticHits));
     }
@@ -1301,22 +1305,12 @@ export const elPaginate = async (user, indexName, options = {}) => {
   return el
     .search(query)
     .then((data) => {
-      const dataWithIds = R.map((n) => {
-        const loadedElement = { ...n._source, _index: n._index, id: n._source.internal_id, sort: n.sort };
-        const element = rawDataElementConverter(loadedElement);
-        if (element.base_type === BASE_TYPE_RELATION) {
-          return elReconstructRelation(element);
-        }
-        if (element.event_data) {
-          return { ...element, event_data: JSON.stringify(element.event_data) };
-        }
-        return element;
-      }, data.body.hits.hits);
+      const convertedHits = R.map((n) => elDataConverter(n), data.body.hits.hits);
       if (connectionFormat) {
-        const nodeHits = R.map((n) => ({ node: n, sort: n.sort }), dataWithIds);
+        const nodeHits = R.map((n) => ({ node: n, sort: n.sort }), convertedHits);
         return buildPagination(first, searchAfter, nodeHits, data.body.hits.total.value);
       }
-      return dataWithIds;
+      return convertedHits;
     })
     .catch(
       /* istanbul ignore next */ (err) => {
