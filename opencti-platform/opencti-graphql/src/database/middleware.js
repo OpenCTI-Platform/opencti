@@ -549,10 +549,6 @@ export const fullLoadById = async (user, id, type = null) => {
   const element = await loadByIdWithDependencies(user, id, type, { onlyMarking: false, fullResolve: true });
   return { ...element, i_fully_resolved: true };
 };
-// Get element with the marking and from/to for relation
-export const markedLoadById = async (user, id, type = null) => {
-  return loadByIdWithDependencies(user, id, type, { onlyMarking: true, fullResolve: false });
-};
 // Get element with every elements connected element -> rel -> to
 export const stixLoadById = async (user, id, type = null) => {
   return loadByIdWithDependencies(user, id, type, {
@@ -579,11 +575,7 @@ const restrictedAggElement = { name: 'Restricted', entity_type: 'Malware', paren
 const convertAggregateDistributions = async (user, limit, orderingFunction, distribution) => {
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
   // eslint-disable-next-line prettier/prettier
-  const resolveLabels = await elFindByIds(
-    user,
-    data.map((d) => d.label),
-    { toMap: true }
-  );
+  const resolveLabels = await elFindByIds(user, data.map((d) => d.label), { toMap: true });
   return R.map((n) => {
     const resolved = resolveLabels[n.label];
     const resolvedData = resolved || restrictedAggElement;
@@ -661,38 +653,49 @@ const depsKeys = [
   { src: 'objects' },
 ];
 const inputResolveRefs = async (user, input) => {
-  const deps = [];
+  const fetching = [];
   const expectedIds = [];
   for (let index = 0; index < depsKeys.length; index += 1) {
     const { src, dst } = depsKeys[index];
     const destKey = dst || src;
-    let id = input[src];
+    const id = input[src];
     if (!R.isNil(id) && !R.isEmpty(id)) {
       const isListing = Array.isArray(id);
       // Handle specific case of object label that can be directly the value instead of the key.
-      let keyPromise;
       if (src === 'objectLabel') {
         const idLabel = (label) => {
           return isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: normalizeName(label) });
         };
-        id = R.map((label) => idLabel(label), id);
-        expectedIds.push(...id);
-        keyPromise = internalFindByIds(user, id);
+        fetching.push(...R.map((label) => ({ id: idLabel(label), destKey, multiple: true }), id));
       } else if (src === 'fromId' || src === 'toId') {
-        keyPromise = markedLoadById(user, id);
-        expectedIds.push(id);
+        fetching.push({ id, destKey, multiple: false });
       } else if (isListing) {
-        keyPromise = internalFindByIds(user, id);
-        expectedIds.push(...id);
+        fetching.push(...R.map((i) => ({ id: i, destKey, multiple: true }), id));
       } else {
-        keyPromise = internalLoadById(user, id);
-        expectedIds.push(id);
+        fetching.push({ id, destKey, multiple: false });
       }
-      const dataPromise = keyPromise.then((data) => ({ [destKey]: data }));
-      deps.push(dataPromise);
     }
   }
-  const resolved = await Promise.all(deps);
+  // eslint-disable-next-line prettier/prettier
+  const resolvedElements = await internalFindByIds(user, fetching.map((i) => i.id));
+  const groupByTypeElements = R.groupBy(
+    (e) => e.i_group.destKey,
+    resolvedElements.map((d) => {
+      const elementIds = [d.internal_id, d.standard_id, ...(d.x_opencti_stix_ids || [])];
+      const conf = R.find((a) => elementIds.includes(a.id), fetching);
+      return { ...d, i_group: conf };
+    })
+  );
+  const resolved = Object.entries(groupByTypeElements).map(([k, val]) => {
+    const isMultiple = R.head(val).i_group.multiple;
+    if (val.length === 1) {
+      return { [k]: isMultiple ? val : R.head(val) };
+    }
+    if (!isMultiple) {
+      throw UnsupportedError('Resolve to multiple');
+    }
+    return { [k]: val };
+  });
   const resolvedIds = R.flatten(
     R.map((r) => {
       const [, val] = R.head(Object.entries(r));
@@ -1363,7 +1366,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
   if (operation !== UPDATE_OPERATION_REPLACE && elements.length > 1) {
     throw FunctionalError(`Unsupported operation`, { operation, elements });
   }
-  const instance = await markedLoadById(user, id, type);
+  const instance = await loadById(user, id, type);
   if (!instance) {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
@@ -1668,9 +1671,8 @@ const handleRelationTimeUpdate = (input, instance, startField, stopField, extend
   }
   return patch;
 };
-const upsertElementRule = async (user, id, type, input) => {
+const upsertElementRule = async (user, instance, type, input) => {
   const impactedInputs = []; // Inputs impacted by updated inputs + updated inputs
-  const instance = await markedLoadById(user, id, type);
   const rulesKeys = Object.keys(input).filter((k) => k.startsWith(RULE_PREFIX));
   for (let indexKey = 0; indexKey < rulesKeys.length; indexKey += 1) {
     const rulesKey = rulesKeys[indexKey];
@@ -1683,9 +1685,8 @@ const upsertElementRule = async (user, id, type, input) => {
   const indexInput = partialInstanceWithInputs(updatedInstance, impactedInputs);
   return { type: TRX_UPDATE, element: updatedInstance, relations: [], streamInputs: [], indexInput };
 };
-const upsertElementRaw = async (user, id, type, input, opts = {}) => {
+const upsertElementRaw = async (user, instance, type, input, opts = {}) => {
   const { extendRelationTime = true, overrideMarkings = false } = opts;
-  const instance = await markedLoadById(user, id, type);
   // Check consistency
   checkInferenceRight(user, instance);
   // Upsert relation
@@ -1768,16 +1769,18 @@ const upsertElementRaw = async (user, id, type, input, opts = {}) => {
   // Upsert markings
   if (input.objectMarking && input.objectMarking.length > 0) {
     // Clear the marking if needed
-    if (overrideMarkings) {
-      const markingRelations = (instance.objectMarking || []).map((e) => e.i_relation);
-      await elDeleteElements(SYSTEM_USER, markingRelations);
+    const markingsIds = instance.object_marking_refs || [];
+    if (overrideMarkings && markingsIds.length > 0) {
+      const currentMarkingRels = await listAllRelations(user, RELATION_OBJECT_MARKING, {
+        fromId: instance.internal_id,
+      });
+      await elDeleteElements(SYSTEM_USER, currentMarkingRels);
     }
-    const instanceMarkings = overrideMarkings ? [] : instance.objectMarking;
     // When upsert stable relations, we decide to only add the missing markings
-    const markingsIds = R.map((m) => m.internal_id, instanceMarkings || []);
-    const markingToCreate = R.filter((m) => !markingsIds.includes(m.internal_id), input.objectMarking);
+    const instanceMarkings = overrideMarkings ? [] : markingsIds;
+    const markingToCreate = R.filter((m) => !instanceMarkings.includes(m.internal_id), input.objectMarking);
     const newRelations = markingToCreate.map(
-      (markingTo) => R.head(buildInnerRelation(instance, markingTo, RELATION_OBJECT_MARKING)).relation
+      (to) => R.head(buildInnerRelation(instance, to, RELATION_OBJECT_MARKING)).relation
     );
     rawRelations.push(...newRelations);
     targetsPerType.push({ objectMarking: markingToCreate });
@@ -1884,17 +1887,17 @@ const buildRelationData = async (user, input, opts = {}) => {
         await deleteElementById(RULE_MANAGER_USER, existingRelationship.id, existingRelationship.entity_type);
       } else {
         // Rule reapply on existing element, simple upsert to execute
-        return upsertElementRaw(user, existingRelationship.id, relationshipType, input, opts);
+        return upsertElementRaw(user, existingRelationship, relationshipType, input, opts);
       }
     } else {
       // If the element was directly created
       if (isRuleCreation) {
         // If the creation is asked by a rule.
         // We ust update the rule element without touching the rest
-        return upsertElementRule(user, existingRelationship.id, relationshipType, input);
+        return upsertElementRule(user, existingRelationship, relationshipType, input);
       }
       // User reapply on existing element, simple upsert to execute
-      return upsertElementRaw(user, existingRelationship.id, relationshipType, input, opts);
+      return upsertElementRaw(user, existingRelationship, relationshipType, input, opts);
     }
   }
   // Default attributes
@@ -2110,7 +2113,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       throw UnsupportedError('Restricted entity already exists');
     }
     if (filteredEntities.length === 1) {
-      return upsertElementRaw(user, R.head(filteredEntities).id, type, input);
+      return upsertElementRaw(user, R.head(filteredEntities), type, input);
     }
     // If creation is not by a reference
     // We can in best effort try to merge a common stix_id
@@ -2121,7 +2124,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       const sourcesEntities = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
       const sources = sourcesEntities.map((s) => s.internal_id);
       await mergeEntities(user, target.internal_id, sources, { locks: participantIds });
-      return upsertElementRaw(user, target.internal_id, type, input);
+      return upsertElementRaw(user, target, type, input);
     }
     // Sometimes multiple entities can match
     // Looking for aliasA, aliasB, find in different entities for example
@@ -2149,7 +2152,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
       const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), input[key] || []);
       const inputAliases = { ...input, [key]: filteredAliases };
-      return upsertElementRaw(user, existingByStandard.id, type, inputAliases);
+      return upsertElementRaw(user, existingByStandard, type, inputAliases);
     }
 
     // If not we dont know what to do, just throw an exception.

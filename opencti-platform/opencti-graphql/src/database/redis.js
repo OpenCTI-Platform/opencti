@@ -21,7 +21,6 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { buildStixData, stixDataConverter } from './stix';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { MARKING_DEFINITION_STATEMENT } from '../schema/stixMetaObject';
 import { now } from '../utils/format';
 import RedisStore from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
@@ -342,13 +341,11 @@ const buildEvent = (eventType, user, markings, message, data) => {
   if (!data.id || !data.x_opencti_id || !data.type) {
     throw UnsupportedError('Stream event requires id, type and x_opencti_id');
   }
-  const secureMarkings = R.filter((m) => m.definition_type !== MARKING_DEFINITION_STATEMENT, markings || []);
-  const eventMarkingIds = R.map((i) => i.standard_id, secureMarkings);
   return {
     version: '2', // Event version.
     type: eventType,
     origin: user.origin,
-    markings: eventMarkingIds,
+    markings: markings || [],
     message,
     data,
   };
@@ -441,7 +438,7 @@ const buildMergeEvent = (user, initialInstance, mergedInstance, sourceEntities) 
   const data = buildStixData(mergedInstance);
   data.x_opencti_patch = patch;
   data.x_opencti_sources = R.map((s) => buildStixData(s), sourceEntities);
-  return buildEvent(EVENT_TYPE_MERGE, user, mergedInstance.objectMarking, message, data);
+  return buildEvent(EVENT_TYPE_MERGE, user, mergedInstance.object_marking_refs, message, data);
 };
 export const storeMergeEvent = async (user, initialInstance, mergedInstance, sourceEntities) => {
   try {
@@ -486,7 +483,7 @@ export const buildUpdateEvent = (user, instance, updateEvents, opts = {}) => {
   const message = withoutMessage ? '-' : generateLogMessage(operation, instance, messageInput);
   // Build and send the event
   const dataEvent = buildStixData(data);
-  return buildEvent(EVENT_TYPE_UPDATE, user, instance.objectMarking, message, dataEvent);
+  return buildEvent(EVENT_TYPE_UPDATE, user, instance.object_marking_refs, message, dataEvent);
 };
 export const storeUpdateEvent = async (user, instance, updateEvents) => {
   // updateEvents -> [{ operation, input }]
@@ -519,7 +516,8 @@ export const buildCreateEvent = async (user, instance, input, stixLoader, opts =
   // Generate the message
   const message = withoutMessage ? '-' : generateLogMessage(EVENT_TYPE_CREATE, instance, data);
   // Build and send the event
-  return buildEvent(EVENT_TYPE_CREATE, user, input.objectMarking, message, data);
+  const inputMarkings = (input.objectMarking || []).map((m) => m.internal_id);
+  return buildEvent(EVENT_TYPE_CREATE, user, inputMarkings, message, data);
 };
 export const buildScanEvent = async (user, instance, stixLoader) => {
   return buildCreateEvent(user, instance, instance, stixLoader, { withoutMessage: true });
@@ -541,7 +539,7 @@ export const buildDeleteEvent = async (user, instance, stixLoader, opts = {}) =>
   if (isStixObject(instance.entity_type)) {
     const message = withoutMessage ? '-' : generateLogMessage(EVENT_TYPE_DELETE, instance);
     const data = buildStixData(instance);
-    return buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
+    return buildEvent(EVENT_TYPE_DELETE, user, instance.object_marking_refs, message, data);
   }
   const isCore = isStixCoreRelationship(instance.entity_type);
   const isSighting = isStixSightingRelationship(instance.entity_type);
@@ -558,7 +556,7 @@ export const buildDeleteEvent = async (user, instance, stixLoader, opts = {}) =>
   // for other deletion, just produce a delete event
   const message = withoutMessage ? '-' : generateLogMessage(EVENT_TYPE_DELETE, instance);
   const data = buildStixData(instance);
-  return buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
+  return buildEvent(EVENT_TYPE_DELETE, user, instance.object_marking_refs, message, data);
 };
 export const storeDeleteEvent = async (user, instance, stixLoader) => {
   try {

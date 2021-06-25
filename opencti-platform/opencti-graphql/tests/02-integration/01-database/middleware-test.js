@@ -13,7 +13,6 @@ import {
   mergeEntities,
   patchAttribute,
   querySubTypes,
-  markedLoadById,
   timeSeriesEntities,
   timeSeriesRelations,
   updateAttribute,
@@ -794,17 +793,17 @@ describe('Upsert and merge entities', () => {
     expect(createdMalware.name).toEqual('MALWARE_TEST');
     expect(createdMalware.description).toEqual('MALWARE_TEST DESCRIPTION');
     expect(createdMalware.i_aliases_ids.length).toEqual(1); // We put the name as internal alias id
-    let loadMalware = await markedLoadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
+    let loadMalware = await loadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware).not.toBeNull();
-    expect(loadMalware.objectMarking.length).toEqual(2);
+    expect(loadMalware.object_marking_refs.length).toEqual(2);
     // Upsert TLP by name
     let upMalware = { name: 'MALWARE_TEST', objectMarking: [testMarking] };
     let upsertedMalware = await createEntity(ADMIN_USER, upMalware, ENTITY_TYPE_MALWARE);
     expect(upsertedMalware).not.toBeNull();
     expect(upsertedMalware.id).toEqual(createdMalware.id);
     expect(upsertedMalware.name).toEqual('MALWARE_TEST');
-    loadMalware = await markedLoadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
-    expect(loadMalware.objectMarking.length).toEqual(3);
+    loadMalware = await loadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
+    expect(loadMalware.object_marking_refs.length).toEqual(3);
     // Upsert definition per alias
     upMalware = {
       name: 'NEW NAME',
@@ -819,7 +818,7 @@ describe('Upsert and merge entities', () => {
     expect(upsertedMalware.id).toEqual(createdMalware.id);
     expect(upsertedMalware.x_opencti_stix_ids).toEqual(['malware--907bb632-e3c2-52fa-b484-cf166a7d377e']);
     expect(upsertedMalware.aliases.sort()).toEqual(['NEW NAME', 'MALWARE_TEST'].sort());
-    loadMalware = await markedLoadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
+    loadMalware = await loadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware.name).toEqual('NEW NAME');
     expect(loadMalware.description).toEqual('MALWARE_TEST NEW');
     expect(loadMalware.id).toEqual(loadMalware.id);
@@ -974,13 +973,13 @@ describe('Upsert and merge entities', () => {
     const idsThatShouldNotExists = [sha1.internal_id, sha256.internal_id];
     const isExist = await isOneOfThisIdsExists(idsThatShouldNotExists);
     expect(isExist).toBeFalsy();
-    const reloadMd5 = await markedLoadById(ADMIN_USER, md5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
+    const reloadMd5 = await loadById(ADMIN_USER, md5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
     expect(reloadMd5).not.toBeNull();
     expect(reloadMd5.hashes).not.toBeNull();
     expect(reloadMd5.hashes.MD5).toEqual('MERGE_MD5');
     expect(reloadMd5.hashes['SHA-1']).toEqual('MERGE_SHA-1');
     expect(reloadMd5.hashes['SHA-256']).toEqual('MERGE_SHA-256');
-    expect(reloadMd5.objectMarking.length).toEqual(3); // [testMarking, whiteMarking, mitreMarking]
+    expect(reloadMd5.object_marking_refs.length).toEqual(3); // [testMarking, whiteMarking, mitreMarking]
     // Cleanup
     await deleteElementById(ADMIN_USER, reloadMd5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
   });

@@ -64,7 +64,7 @@ import {
 } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservableRelationship, RELATION_LINKED } from '../schema/stixCyberObservableRelationship';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, REL_INDEX_PREFIX } from '../schema/general';
 import { isEmptyField } from './utils';
 import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 
@@ -239,7 +239,8 @@ export const stixDataConverter = (data, args = {}) => {
   for (let index = 0; index < entries.length; index += 1) {
     const [key, val] = entries[index];
     const isNullVal = Array.isArray(val) ? val.length === 0 : isEmptyField(val);
-    if (key.startsWith('i_') || isStixRelationShipExceptMeta(key) || key === 'x_opencti_graph_data' || isNullVal) {
+    const isInternalKey = key.startsWith('i_') || key.startsWith(REL_INDEX_PREFIX);
+    if (isInternalKey || isStixRelationShipExceptMeta(key) || key === 'x_opencti_graph_data' || isNullVal) {
       // Internal opencti attributes.
     } else if (key.startsWith('attribute_')) {
       // Stix but reserved keywords

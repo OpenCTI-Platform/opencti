@@ -50,12 +50,12 @@ import {
   ENTITY_TYPE_ATTACK_PATTERN,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
-  isStixObjectAliased
+  isStixObjectAliased,
 } from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
-import {generateAliasesId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD} from '../schema/identifier';
+import { generateAliasesId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
 import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
 
@@ -1763,7 +1763,7 @@ export const elIndexElements = async (elements) => {
         const targetElement = targetsElements[index];
         params[buildRefRelationKey(targetElement.relation)] = targetElement.elements;
       }
-      return { _index: entity._index, id: entityId, data: { script: { source, params } } };
+      return { ...entity, id: entityId, data: { script: { source, params } } };
     }, Object.keys(impactedEntities))
   );
   const bodyUpdate = elementsToUpdate.flatMap((doc) => [
@@ -1772,7 +1772,7 @@ export const elIndexElements = async (elements) => {
   ]);
   if (bodyUpdate.length > 0) {
     const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
-    const cachePromise = cacheDel(elements);
+    const cachePromise = cacheDel(elementsToUpdate);
     await Promise.all([cachePromise, bulkPromise]);
   }
   return transformedElements.length;
