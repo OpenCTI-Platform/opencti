@@ -821,12 +821,6 @@ export const elFindByIds = async (user, ids, opts = {}) => {
       await cacheSet(Object.values(elasticHits));
     }
   }
-  if (Object.keys(cacheHits).length > 0) {
-    console.log(`From cache ${Object.values(cacheHits).map((i) => i.internal_id)}`);
-  }
-  if (remainingIds.length > 0) {
-    console.log(`From elastic ${remainingIds}`);
-  }
   const hits = { ...cacheHits, ...elasticHits };
   return toMap ? hits : Object.values(hits);
 };
