@@ -79,6 +79,7 @@ describe('Elasticsearch document loader', () => {
       internal_id: internalId,
       standard_id: standardId,
       name: 'Germany - Maze - October 2019',
+      entity_type: 'Campaign',
       parent_types: ['Campaign', 'Stix-Domain-Object', 'Stix-Core-Object', 'Stix-Object', 'Basic-Object'],
     };
     const indexedData = await elIndex('test_index', documentBody);

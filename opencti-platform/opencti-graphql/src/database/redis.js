@@ -61,14 +61,21 @@ const createRedisClient = (provider, database = BASE_DATABASE) => {
   client.on('ready', () => logApp.info(`[REDIS] Redis '${provider}' client ready`));
   client.on('reconnecting', () => logApp.info(`[REDIS] '${provider}' Redis client reconnecting`));
   client.defineCommand('cacheGet', {
-    numberOfKeys: 1,
     lua:
-      "local resolvedKey = redis.call('get', KEYS[1])\n" +
-      'if resolvedKey then \n' +
-      "    return redis.call('get', resolvedKey)\n" +
-      'else \n' +
-      '    return resolvedKey\n' +
-      'end\n',
+      'local index = 1\n' +
+      "local resolvedKeys = redis.call('mget', unpack(KEYS))\n" +
+      'for p, k in pairs(resolvedKeys) do \n' +
+      '    if (k==nil or (type(k) == "boolean" and not k)) then \n' +
+      '        index = index+1\n' +
+      '    elseif (k:sub(0, 1) == "@") then \n' +
+      '        local subKey = "cache:" .. k:sub(2, #k)\n' +
+      "        resolvedKeys[index] = redis.call('get', subKey)\n" +
+      '        index = index+1\n' +
+      '    else \n' +
+      '        index = index+1\n' +
+      '    end\n' +
+      'end\n' +
+      'return resolvedKeys\n',
   });
   return client;
 };
@@ -267,19 +274,26 @@ export const lockResource = async (resources, automaticExtension = true) => {
 // endregion
 
 // region cache
+const cacheExtraIds = (e) =>
+  [e.standard_id, ...(e.x_opencti_stix_ids || [])].filter((f) => isNotEmptyField(f)).map((i) => `cache:${i}`);
 export const cacheSet = async (elements) => {
   if (ENABLED_CACHING) {
     await redisTx(clientCache, (tx) => {
       for (let index = 0; index < elements.length; index += 1) {
         const element = elements[index];
         tx.call('SET', `cache:${element.internal_id}`, JSON.stringify(element), 'ex', 5 * 60);
+        const ids = cacheExtraIds(element);
+        for (let indexId = 0; indexId < ids.length; indexId += 1) {
+          const id = ids[indexId];
+          tx.call('SET', id, `@${element.internal_id}`, 'ex', 5 * 60);
+        }
       }
     });
   }
 };
 export const cacheDel = async (elements) => {
   if (ENABLED_CACHING) {
-    const ids = elements.map((e) => `cache:${e.internal_id}`);
+    const ids = R.flatten(elements.map((e) => [`cache:${e.internal_id}`, ...cacheExtraIds(e)]));
     await clientCache.del(ids);
   }
 };
@@ -296,7 +310,10 @@ export const cacheGet = async (id) => {
   if (ENABLED_CACHING) {
     const result = {};
     if (ids.length > 0) {
-      const keyValues = await clientCache.mget(ids.map((i) => `cache:${i}`));
+      const keyValues = await clientCache.cacheGet(
+        ids.length,
+        ids.map((i) => `cache:${i}`)
+      );
       for (let index = 0; index < ids.length; index += 1) {
         const val = keyValues[index];
         result[ids[index]] = val ? JSON.parse(val) : val;

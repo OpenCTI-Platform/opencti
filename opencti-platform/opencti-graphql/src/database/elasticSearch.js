@@ -46,11 +46,16 @@ import {
   numericOrBooleanAttributes,
 } from '../schema/fieldDataAdapter';
 import { getParentTypes } from '../schema/schemaUtils';
-import { isStixObjectAliased } from '../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_ATTACK_PATTERN,
+  isStixDomainObjectIdentity,
+  isStixDomainObjectLocation,
+  isStixObjectAliased
+} from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
-import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
+import {generateAliasesId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD} from '../schema/identifier';
 import { BYPASS } from '../utils/access';
 import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
 
@@ -704,7 +709,21 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
 
 const loadFromCache = async (user, id, type) => {
   const data = await cacheGet(id);
-  const cached = data ? Object.keys(R.filter((instance) => instance, data)) : [];
+  const cachedValues = data ? Object.values(data).filter((e) => isNotEmptyField(e)) : [];
+  const cached = R.flatten(
+    cachedValues.map((v) => {
+      const aliasIds = [];
+      if (isStixObjectAliased(v.entity_type)) {
+        const aliases = [v.name, ...(v.aliases || []), ...(v.x_opencti_aliases || [])];
+        let additionalFields = {};
+        if (isStixDomainObjectIdentity(type)) additionalFields = { identity_class: v.identity_class };
+        if (isStixDomainObjectLocation(type)) additionalFields = { x_opencti_location_type: v.x_opencti_location_type };
+        if (type === ENTITY_TYPE_ATTACK_PATTERN && v.x_mitre_id) additionalFields = { x_mitre_id: v.x_mitre_id };
+        aliasIds.push(...generateAliasesId(aliases, additionalFields));
+      }
+      return [v.internal_id, v.standard_id, ...aliasIds, ...(v.x_opencti_stix_ids || [])];
+    })
+  );
   const accessible = R.filter((instance) => {
     if (!instance) {
       return false;
@@ -722,7 +741,8 @@ const loadFromCache = async (user, id, type) => {
     const dataTypes = [instance.entity_type, ...getParentTypes(instance.entity_type)];
     return !(type && !dataTypes.includes(type));
   }, data || {});
-  return { cached, accessible };
+  const uniqByInternal = R.mergeAll(Object.entries(accessible).map(([, v]) => ({ [v.internal_id]: v })));
+  return { cached, accessible: uniqByInternal };
 };
 export const elFindByIds = async (user, ids, opts = {}) => {
   const { indices = READ_DATA_INDICES, toMap = false, type = null } = opts;
@@ -800,6 +820,12 @@ export const elFindByIds = async (user, ids, opts = {}) => {
       }
       await cacheSet(Object.values(elasticHits));
     }
+  }
+  if (Object.keys(cacheHits).length > 0) {
+    console.log(`From cache ${Object.values(cacheHits).map((i) => i.internal_id)}`);
+  }
+  if (remainingIds.length > 0) {
+    console.log(`From elastic ${remainingIds}`);
   }
   const hits = { ...cacheHits, ...elasticHits };
   return toMap ? hits : Object.values(hits);
