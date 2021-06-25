@@ -16,7 +16,7 @@ describe('Database provision', () => {
   it(
     'should platform init',
     () => {
-      return expect(platformInit(true)).resolves.toBe(true);
+      return expect(platformInit()).resolves.toBe(true);
     },
     FIVE_MINUTES
   );

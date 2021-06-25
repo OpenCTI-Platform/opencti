@@ -111,6 +111,7 @@
     "babel-eslint": "10.1.0",
     "babel-loader": "8.2.2",
     "babel-plugin-require-context-hook": "1.0.0",
+    "babel-plugin-transform-require-context": "^0.1.1",
     "clean-webpack-plugin": "3.0.0",
     "eslint": "7.28.0",
     "eslint-config-airbnb": "18.2.1",

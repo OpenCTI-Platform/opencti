@@ -137,9 +137,9 @@ const initializeSchema = async () => {
   return true;
 };
 
-const initializeMigration = async (testMode = false) => {
+const initializeMigration = async () => {
   logApp.info('[INIT] Creating migration structure');
-  const time = testMode ? new Date().getTime() : lastAvailableMigrationTime();
+  const time = lastAvailableMigrationTime();
   const lastRun = `${time}-init`;
   const migrationStatus = { internal_id: uuidv4(), lastRun };
   await createEntity(SYSTEM_USER, migrationStatus, ENTITY_TYPE_MIGRATION_STATUS);
@@ -275,7 +275,7 @@ const isCompatiblePlatform = async () => {
 };
 
 // eslint-disable-next-line
-const platformInit = async (testMode = false) => {
+const platformInit = async () => {
   let lock;
   try {
     await checkSystemDependencies();
@@ -286,17 +286,15 @@ const platformInit = async (testMode = false) => {
     if (!alreadyExists) {
       logApp.info(`[INIT] New platform detected, initialization...`);
       await initializeSchema();
-      await initializeMigration(testMode);
+      await initializeMigration();
       await initializeData();
       await initializeAdminUser();
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
       await isCompatiblePlatform();
       await initializeAdminUser();
-      if (!testMode) {
-        await alignMigrationLastRun();
-        await applyMigration();
-      }
+      await alignMigrationLastRun();
+      await applyMigration();
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {

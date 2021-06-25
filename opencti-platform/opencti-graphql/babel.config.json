@@ -12,9 +12,12 @@
     }]
   ],
   "env": {
+    "test": {
+      "plugins": ["transform-require-context"]
+    },
     "development": {
       "sourceMaps": true,
-      "retainLines": true,
+      "retainLines": true
     }
-  },
+  }
 }
