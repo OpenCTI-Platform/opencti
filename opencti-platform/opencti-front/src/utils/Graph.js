@@ -492,7 +492,9 @@ export const buildGraphData = (objects, graphData, t) => {
       ],
       name: `${
         n.relationship_type
-          ? `${t('Start time')} ${
+          ? `<strong>${t(`relationship_${n.relationship_type}`)}</strong>\n${t(
+            'Start time',
+          )} ${
             isNone(n.start_time)
               ? dateFormat(defaultDate(n))
               : dateFormat(n.start_time)
@@ -555,7 +557,9 @@ export const buildGraphData = (objects, graphData, t) => {
       source: n.from.id,
       target: n.to.id,
       label: t(`relationship_${n.entity_type}`),
-      name: `${t('Start time')} ${
+      name: `<strong>${t(`relationship_${n.entity_type}`)}</strong>\n${t(
+        'Start time',
+      )} ${
         isNone(n.start_time)
           ? dateFormat(defaultDate(n))
           : dateFormat(n.start_time)
