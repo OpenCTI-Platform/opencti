@@ -1011,7 +1011,6 @@ class ReportKnowledgeGraphComponent extends Component {
                 link,
                 ctx,
                 theme.palette.text.primary,
-                displayLabels,
               )
               : null)
             }

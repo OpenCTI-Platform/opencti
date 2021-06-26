@@ -3,6 +3,7 @@ import ObservableRelated from './observable-related/ObservableRelatedRule';
 import AttributionUseRule from './attribution-use/AttributionUseRule';
 import AttributionTargetsRule from './attribution-targets/AttributionTargetsRule';
 import LocationTargetsRule from './location-targets/LocationTargetsRule';
+import PartOfTargetsRule from './part-of-targets/PartOfTargetsRule';
 import LocatedAtLocatedRule from './located-at-located/LocatedAtLocatedRule';
 import RuleLocalizationOfTargetsRule from './localization-of-targets/LocalizationOfTargetsRule';
 import ConfidenceLevelRule from './testing/confidence-level/ConfidenceLevelRule';
@@ -15,6 +16,7 @@ const declaredRules = [
   AttributionUseRule,
   AttributionTargetsRule,
   LocationTargetsRule,
+  PartOfTargetsRule,
   LocatedAtLocatedRule,
   RuleLocalizationOfTargetsRule,
 ];
