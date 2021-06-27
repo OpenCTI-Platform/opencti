@@ -349,6 +349,10 @@ const buildEvent = (eventType, user, markings, message, data) => {
   };
 };
 const pushToStream = (client, event) => {
+  // Event can be empty because of UUIDv1 in STIX IDs
+  if (!event) {
+    return true;
+  }
   if (streamTrimming) {
     return client.call('XADD', OPENCTI_STREAM, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(event));
   }
@@ -457,7 +461,7 @@ export const buildUpdateEvent = (user, instance, updateEvents, opts = {}) => {
   const dataPatch = R.mergeAll(convertedInputs);
   // dataUpdate can be empty
   if (isEmptyField(dataPatch)) {
-    return true;
+    return null;
   }
   // In update event we need to dispatch everything needed to identify the element
   const identifiers = {
@@ -489,11 +493,12 @@ export const storeUpdateEvent = async (user, instance, updateEvents) => {
     try {
       const event = buildUpdateEvent(user, instance, updateEvents);
       await pushToStream(clientBase, event);
+      return event;
     } catch (e) {
       throw DatabaseError('Error in store update event', { error: e });
     }
   }
-  return true;
+  return null;
 };
 // Create
 export const buildCreateEvent = async (user, instance, input, stixLoader, opts = {}) => {
@@ -525,11 +530,12 @@ export const storeCreateEvent = async (user, instance, input, stixLoader) => {
     try {
       const event = await buildCreateEvent(user, instance, input, stixLoader);
       await pushToStream(clientBase, event);
+      return event;
     } catch (e) {
       throw DatabaseError('Error in store create event', { error: e });
     }
   }
-  return true;
+  return null;
 };
 // Delete
 export const buildDeleteEvent = async (user, instance, stixLoader, opts = {}) => {
@@ -561,11 +567,12 @@ export const storeDeleteEvent = async (user, instance, stixLoader) => {
     if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
       const event = await buildDeleteEvent(user, instance, stixLoader);
       await pushToStream(clientBase, event);
+      return event;
     }
   } catch (e) {
     throw DatabaseError('Error in store delete event', { error: e });
   }
-  return true;
+  return null;
 };
 
 const fetchStreamInfo = async () => {
