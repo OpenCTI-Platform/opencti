@@ -164,7 +164,7 @@ export const stixDataConverter = (data, args = {}) => {
   }
   // Inner relations
   if (isDefinedValue(finalData.objects)) {
-    const objectSet = Array.isArray(finalData.object) ? finalData.object : [finalData.object];
+    const objectSet = Array.isArray(finalData.objects) ? finalData.objects : [finalData.objects];
     const objects = R.map(
       (m) => (patchGeneration ? { value: m.standard_id, x_opencti_internal_id: m.internal_id } : m.standard_id),
       objectSet
