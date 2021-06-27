@@ -110,7 +110,7 @@ class StixCoreRelationshipInference extends Component {
           }
           linkDirectionalParticles={(link) => (link.inferred ? 20 : 0)}
           linkDirectionalParticleWidth={2}
-          linkDirectionalParticleSpeed={() => 0.003}
+          linkDirectionalParticleSpeed={() => 0.002}
           linkDirectionalArrowLength={3}
           linkDirectionalArrowRelPos={0.99}
           onLinkClick={this.handleLinkClick.bind(this)}
