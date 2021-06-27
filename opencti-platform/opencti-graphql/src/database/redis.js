@@ -26,6 +26,7 @@ import RedisStore from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
 import { isStixMetaRelationship, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
+import { getInstanceIds } from '../schema/identifier';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path) => readFileSync(path));
@@ -273,8 +274,7 @@ export const lockResource = async (resources, automaticExtension = true) => {
 // endregion
 
 // region cache
-const cacheExtraIds = (e) =>
-  [e.standard_id, ...(e.x_opencti_stix_ids || [])].filter((f) => isNotEmptyField(f)).map((i) => `cache:${i}`);
+const cacheExtraIds = (e) => getInstanceIds(e, true).map((i) => `cache:${i}`);
 export const cacheSet = async (elements) => {
   if (ENABLED_CACHING) {
     await redisTx(clientCache, (tx) => {
@@ -309,10 +309,8 @@ export const cacheGet = async (id) => {
   if (ENABLED_CACHING) {
     const result = {};
     if (ids.length > 0) {
-      const keyValues = await clientCache.cacheGet(
-        ids.length,
-        ids.map((i) => `cache:${i}`)
-      );
+      // eslint-disable-next-line prettier/prettier
+      const keyValues = await clientCache.cacheGet(ids.length, ids.map((i) => `cache:${i}`));
       for (let index = 0; index < ids.length; index += 1) {
         const val = keyValues[index];
         result[ids[index]] = val ? JSON.parse(val) : val;

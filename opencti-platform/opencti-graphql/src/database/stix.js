@@ -64,7 +64,16 @@ import {
 } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservableRelationship, RELATION_LINKED } from '../schema/stixCyberObservableRelationship';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, REL_INDEX_PREFIX } from '../schema/general';
+import {
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  INPUT_CREATED_BY,
+  INPUT_EXTERNAL_REFS,
+  INPUT_KILLCHAIN,
+  INPUT_LABELS,
+  INPUT_MARKINGS,
+  INPUT_OBJECTS,
+  REL_INDEX_PREFIX,
+} from '../schema/general';
 import { isEmptyField } from './utils';
 import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 
@@ -154,15 +163,15 @@ export const stixDataConverter = (data, args = {}) => {
     finalData = R.dissoc('stix_id', finalData);
   }
   // Inner relations
-  if (isDefinedValue(finalData.object)) {
+  if (isDefinedValue(finalData.objects)) {
     const objectSet = Array.isArray(finalData.object) ? finalData.object : [finalData.object];
     const objects = R.map(
       (m) => (patchGeneration ? { value: m.standard_id, x_opencti_internal_id: m.internal_id } : m.standard_id),
       objectSet
     );
-    finalData = R.pipe(R.dissoc('object'), R.assoc('object_refs', objects))(finalData);
+    finalData = R.pipe(R.dissoc(INPUT_OBJECTS), R.assoc('object_refs', objects))(finalData);
   } else {
-    finalData = R.dissoc('object', finalData);
+    finalData = R.dissoc(INPUT_OBJECTS, finalData);
   }
   if (isDefinedValue(finalData.objectMarking)) {
     const markingSet = Array.isArray(finalData.objectMarking) ? finalData.objectMarking : [finalData.objectMarking];
@@ -170,18 +179,18 @@ export const stixDataConverter = (data, args = {}) => {
       (m) => (patchGeneration ? { value: m.standard_id, x_opencti_internal_id: m.internal_id } : m.standard_id),
       markingSet
     );
-    finalData = R.pipe(R.dissoc('objectMarking'), R.assoc('object_marking_refs', markings))(finalData);
+    finalData = R.pipe(R.dissoc(INPUT_MARKINGS), R.assoc('object_marking_refs', markings))(finalData);
   } else {
-    finalData = R.dissoc('objectMarking', finalData);
+    finalData = R.dissoc(INPUT_MARKINGS, finalData);
   }
   if (isDefinedValue(finalData.createdBy)) {
     const creator = Array.isArray(finalData.createdBy) ? R.head(finalData.createdBy) : finalData.createdBy;
     const created = patchGeneration
       ? [{ value: creator.standard_id, x_opencti_internal_id: creator.internal_id }]
       : creator.standard_id;
-    finalData = R.pipe(R.dissoc('createdBy'), R.assoc('created_by_ref', created))(finalData);
+    finalData = R.pipe(R.dissoc(INPUT_CREATED_BY), R.assoc('created_by_ref', created))(finalData);
   } else {
-    finalData = R.dissoc('createdBy', finalData);
+    finalData = R.dissoc(INPUT_CREATED_BY, finalData);
   }
   // Embedded relations
   if (isDefinedValue(finalData.objectLabel)) {
@@ -190,9 +199,9 @@ export const stixDataConverter = (data, args = {}) => {
       (m) => (patchGeneration ? { value: m.value, x_opencti_internal_id: m.internal_id } : m.value),
       labelSet
     );
-    finalData = R.pipe(R.dissoc('objectLabel'), R.assoc('labels', labels))(finalData);
+    finalData = R.pipe(R.dissoc(INPUT_LABELS), R.assoc('labels', labels))(finalData);
   } else {
-    finalData = R.dissoc('objectLabel', finalData);
+    finalData = R.dissoc(INPUT_LABELS, finalData);
   }
   if (isDefinedValue(finalData.killChainPhases)) {
     const killSet = Array.isArray(finalData.killChainPhases) ? finalData.killChainPhases : [finalData.killChainPhases];
@@ -203,9 +212,9 @@ export const stixDataConverter = (data, args = {}) => {
           : R.pick(['kill_chain_name', 'phase_name'], k),
       killSet
     );
-    finalData = R.pipe(R.dissoc('killChainPhases'), R.assoc('kill_chain_phases', kills))(finalData);
+    finalData = R.pipe(R.dissoc(INPUT_KILLCHAIN), R.assoc('kill_chain_phases', kills))(finalData);
   } else {
-    finalData = R.dissoc('killChainPhases', finalData);
+    finalData = R.dissoc(INPUT_KILLCHAIN, finalData);
   }
   if (isDefinedValue(finalData.externalReferences)) {
     const externalSet = Array.isArray(finalData.externalReferences)
@@ -221,9 +230,9 @@ export const stixDataConverter = (data, args = {}) => {
           : R.pick(['source_name', 'description', 'url', 'hashes', 'external_id'], e),
       externalSet
     );
-    finalData = R.pipe(R.dissoc('externalReferences'), R.assoc('external_references', externals))(finalData);
+    finalData = R.pipe(R.dissoc(INPUT_EXTERNAL_REFS), R.assoc('external_references', externals))(finalData);
   } else {
-    finalData = R.dissoc('externalReferences', finalData);
+    finalData = R.dissoc(INPUT_EXTERNAL_REFS, finalData);
   }
   // StixID V1 are transient and so not in data output
   if (isDefinedValue(finalData.x_opencti_stix_ids)) {

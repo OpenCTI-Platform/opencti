@@ -46,6 +46,7 @@ import {
   ROLE_TO,
 } from './elasticSearch';
 import {
+  generateAliasesIdsForInstance,
   generateAliasesId,
   generateInternalId,
   generateStandardId,
@@ -57,6 +58,8 @@ import {
   normalizeName,
   REVOKED,
   VALID_UNTIL,
+  getInputIds,
+  getInstanceIds,
 } from '../schema/identifier';
 import {
   buildDeleteEvent,
@@ -86,6 +89,12 @@ import {
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
+  INPUT_CREATED_BY,
+  INPUT_EXTERNAL_REFS,
+  INPUT_KILLCHAIN,
+  INPUT_LABELS,
+  INPUT_MARKINGS,
+  INPUT_OBJECTS,
   INTERNAL_IDS_ALIASES,
   INTERNAL_PREFIX,
   REL_INDEX_PREFIX,
@@ -118,16 +127,13 @@ import {
   numericAttributes,
   statsDateAttributes,
 } from '../schema/fieldDataAdapter';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_REVOKED_BY } from '../schema/stixCoreRelationship';
 import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
-  ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
-  isStixDomainObjectIdentity,
-  isStixDomainObjectLocation,
   isStixObjectAliased,
   resolveAliasesField,
   stixDomainObjectFieldsToBeUpdated,
@@ -645,15 +651,18 @@ const TRX_UPDATE = 'update';
 const depsKeys = [
   { src: 'fromId', dst: 'from' },
   { src: 'toId', dst: 'to' },
-  { src: 'createdBy' },
-  { src: 'objectMarking' },
-  { src: 'objectLabel' },
-  { src: 'killChainPhases' },
-  { src: 'externalReferences' },
-  { src: 'objects' },
+  { src: INPUT_CREATED_BY },
+  { src: INPUT_MARKINGS },
+  { src: INPUT_LABELS },
+  { src: INPUT_KILLCHAIN },
+  { src: INPUT_EXTERNAL_REFS },
+  { src: INPUT_OBJECTS },
 ];
-const inputResolveRefs = async (user, input) => {
-  const fetching = [];
+const idLabel = (label) => {
+  return isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: normalizeName(label) });
+};
+const inputResolveRefs = async (user, input, type) => {
+  const fetchingIds = [];
   const expectedIds = [];
   for (let index = 0; index < depsKeys.length; index += 1) {
     const { src, dst } = depsKeys[index];
@@ -662,30 +671,31 @@ const inputResolveRefs = async (user, input) => {
     if (!R.isNil(id) && !R.isEmpty(id)) {
       const isListing = Array.isArray(id);
       // Handle specific case of object label that can be directly the value instead of the key.
-      if (src === 'objectLabel') {
-        const idLabel = (label) => {
-          return isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: normalizeName(label) });
-        };
-        fetching.push(...R.map((label) => ({ id: idLabel(label), destKey, multiple: true }), id));
-      } else if (src === 'fromId' || src === 'toId') {
-        fetching.push({ id, destKey, multiple: false });
+      if (src === INPUT_LABELS) {
+        const elements = R.map((label) => ({ id: idLabel(label), destKey, multiple: true }), id);
+        fetchingIds.push(...elements);
+        expectedIds.push(...elements.map((e) => e.id));
       } else if (isListing) {
-        fetching.push(...R.map((i) => ({ id: i, destKey, multiple: true }), id));
+        const elements = R.uniq(id).map((i) => ({ id: i, destKey, multiple: true }));
+        expectedIds.push(...R.uniq(id));
+        fetchingIds.push(...elements);
       } else {
-        fetching.push({ id, destKey, multiple: false });
+        expectedIds.push(id);
+        fetchingIds.push({ id, destKey, multiple: false });
       }
     }
   }
   // eslint-disable-next-line prettier/prettier
-  const resolvedElements = await internalFindByIds(user, fetching.map((i) => i.id));
-  const groupByTypeElements = R.groupBy(
-    (e) => e.i_group.destKey,
-    resolvedElements.map((d) => {
-      const elementIds = [d.internal_id, d.standard_id, ...(d.x_opencti_stix_ids || [])];
-      const conf = R.find((a) => elementIds.includes(a.id), fetching);
-      return { ...d, i_group: conf };
-    })
-  );
+  const resolvedElements = await internalFindByIds(user, fetchingIds.map((i) => i.id));
+  const resolvedElementWithConfGroup = resolvedElements.map((d) => {
+    const elementIds = getInstanceIds(d);
+    const matchingConfigs = R.filter((a) => elementIds.includes(a.id), fetchingIds);
+    return matchingConfigs.map((c) => ({ ...d, i_group: c }));
+  });
+  const allResolvedElements = R.flatten(resolvedElementWithConfGroup);
+  const uniqElement = (a, b) => a.internal_id === b.internal_id && a.i_group.destKey === b.i_group.destKey;
+  const filteredElements = R.uniqWith(uniqElement, allResolvedElements);
+  const groupByTypeElements = R.groupBy((e) => e.i_group.destKey, filteredElements);
   const resolved = Object.entries(groupByTypeElements).map(([k, val]) => {
     const isMultiple = R.head(val).i_group.multiple;
     if (val.length === 1) {
@@ -701,7 +711,7 @@ const inputResolveRefs = async (user, input) => {
       const [, val] = R.head(Object.entries(r));
       if (isNotEmptyField(val)) {
         const values = Array.isArray(val) ? val : [val];
-        return R.map((v) => [v.internal_id, v.standard_id, ...(v.x_opencti_stix_ids || [])], values);
+        return R.map((v) => getInstanceIds(v), values);
       }
       return [];
     }, resolved)
@@ -710,8 +720,9 @@ const inputResolveRefs = async (user, input) => {
   if (unresolvedIds.length > 0) {
     throw MissingReferenceError({ input, unresolvedIds });
   }
-  const patch = R.mergeAll(resolved);
-  return R.mergeRight(input, patch);
+  const complete = { ...input, entity_type: type };
+  const resolvedRefs = R.mergeAll(resolved);
+  return R.mergeRight(complete, resolvedRefs);
 };
 const indexCreatedElement = async ({ type, element, relations, indexInput }) => {
   if (type === TRX_CREATION) {
@@ -1297,11 +1308,7 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
     if (input.key === NAME_FIELD && isStixObjectAliased(instanceType) && isTypeHasAliasIDs(instanceType)) {
       const name = R.head(input.value);
       const aliases = [name, ...(instance[ATTRIBUTE_ALIASES] || []), ...(instance[ATTRIBUTE_ALIASES_OPENCTI] || [])];
-      let additionalFields = {};
-      if (isStixDomainObjectIdentity(instanceType)) additionalFields = { identity_class: instance.identity_class };
-      if (isStixDomainObjectLocation(instanceType))
-        additionalFields = { x_opencti_location_type: instance.x_opencti_location_type };
-      const aliasesId = generateAliasesId(aliases, additionalFields);
+      const aliasesId = generateAliasesId(aliases, instance);
       const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
       const aliasIns = innerUpdateAttribute(instance, aliasInput, options);
       impactedInputs.push(...aliasIns);
@@ -1329,11 +1336,7 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
     const aliasesAttrs = [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI];
     const isAliasesImpacted = aliasesAttrs.includes(input.key) && !R.isEmpty(ins.length);
     if (isTypeHasAliasIDs(instanceType) && isAliasesImpacted) {
-      let additionalFields = {};
-      if (isStixDomainObjectIdentity(instanceType)) additionalFields = { identity_class: instance.identity_class };
-      if (isStixDomainObjectLocation(instanceType))
-        additionalFields = { x_opencti_location_type: instance.x_opencti_location_type };
-      const aliasesId = generateAliasesId([instance.name, ...input.value], additionalFields);
+      const aliasesId = generateAliasesId([instance.name, ...input.value], instance);
       const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
       const aliasIns = innerUpdateAttribute(instance, aliasInput, options);
       if (aliasIns.length > 0) {
@@ -1370,7 +1373,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
   if (!instance) {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
-  const participantIds = [instance.internal_id, instance.standard_id];
+  const participantIds = getInstanceIds(instance);
   // 01. Check if updating alias lead to entity conflict
   const keys = R.map((t) => t.key, elements);
   if (isStixObjectAliased(instance.entity_type)) {
@@ -1379,12 +1382,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     const aliasedInputs = R.filter((input) => isInputAliases(input), elements);
     if (aliasedInputs.length > 0) {
       const aliases = R.uniq(R.flatten(R.map((a) => a.value, aliasedInputs)));
-      let additionalFields = {};
-      if (isStixDomainObjectIdentity(instance.entity_type))
-        additionalFields = { identity_class: instance.identity_class };
-      if (isStixDomainObjectLocation(instance.entity_type))
-        additionalFields = { x_opencti_location_type: instance.x_opencti_location_type };
-      const aliasesIds = generateAliasesId(aliases, additionalFields);
+      const aliasesIds = generateAliasesId(aliases, instance);
       const existingEntities = await internalFindByIds(user, aliasesIds, { type: instance.entity_type });
       const differentEntities = R.filter((e) => e.internal_id !== id, existingEntities);
       if (differentEntities.length > 0) {
@@ -1418,10 +1416,10 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
       if (existingEntity) {
         // If stix observable, we can merge. If not throw an error.
         if (isStixCyberObservable(existingEntity.entity_type)) {
+          const mergeOpts = { locks: participantIds };
+          const sourceEntityIds = [instance.internal_id];
           // noinspection UnnecessaryLocalVariableJS
-          const merged = await mergeEntities(user, existingEntity.internal_id, [instance.internal_id], {
-            locks: participantIds,
-          });
+          const merged = await mergeEntities(user, existingEntity.internal_id, sourceEntityIds, mergeOpts);
           // Return merged element after waiting for it.
           return merged;
         }
@@ -1471,23 +1469,6 @@ export const patchAttribute = async (user, id, type, patch, options = {}) => {
 // endregion
 
 // region mutation relation
-const getLocksFromInput = (type, input) => {
-  const standardId = input.standard_id || generateStandardId(type, input);
-  const inputIds = [...(input.externalReferences || []), ...(input.objects || [])].map((e) => e.internal_id);
-  const lockIds = [standardId, ...inputIds];
-  if (isNotEmptyField(input.stix_id)) {
-    lockIds.push(input.stix_id);
-  }
-  if (isStixObjectAliased(type) && isTypeHasAliasIDs(type)) {
-    const aliases = [input.name, ...(input.aliases || []), ...(input.x_opencti_aliases || [])];
-    let additionalFields = {};
-    if (isStixDomainObjectIdentity(type)) additionalFields = { identity_class: input.identity_class };
-    if (isStixDomainObjectLocation(type)) additionalFields = { x_opencti_location_type: input.x_opencti_location_type };
-    if (type === ENTITY_TYPE_ATTACK_PATTERN && input.x_mitre_id) additionalFields = { x_mitre_id: input.x_mitre_id };
-    lockIds.push(...generateAliasesId(aliases, additionalFields));
-  }
-  return lockIds;
-};
 const buildRelationInput = (input) => {
   const { relationship_type: relationshipType } = input;
   // 03. Generate the ID
@@ -2032,18 +2013,30 @@ const checkRelationConsistency = (relationshipType, fromType, toType) => {
 export const createRelationRaw = async (user, input, opts = {}) => {
   let lock;
   const { fromId, toId, relationship_type: relationshipType } = input;
+  // Pre check before inputs resolution
   if (fromId === toId) {
     /* istanbul ignore next */
     const errorData = { from: input.fromId, relationshipType };
     throw UnsupportedError(`Relation cant be created with the same source and target`, errorData);
   }
   // We need to check existing dependencies
-  const resolvedInput = await inputResolveRefs(user, input);
+  const resolvedInput = await inputResolveRefs(user, input, relationshipType);
   const { from, to } = resolvedInput;
+  // In some case from and to can be resolved to the same element (because of automatic merging)
+  if (from.internal_id === to.internal_id) {
+    /* istanbul ignore next */
+    if (relationshipType === RELATION_REVOKED_BY) {
+      // Because of entity merging, we can receive some revoked-by on the same internal id element
+      // In this case we need to revoke the fromId stixId of the relation
+      // TODO
+    }
+    const errorData = { from: input.fromId, to: input.toId, relationshipType };
+    throw UnsupportedError(`Relation cant be created with the same source and target`, errorData);
+  }
   // Check consistency
   checkRelationConsistency(relationshipType, from.entity_type, to.entity_type);
   // Build lock ids
-  const participantIds = getLocksFromInput(relationshipType, resolvedInput);
+  const participantIds = getInputIds(relationshipType, resolvedInput);
   if (isImpactedTypeAndSide(relationshipType, ROLE_FROM)) participantIds.push(from.internal_id);
   if (isImpactedTypeAndSide(relationshipType, ROLE_TO)) participantIds.push(to.internal_id);
   try {
@@ -2099,9 +2092,10 @@ export const createRelations = async (user, inputs) => {
 // endregion
 
 // region mutation entity
-const createEntityRaw = async (user, standardId, participantIds, input, type) => {
+const createEntityRaw = async (user, participantIds, input, type) => {
   // Generate the internal id if needed
   const internalId = input.internal_id || generateInternalId();
+  const standardId = input.standard_id || generateStandardId(type, input);
   // Check if the entity exists, must be done with SYSTEM USER to really find it.
   const existingEntities = await internalFindByIds(SYSTEM_USER, participantIds, { type });
   // If existing entities have been found and type is a STIX Core Object
@@ -2154,7 +2148,6 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       const inputAliases = { ...input, [key]: filteredAliases };
       return upsertElementRaw(user, existingByStandard, type, inputAliases);
     }
-
     // If not we dont know what to do, just throw an exception.
     const entityIds = R.map((i) => i.standard_id, filteredEntities);
     throw UnsupportedError('Cant upsert entity. Too many entities resolved', { input, entityIds });
@@ -2163,17 +2156,17 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
   const today = now();
   // Default attributes
   let data = R.pipe(
+    R.assoc('_index', inferIndexFromConceptType(type)),
     R.assoc(ID_INTERNAL, internalId),
     R.assoc(ID_STANDARD, standardId),
-    R.assoc('_index', inferIndexFromConceptType(type)),
     R.assoc('entity_type', type),
     R.dissoc('update'),
-    R.dissoc('createdBy'),
-    R.dissoc('objectMarking'),
-    R.dissoc('objectLabel'),
-    R.dissoc('killChainPhases'),
-    R.dissoc('externalReferences'),
-    R.dissoc('objects')
+    R.dissoc(INPUT_CREATED_BY),
+    R.dissoc(INPUT_MARKINGS),
+    R.dissoc(INPUT_LABELS),
+    R.dissoc(INPUT_KILLCHAIN),
+    R.dissoc(INPUT_EXTERNAL_REFS),
+    R.dissoc(INPUT_OBJECTS)
   )(input);
   // Some internal objects have dates
   if (isDatedInternalObject(type)) {
@@ -2208,12 +2201,8 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
     )(data);
   }
   // -- Aliased entities
-  if (isStixObjectAliased(type) && isTypeHasAliasIDs(type)) {
-    const aliases = [input.name, ...(data[ATTRIBUTE_ALIASES] || []), ...(data[ATTRIBUTE_ALIASES_OPENCTI] || [])];
-    let additionalFields = {};
-    if (isStixDomainObjectIdentity(type)) additionalFields = { identity_class: data.identity_class };
-    if (isStixDomainObjectLocation(type)) additionalFields = { x_opencti_location_type: data.x_opencti_location_type };
-    data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesId(aliases, additionalFields), data);
+  if (isStixObjectAliased(type)) {
+    data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesIdsForInstance(input), data);
   }
   // Add the additional fields for dates (day, month, year)
   const dataKeys = Object.keys(data);
@@ -2253,17 +2242,16 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
 export const createEntity = async (user, input, type) => {
   let lock;
   // We need to check existing dependencies
-  const resolvedInput = await inputResolveRefs(user, input);
+  const resolvedInput = await inputResolveRefs(user, input, type);
   // Generate all the possibles ids
   // For marking def, we need to force the standard_id
-  const standardId = input.standard_id || generateStandardId(type, resolvedInput);
-  const participantIds = getLocksFromInput(type, resolvedInput);
+  const participantIds = getInputIds(type, resolvedInput);
   // Create the element
   try {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
     // Create the object
-    const dataEntity = await createEntityRaw(user, standardId, participantIds, resolvedInput, type);
+    const dataEntity = await createEntityRaw(user, participantIds, resolvedInput, type);
     // Index the created element
     await indexCreatedElement(dataEntity);
     // Push the input in the stream

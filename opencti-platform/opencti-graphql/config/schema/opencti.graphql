@@ -1457,7 +1457,7 @@ input StixDomainObjectAddInput {
   objectLabel: [String]
   killChainPhases: [String]
   externalReferences: [String]
-  object: [String]
+  objects: [String]
   clientMutationId: String
   created: DateTime
   modified: DateTime

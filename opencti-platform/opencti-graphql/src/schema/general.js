@@ -8,6 +8,14 @@ export const IDS_STIX = 'x_opencti_stix_ids';
 export const BASE_TYPE_RELATION = 'RELATION';
 export const BASE_TYPE_ENTITY = 'ENTITY';
 
+// Inputs
+export const INPUT_EXTERNAL_REFS = 'externalReferences'; // external_references
+export const INPUT_KILLCHAIN = 'killChainPhases'; // kill_chain_phases
+export const INPUT_CREATED_BY = 'createdBy'; // created_by_ref
+export const INPUT_LABELS = 'objectLabel'; // labels
+export const INPUT_MARKINGS = 'objectMarking'; // object_marking_refs
+export const INPUT_OBJECTS = 'objects'; // object_refs
+
 // Specific prefix
 export const REL_INDEX_PREFIX = 'rel_';
 export const INTERNAL_PREFIX = 'i_';

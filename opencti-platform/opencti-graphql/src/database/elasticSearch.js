@@ -46,16 +46,11 @@ import {
   numericOrBooleanAttributes,
 } from '../schema/fieldDataAdapter';
 import { getParentTypes } from '../schema/schemaUtils';
-import {
-  ENTITY_TYPE_ATTACK_PATTERN,
-  isStixDomainObjectIdentity,
-  isStixDomainObjectLocation,
-  isStixObjectAliased,
-} from '../schema/stixDomainObject';
+import { isStixObjectAliased } from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
-import { generateAliasesId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
+import { getInstanceIds, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
 import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
 
@@ -710,20 +705,7 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
 const loadFromCache = async (user, id, type) => {
   const data = await cacheGet(id);
   const cachedValues = data ? Object.values(data).filter((e) => isNotEmptyField(e)) : [];
-  const cached = R.flatten(
-    cachedValues.map((v) => {
-      const aliasIds = [];
-      if (isStixObjectAliased(v.entity_type)) {
-        const aliases = [v.name, ...(v.aliases || []), ...(v.x_opencti_aliases || [])];
-        let additionalFields = {};
-        if (isStixDomainObjectIdentity(type)) additionalFields = { identity_class: v.identity_class };
-        if (isStixDomainObjectLocation(type)) additionalFields = { x_opencti_location_type: v.x_opencti_location_type };
-        if (type === ENTITY_TYPE_ATTACK_PATTERN && v.x_mitre_id) additionalFields = { x_mitre_id: v.x_mitre_id };
-        aliasIds.push(...generateAliasesId(aliases, additionalFields));
-      }
-      return [v.internal_id, v.standard_id, ...aliasIds, ...(v.x_opencti_stix_ids || [])];
-    })
-  );
+  const cached = R.flatten(cachedValues.map((v) => getInstanceIds(v)));
   const accessible = R.filter((instance) => {
     if (!instance) {
       return false;

@@ -5,20 +5,27 @@ import jsonCanonicalize from 'canonicalize';
 import { DatabaseError, UnsupportedError } from '../config/errors';
 import { convertEntityTypeToStixType } from './schemaUtils';
 import * as I from './internalObject';
-import * as D from './stixDomainObject';
-import * as M from './stixMetaObject';
-import * as C from './stixCyberObservable';
-import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID } from './general';
-import { isStixMetaObject } from './stixMetaObject';
-import { isStixDomainObject, isStixDomainObjectIdentity, isStixDomainObjectLocation } from './stixDomainObject';
-import { isStixCyberObservable } from './stixCyberObservable';
 import { isInternalObject } from './internalObject';
+import * as D from './stixDomainObject';
+import {
+  ENTITY_TYPE_ATTACK_PATTERN,
+  isStixDomainObject,
+  isStixDomainObjectIdentity,
+  isStixDomainObjectLocation,
+  isStixObjectAliased,
+} from './stixDomainObject';
+import * as M from './stixMetaObject';
+import { isStixMetaObject } from './stixMetaObject';
+import * as C from './stixCyberObservable';
+import { isStixCyberObservable } from './stixCyberObservable';
+import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID } from './general';
 import { isInternalRelationship } from './internalRelationship';
 import { isStixCoreRelationship } from './stixCoreRelationship';
 import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isStixCyberObservableRelationship } from './stixCyberObservableRelationship';
 import { isBasicRelationship } from './stixRelationship';
+import { isNotEmptyField } from '../database/utils';
 
 // region hashes
 const MD5 = 'MD5';
@@ -193,7 +200,7 @@ const stixEntityContribution = {
 const resolveContribution = (type) => {
   return isStixCyberObservable(type) ? stixCyberObservableContribution : stixEntityContribution;
 };
-const idGen = (type, raw, data, namespace) => {
+export const idGen = (type, raw, data, namespace) => {
   if (R.isEmpty(data)) {
     const contrib = resolveContribution(type);
     const properties = contrib.definition[type];
@@ -317,10 +324,48 @@ export const generateStandardId = (type, data) => {
   // Unknown
   throw UnsupportedError(`${type} is not supported by the platform`);
 };
-export const generateAliasesId = (aliases, additionalFields = {}) => {
+export const generateAliasesId = (aliases, instance = {}) => {
+  const additionalFields = {};
+  if (isStixDomainObjectIdentity(instance.entity_type)) {
+    additionalFields.identity_class = instance.identity_class;
+  }
+  if (isStixDomainObjectLocation(instance.entity_type)) {
+    additionalFields.x_opencti_location_type = instance.x_opencti_location_type;
+  }
+  if (instance.entity_type === ENTITY_TYPE_ATTACK_PATTERN && instance.x_mitre_id) {
+    additionalFields.x_mitre_id = instance.x_mitre_id;
+  }
   return R.map((a) => {
     const dataUUID = { name: normalizeName(a), ...additionalFields };
     const uuid = idGen('ALIAS', aliases, dataUUID, OPENCTI_NAMESPACE);
     return `aliases--${uuid}`;
   }, aliases);
+};
+
+export const generateAliasesIdsForInstance = (instance) => {
+  if (isStixObjectAliased(instance.entity_type)) {
+    const aliases = [instance.name, ...(instance.aliases || []), ...(instance.x_opencti_aliases || [])];
+    return generateAliasesId(aliases, instance);
+  }
+  return [];
+};
+export const getInstanceIds = (instance, withoutInternal = false) => {
+  const ids = [];
+  if (!withoutInternal) {
+    ids.push(instance.internal_id);
+  }
+  ids.push(instance.standard_id);
+  if (instance.x_opencti_stix_ids) {
+    ids.push(...instance.x_opencti_stix_ids);
+  }
+  ids.push(...generateAliasesIdsForInstance(instance));
+  return ids;
+};
+export const getInputIds = (type, input) => {
+  const ids = [input.standard_id || generateStandardId(type, input)];
+  if (isNotEmptyField(input.stix_id)) {
+    ids.push(input.stix_id);
+  }
+  ids.push(...generateAliasesIdsForInstance(input));
+  return ids;
 };
