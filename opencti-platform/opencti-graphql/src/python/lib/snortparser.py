@@ -1,7 +1,7 @@
-import re
-import ipaddress
 import collections
-from typing import Tuple, List, Dict, Any
+import ipaddress
+import re
+from typing import Any, Dict, List, Tuple
 
 try:
     from .dicts import Dicts
