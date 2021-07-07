@@ -281,16 +281,38 @@ class ReportKnowledgeGraphBar extends Component {
         && numberOfSelectedLinks === 0
         && !selectedNodes[0].isObservable)
       || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
-    const relationEnabled = (numberOfSelectedNodes === 2 && numberOfSelectedLinks === 0)
+    const fromSelectedTypes = numberOfSelectedNodes >= 2
+      ? R.uniq(R.map((n) => n.entity_type, R.init(selectedNodes)))
+      : [];
+    const toSelectedTypes = numberOfSelectedNodes >= 2
+      ? R.uniq(R.map((n) => n.entity_type, R.tail(selectedNodes)))
+      : [];
+    const relationEnabled = (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
+      || (toSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1);
-    let relationFrom = null;
-    let relationTo = null;
-    if (numberOfSelectedNodes === 2) {
-      relationFrom = relationReversed ? selectedNodes[1] : selectedNodes[0];
-      relationTo = relationReversed ? selectedNodes[0] : selectedNodes[1];
+    let relationFromObjects = null;
+    let relationToObjects = null;
+    if (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0) {
+      relationFromObjects = relationReversed
+        ? [R.last(selectedNodes)]
+        : R.init(selectedNodes);
+      relationToObjects = relationReversed
+        ? R.init(selectedNodes)
+        : [R.last(selectedNodes)];
+    } else if (toSelectedTypes.length === 1 && numberOfSelectedLinks === 0) {
+      relationFromObjects = relationReversed
+        ? R.tail(selectedNodes)
+        : [R.head(selectedNodes)];
+      relationToObjects = relationReversed
+        ? [R.head(selectedNodes)]
+        : R.tail(selectedNodes);
     } else if (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1) {
-      relationFrom = relationReversed ? selectedNodes[0] : selectedLinks[0];
-      relationTo = relationReversed ? selectedLinks[0] : selectedNodes[0];
+      relationFromObjects = relationReversed
+        ? selectedNodes[0]
+        : selectedLinks[0];
+      relationToObjects = relationReversed
+        ? [selectedLinks[0]]
+        : [selectedNodes[0]];
     }
     return (
       <Drawer
@@ -338,17 +360,38 @@ class ReportKnowledgeGraphBar extends Component {
               <Tooltip
                 title={
                   currentModeTree
-                    ? t('Disable tree mode')
-                    : t('Enable tree mode')
+                    ? t('Disable vertical tree mode')
+                    : t('Enable vertical tree mode')
                 }
               >
                 <span>
                   <IconButton
-                    color={currentModeTree ? 'secondary' : 'primary'}
-                    onClick={handleToggleTreeMode.bind(this)}
+                    color={
+                      currentModeTree === 'vertical' ? 'secondary' : 'primary'
+                    }
+                    onClick={handleToggleTreeMode.bind(this, 'vertical')}
                     disabled={currentModeFixed}
                   >
                     <FamilyTree />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip
+                title={
+                  currentModeTree
+                    ? t('Disable horizontal tree mode')
+                    : t('Enable horizontal tree mode')
+                }
+              >
+                <span>
+                  <IconButton
+                    color={
+                      currentModeTree === 'horizontal' ? 'secondary' : 'primary'
+                    }
+                    onClick={handleToggleTreeMode.bind(this, 'horizontal')}
+                    disabled={currentModeFixed}
+                  >
+                    <FamilyTree style={{ transform: 'rotate(-90deg)' }} />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -629,6 +672,7 @@ class ReportKnowledgeGraphBar extends Component {
                     ]}
                     onAdd={onAdd}
                     onDelete={onDelete}
+                    confidence={report.confidence}
                   />
                 )}
                 <Tooltip title={t('View the item')}>
@@ -684,13 +728,13 @@ class ReportKnowledgeGraphBar extends Component {
                 {onAddRelation && (
                   <StixCoreRelationshipCreation
                     open={openCreatedRelation}
-                    from={relationFrom}
-                    to={relationTo}
-                    firstSeen={
+                    fromObjects={relationFromObjects}
+                    toObjects={relationToObjects}
+                    startTime={
                       lastLinkFirstSeen || dateFormat(report.published)
                     }
-                    lastSeen={lastLinkLastSeen || dateFormat(report.published)}
-                    weight={report.confidence}
+                    stopTime={lastLinkLastSeen || dateFormat(report.published)}
+                    confidence={report.confidence}
                     handleClose={this.handleCloseCreateRelationship.bind(this)}
                     handleResult={onAddRelation}
                     handleReverseRelation={this.handleReverseRelation.bind(
@@ -818,7 +862,7 @@ ReportKnowledgeGraphBar.propTypes = {
   handleToggle3DMode: PropTypes.func,
   currentMode3D: PropTypes.bool,
   handleToggleTreeMode: PropTypes.func,
-  currentModeTree: PropTypes.bool,
+  currentModeTree: PropTypes.string,
   currentModeFixed: PropTypes.bool,
   handleToggleFixedMode: PropTypes.func,
   handleZoomToFit: PropTypes.func,

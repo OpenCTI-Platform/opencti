@@ -8,9 +8,14 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Chip from '@material-ui/core/Chip';
 import Grid from '@material-ui/core/Grid';
-import inject18n from '../../../../components/i18n';
-import CoursesOfActionAttackPatterns from './CourseOfActionAttackPatterns';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import { PostOutline } from 'mdi-material-ui';
+import ListItemText from '@material-ui/core/ListItemText';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import CoursesOfActionAttackPatterns from './CourseOfActionAttackPatterns';
+import inject18n from '../../../../components/i18n';
 
 const styles = () => ({
   paper: {
@@ -47,6 +52,25 @@ class CourseOfActionDetailsComponent extends Component {
                 source={courseOfAction.description}
                 limit={300}
               />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Log sources')}
+              </Typography>
+              {courseOfAction.x_opencti_log_sources && (
+                <List>
+                  {courseOfAction.x_opencti_log_sources.map((logSource) => (
+                    <ListItem key={logSource} dense={true} divider={true}>
+                      <ListItemIcon>
+                        <PostOutline />
+                      </ListItemIcon>
+                      <ListItemText primary={logSource} />
+                    </ListItem>
+                  ))}
+                </List>
+              )}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -56,6 +80,17 @@ class CourseOfActionDetailsComponent extends Component {
                 size="small"
                 label={courseOfAction.x_mitre_id}
                 color="primary"
+              />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Threat hunting techniques')}
+              </Typography>
+              <ExpandableMarkdown
+                source={courseOfAction.x_opencti_threat_hunting}
+                limit={300}
               />
             </Grid>
           </Grid>
@@ -81,6 +116,8 @@ const CourseOfActionDetails = createFragmentContainer(
         id
         description
         x_mitre_id
+        x_opencti_threat_hunting
+        x_opencti_log_sources
         creator {
           id
           name

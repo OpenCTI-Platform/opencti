@@ -12,6 +12,9 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
+import Tooltip from '@material-ui/core/Tooltip';
+import * as R from 'ramda';
+import { AutoFix } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
@@ -93,10 +96,25 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
                       )}
                     />
                     <ListItemSecondaryAction>
-                      <StixCoreRelationshipPopover
-                        stixCoreRelationshipId={stixCoreRelationship.id}
-                        paginationOptions={paginationOptions}
-                      />
+                      {stixCoreRelationship.is_inferred ? (
+                        <Tooltip
+                          title={
+                            t('Inferred knowledge based on the rule ')
+                            + R.head(stixCoreRelationship.x_opencti_inferences).rule.name
+                          }
+                        >
+                          <AutoFix
+                            fontSize="small"
+                            style={{ marginLeft: -30 }}
+                            color="secondary"
+                          />
+                        </Tooltip>
+                      ) : (
+                        <StixCoreRelationshipPopover
+                          stixCoreRelationshipId={stixCoreRelationship.id}
+                          paginationOptions={paginationOptions}
+                        />
+                      )}
                     </ListItemSecondaryAction>
                   </ListItem>
                 );
@@ -167,6 +185,13 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
             edges {
               node {
                 id
+                is_inferred
+                x_opencti_inferences {
+                  rule {
+                    id
+                    name
+                  }
+                }
                 to {
                   ... on StixDomainObject {
                     id

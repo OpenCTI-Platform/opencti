@@ -83,6 +83,20 @@ class RegionKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/entities/regions/:regionId/knowledge/cities"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={region.id}
+                relationshipTypes={['located-at']}
+                targetStixDomainObjectTypes={['City']}
+                entityLink={link}
+                isRelationReversed={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/entities/regions/:regionId/knowledge/threat_actors"
             render={(routeProps) => (
               <EntityStixCoreRelationships

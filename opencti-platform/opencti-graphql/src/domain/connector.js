@@ -4,7 +4,7 @@ import { connectorConfig, registerConnectorQueues, unregisterConnector } from '.
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError } from '../config/errors';
 import { now, sinceNowInMinutes } from '../utils/format';
-import { elLoadByIds } from '../database/elasticSearch';
+import { elLoadById } from '../database/elasticSearch';
 import { READ_INDEX_HISTORY } from '../database/utils';
 import { CONNECTOR_INTERNAL_EXPORT_FILE, CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
 
@@ -27,7 +27,7 @@ export const loadConnectorById = (user, id) => {
 };
 
 export const connectorForWork = async (user, id) => {
-  const work = await elLoadByIds(user, id, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
+  const work = await elLoadById(user, id, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
   if (work) return loadConnectorById(user, work.connector_id);
   return null;
 };

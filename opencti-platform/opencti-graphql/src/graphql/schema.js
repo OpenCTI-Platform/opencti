@@ -1,6 +1,6 @@
 import { GraphQLDateTime } from 'graphql-iso-date';
 import { mergeResolvers } from 'merge-graphql-schemas';
-import { makeExecutableSchema } from 'graphql-tools';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 import { constraintDirective } from 'graphql-constraint-directive';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
@@ -9,6 +9,7 @@ import workspaceResolvers from '../resolvers/workspace';
 import subTypeResolvers from '../resolvers/subType';
 import labelResolvers from '../resolvers/label';
 import rabbitmqMetricsResolvers from '../resolvers/rabbitmqMetrics';
+import elasticSearchMetricsResolvers from '../resolvers/elasticSearchMetrics';
 import internalObjectResolvers from '../resolvers/internalObject';
 import stixObjectOrStixRelationshipResolvers from '../resolvers/stixObjectOrStixRelationship';
 import stixCoreObjectResolvers from '../resolvers/stixCoreObject';
@@ -58,6 +59,7 @@ import organizationOrIndividualResolvers from '../resolvers/organizationOrIndivi
 import taxiiResolvers from '../resolvers/taxii';
 import taskResolvers from '../resolvers/task';
 import streamResolvers from '../resolvers/stream';
+import ruleResolvers from '../resolvers/rule';
 
 const createSchema = () => {
   const globalResolvers = {
@@ -71,11 +73,13 @@ const createSchema = () => {
     streamResolvers,
     logResolvers,
     rabbitmqMetricsResolvers,
+    elasticSearchMetricsResolvers,
     attributeResolvers,
     workspaceResolvers,
     subTypeResolvers,
     fileResolvers,
     taskResolvers,
+    // ruleResolvers,
     // ENTITIES
     // INTERNAL OBJECT ENTITIES
     internalObjectResolvers,
@@ -110,6 +114,7 @@ const createSchema = () => {
     indicatorResolvers,
     infrastructureResolvers,
     intrusionSetResolvers,
+    ruleResolvers,
     // Locations
     locationResolvers,
     cityResolvers,

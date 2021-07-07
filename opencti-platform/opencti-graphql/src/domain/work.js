@@ -4,7 +4,7 @@ import {
   el,
   elDeleteInstanceIds,
   elIndex,
-  elLoadByIds,
+  elLoadById,
   elPaginate,
   elUpdate,
   ES_IGNORE_THROTTLED,
@@ -76,7 +76,7 @@ export const loadExportWorksAsProgressFiles = async (user, sourceId) => {
 };
 
 const loadWorkById = async (user, workId) => {
-  const action = await elLoadByIds(user, workId, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
+  const action = await elLoadById(user, workId, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
   return R.assoc('id', workId, action);
 };
 

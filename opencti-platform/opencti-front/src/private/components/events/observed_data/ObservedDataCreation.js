@@ -28,6 +28,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import SelectField from '../../../../components/SelectField';
 import { dayStartDate, parse } from '../../../../utils/Time';
 import DatePickerField from '../../../../components/DatePickerField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -45,7 +46,6 @@ const styles = (theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
-    zIndex: 2000,
   },
   buttons: {
     marginTop: 20,
@@ -91,6 +91,7 @@ const observedDataValidation = (t) => Yup.object().shape({
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
   number_observed: Yup.number().required(t('This field is required')),
+  confidence: Yup.number(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -196,6 +197,7 @@ class ObservedDataCreation extends Component {
                 first_observed: dayStartDate(),
                 last_observed: dayStartDate(),
                 number_observed: 1,
+                confidence: 15,
                 createdBy: '',
                 objectMarking: [],
                 objectLabel: [],
@@ -238,6 +240,12 @@ class ObservedDataCreation extends Component {
                     label={t('Number observed')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
+                  />
+                  <ConfidenceField
+                    name="confidence"
+                    label={t('Confidence')}
+                    fullWidth={true}
+                    containerstyle={{ width: '100%', marginTop: 20 }}
                   />
                   <CreatedByField
                     name="createdBy"

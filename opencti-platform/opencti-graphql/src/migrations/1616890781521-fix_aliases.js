@@ -2,11 +2,19 @@ import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/elasticSearch';
-import { generateAliasesId, generateStandardId } from '../schema/identifier';
+import { generateStandardId, idGen, normalizeName } from '../schema/identifier';
 import { logApp } from '../config/conf';
-import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../schema/general';
+import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION, OPENCTI_NAMESPACE } from '../schema/general';
 import { isStixDomainObjectIdentity } from '../schema/stixDomainObject';
 import { SYSTEM_USER } from '../utils/access';
+
+const generateAliases = (aliases, additionalFields = {}) => {
+  return R.map((a) => {
+    const dataUUID = { name: normalizeName(a), ...additionalFields };
+    const uuid = idGen('ALIAS', aliases, dataUUID, OPENCTI_NAMESPACE);
+    return `aliases--${uuid}`;
+  }, aliases);
+};
 
 export const up = async (next) => {
   const start = new Date().getTime();
@@ -20,7 +28,7 @@ export const up = async (next) => {
             entity.entity_type,
             R.assoc('identity_class', entity.identity_class === 'sector' ? 'class' : entity.identity_class, entity)
           );
-          const newAliasIds = generateAliasesId([entity.name, ...(entity.x_opencti_aliases || [])], {
+          const newAliasIds = generateAliases([entity.name, ...(entity.x_opencti_aliases || [])], {
             identity_class: entity.identity_class === 'sector' ? 'class' : entity.identity_class,
           });
           return [
@@ -36,7 +44,7 @@ export const up = async (next) => {
             },
           ];
         }
-        const newAliasIds = generateAliasesId([entity.name, ...(entity.x_opencti_aliases || [])], {
+        const newAliasIds = generateAliases([entity.name, ...(entity.x_opencti_aliases || [])], {
           x_opencti_location_type: entity.x_opencti_location_type,
         });
         return [{ update: { _index: entity._index, _id: entity.id } }, { doc: { i_aliases_ids: newAliasIds } }];

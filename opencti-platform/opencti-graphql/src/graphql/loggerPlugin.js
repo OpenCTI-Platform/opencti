@@ -1,7 +1,6 @@
 import { dissoc, filter, head, includes, isEmpty, isNil } from 'ramda';
 import { stripIgnoredCharacters } from 'graphql';
-import nconf from 'nconf';
-import { logApp } from '../config/conf';
+import { booleanConf, DEV_MODE, logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
 import { getMemoryStatistics } from '../domain/settings';
 import { AUTH_FAILURE, AUTH_REQUIRED, FORBIDDEN_ACCESS, UNSUPPORTED_ERROR } from '../config/errors';
@@ -29,7 +28,7 @@ const tryResolveKeyPromises = async (data) => {
 };
 
 const API_CALL_MESSAGE = 'API Call'; // If you touch this, you need to change the performance agent
-const perfLog = nconf.get('app:performance_logger') || false;
+const perfLog = booleanConf('app:performance_logger', false);
 export default {
   requestDidStart: /* istanbul ignore next */ () => {
     const start = Date.now();
@@ -89,6 +88,10 @@ export default {
           } else {
             // Every other uses cases are logged with error level
             logApp.error(API_CALL_MESSAGE, { ...callMetaData, error });
+            if (DEV_MODE) {
+              // eslint-disable-next-line no-console
+              console.error(stack);
+            }
           }
         } else if (perfLog) {
           logApp.info(API_CALL_MESSAGE, { ...callMetaData, memory: getMemoryStatistics() });

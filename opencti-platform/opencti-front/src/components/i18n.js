@@ -18,9 +18,14 @@ const inject18n = (WrappedComponent) => {
     render() {
       const { children } = this.props;
       const translate = (message) => this.props.intl.formatMessage({ id: message });
-      const formatNumber = (number) => `${this.props.intl.formatNumber(numberFormat(number).number)}${
-        numberFormat(number).symbol
-      }`;
+      const formatNumber = (number) => {
+        if (number === null || number === '') {
+          return '-';
+        }
+        return `${this.props.intl.formatNumber(numberFormat(number).number)}${
+          numberFormat(number).symbol
+        }`;
+      };
       const formatBytes = (number) => `${this.props.intl.formatNumber(bytesFormat(number).number)}${
         bytesFormat(number).symbol
       }`;

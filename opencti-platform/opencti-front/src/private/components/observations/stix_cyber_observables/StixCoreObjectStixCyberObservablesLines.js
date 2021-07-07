@@ -29,6 +29,7 @@ class StixCoreObjectStixCyberObservablesLines extends Component {
       relay,
       stixCoreObjectLink,
       paginationOptions,
+      isRelationReversed,
     } = this.props;
     return (
       <ListLinesContent
@@ -52,6 +53,7 @@ class StixCoreObjectStixCyberObservablesLines extends Component {
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
         entityLink={stixCoreObjectLink}
+        isTo={isRelationReversed}
       />
     );
   }
@@ -66,12 +68,15 @@ StixCoreObjectStixCyberObservablesLines.propTypes = {
   stixCoreRelationships: PropTypes.object,
   initialLoading: PropTypes.bool,
   stixCoreObjectLink: PropTypes.string,
+  isRelationReversed: PropTypes.bool,
 };
 
 export const stixCoreObjectStixCyberObservablesLinesQuery = graphql`
   query StixCoreObjectStixCyberObservablesLinesPaginationQuery(
+    $fromId: String
     $toId: String
     $fromTypes: [String]
+    $toTypes: [String]
     $relationship_type: String
     $startTimeStart: DateTime
     $startTimeStop: DateTime
@@ -85,8 +90,10 @@ export const stixCoreObjectStixCyberObservablesLinesQuery = graphql`
   ) {
     ...StixCoreObjectStixCyberObservablesLines_data
       @arguments(
+        fromId: $fromId
         toId: $toId
         fromTypes: $fromTypes
+        toTypes: $toTypes
         relationship_type: $relationship_type
         startTimeStart: $startTimeStart
         startTimeStop: $startTimeStop
@@ -107,8 +114,10 @@ export default createPaginationContainer(
     data: graphql`
       fragment StixCoreObjectStixCyberObservablesLines_data on Query
       @argumentDefinitions(
+        fromId: { type: "String" }
         toId: { type: "String" }
         fromTypes: { type: "[String]" }
+        toTypes: { type: "[String]" }
         relationship_type: { type: "String" }
         startTimeStart: { type: "DateTime" }
         startTimeStop: { type: "DateTime" }
@@ -124,8 +133,10 @@ export default createPaginationContainer(
         orderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
         stixCoreRelationships(
+          fromId: $fromId
           toId: $toId
           fromTypes: $fromTypes
+          toTypes: $toTypes
           relationship_type: $relationship_type
           startTimeStart: $startTimeStart
           startTimeStop: $startTimeStop
@@ -164,8 +175,10 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        toId: fragmentVariables.fromId,
+        fromId: fragmentVariables.fromId,
+        toId: fragmentVariables.toId,
         fromTypes: fragmentVariables.fromTypes,
+        toTypes: fragmentVariables.toTypes,
         relationship_type: fragmentVariables.relationship_type,
         startTimeStart: fragmentVariables.startTimeStart,
         startTimeStop: fragmentVariables.startTimeStop,

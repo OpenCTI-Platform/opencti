@@ -29,7 +29,7 @@ import Incident from '../resources/images/entities/incident_dark.svg';
 import StixCyberObservable from '../resources/images/entities/stix-cyber-observable_dark.svg';
 import relationship from '../resources/images/entities/relationship.svg';
 import { itemColor } from './Colors';
-import Theme from '../components/ThemeDark';
+import themeDark from '../components/ThemeDark';
 import {
   dateFormat,
   dayEndDate,
@@ -492,7 +492,9 @@ export const buildGraphData = (objects, graphData, t) => {
       ],
       name: `${
         n.relationship_type
-          ? `${t('Start time')} ${
+          ? `<strong>${t(`relationship_${n.relationship_type}`)}</strong>\n${t(
+            'Start time',
+          )} ${
             isNone(n.start_time)
               ? dateFormat(defaultDate(n))
               : dateFormat(n.start_time)
@@ -555,7 +557,9 @@ export const buildGraphData = (objects, graphData, t) => {
       source: n.from.id,
       target: n.to.id,
       label: t(`relationship_${n.entity_type}`),
-      name: `${t('Start time')} ${
+      name: `<strong>${t(`relationship_${n.entity_type}`)}</strong>\n${t(
+        'Start time',
+      )} ${
         isNone(n.start_time)
           ? dateFormat(defaultDate(n))
           : dateFormat(n.start_time)
@@ -564,6 +568,7 @@ export const buildGraphData = (objects, graphData, t) => {
       }`,
       source_id: n.from.id,
       target_id: n.to.id,
+      inferred: n.inferred,
       defaultDate: jsDate(defaultDate(n)),
     })),
   )(objects);
@@ -629,7 +634,7 @@ export const nodePaint = (
   ctx.fill();
   if (selected) {
     ctx.lineWidth = 0.8;
-    ctx.strokeStyle = Theme.palette.secondary.main;
+    ctx.strokeStyle = themeDark().palette.secondary.main;
     ctx.stroke();
   }
   const size = 8;

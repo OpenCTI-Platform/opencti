@@ -5,6 +5,7 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import { Route, withRouter } from 'react-router-dom';
+import { propOr } from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ContainerHeader from '../../common/containers/ContainerHeader';
@@ -17,6 +18,10 @@ import ReportKnowledgeCorrelation, {
 import Loader from '../../../../components/Loader';
 import ReportPopover from './ReportPopover';
 import AttackPatternsMatrix from '../../arsenal/attack_patterns/AttackPatternsMatrix';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 
 const styles = () => ({
   container: {
@@ -107,6 +112,48 @@ export const reportKnowledgeAttackPatternsGraphQuery = graphql`
 `;
 
 class ReportKnowledgeComponent extends Component {
+  constructor(props) {
+    super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      `view-report-knowledge-${props.report.id}`,
+    );
+    this.state = {
+      currentModeOnlyActive: propOr(false, 'currentModeOnlyActive', params),
+      currentColorsReversed: propOr(false, 'currentColorsReversed', params),
+      currentKillChain: propOr('mitre-attack', 'currentKillChain', params),
+    };
+  }
+
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      `view-report-knowledge-${this.props.report.id}`,
+      this.state,
+    );
+  }
+
+  handleToggleModeOnlyActive() {
+    this.setState(
+      { currentModeOnlyActive: !this.state.currentModeOnlyActive },
+      () => this.saveView(),
+    );
+  }
+
+  handleToggleColorsReversed() {
+    this.setState(
+      { currentColorsReversed: !this.state.currentColorsReversed },
+      () => this.saveView(),
+    );
+  }
+
+  handleChangeKillChain(event) {
+    const { value } = event.target;
+    this.setState({ currentKillChain: value }, () => this.saveView());
+  }
+
   render() {
     const {
       classes,
@@ -116,6 +163,7 @@ class ReportKnowledgeComponent extends Component {
         params: { mode },
       },
     } = this.props;
+    const { currentModeOnlyActive, currentColorsReversed, currentKillChain } = this.state;
     return (
       <div
         className={classes.container}
@@ -127,6 +175,7 @@ class ReportKnowledgeComponent extends Component {
           link={`/dashboard/analysis/reports/${report.id}/knowledge`}
           modes={['graph', 'correlation', 'matrix']}
           currentMode={mode}
+          knowledge={true}
         />
         <Route
           exact
@@ -178,6 +227,18 @@ class ReportKnowledgeComponent extends Component {
                       entity={report}
                       attackPatterns={attackPatterns}
                       searchTerm=""
+                      currentKillChain={currentKillChain}
+                      currentModeOnlyActive={currentModeOnlyActive}
+                      currentColorsReversed={currentColorsReversed}
+                      handleChangeKillChain={this.handleChangeKillChain.bind(
+                        this,
+                      )}
+                      handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
+                        this,
+                      )}
+                      handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
+                        this,
+                      )}
                     />
                   );
                 }

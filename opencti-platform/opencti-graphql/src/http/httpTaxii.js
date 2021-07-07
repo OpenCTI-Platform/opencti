@@ -1,10 +1,15 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
-import { authenticateUser, TAXIIAPI } from './domain/user';
-import { basePath } from './config/conf';
-import { AuthRequired, ForbiddenAccess, UnsupportedError } from './config/errors';
-import { restAllCollections, restCollectionManifest, restCollectionStix, restLoadCollectionById } from './domain/taxii';
-import { BYPASS } from './utils/access';
+import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
+import { basePath } from '../config/conf';
+import { AuthRequired, ForbiddenAccess, UnsupportedError } from '../config/errors';
+import {
+  restAllCollections,
+  restCollectionManifest,
+  restCollectionStix,
+  restLoadCollectionById,
+} from '../domain/taxii';
+import { BYPASS } from '../utils/access';
 
 const TAXII_VERSION = 'application/taxii+json;version=2.1';
 
@@ -25,7 +30,7 @@ const userHaveAccess = (user) => {
 const extractUser = async (req, res) => {
   res.setHeader('content-type', TAXII_VERSION);
   // noinspection UnnecessaryLocalVariableJS
-  const user = await authenticateUser(req);
+  const user = await authenticateUserFromRequest(req);
   if (!user) {
     res.setHeader('WWW-Authenticate', 'Basic, Bearer');
     throw AuthRequired();

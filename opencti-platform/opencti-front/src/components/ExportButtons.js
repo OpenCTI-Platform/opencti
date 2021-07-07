@@ -7,8 +7,8 @@ import * as R from 'ramda';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Dialog from '@material-ui/core/Dialog';
-import ThemeLight from './ThemeLight';
-import ThemeDark from './ThemeDark';
+import themeLight from './ThemeLight';
+import themeDark from './ThemeDark';
 import { commitLocalUpdate } from '../relay/environment';
 import { exportImage, exportPdf } from '../utils/Image';
 import inject18n from './i18n';
@@ -48,12 +48,16 @@ class ExportButtons extends Component {
   exportImage(domElementId, name, theme, background) {
     this.setState({ exporting: true });
     this.handleCloseImage();
-    const { theme: currentTheme } = this.props;
-    commitLocalUpdate((store) => {
-      const me = store.getRoot().getLinkedRecord('me');
-      me.setValue(theme, 'theme');
-      me.setValue(true, 'exporting');
-    });
+    const { theme: currentTheme, pixelRatio = 2 } = this.props;
+    let timeout = 4000;
+    if (theme !== currentTheme.palette.type) {
+      timeout = 6000;
+      commitLocalUpdate((store) => {
+        const me = store.getRoot().getLinkedRecord('me');
+        me.setValue(theme, 'theme');
+        me.setValue(true, 'exporting');
+      });
+    }
     setTimeout(() => {
       exportImage(
         domElementId,
@@ -61,18 +65,22 @@ class ExportButtons extends Component {
         // eslint-disable-next-line no-nested-ternary
         background
           ? theme === 'light'
-            ? ThemeLight().palette.background.default
-            : ThemeDark().palette.background.default
+            ? themeLight().palette.background.default
+            : themeDark().palette.background.default
           : null,
+        pixelRatio,
       ).then(() => {
-        commitLocalUpdate((store) => {
-          const me = store.getRoot().getLinkedRecord('me');
-          me.setValue(currentTheme.palette.type, 'theme');
-          me.setValue(false, 'exporting');
-          setTimeout(() => this.setState({ exporting: false }, 1000));
-        });
+        if (theme !== currentTheme.palette.type) {
+          commitLocalUpdate((store) => {
+            const me = store.getRoot().getLinkedRecord('me');
+            me.setValue(false, 'exporting');
+            me.setValue(currentTheme.palette.type, 'theme');
+          });
+        } else {
+          this.setState({ exporting: false });
+        }
       });
-    }, 4000);
+    }, timeout);
   }
 
   handleOpenPdf(event) {
@@ -86,12 +94,16 @@ class ExportButtons extends Component {
   exportPdf(domElementId, name, theme, background) {
     this.setState({ exporting: true });
     this.handleClosePdf();
-    const { theme: currentTheme } = this.props;
-    commitLocalUpdate((store) => {
-      const me = store.getRoot().getLinkedRecord('me');
-      me.setValue(true, 'exporting');
-      me.setValue(theme, 'theme');
-    });
+    const { theme: currentTheme, pixelRatio = 2 } = this.props;
+    let timeout = 4000;
+    if (theme !== currentTheme.palette.type) {
+      timeout = 6000;
+      commitLocalUpdate((store) => {
+        const me = store.getRoot().getLinkedRecord('me');
+        me.setValue(true, 'exporting');
+        me.setValue(theme, 'theme');
+      });
+    }
     setTimeout(() => {
       exportPdf(
         domElementId,
@@ -99,18 +111,22 @@ class ExportButtons extends Component {
         // eslint-disable-next-line no-nested-ternary
         background
           ? theme === 'light'
-            ? ThemeLight().palette.background.default
-            : ThemeDark().palette.background.default
+            ? themeLight().palette.background.default
+            : themeDark().palette.background.default
           : null,
+        pixelRatio,
       ).then(() => {
-        commitLocalUpdate((store) => {
-          const me = store.getRoot().getLinkedRecord('me');
-          me.setValue(currentTheme.palette.type, 'theme');
-          me.setValue(false, 'exporting');
-          setTimeout(() => this.setState({ exporting: false }, 1000));
-        });
+        if (theme !== currentTheme.palette.type) {
+          commitLocalUpdate((store) => {
+            const me = store.getRoot().getLinkedRecord('me');
+            me.setValue(false, 'exporting');
+            me.setValue(currentTheme.palette.type, 'theme');
+          });
+        } else {
+          this.setState({ exporting: false });
+        }
       });
-    }, 4000);
+    }, timeout);
   }
 
   render() {

@@ -3,6 +3,7 @@ import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
+import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -14,6 +15,14 @@ import KillChainPhasesLines, {
   killChainPhasesLinesQuery,
 } from './kill_chain_phases/KillChainPhasesLines';
 import KillChainPhaseCreation from './kill_chain_phases/KillChainPhaseCreation';
+import LabelsAttributesMenu from './LabelsAttributesMenu';
+
+const styles = () => ({
+  container: {
+    margin: 0,
+    padding: '0 200px 0 0',
+  },
+});
 
 export const killChainPhasesSearchQuery = graphql`
   query KillChainPhasesSearchQuery($search: String) {
@@ -115,6 +124,7 @@ class KillChainPhases extends Component {
   }
 
   render() {
+    const { classes } = this.props;
     const {
       view, sortBy, orderAsc, searchTerm,
     } = this.state;
@@ -124,7 +134,8 @@ class KillChainPhases extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div>
+      <div className={classes.container}>
+        <LabelsAttributesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <KillChainPhaseCreation paginationOptions={paginationOptions} />
       </div>
@@ -133,9 +144,14 @@ class KillChainPhases extends Component {
 }
 
 KillChainPhases.propTypes = {
+  classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter)(KillChainPhases);
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(KillChainPhases);

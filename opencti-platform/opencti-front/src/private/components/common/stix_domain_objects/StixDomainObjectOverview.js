@@ -89,15 +89,13 @@ class StixDomainObjectOverview extends Component {
               </pre>
             </Grid>
             <Grid item={true} xs={6}>
-              {withPattern ? (
+              {withPattern && (
                 <div>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Pattern type')}
                   </Typography>
                   <ItemPatternType label={stixDomainObject.pattern_type} />
                 </div>
-              ) : (
-                ''
               )}
               <Typography
                 variant="h3"

@@ -1,5 +1,6 @@
 import { lstatSync, readFileSync } from 'fs';
 import nconf from 'nconf';
+import * as R from 'ramda';
 import winston, { format } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
@@ -114,6 +115,16 @@ export const BUS_TOPICS = {
   },
 };
 
+export const PLATFORM_VERSION = pjson.version;
+
+export const booleanConf = (key, defaultValue = true) => {
+  const configValue = nconf.get(key);
+  if (R.isEmpty(configValue) || R.isNil(configValue)) {
+    return defaultValue;
+  }
+  return configValue === true || configValue === 'true';
+};
+
 // Environment from NODE_ENV environment variable
 nconf.env({ separator: '__', lowerCase: true, parseValues: true });
 
@@ -148,8 +159,8 @@ nconf.file('default', resolveEnvFile('default'));
 
 // Setup application logApp
 const appLogLevel = nconf.get('app:app_logs:logs_level');
-const appLogFileTransport = nconf.get('app:app_logs:logs_files');
-const appLogConsoleTransport = nconf.get('app:app_logs:logs_console');
+const appLogFileTransport = booleanConf('app:app_logs:logs_files', true);
+const appLogConsoleTransport = booleanConf('app:app_logs:logs_console', true);
 const appLogTransports = [];
 if (appLogFileTransport) {
   const dirname = nconf.get('app:app_logs:logs_directory');
@@ -180,8 +191,8 @@ const appLogger = winston.createLogger({
 });
 
 // Setup audit log logApp
-const auditLogFileTransport = nconf.get('app:audit_logs:logs_files');
-const auditLogConsoleTransport = nconf.get('app:audit_logs:logs_console');
+const auditLogFileTransport = booleanConf('app:audit_logs:logs_files', true);
+const auditLogConsoleTransport = booleanConf('app:audit_logs:logs_console', true);
 const auditLogTransports = [];
 if (auditLogFileTransport) {
   const dirname = nconf.get('app:audit_logs:logs_directory');
@@ -210,7 +221,7 @@ if (environment === 'test') {
   });
 }
 const LOG_APP = 'APP';
-const addBasicMetaInformation = (category, meta) => ({ ...meta, category, version: pjson.version });
+const addBasicMetaInformation = (category, meta) => ({ ...meta, category, version: PLATFORM_VERSION });
 export const logApp = {
   _log: (level, message, meta = {}) => {
     if (appLogTransports.length > 0) {
@@ -261,5 +272,12 @@ export const configureCA = (certificates) => {
   }
   return { ca: [] };
 };
+
+// Expose global configuration
+export const ENABLED_API = booleanConf('app:enabled', true);
+export const ENABLED_EXPIRED_MANAGER = booleanConf('expiration_scheduler:enabled', false);
+export const ENABLED_TASK_SCHEDULER = booleanConf('task_scheduler:enabled', false);
+export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
+export const ENABLED_CACHING = booleanConf('redis:use_as_cache', false);
 
 export default nconf;

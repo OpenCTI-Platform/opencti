@@ -35,6 +35,7 @@ import SelectField from '../../../../components/SelectField';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import ObjectLabelField from '../form/ObjectLabelField';
+import ConfidenceField from '../form/ConfidenceField';
 
 const typesWithOpenCTIAliases = [
   'Course-Of-Action',
@@ -202,6 +203,7 @@ const stixDomainObjectCreationMutation = graphql`
 
 const stixDomainObjectValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  confidence: Yup.number().required(t('This field is required')),
   description: Yup.string(),
   type: Yup.string().required(t('This field is required')),
 });
@@ -419,6 +421,7 @@ class StixDomainObjectCreation extends Component {
               initialValues={{
                 type: '',
                 name: '',
+                confidence: 15,
                 description: '',
                 pattern_type: '',
                 pattern: '',
@@ -491,6 +494,12 @@ class StixDomainObjectCreation extends Component {
                       />
                     </div>
                   )}
+                  <ConfidenceField
+                    name="confidence"
+                    label={t('Confidence')}
+                    fullWidth={true}
+                    containerstyle={{ width: '100%', marginTop: 20 }}
+                  />
                   <Field
                     component={MarkDownField}
                     name="description"
@@ -551,11 +560,13 @@ class StixDomainObjectCreation extends Component {
       display,
       defaultCreatedBy,
       defaultMarkingDefinitions,
+      confidence,
       targetStixDomainObjectTypes,
     } = this.props;
     const initialValues = {
       type: '',
       name: inputValue,
+      confidence: confidence || 15,
       description: '',
       aliases: '',
       x_opencti_aliases: '',
@@ -663,6 +674,12 @@ class StixDomainObjectCreation extends Component {
                       />
                     </div>
                   )}
+                  <ConfidenceField
+                    name="confidence"
+                    label={t('Confidence')}
+                    fullWidth={true}
+                    containerstyle={{ width: '100%', marginTop: 20 }}
+                  />
                   <Field
                     component={MarkDownField}
                     name="description"
@@ -731,6 +748,7 @@ StixDomainObjectCreation.propTypes = {
   inputValue: PropTypes.string,
   defaultCreatedBy: PropTypes.object,
   defaultMarkingDefinitions: PropTypes.array,
+  confidence: PropTypes.number,
 };
 
 export default compose(

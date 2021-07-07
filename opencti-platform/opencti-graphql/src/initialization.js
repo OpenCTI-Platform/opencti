@@ -1,6 +1,8 @@
 // Admin user initialization
 import { ApolloError } from 'apollo-errors';
-import { logApp } from './config/conf';
+import { v4 as uuidv4 } from 'uuid';
+import semver from 'semver';
+import { logApp, PLATFORM_VERSION } from './config/conf';
 import { elCreateIndexes, elIndexExists, elIsAlive } from './database/elasticSearch';
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
@@ -11,12 +13,12 @@ import { ROLE_DEFAULT, STREAMAPI, TAXIIAPI } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
-import { lockResource, redisInitializeClients, redisIsAlive } from './database/redis';
+import { cachePurge, lockResource, redisIsAlive } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import applyMigration, { lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity, patchAttribute } from './database/middleware';
 import { INDEX_INTERNAL_OBJECTS } from './database/utils';
-import { ConfigurationError, TYPE_LOCK_ERROR } from './config/errors';
+import { ConfigurationError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
 import { BYPASS, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
 
 // region Platform constants
@@ -135,11 +137,11 @@ const initializeSchema = async () => {
   return true;
 };
 
-const initializeMigration = async (testMode = false) => {
+const initializeMigration = async () => {
   logApp.info('[INIT] Creating migration structure');
-  const time = testMode ? new Date().getTime() : lastAvailableMigrationTime();
+  const time = lastAvailableMigrationTime();
   const lastRun = `${time}-init`;
-  const migrationStatus = { lastRun };
+  const migrationStatus = { internal_id: uuidv4(), lastRun };
   await createEntity(SYSTEM_USER, migrationStatus, ENTITY_TYPE_MIGRATION_STATUS);
 };
 
@@ -259,29 +261,40 @@ const isExistingPlatform = async () => {
   }
 };
 
+const isCompatiblePlatform = async () => {
+  const migration = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
+  const { platformVersion } = migration;
+  // For old platform, version is not set yet, continue
+  if (!platformVersion) return;
+  // Runtime version must be >= of the stored runtime
+  if (semver.lt(PLATFORM_VERSION, platformVersion)) {
+    throw UnsupportedError(
+      `Your platform data (${PLATFORM_VERSION}) are too old to start on version ${platformVersion}`
+    );
+  }
+};
+
 // eslint-disable-next-line
-const platformInit = async (testMode = false) => {
+const platformInit = async () => {
   let lock;
   try {
-    await redisInitializeClients();
     await checkSystemDependencies();
+    await cachePurge();
     lock = await lockResource([PLATFORM_LOCK_ID]);
     logApp.info(`[INIT] Starting platform initialization`);
     const alreadyExists = await isExistingPlatform();
     if (!alreadyExists) {
       logApp.info(`[INIT] New platform detected, initialization...`);
       await initializeSchema();
-      await initializeMigration(testMode);
+      await initializeMigration();
       await initializeData();
       await initializeAdminUser();
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
-      // Always reset the admin user
+      await isCompatiblePlatform();
       await initializeAdminUser();
-      if (!testMode) {
-        await alignMigrationLastRun();
-        await applyMigration();
-      }
+      await alignMigrationLastRun();
+      await applyMigration();
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {

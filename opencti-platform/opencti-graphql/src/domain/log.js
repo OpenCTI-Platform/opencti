@@ -1,7 +1,7 @@
 import { head } from 'ramda';
 import * as R from 'ramda';
 import { elPaginate } from '../database/elasticSearch';
-import conf from '../config/conf';
+import conf, { booleanConf } from '../config/conf';
 import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
 import { findById } from './user';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
@@ -49,6 +49,6 @@ export const logsWorkerConfig = () => ({
   elasticsearch_index: INDEX_HISTORY,
   elasticsearch_username: conf.get('elasticsearch:username') || null,
   elasticsearch_password: conf.get('elasticsearch:password') || null,
-  elasticsearch_api_key: conf.get('elasticsearch:api_Key') || null,
-  elasticsearch_ssl_reject_unauthorized: conf.get('elasticsearch:ssl:reject_unauthorized') || true,
+  elasticsearch_api_key: conf.get('elasticsearch:api_key') || null,
+  elasticsearch_ssl_reject_unauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
 });

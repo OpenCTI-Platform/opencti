@@ -25,6 +25,8 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import { dayStartDate } from '../../../../utils/Time';
+import DatePickerField from '../../../../components/DatePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -87,6 +89,9 @@ const noteCreationMutation = graphql`
 
 const noteValidation = (t) => Yup.object().shape({
   confidence: Yup.number(),
+  created: Yup.date()
+    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .required(t('This field is required')),
   attribute_abstract: Yup.string(),
   content: Yup.string().required(t('This field is required')),
 });
@@ -188,6 +193,7 @@ class NoteCreation extends Component {
           <div className={classes.container}>
             <Formik
               initialValues={{
+                created: dayStartDate(),
                 attribute_abstract: '',
                 content: '',
                 confidence: 15,
@@ -207,6 +213,16 @@ class NoteCreation extends Component {
                 values,
               }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
+                  <Field
+                    component={DatePickerField}
+                    name="created"
+                    label={t('Date')}
+                    invalidDateMessage={t(
+                      'The value must be a date (YYYY-MM-DD)',
+                    )}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
                   <Field
                     component={MarkDownField}
                     name="attribute_abstract"
@@ -289,6 +305,7 @@ class NoteCreation extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
+              created: dayStartDate(),
               attribute_abstract: '',
               content: inputValue,
               createdBy: '',
@@ -310,10 +327,20 @@ class NoteCreation extends Component {
                 <DialogTitle>{t('Create a note')}</DialogTitle>
                 <DialogContent>
                   <Field
+                    component={DatePickerField}
+                    name="created"
+                    label={t('Date')}
+                    invalidDateMessage={t(
+                      'The value must be a date (YYYY-MM-DD)',
+                    )}
+                    fullWidth={true}
+                  />
+                  <Field
                     component={MarkDownField}
                     name="attribute_abstract"
                     label={t('Abstract')}
                     fullWidth={true}
+                    style={{ marginTop: 20 }}
                   />
                   <Field
                     component={MarkDownField}

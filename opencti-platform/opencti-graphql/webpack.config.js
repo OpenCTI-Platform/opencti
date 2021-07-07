@@ -31,13 +31,20 @@ module.exports = (env, argv) => {
     target: 'node',
     output: {
       path: resolvePath('build'),
-      libraryTarget: 'commonjs2',
+      devtoolModuleFilenameTemplate: isDev ? '[absolute-resource-path]' : '[resource-path]',
     },
-    devtool: isDev ? 'inline-source-map' : 'nosources-source-map',
+    devtool: 'inline-source-map',
     optimization: {
       emitOnErrors: false,
-      minimize: true,
-      minimizer: [new TerserPlugin({ extractComments: false })],
+      minimize: !isDev,
+      minimizer: [
+        new TerserPlugin({
+          extractComments: false,
+          terserOptions: {
+            mangle: false,
+          },
+        }),
+      ],
     },
     stats: !isDev && {
       children: false,

@@ -1,9 +1,9 @@
 import { head } from 'ramda';
 import { deleteFile, downloadFile, filesListing, loadFile } from '../../../src/database/minio';
-import { listenServer, stopServer } from '../../../src/httpServer';
 import { execPython3 } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
-import { elLoadByIds } from '../../../src/database/elasticSearch';
+import { elLoadById } from '../../../src/database/elasticSearch';
+import { startModules, shutdownModules } from '../../../src/modules';
 
 const streamConverter = (stream) => {
   return new Promise((resolve) => {
@@ -22,7 +22,7 @@ describe('Minio file listing', () => {
   let importFileId;
   let importOpts;
   it('should resolve the malware', async () => {
-    const malware = await elLoadByIds(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     malwareId = malware.internal_id;
     exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
     exportFileId = `export/Malware/${malwareId}/${exportFileName}`;
@@ -30,12 +30,12 @@ describe('Minio file listing', () => {
     importOpts = [API_URI, API_TOKEN, malwareId, exportFileName];
   });
   it('should file upload succeed', async () => {
-    const httpServer = await listenServer();
+    await startModules();
     // local exporter create an export and also upload the file as an import
     const execution = await execPython3(PYTHON_PATH, 'local_exporter.py', importOpts);
     expect(execution).not.toBeNull();
     expect(execution.status).toEqual('success');
-    await stopServer(httpServer);
+    await shutdownModules();
   });
   it('should file listing', async () => {
     const entity = { id: malwareId };
@@ -45,7 +45,7 @@ describe('Minio file listing', () => {
     let file = head(list.edges).node;
     expect(file.id).toEqual(exportFileId);
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(10519);
+    expect(file.size).toEqual(10565);
     expect(file.metaData).not.toBeNull();
     expect(file.metaData.encoding).toEqual('7bit');
     expect(file.metaData.filename).toEqual(exportFileName.replace(/\s/g, '%20'));
@@ -55,7 +55,7 @@ describe('Minio file listing', () => {
     expect(list.edges.length).toEqual(1);
     file = head(list.edges).node;
     expect(file.id).toEqual(importFileId);
-    expect(file.size).toEqual(10519);
+    expect(file.size).toEqual(10565);
     expect(file.name).toEqual(exportFileName);
   });
   it('should file download', async () => {
@@ -74,7 +74,7 @@ describe('Minio file listing', () => {
     expect(file).not.toBeNull();
     expect(file.id).toEqual(exportFileId);
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(10519);
+    expect(file.size).toEqual(10565);
   });
   it('should delete file', async () => {
     let deleted = await deleteFile(ADMIN_USER, exportFileId);

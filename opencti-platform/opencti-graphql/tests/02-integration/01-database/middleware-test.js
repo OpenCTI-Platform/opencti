@@ -13,15 +13,13 @@ import {
   mergeEntities,
   patchAttribute,
   querySubTypes,
-  REL_CONNECTED_SUFFIX,
-  markedLoadById,
   timeSeriesEntities,
   timeSeriesRelations,
   updateAttribute,
   fullLoadById,
 } from '../../../src/database/middleware';
 import { attributeEditField, findAll as findAllAttributes } from '../../../src/domain/attribute';
-import { el, elFindByIds, elLoadByIds, ES_IGNORE_THROTTLED } from '../../../src/database/elasticSearch';
+import { el, elFindByIds, elLoadById, ES_IGNORE_THROTTLED } from '../../../src/database/elasticSearch';
 import { ADMIN_USER, sleep } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
@@ -33,11 +31,7 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR,
 } from '../../../src/schema/stixDomainObject';
-import {
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_META_RELATIONSHIP,
-  REL_INDEX_PREFIX,
-} from '../../../src/schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP } from '../../../src/schema/general';
 import { RELATION_MITIGATES, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCyberObservable';
 import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixMetaRelationship';
@@ -97,14 +91,14 @@ describe('Attribute updater', () => {
   const noCacheCases = [[true], [false]];
   // TODO JRI HOW TO CHECK THE ES SCHEMA
   it.skip('should update fail for unknown attributes', async () => {
-    const campaign = await elLoadByIds(ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
+    const campaign = await elLoadById(ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const campaignId = campaign.internal_id;
     const input = { observable_value: 'test' };
     const update = patchAttribute(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input);
     expect(update).rejects.toThrow();
   });
   it('should update dont do anything if already the same', async () => {
-    const campaign = await elLoadByIds(ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
+    const campaign = await elLoadById(ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const campaignId = campaign.internal_id;
     const patch = { description: 'A test campaign' };
     const update = await patchAttribute(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, patch);
@@ -231,7 +225,7 @@ describe('Entities listing', () => {
     ]);
   });
   it.each(noCacheCases)('should list multiple entities with attribute filters (noCache = %s)', async (noCache) => {
-    const identity = await elLoadByIds(ADMIN_USER, 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5');
+    const identity = await elLoadById(ADMIN_USER, 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5');
     const filters = [{ key: `rel_created-by.internal_id`, values: [identity.internal_id] }];
     const options = { filters, noCache };
     const entities = await listEntities(ADMIN_USER, ['Attack-Pattern', 'Intrusion-Set'], options);
@@ -302,7 +296,7 @@ describe('Relations listing', () => {
     for (let index = 0; index < stixRelations.edges.length; index += 1) {
       const stixRelation = stixRelations.edges[index].node;
       // eslint-disable-next-line no-await-in-loop
-      const toThing = await elLoadByIds(ADMIN_USER, stixRelation.toId);
+      const toThing = await elLoadById(ADMIN_USER, stixRelation.toId);
       expect(toThing.entity_type).toEqual('Attack-Pattern');
       expect(stixRelation.fromId).toEqual(malware.internal_id);
     }
@@ -337,7 +331,7 @@ describe('Relations listing', () => {
     //                                               (indicator)
     //                                                   |
     //                                     [Indicator: www.xolod-teplo.ru]
-    const indicator = await elLoadByIds(ADMIN_USER, 'indicator--10e9a46e-7edb-496b-a167-e27ea3ed0079');
+    const indicator = await elLoadById(ADMIN_USER, 'indicator--10e9a46e-7edb-496b-a167-e27ea3ed0079');
     const indicatorId = indicator.internal_id; // indicator -> www.xolod-teplo.ru
     const relationFilter = {
       relation: 'indicates',
@@ -350,7 +344,7 @@ describe('Relations listing', () => {
     expect(stixRelations.edges.length).toEqual(0);
   });
   it.each(noCacheCases)('should list relations with relation filtering on report (noCache = %s)', async (noCache) => {
-    const report = await elLoadByIds(ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
+    const report = await elLoadById(ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
     const relationFilter = {
       relation: 'object',
       fromRole: 'object_to',
@@ -361,7 +355,7 @@ describe('Relations listing', () => {
     const stixRelations = await listRelations(ADMIN_USER, 'stix-core-relationship', args);
     // TODO Ask Julien
     expect(stixRelations.edges.length).toEqual(11);
-    const relation = await elLoadByIds(ADMIN_USER, 'relationship--b703f822-f6f0-4d96-9c9b-3fc0bb61e69c');
+    const relation = await elLoadById(ADMIN_USER, 'relationship--b703f822-f6f0-4d96-9c9b-3fc0bb61e69c');
     const argsWithRelationId = {
       noCache,
       relationFilter: R.assoc('relationId', relation.internal_id, relationFilter),
@@ -369,18 +363,12 @@ describe('Relations listing', () => {
     const stixRelationsWithInternalId = await listRelations(ADMIN_USER, 'stix-core-relationship', argsWithRelationId);
     expect(stixRelationsWithInternalId.edges.length).toEqual(1);
   });
-  it.each(noCacheCases)('should list relations with to attribute filtering (noCache = %s)', async (noCache) => {
-    const options = { orderBy: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`, orderMode: 'asc', noCache };
-    const stixRelations = await listRelations(ADMIN_USER, 'uses', options);
-    // TODO Fix that test
-    expect(stixRelations).not.toBeNull();
-  });
   it.each(noCacheCases)('should list relations with search (noCache = %s)', async (noCache) => {
-    const malware = await elLoadByIds(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = { noCache, fromId: malware.internal_id, search: 'Spear phishing' };
     const stixRelations = await listRelations(ADMIN_USER, 'uses', options);
     expect(stixRelations.edges.length).toEqual(2);
-    const relTargets = await Promise.all(R.map((s) => elLoadByIds(ADMIN_USER, s.node.toId), stixRelations.edges));
+    const relTargets = await Promise.all(R.map((s) => elLoadById(ADMIN_USER, s.node.toId), stixRelations.edges));
     for (let index = 0; index < relTargets.length; index += 1) {
       const target = relTargets[index];
       expect(target.name).toEqual(expect.stringContaining('Spear phishing'));
@@ -410,12 +398,12 @@ describe('Relations listing', () => {
   });
   it.skip('should list relations with filters (noCache = %s)', async (noCache) => {
     let filters = [{ key: 'connections', nested: [{ key: 'name', values: ['malicious'], operator: 'wildcard' }] }];
-    const malware = await elLoadByIds(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     let options = { noCache, fromId: malware.internal_id, filters };
     let stixRelations = await listRelations(ADMIN_USER, 'uses', options);
     expect(stixRelations.edges.length).toEqual(1);
     const relation = R.head(stixRelations.edges).node;
-    const target = await elLoadByIds(ADMIN_USER, relation.toId);
+    const target = await elLoadById(ADMIN_USER, relation.toId);
     expect(target.name).toEqual(expect.stringContaining('malicious'));
     // Test with exact match
     filters = [{ key: 'connections', nested: [{ key: 'name', values: ['malicious'] }] }];
@@ -431,7 +419,7 @@ describe('Relations listing', () => {
   it.each(noCacheCases)('should list sightings with id option (noCache = %s)', async (noCache) => {
     // Just id specified,
     // "name": "Paradise Ransomware"
-    const relationship = await elLoadByIds(ADMIN_USER, 'relationship--8d2200a8-f9ef-4345-95d1-ba3ed49606f9');
+    const relationship = await elLoadById(ADMIN_USER, 'relationship--8d2200a8-f9ef-4345-95d1-ba3ed49606f9');
     const options = { noCache, fromId: relationship.internal_id };
     const thing = await internalLoadById(ADMIN_USER, relationship.internal_id);
     const stixSightings = await listRelations(ADMIN_USER, 'stix-sighting-relationship', options);
@@ -443,67 +431,66 @@ describe('Relations listing', () => {
 });
 
 describe('Element loader', () => {
-  const noCacheCases = [[true], [false]];
-  it.each(noCacheCases)('should load entity by id - internal (noCache = %s)', async (noCache) => {
+  it('should load entity by id - internal', async () => {
     // No type
-    const report = await elLoadByIds(ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
+    const report = await elLoadById(ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
     const internalId = report.internal_id;
-    let element = await internalLoadById(ADMIN_USER, internalId, { noCache });
+    let element = await internalLoadById(ADMIN_USER, internalId);
     expect(element).not.toBeNull();
     expect(element.id).toEqual(internalId);
     expect(element.name).toEqual('A demo report for testing purposes');
     // Correct type
-    element = await loadById(ADMIN_USER, internalId, ENTITY_TYPE_CONTAINER_REPORT, { noCache });
+    element = await loadById(ADMIN_USER, internalId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(element).not.toBeNull();
     expect(element.id).toEqual(internalId);
     // Wrong type
-    element = await loadById(ADMIN_USER, internalId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, { noCache });
+    element = await loadById(ADMIN_USER, internalId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
     expect(element).toBeUndefined();
   });
-  it.each(noCacheCases)('should load entity by id (noCache = %s)', async (noCache) => {
+  it('should load entity by id (noCache = %s)', async () => {
     // No type
-    const report = await elLoadByIds(ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
+    const report = await elLoadById(ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
     const internalId = report.internal_id;
-    const loadPromise = loadById(ADMIN_USER, internalId, { noCache });
+    const loadPromise = loadById(ADMIN_USER, internalId);
     expect(loadPromise).rejects.toThrow();
-    const element = await loadById(ADMIN_USER, internalId, ENTITY_TYPE_CONTAINER_REPORT, { noCache });
+    const element = await loadById(ADMIN_USER, internalId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(element).not.toBeNull();
     expect(element.id).toEqual(internalId);
     expect(element.name).toEqual('A demo report for testing purposes');
   });
-  it.each(noCacheCases)('should load entity by stix id (noCache = %s)', async (noCache) => {
+  it('should load entity by stix id (noCache = %s)', async () => {
     // No type
     const stixId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
-    const loadPromise = loadById(ADMIN_USER, stixId, { noCache });
+    const loadPromise = loadById(ADMIN_USER, stixId);
     expect(loadPromise).rejects.toThrow();
-    const element = await loadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT, { noCache });
+    const element = await loadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(element).not.toBeNull();
     expect(element.standard_id).toEqual('report--f3e554eb-60f5-587c-9191-4f25e9ba9f32');
     expect(element.name).toEqual('A demo report for testing purposes');
   });
-  it.each(noCacheCases)('should load relation by id (noCache = %s)', async (noCache) => {
+  it('should load relation by id (noCache = %s)', async () => {
     // No type
-    const relation = await elLoadByIds(ADMIN_USER, 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02');
+    const relation = await elLoadById(ADMIN_USER, 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02');
     const relationId = relation.internal_id;
-    const loadPromise = loadById(ADMIN_USER, relationId, null, { noCache });
+    const loadPromise = loadById(ADMIN_USER, relationId, null);
     expect(loadPromise).rejects.toThrow();
-    const element = await loadById(ADMIN_USER, relationId, 'uses', { noCache });
+    const element = await loadById(ADMIN_USER, relationId, 'uses');
     expect(element).not.toBeNull();
     expect(element.id).toEqual(relationId);
     expect(element.confidence).toEqual(3);
   });
-  it.each(noCacheCases)('should load relation by stix id (noCache = %s)', async (noCache) => {
+  it('should load relation by stix id (noCache = %s)', async () => {
     const stixId = 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02';
-    const loadPromise = loadById(ADMIN_USER, stixId, null, { noCache });
+    const loadPromise = loadById(ADMIN_USER, stixId, null);
     expect(loadPromise).rejects.toThrow();
-    const element = await loadById(ADMIN_USER, stixId, 'uses', { noCache });
+    const element = await loadById(ADMIN_USER, stixId, 'uses');
     expect(element).not.toBeNull();
     expect(element.x_opencti_stix_ids).toEqual([stixId]);
     expect(element.confidence).toEqual(3);
   });
-  it.each(noCacheCases)('should load by grakn id for multiple attributes (noCache = %s)', async (noCache) => {
+  it('should load by grakn id for multiple attributes (noCache = %s)', async () => {
     const stixId = 'identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132';
-    const identity = await loadById(ADMIN_USER, stixId, ENTITY_TYPE_IDENTITY_ORGANIZATION, { noCache });
+    const identity = await loadById(ADMIN_USER, stixId, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     expect(identity).not.toBeNull();
     expect(identity.x_opencti_aliases).not.toBeNull();
     expect(identity.x_opencti_aliases.length).toEqual(2);
@@ -572,7 +559,7 @@ describe('Entities time series', () => {
   });
   it.each(noCacheCases)('should start time relation time series (noCache = %s)', async (noCache) => {
     // const { startDate, endDate, operation, field, interval, inferred = false } = options;
-    const intrusionSet = await elLoadByIds(ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
+    const intrusionSet = await elLoadById(ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
     const filters = [{ isRelation: true, type: 'attributed-to', value: intrusionSet.internal_id }];
     const options = {
       field: 'first_seen',
@@ -627,7 +614,7 @@ describe('Relations time series', () => {
     expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(3);
   });
   it.each(noCacheCases)('should relations with fromId time series (noCache = %s)', async (noCache) => {
-    const malware = await elLoadByIds(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
       fromId: malware.internal_id,
       relationship_type: 'uses',
@@ -658,7 +645,7 @@ describe('Entities distribution', () => {
   });
   it.skip('should entity distribution filters (noCache = %s)', async (noCache) => {
     // const { startDate, endDate, operation, field, inferred, noCache } = options;
-    const malware = await elLoadByIds(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = { field: 'entity_type', operation: 'count', limit: 20, noCache };
     const start = '2020-02-28T22:59:00.000Z';
     const end = '2020-02-28T23:01:00.000Z';
@@ -704,7 +691,7 @@ describe('Relations distribution', () => {
   it.each(noCacheCases)('should relation distribution (noCache = %s)', async (noCache) => {
     // const { limit = 50, order, noCache = false, inferred = false } = options;
     // const { startDate, endDate, relationship_type, toTypes, fromId, field, operation } = options;
-    const malware = await elLoadByIds(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
       fromId: malware.internal_id,
       relationship_type: 'uses',
@@ -719,7 +706,7 @@ describe('Relations distribution', () => {
     expect(aggregationMap.get('Intrusion-Set')).toEqual(1);
   });
   it('should relation distribution dates filtered (noCache = %s)', async () => {
-    const malware = await elLoadByIds(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
       fromId: malware.internal_id,
       field: 'entity_type',
@@ -733,7 +720,7 @@ describe('Relations distribution', () => {
     expect(aggregationMap.get('Intrusion-Set')).toEqual(undefined);
   });
   it.each(noCacheCases)('should relation distribution filtered by to (noCache = %s)', async (noCache) => {
-    const malware = await elLoadByIds(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
       fromId: malware.internal_id,
       field: 'entity_type',
@@ -806,17 +793,17 @@ describe('Upsert and merge entities', () => {
     expect(createdMalware.name).toEqual('MALWARE_TEST');
     expect(createdMalware.description).toEqual('MALWARE_TEST DESCRIPTION');
     expect(createdMalware.i_aliases_ids.length).toEqual(1); // We put the name as internal alias id
-    let loadMalware = await markedLoadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
+    let loadMalware = await loadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware).not.toBeNull();
-    expect(loadMalware.objectMarking.length).toEqual(2);
+    expect(loadMalware.object_marking_refs.length).toEqual(2);
     // Upsert TLP by name
     let upMalware = { name: 'MALWARE_TEST', objectMarking: [testMarking] };
     let upsertedMalware = await createEntity(ADMIN_USER, upMalware, ENTITY_TYPE_MALWARE);
     expect(upsertedMalware).not.toBeNull();
     expect(upsertedMalware.id).toEqual(createdMalware.id);
     expect(upsertedMalware.name).toEqual('MALWARE_TEST');
-    loadMalware = await markedLoadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
-    expect(loadMalware.objectMarking.length).toEqual(3);
+    loadMalware = await loadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
+    expect(loadMalware.object_marking_refs.length).toEqual(3);
     // Upsert definition per alias
     upMalware = {
       name: 'NEW NAME',
@@ -831,7 +818,7 @@ describe('Upsert and merge entities', () => {
     expect(upsertedMalware.id).toEqual(createdMalware.id);
     expect(upsertedMalware.x_opencti_stix_ids).toEqual(['malware--907bb632-e3c2-52fa-b484-cf166a7d377e']);
     expect(upsertedMalware.aliases.sort()).toEqual(['NEW NAME', 'MALWARE_TEST'].sort());
-    loadMalware = await markedLoadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
+    loadMalware = await loadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware.name).toEqual('NEW NAME');
     expect(loadMalware.description).toEqual('MALWARE_TEST NEW');
     expect(loadMalware.id).toEqual(loadMalware.id);
@@ -846,10 +833,10 @@ describe('Upsert and merge entities', () => {
       RELATION_OBJECT_MARKING,
       ABSTRACT_STIX_META_RELATIONSHIP
     );
-    const checkers = await elFindByIds(ADMIN_USER, loadMalware.id, { relExclude: false });
+    const checkers = await elFindByIds(ADMIN_USER, loadMalware.id);
     const test = await internalLoadById(ADMIN_USER, testMarking);
     const mitre = await internalLoadById(ADMIN_USER, mitreMarking);
-    const rawMarkings = R.head(checkers)['rel_object-marking.internal_id'];
+    const rawMarkings = R.head(checkers).object_marking_refs;
     expect(rawMarkings.length).toEqual(2);
     expect(rawMarkings.includes(test.internal_id)).toBeTruthy();
     expect(rawMarkings.includes(mitre.internal_id)).toBeTruthy();
@@ -986,13 +973,13 @@ describe('Upsert and merge entities', () => {
     const idsThatShouldNotExists = [sha1.internal_id, sha256.internal_id];
     const isExist = await isOneOfThisIdsExists(idsThatShouldNotExists);
     expect(isExist).toBeFalsy();
-    const reloadMd5 = await markedLoadById(ADMIN_USER, md5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
+    const reloadMd5 = await loadById(ADMIN_USER, md5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
     expect(reloadMd5).not.toBeNull();
     expect(reloadMd5.hashes).not.toBeNull();
     expect(reloadMd5.hashes.MD5).toEqual('MERGE_MD5');
     expect(reloadMd5.hashes['SHA-1']).toEqual('MERGE_SHA-1');
     expect(reloadMd5.hashes['SHA-256']).toEqual('MERGE_SHA-256');
-    expect(reloadMd5.objectMarking.length).toEqual(3); // [testMarking, whiteMarking, mitreMarking]
+    expect(reloadMd5.object_marking_refs.length).toEqual(3); // [testMarking, whiteMarking, mitreMarking]
     // Cleanup
     await deleteElementById(ADMIN_USER, reloadMd5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
   });

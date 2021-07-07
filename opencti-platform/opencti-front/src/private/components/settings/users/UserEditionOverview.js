@@ -206,7 +206,7 @@ class UserEditionOverviewComponent extends Component {
         'lastname',
         'language',
         'roles',
-        'token',
+        'api_token',
       ]),
     )(user);
     return (
@@ -312,7 +312,7 @@ class UserEditionOverviewComponent extends Component {
               />
               <Field
                 component={TextField}
-                name="token"
+                name="api_token"
                 disabled={true}
                 label={t('Token')}
                 fullWidth={true}
@@ -320,7 +320,7 @@ class UserEditionOverviewComponent extends Component {
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 helperText={
-                  <SubscriptionFocus context={context} fieldName="token" />
+                  <SubscriptionFocus context={context} fieldName="api_token" />
                 }
               />
               <Field
@@ -370,7 +370,7 @@ const UserEditionOverview = createFragmentContainer(
         lastname
         language
         theme
-        token
+        api_token
         roles {
           id
           name

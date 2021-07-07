@@ -11,6 +11,9 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
+import Tooltip from '@material-ui/core/Tooltip';
+import * as R from 'ramda';
+import { AutoFix } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
@@ -93,15 +96,13 @@ class StixCyberObservableEntityLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              {displayRelation ? (
+              {displayRelation && (
                 <div
                   className={classes.bodyItem}
                   style={{ width: dataColumns.relationship_type.width }}
                 >
                   {t(`relationship_${node.relationship_type}`)}
                 </div>
-              ) : (
-                ''
               )}
               <div
                 className={classes.bodyItem}
@@ -132,26 +133,17 @@ class StixCyberObservableEntityLineComponent extends Component {
                     : defaultValue(targetEntity)
                   : t('Restricted')}
               </div>
-              {!displayRelation && (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.role_played.width }}
-                >
-                  {/* eslint-disable-next-line no-nested-ternary */}
-                  {node.role_played ? t(node.role_played) : t('Unknown')}
-                </div>
-              )}
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.start_time.width }}
               >
-                {node.inferred ? '-' : fsd(node.start_time)}
+                {fsd(node.start_time)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.stop_time.width }}
               >
-                {node.inferred ? '-' : fsd(node.stop_time)}
+                {fsd(node.stop_time)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -163,11 +155,22 @@ class StixCyberObservableEntityLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <StixCoreRelationshipPopover
-            stixCoreRelationshipId={node.id}
-            paginationOptions={paginationOptions}
-            disabled={restricted}
-          />
+          {node.is_inferred ? (
+            <Tooltip
+              title={
+                t('Inferred knowledge based on the rule ')
+                + R.head(node.x_opencti_inferences).rule.name
+              }
+            >
+              <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
+            </Tooltip>
+          ) : (
+            <StixCoreRelationshipPopover
+              stixCoreRelationshipId={node.id}
+              paginationOptions={paginationOptions}
+              disabled={restricted}
+            />
+          )}
         </ListItemSecondaryAction>
       </ListItem>
     );
@@ -196,6 +199,13 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
         start_time
         stop_time
         description
+        is_inferred
+        x_opencti_inferences {
+          rule {
+            id
+            name
+          }
+        }
         from {
           ... on BasicObject {
             id

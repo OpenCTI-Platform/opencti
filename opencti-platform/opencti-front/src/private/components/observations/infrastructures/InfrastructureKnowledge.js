@@ -89,6 +89,7 @@ class InfrastructureKnowledgeComponent extends Component {
               stixCoreObjectId={infrastructure.id}
               stixCoreObjectLink={link}
               noRightBar={true}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}

@@ -91,21 +91,21 @@ class TopMenuSettings extends Component {
         </Security>
         <Button
           component={Link}
-          to="/dashboard/settings/killchains"
+          to="/dashboard/settings/rules"
           variant={
-            location.pathname.includes('/dashboard/settings/killchains')
+            location.pathname.includes('/dashboard/settings/rules')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/dashboard/settings/killchains')
+            location.pathname.includes('/dashboard/settings/rules')
               ? 'secondary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Kill chain phases')}
+          {t('Rules engine')}
         </Button>
         <Security needs={[SETTINGS_SETLABELS]}>
           <Button

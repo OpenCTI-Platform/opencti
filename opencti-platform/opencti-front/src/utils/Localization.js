@@ -125,9 +125,32 @@ const i18n = {
         'Souhaitez-vous supprimer ce stream live ?',
       'Do you want to create a STIX Indcator from this observable?':
         'Souhaitez-vous créer un indicateur STIX depuis cet observable ?',
+      'Do you want to enable this rule?':
+        'Souhaitez-vous activer cette règle ?',
+      'Do you want to disable this rule?':
+        'Souhaitez-vous désactiver cette règle ?',
+      'Applying this rule on the existing data':
+        "En cours d'application de cette règle sur les données de la plateforme",
+      'This rule has been applied on the existing data':
+        'Cette règle a été appliquée sur les données de la plateforme',
+      'Cleaning up this rule on the existing data':
+        'En cours de purge de cette règle des données de la plateforme',
+      'Rule has been cleaned up on the existing data':
+        'Cette règle a été purgée des données de la plateforme',
       'Confirmation required': 'Confirmation requise',
+      'The rule has been enabled, rescan of platform data launched...':
+        'La règle a été activée, re-scan des données de la plateforme lancé....',
+      'The rule has been disabled, clean-up launched...':
+        'La règle a été déséactivée, purge lancée...',
+      'Rules engine': 'Moteur de règles',
+      'Launch rescan': 'Lancer le re-scan',
+      'Enabled the ': 'Activée le ',
+      'Never enabled': 'Jamais activée',
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
+      Enable: 'Activer',
+      Disable: 'Désactiver',
+      Rescan: 'Rescanner',
       'Last notes': 'Dernières notes',
       'Latest reports written by this entity':
         'Derniers rapports écrits par cette entité',
@@ -447,6 +470,7 @@ const i18n = {
       Category: 'Catégorie',
       Constituent: 'Bénéficiaire',
       Enabled: 'Activé',
+      Disabled: 'Désactivé',
       CSIRT: 'CSIRT',
       Partner: 'Partenaire',
       Vendor: 'Editeur',
@@ -502,7 +526,8 @@ const i18n = {
       'Enable 3D mode': 'Activer le mode 3D',
       'Disable 3D mode': 'Désactiver le mode 3D',
       'Enable tree mode': 'Activer le mode arbre',
-      'Disable tree mode': 'Désactiver le mode arbre',
+      'Disable tree horizontal mode': 'Désactiver le mode arbre horizontal',
+      'Disable tree vertical mode': 'Désactiver le mode arbre vertical',
       'Enable forces': 'Activer les forces',
       'Disable forces': 'Désactiver les forces',
       'Display time range selector':
@@ -581,6 +606,8 @@ const i18n = {
       Inferences: 'Inférences',
       'Action type': "Type d'action",
       'Inference rules': "Règles d'inférence",
+      'Inferred knowledge based on the rule ':
+        'Connaissance inférée basée sur la règle ',
       'View the item': "Voir l'object",
       'CSV file': 'Fichier CSV',
       'Export data in CSV': 'Exporter les données en CSV',
@@ -783,6 +810,8 @@ const i18n = {
       References: 'Références',
       'Source name': 'Nom de la source',
       'External ID': 'ID externe',
+      'Log sources': 'Sources de log',
+      'Threat hunting techniques': 'Techniques de recherche de compromission',
       external: 'externe',
       Relations: 'Relations',
       relations: 'relations',
@@ -803,6 +832,7 @@ const i18n = {
       'Personal motivations': 'Motivations personnelles',
       Goals: 'Objectifs',
       'Goals (1 / line)': 'Objectifs (1 / ligne)',
+      'Log sources (1 / line)': 'Sources de log (1 / ligne)',
       'Observable value': "Valeur de l'observable",
       'Observable type': "Type d'observable",
       'Observable types': "Types d'observable",
@@ -846,14 +876,19 @@ const i18n = {
       'Synthesis of knowledge': 'Synthèse de la connaissance',
       Statistics: 'Statistiques',
       Metrics: 'Métriques',
-      'Queued messages': 'Messages en attente',
+      'Queued bundles': 'Bundles en attente',
+      'Total number of documents': 'Nombre total de documents',
       'Connected workers': 'Workers connectés',
       'No work': 'Aucune exécution',
       'No task': 'Aucune tâche',
       'In progress messages': 'Messages en traitement',
-      'Messages processed': 'Messages traités',
+      'Bundles processed': 'Bundles traités',
       'Last processed message': 'Dernier message traité',
       'Total processed messages': 'Total de messages traités',
+      'Read operations': 'Opérations de lecture',
+      'Write operations': "Opérations d'écriture",
+      Write: 'Ecrire',
+      Preview: 'Aperçu',
       'Graph type': 'Type de graphique',
       'Table (top 10)': 'Tableau (top 10)',
       'Workers statistics': 'Statistiques des workers',
@@ -920,6 +955,7 @@ const i18n = {
       'No notes about this entity yet.':
         'Aucune note concernant cette entité pour le moment',
       'Notes about this entity': 'Notes à propos de cette entité',
+      'Notes about this relationship': 'Notes à propos de cette relation',
       'No history about this entity.':
         'Aucun historique à propos cette entité.',
       'No relations history about this entity.':
@@ -1129,6 +1165,7 @@ const i18n = {
       organization_partner: 'Partenaire',
       organization_vendor: 'Editeur',
       organization_other: 'Autre',
+      filter_container_type: "Type d'analyse",
       filter_sightedBy: 'Détecté par/dans',
       filter_entity_type: "Type d'entité",
       filter_pattern_type: "Type d'indicateur",
@@ -1175,6 +1212,10 @@ const i18n = {
       'tanium-signal': 'Tanium Signal',
       true: 'Oui',
       false: 'Non',
+      GRAPHQL_API: 'API GraphQL',
+      EXPIRATION_SCHEDULER: "Planificateur d'expiration",
+      TASK_MANAGER: 'Manager des tâches',
+      RULE_ENGINE: 'Moteur de règles',
     },
     en: {
       progress: 'In progress',
@@ -1350,6 +1391,7 @@ const i18n = {
       organization_partner: 'Partner',
       organization_vendor: 'Vendor',
       organization_other: 'Other',
+      filter_container_type: 'Type of analysis',
       filter_sightedBy: 'Sighted by/in',
       filter_entity_type: 'Entity type',
       filter_pattern_type: 'Indicator type',
@@ -1399,6 +1441,10 @@ const i18n = {
       'Processed time': 'Data sent',
       true: 'Yes',
       false: 'No',
+      GRAPHQL_API: 'GraphQL API',
+      EXPIRATION_SCHEDULER: 'Expiration scheduler',
+      TASK_MANAGER: 'Tasks manager',
+      RULE_ENGINE: 'Rules engine',
     },
   },
 };

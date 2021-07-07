@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { INDEX_MARKINGS_FIELD, OPENCTI_SYSTEM_UUID } from '../schema/general';
+import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 
 export const BYPASS = 'BYPASS';
 export const ROLE_ADMINISTRATOR = 'Administrator';
@@ -14,11 +14,12 @@ export const filterElementsAccordingToUser = (user, elements) => {
     return elements;
   }
   // If not filter by the inner markings
-  return elements.filter((e) => (e[INDEX_MARKINGS_FIELD] || []).every((m) => authorizedMarkings.includes(m)));
+  return elements.filter((e) => (e.object_marking_refs || []).every((m) => authorizedMarkings.includes(m)));
 };
 
 export const SYSTEM_USER = {
   id: OPENCTI_SYSTEM_UUID,
+  internal_id: OPENCTI_SYSTEM_UUID,
   name: 'SYSTEM',
   user_email: 'SYSTEM',
   origin: {},

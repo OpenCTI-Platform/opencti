@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
+  buildRefRelationKey,
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
   ENTITY_TYPE_LOCATION,
-  REL_INDEX_PREFIX,
   schemaTypes,
 } from './general';
 import {
@@ -14,6 +14,7 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
 } from './stixMetaRelationship';
+import { RELATION_INDICATES } from './stixCoreRelationship';
 
 export const ATTRIBUTE_ALIASES = 'aliases';
 export const ATTRIBUTE_ALIASES_OPENCTI = 'x_opencti_aliases';
@@ -124,13 +125,13 @@ export const resolveAliasesField = (type) => {
 
 export const stixDomainObjectOptions = {
   StixDomainObjectsFilter: {
-    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
-    objectContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
-    containedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
-    hasExternalReference: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id`,
-    indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
+    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
+    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
+    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    objectContains: buildRefRelationKey(RELATION_OBJECT),
+    containedBy: buildRefRelationKey(RELATION_OBJECT),
+    hasExternalReference: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
+    indicates: buildRefRelationKey(RELATION_INDICATES),
   },
 };
 
@@ -142,18 +143,43 @@ export const stixDomainObjectFieldsToBeUpdated = {
     'x_mitre_platforms',
     'x_mitre_permissions_required',
     'x_mitre_detection',
+    'confidence',
   ],
-  [ENTITY_TYPE_CAMPAIGN]: ['name', 'revoked', 'description', 'first_seen', 'last_seen'],
-  [ENTITY_TYPE_CONTAINER_NOTE]: ['content'],
-  [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: ['description'],
-  [ENTITY_TYPE_CONTAINER_OPINION]: ['opinion'],
-  [ENTITY_TYPE_CONTAINER_REPORT]: ['name', 'revoked', 'description'],
-  [ENTITY_TYPE_COURSE_OF_ACTION]: ['name', 'revoked', 'description'],
-  [ENTITY_TYPE_IDENTITY_INDIVIDUAL]: ['name', 'revoked', 'description'],
-  [ENTITY_TYPE_IDENTITY_ORGANIZATION]: ['name', 'revoked', 'description'],
-  [ENTITY_TYPE_IDENTITY_SECTOR]: ['name', 'revoked', 'description'],
-  [ENTITY_TYPE_INDICATOR]: ['name', 'revoked', 'description', 'valid_from', 'valid_until'],
-  [ENTITY_TYPE_INFRASTRUCTURE]: ['name', 'revoked', 'description'],
+  [ENTITY_TYPE_CAMPAIGN]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'confidence'],
+  [ENTITY_TYPE_CONTAINER_NOTE]: ['content', 'confidence'],
+  [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: ['description', 'confidence'],
+  [ENTITY_TYPE_CONTAINER_OPINION]: ['opinion', 'confidence'],
+  [ENTITY_TYPE_CONTAINER_REPORT]: [
+    'name',
+    'revoked',
+    'description',
+    'confidence',
+    'x_opencti_report_status',
+    'confidence',
+  ],
+  [ENTITY_TYPE_COURSE_OF_ACTION]: [
+    'name',
+    'revoked',
+    'description',
+    'x_opencti_threat_hunting',
+    'x_opencti_log_sources',
+    'confidence',
+  ],
+  [ENTITY_TYPE_IDENTITY_INDIVIDUAL]: ['name', 'revoked', 'description', 'confidence'],
+  [ENTITY_TYPE_IDENTITY_ORGANIZATION]: ['name', 'revoked', 'description', 'confidence'],
+  [ENTITY_TYPE_IDENTITY_SECTOR]: ['name', 'revoked', 'description', 'confidence'],
+  [ENTITY_TYPE_INDICATOR]: [
+    'name',
+    'revoked',
+    'description',
+    'valid_from',
+    'valid_until',
+    'confidence',
+    'x_opencti_score',
+    'x_opencti_detection',
+    'indicator_types',
+  ],
+  [ENTITY_TYPE_INFRASTRUCTURE]: ['name', 'revoked', 'description', 'confidence'],
   [ENTITY_TYPE_INTRUSION_SET]: [
     'name',
     'revoked',
@@ -164,12 +190,13 @@ export const stixDomainObjectFieldsToBeUpdated = {
     'resource_level',
     'primary_motivation',
     'secondary_motivations',
+    'confidence',
   ],
-  [ENTITY_TYPE_LOCATION_CITY]: ['name', 'revoked', 'description', 'latitude', 'longitude'],
-  [ENTITY_TYPE_LOCATION_COUNTRY]: ['name', 'revoked', 'description', 'latitude', 'longitude'],
-  [ENTITY_TYPE_LOCATION_REGION]: ['name', 'revoked', 'description', 'latitude', 'longitude'],
-  [ENTITY_TYPE_LOCATION_POSITION]: ['name', 'revoked', 'description', 'latitude', 'longitude'],
-  [ENTITY_TYPE_MALWARE]: ['name', 'revoked', 'description', 'is_family', 'malware_types'],
+  [ENTITY_TYPE_LOCATION_CITY]: ['name', 'revoked', 'description', 'latitude', 'longitude', 'confidence'],
+  [ENTITY_TYPE_LOCATION_COUNTRY]: ['name', 'revoked', 'description', 'latitude', 'longitude', 'confidence'],
+  [ENTITY_TYPE_LOCATION_REGION]: ['name', 'revoked', 'description', 'latitude', 'longitude', 'confidence'],
+  [ENTITY_TYPE_LOCATION_POSITION]: ['name', 'revoked', 'description', 'latitude', 'longitude', 'confidence'],
+  [ENTITY_TYPE_MALWARE]: ['name', 'revoked', 'description', 'is_family', 'malware_types', 'confidence'],
   [ENTITY_TYPE_THREAT_ACTOR]: [
     'name',
     'revoked',
@@ -180,8 +207,9 @@ export const stixDomainObjectFieldsToBeUpdated = {
     'resource_level',
     'primary_motivation',
     'secondary_motivations',
+    'confidence',
   ],
-  [ENTITY_TYPE_TOOL]: ['name', 'revoked', 'description'],
+  [ENTITY_TYPE_TOOL]: ['name', 'revoked', 'description', 'confidence'],
   [ENTITY_TYPE_VULNERABILITY]: [
     'name',
     'revoked',
@@ -192,8 +220,9 @@ export const stixDomainObjectFieldsToBeUpdated = {
     'x_opencti_integrity_impact',
     'x_opencti_availability_impact',
     'x_opencti_confidentiality_impact',
+    'confidence',
   ],
-  [ENTITY_TYPE_INCIDENT]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'objective'],
+  [ENTITY_TYPE_INCIDENT]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'objective', 'confidence'],
 };
 
 export const stixDomainObjectsAttributes = {
@@ -364,6 +393,8 @@ export const stixDomainObjectsAttributes = {
     'x_opencti_aliases',
     'i_aliases_ids',
     'x_mitre_id',
+    'x_opencti_threat_hunting',
+    'x_opencti_log_sources',
     'x_opencti_graph_data',
   ],
   [ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [

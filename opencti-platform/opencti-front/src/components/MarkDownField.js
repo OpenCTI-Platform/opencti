@@ -4,6 +4,7 @@ import { useField } from 'formik';
 import * as Showdown from 'showdown';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
+import inject18n from './i18n';
 
 const converter = new Showdown.Converter({
   tables: true,
@@ -20,28 +21,34 @@ const MarkDownField = (props) => {
     onSubmit,
     label,
     style,
+    t,
   } = props;
   const [selectedTab, setSelectedTab] = React.useState('write');
   const [field, meta] = useField(name);
-  const internalOnFocus = React.useCallback(() => {
-    if (typeof onFocus === 'function') {
-      onFocus(name);
+  const internalOnFocus = (event) => {
+    const { nodeName } = event.relatedTarget || {};
+    if (nodeName === 'INPUT' || nodeName === undefined) {
+      if (typeof onFocus === 'function') {
+        onFocus(name);
+      }
     }
-  }, [onFocus, name]);
-  const internalOnBlur = React.useCallback(
-    (event) => {
-      const { value } = event.target;
+  };
+  const internalOnBlur = (event) => {
+    const { nodeName } = event.relatedTarget || {};
+    const { value } = event.target;
+    if (nodeName === 'INPUT' || nodeName === undefined) {
       setTouched(true);
       if (typeof onSubmit === 'function') {
         onSubmit(name, value || '');
       }
-    },
-    [onSubmit, setTouched, name],
-  );
+    }
+  };
   return (
     <div
       style={style}
       className={meta.touched && meta.error ? 'error' : 'main'}
+      onBlur={internalOnBlur}
+      onFocus={internalOnFocus}
     >
       <InputLabel style={{ fontSize: 10, marginBottom: 10 }}>
         {label}
@@ -53,20 +60,18 @@ const MarkDownField = (props) => {
         onTabChange={setSelectedTab}
         generateMarkdownPreview={(markdown) => Promise.resolve(converter.makeHtml(markdown))
         }
-        childProps={{
-          textArea: {
-            onBlur: internalOnBlur,
-            onFocus: internalOnFocus,
-          },
+        l18n={{
+          write: t('Write'),
+          preview: t('Preview'),
+          uploadingImage: t('Uploading image'),
+          pasteDropSelect: t('Paste'),
         }}
       />
-      {meta.touched ? (
+      {meta.touched && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
-      ) : (
-        ''
       )}
     </div>
   );
 };
 
-export default MarkDownField;
+export default inject18n(MarkDownField);

@@ -1,4 +1,4 @@
-import { REL_INDEX_PREFIX } from '../schema/general';
+import { buildRefRelationKey } from '../schema/general';
 import {
   RELATION_CREATED_BY,
   RELATION_OBJECT,
@@ -9,11 +9,11 @@ import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 
 // eslint-disable-next-line import/prefer-default-export
 export const GlobalFilters = {
-  createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-  markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-  labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
-  indicates: `${REL_INDEX_PREFIX}${RELATION_INDICATES}.internal_id`,
-  containedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
+  createdBy: buildRefRelationKey(RELATION_CREATED_BY),
+  markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
+  labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+  indicates: buildRefRelationKey(RELATION_INDICATES),
+  containedBy: buildRefRelationKey(RELATION_OBJECT),
 };
 
 export const TYPE_FILTER = 'entity_type';

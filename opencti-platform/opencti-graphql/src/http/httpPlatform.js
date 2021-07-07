@@ -12,16 +12,16 @@ import nconf from 'nconf';
 import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
-import { basePath, DEV_MODE, logApp, logAudit } from './config/conf';
-import passport, { empty, isStrategyActivated, STRATEGY_CERT } from './config/providers';
-import { authenticateUser, loginFromProvider, userWithOrigin } from './domain/user';
-import { downloadFile, loadFile } from './database/minio';
-import { checkSystemDependencies } from './initialization';
-import { getSettings } from './domain/settings';
-import createSeeMiddleware from './graphql/sseMiddleware';
-import initTaxiiApi from './taxiiApi';
-import { initializeSession } from './database/session';
-import { LOGIN_ACTION } from './config/audit';
+import { basePath, DEV_MODE, logApp, logAudit } from '../config/conf';
+import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
+import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
+import { downloadFile, loadFile } from '../database/minio';
+import { checkSystemDependencies } from '../initialization';
+import { getSettings } from '../domain/settings';
+import createSeeMiddleware from '../graphql/sseMiddleware';
+import initTaxiiApi from './httpTaxii';
+import { initializeSession } from '../database/session';
+import { LOGIN_ACTION } from '../config/audit';
 
 const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 
@@ -74,12 +74,12 @@ const createApp = async (apolloServer) => {
   // -- Generated CSS with correct base path
   app.get(`${basePath}/static/css/*`, (req, res) => {
     const cssFileName = R.last(req.url.split('/'));
-    const data = readFileSync(path.join(__dirname, `../public/static/css/${sanitize(cssFileName)}`), 'utf8');
+    const data = readFileSync(path.join(__dirname, `../../public/static/css/${sanitize(cssFileName)}`), 'utf8');
     const withBasePath = data.replace(/%BASE_PATH%/g, basePath);
     res.header('Content-Type', 'text/css');
     res.send(withBasePath);
   });
-  app.use(`${basePath}/static`, express.static(path.join(__dirname, '../public/static')));
+  app.use(`${basePath}/static`, express.static(path.join(__dirname, '../../public/static')));
 
   app.use(appSessionHandler.session);
   // app.use(refreshSessionMiddleware);
@@ -95,13 +95,14 @@ const createApp = async (apolloServer) => {
   // -- File download
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res, next) => {
     try {
-      const auth = await authenticateUser(req);
+      const auth = await authenticateUserFromRequest(req);
       if (!auth) res.sendStatus(403);
       const { file } = req.params;
       const stream = await downloadFile(file);
       res.attachment(file);
       stream.pipe(res);
     } catch (e) {
+      setCookieError(res, e?.message);
       next(e);
     }
   });
@@ -109,7 +110,7 @@ const createApp = async (apolloServer) => {
   // -- File view
   app.get(`${basePath}/storage/view/:file(*)`, async (req, res, next) => {
     try {
-      const auth = await authenticateUser(req);
+      const auth = await authenticateUserFromRequest(req);
       if (!auth) res.sendStatus(403);
       const { file } = req.params;
       const data = await loadFile(auth, file);
@@ -118,6 +119,7 @@ const createApp = async (apolloServer) => {
       const stream = await downloadFile(file);
       stream.pipe(res);
     } catch (e) {
+      setCookieError(res, e?.message);
       next(e);
     }
   });
@@ -137,9 +139,10 @@ const createApp = async (apolloServer) => {
             setCookieError(res, 'Client certificate need a correct emailAddress');
             res.redirect(req.headers.referer);
           } else {
-            loginFromProvider(emailAddress, empty(CN) ? emailAddress : CN)
-              .then(async ({ token }) => {
-                await authenticateUser(req, { providerToken: token.uuid, provider: 'cert' });
+            const userInfo = { email: emailAddress, name: empty(CN) ? emailAddress : CN };
+            loginFromProvider(userInfo)
+              .then(async (user) => {
+                await authenticateUser(req, user, 'cert');
                 res.redirect(req.headers.referer);
               })
               .catch((err) => {
@@ -153,38 +156,52 @@ const createApp = async (apolloServer) => {
         }
       }
     } catch (e) {
+      setCookieError(res, e?.message);
       next(e);
     }
   });
 
   // -- Passport login
   app.get(`${basePath}/auth/:provider`, (req, res, next) => {
-    const { provider } = req.params;
-    req.session.referer = req.headers.referer;
-    passport.authenticate(provider, {}, () => {})(req, res, next);
+    try {
+      const { provider } = req.params;
+      req.session.referer = req.headers.referer;
+      passport.authenticate(provider, {}, (err) => {
+        setCookieError(res, err?.message);
+        next(err);
+      })(req, res, next);
+    } catch (e) {
+      setCookieError(res, e?.message);
+      next(e);
+    }
   });
 
   // -- Passport callback
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
-  app.get(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), (req, res, next) => {
-    const { provider } = req.params;
-    const { referer } = req.session;
-    passport.authenticate(provider, {}, async (err, token) => {
-      if (err || !token) {
-        logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
-        setCookieError(res, err?.message);
+  app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), (req, res, next) => {
+    try {
+      const { provider } = req.params;
+      const { referer } = req.session;
+      passport.authenticate(provider, {}, async (err, user) => {
+        if (err || !user) {
+          logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
+          setCookieError(res, err?.message);
+          return res.redirect(referer);
+        }
+        // noinspection UnnecessaryLocalVariableJS
+        await authenticateUser(req, user, provider);
+        req.session.referer = null;
         return res.redirect(referer);
-      }
-      // noinspection UnnecessaryLocalVariableJS
-      await authenticateUser(req, { providerToken: token.uuid, provider });
-      req.session.referer = null;
-      return res.redirect(referer);
-    })(req, res, next);
+      })(req, res, next);
+    } catch (e) {
+      setCookieError(res, e?.message);
+      next(e);
+    }
   });
 
   // Other routes - Render index.html
   app.get('*', (req, res) => {
-    const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
+    const data = readFileSync(`${__dirname}/../../public/index.html`, 'utf8');
     const withOptionValued = data.replace(/%BASE_PATH%/g, basePath);
     res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
     res.header('Expires', '-1');

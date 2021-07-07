@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import conf, { basePath, logApp } from '../config/conf';
-import { authenticateUser, STREAMAPI } from '../domain/user';
+import { authenticateUserFromRequest, STREAMAPI } from '../domain/user';
 import { createStreamProcessor } from '../database/redis';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { generateInternalId } from '../schema/identifier';
@@ -311,6 +311,45 @@ export const rebuildInstanceBeforePatch = (stixWithInternalRefs, patch) => {
   }
   return rebuild;
 };
+export const rebuildInstanceWithPatch = (instance, patch) => {
+  const rebuild = R.clone(instance);
+  const patchEntries = Object.entries(patch);
+  for (let index = 0; index < patchEntries.length; index += 1) {
+    const [type, actionPatch] = patchEntries[index];
+    const elementEntries = Object.entries(actionPatch);
+    for (let elemIndex = 0; elemIndex < elementEntries.length; elemIndex += 1) {
+      const [key, changes] = elementEntries[elemIndex];
+      if (type === UPDATE_OPERATION_REPLACE) {
+        const { current } = changes;
+        rebuild[key] = current;
+      }
+      if (type === UPDATE_OPERATION_ADD) {
+        const ops = rebuild[key] || [];
+        ops.push(...changes.map((c) => c.value));
+        rebuild[key] = key.endsWith('_ref') ? R.head(ops) : ops;
+      }
+      if (type === UPDATE_OPERATION_REMOVE) {
+        const ids = changes.map((c) => c.value);
+        const elements = (instance[key] || []).filter((e) => !ids.includes(e.value));
+        rebuild[key] = key.endsWith('_ref') ? null : elements;
+      }
+    }
+  }
+  return rebuild;
+};
+export const extractFieldsOfPatch = (patch) => {
+  const fields = [];
+  const patchEntries = Object.entries(patch);
+  for (let index = 0; index < patchEntries.length; index += 1) {
+    const [, actionPatch] = patchEntries[index];
+    const elementEntries = Object.entries(actionPatch);
+    for (let elemIndex = 0; elemIndex < elementEntries.length; elemIndex += 1) {
+      const [key] = elementEntries[elemIndex];
+      fields.push(key);
+    }
+  }
+  return R.uniq(fields);
+};
 
 const isEventGranted = (event, user) => {
   const { data } = event;
@@ -319,9 +358,10 @@ const isEventGranted = (event, user) => {
   // - Event has no specified markings
   // - User have all event markings
   // - User have the bypass capabilities
-  const clientMarkings = R.map((m) => m.standard_id, user.allowed_marking);
+  const clientMarkings = R.flatten(R.map((m) => [m.standard_id, m.internal_id], user.allowed_marking));
   const isMarkingObject = data.type === ENTITY_TYPE_MARKING_DEFINITION.toLowerCase();
-  const isUserHaveAccess = event.markings.length === 0 || event.markings.every((m) => clientMarkings.includes(m));
+  const isUserHaveAccess =
+    (event.markings || []).length === 0 || event.markings.every((m) => clientMarkings.includes(m));
   const isBypass = isBypassUser(user);
   const isGrantedForData = isMarkingObject || isUserHaveAccess;
   return isBypass || isGrantedForData;
@@ -364,7 +404,7 @@ const createHeartbeatProcessor = () => {
 };
 
 const authenticate = async (req, res, next) => {
-  const auth = await authenticateUser(req);
+  const auth = await authenticateUserFromRequest(req);
   const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;
   const isUserGranted = auth && R.find(capabilityControl, auth.capabilities || []) !== undefined;
   if (isUserGranted) {
@@ -438,7 +478,7 @@ const createSeeMiddleware = () => {
   };
   const genericStreamHandler = async (req, res) => {
     const { client } = createSseChannel(req, res);
-    const processor = createStreamProcessor(req.session.user, async (elements) => {
+    const processor = createStreamProcessor(req.session.user, req.session.user.user_email, async (elements) => {
       for (let index = 0; index < elements.length; index += 1) {
         const { id: eventId, topic, data } = elements[index];
         client.sendEvent(eventId, topic, data);
@@ -509,6 +549,7 @@ const createSeeMiddleware = () => {
     const compactDepth = conf.get('redis:live_depth_compact');
     const processor = createStreamProcessor(
       req.session.user,
+      req.session.user.user_email,
       async (elements) => {
         // We need to build all elements that have change during the last call
         const processingMessages = buildProcessingMessages(streamFilters, req.session.user, elements);
@@ -586,7 +627,6 @@ const createSeeMiddleware = () => {
           }
           return channel.connected();
         };
-        queryOptions.minSource = true;
         queryOptions.callback = callback;
         await elList(req.session.user, READ_DATA_INDICES, queryOptions);
         // We need to sent a special event to mark the end of init with the current timestamp

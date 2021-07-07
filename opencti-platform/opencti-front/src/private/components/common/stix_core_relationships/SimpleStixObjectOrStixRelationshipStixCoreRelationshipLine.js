@@ -10,8 +10,10 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVertOutlined } from '@material-ui/icons';
-import { VectorRadius } from 'mdi-material-ui';
+import { AutoFix, VectorRadius } from 'mdi-material-ui';
 import Skeleton from '@material-ui/lab/Skeleton';
+import Tooltip from '@material-ui/core/Tooltip';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
@@ -117,11 +119,25 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
           }
         />
         <ListItemSecondaryAction>
-          <StixCoreRelationshipPopover
-            stixCoreRelationshipId={node.id}
-            paginationOptions={paginationOptions}
-            connectionKey={connectionKey}
-          />
+          {node.is_inferred ? (
+            <Tooltip
+              title={
+                t('Inferred knowledge based on the rule ')
+                + R.head(node.x_opencti_inferences).rule.name
+              }
+            >
+              <AutoFix
+                fontSize="small"
+                style={{ marginLeft: -30 }}
+              />
+            </Tooltip>
+          ) : (
+            <StixCoreRelationshipPopover
+              stixCoreRelationshipId={node.id}
+              paginationOptions={paginationOptions}
+              connectionKey={connectionKey}
+            />
+          )}
         </ListItemSecondaryAction>
       </ListItem>
     );
@@ -153,6 +169,13 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
           start_time
           stop_time
           description
+          is_inferred
+          x_opencti_inferences {
+            rule {
+              id
+              name
+            }
+          }
           from {
             ... on StixDomainObject {
               id

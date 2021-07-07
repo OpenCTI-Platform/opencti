@@ -64,7 +64,16 @@ import {
 } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservableRelationship, RELATION_LINKED } from '../schema/stixCyberObservableRelationship';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
+import {
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  INPUT_CREATED_BY,
+  INPUT_EXTERNAL_REFS,
+  INPUT_KILLCHAIN,
+  INPUT_LABELS,
+  INPUT_MARKINGS,
+  INPUT_OBJECTS,
+  REL_INDEX_PREFIX,
+} from '../schema/general';
 import { isEmptyField } from './utils';
 import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 
@@ -117,11 +126,27 @@ export const stixDataConverter = (data, args = {}) => {
   const { patchGeneration = false } = args;
   let finalData = data;
   // Relationships
+  if (isDefinedValue(finalData.fromId)) {
+    finalData = R.pipe(
+      R.dissoc('fromId'),
+      R.dissoc('fromRole'),
+      R.dissoc('fromType'),
+      R.assoc('x_opencti_source_ref', data.fromId)
+    )(finalData);
+  }
   if (isDefinedValue(finalData.from)) {
     finalData = R.pipe(
       R.dissoc('from'),
       R.assoc('source_ref', data.from.standard_id),
       R.assoc('x_opencti_source_ref', data.from.internal_id)
+    )(finalData);
+  }
+  if (isDefinedValue(finalData.toId)) {
+    finalData = R.pipe(
+      R.dissoc('toId'),
+      R.dissoc('toRole'),
+      R.dissoc('toType'),
+      R.assoc('x_opencti_target_ref', data.toId)
     )(finalData);
   }
   if (isDefinedValue(finalData.to)) {
@@ -138,15 +163,15 @@ export const stixDataConverter = (data, args = {}) => {
     finalData = R.dissoc('stix_id', finalData);
   }
   // Inner relations
-  if (isDefinedValue(finalData.object)) {
-    const objectSet = Array.isArray(finalData.object) ? finalData.object : [finalData.object];
+  if (isDefinedValue(finalData.objects)) {
+    const objectSet = Array.isArray(finalData.objects) ? finalData.objects : [finalData.objects];
     const objects = R.map(
       (m) => (patchGeneration ? { value: m.standard_id, x_opencti_internal_id: m.internal_id } : m.standard_id),
       objectSet
     );
-    finalData = R.pipe(R.dissoc('object'), R.assoc('object_refs', objects))(finalData);
+    finalData = R.pipe(R.dissoc(INPUT_OBJECTS), R.assoc('object_refs', objects))(finalData);
   } else {
-    finalData = R.dissoc('object', finalData);
+    finalData = R.dissoc(INPUT_OBJECTS, finalData);
   }
   if (isDefinedValue(finalData.objectMarking)) {
     const markingSet = Array.isArray(finalData.objectMarking) ? finalData.objectMarking : [finalData.objectMarking];
@@ -154,18 +179,18 @@ export const stixDataConverter = (data, args = {}) => {
       (m) => (patchGeneration ? { value: m.standard_id, x_opencti_internal_id: m.internal_id } : m.standard_id),
       markingSet
     );
-    finalData = R.pipe(R.dissoc('objectMarking'), R.assoc('object_marking_refs', markings))(finalData);
+    finalData = R.pipe(R.dissoc(INPUT_MARKINGS), R.assoc('object_marking_refs', markings))(finalData);
   } else {
-    finalData = R.dissoc('objectMarking', finalData);
+    finalData = R.dissoc(INPUT_MARKINGS, finalData);
   }
   if (isDefinedValue(finalData.createdBy)) {
     const creator = Array.isArray(finalData.createdBy) ? R.head(finalData.createdBy) : finalData.createdBy;
     const created = patchGeneration
       ? [{ value: creator.standard_id, x_opencti_internal_id: creator.internal_id }]
       : creator.standard_id;
-    finalData = R.pipe(R.dissoc('createdBy'), R.assoc('created_by_ref', created))(finalData);
+    finalData = R.pipe(R.dissoc(INPUT_CREATED_BY), R.assoc('created_by_ref', created))(finalData);
   } else {
-    finalData = R.dissoc('createdBy', finalData);
+    finalData = R.dissoc(INPUT_CREATED_BY, finalData);
   }
   // Embedded relations
   if (isDefinedValue(finalData.objectLabel)) {
@@ -174,9 +199,9 @@ export const stixDataConverter = (data, args = {}) => {
       (m) => (patchGeneration ? { value: m.value, x_opencti_internal_id: m.internal_id } : m.value),
       labelSet
     );
-    finalData = R.pipe(R.dissoc('objectLabel'), R.assoc('labels', labels))(finalData);
+    finalData = R.pipe(R.dissoc(INPUT_LABELS), R.assoc('labels', labels))(finalData);
   } else {
-    finalData = R.dissoc('objectLabel', finalData);
+    finalData = R.dissoc(INPUT_LABELS, finalData);
   }
   if (isDefinedValue(finalData.killChainPhases)) {
     const killSet = Array.isArray(finalData.killChainPhases) ? finalData.killChainPhases : [finalData.killChainPhases];
@@ -187,9 +212,9 @@ export const stixDataConverter = (data, args = {}) => {
           : R.pick(['kill_chain_name', 'phase_name'], k),
       killSet
     );
-    finalData = R.pipe(R.dissoc('killChainPhases'), R.assoc('kill_chain_phases', kills))(finalData);
+    finalData = R.pipe(R.dissoc(INPUT_KILLCHAIN), R.assoc('kill_chain_phases', kills))(finalData);
   } else {
-    finalData = R.dissoc('killChainPhases', finalData);
+    finalData = R.dissoc(INPUT_KILLCHAIN, finalData);
   }
   if (isDefinedValue(finalData.externalReferences)) {
     const externalSet = Array.isArray(finalData.externalReferences)
@@ -205,9 +230,9 @@ export const stixDataConverter = (data, args = {}) => {
           : R.pick(['source_name', 'description', 'url', 'hashes', 'external_id'], e),
       externalSet
     );
-    finalData = R.pipe(R.dissoc('externalReferences'), R.assoc('external_references', externals))(finalData);
+    finalData = R.pipe(R.dissoc(INPUT_EXTERNAL_REFS), R.assoc('external_references', externals))(finalData);
   } else {
-    finalData = R.dissoc('externalReferences', finalData);
+    finalData = R.dissoc(INPUT_EXTERNAL_REFS, finalData);
   }
   // StixID V1 are transient and so not in data output
   if (isDefinedValue(finalData.x_opencti_stix_ids)) {
@@ -223,7 +248,8 @@ export const stixDataConverter = (data, args = {}) => {
   for (let index = 0; index < entries.length; index += 1) {
     const [key, val] = entries[index];
     const isNullVal = Array.isArray(val) ? val.length === 0 : isEmptyField(val);
-    if (key.startsWith('i_') || isStixRelationShipExceptMeta(key) || key === 'x_opencti_graph_data' || isNullVal) {
+    const isInternalKey = key.startsWith('i_') || key.startsWith(REL_INDEX_PREFIX);
+    if (isInternalKey || isStixRelationShipExceptMeta(key) || key === 'x_opencti_graph_data' || isNullVal) {
       // Internal opencti attributes.
     } else if (key.startsWith('attribute_')) {
       // Stix but reserved keywords
@@ -264,13 +290,6 @@ export const buildStixData = (data, args = {}) => {
     R.dissoc('base_type'),
     R.dissoc('entity_type'),
     R.dissoc('update'),
-    // Relations
-    R.dissoc('fromId'),
-    R.dissoc('fromRole'),
-    R.dissoc('fromType'),
-    R.dissoc('toId'),
-    R.dissoc('toRole'),
-    R.dissoc('toType'),
     R.dissoc('connections')
   )(data);
   const stixData = stixDataConverter(rawData, args);
@@ -477,6 +496,7 @@ export const stixCoreRelationshipsMapping = {
   'Threat-Actor_Position': ['located-at', 'targets'],
   'Threat-Actor_Attack-Pattern': ['uses'],
   'Threat-Actor_Malware': ['uses'],
+  'Threat-Actor_Threat-Actor': ['part-of'],
   'Threat-Actor_Tool': ['uses'],
   'Threat-Actor_Vulnerability': ['targets'],
   'Tool_Attack-Pattern': ['uses', 'drops', 'delivers'],
@@ -507,6 +527,7 @@ export const stixCoreRelationshipsMapping = {
   Region_Region: ['located-at'],
   Country_Region: ['located-at'],
   City_Country: ['located-at'],
+  City_Region: ['located-at'],
   Position_City: ['located-at'],
   'IPv4-Addr_Region': ['located-at'],
   'IPv4-Addr_Country': ['located-at'],

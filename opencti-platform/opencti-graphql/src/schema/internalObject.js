@@ -4,9 +4,9 @@ import { ABSTRACT_INTERNAL_OBJECT, schemaTypes } from './general';
 export const ENTITY_TYPE_SETTINGS = 'Settings';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
 export const ENTITY_TYPE_MIGRATION_REFERENCE = 'MigrationReference';
-export const ENTITY_TYPE_TOKEN = 'Token';
 export const ENTITY_TYPE_GROUP = 'Group';
 export const ENTITY_TYPE_USER = 'User';
+export const ENTITY_TYPE_RULE = 'Rule';
 export const ENTITY_TYPE_ROLE = 'Role';
 export const ENTITY_TYPE_CAPABILITY = 'Capability';
 export const ENTITY_TYPE_CONNECTOR = 'Connector';
@@ -18,7 +18,6 @@ export const ENTITY_TYPE_TAXII_COLLECTION = 'TaxiiCollection';
 export const ENTITY_TYPE_STREAM_COLLECTION = 'StreamCollection';
 const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
-  ENTITY_TYPE_TOKEN,
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_USER,
   ENTITY_TYPE_ROLE,
@@ -33,10 +32,10 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_TASK,
   ENTITY_TYPE_MIGRATION_STATUS,
   ENTITY_TYPE_MIGRATION_REFERENCE,
-  ENTITY_TYPE_TOKEN,
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_USER,
   ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_RULE,
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_ATTRIBUTE,
@@ -71,23 +70,8 @@ export const internalObjectsAttributes = {
     'i_created_at_year',
     'updated_at',
   ],
-  [ENTITY_TYPE_MIGRATION_STATUS]: ['internal_id', 'standard_id', 'entity_type', 'lastRun'],
+  [ENTITY_TYPE_MIGRATION_STATUS]: ['internal_id', 'standard_id', 'entity_type', 'lastRun', 'platformVersion'],
   [ENTITY_TYPE_MIGRATION_REFERENCE]: ['internal_id', 'standard_id', 'entity_type', 'title', 'timestamp'],
-  [ENTITY_TYPE_TOKEN]: [
-    'internal_id',
-    'standard_id',
-    'entity_type',
-    'uuid',
-    'name',
-    'duration',
-    'issuer',
-    'revoked',
-    'created_at',
-    'i_created_at_day',
-    'i_created_at_month',
-    'i_created_at_year',
-    'updated_at',
-  ],
   [ENTITY_TYPE_GROUP]: [
     'internal_id',
     'standard_id',
@@ -121,6 +105,7 @@ export const internalObjectsAttributes = {
     'i_created_at_month',
     'i_created_at_year',
     'updated_at',
+    'api_token',
   ],
   [ENTITY_TYPE_ROLE]: [
     'internal_id',
@@ -135,6 +120,7 @@ export const internalObjectsAttributes = {
     'i_created_at_year',
     'updated_at',
   ],
+  [ENTITY_TYPE_RULE]: ['internal_id', 'standard_id', 'entity_type', 'active'],
   [ENTITY_TYPE_CAPABILITY]: [
     'internal_id',
     'standard_id',
@@ -197,4 +183,9 @@ export const internalObjectsAttributes = {
     'completed',
   ],
 };
+
+export const internalObjectsFieldsToBeUpdated = {
+  [ENTITY_TYPE_RULE]: ['active'],
+};
+
 R.forEachObjIndexed((value, key) => schemaTypes.registerAttributes(key, value), internalObjectsAttributes);

@@ -5,7 +5,7 @@ import { notify } from '../database/redis';
 import { find as findAttribute, addAttribute } from './attribute';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, REL_INDEX_PREFIX } from '../schema/general';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 
@@ -27,7 +27,7 @@ export const reportContainsStixObjectOrStixRelationship = async (user, reportId,
   const args = {
     filters: [
       { key: 'internal_id', values: [reportId] },
-      { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`, values: [thingId] },
+      { key: buildRefRelationKey(RELATION_OBJECT), values: [thingId] },
     ],
   };
   const reportFound = await findAll(user, args);

@@ -13,6 +13,7 @@ import {
   pick,
   difference,
   head,
+  split,
 } from 'ramda';
 import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
@@ -110,6 +111,8 @@ const courseOfActionValidation = (t) => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
+  x_opencti_threat_hunting: Yup.string(),
+  x_opencti_log_sources: Yup.string(),
 });
 
 class CourseOfActionEditionOverviewComponent extends Component {
@@ -126,6 +129,10 @@ class CourseOfActionEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
+    let finalValue = value;
+    if (name === 'x_opencti_log_sources') {
+      finalValue = split('\n', value);
+    }
     courseOfActionValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -133,7 +140,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
           mutation: courseOfActionMutationFieldPatch,
           variables: {
             id: this.props.courseOfAction.id,
-            input: { key: name, value },
+            input: { key: name, value: finalValue },
           },
         });
       })
@@ -242,6 +249,8 @@ class CourseOfActionEditionOverviewComponent extends Component {
       pick([
         'name',
         'description',
+        'x_opencti_threat_hunting',
+        'x_opencti_log_sources',
         'createdBy',
         'killChainPhases',
         'objectMarking',
@@ -279,6 +288,40 @@ class CourseOfActionEditionOverviewComponent extends Component {
               onSubmit={this.handleSubmitField.bind(this)}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
+              }
+            />
+            <Field
+              component={MarkDownField}
+              name="x_opencti_threat_hunting"
+              label={t('Threat hunting techniques')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_threat_hunting"
+                />
+              }
+            />
+            <Field
+              component={TextField}
+              name="x_opencti_log_sources"
+              label={t('Log sources (1 / line)')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_log_sources"
+                />
               }
             />
             <CreatedByField
@@ -324,6 +367,8 @@ const CourseOfActionEditionOverview = createFragmentContainer(
         id
         name
         description
+        x_opencti_threat_hunting
+        x_opencti_log_sources
         createdBy {
           ... on Identity {
             id

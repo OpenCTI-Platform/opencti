@@ -1,6 +1,7 @@
 {
   "app": {
     "port": 4000,
+    "enabled": true,
     "https_cert": {
       "ca": [],
       "key": null,
@@ -44,11 +45,17 @@
       "token": "ChangeMe"
     }
   },
+  "rule_engine": {
+    "enabled": false,
+    "lock_key": "rule_engine_lock"
+  },
   "task_scheduler": {
+    "enabled": true,
     "lock_key": "task_manager_lock",
     "interval": 10000
   },
   "expiration_scheduler": {
+    "enabled": true,
     "lock_key": "expired_manager_lock",
     "interval": 300000
   },
@@ -58,7 +65,8 @@
     "ca": [],
     "port": 6379,
     "trimming": 0,
-    "live_depth_compact": 5000
+    "live_depth_compact": 5000,
+    "use_as_cache": true
   },
   "elasticsearch": {
     "url": "http://localhost:9200",

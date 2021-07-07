@@ -20,8 +20,7 @@ import {
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
-import { createWork, workToExportFile } from './work';
-import { pushToConnector } from '../database/rabbitmq';
+import { workToExportFile } from './work';
 import { addIndicator } from './indicator';
 import { askEnrich } from './enrichment';
 import { FunctionalError } from '../config/errors';
@@ -48,7 +47,6 @@ import {
 } from '../schema/stixCyberObservable';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { apiAttributeToComplexFormat } from '../schema/fieldDataAdapter';
@@ -94,9 +92,11 @@ export const batchIndicators = (user, stixCyberObservableIds) => {
   return batchListThroughGetFrom(user, stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
 };
 
+const hashes = ['SHA-256', 'SHA-1', 'MD5'];
 export const hashValue = (stixCyberObservable) => {
   if (stixCyberObservable.hashes) {
-    for (const algo of ['SHA-256', 'SHA-1', 'MD5']) {
+    for (let index = 0; index < hashes.length; index += 1) {
+      const algo = hashes[index];
       if (stixCyberObservable.hashes[algo]) {
         return stixCyberObservable.hashes[algo];
       }
@@ -157,6 +157,12 @@ const createIndicatorFromObservable = async (user, input, observable) => {
     }
     if (observable.pid) {
       key = `${entityType}_pid`;
+    }
+    if (observable.subject) {
+      key = `${entityType}_subject`;
+    }
+    if (observable.body) {
+      key = `${entityType}_body`;
     }
     const indicatorName = observableValue(observable);
     if (key.includes('StixFile')) {

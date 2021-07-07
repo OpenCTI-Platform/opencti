@@ -33,7 +33,7 @@ If you want to know more on OpenCTI, you can read the [documentation on the tool
 
 ## Releases download
 
-The releases are available on the [Github releases page](https://github.com/OpenCTI-Platform/opencti/releases). You can also access the [rolling release package](https://releases.opencti.io) generated from the mater branch of the repository.
+The releases are available on the [Github releases page](https://github.com/OpenCTI-Platform/opencti/releases). You can also access the [rolling release package](https://releases.opencti.io) generated from the master branch of the repository.
 
 ## Installation
 

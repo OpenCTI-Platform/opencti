@@ -140,7 +140,7 @@ class ContainerStixCyberObservablesComponent extends Component {
       observable_value: {
         label: 'Value',
         width: '40%',
-        isSortable: true,
+        isSortable: false,
       },
       createdBy: {
         label: 'Creator',

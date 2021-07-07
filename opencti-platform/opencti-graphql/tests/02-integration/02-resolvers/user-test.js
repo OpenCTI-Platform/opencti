@@ -1,7 +1,6 @@
 import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
-import { authenticateUser } from '../../../src/domain/user';
-import { elLoadByIds } from '../../../src/database/elasticSearch';
+import { elLoadById } from '../../../src/database/elasticSearch';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_ROLE } from '../../../src/schema/internalObject';
 
@@ -61,7 +60,7 @@ const READ_QUERY = gql`
         name
         description
       }
-      token
+      api_token
     }
   }
 `;
@@ -69,7 +68,6 @@ const READ_QUERY = gql`
 describe('User resolver standard behavior', () => {
   let userInternalId;
   let groupInternalId;
-  let userToken;
   let userStandardId;
   it('should user created', async () => {
     const CREATE_QUERY = gql`
@@ -133,7 +131,7 @@ describe('User resolver standard behavior', () => {
   });
   it('should user remove role', async () => {
     const roleStandardId = generateStandardId(ENTITY_TYPE_ROLE, { name: 'Default' });
-    const role = await elLoadByIds(ADMIN_USER, roleStandardId);
+    const role = await elLoadById(ADMIN_USER, roleStandardId);
     const REMOTE_ROLE_QUERY = gql`
       mutation UserEditRemoveRole($id: ID!, $toId: String!, $relationship_type: String!) {
         userEdit(id: $id) {
@@ -169,28 +167,6 @@ describe('User resolver standard behavior', () => {
     expect(res).not.toBeNull();
     expect(res.data).not.toBeNull();
     expect(res.data.token).toBeDefined();
-    const user = await authenticateUser(null, { providerToken: res.data.token });
-    expect(user.user_email).toBe('user@mail.com');
-    userToken = res.data.token;
-  });
-  // TODO: Ask to Julien
-  /* it('should user login failed', async () => {
-    const loginPromise = queryAsAdmin({
-      query: LOGIN_QUERY,
-      variables: {
-        input: {
-          email: 'user@mail.com',
-          password: 'user-test',
-        },
-      },
-    });
-    expect(loginPromise).rejects.toThrow();
-  }); */
-  it('should user token to be accurate', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).not.toBeNull();
-    expect(queryResult.data.user.token).toEqual(userToken);
   });
   it('should list users', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });

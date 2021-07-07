@@ -6,14 +6,9 @@ import {
   fetchEditContext,
   getRedisVersion,
   lockResource,
-  redisInitializeClients,
   setEditContext,
 } from '../../../src/database/redis';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
-
-beforeAll(async () => {
-  await redisInitializeClients();
-});
 
 describe('Redis basic and utils', () => {
   it('should redis in correct version', async () => {
