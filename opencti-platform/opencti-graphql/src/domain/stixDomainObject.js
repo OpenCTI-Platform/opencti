@@ -209,7 +209,7 @@ export const stixDomainObjectEditField = async (user, stixDomainObjectId, input,
       })
     );
   }
-  const updatedStixDomainObject = await updateAttribute(
+  const { element: updatedStixDomainObject } = await updateAttribute(
     user,
     stixDomainObjectId,
     ABSTRACT_STIX_DOMAIN_OBJECT,
@@ -217,12 +217,7 @@ export const stixDomainObjectEditField = async (user, stixDomainObjectId, input,
     options
   );
   if (stixDomainObject.entity_type === ENTITY_TYPE_INDICATOR && input.key === 'x_opencti_score') {
-    const observables = await listThroughGetTo(
-      user,
-      [stixDomainObjectId],
-      RELATION_BASED_ON,
-      ABSTRACT_STIX_CYBER_OBSERVABLE
-    );
+    const observables = await listThroughGetTo(user, [stixDomainObjectId], RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
     await Promise.all(
       observables.map((observable) =>
         updateAttribute(user, observable.id, ABSTRACT_STIX_CYBER_OBSERVABLE, input, options)

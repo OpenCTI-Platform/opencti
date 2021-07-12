@@ -49,8 +49,8 @@ export const killChainPhaseDeleteRelation = async (user, killChainPhaseId, relat
 };
 
 export const killChainPhaseEditField = async (user, killChainPhaseId, input) => {
-  const killChainPhase = await updateAttribute(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE, input);
-  return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user);
+  const { element } = await updateAttribute(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE, input);
+  return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, element, user);
 };
 
 export const killChainPhaseCleanContext = async (user, killChainPhaseId) => {

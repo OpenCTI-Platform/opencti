@@ -6,7 +6,6 @@ import LocationTargetsDefinition from './location-targets/LocationTargetsDefinit
 import PartOfTargetsDefinition from './part-of-targets/PartOfTargetsDefinition';
 import LocatedAtLocatedDefinition from './located-at-located/LocatedAtLocatedDefinition';
 import LocalizationOfTargetsDefinition from './localization-of-targets/LocalizationOfTargetsDefinition';
-import ConfidenceLevelDefinition from './testing/confidence-level/ConfidenceLevelDefinition';
 import RelatedToRelatedDefinition from './testing/related-to-related/RelatedToRelatedDefinition';
 import { DEV_MODE } from '../config/conf';
 
@@ -19,9 +18,8 @@ const declaredDef = [
   PartOfTargetsDefinition,
   LocatedAtLocatedDefinition,
   LocalizationOfTargetsDefinition,
-  ConfidenceLevelDefinition,
 ];
 if (DEV_MODE) {
-  declaredDef.push(...[ConfidenceLevelDefinition, RelatedToRelatedDefinition]);
+  declaredDef.push(...[RelatedToRelatedDefinition]);
 }
 export default declaredDef;

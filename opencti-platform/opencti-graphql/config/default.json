@@ -29,10 +29,10 @@
       "max_requests": 10000
     },
     "concurrency": {
-      "retry_count": 200,
-      "retry_delay": 100,
-      "retry_jitter": 50,
-      "max_ttl": 30000,
+      "retry_count": 100,
+      "retry_delay": 250,
+      "retry_jitter": 100,
+      "max_ttl": 60000,
       "extension_threshold": 5000
     },
     "base_path": "",
@@ -66,7 +66,7 @@
     "port": 6379,
     "trimming": 0,
     "live_depth_compact": 5000,
-    "use_as_cache": true
+    "use_as_cache": false
   },
   "elasticsearch": {
     "url": "http://localhost:9200",

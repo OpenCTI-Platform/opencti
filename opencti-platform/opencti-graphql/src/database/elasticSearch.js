@@ -45,7 +45,7 @@ import {
   isMultipleAttribute,
   numericOrBooleanAttributes,
 } from '../schema/fieldDataAdapter';
-import { getParentTypes } from '../schema/schemaUtils';
+import { convertEntityTypeToStixType, getParentTypes } from '../schema/schemaUtils';
 import { isStixObjectAliased } from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship } from '../schema/stixRelationship';
@@ -591,7 +591,9 @@ const elMergeRelation = (concept, fromConnection, toConnection) => {
     throw DatabaseError(`[ELASTIC] Something fail in reconstruction of the relation`, concept.internal_id);
   }
   const from = elBuildRelation('from', fromConnection);
+  from.source_ref = `${convertEntityTypeToStixType(from.fromType)}--temporary`;
   const to = elBuildRelation('to', toConnection);
+  to.target_ref = `${convertEntityTypeToStixType(to.toType)}--temporary`;
   return R.mergeAll([concept, from, to]);
 };
 export const elRebuildRelation = (concept) => {
@@ -619,9 +621,12 @@ const elDataConverter = (esHit) => {
     const [key, val] = entries[index];
     if (key.startsWith(RULE_PREFIX)) {
       const rule = key.substr(RULE_PREFIX.length);
-      const { inferred, explanation } = val;
-      const attributes = R.toPairs(inferred).map((s) => ({ field: R.head(s), value: String(R.last(s)) }));
-      ruleInferences.push({ rule, explanation, attributes });
+      const ruleDefinitions = Object.values(val);
+      for (let rIndex = 0; rIndex < ruleDefinitions.length; rIndex += 1) {
+        const { inferred, explanation } = ruleDefinitions[rIndex];
+        const attributes = R.toPairs(inferred).map((s) => ({ field: R.head(s), value: String(R.last(s)) }));
+        ruleInferences.push({ rule, explanation, attributes });
+      }
       data[key] = val;
     } else if (key.startsWith(REL_INDEX_PREFIX)) {
       const rel = key.substr(REL_INDEX_PREFIX.length);

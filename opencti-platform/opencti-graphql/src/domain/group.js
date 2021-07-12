@@ -43,8 +43,8 @@ export const addGroup = async (user, group) => {
 export const groupDelete = (user, groupId) => deleteElementById(user, groupId, ENTITY_TYPE_GROUP);
 
 export const groupEditField = async (user, groupId, input) => {
-  const group = await updateAttribute(user, groupId, ENTITY_TYPE_GROUP, input);
-  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);
+  const { element } = await updateAttribute(user, groupId, ENTITY_TYPE_GROUP, input);
+  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, element, user);
 };
 
 export const groupAddRelation = async (user, groupId, input) => {

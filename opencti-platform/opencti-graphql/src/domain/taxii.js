@@ -33,8 +33,8 @@ export const findAll = (user, args) => {
   return listEntities(user, [ENTITY_TYPE_TAXII_COLLECTION], args);
 };
 export const taxiiCollectionEditField = async (user, collectionId, input) => {
-  const collection = await updateAttribute(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION, input);
-  return notify(BUS_TOPICS[ENTITY_TYPE_TAXII_COLLECTION].EDIT_TOPIC, collection, user);
+  const { element } = await updateAttribute(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION, input);
+  return notify(BUS_TOPICS[ENTITY_TYPE_TAXII_COLLECTION].EDIT_TOPIC, element, user);
 };
 export const taxiiCollectionDelete = async (user, collectionId) => {
   await deleteElementById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);

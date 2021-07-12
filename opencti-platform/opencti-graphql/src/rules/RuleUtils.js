@@ -1,8 +1,7 @@
-import * as R from 'ramda';
-import { RULE_PREFIX } from '../schema/general';
-import { isNotEmptyField } from '../database/utils';
-import declaredDef from './RuleDefinitions';
 import { BYPASS, ROLE_ADMINISTRATOR } from '../utils/access';
+import { UnsupportedError } from '../config/errors';
+import { shortHash, isInternalId } from '../schema/schemaUtils';
+import { RULE_PREFIX } from '../schema/general';
 
 const RULE_MANAGER_USER_UUID = 'f9d7b43f-b208-4c56-8637-375a1ce84943';
 export const RULE_MANAGER_USER = {
@@ -17,17 +16,13 @@ export const RULE_MANAGER_USER = {
 };
 export const isRuleUser = (user) => user.id === RULE_MANAGER_USER_UUID;
 
-export const getAttributesRulesFor = (attrKey) => {
-  const attrRules = declaredDef.filter((d) => d.scopeFields.includes(attrKey));
-  return R.flatten(attrRules.map((r) => `${RULE_PREFIX + r.id}.inferred.${attrKey}`));
-};
-
-export const createRulePatch = (rule, dependencies, explanation, inferred = {}) => {
-  const content = { explanation, dependencies };
-  if (isNotEmptyField(inferred)) {
-    content.inferred = inferred;
+export const createRuleContent = (ruleId, dependencies, explanation, data = {}) => {
+  if (dependencies.filter((d) => !isInternalId(d)).length > 0) {
+    throw UnsupportedError('Rule definition dependencies must have internal ids only');
   }
-  return { [`${RULE_PREFIX}${rule}`]: content };
+  if (explanation.filter((d) => !isInternalId(d)).length > 0) {
+    throw UnsupportedError('Rule definition explanation must have internal ids only');
+  }
+  const hash = shortHash(explanation);
+  return { field: `${RULE_PREFIX}${ruleId}`, content: { explanation, dependencies, data, hash } };
 };
-
-export const createClearRulePatch = (rule) => ({ [`${RULE_PREFIX}${rule}`]: null });

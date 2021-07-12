@@ -3,12 +3,9 @@ import buildRelationToRelationRule from '../relation-to-relation/RelationToRelat
 import { RELATION_ATTRIBUTED_TO } from '../../schema/stixCoreRelationship';
 import def from './AttributedToAttributedDefinition';
 
-const AttributedToAttributedRule = buildRelationToRelationRule(
-  def.id,
-  def.name,
-  def.description,
-  { leftType: RELATION_ATTRIBUTED_TO, rightType: RELATION_ATTRIBUTED_TO, creationType: RELATION_ATTRIBUTED_TO },
-  def.scopeFields,
-  def.scopeFilters
-);
+const AttributedToAttributedRule = buildRelationToRelationRule(def, {
+  leftType: RELATION_ATTRIBUTED_TO,
+  rightType: RELATION_ATTRIBUTED_TO,
+  creationType: RELATION_ATTRIBUTED_TO,
+});
 export default AttributedToAttributedRule;

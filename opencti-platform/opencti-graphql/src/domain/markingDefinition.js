@@ -29,8 +29,8 @@ export const markingDefinitionDelete = (user, markingDefinitionId) =>
   deleteElementById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
 
 export const markingDefinitionEditField = async (user, markingDefinitionId, input) => {
-  const markingDefinition = await updateAttribute(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, input);
-  return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user);
+  const { element } = await updateAttribute(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, input);
+  return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, element, user);
 };
 
 export const markingDefinitionCleanContext = async (user, markingDefinitionId) => {

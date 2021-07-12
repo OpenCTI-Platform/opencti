@@ -1,22 +1,21 @@
 /* eslint-disable camelcase */
 import {
+  computeRuleConfidence,
   createInferredRelation,
   deleteInferredRuleElement,
-  internalLoadById,
   listAllRelations,
 } from '../../database/middleware';
-import { extractFieldsOfPatch } from '../../graphql/sseMiddleware';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
-import { createRulePatch, RULE_MANAGER_USER } from '../RuleUtils';
+import { createRuleContent, RULE_MANAGER_USER } from '../RuleUtils';
 
-const buildRelationWithRelationRule = (id, name, description, relationTypes, scopeFields, scopeFilters) => {
+const buildRelationWithRelationRule = (ruleDefinition, relationTypes) => {
+  const { id } = ruleDefinition;
   const { leftType, rightType, creationType } = relationTypes;
   const resolveTypes = { [leftType]: rightType, [rightType]: leftType };
-  const listenedFields = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];
-  // execution
-  const applyUpsert = async (markings, data) => {
+  // Execution
+  const applyUpsert = async (data) => {
     const events = [];
-    const { x_opencti_id: createdId, relationship_type } = data;
+    const { x_opencti_id: createdId, object_marking_refs: markings, relationship_type } = data;
     const { x_opencti_source_ref: sourceRef, x_opencti_target_ref: targetRef } = data;
     const { confidence: createdConfidence, start_time: startTime, stop_time: stopTime } = data;
     const creationRange = buildPeriodFromDates(startTime, stopTime);
@@ -33,21 +32,21 @@ const buildRelationWithRelationRule = (id, name, description, relationTypes, sco
         const inferenceToId = relationTypeToFind === leftType ? toId : targetRef;
         const existingRange = buildPeriodFromDates(start_time, stop_time);
         const range = computeRangeIntersection(creationRange, existingRange);
-        // We do not need to propagate the creation here.
-        // Because created relation have the same type.
+        const elementMarkings = [...(markings || []), ...(object_marking_refs || [])];
+        const computedConfidence = computeRuleConfidence([createdConfidence, confidence]);
+        // Rule content
         const dependencies = [sourceRef, createdId, targetRef, foundRelationId, toId];
         const explanation = [foundRelationId, createdId];
-        const input = {
-          fromId: inferenceFromId,
-          toId: inferenceToId,
-          relationship_type: creationType,
-          objectMarking: [...(markings || []), ...(object_marking_refs || [])],
-          confidence: createdConfidence < confidence ? createdConfidence : confidence,
+        // Create the inferred relation
+        const input = { fromId: inferenceFromId, toId: inferenceToId, relationship_type: creationType };
+        const ruleContent = createRuleContent(id, dependencies, explanation, {
+          confidence: computedConfidence,
           start_time: range.start,
           stop_time: range.end,
-          ...createRulePatch(id, dependencies, explanation),
-        };
-        const event = await createInferredRelation(id, input);
+          objectMarking: elementMarkings,
+        });
+        const event = await createInferredRelation(input, ruleContent);
+        // Re inject event if needed
         if (event) {
           events.push(event);
         }
@@ -57,30 +56,11 @@ const buildRelationWithRelationRule = (id, name, description, relationTypes, sco
     await listAllRelations(RULE_MANAGER_USER, relationTypeToFind, listFromArgs);
     return events;
   };
-  const clean = async (element) => deleteInferredRuleElement(id, element);
-  const insert = async (element) => {
-    const types = Object.keys(resolveTypes);
-    const isImpactedEvent = types.includes(element.relationship_type);
-    const { object_marking_refs: markings } = element;
-    if (isImpactedEvent) {
-      return applyUpsert(markings, element);
-    }
-    return [];
-  };
-  const update = async (element) => {
-    const types = Object.keys(resolveTypes);
-    const isImpactedEvent = types.includes(element.relationship_type);
-    const { object_marking_refs: markings } = element;
-    const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
-    // When updating, only some fields have impacts
-    const isImpactedFields = listenedFields.some((f) => patchedFields.includes(f));
-    if (isImpactedEvent && isImpactedFields) {
-      const rel = await internalLoadById(RULE_MANAGER_USER, element.x_opencti_id);
-      return applyUpsert(markings, { ...element, ...rel });
-    }
-    return [];
-  };
-  return { id, name, description, scopeFields, scopeFilters, insert, update, clean };
+  // Contract
+  const clean = async (element, dependencyId) => deleteInferredRuleElement(id, element, dependencyId);
+  const insert = async (element) => applyUpsert(element);
+  const update = async (element) => applyUpsert(element);
+  return { ...ruleDefinition, insert, update, clean };
 };
 
 export default buildRelationWithRelationRule;

@@ -6,7 +6,6 @@ import LocationTargetsRule from './location-targets/LocationTargetsRule';
 import PartOfTargetsRule from './part-of-targets/PartOfTargetsRule';
 import LocatedAtLocatedRule from './located-at-located/LocatedAtLocatedRule';
 import RuleLocalizationOfTargetsRule from './localization-of-targets/LocalizationOfTargetsRule';
-import ConfidenceLevelRule from './testing/confidence-level/ConfidenceLevelRule';
 import RelatedToRelatedRule from './testing/related-to-related/RelatedToRelatedRule';
 import { DEV_MODE } from '../config/conf';
 
@@ -22,6 +21,6 @@ const declaredRules = [
 ];
 
 if (DEV_MODE) {
-  declaredRules.push(...[ConfidenceLevelRule, RelatedToRelatedRule]);
+  declaredRules.push(...[RelatedToRelatedRule]);
 }
 export default declaredRules;

@@ -8,6 +8,7 @@ import conf, { booleanConf, configureCA, DEV_MODE, ENABLED_CACHING, logApp } fro
 import {
   generateLogMessage,
   isEmptyField,
+  isInferredIndex,
   isNotEmptyField,
   relationTypeToInputName,
   UPDATE_OPERATION_ADD,
@@ -445,7 +446,10 @@ const buildMergeEvent = (user, initialInstance, mergedInstance, sourceEntities) 
 export const storeMergeEvent = async (user, initialInstance, mergedInstance, sourceEntities) => {
   try {
     const event = buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities);
-    await pushToStream(clientBase, event);
+    // Push the event in the stream only if instance is in "real index"
+    if (!isInferredIndex(mergedInstance._index)) {
+      await pushToStream(clientBase, event);
+    }
   } catch (e) {
     throw DatabaseError('Error in store merge event', { error: e });
   }
@@ -472,9 +476,9 @@ export const buildUpdateEvent = (user, instance, updateEvents, opts = {}) => {
     x_opencti_location_type: instance.x_opencti_location_type,
     // Need to put everything needed to identified a relationship
     relationship_type: instance.relationship_type,
-    source_ref: instance.from?.standard_id,
+    source_ref: instance.from?.standard_id || instance.source_ref,
     x_opencti_source_ref: instance.fromId,
-    target_ref: instance.to?.standard_id,
+    target_ref: instance.to?.standard_id || instance.target_ref,
     x_opencti_target_ref: instance.toId,
   };
   // Build the final data
@@ -492,7 +496,10 @@ export const storeUpdateEvent = async (user, instance, updateEvents) => {
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     try {
       const event = buildUpdateEvent(user, instance, updateEvents);
-      await pushToStream(clientBase, event);
+      // Push the event in the stream only if instance is in "real index"
+      if (!isInferredIndex(instance._index)) {
+        await pushToStream(clientBase, event);
+      }
       return event;
     } catch (e) {
       throw DatabaseError('Error in store update event', { error: e });
@@ -529,7 +536,10 @@ export const storeCreateEvent = async (user, instance, input, stixLoader) => {
   if (isStixSpecificationObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     try {
       const event = await buildCreateEvent(user, instance, input, stixLoader);
-      await pushToStream(clientBase, event);
+      // Push the event in the stream only if instance is in "real index"
+      if (!isInferredIndex(instance._index)) {
+        await pushToStream(clientBase, event);
+      }
       return event;
     } catch (e) {
       throw DatabaseError('Error in store create event', { error: e });
@@ -566,7 +576,10 @@ export const storeDeleteEvent = async (user, instance, stixLoader) => {
   try {
     if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
       const event = await buildDeleteEvent(user, instance, stixLoader);
-      await pushToStream(clientBase, event);
+      // Push the event in the stream only if instance is in "real index"
+      if (!isInferredIndex(instance._index)) {
+        await pushToStream(clientBase, event);
+      }
       return event;
     }
   } catch (e) {

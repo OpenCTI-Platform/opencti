@@ -50,6 +50,6 @@ export const attributeEditField = async (user, attributeId, input) => {
   const previous = await loadById(user, attributeId, ENTITY_TYPE_ATTRIBUTE);
   const { value } = input;
   await elUpdateAttributeValue(previous.key, previous.value, R.head(value));
-  const attribute = await updateAttribute(user, attributeId, ENTITY_TYPE_ATTRIBUTE, input);
-  return notify(BUS_TOPICS[ENTITY_TYPE_ATTRIBUTE].EDIT_TOPIC, attribute, user);
+  const { element } = await updateAttribute(user, attributeId, ENTITY_TYPE_ATTRIBUTE, input);
+  return notify(BUS_TOPICS[ENTITY_TYPE_ATTRIBUTE].EDIT_TOPIC, element, user);
 };
