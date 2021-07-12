@@ -3,7 +3,7 @@ import { deleteFile, downloadFile, filesListing, loadFile } from '../../../src/d
 import { execPython3 } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/elasticSearch';
-// import { startModules, shutdownModules } from '../../../src/modules';
+import { startModules, shutdownModules } from '../../../src/modules';
 
 const streamConverter = (stream) => {
   return new Promise((resolve) => {
@@ -30,12 +30,12 @@ describe('Minio file listing', () => {
     importOpts = [API_URI, API_TOKEN, malwareId, exportFileName];
   });
   it('should file upload succeed', async () => {
-    // await startModules();
+    await startModules();
     // local exporter create an export and also upload the file as an import
     const execution = await execPython3(PYTHON_PATH, 'local_exporter.py', importOpts);
     expect(execution).not.toBeNull();
     expect(execution.status).toEqual('success');
-    // await shutdownModules();
+    await shutdownModules();
   });
   it('should file listing', async () => {
     const entity = { id: malwareId };

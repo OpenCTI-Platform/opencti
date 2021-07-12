@@ -2,7 +2,7 @@
 import platformInit from '../../../src/initialization';
 import { FIVE_MINUTES, PYTHON_PATH, API_TOKEN, API_URI } from '../../utils/testQuery';
 import { execPython3 } from '../../../src/python/pythonBridge';
-// import { startModules, shutdownModules } from "../../../src/modules";
+import { startModules, shutdownModules } from "../../../src/modules";
 import { SYSTEM_USER } from "../../../src/utils/access";
 import { createEntity } from "../../../src/database/middleware";
 import { ENTITY_TYPE_RULE } from "../../../src/schema/internalObject";
@@ -24,14 +24,14 @@ describe('Database provision', () => {
     'Should import creation succeed',
     async () => {
       // Start platform
-      // await startModules();
+      await startModules();
       // Activate rules
       // await activateRule('location_targets');
       // Start import
       const execution = await execPython3(PYTHON_PATH, 'local_importer.py', importOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
-      // await shutdownModules();
+      await shutdownModules();
     },
     FIVE_MINUTES
   );
@@ -39,11 +39,11 @@ describe('Database provision', () => {
   it(
     'Should import update succeed',
     async () => {
-      // await startModules();
+      await startModules();
       const execution = await execPython3(PYTHON_PATH, 'local_importer.py', importOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
-      // await shutdownModules();
+      await shutdownModules();
     },
     FIVE_MINUTES
   );
