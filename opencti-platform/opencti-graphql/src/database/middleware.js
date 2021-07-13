@@ -131,14 +131,15 @@ import {
 import { isStixCoreRelationship, RELATION_REVOKED_BY } from '../schema/stixCoreRelationship';
 import {
   ATTRIBUTE_ALIASES,
-  ATTRIBUTE_ALIASES_OPENCTI, ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
+  ATTRIBUTE_ALIASES_OPENCTI,
+  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
   isStixObjectAliased,
   resolveAliasesField,
-  stixDomainObjectFieldsToBeUpdated
-} from "../schema/stixDomainObject";
+  stixDomainObjectFieldsToBeUpdated,
+} from '../schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservable, stixCyberObservableFieldsToBeUpdated } from '../schema/stixCyberObservable';
@@ -640,7 +641,11 @@ const restrictedAggElement = { name: 'Restricted', entity_type: 'Malware', paren
 const convertAggregateDistributions = async (user, limit, orderingFunction, distribution) => {
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
   // eslint-disable-next-line prettier/prettier
-  const resolveLabels = await elFindByIds(user, data.map((d) => d.label), { toMap: true });
+  const resolveLabels = await elFindByIds(
+    user,
+    data.map((d) => d.label),
+    { toMap: true }
+  );
   return R.map((n) => {
     const resolved = resolveLabels[n.label];
     const resolvedData = resolved || restrictedAggElement;
@@ -745,7 +750,10 @@ const inputResolveRefs = async (user, input, type) => {
     }
   }
   // eslint-disable-next-line prettier/prettier
-  const resolvedElements = await internalFindByIds(user, fetchingIds.map((i) => i.id));
+  const resolvedElements = await internalFindByIds(
+    user,
+    fetchingIds.map((i) => i.id)
+  );
   const resolvedElementWithConfGroup = resolvedElements.map((d) => {
     const elementIds = getInstanceIds(d);
     const matchingConfigs = R.filter((a) => elementIds.includes(a.id), fetchingIds);
@@ -1265,7 +1273,7 @@ const transformPathToInput = (patch) => {
     R.toPairs,
     R.map((t) => {
       const val = R.last(t);
-      if (val) {
+      if (isEmptyField(val)) {
         return { key: R.head(t), value: Array.isArray(val) ? val : [val] };
       }
       return { key: R.head(t), value: null };
@@ -1830,7 +1838,9 @@ const upsertRuleRaw = async (instance, input, opts = {}) => {
     // 01. First delete all the current markings of the instance
     const buildInstanceRelTo = (to) => buildInnerRelation(ruleInstance, to, RELATION_OBJECT_MARKING);
     // eslint-disable-next-line prettier/prettier
-    const currentMarkingRels = await listAllRelations(RULE_MANAGER_USER, RELATION_OBJECT_MARKING, { fromId: instance.internal_id });
+    const currentMarkingRels = await listAllRelations(RULE_MANAGER_USER, RELATION_OBJECT_MARKING, {
+      fromId: instance.internal_id,
+    });
     await elDeleteElements(SYSTEM_USER, currentMarkingRels);
     updatedRemoveRelations.push({ objectMarking: currentMarkingRels });
     // 02. Create the new relations
