@@ -19,6 +19,7 @@ import {
   isNotEmptyField,
   READ_DATA_INDICES,
   READ_ENTITIES_INDICES,
+  READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
   relationTypeToInputName,
   UPDATE_OPERATION_ADD,
@@ -46,10 +47,12 @@ import {
   ROLE_TO,
 } from './elasticSearch';
 import {
-  generateAliasesIdsForInstance,
   generateAliasesId,
+  generateAliasesIdsForInstance,
   generateInternalId,
   generateStandardId,
+  getInputIds,
+  getInstanceIds,
   INTERNAL_FROM_FIELD,
   INTERNAL_TO_FIELD,
   isFieldContributingToStandardId,
@@ -58,11 +61,10 @@ import {
   normalizeName,
   REVOKED,
   VALID_UNTIL,
-  getInputIds,
-  getInstanceIds,
 } from '../schema/identifier';
 import {
   buildDeleteEvent,
+  buildUpdateEvent,
   lockResource,
   notify,
   redisAddDeletions,
@@ -123,7 +125,6 @@ import {
   isModifiedObject,
   isMultipleAttribute,
   isUpdatedAtObject,
-  multipleAttributes,
   numericAttributes,
   statsDateAttributes,
 } from '../schema/fieldDataAdapter';
@@ -158,8 +159,7 @@ import {
 import { checkObservableSyntax } from '../utils/syntax';
 import { deleteAllFiles } from './minio';
 import { filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
-import { createClearRulePatch, isRuleUser, RULE_MANAGER_USER } from '../rules/RuleUtils';
-import { findAll } from "../domain/observedData";
+import { isRuleUser, RULE_MANAGER_USER } from '../rules/RuleUtils';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -203,7 +203,7 @@ const checkInferenceRight = (user, element) => {
   const isRuleManaged = isRuleUser(user);
   const isPurelyInferred = isInferredIndex(element._index);
   if (isPurelyInferred && !isRuleManaged) {
-    throw UnsupportedError('Manual inference update/deletion is not allowed', { id: element.id });
+    // throw UnsupportedError('Manual inference update/deletion is not allowed', { id: element.id });
   }
 };
 // endregion
@@ -307,6 +307,70 @@ export const loadThroughGetTo = async (user, sources, relationType, targetEntity
   return loadThrough(user, sources, 'from', relationType, targetEntityType);
 };
 // Standard listing
+export const buildFilters = (args = {}) => {
+  const builtFilters = { ...args };
+  const { types = [], entityTypes = [], relationshipTypes = [] } = args;
+  const { elementId, elementWithTargetTypes = [] } = args;
+  const { fromId, fromRole, fromTypes = [] } = args;
+  const { toId, toRole, toTypes = [] } = args;
+  const { filters = [] } = args;
+  // Config
+  const customFilters = [...(filters ?? [])];
+  // region element
+  const nestedElement = [];
+  if (elementId) {
+    nestedElement.push({ key: 'internal_id', values: [elementId] });
+  }
+  if (nestedElement.length > 0) {
+    customFilters.push({ key: 'connections', nested: nestedElement });
+  }
+  const nestedElementTypes = [];
+  if (elementWithTargetTypes && elementWithTargetTypes.length > 0) {
+    nestedElementTypes.push({ key: 'types', values: elementWithTargetTypes });
+  }
+  if (nestedElementTypes.length > 0) {
+    customFilters.push({ key: 'connections', nested: nestedElementTypes });
+  }
+  // endregion
+  // region from filtering
+  const nestedFrom = [];
+  if (fromId) {
+    nestedFrom.push({ key: 'internal_id', values: [fromId] });
+  }
+  if (fromTypes && fromTypes.length > 0) {
+    nestedFrom.push({ key: 'types', values: fromTypes });
+  }
+  if (fromRole) {
+    nestedFrom.push({ key: 'role', values: [fromRole] });
+  } else if (fromId || (fromTypes && fromTypes.length > 0)) {
+    nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
+  }
+  if (nestedFrom.length > 0) {
+    customFilters.push({ key: 'connections', nested: nestedFrom });
+  }
+  // endregion
+  // region to filtering
+  const nestedTo = [];
+  if (toId) {
+    nestedTo.push({ key: 'internal_id', values: [toId] });
+  }
+  if (toTypes && toTypes.length > 0) {
+    nestedTo.push({ key: 'types', values: toTypes });
+  }
+  if (toRole) {
+    nestedTo.push({ key: 'role', values: [toRole] });
+  } else if (toId || (toTypes && toTypes.length > 0)) {
+    nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
+  }
+  if (nestedTo.length > 0) {
+    customFilters.push({ key: 'connections', nested: nestedTo });
+  }
+  // endregion
+  // Override some special filters
+  builtFilters.types = [...(types ?? []), ...entityTypes, ...relationshipTypes];
+  builtFilters.filters = customFilters;
+  return builtFilters;
+};
 const buildRelationsFilter = (relationshipType, args) => {
   const { relationFilter = false } = args;
   const {
@@ -425,17 +489,14 @@ const buildRelationsFilter = (relationshipType, args) => {
     R.assoc('filters', finalFilters)
   )(args);
 };
-const buildThingsFilter = (thingsTypes, args) => {
-  return R.assoc('types', thingsTypes, args);
-};
 export const listThings = async (user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
-  const paginateArgs = buildThingsFilter(thingsTypes, args);
+  const paginateArgs = buildFilters({ types: thingsTypes, ...args });
   return elPaginate(user, indices, paginateArgs);
 };
 export const listAllThings = async (user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
-  const paginateArgs = buildThingsFilter(thingsTypes, args);
+  const paginateArgs = buildFilters({ types: thingsTypes, ...args });
   return elList(user, indices, paginateArgs);
 };
 export const paginateAllThings = async (user, thingsTypes, args = {}) => {
@@ -443,12 +504,9 @@ export const paginateAllThings = async (user, thingsTypes, args = {}) => {
   const nodeResult = result.map((n) => ({ node: n }));
   return buildPagination(0, null, nodeResult, nodeResult.length);
 };
-const buildEntitiesFilter = (entityTypes, args) => {
-  return R.assoc('types', entityTypes, args);
-};
 export const listEntities = async (user, entityTypes, args = {}) => {
   const { indices = READ_ENTITIES_INDICES } = args;
-  const paginateArgs = buildEntitiesFilter(entityTypes, args);
+  const paginateArgs = buildFilters({ entityTypes, ...args });
   return elPaginate(user, indices, paginateArgs);
 };
 export const listRelations = async (user, relationshipType, args) => {
@@ -763,7 +821,10 @@ const mergeDeepRightAll = R.unapply(R.reduce(R.mergeDeepRight, {}));
 const updatedInputsToData = (inputs) => {
   const inputPairs = R.map((input) => {
     const { key, value } = input;
-    const val = R.includes(key, multipleAttributes) ? value : R.head(value);
+    let val = value;
+    if (!isMultipleAttribute(key) && val) {
+      val = R.head(value);
+    }
     return { [key]: val };
   }, inputs);
   return mergeDeepRightAll(...inputPairs);
@@ -771,14 +832,18 @@ const updatedInputsToData = (inputs) => {
 const replacedInputsToData = (inputs) => {
   const inputPairs = R.map((input) => {
     const { key, value, previous } = input;
-    const val = R.includes(key, multipleAttributes) ? value : R.head(value);
+    let val = value;
+    if (!isMultipleAttribute(key) && val) {
+      val = R.head(value);
+    }
     return { [key]: { current: val, previous } };
   }, inputs);
   return mergeDeepRightAll(...inputPairs);
 };
 const mergeInstanceWithInputs = (instance, inputs) => {
   const data = updatedInputsToData(inputs);
-  return R.mergeRight(instance, data);
+  const updatedInstance = R.mergeRight(instance, data);
+  return R.reject(R.equals(null))(updatedInstance);
 };
 const partialInstanceWithInputs = (instance, inputs) => {
   const inputData = updatedInputsToData(inputs);
@@ -792,7 +857,7 @@ const partialInstanceWithInputs = (instance, inputs) => {
 const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) => {
   const { forceUpdate = false, operation = UPDATE_OPERATION_REPLACE } = options;
   const { key, value } = rawInput; // value can be multi valued
-  const isMultiple = R.includes(key, multipleAttributes);
+  const isMultiple = isMultipleAttribute(key);
   let finalVal;
   let finalKey = key;
   if (dictAttributes[key]) {
@@ -831,17 +896,18 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) 
     } else {
       finalVal = value;
     }
-    if (!forceUpdate && R.equals(finalVal.sort(), currentValues.sort())) {
+    if (!forceUpdate && R.equals((finalVal ?? []).sort(), currentValues.sort())) {
       return {}; // No need to update the attribute
     }
   } else {
     finalVal = value;
     const isDate = dateAttributes.includes(key);
     if (!forceUpdate) {
-      if (isDate && utcDate(instance[key]).isSame(utcDate(R.head(value)))) {
+      const evaluateValue = value ? R.head(value) : null;
+      if (isDate && utcDate(instance[key]).isSame(utcDate(evaluateValue))) {
         return {};
       }
-      if (R.equals(instance[key], R.head(value))) {
+      if (R.equals(instance[key], evaluateValue)) {
         return {}; // No need to update the attribute
       }
     }
@@ -1199,7 +1265,10 @@ const transformPathToInput = (patch) => {
     R.toPairs,
     R.map((t) => {
       const val = R.last(t);
-      return { key: R.head(t), value: Array.isArray(val) ? val : [val] };
+      if (val) {
+        return { key: R.head(t), value: Array.isArray(val) ? val : [val] };
+      }
+      return { key: R.head(t), value: null };
     })
   )(patch);
 };
@@ -1443,13 +1512,14 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
       await elUpdateElement(updateAsInstance);
     }
     // Only push event in stream if modifications really happens
+    let event;
     if (data.updatedInputs.length > 0) {
       const isUpdate = operation === UPDATE_OPERATION_REPLACE;
       const updatedData = isUpdate ? replacedInputsToData(data.updatedInputs) : updatedInputsToData(data.updatedInputs);
-      await storeUpdateEvent(user, instance, [{ [operation]: updatedData }]);
+      event = await storeUpdateEvent(user, instance, [{ [operation]: updatedData }]);
     }
     // Return updated element after waiting for it.
-    return updatedInstance;
+    return { element: updatedInstance, event };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -1628,47 +1698,171 @@ const computeExtendedDateValues = (newValue, currentValue, mode) => {
   }
   return null;
 };
-
-const handleRelationTimeUpdate = (input, instance, startField, stopField, extendRelationTime) => {
+const getAllRulesField = (instance, field) => {
+  return Object.keys(instance)
+    .filter((key) => key.startsWith(RULE_PREFIX))
+    .map((key) => instance[key])
+    .flat()
+    .map((rule) => rule.data?.[field])
+    .flat()
+    .filter((val) => isNotEmptyField(val));
+};
+const getAllRulesTimeField = (instance, field) => {
+  const timeFieldsFromRule = getAllRulesField(instance, field);
+  return timeFieldsFromRule //
+    .filter((val) => val !== FROM_START_STR && val !== UNTIL_END_STR)
+    .map((d) => moment(d));
+};
+const handleRelationTimeUpdate = (input, instance, startField, stopField) => {
   const patch = {};
+  // If not coming from a rule, compute extended time.
   if (input[startField]) {
-    if (extendRelationTime) {
-      const extendedStart = computeExtendedDateValues(input[startField], instance[startField], ALIGN_OLDEST);
-      if (extendedStart) {
-        patch[startField] = extendedStart;
-      }
-    } else {
-      patch[startField] = input[startField];
+    const extendedStart = computeExtendedDateValues(input[startField], instance[startField], ALIGN_OLDEST);
+    if (extendedStart) {
+      patch[startField] = extendedStart;
     }
   }
   if (input[stopField]) {
-    if (extendRelationTime) {
-      const extendedStop = computeExtendedDateValues(input[stopField], instance[stopField], ALIGN_NEWEST);
-      if (extendedStop) {
-        patch[stopField] = extendedStop;
-      }
-    } else {
-      patch[stopField] = input[stopField];
+    const extendedStop = computeExtendedDateValues(input[stopField], instance[stopField], ALIGN_NEWEST);
+    if (extendedStop) {
+      patch[stopField] = extendedStop;
     }
   }
   return patch;
 };
-const upsertElementRule = async (user, instance, type, input) => {
-  const impactedInputs = []; // Inputs impacted by updated inputs + updated inputs
-  const rulesKeys = Object.keys(input).filter((k) => k.startsWith(RULE_PREFIX));
-  for (let indexKey = 0; indexKey < rulesKeys.length; indexKey += 1) {
-    const rulesKey = rulesKeys[indexKey];
-    const ruleDefinition = input[rulesKey];
-    const patched = patchAttributeRaw(instance, { [rulesKey]: ruleDefinition });
-    impactedInputs.push(...patched.impactedInputs);
+const buildRelationTimeFilter = (input) => {
+  const args = {};
+  const { relationship_type: relationshipType } = input;
+  if (isStixCoreRelationship(relationshipType)) {
+    if (!R.isNil(input.start_time)) {
+      args.startTimeStart = prepareDate(moment(input.start_time).subtract(1, 'months').utc());
+      args.startTimeStop = prepareDate(moment(input.start_time).add(1, 'months').utc());
+    }
+    if (!R.isNil(input.stop_time)) {
+      args.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'months').utc());
+      args.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'months').utc());
+    }
+  } else if (isStixSightingRelationship(relationshipType)) {
+    if (!R.isNil(input.first_seen)) {
+      args.firstSeenStart = prepareDate(moment(input.first_seen).subtract(1, 'months').utc());
+      args.firstSeenStop = prepareDate(moment(input.first_seen).add(1, 'months').utc());
+    }
+    if (!R.isNil(input.last_seen)) {
+      args.lastSeenStart = prepareDate(moment(input.last_seen).subtract(1, 'months').utc());
+      args.lastSeenStop = prepareDate(moment(input.last_seen).add(1, 'months').utc());
+    }
   }
-  const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
-  // Build the input to reindex in elastic
-  const indexInput = partialInstanceWithInputs(updatedInstance, impactedInputs);
-  return { type: TRX_UPDATE, element: updatedInstance, relations: [], streamInputs: [], indexInput };
+  return args;
 };
-const upsertElementRaw = async (user, instance, type, input, opts = {}) => {
-  const { extendRelationTime = true, overrideMarkings = false } = opts;
+
+export const computeRuleConfidence = (confidences) => {
+  const sum = confidences.reduce((a, b) => a + b, 0);
+  return Math.round(sum / confidences.length || 0);
+};
+const createRuleDataPatch = (instance) => {
+  // 02 - Compute the attributes
+  // -------- confidence
+  const ruleInput = {};
+  const ruleConfidences = getAllRulesField(instance, 'confidence');
+  if (ruleConfidences.length > 0) {
+    ruleInput.confidence = computeRuleConfidence(ruleConfidences);
+  }
+  // -------- start_time / stop_time
+  const startTimeAttributes = getAllRulesTimeField(instance, 'start_time');
+  if (startTimeAttributes.length > 0) {
+    const minDate = moment.min(startTimeAttributes);
+    ruleInput.start_time = minDate.utc().toISOString();
+  }
+  const stopTimeAttributes = getAllRulesTimeField(instance, 'stop_time');
+  if (stopTimeAttributes.length > 0) {
+    const maxDate = moment.max(stopTimeAttributes);
+    ruleInput.stop_time = maxDate.utc().toISOString();
+  }
+  // ------- first_seen / last_seen
+  const firstTimeAttributes = getAllRulesTimeField(instance, 'first_seen');
+  if (firstTimeAttributes.length > 0) {
+    const minDate = moment.min(firstTimeAttributes);
+    ruleInput.first_seen = minDate.utc().toISOString();
+  }
+  const lastTimeAttributes = getAllRulesTimeField(instance, 'last_seen');
+  if (lastTimeAttributes.length > 0) {
+    const maxDate = moment.max(lastTimeAttributes);
+    ruleInput.last_seen = maxDate.utc().toISOString();
+  }
+  // 03 - Compute the inner relations
+  // ------- markings
+  const allRulesMarkingIds = getAllRulesField(instance, INPUT_MARKINGS);
+  return { ruleInput, ruleMarkings: allRulesMarkingIds };
+};
+const upsertRuleRaw = async (instance, input, opts = {}) => {
+  const { fromRule, ruleOverride = false } = opts;
+  const updatedAddInputs = []; // Direct modified inputs (add)
+  const updatedReplaceInputs = []; // Direct modified inputs (replace)
+  const impactedInputs = []; // Inputs impacted by updated inputs + updated inputs
+  const rawRelations = [];
+  const updatedAddRelations = [];
+  const updatedRemoveRelations = [];
+  const streamInputs = [];
+  // Upserting a rule is adding the new rule explanation to the list
+  // and recompute the inside fields
+  // 01 - Update the rule
+  const updatedRule = input[fromRule];
+  if (!ruleOverride) {
+    const keepRuleHashes = input[fromRule].map((i) => i.hash);
+    const instanceRuleToKeep = (instance[fromRule] ?? []).filter((i) => !keepRuleHashes.includes(i.hash));
+    updatedRule.push(...instanceRuleToKeep);
+  }
+  const patched = patchAttributeRaw(instance, { [fromRule]: updatedRule });
+  impactedInputs.push(...patched.impactedInputs);
+  const { updatedInstance: ruleInstance } = patched;
+  // 02 - Compute the attributes
+  // -------- confidence
+  const { ruleInput, ruleMarkings } = createRuleDataPatch(ruleInstance);
+  const patchedAttributes = patchAttributeRaw(ruleInstance, ruleInput);
+  impactedInputs.push(...patchedAttributes.impactedInputs);
+  updatedReplaceInputs.push(...patchedAttributes.updatedInputs);
+  // 03 - Compute the inner relations
+  // ------- markings
+  const instanceMarkings = ruleInstance.object_marking_refs || [];
+  const isSameMarkings =
+    ruleMarkings.length === instanceMarkings.length && ruleMarkings.every((i) => instanceMarkings.includes(i));
+  if (!isSameMarkings) {
+    // 01. First delete all the current markings of the instance
+    const buildInstanceRelTo = (to) => buildInnerRelation(ruleInstance, to, RELATION_OBJECT_MARKING);
+    // eslint-disable-next-line prettier/prettier
+    const currentMarkingRels = await listAllRelations(RULE_MANAGER_USER, RELATION_OBJECT_MARKING, { fromId: instance.internal_id });
+    await elDeleteElements(SYSTEM_USER, currentMarkingRels);
+    updatedRemoveRelations.push({ objectMarking: currentMarkingRels });
+    // 02. Create the new relations
+    const markings = await internalFindByIds(RULE_MANAGER_USER, ruleMarkings);
+    const newRelations = markings.map((to) => R.head(buildInstanceRelTo(to)).relation);
+    rawRelations.push(...newRelations);
+    updatedAddRelations.push({ objectMarking: markings });
+  }
+  // 04 - Build the final result
+  if (updatedReplaceInputs.length > 0) {
+    streamInputs.push({ [UPDATE_OPERATION_REPLACE]: replacedInputsToData(updatedReplaceInputs) });
+  }
+  if (updatedAddInputs.length > 0 || updatedAddRelations.length > 0) {
+    const streamInput = updatedInputsToData(updatedAddInputs);
+    const streamRels = updatedAddRelations.length > 0 ? R.mergeAll(updatedAddRelations) : {};
+    const addOperations = { ...streamInput, ...streamRels };
+    streamInputs.push({ [UPDATE_OPERATION_ADD]: addOperations });
+  }
+  if (updatedRemoveRelations.length > 0) {
+    streamInputs.push({ [UPDATE_OPERATION_REMOVE]: R.mergeAll(updatedRemoveRelations) });
+  }
+  if (impactedInputs.length > 0) {
+    const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
+    // Build the input to reindex in elastic
+    const indexInput = partialInstanceWithInputs(updatedInstance, impactedInputs);
+    return { type: TRX_UPDATE, element: updatedInstance, relations: rawRelations, streamInputs, indexInput };
+  }
+  // Return all elements requirement for stream and indexation
+  return { type: TRX_UPDATE, element: instance, relations: rawRelations, streamInputs };
+};
+
+const upsertElementRaw = async (user, instance, type, input) => {
   // Check consistency
   checkInferenceRight(user, instance);
   // Upsert relation
@@ -1677,7 +1871,9 @@ const upsertElementRaw = async (user, instance, type, input, opts = {}) => {
   const updatedReplaceInputs = []; // Direct modified inputs (replace)
   const impactedInputs = []; // Inputs impacted by updated inputs + updated inputs
   const rawRelations = [];
-  const targetsPerType = [];
+  const updatedAddRelations = [];
+  const updatedRemoveRelations = [];
+  const streamInputs = [];
   // Handle attributes updates
   if (isNotEmptyField(input.stix_id)) {
     const patch = { x_opencti_stix_ids: [input.stix_id] };
@@ -1699,7 +1895,7 @@ const upsertElementRaw = async (user, instance, type, input, opts = {}) => {
   // Upsert relationships
   if (isStixSightingRelationship(type)) {
     const basePatch = { attribute_count: instance.attribute_count + input.attribute_count };
-    const timePatch = handleRelationTimeUpdate(input, instance, 'first_seen', 'last_seen', extendRelationTime);
+    const timePatch = handleRelationTimeUpdate(input, instance, 'first_seen', 'last_seen');
     const patch = { ...basePatch, ...timePatch };
     const patched = patchAttributeRaw(instance, patch);
     impactedInputs.push(...patched.impactedInputs);
@@ -1713,7 +1909,7 @@ const upsertElementRaw = async (user, instance, type, input, opts = {}) => {
     if (input.description && forceUpdate) {
       basePatch.description = input.description;
     }
-    const timePatch = handleRelationTimeUpdate(input, instance, 'start_time', 'stop_time', extendRelationTime);
+    const timePatch = handleRelationTimeUpdate(input, instance, 'start_time', 'stop_time');
     const patch = { ...basePatch, ...timePatch };
     const patched = patchAttributeRaw(instance, patch);
     impactedInputs.push(...patched.impactedInputs);
@@ -1739,44 +1935,28 @@ const upsertElementRaw = async (user, instance, type, input, opts = {}) => {
     impactedInputs.push(...upsertImpacted);
     updatedReplaceInputs.push(...upsertUpdated);
   }
-  // Upsert rules
-  const rulesKeys = Object.keys(input).filter((k) => k.startsWith(RULE_PREFIX));
-  for (let indexKey = 0; indexKey < rulesKeys.length; indexKey += 1) {
-    const rulesKey = rulesKeys[indexKey];
-    const ruleDefinition = input[rulesKey];
-    const patched = patchAttributeRaw(instance, { [rulesKey]: ruleDefinition });
-    impactedInputs.push(...patched.impactedInputs);
-  }
   // Upsert markings
   if (input.objectMarking && input.objectMarking.length > 0) {
-    // Clear the marking if needed
-    const markingsIds = instance.object_marking_refs || [];
-    if (overrideMarkings && markingsIds.length > 0) {
-      const currentMarkingRels = await listAllRelations(user, RELATION_OBJECT_MARKING, {
-        fromId: instance.internal_id,
-      });
-      await elDeleteElements(SYSTEM_USER, currentMarkingRels);
-    }
+    const buildInstanceRelTo = (to) => buildInnerRelation(instance, to, RELATION_OBJECT_MARKING);
     // When upsert stable relations, we decide to only add the missing markings
-    const instanceMarkings = overrideMarkings ? [] : markingsIds;
+    const instanceMarkings = instance.object_marking_refs || [];
     const markingToCreate = R.filter((m) => !instanceMarkings.includes(m.internal_id), input.objectMarking);
-    const newRelations = markingToCreate.map(
-      (to) => R.head(buildInnerRelation(instance, to, RELATION_OBJECT_MARKING)).relation
-    );
+    const newRelations = markingToCreate.map((to) => R.head(buildInstanceRelTo(to)).relation);
     rawRelations.push(...newRelations);
-    targetsPerType.push({ objectMarking: markingToCreate });
+    updatedAddRelations.push({ objectMarking: markingToCreate });
   }
   // Build the stream input
-  const streamInputs = [];
   if (updatedReplaceInputs.length > 0) {
-    streamInputs.push({ [UPDATE_OPERATION_REPLACE]: updatedInputsToData(updatedReplaceInputs) });
+    streamInputs.push({ [UPDATE_OPERATION_REPLACE]: replacedInputsToData(updatedReplaceInputs) });
   }
-  if (updatedAddInputs.length > 0 || rawRelations.length > 0) {
-    let streamInput = updatedInputsToData(updatedAddInputs);
-    if (rawRelations.length > 0) {
-      streamInput = { ...streamInput, ...R.mergeAll(targetsPerType) };
-    }
-    streamInputs.push({ [UPDATE_OPERATION_ADD]: streamInput });
+  if (updatedAddInputs.length > 0 || updatedAddRelations.length > 0) {
+    const streamInput = updatedInputsToData(updatedAddInputs);
+    const streamRels = updatedAddRelations.length > 0 ? R.mergeAll(updatedAddRelations) : {};
+    const addOperations = { ...streamInput, ...streamRels };
+    streamInputs.push({ [UPDATE_OPERATION_ADD]: addOperations });
+  }
+  if (updatedRemoveRelations.length > 0) {
+    streamInputs.push({ [UPDATE_OPERATION_REMOVE]: R.mergeAll(updatedRemoveRelations) });
   }
   if (impactedInputs.length > 0) {
     const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
@@ -1788,31 +1968,24 @@ const upsertElementRaw = async (user, instance, type, input, opts = {}) => {
   return { type: TRX_UPDATE, element: instance, relations: rawRelations, streamInputs };
 };
 
-export const buildRelationTimeFilter = (input) => {
-  const args = {};
-  const { relationship_type: relationshipType } = input;
+const checkRelationConsistency = (relationshipType, fromType, toType) => {
+  // Check if StixCoreRelationship is allowed
   if (isStixCoreRelationship(relationshipType)) {
-    if (!R.isNil(input.start_time)) {
-      args.startTimeStart = prepareDate(moment(input.start_time).subtract(1, 'months').utc());
-      args.startTimeStop = prepareDate(moment(input.start_time).add(1, 'months').utc());
-    }
-    if (!R.isNil(input.stop_time)) {
-      args.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'months').utc());
-      args.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'months').utc());
-    }
-  } else if (isStixSightingRelationship(relationshipType)) {
-    if (!R.isNil(input.first_seen)) {
-      args.firstSeenStart = prepareDate(moment(input.first_seen).subtract(1, 'months').utc());
-      args.firstSeenStop = prepareDate(moment(input.first_seen).add(1, 'months').utc());
-    }
-    if (!R.isNil(input.last_seen)) {
-      args.lastSeenStart = prepareDate(moment(input.last_seen).subtract(1, 'months').utc());
-      args.lastSeenStop = prepareDate(moment(input.last_seen).add(1, 'months').utc());
+    if (!checkStixCoreRelationshipMapping(fromType, toType, relationshipType)) {
+      throw FunctionalError(
+        `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
+      );
     }
   }
-  return args;
+  // Check if StixCyberObservableRelationship is allowed
+  if (isStixCyberObservableRelationship(relationshipType)) {
+    if (!checkStixCyberObservableRelationshipMapping(fromType, toType, relationshipType)) {
+      throw FunctionalError(
+        `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
+      );
+    }
+  }
 };
-
 const buildRelationData = async (user, input, opts = {}) => {
   const { fromRule } = opts;
   const { from, to, relationship_type: relationshipType } = input;
@@ -1820,9 +1993,23 @@ const buildRelationData = async (user, input, opts = {}) => {
   const internalId = generateInternalId();
   const standardId = generateStandardId(relationshipType, input);
   // 02. Check existing relationship
-  const timeFilters = fromRule ? {} : buildRelationTimeFilter(input);
-  const listingArgs = { fromId: from.internal_id, toId: to.internal_id, connectionFormat: false, ...timeFilters };
-  const existingRelationships = await listRelations(SYSTEM_USER, relationshipType, listingArgs);
+  const existingRelationships = [];
+  if (fromRule) {
+    // In case inferred rule, try to find the relation with basic filters
+    const listingArgs = {
+      fromId: from.internal_id,
+      toId: to.internal_id,
+      connectionFormat: false,
+      indices: [READ_INDEX_INFERRED_RELATIONSHIPS],
+    };
+    const inferredRelationships = await listRelations(SYSTEM_USER, relationshipType, listingArgs);
+    existingRelationships.push(...inferredRelationships);
+  } else {
+    const timeFilters = buildRelationTimeFilter(input);
+    const listingArgs = { fromId: from.internal_id, toId: to.internal_id, connectionFormat: false, ...timeFilters };
+    const manualRelationships = await listRelations(SYSTEM_USER, relationshipType, listingArgs);
+    existingRelationships.push(...manualRelationships);
+  }
   let existingRelationship = null;
   if (existingRelationships.length > 0) {
     // We need to filter what we found with the user rights
@@ -1847,46 +2034,21 @@ const buildRelationData = async (user, input, opts = {}) => {
   const data = {};
   // Check existing
   if (existingRelationship) {
-    // If user try to create an existing inferred relationship but she's already exists
-    // we need to delete the inference and create the real relation.
-    const isDirectCreation = isEmptyField(fromRule);
-    const isRuleCreation = !isDirectCreation;
-    const wasCreatedByRule = isInferredIndex(existingRelationship._index);
-    if (wasCreatedByRule) {
-      // If the element was created by a rule
-      if (isDirectCreation) {
-        // If the creation is asked by a user.
-        // We can delete the current element. It will be recreated as manual creation
-        const rulesToKeep = Object.keys(existingRelationship)
-          .filter((k) => k.startsWith(RULE_PREFIX))
-          .map((key) => ({ key, val: existingRelationship[key] }));
-        for (let index = 0; index < rulesToKeep.length; index += 1) {
-          const rulesToKeepElement = rulesToKeep[index];
-          data[rulesToKeepElement.key] = rulesToKeepElement.val;
-        }
-        // eslint-disable-next-line no-use-before-define
-        await deleteElementById(RULE_MANAGER_USER, existingRelationship.id, existingRelationship.entity_type);
-      } else {
-        // Rule reapply on existing element, simple upsert to execute
-        return upsertElementRaw(user, existingRelationship, relationshipType, input, opts);
-      }
-    } else {
-      // If the element was directly created
-      if (isRuleCreation) {
-        // If the creation is asked by a rule.
-        // We ust update the rule element without touching the rest
-        return upsertElementRule(user, existingRelationship, relationshipType, input);
-      }
-      // User reapply on existing element, simple upsert to execute
-      return upsertElementRaw(user, existingRelationship, relationshipType, input, opts);
+    // If upsert come from a rule, do a specific upsert.
+    if (fromRule) {
+      return upsertRuleRaw(existingRelationship, input, opts);
     }
+    // If user try to create an existing inferred relationship but she's already exists
+    return upsertElementRaw(user, existingRelationship, relationshipType, input, opts);
   }
   // Default attributes
   // basic-relationship
   const inferred = isNotEmptyField(fromRule);
   data._index = inferIndexFromConceptType(relationshipType, inferred);
   if (inferred) {
-    data[RULE_PREFIX + fromRule] = input[RULE_PREFIX + fromRule];
+    // Simply add the rule
+    // start/stop confidence was computed by the rule directly
+    data[fromRule] = input[fromRule];
   }
   data.internal_id = internalId;
   data.standard_id = standardId;
@@ -1991,24 +2153,6 @@ const buildRelationData = async (user, input, opts = {}) => {
   const relations = relToCreate.map((r) => r.relation);
   return { type: TRX_CREATION, element: created, relations };
 };
-const checkRelationConsistency = (relationshipType, fromType, toType) => {
-  // Check if StixCoreRelationship is allowed
-  if (isStixCoreRelationship(relationshipType)) {
-    if (!checkStixCoreRelationshipMapping(fromType, toType, relationshipType)) {
-      throw FunctionalError(
-        `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
-      );
-    }
-  }
-  // Check if StixCyberObservableRelationship is allowed
-  if (isStixCyberObservableRelationship(relationshipType)) {
-    if (!checkStixCyberObservableRelationshipMapping(fromType, toType, relationshipType)) {
-      throw FunctionalError(
-        `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
-      );
-    }
-  }
-};
 
 export const createRelationRaw = async (user, input, opts = {}) => {
   let lock;
@@ -2072,9 +2216,19 @@ export const createRelation = async (user, input) => {
   return data.element;
 };
 
-export const createInferredRelation = async (rule, input) => {
-  const opts = { fromRule: rule, extendRelationTime: false, overrideMarkings: true };
-  const data = await createRelationRaw(RULE_MANAGER_USER, input, opts);
+export const createInferredRelation = async (input, ruleContent) => {
+  const opts = { fromRule: ruleContent.field };
+  // eslint-disable-next-line camelcase
+  const { fromId, toId, relationship_type } = input;
+  // In some cases, we can try to create with the same from and to, ignore
+  if (fromId === toId) {
+    return undefined;
+  }
+  // Build the instance
+  const instance = { fromId, toId, relationship_type, [ruleContent.field]: [ruleContent.content] };
+  const { ruleInput, ruleMarkings } = createRuleDataPatch(instance);
+  const inputRelation = { ...instance, ...ruleInput, objectMarking: ruleMarkings };
+  const data = await createRelationRaw(RULE_MANAGER_USER, inputRelation, opts);
   return data.event;
 };
 
@@ -2308,26 +2462,60 @@ export const deleteElementById = async (user, elementId, type) => {
   // Return id
   return elementId;
 };
-export const deleteInferredRuleElement = async (rule, element) => {
-  const events = [];
-  const rules = Object.keys(element).filter((k) => k.startsWith(RULE_PREFIX));
+export const deleteInferredRuleElement = async (rule, instance, dependencyId) => {
+  const fromRule = RULE_PREFIX + rule;
+  const rules = Object.keys(instance).filter((k) => k.startsWith(RULE_PREFIX));
   const completeRuleName = RULE_PREFIX + rule;
   if (!rules.includes(completeRuleName)) {
     throw UnsupportedError('Cant ask a deletion on element not inferred by this rule', { rule });
   }
-  const isPurelyInferred = isInferredIndex(element._index);
+  // Get useful vars
   const monoRule = rules.length === 1;
-  // If purely inferred and mono rule we can safely delete it.
-  if (isPurelyInferred && monoRule) {
-    await deleteElementById(RULE_MANAGER_USER, element.id, element.entity_type);
-    const event = await buildDeleteEvent(RULE_MANAGER_USER, element, stixLoadById, { withoutMessage: true });
-    events.push(event);
-  } else {
-    // In others case you need to clean the rule and keep the element
-    const patch = createClearRulePatch(rule);
-    await patchAttribute(RULE_MANAGER_USER, element.id, element.entity_type, patch);
+  const isPurelyInferred = isInferredIndex(instance._index);
+  // Cleanup all explanation that match the dependency id
+  const derivedEvents = [];
+  const elementsRule = instance[completeRuleName];
+  const rebuildRuleContent = [];
+  for (let index = 0; index < elementsRule.length; index += 1) {
+    const ruleContent = elementsRule[index];
+    const { dependencies } = ruleContent;
+    // If no dependency setup, this is task cleanup
+    if (isNotEmptyField(dependencyId) && !dependencies.includes(dependencyId)) {
+      rebuildRuleContent.push(ruleContent);
+    }
   }
-  return events;
+  try {
+    if (rebuildRuleContent.length === 0) {
+      // Rule has no more explanation in the rule
+      if (isPurelyInferred && monoRule) {
+        // If purely inferred and mono rule we can safely delete it.
+        await deleteElementById(RULE_MANAGER_USER, instance.id, instance.entity_type);
+        const event = await buildDeleteEvent(RULE_MANAGER_USER, instance, stixLoadById, { withoutMessage: true });
+        derivedEvents.push(event);
+      } else {
+        // If not we need to clean the rule and keep the element
+        const input = { [completeRuleName]: null };
+        const data = await upsertRuleRaw(instance, input, { fromRule, ruleOverride: true });
+        await indexCreatedElement(data);
+        const event = await buildUpdateEvent(RULE_MANAGER_USER, data.element, data.streamInputs);
+        if (event) {
+          derivedEvents.push(event);
+        }
+      }
+    } else {
+      // Rule still have other explanation, update the rule
+      const input = { [completeRuleName]: rebuildRuleContent };
+      const data = await upsertRuleRaw(instance, input, { fromRule, ruleOverride: true });
+      await indexCreatedElement(data);
+      const event = await buildUpdateEvent(RULE_MANAGER_USER, data.element, data.streamInputs);
+      if (event) {
+        derivedEvents.push(event);
+      }
+    }
+  } catch (e) {
+    logApp.error('Cant delete inference', { error: e.message });
+  }
+  return derivedEvents;
 };
 export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshipType, scopeType, opts = {}) => {
   /* istanbul ignore if */

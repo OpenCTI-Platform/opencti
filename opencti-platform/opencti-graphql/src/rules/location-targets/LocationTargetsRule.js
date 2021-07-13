@@ -3,12 +3,9 @@ import { RELATION_LOCATED_AT, RELATION_TARGETS } from '../../schema/stixCoreRela
 import def from './LocationTargetsDefinition';
 import buildRelationToRelationRule from '../relation-to-relation/RelationToRelationBuilder';
 
-const LocationTargetsRule = buildRelationToRelationRule(
-  def.id,
-  def.name,
-  def.description,
-  { leftType: RELATION_TARGETS, rightType: RELATION_LOCATED_AT, creationType: RELATION_TARGETS },
-  def.scopeFields,
-  def.scopeFilters
-);
+const LocationTargetsRule = buildRelationToRelationRule(def, {
+  leftType: RELATION_TARGETS,
+  rightType: RELATION_LOCATED_AT,
+  creationType: RELATION_TARGETS,
+});
 export default LocationTargetsRule;

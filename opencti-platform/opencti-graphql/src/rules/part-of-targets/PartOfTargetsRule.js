@@ -3,12 +3,9 @@ import { RELATION_PART_OF, RELATION_TARGETS } from '../../schema/stixCoreRelatio
 import def from './PartOfTargetsDefinition';
 import buildRelationToRelationRule from '../relation-to-relation/RelationToRelationBuilder';
 
-const PartOfTargetsRule = buildRelationToRelationRule(
-  def.id,
-  def.name,
-  def.description,
-  { leftType: RELATION_TARGETS, rightType: RELATION_PART_OF, creationType: RELATION_TARGETS },
-  def.scopeFields,
-  def.scopeFilters
-);
+const PartOfTargetsRule = buildRelationToRelationRule(def, {
+  leftType: RELATION_TARGETS,
+  rightType: RELATION_PART_OF,
+  creationType: RELATION_TARGETS,
+});
 export default PartOfTargetsRule;

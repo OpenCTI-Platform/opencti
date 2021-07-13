@@ -144,13 +144,8 @@ export const stixCoreRelationshipEditField = async (user, stixCoreRelationshipId
   if (!stixCoreRelationship) {
     throw FunctionalError('Cannot edit the field, stix-core-relationship cannot be found.');
   }
-  const updatedRelationship = await updateAttribute(
-    user,
-    stixCoreRelationshipId,
-    ABSTRACT_STIX_CORE_RELATIONSHIP,
-    input
-  );
-  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, updatedRelationship, user);
+  const { element } = await updateAttribute(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP, input);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, element, user);
 };
 
 export const stixCoreRelationshipAddRelation = async (user, stixCoreRelationshipId, input) => {

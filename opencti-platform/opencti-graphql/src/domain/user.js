@@ -312,8 +312,8 @@ export const addUser = async (user, newUser) => {
 };
 
 export const roleEditField = async (user, roleId, input) => {
-  const role = await updateAttribute(user, roleId, ENTITY_TYPE_ROLE, input);
-  return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
+  const { element } = await updateAttribute(user, roleId, ENTITY_TYPE_ROLE, input);
+  return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, element, user);
 };
 
 export const roleAddRelation = async (user, roleId, input) => {
@@ -348,8 +348,8 @@ export const userEditField = async (user, userId, input) => {
   const { key } = input;
   const value = key === 'password' ? [bcrypt.hashSync(R.head(input.value).toString(), 10)] : input.value;
   const patch = { [key]: value };
-  const userToEdit = await patchAttribute(user, userId, ENTITY_TYPE_USER, patch);
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToEdit, user);
+  const { element } = await patchAttribute(user, userId, ENTITY_TYPE_USER, patch);
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
 export const bookmarks = async (user, types) => {

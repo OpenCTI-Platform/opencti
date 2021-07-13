@@ -63,6 +63,6 @@ export const settingsEditContext = (user, settingsId, input) => {
 };
 
 export const settingsEditField = async (user, settingsId, input) => {
-  const settings = await updateAttribute(user, settingsId, ENTITY_TYPE_SETTINGS, input);
-  return notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user);
+  const { element } = await updateAttribute(user, settingsId, ENTITY_TYPE_SETTINGS, input);
+  return notify(BUS_TOPICS.Settings.EDIT_TOPIC, element, user);
 };

@@ -1,17 +1,21 @@
 /* eslint-disable camelcase */
 import { buildDeleteEvent, buildScanEvent, createStreamProcessor, lockResource } from '../database/redis';
 import conf, { ENABLED_RULE_ENGINE, logApp } from '../config/conf';
-import { createEntity, listAllRelations, stixLoadById } from '../database/middleware';
-import { isEmptyField, READ_DATA_INDICES } from '../database/utils';
+import { createEntity, internalLoadById, listAllRelations, stixLoadById } from '../database/middleware';
+import { isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/rabbitmq';
 import { elList } from '../database/elasticSearch';
 import { STIX_RELATIONSHIPS } from '../schema/stixRelationship';
 import { RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE } from '../schema/internalObject';
-import { UnsupportedError } from '../config/errors';
+import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { createRuleTask, deleteTask, findAll } from '../domain/task';
-import { getActivatedRules, getRule, getRules } from '../domain/rule';
+import { getActivatedRules, getRule } from '../domain/rule';
 import { RULE_MANAGER_USER } from '../rules/RuleUtils';
+import { extractFieldsOfPatch, MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/sseMiddleware';
+import { buildStixData } from '../database/stix';
+import { generateInternalType, getParentTypes, getTypeFromStixId } from '../schema/schemaUtils';
+import declaredRules from '../rules/RuleDeclarations';
 
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
 
@@ -47,9 +51,37 @@ const ruleMergeHandler = async (event) => {
   return events;
 };
 
-const ruleApplyHandler = async (events) => {
+const isMatchRuleFilters = (rule, element) => {
+  // Handle types filtering
+  const { types = [], fromTypes = [], toTypes = [] } = rule.scopeFilters ?? {};
+  if (types.length > 0) {
+    const instanceType = element.relationship_type || generateInternalType(element);
+    const elementTypes = [instanceType, ...getParentTypes(instanceType)];
+    const isCompatibleType = types.some((r) => elementTypes.includes(r));
+    if (!isCompatibleType) return false;
+  }
+  if (fromTypes.length > 0) {
+    const { source_ref: fromId } = element;
+    const fromType = getTypeFromStixId(fromId);
+    const instanceFromTypes = [fromType, ...getParentTypes(fromType)];
+    const isCompatibleType = fromTypes.some((r) => instanceFromTypes.includes(r));
+    if (!isCompatibleType) return false;
+  }
+  if (toTypes.length > 0) {
+    const { target_ref: toId } = element;
+    const toType = getTypeFromStixId(toId);
+    const instanceToTypes = [toType, ...getParentTypes(toType)];
+    const isCompatibleType = toTypes.some((r) => instanceToTypes.includes(r));
+    if (!isCompatibleType) return false;
+  }
+  return true;
+};
+
+export const rulesApplyHandler = async (events, onlyRules = []) => {
   if (isEmptyField(events) || events.length === 0) return;
-  const activatedRules = await getActivatedRules();
+  // Execute all rules if not specified
+  const allActivatedRules = await getActivatedRules();
+  const rules = onlyRules.length > 0 ? onlyRules : allActivatedRules;
   for (let index = 0; index < events.length; index += 1) {
     const event = events[index];
     try {
@@ -58,73 +90,84 @@ const ruleApplyHandler = async (events) => {
       // In case of merge convert the events to basic events and restart the process
       if (type === EVENT_TYPE_MERGE) {
         const derivedEvents = await ruleMergeHandler(event);
-        await ruleApplyHandler(derivedEvents);
+        await rulesApplyHandler(derivedEvents, allActivatedRules);
       }
       // In case of deletion, call clean on every impacted elements
       if (type === EVENT_TYPE_DELETE) {
         const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: [data.x_opencti_id], operator: 'wildcard' }];
         // eslint-disable-next-line no-use-before-define
-        const opts = { filters, callback: handleRuleClean };
+        const opts = { filters, callback: (elements) => allRulesCleanHandler(elements, data.x_opencti_id) };
         await elList(RULE_MANAGER_USER, READ_DATA_INDICES, opts);
       }
       // In case of update apply the event on every rules
       if (type === EVENT_TYPE_UPDATE) {
-        for (let ruleIndex = 0; ruleIndex < activatedRules.length; ruleIndex += 1) {
-          const rule = activatedRules[ruleIndex];
-          const derivedEvents = await rule.update(element);
-          await ruleApplyHandler(derivedEvents);
+        for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
+          const rule = rules[ruleIndex];
+          // const instance = rebuildInstanceWithPatch(element, element.x_opencti_patch);
+          const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
+          const isImpactedFields = rule.scopePatch.some((f) => patchedFields.includes(f));
+          const isImpactedElement = isMatchRuleFilters(rule, element);
+          if (isImpactedElement && isImpactedFields) {
+            const instance = await internalLoadById(RULE_MANAGER_USER, element.id);
+            const stixData = buildStixData(instance);
+            const derivedEvents = await rule.update(stixData, patchedFields);
+            await rulesApplyHandler(derivedEvents, allActivatedRules);
+          }
         }
       }
       // In case of creation apply the event on every rules
       if (type === EVENT_TYPE_CREATE) {
-        for (let ruleIndex = 0; ruleIndex < activatedRules.length; ruleIndex += 1) {
-          const rule = activatedRules[ruleIndex];
-          const derivedEvents = await rule.insert(element);
-          await ruleApplyHandler(derivedEvents);
+        for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
+          const rule = rules[ruleIndex];
+          const isImpactedElement = isMatchRuleFilters(rule, element);
+          if (isImpactedElement) {
+            const derivedEvents = await rule.insert(element);
+            await rulesApplyHandler(derivedEvents, allActivatedRules);
+          }
         }
       }
     } catch (e) {
-      logApp.error('Error in rule processing', { event });
+      logApp.error('Error applying event in rule processor', { event, error: e });
     }
   }
 };
 
-export const handleRuleClean = async (depElements) => {
-  const rules = await getRules();
-  for (let i = 0; i < depElements.length; i += 1) {
-    const depElement = depElements[i];
-    const elementRules = Object.keys(depElement)
-      .filter((k) => k.startsWith(RULE_PREFIX))
-      .map((k) => k.substr(RULE_PREFIX.length));
-    const rulesToClean = rules.filter((d) => elementRules.includes(d.id));
-    for (let ruleIndex = 0; ruleIndex < rulesToClean.length; ruleIndex += 1) {
-      const rule = rulesToClean[ruleIndex];
-      const derivedEvents = await rule.clean(depElement);
-      await ruleApplyHandler(derivedEvents);
+export const rulesCleanHandler = async (instances, rules, dependencyId) => {
+  for (let i = 0; i < instances.length; i += 1) {
+    const instance = instances[i];
+    for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
+      const rule = rules[ruleIndex];
+      const isElementCleanable = isNotEmptyField(instance[RULE_PREFIX + rule.id]);
+      if (isElementCleanable) {
+        const processingElement = await internalLoadById(RULE_MANAGER_USER, instance.internal_id);
+        const derivedEvents = await rule.clean(processingElement, dependencyId);
+        await rulesApplyHandler(derivedEvents);
+      }
     }
   }
 };
-
-export const handleRuleApply = async (user, element) => {
-  // Execute rules over one element, act as element creation
-  const event = await buildScanEvent(user, element, stixLoadById);
-  await ruleApplyHandler([event]);
+export const allRulesCleanHandler = async (elements, dependencyId) => {
+  await rulesCleanHandler(elements, declaredRules, dependencyId);
 };
 
 const ruleStreamHandler = async (streamEvents) => {
-  const events = streamEvents
-    .filter((event) => {
-      const { data } = event;
-      return data && parseInt(data.version, 10) >= 2;
-    })
-    .map((e) => {
-      const { topic, data: eventData } = e;
-      const { data, markings } = eventData;
-      return { type: topic, markings, data };
-    });
-  await ruleApplyHandler(events);
+  // Create list of events to process
+  const compatibleEvents = streamEvents.filter((event) => {
+    const { data } = event;
+    return data && parseInt(data.version, 10) >= MIN_LIVE_STREAM_EVENT_VERSION;
+  });
+  // const compactedEvents = computeEventsDiff(compatibleEvents);
+  const ruleEvents = compatibleEvents.map((e) => {
+    const { topic, data: eventData } = e;
+    const { data, markings } = eventData;
+    return { type: topic, markings, data };
+  });
+  // Execute the events
+  await rulesApplyHandler(ruleEvents);
+  // TODO Save the last processed event
 };
 
+const compactDepth = conf.get('redis:live_depth_compact');
 const initRuleManager = () => {
   let streamProcessor;
   return {
@@ -133,7 +176,7 @@ const initRuleManager = () => {
       try {
         // Lock the manager
         lock = await lockResource([RULE_ENGINE_KEY]);
-        streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler);
+        streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler, compactDepth);
         await streamProcessor.start();
         // Handle hot module replacement resource dispose
         if (module.hot) {
@@ -143,7 +186,11 @@ const initRuleManager = () => {
         }
         return true;
       } catch (e) {
-        logApp.error('Rule engine failed to start', { error: e });
+        if (e.name === TYPE_LOCK_ERROR) {
+          logApp.debug('[OPENCTI] Rule engine already started by another API');
+        } else {
+          logApp.error('[OPENCTI] Rule engine failed to start', { error: e });
+        }
         return false;
       } finally {
         if (lock) await lock.unlock();

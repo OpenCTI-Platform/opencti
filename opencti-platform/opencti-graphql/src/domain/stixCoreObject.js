@@ -143,8 +143,8 @@ export const stixCoreObjectEditField = async (user, stixCoreObjectId, input) => 
   if (!stixCoreObject) {
     throw FunctionalError('Cannot edit the field, Stix-Core-Object cannot be found.');
   }
-  const updatedStixCoreObject = await updateAttribute(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT, input);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, updatedStixCoreObject, user);
+  const { element } = await updateAttribute(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT, input);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, element, user);
 };
 
 export const stixCoreObjectDelete = async (user, stixCoreObjectId) => {

@@ -94,14 +94,14 @@ describe('Attribute updater', () => {
     const campaign = await elLoadById(ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const campaignId = campaign.internal_id;
     const input = { observable_value: 'test' };
-    const update = patchAttribute(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input);
+    const { element: update } = patchAttribute(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input);
     expect(update).rejects.toThrow();
   });
   it('should update dont do anything if already the same', async () => {
     const campaign = await elLoadById(ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const campaignId = campaign.internal_id;
     const patch = { description: 'A test campaign' };
-    const update = await patchAttribute(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, patch);
+    const { element: update } = await patchAttribute(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, patch);
     expect(update.internal_id).toEqual(campaignId);
   });
   it.each(noCacheCases)('should update date with dependencies', async (noCache) => {
@@ -111,8 +111,8 @@ describe('Attribute updater', () => {
     expect(campaign.first_seen).toEqual('2020-02-27T08:45:43.365Z');
     const type = 'Stix-Domain-Object';
     let patch = { first_seen: '2020-02-20T08:45:43.366Z' };
-    let update = await patchAttribute(ADMIN_USER, campaignId, type, patch);
-    expect(update.internal_id).toEqual(campaignId);
+    const { element: update01 } = await patchAttribute(ADMIN_USER, campaignId, type, patch);
+    expect(update01.internal_id).toEqual(campaignId);
     campaign = await internalLoadById(ADMIN_USER, stixId, { noCache });
     expect(campaign.first_seen).toEqual('2020-02-20T08:45:43.366Z');
     expect(campaign.i_first_seen_day).toEqual('2020-02-20');
@@ -120,8 +120,8 @@ describe('Attribute updater', () => {
     expect(campaign.i_first_seen_year).toEqual('2020');
     // Value back to before
     patch = { first_seen: '2020-02-27T08:45:43.365Z' };
-    update = await patchAttribute(ADMIN_USER, campaignId, type, patch);
-    expect(update.internal_id).toEqual(campaignId);
+    const { element: update02 } = await patchAttribute(ADMIN_USER, campaignId, type, patch);
+    expect(update02.internal_id).toEqual(campaignId);
     campaign = await internalLoadById(ADMIN_USER, stixId, { noCache });
     expect(campaign.first_seen).toEqual('2020-02-27T08:45:43.365Z');
     expect(campaign.i_first_seen_day).toEqual('2020-02-27');
@@ -965,6 +965,7 @@ describe('Upsert and merge entities', () => {
     });
     // merge by update
     const md5Input = { key: 'hashes.MD5', value: ['MERGE_MD5'] };
+    // eslint-disable-next-line prettier/prettier
     const patchSha1 = updateAttribute(SYSTEM_USER, sha1.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [md5Input]);
     // eslint-disable-next-line prettier/prettier
     const patchSha256 = updateAttribute(SYSTEM_USER, sha256.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [md5Input]);

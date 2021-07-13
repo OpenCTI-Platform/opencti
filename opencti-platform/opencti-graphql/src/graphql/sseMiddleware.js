@@ -23,12 +23,12 @@ import {
   UPDATE_OPERATION_REPLACE,
 } from '../database/utils';
 import { buildStixData } from '../database/stix';
-import { generateInternalType, parents } from '../schema/schemaUtils';
+import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { BYPASS, isBypassUser } from '../utils/access';
 import { adaptFiltersFrontendFormat, TYPE_FILTER } from '../utils/filtering';
 
 let heartbeat;
-const MIN_LIVE_STREAM_EVENT_VERSION = 2;
+export const MIN_LIVE_STREAM_EVENT_VERSION = 2;
 const KEEP_ALIVE_INTERVAL_MS = 20000;
 const broadcastClients = {};
 
@@ -219,7 +219,7 @@ export const isInstanceMatchFilters = (instance, filters) => {
     // Entity type filtering
     if (type === TYPE_FILTER) {
       const instanceType = generateInternalType(instance);
-      const instanceAllTypes = [instanceType, ...parents(instanceType)];
+      const instanceAllTypes = [instanceType, ...getParentTypes(instanceType)];
       let found = false;
       if (values.length === 0) {
         found = true;
@@ -329,8 +329,8 @@ export const rebuildInstanceWithPatch = (instance, patch) => {
         rebuild[key] = key.endsWith('_ref') ? R.head(ops) : ops;
       }
       if (type === UPDATE_OPERATION_REMOVE) {
-        const ids = changes.map((c) => c.value);
-        const elements = (instance[key] || []).filter((e) => !ids.includes(e.value));
+        const ids = changes.map((c) => [c.value, c.x_opencti_internal_id]).flat();
+        const elements = (instance[key] || []).filter((e) => !ids.includes(e));
         rebuild[key] = key.endsWith('_ref') ? null : elements;
       }
     }
@@ -503,7 +503,7 @@ const createSeeMiddleware = () => {
         // Pre filter for entity_type if needed
         const filterTypes = streamFilters?.entity_type || [];
         const instanceType = generateInternalType(data);
-        const instanceAllTypes = [instanceType, ...parents(instanceType)];
+        const instanceAllTypes = [instanceType, ...getParentTypes(instanceType)];
         let isValid = false;
         if (filterTypes.length === 0) {
           isValid = true;

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { UnsupportedError } from '../config/errors';
-import { INTERNAL_IDS_ALIASES, IDS_STIX } from './general';
+import { INTERNAL_IDS_ALIASES, IDS_STIX, RULE_PREFIX } from './general';
 import { STANDARD_HASHES } from './identifier';
 import { isDatedInternalObject } from './internalObject';
 import { isStixCoreObject } from './stixCoreObject';
@@ -9,7 +9,7 @@ import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isStixMetaObject } from './stixMetaObject';
 import { isStixDomainObject } from './stixDomainObject';
 
-export const multipleAttributes = [
+const multipleAttributes = [
   IDS_STIX,
   'aliases',
   INTERNAL_IDS_ALIASES,
@@ -125,7 +125,7 @@ export const dictAttributes = { hashes: { key: 'algorithm', value: 'hash' } };
 
 export const isDictionaryAttribute = (key) => dictAttributes[key];
 export const isBooleanAttribute = (key) => booleanAttributes.includes(key);
-export const isMultipleAttribute = (key) => multipleAttributes.includes(key);
+export const isMultipleAttribute = (key) => key.startsWith(RULE_PREFIX) || multipleAttributes.includes(key);
 
 // Must be call as soon as possible in the according resolvers
 export const apiAttributeToComplexFormat = (attribute, data) => {
