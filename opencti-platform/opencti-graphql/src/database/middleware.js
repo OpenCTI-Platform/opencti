@@ -1273,7 +1273,7 @@ const transformPathToInput = (patch) => {
     R.toPairs,
     R.map((t) => {
       const val = R.last(t);
-      if (isNotEmptyField(val)) {
+      if (!R.isNil(val)) {
         return { key: R.head(t), value: Array.isArray(val) ? val : [val] };
       }
       return { key: R.head(t), value: null };
