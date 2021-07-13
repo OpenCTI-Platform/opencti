@@ -23,11 +23,7 @@ import { isInternalRelationship } from '../schema/internalRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
-import {
-  isStixInternalMetaRelationship,
-  isStixMetaRelationship,
-  RELATION_OBJECT_LABEL,
-} from '../schema/stixMetaRelationship';
+import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE } from './rabbitmq';
 import { isStixObject } from '../schema/stixCoreObject';
 
@@ -297,27 +293,17 @@ const extractEntityMainValue = (entityData) => {
   return mainValue;
 };
 
-export const relationTypeToInputName = (type) => {
-  let inputName = '';
-  const isMeta = isStixInternalMetaRelationship(type) && type !== RELATION_OBJECT_LABEL;
-  const elements = type.split('-');
-  for (let index = 0; index < elements.length; index += 1) {
-    const element = elements[index];
-    if (index > 0) {
-      inputName += element.charAt(0).toUpperCase() + element.slice(1);
-    } else {
-      inputName += element;
-    }
-  }
-  return inputName + (isMeta ? 's' : '');
-};
-
 const valToMessage = (val) => {
   if (Array.isArray(val)) {
     const values = R.filter((v) => isNotEmptyField(v), val);
-    return values.length > 0 ? values.map((item) => valToMessage(item)) : null;
+    return values.length > 0 ? values.map((item) => valToMessage(item)).join(', ') : null;
   }
   if (val && typeof val === 'object') {
+    // If the message is an update with current/previous
+    if (val.current && val.previous) {
+      return valToMessage(val.current);
+    }
+    // If not, just format the message
     const valEntries = R.filter(([, v]) => isNotEmptyField(v), Object.entries(val));
     return valEntries.map(([k, v]) => `${k}: ${v}`).join(', ');
   }

@@ -21,7 +21,6 @@ import {
   READ_ENTITIES_INDICES,
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
-  relationTypeToInputName,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE,
@@ -113,6 +112,7 @@ import {
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
+  STIX_META_RELATION_TO_OPENCTI_INPUT,
 } from '../schema/stixMetaRelationship';
 import { internalObjectsFieldsToBeUpdated, isDatedInternalObject, isInternalObject } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
@@ -132,7 +132,6 @@ import { isStixCoreRelationship, RELATION_REVOKED_BY } from '../schema/stixCoreR
 import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
-  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
@@ -567,7 +566,7 @@ const loadElementDependencies = async (user, element, args = {}) => {
   const [toResolved, fromResolved] = await Promise.all([toResolvedPromise, fromResolvedPromise]);
   if (fromRelations.length > 0) {
     // Build the flatten view inside the data
-    const grouped = R.groupBy((a) => relationTypeToInputName(a.entity_type), fromRelations);
+    const grouped = R.groupBy((a) => STIX_META_RELATION_TO_OPENCTI_INPUT[a.entity_type], fromRelations);
     const entries = Object.entries(grouped);
     for (let index = 0; index < entries.length; index += 1) {
       const [key, values] = entries[index];

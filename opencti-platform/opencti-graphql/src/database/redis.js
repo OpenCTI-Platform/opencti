@@ -10,7 +10,6 @@ import {
   isEmptyField,
   isInferredIndex,
   isNotEmptyField,
-  relationTypeToInputName,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_CHANGE,
   UPDATE_OPERATION_REMOVE,
@@ -25,7 +24,11 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { now } from '../utils/format';
 import RedisStore from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
-import { isStixMetaRelationship, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+import {
+  isStixMetaRelationship,
+  RELATION_OBJECT_MARKING,
+  STIX_META_RELATION_TO_OPENCTI_INPUT,
+} from '../schema/stixMetaRelationship';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import { getInstanceIds } from '../schema/identifier';
 
@@ -512,7 +515,7 @@ export const buildCreateEvent = async (user, instance, input, stixLoader, opts =
   const { withoutMessage = false } = opts;
   // If internal relation, publish an update instead of a creation
   if (isStixCyberObservableRelationship(instance.entity_type) || isStixMetaRelationship(instance.entity_type)) {
-    const field = relationTypeToInputName(instance.entity_type);
+    const field = STIX_META_RELATION_TO_OPENCTI_INPUT[instance.entity_type];
     const inputUpdate = { [field]: input.to };
     const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
     let publishedInstance = instance.from;
@@ -558,7 +561,7 @@ export const buildDeleteEvent = async (user, instance, stixLoader, opts = {}) =>
   const isCore = isStixCoreRelationship(instance.entity_type);
   const isSighting = isStixSightingRelationship(instance.entity_type);
   if (!isCore && !isSighting) {
-    const field = relationTypeToInputName(instance.entity_type);
+    const field = STIX_META_RELATION_TO_OPENCTI_INPUT[instance.entity_type];
     const inputUpdate = { [field]: instance.to };
     const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
     let publishedInstance = instance.from;
