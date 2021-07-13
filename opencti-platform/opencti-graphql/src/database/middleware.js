@@ -130,14 +130,14 @@ import {
 import { isStixCoreRelationship, RELATION_REVOKED_BY } from '../schema/stixCoreRelationship';
 import {
   ATTRIBUTE_ALIASES,
-  ATTRIBUTE_ALIASES_OPENCTI,
+  ATTRIBUTE_ALIASES_OPENCTI, ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
   isStixObjectAliased,
   resolveAliasesField,
-  stixDomainObjectFieldsToBeUpdated,
-} from '../schema/stixDomainObject';
+  stixDomainObjectFieldsToBeUpdated
+} from "../schema/stixDomainObject";
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservable, stixCyberObservableFieldsToBeUpdated } from '../schema/stixCyberObservable';
@@ -159,6 +159,7 @@ import { checkObservableSyntax } from '../utils/syntax';
 import { deleteAllFiles } from './minio';
 import { filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
 import { createClearRulePatch, isRuleUser, RULE_MANAGER_USER } from '../rules/RuleUtils';
+import { findAll } from "../domain/observedData";
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -1704,7 +1705,6 @@ const upsertElementRaw = async (user, instance, type, input, opts = {}) => {
     impactedInputs.push(...patched.impactedInputs);
     updatedReplaceInputs.push(...patched.updatedInputs);
   }
-  // Upsert SDOs
   if (isStixCoreRelationship(type)) {
     const basePatch = {};
     if (input.confidence && forceUpdate) {
