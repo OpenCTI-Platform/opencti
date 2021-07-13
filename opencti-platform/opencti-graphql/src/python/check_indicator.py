@@ -1,11 +1,11 @@
-import sys
 import json
-import plyara
+import sys
 
-from stix2patterns.validator import run_validator
-from sigma.parser.collection import SigmaCollectionParser
-from parsuricata import parse_rules
+import plyara
 from lib.snortparser import *
+from parsuricata import parse_rules
+from sigma.parser.collection import SigmaCollectionParser
+from stix2patterns.validator import run_validator
 
 
 def return_data(data):

@@ -1,7 +1,7 @@
-import sys
 import json
-import stix2
+import sys
 
+import stix2
 from stix2.pattern_visitor import create_pattern_object
 
 PATTERN_MAPPING = {
