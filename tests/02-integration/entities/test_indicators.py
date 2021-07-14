@@ -2,10 +2,6 @@
 
 import json
 
-import pytest
-from dateutil.parser import parse
-from stix2 import TLP_GREEN, TLP_WHITE
-
 # Commented out since OpenCTI requires at least 100 indicators
 # for this test to work
 #
