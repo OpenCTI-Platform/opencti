@@ -3,8 +3,8 @@ import { RELATION_ATTRIBUTED_TO } from '../../schema/stixCoreRelationship';
 const id = 'attribution_attribution';
 const name = 'Attribution via attribution';
 const description =
-  'If `entity A` is **attributed-to** `entity B` and `entity B` ' +
-  'is **attributed-to** `entity C`, then `entity A` is **attributed-to** `entity C`.';
+  'If **entity A** is `attributed-to` **entity B** and **entity B** ' +
+  'is `attributed-to` **entity C**, then **entity A** is `attributed-to` **entity C**.';
 
 // For rescan
 const scanFilters = { types: [RELATION_ATTRIBUTED_TO] };

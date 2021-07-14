@@ -147,11 +147,7 @@ const stixEntityContribution = {
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_CAMPAIGN]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_CONTAINER_NOTE]: [{ src: CONTENT_FIELD }],
-    [D.ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [
-      { src: 'first_observed' },
-      { src: 'last_observed' },
-      { src: 'number_observed' },
-    ],
+    [D.ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [], // ALL
     [D.ENTITY_TYPE_CONTAINER_OPINION]: [{ src: OPINION_FIELD }],
     [D.ENTITY_TYPE_CONTAINER_REPORT]: [{ src: NAME_FIELD }, { src: 'published' }],
     [D.ENTITY_TYPE_COURSE_OF_ACTION]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],

@@ -2079,7 +2079,7 @@ input ObservedDataAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  objects: [String]
+  objects: [String]!
   created: DateTime
   modified: DateTime
   clientMutationId: String

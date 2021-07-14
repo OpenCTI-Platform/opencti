@@ -3,8 +3,8 @@ import { RELATION_ATTRIBUTED_TO, RELATION_TARGETS } from '../../schema/stixCoreR
 const id = 'attribution_targets';
 const name = 'Targets via attribution';
 const description =
-  'If `entity A` **targets** `entity B` and `entity A` is ' +
-  '**attributed-to** `entity C`, then `entity C` **targets** `entity B`.';
+  'If **entity A** `targets` **entity B** and **entity A** is ' +
+  '`attributed-to` **entity C**, then **entity C** `targets` **entity B**.';
 
 // For rescan
 const scanFilters = { types: [RELATION_ATTRIBUTED_TO] };

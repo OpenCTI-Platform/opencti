@@ -46,7 +46,7 @@
     }
   },
   "rule_engine": {
-    "enabled": false,
+    "enabled": true,
     "lock_key": "rule_engine_lock"
   },
   "task_scheduler": {

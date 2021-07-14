@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
+import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
@@ -11,11 +12,11 @@ import {
   KeyboardArrowRightOutlined,
   WifiTetheringOutlined,
 } from '@material-ui/icons';
-import { compose, pathOr, take } from 'ramda';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import { defaultValue } from '../../../../utils/Graph';
 
 const styles = (theme) => ({
   item: {
@@ -50,8 +51,9 @@ const styles = (theme) => ({
 class ObservedDataLineComponent extends Component {
   render() {
     const {
-      fd, classes, node, dataColumns, onLabelClick,
+      t, fd, classes, node, dataColumns, onLabelClick,
     } = this.props;
+    const firstEntity = node.objects.edges.length > 0 ? R.head(node.objects.edges).node : null;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -68,6 +70,12 @@ class ObservedDataLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.first_entity.width }}
+              >
+                {firstEntity ? defaultValue(firstEntity) : t('None')}
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.first_observed.width }}
               >
                 {fd(node.first_observed)}
@@ -82,7 +90,7 @@ class ObservedDataLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
-                {pathOr('', ['createdBy', 'name'], node)}
+                {R.pathOr('', ['createdBy', 'name'], node)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -96,15 +104,9 @@ class ObservedDataLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
-                {fd(node.created)}
-              </div>
-              <div
-                className={classes.bodyItem}
                 style={{ width: dataColumns.objectMarking.width }}
               >
-                {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
+                {R.take(1, R.pathOr([], ['objectMarking', 'edges'], node)).map(
                   (markingDefinition) => (
                     <ItemMarking
                       key={markingDefinition.node.id}
@@ -168,12 +170,142 @@ const ObservedDataLineFragment = createFragmentContainer(
             }
           }
         }
+        objects(first: 1) {
+          edges {
+            node {
+              ... on StixCoreObject {
+                id
+                entity_type
+                parent_types
+                created_at
+                createdBy {
+                  ... on Identity {
+                    id
+                    name
+                    entity_type
+                  }
+                }
+                objectMarking {
+                  edges {
+                    node {
+                      id
+                      definition
+                    }
+                  }
+                }
+              }
+              ... on AttackPattern {
+                name
+                description
+                x_mitre_id
+              }
+              ... on Campaign {
+                name
+                description
+                first_seen
+                last_seen
+              }
+              ... on Note {
+                attribute_abstract
+              }
+              ... on ObservedData {
+                first_observed
+                last_observed
+              }
+              ... on Opinion {
+                opinion
+              }
+              ... on Report {
+                name
+                description
+                published
+              }
+              ... on CourseOfAction {
+                name
+                description
+              }
+              ... on Individual {
+                name
+                description
+              }
+              ... on Organization {
+                name
+                description
+              }
+              ... on Sector {
+                name
+                description
+              }
+              ... on Indicator {
+                name
+                description
+                valid_from
+              }
+              ... on Infrastructure {
+                name
+                description
+              }
+              ... on IntrusionSet {
+                name
+                description
+                first_seen
+                last_seen
+              }
+              ... on Position {
+                name
+                description
+              }
+              ... on City {
+                name
+                description
+              }
+              ... on Country {
+                name
+                description
+              }
+              ... on Region {
+                name
+                description
+              }
+              ... on Malware {
+                name
+                description
+                first_seen
+                last_seen
+              }
+              ... on ThreatActor {
+                name
+                description
+                first_seen
+                last_seen
+              }
+              ... on Tool {
+                name
+                description
+              }
+              ... on Vulnerability {
+                name
+                description
+              }
+              ... on Incident {
+                name
+                description
+                first_seen
+                last_seen
+              }
+              ... on StixCyberObservable {
+                observable_value
+                x_opencti_description
+              }
+            }
+          }
+        }
       }
     `,
   },
 );
 
-export const ObservedDataLine = compose(
+export const ObservedDataLine = R.compose(
   inject18n,
   withStyles(styles),
 )(ObservedDataLineFragment);
@@ -189,6 +321,17 @@ class ObservedDataLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.first_entity.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.first_observed.width }}
@@ -235,17 +378,6 @@ class ObservedDataLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
                 style={{ width: dataColumns.objectMarking.width }}
               >
                 <Skeleton
@@ -271,7 +403,7 @@ ObservedDataLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
 };
 
-export const ObservedDataLineDummy = compose(
+export const ObservedDataLineDummy = R.compose(
   inject18n,
   withStyles(styles),
 )(ObservedDataLineDummyComponent);

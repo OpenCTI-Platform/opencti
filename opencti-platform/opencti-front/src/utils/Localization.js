@@ -268,6 +268,8 @@ const i18n = {
       'Update an incident': 'Modifier un incident',
       'Create a malware': 'Créer un code malveillant',
       'Update a malware': 'Modifier un code malveillant',
+      'Create an observed data': 'Créer une donnée observée',
+      'Update an observed data': 'Modifier une donnée observée',
       'New alias': 'Nouvel alias',
       'Aliases separated by commas': 'Alias séparés par des virgules',
       Alias: 'Alias',

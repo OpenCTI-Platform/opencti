@@ -120,14 +120,19 @@ class ObservedDatas extends Component {
     }
 
     const dataColumns = {
+      first_entity: {
+        label: 'First entity',
+        width: '30%',
+        isSortable: false,
+      },
       first_observed: {
         label: 'First obs.',
-        width: '20%',
+        width: '15%',
         isSortable: true,
       },
       last_observed: {
         label: 'Last obs.',
-        width: '20%',
+        width: '15%',
         isSortable: true,
       },
       createdBy: {
@@ -140,14 +145,8 @@ class ObservedDatas extends Component {
         width: '20%',
         isSortable: false,
       },
-      created: {
-        label: 'Date',
-        width: '10%',
-        isSortable: true,
-      },
       objectMarking: {
         label: 'Marking',
-        width: '15%',
         isSortable: false,
       },
     };

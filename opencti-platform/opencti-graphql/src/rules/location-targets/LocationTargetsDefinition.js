@@ -3,8 +3,8 @@ import { RELATION_LOCATED_AT, RELATION_TARGETS } from '../../schema/stixCoreRela
 const id = 'location_targets';
 const name = 'Targets via location';
 const description =
-  'If `entity A` **targets** `entity B` and `entity B` is ' +
-  '**located-at** `entity C`, then `entity A` **targets** `entity C`.';
+  'If **entity A** `targets` **entity B** and **entity B** is ' +
+  '`located-at` **entity C**, then **entity A** `targets` **entity C**.';
 
 // For rescan
 const scanFilters = { types: [RELATION_TARGETS] };
