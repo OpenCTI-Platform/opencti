@@ -10,3 +10,4 @@ sseclient==0.0.27
 black==20.8b1
 python-magic==0.4.22; sys_platform == 'linux' or sys_platform == 'darwin'
 python-magic-bin==0.4.14; sys_platform == 'win32'
+pytest_randomly==3.8.0
