@@ -340,9 +340,14 @@ class ObservedData:
         first_observed = kwargs.get("first_observed", None)
         last_observed = kwargs.get("last_observed", None)
         number_observed = kwargs.get("number_observed", None)
+        objects = kwargs.get("objects", None)
         update = kwargs.get("update", False)
 
-        if first_observed is not None and last_observed is not None:
+        if (
+            first_observed is not None
+            and last_observed is not None
+            and objects is not None
+        ):
             self.opencti.log("info", "Creating ObservedData.")
             query = """
                 mutation ObservedDataAdd($input: ObservedDataAddInput) {
@@ -371,6 +376,7 @@ class ObservedData:
                         "first_observed": first_observed,
                         "last_observed": last_observed,
                         "number_observed": number_observed,
+                        "objects": objects,
                         "update": update,
                     }
                 },
@@ -526,6 +532,7 @@ class ObservedData:
                 number_observed=stix_object["number_observed"]
                 if "number_observed" in stix_object
                 else None,
+                objects=stix_object["object_refs"],
                 update=update,
             )
             if "objects" in stix_object:

@@ -107,9 +107,9 @@ class IndicatorTest(EntityTest):
 
     def get_filter(self) -> Dict[str, str]:
         return {
-                "key": "name",
-                "values": ["C2 server of the new campaign"],
-            }
+            "key": "name",
+            "values": ["C2 server of the new campaign"],
+        }
 
 
 class AttackPatternTest(EntityTest):
