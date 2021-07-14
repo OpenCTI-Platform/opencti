@@ -73,5 +73,6 @@ const initExpiredManager = () => {
     },
   };
 };
+const expiredManager = initExpiredManager();
 
-export default initExpiredManager;
+export default expiredManager;

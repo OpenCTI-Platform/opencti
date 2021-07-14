@@ -928,6 +928,17 @@ type Connector implements BasicObject & InternalObject {
 }
 
 ############## Rules
+type RuleExecutionError {
+  eventId: String
+  message: String
+}
+type RuleManager {
+  id: ID! # internal_id
+  activated: Boolean!
+  lastEventId: String
+  errors: [RuleExecutionError]
+}
+
 type Rule {
   id: ID! # internal_id
   name: String!
@@ -7968,6 +7979,7 @@ type Query {
   ): TaskConnection @auth(for: [KNOWLEDGE])
   rule(id: String!): Rule @auth(for: [KNOWLEDGE])
   rules: [Rule] @auth(for: [KNOWLEDGE])
+  ruleManagerInfo: RuleManager
 
   ######## STIX OBJECT ENTITIES
 
@@ -9104,6 +9116,7 @@ type Mutation {
 
   ### RULE
   ruleSetActivation(id: ID!, enable: Boolean!): Rule! @auth(for: [SETTINGS])
+  ruleManagerClean(eventId: ID): RuleManager! @auth(for: [SETTINGS])
 
   ######## INTERNAL OBJECT ENTITIES
   token(input: UserLoginInput): String

@@ -4,6 +4,7 @@ import { ABSTRACT_INTERNAL_OBJECT, schemaTypes } from './general';
 export const ENTITY_TYPE_SETTINGS = 'Settings';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
 export const ENTITY_TYPE_MIGRATION_REFERENCE = 'MigrationReference';
+export const ENTITY_TYPE_RULE_MANAGER = 'RuleManager';
 export const ENTITY_TYPE_GROUP = 'Group';
 export const ENTITY_TYPE_USER = 'User';
 export const ENTITY_TYPE_RULE = 'Rule';
@@ -36,6 +37,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_USER,
   ENTITY_TYPE_ROLE,
   ENTITY_TYPE_RULE,
+  ENTITY_TYPE_RULE_MANAGER,
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_ATTRIBUTE,
@@ -121,6 +123,7 @@ export const internalObjectsAttributes = {
     'updated_at',
   ],
   [ENTITY_TYPE_RULE]: ['internal_id', 'standard_id', 'entity_type', 'active'],
+  [ENTITY_TYPE_RULE_MANAGER]: ['internal_id', 'lastEventId', 'errors'],
   [ENTITY_TYPE_CAPABILITY]: [
     'internal_id',
     'standard_id',

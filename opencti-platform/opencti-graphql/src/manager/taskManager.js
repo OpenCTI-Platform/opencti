@@ -43,7 +43,7 @@ import { elPaginate, elUpdate } from '../database/elasticSearch';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_BASIC_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
-import { rulesCleanHandler, rulesApplyHandler } from './ruleManager';
+import { rulesCleanHandler, rulesApplyDerivedEvents } from './ruleManager';
 import { getRule } from '../domain/rule';
 
 // Task manager responsible to execute long manual tasks
@@ -77,7 +77,7 @@ const computeRuleTaskElements = async (user, task) => {
     const options = {
       first: MAX_TASK_ELEMENTS,
       orderMode: 'asc',
-      orderBy: 'internal_id',
+      orderBy: 'updated_at',
       after: task_position,
       ...buildFilters(scanFilters),
     };
@@ -97,7 +97,7 @@ const computeRuleTaskElements = async (user, task) => {
     const options = {
       first: MAX_TASK_ELEMENTS,
       orderMode: 'asc',
-      orderBy: 'internal_id',
+      orderBy: 'updated_at',
       after: task_position,
       filters,
     };
@@ -214,19 +214,19 @@ const executeMerge = async (user, context, element) => {
   await mergeEntities(user, element.internal_id, values);
 };
 
-const executeRuleApply = async (user, context, element) => {
+const executeRuleApply = async (user, taskId, context, element) => {
   const { rule } = context;
   // Execute rules over one element, act as element creation
   const event = await buildScanEvent(user, element, stixLoadById);
-  await rulesApplyHandler([event], [rule]);
+  await rulesApplyDerivedEvents(`task--${taskId}`, [event], [rule]);
 };
 
-const executeRuleClean = async (context, element) => {
+const executeRuleClean = async (context, taskId, element) => {
   const { rule } = context;
-  await rulesCleanHandler([element], [rule], null);
+  await rulesCleanHandler(`task--${taskId}`, [element], [rule], null);
 };
 
-const executeProcessing = async (user, processingElements) => {
+const executeProcessing = async (user, taskId, processingElements) => {
   const errors = [];
   for (let index = 0; index < processingElements.length; index += 1) {
     const { element, actions } = processingElements[index];
@@ -250,10 +250,10 @@ const executeProcessing = async (user, processingElements) => {
           await executeMerge(user, context, element);
         }
         if (type === ACTION_TYPE_RULE_APPLY) {
-          await executeRuleApply(user, context, element);
+          await executeRuleApply(user, taskId, context, element);
         }
         if (type === ACTION_TYPE_RULE_CLEAR) {
-          await executeRuleClean(context, element);
+          await executeRuleClean(context, taskId, element);
         }
       }
     } catch (err) {
@@ -301,7 +301,7 @@ const taskHandler = async () => {
     }
     // Process the elements (empty = end of execution)
     if (processingElements.length > 0) {
-      const errors = await executeProcessing(user, processingElements);
+      const errors = await executeProcessing(user, task.id, processingElements);
       await appendTaskErrors(task.id, errors);
     }
     // Update the task
@@ -347,5 +347,6 @@ const initTaskManager = () => {
     },
   };
 };
+const taskManager = initTaskManager();
 
-export default initTaskManager;
+export default taskManager;

@@ -662,7 +662,9 @@ export const createStreamProcessor = (user, provider, callback, maxRange = MAX_R
     info: async () => processInfo(),
     start: async (start = 'live') => {
       let fromStart = start;
-      if (isEmptyField(fromStart)) fromStart = 'live';
+      if (isEmptyField(fromStart)) {
+        fromStart = 'live';
+      }
       startEventId = fromStart === 'live' ? '$' : fromStart;
       client = await createRedisClient(provider); // Create client for this processing loop
       logApp.info(`[STREAM] Starting stream processor for ${provider}`);
