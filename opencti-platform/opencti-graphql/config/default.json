@@ -47,7 +47,8 @@
   },
   "rule_engine": {
     "enabled": false,
-    "lock_key": "rule_engine_lock"
+    "lock_key": "rule_engine_lock",
+    "status_writing_delay": 2000
   },
   "task_scheduler": {
     "enabled": true,

@@ -1560,6 +1560,7 @@ const buildRelationInput = (input) => {
   relationAttributes.internal_id = internalId;
   relationAttributes.standard_id = standardId;
   relationAttributes.entity_type = relationshipType;
+  relationAttributes.relationship_type = relationshipType;
   relationAttributes.created_at = today;
   relationAttributes.updated_at = today;
   // stix-relationship
@@ -1574,7 +1575,6 @@ const buildRelationInput = (input) => {
   }
   // stix-core-relationship
   if (isStixCoreRelationship(relationshipType)) {
-    relationAttributes.relationship_type = relationshipType;
     relationAttributes.description = input.description ? input.description : '';
     relationAttributes.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
     relationAttributes.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
@@ -1588,7 +1588,6 @@ const buildRelationInput = (input) => {
   }
   // stix-observable-relationship
   if (isStixCyberObservableRelationship(relationshipType)) {
-    relationAttributes.relationship_type = relationshipType;
     relationAttributes.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
     relationAttributes.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     /* istanbul ignore if */

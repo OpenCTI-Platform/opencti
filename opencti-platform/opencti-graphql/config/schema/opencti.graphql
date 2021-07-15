@@ -7979,7 +7979,7 @@ type Query {
   ): TaskConnection @auth(for: [KNOWLEDGE])
   rule(id: String!): Rule @auth(for: [KNOWLEDGE])
   rules: [Rule] @auth(for: [KNOWLEDGE])
-  ruleManagerInfo: RuleManager
+  ruleManagerInfo: RuleManager @auth(for: [SETTINGS])
 
   ######## STIX OBJECT ENTITIES
 

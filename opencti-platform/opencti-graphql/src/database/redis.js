@@ -339,7 +339,7 @@ const mapJSToStream = (event) => {
   });
   return cmdArgs;
 };
-const buildEvent = (eventType, user, markings, message, data) => {
+export const buildEvent = (eventType, user, markings, message, data) => {
   if (!data.id || !data.x_opencti_id || !data.type) {
     throw UnsupportedError('Stream event requires id, type and x_opencti_id');
   }
@@ -532,8 +532,9 @@ export const buildCreateEvent = async (user, instance, input, stixLoader, opts =
   const inputMarkings = (input.objectMarking || []).map((m) => m.internal_id);
   return buildEvent(EVENT_TYPE_CREATE, user, inputMarkings, message, data);
 };
-export const buildScanEvent = async (user, instance, stixLoader) => {
-  return buildCreateEvent(user, instance, instance, stixLoader, { withoutMessage: true });
+export const buildScanEvent = (user, instance) => {
+  const data = buildStixData(instance);
+  return buildEvent(EVENT_TYPE_CREATE, user, instance.object_marking_refs ?? [], '-', data);
 };
 export const storeCreateEvent = async (user, instance, input, stixLoader) => {
   if (isStixSpecificationObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {

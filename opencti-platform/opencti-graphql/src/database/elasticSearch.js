@@ -603,6 +603,7 @@ export const elRebuildRelation = (concept) => {
     const fromConnection = R.find((connection) => connection.role === `${entityType}_from`, connections);
     const toConnection = R.find((connection) => connection.role === `${entityType}_to`, connections);
     const relation = elMergeRelation(concept, fromConnection, toConnection);
+    relation.relationship_type = relation.entity_type;
     return R.dissoc('connections', relation);
   }
   return concept;

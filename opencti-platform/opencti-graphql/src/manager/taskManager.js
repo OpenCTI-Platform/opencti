@@ -29,7 +29,6 @@ import {
   listAllRelations,
   mergeEntities,
   patchAttribute,
-  stixLoadById,
 } from '../database/middleware';
 import { now } from '../utils/format';
 import {
@@ -217,7 +216,7 @@ const executeMerge = async (user, context, element) => {
 const executeRuleApply = async (user, taskId, context, element) => {
   const { rule } = context;
   // Execute rules over one element, act as element creation
-  const event = await buildScanEvent(user, element, stixLoadById);
+  const event = await buildScanEvent(user, element);
   await rulesApplyDerivedEvents(`task--${taskId}`, [event], [rule]);
 };
 

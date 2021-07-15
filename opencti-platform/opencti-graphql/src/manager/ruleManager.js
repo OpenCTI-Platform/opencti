@@ -1,13 +1,12 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
-import { buildDeleteEvent, buildScanEvent, createStreamProcessor, lockResource } from '../database/redis';
+import { buildDeleteEvent, buildEvent, buildScanEvent, createStreamProcessor, lockResource } from '../database/redis';
 import conf, { ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import { createEntity, internalLoadById, listAllRelations, patchAttribute, stixLoadById } from '../database/middleware';
 import { INDEX_INTERNAL_OBJECTS, isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/rabbitmq';
 import { elList, elUpdate } from '../database/elasticSearch';
-import { STIX_RELATIONSHIPS } from '../schema/stixRelationship';
-import { RULE_PREFIX } from '../schema/general';
+import { ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE, ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { createRuleTask, deleteTask, findAll } from '../domain/task';
@@ -18,8 +17,10 @@ import { buildStixData } from '../database/stix';
 import { generateInternalType, getParentTypes, getTypeFromStixId } from '../schema/schemaUtils';
 import declaredRules from '../rules/RuleDeclarations';
 
+let activatedRules = [];
 const RULE_ENGINE_ID = 'rule_engine_settings';
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
+const STATUS_WRITE_RANGE = conf.get('rule_engine:status_writing_delay') || 1000;
 
 export const getManagerInfo = async (user) => {
   const ruleStatus = await internalLoadById(user, RULE_ENGINE_ID);
@@ -31,7 +32,10 @@ export const setRuleActivation = async (user, ruleId, active) => {
   if (isEmptyField(resolvedRule)) {
     throw UnsupportedError(`Cant ${active ? 'enable' : 'disable'} undefined rule ${ruleId}`);
   }
+  // Update the rule
   await createEntity(user, { internal_id: ruleId, active, update: true }, ENTITY_TYPE_RULE);
+  // Refresh the activated rules
+  activatedRules = await getActivatedRules();
   if (ENABLED_RULE_ENGINE) {
     const tasksFilters = [
       { key: 'type', values: ['RULE'] },
@@ -45,16 +49,24 @@ export const setRuleActivation = async (user, ruleId, active) => {
 };
 
 const ruleMergeHandler = async (event) => {
-  const { data } = event;
+  const { data, markings } = event;
   // Need to generate events for deletion
-  const events = data.sources.map((s) => buildDeleteEvent(RULE_MANAGER_USER, s, stixLoadById));
+  const events = await Promise.all(
+    data.x_opencti_sources.map((s) => {
+      const instance = { ...s, standard_id: s.id, internal_id: s.x_opencti_id, entity_type: generateInternalType(s) };
+      return buildDeleteEvent(RULE_MANAGER_USER, instance, stixLoadById, { withoutMessage: true });
+    })
+  );
+  // Add the update event
+  const updateEvent = buildEvent(EVENT_TYPE_UPDATE, RULE_MANAGER_USER, markings, '-', data);
+  events.push(updateEvent);
   // Need to generate event for redo rule on updated element
   const mergeCallback = async (relationships) => {
-    const creationEvents = relationships.map((r) => buildScanEvent(RULE_MANAGER_USER, r, stixLoadById));
+    const creationEvents = relationships.map((r) => buildScanEvent(RULE_MANAGER_USER, r));
     events.push(...creationEvents);
   };
   const listToArgs = { elementId: data.x_opencti_id, callback: mergeCallback };
-  await listAllRelations(RULE_MANAGER_USER, STIX_RELATIONSHIPS, listToArgs);
+  await listAllRelations(RULE_MANAGER_USER, ABSTRACT_STIX_RELATIONSHIP, listToArgs);
   return events;
 };
 
@@ -103,9 +115,7 @@ export const rulesApplyDerivedEvents = async (eventId, derivedEvents, forRules =
 
 export const rulesApplyHandler = async (events, forRules = []) => {
   if (isEmptyField(events) || events.length === 0) return;
-  // Execute all rules if not specified
-  const allActivatedRules = await getActivatedRules();
-  const rules = forRules.length > 0 ? forRules : allActivatedRules;
+  const rules = forRules.length > 0 ? forRules : activatedRules;
   for (let index = 0; index < events.length; index += 1) {
     const event = events[index];
     const { eventId, type, data, markings } = event;
@@ -171,6 +181,7 @@ export const rulesCleanHandler = async (eventId, instances, rules, dependencyId)
   }
 };
 
+let streamEventProcessedCount = 0;
 const ruleStreamHandler = async (streamEvents) => {
   // Create list of events to process
   const compatibleEvents = streamEvents.filter((event) => {
@@ -186,9 +197,14 @@ const ruleStreamHandler = async (streamEvents) => {
     // Execute the events
     await rulesApplyHandler(ruleEvents);
     // Save the last processed event
-    const lastEvent = R.last(compatibleEvents);
-    const patch = { lastEventId: lastEvent.id };
-    await patchAttribute(RULE_MANAGER_USER, RULE_ENGINE_ID, ENTITY_TYPE_RULE_MANAGER, patch);
+    if (streamEventProcessedCount > STATUS_WRITE_RANGE) {
+      const lastEvent = R.last(compatibleEvents);
+      const patch = { lastEventId: lastEvent.id };
+      await patchAttribute(RULE_MANAGER_USER, RULE_ENGINE_ID, ENTITY_TYPE_RULE_MANAGER, patch);
+      streamEventProcessedCount = 0;
+    } else {
+      streamEventProcessedCount += compatibleEvents.length;
+    }
   }
 };
 
@@ -204,6 +220,7 @@ const initRuleManager = () => {
         const ruleSettingsInput = { internal_id: RULE_ENGINE_ID, errors: [] };
         const ruleStatus = await createEntity(RULE_MANAGER_USER, ruleSettingsInput, ENTITY_TYPE_RULE_MANAGER);
         // Start the stream listening
+        activatedRules = await getActivatedRules();
         streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler);
         await streamProcessor.start(ruleStatus.lastEventId);
         // Handle hot module replacement resource dispose
