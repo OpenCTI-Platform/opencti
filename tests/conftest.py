@@ -33,7 +33,7 @@ from tests.modules.modules import (
 def api_client(request):
     return OpenCTIApiClient(
         "https://demo.opencti.io",
-        "681b01f9-542d-4c8c-be0c-b6c850b087c8",
+        "e43f4012-9fe2-4ece-bb3f-fe9572e5993b",
         ssl_verify=True,
     )
 

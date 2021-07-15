@@ -532,7 +532,7 @@ class ObservedData:
                 number_observed=stix_object["number_observed"]
                 if "number_observed" in stix_object
                 else None,
-                objects=stix_object["object_refs"],
+                objects=stix_object["object_refs"] if "object_refs" in stix_object else None,
                 update=update,
             )
             if "objects" in stix_object:
