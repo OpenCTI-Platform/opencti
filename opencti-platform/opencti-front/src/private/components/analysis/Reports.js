@@ -14,6 +14,7 @@ import inject18n from '../../../components/i18n';
 import ReportCreation from './reports/ReportCreation';
 import ToolBar from '../data/ToolBar';
 import { isUniqFilter } from '../common/lists/Filters';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class Reports extends Component {
   constructor(props) {
@@ -288,10 +289,10 @@ class Reports extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        {displayCreate === true ? (
-          <ReportCreation paginationOptions={paginationOptions} />
-        ) : (
-          ''
+        {displayCreate === true && (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <ReportCreation paginationOptions={paginationOptions} />
+          </Security>
         )}
       </div>
     );
