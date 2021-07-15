@@ -88,7 +88,9 @@ class ContainerStixDomainObjectsComponent extends Component {
     this.setState({ numberOfElements });
   }
 
-  handleToggleSelectEntity(entity) {
+  handleToggleSelectEntity(entity, event) {
+    event.stopPropagation();
+    event.preventDefault();
     const { selectedElements } = this.state;
     if (entity.id in (selectedElements || {})) {
       const newSelectedElements = R.omit([entity.id], selectedElements);
