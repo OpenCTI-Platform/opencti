@@ -227,7 +227,7 @@ type Number {
 
 ############## Logs
 type LogsWorkerConfig {
-  elasticsearch_url: String!
+  elasticsearch_url: [String]!
   elasticsearch_proxy: String
   elasticsearch_index: String!
   elasticsearch_username: String

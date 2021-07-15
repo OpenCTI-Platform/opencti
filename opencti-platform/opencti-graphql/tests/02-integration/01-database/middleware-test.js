@@ -246,7 +246,7 @@ describe('Relations listing', () => {
     expect(stixCoreRelationships.edges.length).toEqual(21);
     const stixMetaRelationships = await listRelations(ADMIN_USER, 'stix-meta-relationship', { noCache });
     expect(stixMetaRelationships).not.toBeNull();
-    expect(stixMetaRelationships.edges.length).toEqual(111);
+    expect(stixMetaRelationships.edges.length).toEqual(110);
   });
   it.each(noCacheCases)('should list relations with roles (noCache = %s)', async (noCache) => {
     const stixRelations = await listRelations(ADMIN_USER, 'uses', {
