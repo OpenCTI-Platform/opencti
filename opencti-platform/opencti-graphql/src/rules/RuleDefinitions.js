@@ -6,6 +6,7 @@ import LocationTargetsDefinition from './location-targets/LocationTargetsDefinit
 import PartOfTargetsDefinition from './part-of-targets/PartOfTargetsDefinition';
 import LocatedAtLocatedDefinition from './located-at-located/LocatedAtLocatedDefinition';
 import LocalizationOfTargetsDefinition from './localization-of-targets/LocalizationOfTargetsDefinition';
+import ObserveSightingDefinition from './observed-sighting/ObserveSightingDefinition';
 import RelatedToRelatedDefinition from './testing/related-to-related/RelatedToRelatedDefinition';
 import { DEV_MODE } from '../config/conf';
 
@@ -18,6 +19,7 @@ const declaredDef = [
   PartOfTargetsDefinition,
   LocatedAtLocatedDefinition,
   LocalizationOfTargetsDefinition,
+  ObserveSightingDefinition,
 ];
 if (DEV_MODE) {
   declaredDef.push(...[RelatedToRelatedDefinition]);

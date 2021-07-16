@@ -7,11 +7,12 @@ const description =
   '`attributed-to` **entity C**, then **entity C** `uses` **entity B**.';
 
 // For rescan
-const scanFilters = { types: [RELATION_ATTRIBUTED_TO] };
+const scan = { types: [RELATION_ATTRIBUTED_TO] };
 
 // For live
-const scopeFilters = { types: [RELATION_USES, RELATION_ATTRIBUTED_TO] };
-const scopePatch = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];
+const filters = { types: [RELATION_USES, RELATION_ATTRIBUTED_TO] };
+const attributes = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];
+const scopes = [{ filters, attributes }];
 
-const definition = { id, name, description, scanFilters, scopeFilters, scopePatch };
+const definition = { id, name, description, scan, scopes };
 export default definition;

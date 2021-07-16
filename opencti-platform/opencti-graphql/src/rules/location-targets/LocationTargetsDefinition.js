@@ -7,11 +7,12 @@ const description =
   '`located-at` **entity C**, then **entity A** `targets` **entity C**.';
 
 // For rescan
-const scanFilters = { types: [RELATION_TARGETS] };
+const scan = { types: [RELATION_TARGETS] };
 
 // For live
-const scopeFilters = { types: [RELATION_TARGETS, RELATION_LOCATED_AT] };
-const scopePatch = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];
+const filters = { types: [RELATION_TARGETS, RELATION_LOCATED_AT] };
+const attributes = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];
+const scopes = [{ filters, attributes }];
 
-const definition = { id, name, description, scanFilters, scopeFilters, scopePatch };
+const definition = { id, name, description, scan, scopes };
 export default definition;

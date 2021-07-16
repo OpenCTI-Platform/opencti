@@ -1795,6 +1795,11 @@ const createRuleDataPatch = (instance) => {
     const maxDate = moment.max(lastTimeAttributes);
     ruleInput.last_seen = maxDate.utc().toISOString();
   }
+  // ------- count
+  const ruleCount = getAllRulesField(instance, 'attribute_count');
+  if (ruleCount.length > 0) {
+    ruleInput.attribute_count = R.sum(ruleCount);
+  }
   // 03 - Compute the inner relations
   // ------- markings
   const allRulesMarkingIds = getAllRulesField(instance, INPUT_MARKINGS);

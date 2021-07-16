@@ -7,6 +7,7 @@ import PartOfTargetsRule from './part-of-targets/PartOfTargetsRule';
 import LocatedAtLocatedRule from './located-at-located/LocatedAtLocatedRule';
 import RuleLocalizationOfTargetsRule from './localization-of-targets/LocalizationOfTargetsRule';
 import RelatedToRelatedRule from './testing/related-to-related/RelatedToRelatedRule';
+import RuleObserveSighting from './observed-sighting/ObserveSightingRule';
 import { DEV_MODE } from '../config/conf';
 
 const declaredRules = [
@@ -18,6 +19,7 @@ const declaredRules = [
   PartOfTargetsRule,
   LocatedAtLocatedRule,
   RuleLocalizationOfTargetsRule,
+  RuleObserveSighting,
 ];
 
 if (DEV_MODE) {

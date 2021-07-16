@@ -71,30 +71,52 @@ const ruleMergeHandler = async (event) => {
   return events;
 };
 
-const isMatchRuleFilters = (rule, element) => {
+const isMatchRuleFilters = (rule, element, matchUpdateFields = false) => {
   // Handle types filtering
-  const { types = [], fromTypes = [], toTypes = [] } = rule.scopeFilters ?? {};
-  if (types.length > 0) {
-    const instanceType = element.relationship_type || generateInternalType(element);
-    const elementTypes = [instanceType, ...getParentTypes(instanceType)];
-    const isCompatibleType = types.some((r) => elementTypes.includes(r));
-    if (!isCompatibleType) return false;
+  const scopeFilters = rule.scopes ?? [];
+  for (let index = 0; index < scopeFilters.length; index += 1) {
+    const scopeFilter = scopeFilters[index];
+    const { filters, attributes } = scopeFilter;
+    const { types = [], fromTypes = [], toTypes = [] } = filters ?? {};
+    let isValidFilter = true;
+    if (types.length > 0) {
+      const instanceType = element.relationship_type || generateInternalType(element);
+      const elementTypes = [instanceType, ...getParentTypes(instanceType)];
+      const isCompatibleType = types.some((r) => elementTypes.includes(r));
+      if (!isCompatibleType) isValidFilter = false;
+    }
+    if (fromTypes.length > 0) {
+      const { source_ref: fromId } = element;
+      if (fromId) {
+        const fromType = getTypeFromStixId(fromId);
+        const instanceFromTypes = [fromType, ...getParentTypes(fromType)];
+        const isCompatibleType = fromTypes.some((r) => instanceFromTypes.includes(r));
+        if (!isCompatibleType) isValidFilter = false;
+      } else {
+        isValidFilter = false;
+      }
+    }
+    if (toTypes.length > 0) {
+      const { target_ref: toId } = element;
+      if (toId) {
+        const toType = getTypeFromStixId(toId);
+        const instanceToTypes = [toType, ...getParentTypes(toType)];
+        const isCompatibleType = toTypes.some((r) => instanceToTypes.includes(r));
+        if (!isCompatibleType) isValidFilter = false;
+      } else {
+        isValidFilter = false;
+      }
+    }
+    if (isValidFilter) {
+      if (matchUpdateFields) {
+        const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
+        return attributes.some((f) => patchedFields.includes(f));
+      }
+      return true;
+    }
   }
-  if (fromTypes.length > 0) {
-    const { source_ref: fromId } = element;
-    const fromType = getTypeFromStixId(fromId);
-    const instanceFromTypes = [fromType, ...getParentTypes(fromType)];
-    const isCompatibleType = fromTypes.some((r) => instanceFromTypes.includes(r));
-    if (!isCompatibleType) return false;
-  }
-  if (toTypes.length > 0) {
-    const { target_ref: toId } = element;
-    const toType = getTypeFromStixId(toId);
-    const instanceToTypes = [toType, ...getParentTypes(toType)];
-    const isCompatibleType = toTypes.some((r) => instanceToTypes.includes(r));
-    if (!isCompatibleType) return false;
-  }
-  return true;
+  // No filter match, return false
+  return false;
 };
 
 const handleRuleError = async (event, error) => {
@@ -139,13 +161,11 @@ export const rulesApplyHandler = async (events, forRules = []) => {
       if (type === EVENT_TYPE_UPDATE) {
         for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
           const rule = rules[ruleIndex];
-          // const instance = rebuildInstanceWithPatch(element, element.x_opencti_patch);
-          const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
-          const isImpactedFields = rule.scopePatch.some((f) => patchedFields.includes(f));
-          const isImpactedElement = isMatchRuleFilters(rule, element);
-          if (isImpactedElement && isImpactedFields) {
+          const isImpactedElement = isMatchRuleFilters(rule, element, true);
+          if (isImpactedElement) {
             const instance = await internalLoadById(RULE_MANAGER_USER, element.id);
             const stixData = buildStixData(instance);
+            const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
             const derivedEvents = await rule.update(stixData, patchedFields);
             await rulesApplyDerivedEvents(eventId, derivedEvents);
           }
