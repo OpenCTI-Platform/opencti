@@ -241,6 +241,7 @@ export const createBasicRolesAndCapabilities = async () => {
       'CONNECTORAPI',
       'MODULES_MODMANAGE',
       'STREAMAPI',
+      'SETTINGS_SETMARKINGS',
     ],
   });
 };
