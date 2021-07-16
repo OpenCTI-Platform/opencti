@@ -566,7 +566,7 @@ describe('Elasticsearch pagination', () => {
     // Same query with no pagination
     data = await elPaginate(ADMIN_USER, READ_RELATIONSHIPS_INDICES, { connectionFormat: false });
     expect(data).not.toBeNull();
-    expect(data.length).toEqual(137);
+    expect(data.length).toEqual(146);
     filterBaseTypes = uniq(map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('RELATION');
