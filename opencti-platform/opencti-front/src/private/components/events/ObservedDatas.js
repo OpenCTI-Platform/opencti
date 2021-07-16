@@ -127,12 +127,12 @@ class ObservedDatas extends Component {
       },
       first_observed: {
         label: 'First obs.',
-        width: '15%',
+        width: '10%',
         isSortable: true,
       },
       last_observed: {
         label: 'Last obs.',
-        width: '15%',
+        width: '10%',
         isSortable: true,
       },
       createdBy: {
@@ -142,7 +142,7 @@ class ObservedDatas extends Component {
       },
       objectLabel: {
         label: 'Labels',
-        width: '20%',
+        width: '15%',
         isSortable: false,
       },
       objectMarking: {
