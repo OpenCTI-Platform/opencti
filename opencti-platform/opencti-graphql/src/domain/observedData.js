@@ -1,4 +1,5 @@
 import { assoc, dissoc, pipe } from 'ramda';
+import * as R from 'ramda';
 import {
   createEntity,
   distributionEntities,
@@ -112,13 +113,22 @@ export const addObservedData = async (user, observedData) => {
   };
   const observedDataFound = await findAll(user, args);
   if (observedDataFound.length > 0) {
-    const observedDataEntity = observedDataFound[0];
+    const existingObservedData = observedDataFound[0];
+    // By default, we don't touch the last_observed
+    let lastObserved = existingObservedData.last_observed;
+    if (R.isNil(observedData.last_observed)) {
+      // If the input don't contain any last_observed, then last_observed is now()
+      lastObserved = now();
+    } else if (observedData.last_observed > lastObserved) {
+      // If the provided last_observed is after, then we update with the given date
+      lastObserved = observedData.last_observed;
+    }
     const patch = {
-      number_observed: observedDataEntity.number_observed + 1,
-      last_observed: now(),
+      number_observed: existingObservedData.number_observed + 1,
+      last_observed: lastObserved,
     };
-    await patchAttribute(user, observedDataEntity.id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, patch);
-    return loadById(user, observedDataEntity.id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
+    await patchAttribute(user, existingObservedData.id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, patch);
+    return loadById(user, existingObservedData.id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
   }
   const observedDataResult = await createEntity(user, observedData, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, observedDataResult, user);
