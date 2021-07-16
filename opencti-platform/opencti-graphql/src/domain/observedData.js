@@ -1,5 +1,6 @@
 import { assoc, dissoc, pipe } from 'ramda';
 import * as R from 'ramda';
+import { v4 as uuidv4 } from 'uuid';
 import {
   createEntity,
   distributionEntities,
@@ -136,7 +137,8 @@ export const addObservedData = async (user, observedData) => {
     await patchAttribute(user, existingObservedData.id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, patch);
     return loadById(user, existingObservedData.id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
   }
-  const observedDataResult = await createEntity(user, observedData, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
+  const entity = { internal_id: uuidv4(), ...observedData };
+  const observedDataResult = await createEntity(user, entity, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, observedDataResult, user);
 };
 // endregion
