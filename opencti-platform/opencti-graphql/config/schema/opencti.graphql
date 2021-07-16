@@ -929,8 +929,9 @@ type Connector implements BasicObject & InternalObject {
 
 ############## Rules
 type RuleExecutionError {
-  eventId: String
-  message: String
+  timestamp: DateTime
+  source: String
+  error: String
 }
 type RuleManager {
   id: ID! # internal_id

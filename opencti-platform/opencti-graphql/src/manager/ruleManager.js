@@ -16,6 +16,7 @@ import { extractFieldsOfPatch, MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/
 import { buildStixData } from '../database/stix';
 import { generateInternalType, getParentTypes, getTypeFromStixId } from '../schema/schemaUtils';
 import declaredRules from '../rules/RuleDeclarations';
+import { now } from '../utils/format';
 
 let activatedRules = [];
 const RULE_ENGINE_ID = 'rule_engine_settings';
@@ -97,13 +98,14 @@ const isMatchRuleFilters = (rule, element) => {
 };
 
 const handleRuleError = async (event, error) => {
-  const { eventId, type } = event;
+  const { type } = event;
+  const params = { now: now(), source: JSON.stringify(event), error: error.stack };
   logApp.error(`Error applying ${type} event rule`, { event, error });
   const initIfNotExist = `if (ctx._source.errors == null) ctx._source.errors = [];`;
-  const addError = `ctx._source.errors.add(["eventId": "${eventId}", "message": "${error.message}"]); `;
+  const addError = `ctx._source.errors.add(["timestamp": params.now, "source": params.source, "error": params.error]); `;
   const source = `${initIfNotExist} ${addError}`;
   await elUpdate(INDEX_INTERNAL_OBJECTS, RULE_ENGINE_ID, {
-    script: { source, lang: 'painless' },
+    script: { source, lang: 'painless', params },
   });
 };
 
