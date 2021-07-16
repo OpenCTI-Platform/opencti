@@ -123,8 +123,14 @@ export const addObservedData = async (user, observedData) => {
       // If the provided last_observed is after, then we update with the given date
       lastObserved = observedData.last_observed;
     }
+    let numberObserved;
+    if (R.isNil(observedData.number_observed)) {
+      numberObserved = existingObservedData.number_observed + 1;
+    } else {
+      numberObserved = existingObservedData.number_observed + observedData.number_observed;
+    }
     const patch = {
-      number_observed: existingObservedData.number_observed + 1,
+      number_observed: numberObserved,
       last_observed: lastObserved,
     };
     await patchAttribute(user, existingObservedData.id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, patch);
