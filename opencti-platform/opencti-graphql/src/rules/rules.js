@@ -9,11 +9,11 @@ import { logApp } from '../config/conf';
 export const RULES_DECLARATION = [];
 export const RULES_ATTRIBUTES_MERGE = {
   _attributes: {
-    start_time: 'min',
-    first_seen: 'min',
-    stop_time: 'max',
-    last_seen: 'max',
-    confidence: 'avg',
+    start_time: 'MIN',
+    first_seen: 'MIN',
+    stop_time: 'MAX',
+    last_seen: 'MAX',
+    confidence: 'AVG',
   },
   OPERATIONS: { MIN: 'MIN', MAX: 'MAX', AVG: 'AVG', SUM: 'SUM' },
   register(rule, name, operation) {
