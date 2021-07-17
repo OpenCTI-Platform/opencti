@@ -3,6 +3,9 @@ import { UnsupportedError } from '../config/errors';
 import { shortHash, isInternalId } from '../schema/schemaUtils';
 import { RULE_PREFIX } from '../schema/general';
 
+// region declarations
+export const RULES_DECLARATION = [];
+
 const RULE_MANAGER_USER_UUID = 'f9d7b43f-b208-4c56-8637-375a1ce84943';
 export const RULE_MANAGER_USER = {
   id: RULE_MANAGER_USER_UUID,
@@ -14,6 +17,9 @@ export const RULE_MANAGER_USER = {
   capabilities: [{ name: BYPASS }],
   allowed_marking: [],
 };
+// endregion
+
+// region utils
 export const isRuleUser = (user) => user.id === RULE_MANAGER_USER_UUID;
 
 export const createRuleContent = (ruleId, dependencies, explanation, data = {}) => {
@@ -26,3 +32,4 @@ export const createRuleContent = (ruleId, dependencies, explanation, data = {}) 
   const hash = shortHash(explanation);
   return { field: `${RULE_PREFIX}${ruleId}`, content: { explanation, dependencies, data, hash } };
 };
+// endregion

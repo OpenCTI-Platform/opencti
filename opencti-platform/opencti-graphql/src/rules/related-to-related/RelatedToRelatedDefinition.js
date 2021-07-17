@@ -1,4 +1,4 @@
-import { RELATION_RELATED_TO } from '../../../schema/stixCoreRelationship';
+import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
 
 const id = 'related_related';
 const name = 'Related testing';

@@ -8,7 +8,7 @@ import {
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
 import { RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import def from './LocalizationOfTargetsDefinition';
-import { createRuleContent, RULE_MANAGER_USER } from '../RuleUtils';
+import { createRuleContent, RULE_MANAGER_USER, RULES_DECLARATION } from '../rules';
 
 const ruleLocalizationOfTargetsBuilder = () => {
   // Execution
@@ -52,4 +52,5 @@ const ruleLocalizationOfTargetsBuilder = () => {
   return { ...def, insert, update, clean };
 };
 const RuleLocalizationOfTargets = ruleLocalizationOfTargetsBuilder();
-export default RuleLocalizationOfTargets;
+
+RULES_DECLARATION.push(RuleLocalizationOfTargets);

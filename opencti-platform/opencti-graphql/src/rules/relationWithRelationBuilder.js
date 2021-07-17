@@ -4,9 +4,9 @@ import {
   createInferredRelation,
   deleteInferredRuleElement,
   listAllRelations,
-} from '../../database/middleware';
-import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
-import { createRuleContent, RULE_MANAGER_USER } from '../RuleUtils';
+} from '../database/middleware';
+import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format';
+import { createRuleContent, RULE_MANAGER_USER } from './rules';
 
 const buildRelationWithRelationRule = (ruleDefinition, relationTypes) => {
   const { id } = ruleDefinition;

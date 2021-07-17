@@ -1,12 +1,12 @@
 /* eslint-disable camelcase */
-import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
+import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format';
 import {
   computeRuleConfidence,
   createInferredRelation,
   deleteInferredRuleElement,
   listAllRelations,
-} from '../../database/middleware';
-import { createRuleContent, RULE_MANAGER_USER } from '../RuleUtils';
+} from '../database/middleware';
+import { createRuleContent, RULE_MANAGER_USER } from './rules';
 
 const buildRelationToRelationRule = (ruleDefinition, relationTypes) => {
   const { id } = ruleDefinition;

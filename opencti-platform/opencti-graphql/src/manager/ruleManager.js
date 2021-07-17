@@ -11,11 +11,10 @@ import { ENTITY_TYPE_RULE, ENTITY_TYPE_RULE_MANAGER } from '../schema/internalOb
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { createRuleTask, deleteTask, findAll } from '../domain/task';
 import { getActivatedRules, getRule } from '../domain/rule';
-import { RULE_MANAGER_USER } from '../rules/RuleUtils';
+import { RULE_MANAGER_USER, RULES_DECLARATION } from '../rules/rules';
 import { extractFieldsOfPatch, MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/sseMiddleware';
 import { buildStixData } from '../database/stix';
 import { generateInternalType, getParentTypes, getTypeFromStixId } from '../schema/schemaUtils';
-import declaredRules from '../rules/RuleDeclarations';
 import { now } from '../utils/format';
 
 let activatedRules = [];
@@ -154,7 +153,7 @@ export const rulesApplyHandler = async (events, forRules = []) => {
       if (type === EVENT_TYPE_DELETE) {
         const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: [data.x_opencti_id], operator: 'wildcard' }];
         // eslint-disable-next-line no-use-before-define,prettier/prettier
-        const opts = { filters, callback: (elements) => rulesCleanHandler(eventId, elements, declaredRules, data.x_opencti_id) };
+        const opts = { filters, callback: (elements) => rulesCleanHandler(eventId, elements, RULES_DECLARATION, data.x_opencti_id) };
         await elList(RULE_MANAGER_USER, READ_DATA_INDICES, opts);
       }
       // In case of update apply the event on every rules

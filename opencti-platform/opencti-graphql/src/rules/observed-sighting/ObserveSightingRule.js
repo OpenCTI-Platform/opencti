@@ -11,7 +11,7 @@ import def from './ObserveSightingDefinition';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
 import { RELATION_OBJECT } from '../../schema/stixMetaRelationship';
 import { isEmptyField } from '../../database/utils';
-import { createRuleContent, RULE_MANAGER_USER } from '../RuleUtils';
+import { createRuleContent, RULE_MANAGER_USER, RULES_DECLARATION } from '../rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
@@ -206,4 +206,5 @@ const ruleObserveSightingBuilder = () => {
   return { ...def, insert, update, clean };
 };
 const RuleObserveSighting = ruleObserveSightingBuilder();
-export default RuleObserveSighting;
+
+RULES_DECLARATION.push(RuleObserveSighting);

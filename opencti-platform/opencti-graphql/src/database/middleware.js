@@ -159,7 +159,7 @@ import {
 import { checkObservableSyntax } from '../utils/syntax';
 import { deleteAllFiles } from './minio';
 import { filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
-import { isRuleUser, RULE_MANAGER_USER } from '../rules/RuleUtils';
+import { isRuleUser, RULE_MANAGER_USER } from '../rules/rules';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -1795,7 +1795,7 @@ const createRuleDataPatch = (instance) => {
     const maxDate = moment.max(lastTimeAttributes);
     ruleInput.last_seen = maxDate.utc().toISOString();
   }
-  // ------- count
+  // ------- attribute_count
   const ruleCount = getAllRulesField(instance, 'attribute_count');
   if (ruleCount.length > 0) {
     ruleInput.attribute_count = R.sum(ruleCount);

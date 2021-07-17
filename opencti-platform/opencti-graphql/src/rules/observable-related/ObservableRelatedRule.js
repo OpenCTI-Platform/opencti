@@ -8,7 +8,7 @@ import {
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
 import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
 import def from './ObservableRelatedDefinition';
-import { createRuleContent, RULE_MANAGER_USER } from '../RuleUtils';
+import { createRuleContent, RULE_MANAGER_USER, RULES_DECLARATION } from '../rules';
 
 const ruleRelatedObservableBuilder = () => {
   // Execution
@@ -71,4 +71,5 @@ const ruleRelatedObservableBuilder = () => {
   return { ...def, insert, update, clean };
 };
 const RuleObservableRelatedObservable = ruleRelatedObservableBuilder();
-export default RuleObservableRelatedObservable;
+
+RULES_DECLARATION.push(RuleObservableRelatedObservable);
