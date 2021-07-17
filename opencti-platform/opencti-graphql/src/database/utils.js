@@ -358,3 +358,8 @@ export const pascalize = (s) => {
     return g1.toUpperCase() + g2.toLowerCase();
   });
 };
+
+export const computeAverage = (numbers) => {
+  const sum = numbers.reduce((a, b) => a + b, 0);
+  return Math.round(sum / numbers.length || 0);
+};

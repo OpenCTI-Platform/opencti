@@ -1,14 +1,10 @@
 /* eslint-disable camelcase */
-import {
-  computeRuleConfidence,
-  createInferredRelation,
-  deleteInferredRuleElement,
-  internalLoadById,
-} from '../../database/middleware';
+import { createInferredRelation, deleteInferredRuleElement, internalLoadById } from '../../database/middleware';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
 import { RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import def from './LocalizationOfTargetsDefinition';
 import { createRuleContent, RULE_MANAGER_USER, RULES_DECLARATION } from '../rules';
+import { computeAverage } from '../../database/utils';
 
 const ruleLocalizationOfTargetsBuilder = () => {
   // Execution
@@ -25,7 +21,7 @@ const ruleLocalizationOfTargetsBuilder = () => {
       const existingRange = buildPeriodFromDates(start_time, stop_time);
       const range = computeRangeIntersection(creationRange, existingRange);
       const elementMarkings = [...(markings || []), ...(object_marking_refs || [])];
-      const computedConfidence = computeRuleConfidence([createdConfidence, confidence]);
+      const computedConfidence = computeAverage([createdConfidence, confidence]);
       // Rule content
       const dependencies = [foundFrom, foundTo, foundRelationId, createdId];
       const explanation = [foundRelationId, createdId];

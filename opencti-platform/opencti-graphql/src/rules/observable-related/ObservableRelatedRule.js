@@ -1,14 +1,10 @@
 /* eslint-disable camelcase */
-import {
-  computeRuleConfidence,
-  createInferredRelation,
-  deleteInferredRuleElement,
-  listAllRelations,
-} from '../../database/middleware';
+import { createInferredRelation, deleteInferredRuleElement, listAllRelations } from '../../database/middleware';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
 import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
 import def from './ObservableRelatedDefinition';
 import { createRuleContent, RULE_MANAGER_USER, RULES_DECLARATION } from '../rules';
+import { computeAverage } from '../../database/utils';
 
 const ruleRelatedObservableBuilder = () => {
   // Execution
@@ -26,7 +22,7 @@ const ruleRelatedObservableBuilder = () => {
         const existingRange = buildPeriodFromDates(start_time, stop_time);
         const range = computeRangeIntersection(creationRange, existingRange);
         const elementMarkings = [...(markings || []), ...(object_marking_refs || [])];
-        const computedConfidence = computeRuleConfidence([createdConfidence, confidence]);
+        const computedConfidence = computeAverage([createdConfidence, confidence]);
         // -----------------------------------------------------------------------------------------------------------
         // Because of related-to exists both side, we need to force the both directions
         // -----------------------------------------------------------------------------------------------------------

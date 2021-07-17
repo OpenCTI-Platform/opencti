@@ -1,12 +1,8 @@
 /* eslint-disable camelcase */
 import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format';
-import {
-  computeRuleConfidence,
-  createInferredRelation,
-  deleteInferredRuleElement,
-  listAllRelations,
-} from '../database/middleware';
+import { createInferredRelation, deleteInferredRuleElement, listAllRelations } from '../database/middleware';
 import { createRuleContent, RULE_MANAGER_USER } from './rules';
+import { computeAverage } from '../database/utils';
 
 const buildRelationToRelationRule = (ruleDefinition, relationTypes) => {
   const { id } = ruleDefinition;
@@ -30,7 +26,7 @@ const buildRelationToRelationRule = (ruleDefinition, relationTypes) => {
           const existingRange = buildPeriodFromDates(start_time, stop_time);
           const range = computeRangeIntersection(creationRange, existingRange);
           const elementMarkings = [...(markings || []), ...(object_marking_refs || [])];
-          const computedConfidence = computeRuleConfidence([createdConfidence, confidence]);
+          const computedConfidence = computeAverage([createdConfidence, confidence]);
           // We do not need to propagate the creation here.
           // Because created relation have the same type.
           const explanation = [foundRelationId, createdId];
@@ -65,7 +61,7 @@ const buildRelationToRelationRule = (ruleDefinition, relationTypes) => {
           const existingRange = buildPeriodFromDates(start_time, stop_time);
           const range = computeRangeIntersection(creationRange, existingRange);
           const elementMarkings = [...(markings || []), ...(object_marking_refs || [])];
-          const computedConfidence = computeRuleConfidence([createdConfidence, confidence]);
+          const computedConfidence = computeAverage([createdConfidence, confidence]);
           // Rule content
           const explanation = [createdId, foundRelationId];
           const dependencies = [sourceRef, createdId, toId, foundRelationId, targetRef];

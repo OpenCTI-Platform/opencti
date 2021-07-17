@@ -12,6 +12,7 @@ import {
 } from '../config/errors';
 import {
   buildPagination,
+  computeAverage,
   fillTimeSeries,
   inferIndexFromConceptType,
   isEmptyField,
@@ -121,9 +122,11 @@ import {
   booleanAttributes,
   dateAttributes,
   dictAttributes,
+  isDateAttribute,
   isDictionaryAttribute,
   isModifiedObject,
   isMultipleAttribute,
+  isNumericAttribute,
   isUpdatedAtObject,
   numericAttributes,
   statsDateAttributes,
@@ -159,7 +162,7 @@ import {
 import { checkObservableSyntax } from '../utils/syntax';
 import { deleteAllFiles } from './minio';
 import { filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
-import { isRuleUser, RULE_MANAGER_USER } from '../rules/rules';
+import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_MERGE } from '../rules/rules';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -1713,9 +1716,8 @@ const getAllRulesField = (instance, field) => {
     .flat()
     .filter((val) => isNotEmptyField(val));
 };
-const getAllRulesTimeField = (instance, field) => {
-  const timeFieldsFromRule = getAllRulesField(instance, field);
-  return timeFieldsFromRule //
+const convertRulesTimeValues = (timeValues) => {
+  return timeValues //
     .filter((val) => val !== FROM_START_STR && val !== UNTIL_END_STR)
     .map((d) => moment(d));
 };
@@ -1761,47 +1763,53 @@ const buildRelationTimeFilter = (input) => {
   return args;
 };
 
-export const computeRuleConfidence = (confidences) => {
-  const sum = confidences.reduce((a, b) => a + b, 0);
-  return Math.round(sum / confidences.length || 0);
-};
 const createRuleDataPatch = (instance) => {
-  // 02 - Compute the attributes
-  // -------- confidence
+  // 01 - Compute the attributes
   const ruleInput = {};
-  const ruleConfidences = getAllRulesField(instance, 'confidence');
-  if (ruleConfidences.length > 0) {
-    ruleInput.confidence = computeRuleConfidence(ruleConfidences);
+  const attributes = RULES_ATTRIBUTES_MERGE.supportedAttributes();
+  const instanceAttributes = schemaTypes.getAttributes(instance.entity_type || instance.relationship_type);
+  for (let index = 0; index < attributes.length; index += 1) {
+    const attribute = attributes[index];
+    if (instanceAttributes.includes(attribute)) {
+      const values = getAllRulesField(instance, attribute);
+      if (values.length > 0) {
+        const operation = RULES_ATTRIBUTES_MERGE.getOperation(attribute);
+        if (operation === RULES_ATTRIBUTES_MERGE.OPERATIONS.AVG) {
+          if (!isNumericAttribute(attribute)) {
+            throw UnsupportedError('Can apply avg on non numeric attribute');
+          }
+          ruleInput[attribute] = computeAverage(values);
+        }
+        if (operation === RULES_ATTRIBUTES_MERGE.OPERATIONS.SUM) {
+          if (!isNumericAttribute(attribute)) {
+            throw UnsupportedError('Can apply sum on non numeric attribute');
+          }
+          ruleInput[attribute] = R.sum(values);
+        }
+        if (operation === RULES_ATTRIBUTES_MERGE.OPERATIONS.MIN) {
+          if (isNumericAttribute(attribute)) {
+            ruleInput[attribute] = R.min(values);
+          } else if (isDateAttribute(attribute)) {
+            const timeValues = convertRulesTimeValues(values);
+            ruleInput[attribute] = moment.min(timeValues).utc().toISOString();
+          } else {
+            throw UnsupportedError('Can apply min on non numeric or date attribute');
+          }
+        }
+        if (operation === RULES_ATTRIBUTES_MERGE.OPERATIONS.MAX) {
+          if (isNumericAttribute(attribute)) {
+            ruleInput[attribute] = R.max(values);
+          } else if (isDateAttribute(attribute)) {
+            const timeValues = convertRulesTimeValues(values);
+            ruleInput[attribute] = moment.max(timeValues).utc().toISOString();
+          } else {
+            throw UnsupportedError('Can apply max on non numeric or date attribute');
+          }
+        }
+      }
+    }
   }
-  // -------- start_time / stop_time
-  const startTimeAttributes = getAllRulesTimeField(instance, 'start_time');
-  if (startTimeAttributes.length > 0) {
-    const minDate = moment.min(startTimeAttributes);
-    ruleInput.start_time = minDate.utc().toISOString();
-  }
-  const stopTimeAttributes = getAllRulesTimeField(instance, 'stop_time');
-  if (stopTimeAttributes.length > 0) {
-    const maxDate = moment.max(stopTimeAttributes);
-    ruleInput.stop_time = maxDate.utc().toISOString();
-  }
-  // ------- first_seen / last_seen
-  const firstTimeAttributes = getAllRulesTimeField(instance, 'first_seen');
-  if (firstTimeAttributes.length > 0) {
-    const minDate = moment.min(firstTimeAttributes);
-    ruleInput.first_seen = minDate.utc().toISOString();
-  }
-  const lastTimeAttributes = getAllRulesTimeField(instance, 'last_seen');
-  if (lastTimeAttributes.length > 0) {
-    const maxDate = moment.max(lastTimeAttributes);
-    ruleInput.last_seen = maxDate.utc().toISOString();
-  }
-  // ------- attribute_count
-  const ruleCount = getAllRulesField(instance, 'attribute_count');
-  if (ruleCount.length > 0) {
-    ruleInput.attribute_count = R.sum(ruleCount);
-  }
-  // 03 - Compute the inner relations
-  // ------- markings
+  // 02 - Compute the markings
   const allRulesMarkingIds = getAllRulesField(instance, INPUT_MARKINGS);
   return { ruleInput, ruleMarkings: allRulesMarkingIds };
 };

@@ -125,6 +125,8 @@ export const dictAttributes = { hashes: { key: 'algorithm', value: 'hash' } };
 
 export const isDictionaryAttribute = (key) => dictAttributes[key];
 export const isBooleanAttribute = (key) => booleanAttributes.includes(key);
+export const isNumericAttribute = (key) => numericAttributes.includes(key);
+export const isDateAttribute = (key) => dateAttributes.includes(key);
 export const isMultipleAttribute = (key) => key.startsWith(RULE_PREFIX) || multipleAttributes.includes(key);
 
 // Must be call as soon as possible in the according resolvers
