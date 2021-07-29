@@ -81,8 +81,8 @@ const extractTokenFromBasicAuth = async (authorization) => {
     const b64auth = authorization.substring(BASIC.length);
     const [username, password] = Buffer.from(b64auth, 'base64').toString().split(':');
     // eslint-disable-next-line no-use-before-define
-    const { token } = await login(username, password);
-    return token?.uuid;
+    const { api_token: tokenUUID } = await login(username, password);
+    return tokenUUID;
   }
   return null;
 };

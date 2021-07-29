@@ -123,7 +123,7 @@ const isDefinedValue = (element) => {
   return false;
 };
 export const stixDataConverter = (data, args = {}) => {
-  const { patchGeneration = false } = args;
+  const { patchGeneration = false, clearEmptyValues = false } = args;
   let finalData = data;
   // Relationships
   if (isDefinedValue(finalData.fromId)) {
@@ -158,7 +158,7 @@ export const stixDataConverter = (data, args = {}) => {
   }
   // Specific input cases
   if (isDefinedValue(finalData.stix_id)) {
-    finalData = R.pipe(R.dissoc('stix_id'), R.assoc('x_opencti_stix_ids', [data.stix_id]))(finalData);
+    finalData = R.pipe(R.dissoc('stix_id'), R.assoc('x_opencti_stix_ids', [finalData.stix_id]))(finalData);
   } else {
     finalData = R.dissoc('stix_id', finalData);
   }
@@ -247,9 +247,10 @@ export const stixDataConverter = (data, args = {}) => {
   const entries = Object.entries(finalData);
   for (let index = 0; index < entries.length; index += 1) {
     const [key, val] = entries[index];
-    const isNullVal = Array.isArray(val) ? val.length === 0 : isEmptyField(val);
-    const isInternalKey = key.startsWith('i_') || key.startsWith(REL_INDEX_PREFIX);
-    if (isInternalKey || isStixRelationShipExceptMeta(key) || key === 'x_opencti_graph_data' || isNullVal) {
+    const isEmpty = Array.isArray(val) ? val.length === 0 : isEmptyField(val);
+    const clearEmptyKey = clearEmptyValues && isEmpty;
+    const isInternalKey = key.startsWith('i_') || key.startsWith(REL_INDEX_PREFIX) || key === 'x_opencti_graph_data';
+    if (isInternalKey || isStixRelationShipExceptMeta(key) || clearEmptyKey) {
       // Internal opencti attributes.
     } else if (key.startsWith('attribute_')) {
       // Stix but reserved keywords
@@ -290,7 +291,8 @@ export const buildStixData = (data, args = {}) => {
     R.dissoc('base_type'),
     R.dissoc('entity_type'),
     R.dissoc('update'),
-    R.dissoc('connections')
+    R.dissoc('connections'),
+    R.dissoc('sort')
   )(data);
   const stixData = stixDataConverter(rawData, args);
   if (onlyBase) {

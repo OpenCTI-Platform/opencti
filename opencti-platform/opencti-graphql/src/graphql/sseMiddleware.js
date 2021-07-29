@@ -6,26 +6,21 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { generateInternalId } from '../schema/identifier';
 import { findById } from '../domain/stream';
 import {
-  EVENT_TYPE_SYNC,
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
   EVENT_TYPE_MERGE,
+  EVENT_TYPE_SYNC,
   EVENT_TYPE_UPDATE,
 } from '../database/rabbitmq';
 import { stixLoadById } from '../database/middleware';
 import { convertFiltersToQueryOptions } from '../domain/taxii';
 import { elList } from '../database/elasticSearch';
-import {
-  isEmptyField,
-  READ_DATA_INDICES,
-  UPDATE_OPERATION_ADD,
-  UPDATE_OPERATION_REMOVE,
-  UPDATE_OPERATION_REPLACE,
-} from '../database/utils';
+import { isEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { buildStixData } from '../database/stix';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { BYPASS, isBypassUser } from '../utils/access';
 import { adaptFiltersFrontendFormat, TYPE_FILTER } from '../utils/filtering';
+import { rebuildInstanceBeforePatch } from '../utils/patch';
 
 let heartbeat;
 export const MIN_LIVE_STREAM_EVENT_VERSION = 2;
@@ -284,73 +279,6 @@ export const isInstanceMatchFilters = (instance, filters) => {
   return true;
 };
 
-// Concept here is to recreate the instance before is change
-// Basically reverting the patch.
-export const rebuildInstanceBeforePatch = (stixWithInternalRefs, patch) => {
-  const rebuild = R.clone(stixWithInternalRefs);
-  const patchEntries = Object.entries(patch);
-  for (let index = 0; index < patchEntries.length; index += 1) {
-    const [type, actionPatch] = patchEntries[index];
-    const elementEntries = Object.entries(actionPatch);
-    for (let elemIndex = 0; elemIndex < elementEntries.length; elemIndex += 1) {
-      const [key, changes] = elementEntries[elemIndex];
-      if (type === UPDATE_OPERATION_REPLACE) {
-        const { previous } = changes;
-        rebuild[key] = previous;
-      }
-      if (type === UPDATE_OPERATION_ADD) {
-        const ids = changes.map((c) => c.x_opencti_internal_id);
-        rebuild[key] = (rebuild[key] || []).filter((e) => !ids.includes(e.x_opencti_internal_id));
-      }
-      if (type === UPDATE_OPERATION_REMOVE) {
-        const ops = rebuild[key] || [];
-        ops.push(...changes);
-        rebuild[key] = ops;
-      }
-    }
-  }
-  return rebuild;
-};
-export const rebuildInstanceWithPatch = (instance, patch) => {
-  const rebuild = R.clone(instance);
-  const patchEntries = Object.entries(patch);
-  for (let index = 0; index < patchEntries.length; index += 1) {
-    const [type, actionPatch] = patchEntries[index];
-    const elementEntries = Object.entries(actionPatch);
-    for (let elemIndex = 0; elemIndex < elementEntries.length; elemIndex += 1) {
-      const [key, changes] = elementEntries[elemIndex];
-      if (type === UPDATE_OPERATION_REPLACE) {
-        const { current } = changes;
-        rebuild[key] = current;
-      }
-      if (type === UPDATE_OPERATION_ADD) {
-        const ops = rebuild[key] || [];
-        ops.push(...changes.map((c) => c.value));
-        rebuild[key] = key.endsWith('_ref') ? R.head(ops) : ops;
-      }
-      if (type === UPDATE_OPERATION_REMOVE) {
-        const ids = changes.map((c) => [c.value, c.x_opencti_internal_id]).flat();
-        const elements = (instance[key] || []).filter((e) => !ids.includes(e));
-        rebuild[key] = key.endsWith('_ref') ? null : elements;
-      }
-    }
-  }
-  return rebuild;
-};
-export const extractFieldsOfPatch = (patch) => {
-  const fields = [];
-  const patchEntries = Object.entries(patch);
-  for (let index = 0; index < patchEntries.length; index += 1) {
-    const [, actionPatch] = patchEntries[index];
-    const elementEntries = Object.entries(actionPatch);
-    for (let elemIndex = 0; elemIndex < elementEntries.length; elemIndex += 1) {
-      const [key] = elementEntries[elemIndex];
-      fields.push(key);
-    }
-  }
-  return R.uniq(fields);
-};
-
 const isEventGranted = (event, user) => {
   const { data } = event;
   // Granted if:
@@ -486,7 +414,7 @@ const createSeeMiddleware = () => {
     });
     try {
       await initBroadcasting(req, res, client, processor);
-      await processor.start(req.query.from || req.headers['Last-Event-ID']);
+      await processor.start(req.query.from || req.headers['last-event-id']);
       broadcastClients[client.id] = client;
     } catch (err) {
       res.status(500);

@@ -12,10 +12,11 @@ import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { createRuleTask, deleteTask, findAll } from '../domain/task';
 import { getActivatedRules, getRule } from '../domain/rule';
 import { RULE_MANAGER_USER, RULES_DECLARATION } from '../rules/rules';
-import { extractFieldsOfPatch, MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/sseMiddleware';
+import { MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/sseMiddleware';
 import { buildStixData } from '../database/stix';
 import { generateInternalType, getParentTypes, getTypeFromStixId } from '../schema/schemaUtils';
 import { now } from '../utils/format';
+import {extractFieldsOfPatch} from "../utils/patch";
 
 let activatedRules = [];
 const RULE_ENGINE_ID = 'rule_engine_settings';

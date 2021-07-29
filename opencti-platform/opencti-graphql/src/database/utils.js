@@ -301,7 +301,7 @@ const valToMessage = (val) => {
   }
   if (val && typeof val === 'object') {
     // If the message is an update with current/previous
-    if (val.current && val.previous) {
+    if (isNotEmptyField(val.current)) {
       return valToMessage(val.current);
     }
     // If not, just format the message

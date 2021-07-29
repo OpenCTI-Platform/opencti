@@ -7,8 +7,15 @@ import { BYPASS, ROLE_ADMINISTRATOR } from '../../src/utils/access';
 export const PYTHON_PATH = './src/python';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
 export const API_TOKEN = conf.get('app:admin:token');
+export const API_EMAIL = conf.get('app:admin:email');
+export const API_PASSWORD = conf.get('app:admin:password');
 export const ONE_MINUTE = 60 * 1000;
 export const FIVE_MINUTES = 5 * ONE_MINUTE;
+
+export const generateBasicAuth = () => {
+  const buff = Buffer.from(`${API_EMAIL}:${API_PASSWORD}`, 'utf-8');
+  return `Basic ${buff.toString('base64')}`;
+};
 
 export const ADMIN_USER = {
   id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',

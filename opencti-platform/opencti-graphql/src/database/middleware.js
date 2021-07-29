@@ -106,6 +106,7 @@ import {
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import {
+  isStixMetaRelationship,
   isStixSingleMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
@@ -117,7 +118,7 @@ import {
 } from '../schema/stixMetaRelationship';
 import { internalObjectsFieldsToBeUpdated, isDatedInternalObject, isInternalObject } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
-import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
   booleanAttributes,
   dateAttributes,
@@ -547,6 +548,21 @@ export const loadById = async (user, id, type, args = {}) => {
   const loadArgs = R.assoc('type', type, args);
   return internalLoadById(user, id, loadArgs);
 };
+export const connectionLoaders = async (user, instance) => {
+  if (isBasicRelationship(instance.entity_type)) {
+    const fromPromise = internalLoadById(user, instance.fromId);
+    const toPromise = internalLoadById(user, instance.toId);
+    const [from, to] = await Promise.all([fromPromise, toPromise]);
+    if (!from) {
+      throw FunctionalError(`Inconsistent relation to update (from)`, { id: instance.id, from: instance.fromId });
+    }
+    if (!to) {
+      throw FunctionalError(`Inconsistent relation to update (to)`, { id: instance.id, to: instance.toId });
+    }
+    return R.mergeRight(instance, { from, to });
+  }
+  return instance;
+};
 const transformRawRelationsToAttributes = (data) => {
   return R.mergeAll(Object.entries(R.groupBy((a) => a.i_relation.entity_type, data)).map(([k, v]) => ({ [k]: v })));
 };
@@ -568,8 +584,9 @@ const loadElementDependencies = async (user, element, args = {}) => {
   const fromResolvedPromise = elFindByIds(user, fromResolvedIds, { toMap: true });
   const [toResolved, fromResolved] = await Promise.all([toResolvedPromise, fromResolvedPromise]);
   if (fromRelations.length > 0) {
-    // Build the flatten view inside the data
-    const grouped = R.groupBy((a) => STIX_META_RELATION_TO_OPENCTI_INPUT[a.entity_type], fromRelations);
+    // Build the flatten view inside the data for stix meta
+    const metaRels = fromRelations.filter((r) => isStixMetaRelationship(r.entity_type));
+    const grouped = R.groupBy((a) => STIX_META_RELATION_TO_OPENCTI_INPUT[a.entity_type], metaRels);
     const entries = Object.entries(grouped);
     for (let index = 0; index < entries.length; index += 1) {
       const [key, values] = entries[index];
@@ -841,7 +858,7 @@ const updatedInputsToData = (inputs) => {
 };
 const replacedInputsToData = (inputs) => {
   const inputPairs = R.map((input) => {
-    const { key, value, previous } = input;
+    const { key, value, previous = null } = input;
     let val = value;
     if (!isMultipleAttribute(key) && val) {
       val = R.head(value);
@@ -1449,10 +1466,12 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
   if (operation !== UPDATE_OPERATION_REPLACE && elements.length > 1) {
     throw FunctionalError(`Unsupported operation`, { operation, elements });
   }
-  const instance = await loadById(user, id, type);
-  if (!instance) {
+  const element = await loadById(user, id, type);
+  if (!element) {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
+  // If relationship, resolution of from and to is needed
+  const instance = await connectionLoaders(user, element);
   const participantIds = getInstanceIds(instance);
   // 01. Check if updating alias lead to entity conflict
   const keys = R.map((t) => t.key, elements);
@@ -1915,12 +1934,15 @@ const upsertElementRaw = async (user, instance, type, input) => {
   }
   // Upsert relationships
   if (isStixSightingRelationship(type)) {
-    const basePatch = { attribute_count: instance.attribute_count + input.attribute_count };
     const timePatch = handleRelationTimeUpdate(input, instance, 'first_seen', 'last_seen');
-    const patch = { ...basePatch, ...timePatch };
-    const patched = patchAttributeRaw(instance, patch);
-    impactedInputs.push(...patched.impactedInputs);
-    updatedReplaceInputs.push(...patched.updatedInputs);
+    // Upsert the count only if a time patch is applied.
+    if (isNotEmptyField(timePatch)) {
+      const basePatch = { attribute_count: instance.attribute_count + input.attribute_count };
+      const patch = { ...basePatch, ...timePatch };
+      const patched = patchAttributeRaw(instance, patch);
+      impactedInputs.push(...patched.impactedInputs);
+      updatedReplaceInputs.push(...patched.updatedInputs);
+    }
   }
   if (isStixCoreRelationship(type)) {
     const basePatch = {};
@@ -2213,12 +2235,13 @@ export const createRelationRaw = async (user, input, opts = {}) => {
     await indexCreatedElement(dataRel);
     // Push the input in the stream
     let event;
+    const relWithConnections = { ...dataRel.element, from, to };
     if (dataRel.type === TRX_CREATION) {
-      const relWithConnections = { ...dataRel.element, from, to };
-      event = await storeCreateEvent(user, relWithConnections, resolvedInput, stixLoadById);
+      const loaders = { stixLoadById, connectionLoaders };
+      event = await storeCreateEvent(user, relWithConnections, resolvedInput, loaders);
     } else if (dataRel.streamInputs.length > 0) {
       // If upsert with new data
-      event = await storeUpdateEvent(user, dataRel.element, dataRel.streamInputs);
+      event = await storeUpdateEvent(user, relWithConnections, dataRel.streamInputs);
     }
     // - TRANSACTION END
     return { element: dataRel.element, event };
@@ -2431,7 +2454,8 @@ export const createEntity = async (user, input, type) => {
     await indexCreatedElement(dataEntity);
     // Push the input in the stream
     if (dataEntity.type === TRX_CREATION) {
-      await storeCreateEvent(user, dataEntity.element, resolvedInput, stixLoadById);
+      const loaders = { stixLoadById, connectionLoaders };
+      await storeCreateEvent(user, dataEntity.element, resolvedInput, loaders);
     } else if (dataEntity.streamInputs.length > 0) {
       // If upsert with new data
       await storeUpdateEvent(user, dataEntity.element, dataEntity.streamInputs);
@@ -2469,7 +2493,7 @@ export const deleteElementById = async (user, elementId, type) => {
     lock = await lockResource(participantIds);
     await deleteAllFiles(user, `import/${element.entity_type}/${element.internal_id}`);
     await elDeleteElements(user, [element]);
-    await storeDeleteEvent(user, element, stixLoadById);
+    await storeDeleteEvent(user, element, { stixLoadById, connectionLoaders });
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(participantIds);
   } catch (err) {
@@ -2518,7 +2542,7 @@ export const deleteInferredRuleElement = async (rule, instance, dependencyId) =>
         const input = { [completeRuleName]: null };
         const data = await upsertRuleRaw(instance, input, { fromRule, ruleOverride: true });
         await indexCreatedElement(data);
-        const event = await buildUpdateEvent(RULE_MANAGER_USER, data.element, data.streamInputs);
+        const event = buildUpdateEvent(RULE_MANAGER_USER, data.element, data.streamInputs);
         if (event) {
           derivedEvents.push(event);
         }
@@ -2528,7 +2552,7 @@ export const deleteInferredRuleElement = async (rule, instance, dependencyId) =>
       const input = { [completeRuleName]: rebuildRuleContent };
       const data = await upsertRuleRaw(instance, input, { fromRule, ruleOverride: true });
       await indexCreatedElement(data);
-      const event = await buildUpdateEvent(RULE_MANAGER_USER, data.element, data.streamInputs);
+      const event = buildUpdateEvent(RULE_MANAGER_USER, data.element, data.streamInputs);
       if (event) {
         derivedEvents.push(event);
       }

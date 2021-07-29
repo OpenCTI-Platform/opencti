@@ -2,7 +2,7 @@
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import * as R from 'ramda';
 import jsonCanonicalize from 'canonicalize';
-import { DatabaseError, UnsupportedError } from '../config/errors';
+import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { convertEntityTypeToStixType } from './schemaUtils';
 import * as I from './internalObject';
 import { isInternalObject } from './internalObject';
@@ -365,4 +365,32 @@ export const getInputIds = (type, input) => {
   }
   ids.push(...generateAliasesIdsForInstance(input));
   return ids;
+};
+export const getInstanceIdentifiers = (instance) => {
+  const base = {
+    standard_id: instance.standard_id,
+    internal_id: instance.internal_id,
+    entity_type: instance.entity_type,
+  };
+  if (instance.identity_class) {
+    base.identity_class = instance.identity_class;
+  }
+  if (instance.x_opencti_location_type) {
+    base.x_opencti_location_type = instance.x_opencti_location_type;
+  }
+  // Need to put everything needed to identified a relationship
+  if (instance.relationship_type) {
+    base.relationship_type = instance.relationship_type;
+    if (!instance.from) {
+      throw FunctionalError(`Inconsistent relation to update (from)`, { id: instance.id, from: instance.fromId });
+    }
+    base.source_ref = instance.from.standard_id;
+    base.x_opencti_source_ref = instance.fromId;
+    if (!instance.to) {
+      throw FunctionalError(`Inconsistent relation to update (to)`, { id: instance.id, to: instance.toId });
+    }
+    base.target_ref = instance.to.standard_id;
+    base.x_opencti_target_ref = instance.toId;
+  }
+  return base;
 };
