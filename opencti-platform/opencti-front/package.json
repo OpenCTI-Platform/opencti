@@ -14,7 +14,7 @@
     "babel-plugin-relay": "11.0.2",
     "classnames": "2.3.1",
     "extract-files": "10.0.0",
-    "formik": "2.2.6",
+    "formik": "2.2.9",
     "formik-material-ui": "3.0.1",
     "formik-material-ui-pickers": "0.0.12",
     "graphql": "15.5.0",
