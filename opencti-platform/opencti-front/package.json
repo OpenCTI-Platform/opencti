@@ -48,7 +48,7 @@
     "react-relay": "11.0.2",
     "react-relay-network-modern": "6.0.0",
     "react-router-dom": "5.2.0",
-    "react-swipeable-views": "0.13.9",
+    "react-swipeable-views": "0.14.0",
     "react-timeline-range-slider": "1.4.1",
     "react-virtualized": "9.22.3",
     "recharts": "2.0.9",
