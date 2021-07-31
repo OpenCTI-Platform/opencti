@@ -51,7 +51,7 @@
     "react-swipeable-views": "0.13.9",
     "react-timeline-range-slider": "1.4.1",
     "react-virtualized": "9.22.3",
-    "recharts": "2.0.9",
+    "recharts": "2.0.10",
     "relay-runtime": "11.0.2",
     "rxjs": "7.0.1",
     "showdown": "1.9.1",
@@ -118,6 +118,8 @@
     "not op_mini all"
   ],
   "resolutions": {
+    "node-sass": "6.0.1",
+    "trim-newlines": "3.0.1",
     "bezier-js": "4.0.3"
   },
   "main": "index.js"

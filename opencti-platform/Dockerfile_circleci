@@ -1,4 +1,4 @@
-FROM node:15.11.0-alpine3.13 AS base
+FROM node:16.6.0-alpine3.14 AS base
 
 
 FROM base AS graphql-deps-builder
