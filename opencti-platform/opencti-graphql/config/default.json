@@ -6,7 +6,8 @@
       "ca": [],
       "key": null,
       "crt": null,
-      "reject_unauthorized": true
+      "reject_unauthorized": true,
+      "cookie_secure": false
     },
     "app_logs": {
       "logs_level": "info",
