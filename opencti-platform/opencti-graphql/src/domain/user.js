@@ -346,7 +346,7 @@ export const roleDeleteRelation = async (user, roleId, toId, relationshipType) =
 // User related
 export const userEditField = async (user, userId, input) => {
   const { key } = input;
-  const value = key === 'password' ? [bcrypt.hashSync(R.head(input.value).toString(), 10)] : input.value;
+  const value = key === 'password' ? [bcrypt.hashSync(R.head(input.value).toString())] : input.value;
   const patch = { [key]: value };
   const { element } = await patchAttribute(user, userId, ENTITY_TYPE_USER, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
@@ -591,7 +591,7 @@ export const initAdmin = async (email, password, tokenValue) => {
     // If admin user exists, just patch the fields
     const patch = {
       user_email: email,
-      password: bcrypt.hashSync(password, 10),
+      password: bcrypt.hashSync(password),
       api_token: tokenValue,
       external: true,
     };

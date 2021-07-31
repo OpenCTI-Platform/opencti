@@ -59,8 +59,8 @@ const initTaxiiApi = (app) => {
       };
       res.json(discovery);
     } catch (e) {
-      const error = errorConverter(e);
-      res.status(error.http_status).send(error);
+      const errorDetail = errorConverter(e);
+      res.status(errorDetail.http_status).send(errorDetail);
     }
   });
   // Root api
@@ -75,8 +75,8 @@ const initTaxiiApi = (app) => {
       };
       res.json(rootContent);
     } catch (e) {
-      const error = errorConverter(e);
-      res.status(error.http_status).send(error);
+      const errorDetail = errorConverter(e);
+      res.status(errorDetail.http_status).send(errorDetail);
     }
   });
   // Collection api
@@ -86,8 +86,8 @@ const initTaxiiApi = (app) => {
       const collections = await restAllCollections(user);
       res.json({ collections });
     } catch (e) {
-      const error = errorConverter(e);
-      res.status(error.http_status).send(error);
+      const errorDetail = errorConverter(e);
+      res.status(errorDetail.http_status).send(errorDetail);
     }
   });
   app.get(`${basePath}/taxii2/root/collections/:id`, async (req, res) => {
@@ -97,8 +97,8 @@ const initTaxiiApi = (app) => {
       const collection = await restLoadCollectionById(user, id);
       res.json(collection);
     } catch (e) {
-      const error = errorConverter(e);
-      res.status(error.http_status).send(error);
+      const errorDetail = errorConverter(e);
+      res.status(errorDetail.http_status).send(errorDetail);
     }
   });
   app.get(`${basePath}/taxii2/root/collections/:id/manifest`, async (req, res) => {
@@ -110,8 +110,8 @@ const initTaxiiApi = (app) => {
       res.set('X-TAXII-Date-Added-Last', R.last(manifest.objects)?.updated_at);
       res.json(manifest);
     } catch (e) {
-      const error = errorConverter(e);
-      res.status(error.http_status).send(error);
+      const errorDetail = errorConverter(e);
+      res.status(errorDetail.http_status).send(errorDetail);
     }
   });
   app.get(`${basePath}/taxii2/root/collections/:id/objects`, async (req, res) => {
@@ -123,8 +123,8 @@ const initTaxiiApi = (app) => {
       res.set('X-TAXII-Date-Added-Last', R.last(stix.objects)?.updated_at);
       res.json(stix);
     } catch (e) {
-      const error = errorConverter(e);
-      res.status(error.http_status).send(error);
+      const errorDetail = errorConverter(e);
+      res.status(errorDetail.http_status).send(errorDetail);
     }
   });
   app.get(`${basePath}/taxii2/root/collections/:id/objects/:object_id`, async (req, res) => {
@@ -137,8 +137,8 @@ const initTaxiiApi = (app) => {
       res.set('X-TAXII-Date-Added-Last', R.last(stix.objects)?.updated_at);
       res.json(stix);
     } catch (e) {
-      const error = errorConverter(e);
-      res.status(error.http_status).send(error);
+      const errorDetail = errorConverter(e);
+      res.status(errorDetail.http_status).send(errorDetail);
     }
   });
   app.get(`${basePath}/taxii2/root/collections/:id/objects/:object_id/versions`, async (req, res) => {
@@ -153,22 +153,25 @@ const initTaxiiApi = (app) => {
       const versions = data ? [data.updated_at] : [];
       res.json({ versions });
     } catch (e) {
-      const error = errorConverter(e);
-      res.status(error.http_status).send(error);
+      const errorDetail = errorConverter(e);
+      res.status(errorDetail.http_status).send(errorDetail);
     }
   });
   // Unsupported api
   app.get(`${basePath}/taxii2/root/status/:status_id`, async (req, res) => {
-    const error = UnsupportedError('Unsupported operation');
-    res.status(error.http_status).send(error);
+    const e = UnsupportedError('Unsupported operation');
+    const errorDetail = errorConverter(e);
+    res.status(errorDetail.http_status).send(errorDetail);
   });
   app.post(`${basePath}/taxii2/root/collections/:id/objects`, async (req, res) => {
-    const error = UnsupportedError('Unsupported operation');
-    res.status(error.http_status).send(error);
+    const e = UnsupportedError('Unsupported operation');
+    const errorDetail = errorConverter(e);
+    res.status(errorDetail.http_status).send(errorDetail);
   });
   app.delete(`${basePath}/taxii2/root/collections/:id/objects/:object_id`, async (req, res) => {
-    const error = UnsupportedError('Unsupported operation');
-    res.status(error.http_status).send(error);
+    const e = UnsupportedError('Unsupported operation');
+    const errorDetail = errorConverter(e);
+    res.status(errorDetail.http_status).send(errorDetail);
   });
 };
 
