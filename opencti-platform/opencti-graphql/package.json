@@ -60,7 +60,7 @@
     "graphql-import": "1.0.2",
     "graphql-iso-date": "3.6.1",
     "graphql-redis-subscriptions": "2.4.0",
-    "graphql-relay": "0.7.0",
+    "graphql-relay": "0.8.0",
     "graphql-subscriptions": "1.2.1",
     "he": "1.2.0",
     "helmet": "4.6.0",
