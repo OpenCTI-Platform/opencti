@@ -55,7 +55,7 @@
     "express-session": "1.17.2",
     "github-api": "3.4.0",
     "glob": "^7.1.7",
-    "graphql": "15.5.0",
+    "graphql": "15.5.1",
     "graphql-constraint-directive": "2.1.1",
     "graphql-import": "1.0.2",
     "graphql-iso-date": "3.6.1",
