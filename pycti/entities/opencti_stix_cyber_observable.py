@@ -2,6 +2,7 @@
 
 import json
 import os
+
 import magic
 
 
@@ -320,11 +321,11 @@ class StixCyberObservable:
         )
         query = (
             """
-            query StixCyberObservables($types: [String], $filters: [StixCyberObservablesFiltering], $search: String, $first: Int, $after: ID, $orderBy: StixCyberObservablesOrdering, $orderMode: OrderingMode) {
-                stixCyberObservables(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
-                    edges {
-                        node {
-                            """
+                query StixCyberObservables($types: [String], $filters: [StixCyberObservablesFiltering], $search: String, $first: Int, $after: ID, $orderBy: StixCyberObservablesOrdering, $orderMode: OrderingMode) {
+                    stixCyberObservables(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                        edges {
+                            node {
+                                """
             + (custom_attributes if custom_attributes is not None else self.properties)
             + """
                         }
@@ -398,9 +399,9 @@ class StixCyberObservable:
             self.opencti.log("info", "Reading StixCyberObservable {" + id + "}.")
             query = (
                 """
-                query StixCyberObservable($id: String!) {
-                    stixCyberObservable(id: $id) {
-                        """
+                    query StixCyberObservable($id: String!) {
+                        stixCyberObservable(id: $id) {
+                            """
                 + (
                     custom_attributes
                     if custom_attributes is not None
@@ -1736,3 +1737,30 @@ class StixCyberObservable:
                 "listFilters": list_filters,
             },
         )
+
+    def ask_for_enrichment(self, **kwargs):
+        id = kwargs.get("id", None)
+        connector_id = kwargs.get("connector_id", None)
+
+        if id is None or connector_id is None:
+            self.opencti.log("error", "Missing parameters: id and connector_id")
+            return False
+
+        query = """
+            mutation StixCoreObjectEnrichmentLinesMutation($id: ID!, $connectorId: ID!) {
+                stixCoreObjectEdit(id: $id) {
+                    askEnrichment(connectorId: $connectorId) {
+                        id
+                    }
+                }
+            }
+            """
+
+        self.opencti.query(
+            query,
+            {
+                "id": id,
+                "connectorId": connector_id,
+            },
+        )
+        return True

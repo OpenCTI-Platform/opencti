@@ -106,6 +106,8 @@ class ListenQueue(threading.Thread):
         self.user = config["connection"]["user"]
         self.password = config["connection"]["pass"]
         self.queue_name = config["listen"]
+        self.exit_event = threading.Event()
+        self.thread = None
 
     # noinspection PyUnusedLocal
     def _process_message(self, channel, method, properties, body) -> None:
@@ -122,9 +124,9 @@ class ListenQueue(threading.Thread):
         """
 
         json_data = json.loads(body)
-        thread = threading.Thread(target=self._data_handler, args=[json_data])
-        thread.start()
-        while thread.is_alive():  # Loop while the thread is processing
+        self.thread = threading.Thread(target=self._data_handler, args=[json_data])
+        self.thread.start()
+        while self.thread.is_alive():  # Loop while the thread is processing
             assert self.pika_connection is not None
             self.pika_connection.sleep(1.0)
         logging.info(
@@ -159,7 +161,7 @@ class ListenQueue(threading.Thread):
                 logging.error("Failing reporting the processing")
 
     def run(self) -> None:
-        while True:
+        while not self.exit_event.is_set():
             try:
                 # Connect the broker
                 self.pika_credentials = pika.PlainCredentials(self.user, self.password)
@@ -186,6 +188,11 @@ class ListenQueue(threading.Thread):
                 self.helper.log_error(str(e))
                 time.sleep(10)
 
+    def stop(self):
+        self.exit_event.set()
+        if self.thread:
+            self.thread.join()
+
 
 class PingAlive(threading.Thread):
     def __init__(self, connector_id, api, get_state, set_state) -> None:
@@ -195,9 +202,10 @@ class PingAlive(threading.Thread):
         self.api = api
         self.get_state = get_state
         self.set_state = set_state
+        self.exit_event = threading.Event()
 
     def ping(self) -> None:
-        while True:
+        while not self.exit_event.is_set():
             try:
                 initial_state = self.get_state()
                 result = self.api.connector.ping(self.connector_id, initial_state)
@@ -221,11 +229,15 @@ class PingAlive(threading.Thread):
             except Exception:  # pylint: disable=broad-except
                 self.in_error = True
                 logging.error("Error pinging the API")
-            time.sleep(40)
+            self.exit_event.wait(40)
 
     def run(self) -> None:
         logging.info("Starting ping alive thread")
         self.ping()
+
+    def stop(self) -> None:
+        logging.info("Preparing for clean shutdown")
+        self.exit_event.set()
 
 
 class ListenStream(threading.Thread):
@@ -239,6 +251,7 @@ class ListenStream(threading.Thread):
         self.token = token
         self.verify_ssl = verify_ssl
         self.start_timestamp = start_timestamp
+        self.exit_event = threading.Event()
 
     def run(self) -> None:  # pylint: disable=too-many-branches
         current_state = self.helper.get_state()
@@ -432,6 +445,17 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
         self.ping.start()
 
+        # self.listen_stream = None
+        self.listen_queue = None
+
+    def stop(self) -> None:
+        if self.listen_queue:
+            self.listen_queue.stop()
+        # if self.listen_stream:
+        #     self.listen_stream.stop()
+        self.ping.stop()
+        self.api.connector.unregister(self.connector_id)
+
     def get_name(self) -> Optional[Union[bool, int, str]]:
         return self.connect_name
 
@@ -470,8 +494,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type message_callback: Callable[[Dict], str]
         """
 
-        listen_queue = ListenQueue(self, self.config, message_callback)
-        listen_queue.start()
+        self.listen_queue = ListenQueue(self, self.config, message_callback)
+        self.listen_queue.start()
 
     def listen_stream(
         self,
@@ -486,10 +510,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :param message_callback: callback function to process messages
         """
 
-        listen_stream = ListenStream(
+        self.listen_stream = ListenStream(
             self, message_callback, url, token, verify_ssl, start_timestamp
         )
-        listen_stream.start()
+        self.listen_stream.start()
 
     def get_opencti_url(self) -> Optional[Union[bool, int, str]]:
         return self.opencti_url
