@@ -150,3 +150,19 @@ class Label:
                 "error",
                 "[opencti_label] Missing parameters: value",
             )
+
+    def delete(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is not None:
+            self.opencti.log("info", "Deleting Label {" + id + "}.")
+            query = """
+                 mutation LabelEdit($id: ID!) {
+                     labelEdit(id: $id) {
+                         delete
+                     }
+                 }
+             """
+            self.opencti.query(query, {"id": id})
+        else:
+            self.opencti.log("error", "[opencti_label] Missing parameters: id")
+            return None

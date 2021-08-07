@@ -219,3 +219,21 @@ class MarkingDefinition:
             self.opencti.log(
                 "error", "[opencti_marking_definition] Missing parameters: stixObject"
             )
+
+    def delete(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is not None:
+            self.opencti.log("info", "Deleting Marking-Definition {" + id + "}.")
+            query = """
+                 mutation MarkingDefinitionEdit($id: ID!) {
+                     markingDefinitionEdit(id: $id) {
+                         delete
+                     }
+                 }
+             """
+            self.opencti.query(query, {"id": id})
+        else:
+            self.opencti.log(
+                "error", "[opencti_marking_definition] Missing parameters: id"
+            )
+            return None

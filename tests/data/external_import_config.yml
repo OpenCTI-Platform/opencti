@@ -1,0 +1,11 @@
+connector:
+  id: '65175acc-869b-465d-8a07-47ef00b92394'
+  type: 'EXTERNAL_IMPORT'
+  name: 'TestExternalImport'
+  scope: 'identity,vulnerability'
+  confidence_level: 80 # From 0 (Unknown) to 100 (Fully trusted)
+  update_existing_data: True
+  log_level: 'debug'
+
+test:
+  interval: 1
