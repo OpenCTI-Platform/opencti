@@ -19,7 +19,7 @@
     "formik-material-ui-pickers": "0.0.12",
     "graphql": "15.5.0",
     "html-to-image": "1.6.2",
-    "http-proxy-middleware": "2.0.0",
+    "http-proxy-middleware": "2.0.1",
     "js-cookie": "2.2.1",
     "js-file-download": "0.4.12",
     "jsonwebtoken": "8.5.1",
