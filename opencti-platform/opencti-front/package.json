@@ -55,7 +55,7 @@
     "relay-runtime": "11.0.2",
     "rxjs": "7.0.1",
     "showdown": "1.9.1",
-    "subscriptions-transport-ws": "0.9.18",
+    "subscriptions-transport-ws": "0.10.0",
     "three-spritetext": "1.6.2",
     "typeface-roboto": "1.1.13",
     "uuid": "8.3.2",
