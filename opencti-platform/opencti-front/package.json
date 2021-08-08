@@ -9,7 +9,7 @@
     "@material-ui/icons": "4.11.2",
     "@material-ui/lab": "4.0.0-alpha.58",
     "@material-ui/pickers": "3.3.10",
-    "@react-pdf/renderer": "2.0.15",
+    "@react-pdf/renderer": "2.0.16",
     "babel-loader": "8.1.0",
     "babel-plugin-relay": "11.0.2",
     "classnames": "2.3.1",
