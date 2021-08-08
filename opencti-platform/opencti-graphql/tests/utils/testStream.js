@@ -10,12 +10,16 @@ import { isStixRelationship } from '../../src/schema/stixRelationship';
 
 export const fetchStreamEvents = (uri, { from, compact } = {}) => {
   const opts = {
-    headers: { authorization: generateBasicAuth(), 'last-event-iD': from, 'live-depth-compact': compact },
+    headers: { authorization: generateBasicAuth(), 'last-event-id': from, 'live-depth-compact': compact },
   };
   return new Promise((resolve, reject) => {
     let lastEventTime = null;
     const events = [];
     const es = new EventSource(uri, opts);
+    const closeEventSource = () => {
+      es.close();
+      resolve(events);
+    };
     const handleEvent = (event) => {
       const { type, data, lastEventId, origin } = event;
       const [time] = lastEventId.split('-');
@@ -25,7 +29,7 @@ export const fetchStreamEvents = (uri, { from, compact } = {}) => {
       // If no new event for 5 secs, stop the processing
       setTimeout(() => {
         if (lastEventTime === currentTime) {
-          resolve(events);
+          closeEventSource();
         }
       }, 5000);
     };
@@ -33,7 +37,7 @@ export const fetchStreamEvents = (uri, { from, compact } = {}) => {
     es.addEventListener('create', (event) => handleEvent(event));
     es.addEventListener('merge', (event) => handleEvent(event));
     es.addEventListener('delete', (event) => handleEvent(event));
-    es.addEventListener('sync', () => resolve(events));
+    es.addEventListener('sync', () => closeEventSource());
     es.onerror = (err) => reject(err);
   });
 };

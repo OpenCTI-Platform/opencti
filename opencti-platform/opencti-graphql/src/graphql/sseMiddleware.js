@@ -352,8 +352,8 @@ const createSeeMiddleware = () => {
     const broadcasterInfo = await processor.info();
     req.on('close', () => {
       req.finished = true;
-      processor.shutdown();
       delete broadcastClients[client.id];
+      processor.shutdown();
     });
     res.writeHead(200, {
       Connection: 'keep-alive',
@@ -362,6 +362,7 @@ const createSeeMiddleware = () => {
       'Cache-Control': 'no-cache, no-transform', // no-transform is required for dev proxy
     });
     client.sendConnected({ ...broadcasterInfo, connectionId: client.id });
+    broadcastClients[client.id] = client;
   };
   const createSseChannel = (req, res) => {
     const channel = {
@@ -415,7 +416,6 @@ const createSeeMiddleware = () => {
     try {
       await initBroadcasting(req, res, client, processor);
       await processor.start(req.query.from || req.headers['last-event-id']);
-      broadcastClients[client.id] = client;
     } catch (err) {
       res.status(500);
       res.json({ error: 'Error accessing stream (empty stream or redis client connection problem)' });
@@ -568,7 +568,6 @@ const createSeeMiddleware = () => {
       }
       // After start to stream the live.
       await processor.start(startFrom);
-      broadcastClients[client.id] = client;
     } catch (e) {
       res.status(500);
       res.json({ error: 'Error accessing stream (empty stream or redis client connection problem)' });
