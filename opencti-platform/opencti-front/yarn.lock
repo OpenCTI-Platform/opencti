@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"3d-force-graph@^1.70.1":
+"3d-force-graph@^1.70":
   version "1.70.5"
   resolved "https://registry.yarnpkg.com/3d-force-graph/-/3d-force-graph-1.70.5.tgz#28a623576f76a131ced74c559ded8f183bebdfc6"
   integrity sha512-YEtMvuLwzD3xZhhAdR6HKFFWZfK2t6wQI9/R2xMQ5yCoqYOb1UdSNIfVFAjN5aG3f4W97FyK8H1fADE3Omxrvw==
@@ -13133,7 +13133,7 @@ prompts@^2.0.1, prompts@^2.4.0:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-prop-types@15.7.2, prop-types@15.x, prop-types@^15.0.0, prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.6.0, prop-types@^15.6.1, prop-types@^15.6.2, prop-types@^15.7.2:
+prop-types@15.7.2, prop-types@15.x, prop-types@^15.0.0, prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.6.0, prop-types@^15.6.1, prop-types@^15.6.2, prop-types@^15.7, prop-types@^15.7.2:
   version "15.7.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.7.2.tgz#52c41e75b8c87e72b9d9360e0206b99dcbffa6c5"
   integrity sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
@@ -13541,14 +13541,14 @@ react-force-graph-2d@1.23.6:
     prop-types "^15.7.2"
     react-kapsule "^2.2.2"
 
-react-force-graph-3d@1.21.8:
-  version "1.21.8"
-  resolved "https://registry.yarnpkg.com/react-force-graph-3d/-/react-force-graph-3d-1.21.8.tgz#cc1ceb3b728ed0dd862465ac88607d9de180ad4a"
-  integrity sha512-AJRYRvsCxYDWT+nqZ3wJfGVCSeVQtqKAx4eJOlJFWy/hD0KJhGwF7xZWq2RFtvU9Nn2cmXrMxN3PyFEMf4J6Cw==
+react-force-graph-3d@1.21.10:
+  version "1.21.10"
+  resolved "https://registry.yarnpkg.com/react-force-graph-3d/-/react-force-graph-3d-1.21.10.tgz#a1dc70dd84892aad82fb306dd2373a9281b177e6"
+  integrity sha512-ZA9xI5itj4TYqD2PV9nsDAhDsUuhrOazugkU7iK/WWvoPOY3/bVkzSUZEXpKbPLyg8H9zbe5BGnW14BdxpM4LQ==
   dependencies:
-    "3d-force-graph" "^1.70.1"
-    prop-types "^15.7.2"
-    react-kapsule "^2.2.2"
+    "3d-force-graph" "^1.70"
+    prop-types "^15.7"
+    react-kapsule "^2.2"
 
 react-grid-layout@1.2.5:
   version "1.2.5"
@@ -13611,7 +13611,7 @@ react-is@^16.6.0, react-is@^16.7.0, react-is@^16.8.1:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-17.0.2.tgz#e691d4a8e9c789365655539ab372762b0efb54f0"
   integrity sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==
 
-react-kapsule@^2.2.2:
+react-kapsule@^2.2, react-kapsule@^2.2.2:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/react-kapsule/-/react-kapsule-2.2.2.tgz#b1158b132a2d0d79ac5c33c71aa83e6f4b9e20d5"
   integrity sha512-/dl8dTszQxhGXqlJ10VeOY8upbWRwx9WsBR9cIx1upW0bGmCPkxG2snT6JZiuG+m9QcURf0eRQF8gz1W9upCYQ==
