@@ -48,7 +48,7 @@ import {
 import { convertEntityTypeToStixType, getParentTypes } from '../schema/schemaUtils';
 import { isStixObjectAliased } from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
-import { isBasicRelationship } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { getInstanceIds, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
@@ -514,7 +514,7 @@ export const elCount = (user, indexName, options = {}) => {
       throw DatabaseError('Count data fail', { error: err, query });
     });
 };
-export const elAggregationCount = (user, type, aggregationField, start, end, filters) => {
+export const elAggregationCount = (user, type, aggregationField, start, end, filters = []) => {
   const isIdFields = aggregationField.endsWith('internal_id');
   const haveRange = start && end;
   const dateFilter = [];
@@ -1579,10 +1579,14 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
   }
 };
 
-export const elDeleteElements = async (user, elements) => {
-  if (elements.length === 0) return;
+export const elDeleteElements = async (user, elements, loaders) => {
+  if (elements.length === 0) return [];
+  const { stixLoadById } = loaders;
+  const opts = { concurrency: ES_MAX_CONCURRENCY };
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(user, elements);
-  // 02. Compute the id that needs to be remove from rel
+  const stixRelations = relations.filter((r) => isStixRelationShipExceptMeta(r.relationship_type));
+  const dependencyDeletions = await Promise.map(stixRelations, (r) => stixLoadById(user, r.internal_id), opts);
+  // Compute the id that needs to be remove from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
   const cleanupRelations = relations.concat(basicCleanup);
   const relsFromToImpacts = cleanupRelations
@@ -1602,7 +1606,7 @@ export const elDeleteElements = async (user, elements) => {
     currentRelationsCount += relsToClean.length;
     logApp.debug(`[OPENCTI] Updating relations for deletion ${currentRelationsCount} / ${relsFromToImpacts.length}`);
   };
-  await Promise.map(groupsOfRelsFromTo, concurrentRelsFromTo, { concurrency: ES_MAX_CONCURRENCY });
+  await Promise.map(groupsOfRelsFromTo, concurrentRelsFromTo, opts);
   // Remove all relations
   let currentRelationsDelete = 0;
   const groupsOfDeletions = R.splitEvery(MAX_SPLIT, relations);
@@ -1611,9 +1615,11 @@ export const elDeleteElements = async (user, elements) => {
     currentRelationsDelete += deletions.length;
     logApp.debug(`[OPENCTI] Deleting related relations ${currentRelationsDelete} / ${relations.length}`);
   };
-  await Promise.map(groupsOfDeletions, concurrentDeletions, { concurrency: ES_MAX_CONCURRENCY });
+  await Promise.map(groupsOfDeletions, concurrentDeletions, opts);
   // Remove the elements
   await elDeleteInstanceIds(elements); // Bulk
+  // Return the relations deleted because of the entity deletion
+  return dependencyDeletions;
 };
 
 export const prepareElementForIndexing = (element) => {

@@ -2,7 +2,14 @@
 import * as R from 'ramda';
 import { buildDeleteEvent, buildEvent, buildScanEvent, createStreamProcessor, lockResource } from '../database/redis';
 import conf, { ENABLED_RULE_ENGINE, logApp } from '../config/conf';
-import { createEntity, internalLoadById, listAllRelations, patchAttribute, stixLoadById } from '../database/middleware';
+import {
+  connectionLoaders,
+  createEntity,
+  internalLoadById,
+  listAllRelations,
+  patchAttribute,
+  stixLoadById,
+} from '../database/middleware';
 import { INDEX_INTERNAL_OBJECTS, isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/rabbitmq';
 import { elList, elUpdate } from '../database/elasticSearch';
@@ -16,7 +23,7 @@ import { MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/sseMiddleware';
 import { buildStixData } from '../database/stix';
 import { generateInternalType, getParentTypes, getTypeFromStixId } from '../schema/schemaUtils';
 import { now } from '../utils/format';
-import {extractFieldsOfPatch} from "../utils/patch";
+import { extractFieldsOfPatch } from '../utils/patch';
 
 let activatedRules = [];
 const RULE_ENGINE_ID = 'rule_engine_settings';
@@ -51,23 +58,56 @@ export const setRuleActivation = async (user, ruleId, active) => {
 
 const ruleMergeHandler = async (event) => {
   const { data, markings } = event;
-  // Need to generate events for deletion
-  const events = await Promise.all(
-    data.x_opencti_sources.map((s) => {
-      const instance = { ...s, standard_id: s.id, internal_id: s.x_opencti_id, entity_type: generateInternalType(s) };
-      return buildDeleteEvent(RULE_MANAGER_USER, instance, stixLoadById, { withoutMessage: true });
-    })
-  );
-  // Add the update event
+  const events = [];
+  const generateInternalDeleteEvent = (instance) => {
+    return buildDeleteEvent(
+      RULE_MANAGER_USER,
+      instance,
+      [],
+      { stixLoadById, connectionLoaders },
+      { withoutMessage: true }
+    );
+  };
+  // region 01 - Generate events for deletion
+  // -- sources
+  const { x_opencti_context } = data;
+  const sourceDeleteEventsPromise = x_opencti_context.sources.map((s) => {
+    const instance = { ...s, standard_id: s.id, internal_id: s.x_opencti_id, entity_type: generateInternalType(s) };
+    return generateInternalDeleteEvent(instance);
+  });
+  const sourceDeleteEvents = await Promise.all(sourceDeleteEventsPromise);
+  events.push(...sourceDeleteEvents);
+  // -- derived deletions
+  const derivedDeleteEventsPromise = x_opencti_context.deletions.map((s) => {
+    const instance = { ...s, standard_id: s.id, internal_id: s.x_opencti_id, entity_type: generateInternalType(s) };
+    return generateInternalDeleteEvent(instance);
+  });
+  const derivedDeleteEvents = await Promise.all(derivedDeleteEventsPromise);
+  events.push(...derivedDeleteEvents);
+  // endregion
+  // region 02 - Generate event for merged entity
   const updateEvent = buildEvent(EVENT_TYPE_UPDATE, RULE_MANAGER_USER, markings, '-', data);
   events.push(updateEvent);
-  // Need to generate event for redo rule on updated element
-  const mergeCallback = async (relationships) => {
-    const creationEvents = relationships.map((r) => buildScanEvent(RULE_MANAGER_USER, r));
-    events.push(...creationEvents);
-  };
-  const listToArgs = { elementId: data.x_opencti_id, callback: mergeCallback };
-  await listAllRelations(RULE_MANAGER_USER, ABSTRACT_STIX_RELATIONSHIP, listToArgs);
+  // endregion
+  // region 03 - Generate events for shifted relations
+  // We need to cleanup the element associated with this relation and then rescan it
+  if (x_opencti_context.shifts.length > 0) {
+    const shiftDeleteEventsPromise = x_opencti_context.shifts.map((s) => {
+      const instance = { ...s, standard_id: s.id, internal_id: s.x_opencti_id, entity_type: generateInternalType(s) };
+      return generateInternalDeleteEvent(instance);
+    });
+    const shiftDeleteEvents = await Promise.all(shiftDeleteEventsPromise);
+    events.push(shiftDeleteEvents);
+    // Then we need to generate event for redo rule on updated element
+    const mergeCallback = async (relationships) => {
+      const creationEvents = relationships.map((r) => buildScanEvent(RULE_MANAGER_USER, r));
+      events.push(...creationEvents);
+    };
+    const ids = x_opencti_context.shifts.map((s) => s.x_opencti_id);
+    const listToArgs = { ids, callback: mergeCallback };
+    await listAllRelations(RULE_MANAGER_USER, ABSTRACT_STIX_RELATIONSHIP, listToArgs);
+  }
+  // endregion
   return events;
 };
 
@@ -152,10 +192,15 @@ export const rulesApplyHandler = async (events, forRules = []) => {
       }
       // In case of deletion, call clean on every impacted elements
       if (type === EVENT_TYPE_DELETE) {
-        const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: [data.x_opencti_id], operator: 'wildcard' }];
-        // eslint-disable-next-line no-use-before-define,prettier/prettier
-        const opts = { filters, callback: (elements) => rulesCleanHandler(eventId, elements, RULES_DECLARATION, data.x_opencti_id) };
-        await elList(RULE_MANAGER_USER, READ_DATA_INDICES, opts);
+        const contextDeletions = data.x_opencti_context.deletions.map((d) => d.x_opencti_id);
+        const deletionIds = [data.x_opencti_id, ...contextDeletions];
+        for (let deleteIndex = 0; deleteIndex < deletionIds.length; deleteIndex += 1) {
+          const deletionId = deletionIds[deleteIndex];
+          const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: [deletionId], operator: 'wildcard' }];
+          // eslint-disable-next-line no-use-before-define,prettier/prettier
+          const opts = { filters, callback: (elements) => rulesCleanHandler(eventId, elements, RULES_DECLARATION, deletionId) };
+          await elList(RULE_MANAGER_USER, READ_DATA_INDICES, opts);
+        }
       }
       // In case of update apply the event on every rules
       if (type === EVENT_TYPE_UPDATE) {

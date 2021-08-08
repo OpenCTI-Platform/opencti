@@ -35,6 +35,7 @@ import {
 import { utcDate } from '../../../src/utils/format';
 import { ADMIN_USER } from '../../utils/testQuery';
 import { BASE_TYPE_RELATION } from '../../../src/schema/general';
+import { stixLoadById } from '../../../src/database/middleware';
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
@@ -92,7 +93,7 @@ describe('Elasticsearch document loader', () => {
     const dataThroughStix = await elLoadById(ADMIN_USER, standardId, null, ['test_index']);
     expect(dataThroughStix.standard_id).toEqual(documentWithIndex.standard_id);
     // Try to delete
-    await elDeleteElements(ADMIN_USER, [dataThroughStix]);
+    await elDeleteElements(ADMIN_USER, [dataThroughStix], { stixLoadById });
     const removedInternal = await elLoadById(ADMIN_USER, internalId, null, ['test_index']);
     expect(removedInternal).toBeUndefined();
   });
@@ -240,7 +241,7 @@ describe('Elasticsearch computation', () => {
     // noinspection JSUnresolvedVariable
     const storedFormat = moment(head(data).date)._f;
     expect(storedFormat).toEqual('YYYY-MM-DD');
-    expect(head(data).value).toEqual(28);
+    expect(head(data).value).toEqual(34);
   });
   it('should month histogram accurate', async () => {
     const data = await elHistogramCount(
@@ -261,7 +262,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('2019-11')).toEqual(0);
     expect(aggregationMap.get('2019-12')).toEqual(0);
     expect(aggregationMap.get('2020-01')).toEqual(1);
-    expect(aggregationMap.get('2020-02')).toEqual(12);
+    expect(aggregationMap.get('2020-02')).toEqual(13);
     expect(aggregationMap.get('2020-03')).toEqual(1);
   });
   it('should year histogram accurate', async () => {
@@ -278,7 +279,7 @@ describe('Elasticsearch computation', () => {
     expect(data.length).toEqual(2);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2019')).toEqual(5);
-    expect(aggregationMap.get('2020')).toEqual(14);
+    expect(aggregationMap.get('2020')).toEqual(15);
   });
   it('should year histogram with relation filter accurate', async () => {
     const attackPattern = await elLoadById(ADMIN_USER, 'attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');

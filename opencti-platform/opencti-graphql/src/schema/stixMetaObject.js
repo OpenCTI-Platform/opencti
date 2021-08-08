@@ -1,38 +1,17 @@
 import * as R from 'ramda';
 import { ABSTRACT_STIX_META_OBJECT, schemaTypes } from './general';
 
-export const ENTITY_TYPE_MARKING_DEFINITION = 'Marking-Definition';
 export const ENTITY_TYPE_LABEL = 'Label';
 export const ENTITY_TYPE_EXTERNAL_REFERENCE = 'External-Reference';
 export const ENTITY_TYPE_KILL_CHAIN_PHASE = 'Kill-Chain-Phase';
 
 const STIX_META_INTERNAL = [ENTITY_TYPE_LABEL, ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE];
-const STIX_META_SPEC = [ENTITY_TYPE_MARKING_DEFINITION];
-const STIX_META_OBJECT = [...STIX_META_SPEC, ...STIX_META_INTERNAL];
+const STIX_META_OBJECT = [...STIX_META_INTERNAL];
 schemaTypes.register(ABSTRACT_STIX_META_OBJECT, STIX_META_OBJECT);
 
-export const isStixMetaSpecObject = (type) => R.includes(type, STIX_META_SPEC) || type === ABSTRACT_STIX_META_OBJECT;
 export const isStixMetaObject = (type) => R.includes(type, STIX_META_OBJECT) || type === ABSTRACT_STIX_META_OBJECT;
 
 export const stixMetaObjectsAttributes = {
-  [ENTITY_TYPE_MARKING_DEFINITION]: [
-    'internal_id',
-    'standard_id',
-    'entity_type',
-    'x_opencti_stix_ids',
-    'spec_version',
-    'created_at',
-    'i_created_at_day',
-    'i_created_at_month',
-    'i_created_at_year',
-    'updated_at',
-    'created',
-    'modified',
-    'definition_type',
-    'definition',
-    'x_opencti_order',
-    'x_opencti_color',
-  ],
   [ENTITY_TYPE_LABEL]: [
     'internal_id',
     'standard_id',

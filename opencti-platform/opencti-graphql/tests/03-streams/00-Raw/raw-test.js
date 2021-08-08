@@ -1,20 +1,21 @@
-import { validate as isUuid } from 'uuid';
 import * as R from 'ramda';
-import moment from 'moment';
 import { ADMIN_USER, FIVE_MINUTES } from '../../utils/testQuery';
 import { shutdownModules, startModules } from '../../../src/modules';
-import { fetchStreamEvents } from '../../utils/testStream';
-import { isStixId } from '../../../src/schema/schemaUtils';
+import {
+  checkInstanceDiff,
+  checkStreamData,
+  checkStreamGenericContent,
+  fetchStreamEvents,
+} from '../../utils/testStream';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../../../src/database/utils';
 import { isMultipleAttribute } from '../../../src/schema/fieldDataAdapter';
-import { isStixRelationship } from '../../../src/schema/stixRelationship';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
   EVENT_TYPE_MERGE,
   EVENT_TYPE_UPDATE,
 } from '../../../src/database/rabbitmq';
-import { fullLoadById, internalLoadById } from '../../../src/database/middleware';
+import { fullLoadById } from '../../../src/database/middleware';
 import { rebuildInstanceWithPatch } from '../../../src/utils/patch';
 import { buildStixData } from '../../../src/database/stix';
 
@@ -27,57 +28,28 @@ describe('Raw streams tests', () => {
   afterAll(async () => {
     await shutdownModules();
   });
-  const checkStreamData = (type, data) => {
-    expect(data.id).toBeDefined();
-    expect(isStixId(data.id)).toBeTruthy();
-    expect(data.x_opencti_id).toBeDefined();
-    expect(isUuid(data.x_opencti_id)).toBeTruthy();
-    expect(data.type).toBeDefined();
-    if (type === EVENT_TYPE_CREATE) {
-      expect(data.created_at).toBeDefined();
-      expect(moment(data.created_at).isValid()).toBeTruthy();
-      expect(data.updated_at).toBeDefined();
-      expect(moment(data.updated_at).isValid()).toBeTruthy();
-    }
-    if (data.type === 'relationship') {
-      expect(data.relationship_type).toBeDefined();
-      expect(isStixRelationship(data.relationship_type)).toBeTruthy();
-      expect(data.source_ref).toBeDefined();
-      expect(isStixId(data.source_ref)).toBeTruthy();
-      expect(data.x_opencti_source_ref).toBeDefined();
-      expect(isUuid(data.x_opencti_source_ref)).toBeTruthy();
-      expect(data.target_ref).toBeDefined();
-      expect(isStixId(data.target_ref)).toBeTruthy();
-      expect(data.x_opencti_target_ref).toBeDefined();
-      expect(isUuid(data.x_opencti_target_ref)).toBeTruthy();
-    }
-    if (data.x_opencti_stix_ids) {
-      data.x_opencti_stix_ids.forEach((m) => {
-        expect(isStixId(m)).toBeTruthy();
-      });
-    }
-  };
-  const checkStreamGenericContent = (type, dataEvent) => {
-    const { data, markings, message } = dataEvent;
-    expect(markings).toBeDefined();
-    if (markings.length > 0) {
-      markings.forEach((m) => {
-        expect(isUuid(m)).toBeTruthy();
-      });
-    }
-    expect(message).not.toBeNull();
-    checkStreamData(type, data);
-  };
   // We need to check the event format to be sure that everything is setup correctly
   // eslint-disable-next-line prettier/prettier
   it('Should stream correctly formatted', async () => {
       // Read all events from the beginning.
-      const events = await fetchStreamEvents('http://localhost:4000/stream', '0');
+      const events = await fetchStreamEvents('http://localhost:4000/stream', { from: '0' });
+      // const test = R.groupBy((e) => e.data.data.type, events);
       // Check the number of events
-      expect(events.length).toBe(588);
+      expect(events.length).toBe(610);
       // 01 - CHECK CREATE EVENTS
       const createEvents = events.filter((e) => e.type === EVENT_TYPE_CREATE);
-      expect(createEvents.length).toBe(262);
+      expect(createEvents.length).toBe(290);
+      // Check some events count
+      const createEventsByTypes = R.groupBy((e) => e.data.data.type, createEvents);
+      expect(createEventsByTypes['marking-definition'].length).toBe(7);
+      expect(createEventsByTypes.label.length).toBe(15);
+      expect(createEventsByTypes.identity.length).toBe(13);
+      expect(createEventsByTypes.relationship.length).toBe(118);
+      expect(createEventsByTypes.indicator.length).toBe(30);
+      expect(createEventsByTypes['attack-pattern'].length).toBe(6);
+      expect(createEventsByTypes.report.length).toBe(4);
+      expect(createEventsByTypes.tool.length).toBe(1);
+      expect(createEventsByTypes.vulnerability.length).toBe(7);
       for (let createIndex = 0; createIndex < createEvents.length; createIndex += 1) {
         const { data: insideData, origin, type } = createEvents[createIndex];
         expect(origin).toBeDefined();
@@ -85,7 +57,9 @@ describe('Raw streams tests', () => {
       }
       // 02 - CHECK UPDATE EVENTS
       const updateEvents = events.filter((e) => e.type === EVENT_TYPE_UPDATE);
-      expect(updateEvents.length).toBe(286);
+      expect(updateEvents.length).toBe(280);
+      const updateEventsByTypes = R.groupBy((e) => e.data.data.type, updateEvents);
+      expect(updateEventsByTypes.report.length).toBe(186);
       for (let updateIndex = 0; updateIndex < updateEvents.length; updateIndex += 1) {
         const { data: insideData, origin, type } = updateEvents[updateIndex];
         expect(origin).toBeDefined();
@@ -127,6 +101,7 @@ describe('Raw streams tests', () => {
       // 03 - CHECK DELETE EVENTS
       const deleteEvents = events.filter((e) => e.type === EVENT_TYPE_DELETE);
       expect(deleteEvents.length).toBe(37);
+      // const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
       for (let delIndex = 0; delIndex < deleteEvents.length; delIndex += 1) {
         const { data: insideData, origin, type } = deleteEvents[delIndex];
         expect(origin).toBeDefined();
@@ -140,10 +115,11 @@ describe('Raw streams tests', () => {
         const { data } = insideData;
         expect(origin).toBeDefined();
         expect(data.x_opencti_patch).toBeDefined();
-        expect(data.x_opencti_sources).toBeDefined();
-        expect(data.x_opencti_sources.length > 0).toBeTruthy();
-        for (let sourceIndex = 0; sourceIndex < data.x_opencti_sources.length; sourceIndex += 1) {
-          const source = data.x_opencti_sources[sourceIndex];
+        expect(data.x_opencti_context).toBeDefined();
+        expect(data.x_opencti_context.sources).toBeDefined();
+        expect(data.x_opencti_context.sources.length > 0).toBeTruthy();
+        for (let sourceIndex = 0; sourceIndex < data.x_opencti_context.sources.length; sourceIndex += 1) {
+          const source = data.x_opencti_context.sources[sourceIndex];
           checkStreamData(EVENT_TYPE_MERGE, source);
         }
       }
@@ -155,7 +131,7 @@ describe('Raw streams tests', () => {
   it('Should events rebuild succeed', async () => {
       const report = await fullLoadById(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
       const stixReport = buildStixData(report);
-      const events = await fetchStreamEvents('http://localhost:4000/stream', '0');
+      const events = await fetchStreamEvents('http://localhost:4000/stream', { from: '0' });
       const reportEvents = events.filter((e) => report.standard_id === e.data.data.id);
       expect(reportEvents.length).toBe(154);
       const createEvents = reportEvents.filter((e) => e.type === EVENT_TYPE_CREATE);
@@ -169,33 +145,30 @@ describe('Raw streams tests', () => {
         stixInstance = rebuildInstanceWithPatch(stixInstance, patch);
       }
       // Check
-      const attributes = Object.keys(stixReport);
-      const diffElements = [];
-      for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
-        const attributeKey = attributes[attrIndex];
-        if (attributeKey === 'revoked' || attributeKey === 'lang') {
-          // Currently some attributes are valuated by default
-        } else {
-          const fetchAttr = stixReport[attributeKey];
-          let rebuildAttr = stixInstance[attributeKey];
-          if (attributeKey.endsWith('_ref')) {
-            const data = await internalLoadById(ADMIN_USER, rebuildAttr);
-            rebuildAttr = data.standard_id;
-          }
-          if (attributeKey.endsWith('_refs')) {
-            const data = await Promise.all(rebuildAttr.map(async (r) => internalLoadById(ADMIN_USER, r)));
-            rebuildAttr = data.map((r) => r.standard_id);
-          }
-          if (Array.isArray(fetchAttr)) {
-            if (!R.equals(fetchAttr.sort(), rebuildAttr.sort())) {
-              diffElements.push({ attributeKey, fetchAttr, rebuildAttr });
-            }
-          } else if (!R.equals(fetchAttr, rebuildAttr)) {
-            diffElements.push({ attributeKey, fetchAttr, rebuildAttr });
-          }
-        }
-      }
+      const diffElements = await checkInstanceDiff(stixReport, stixInstance);
       expect(diffElements.length).toBe(0);
+    },
+    FIVE_MINUTES
+  );
+  // Based on all events of a specific element, can we reconstruct the final state correctly?
+  // eslint-disable-next-line prettier/prettier
+  it('Should events context available', async () => {
+      const events = await fetchStreamEvents('http://localhost:4000/stream', { from: '0' });
+      const contextWithDeletionEvents = events.filter(
+        (e) =>
+          (e.data.data.x_opencti_context?.deletions || []).length > 0 ||
+          (e.data.data.x_opencti_context?.sources || []).length > 0
+      );
+      const deletions = R.flatten(
+        contextWithDeletionEvents.map((e) => [
+          ...(e.data.data.x_opencti_context?.deletions || []),
+          ...(e.data.data.x_opencti_context?.sources || []),
+        ])
+      );
+      const byTypes = R.groupBy((e) => e.type, deletions);
+      expect(byTypes.relationship.length).toBe(6); // Due to merge and sub deletions
+      expect(byTypes['threat-actor'].length).toBe(6); // Merge of threat actors in test
+      expect(byTypes.file.length).toBe(2); // Merge of files in test
     },
     FIVE_MINUTES
   );

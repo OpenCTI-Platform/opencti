@@ -14,7 +14,7 @@ import {
   UPDATE_OPERATION_CHANGE,
   UPDATE_OPERATION_REMOVE,
 } from './utils';
-import { isStixObject, isStixSpecificationObject } from '../schema/stixCoreObject';
+import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
 import { buildStixData, stixDataConverter } from './stix';
@@ -344,7 +344,7 @@ export const buildEvent = (eventType, user, markings, message, data) => {
     throw UnsupportedError('Stream event requires id, type and x_opencti_id');
   }
   return {
-    version: '2', // Event version.
+    version: '3', // Event version.
     type: eventType,
     origin: user.origin,
     markings: markings || [],
@@ -461,17 +461,22 @@ const buildRepublishUpdateEvent = (user, instance, updateEvents, opts = {}) => {
   return buildEvent(EVENT_TYPE_UPDATE, user, instance.object_marking_refs, message, dataEvent);
 };
 // Merge
-const buildMergeEvent = (user, initialInstance, mergedInstance, sourceEntities) => {
+const buildMergeEvent = (user, initialInstance, mergedInstance, sourceEntities, impacts) => {
   const patch = computeMergeDifferential(initialInstance, mergedInstance);
   const message = generateLogMessage(EVENT_TYPE_MERGE, initialInstance, sourceEntities);
   const data = buildStixData(mergedInstance, { clearEmptyValues: true });
+  const { updatedRelations, dependencyDeletions } = impacts;
   data.x_opencti_patch = patch;
-  data.x_opencti_sources = R.map((s) => buildStixData(s, { clearEmptyValues: true }), sourceEntities);
+  data.x_opencti_context = {
+    sources: R.map((s) => buildStixData(s, { clearEmptyValues: true }), sourceEntities),
+    deletions: R.map((s) => buildStixData(s, { clearEmptyValues: true }), dependencyDeletions),
+    shifts: updatedRelations,
+  };
   return buildEvent(EVENT_TYPE_MERGE, user, mergedInstance.object_marking_refs, message, data);
 };
-export const storeMergeEvent = async (user, initialInstance, mergedInstance, sourceEntities) => {
+export const storeMergeEvent = async (user, initialInstance, mergedInstance, sourceEntities, impacts) => {
   try {
-    const event = buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities);
+    const event = buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities, impacts);
     // Push the event in the stream only if instance is in "real index"
     if (!isInferredIndex(mergedInstance._index)) {
       await pushToStream(clientBase, event);
@@ -553,7 +558,7 @@ export const buildScanEvent = (user, instance) => {
   return buildEvent(EVENT_TYPE_CREATE, user, instance.object_marking_refs ?? [], '-', data);
 };
 export const storeCreateEvent = async (user, instance, input, loaders) => {
-  if (isStixSpecificationObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
+  if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     try {
       const event = await buildCreateEvent(user, instance, input, loaders);
       // Push the event in the stream only if instance is in "real index"
@@ -568,7 +573,7 @@ export const storeCreateEvent = async (user, instance, input, loaders) => {
   return null;
 };
 // Delete
-export const buildDeleteEvent = async (user, instance, loaders, opts = {}) => {
+export const buildDeleteEvent = async (user, instance, dependencyDeletions, loaders, opts = {}) => {
   const { withoutMessage = false } = opts;
   const { stixLoadById, connectionLoaders } = loaders;
   if (isStixCyberObservableRelationship(instance.entity_type) || isStixMetaRelationship(instance.entity_type)) {
@@ -589,12 +594,15 @@ export const buildDeleteEvent = async (user, instance, loaders, opts = {}) => {
   }
   const message = withoutMessage ? '-' : generateLogMessage(EVENT_TYPE_DELETE, instance);
   const data = buildStixData(instance, { clearEmptyValues: true });
+  data.x_opencti_context = {
+    deletions: R.map((s) => buildStixData(s, { clearEmptyValues: true }), dependencyDeletions),
+  };
   return buildEvent(EVENT_TYPE_DELETE, user, instance.object_marking_refs, message, data);
 };
-export const storeDeleteEvent = async (user, instance, loaders) => {
+export const storeDeleteEvent = async (user, instance, dependencyDeletions, loaders) => {
   try {
     if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
-      const event = await buildDeleteEvent(user, instance, loaders);
+      const event = await buildDeleteEvent(user, instance, dependencyDeletions, loaders);
       // Push the event in the stream only if instance is in "real index"
       if (!isInferredIndex(instance._index)) {
         await pushToStream(clientBase, event);

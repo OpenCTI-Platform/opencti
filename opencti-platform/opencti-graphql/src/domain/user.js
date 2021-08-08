@@ -35,7 +35,6 @@ import { findAll as allMarkings } from './markingDefinition';
 import { findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
 import { elLoadBy } from '../database/elasticSearch';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { now } from '../utils/format';
 import { applicationSession } from '../database/session';
 import {
@@ -48,6 +47,7 @@ import {
 } from '../config/audit';
 import { buildPagination, isEmptyField } from '../database/utils';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixDomainObject';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';

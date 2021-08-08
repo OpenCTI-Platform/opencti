@@ -72,6 +72,7 @@ import {
   INPUT_LABELS,
   INPUT_MARKINGS,
   INPUT_OBJECTS,
+  INTERNAL_PREFIX,
   REL_INDEX_PREFIX,
 } from '../schema/general';
 import { isEmptyField } from './utils';
@@ -97,6 +98,11 @@ export const convertTypeToStixType = (type) => {
     return 'sighting';
   }
   return type.toLowerCase();
+};
+
+const isValidStix = (data) => {
+  // TODO @JRI @SAM
+  return !R.isEmpty(data);
 };
 
 const BASIC_FIELDS = [
@@ -249,7 +255,8 @@ export const stixDataConverter = (data, args = {}) => {
     const [key, val] = entries[index];
     const isEmpty = Array.isArray(val) ? val.length === 0 : isEmptyField(val);
     const clearEmptyKey = clearEmptyValues && isEmpty;
-    const isInternalKey = key.startsWith('i_') || key.startsWith(REL_INDEX_PREFIX) || key === 'x_opencti_graph_data';
+    const isInternalKey =
+      key.startsWith(INTERNAL_PREFIX) || key.startsWith(REL_INDEX_PREFIX) || key === 'x_opencti_graph_data';
     if (isInternalKey || isStixRelationShipExceptMeta(key) || clearEmptyKey) {
       // Internal opencti attributes.
     } else if (key.startsWith('attribute_')) {
@@ -295,6 +302,9 @@ export const buildStixData = (data, args = {}) => {
     R.dissoc('sort')
   )(data);
   const stixData = stixDataConverter(rawData, args);
+  if (!isValidStix(stixData)) {
+    throw FunctionalError('Invalid stix data conversion', { data: stixData });
+  }
   if (onlyBase) {
     return R.pick(BASIC_FIELDS, stixData);
   }
@@ -323,22 +333,21 @@ export const convertStixCyberObservableRelationshipToStix = (data) => {
   return finalData;
 };
 
-export const convertDataToStix = (data, type) => {
+export const convertDataToStix = (data, args = {}) => {
   if (!data) {
     /* istanbul ignore next */
     throw FunctionalError('No data provided to STIX converter');
   }
   const entityType = data.entity_type;
-  const onlyBase = type === 'delete';
   let finalData;
   if (isStixObject(entityType)) {
-    finalData = buildStixData(data, { onlyBase });
+    finalData = buildStixData(data, args);
   }
   if (isStixCoreRelationship(entityType)) {
-    finalData = buildStixData(data, { onlyBase });
+    finalData = buildStixData(data, args);
   }
   if (isStixSightingRelationship(entityType)) {
-    finalData = buildStixData(data, { onlyBase });
+    finalData = buildStixData(data, args);
   }
   if (isStixMetaRelationship(entityType)) {
     finalData = convertStixMetaRelationshipToStix(data);

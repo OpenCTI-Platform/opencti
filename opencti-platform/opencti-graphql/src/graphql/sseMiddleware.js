@@ -2,7 +2,6 @@ import * as R from 'ramda';
 import conf, { basePath, logApp } from '../config/conf';
 import { authenticateUserFromRequest, STREAMAPI } from '../domain/user';
 import { createStreamProcessor } from '../database/redis';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { generateInternalId } from '../schema/identifier';
 import { findById } from '../domain/stream';
 import {
@@ -15,12 +14,13 @@ import {
 import { stixLoadById } from '../database/middleware';
 import { convertFiltersToQueryOptions } from '../domain/taxii';
 import { elList } from '../database/elasticSearch';
-import { isEmptyField, READ_DATA_INDICES } from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_META_OBJECTS, READ_STIX_INDICES } from '../database/utils';
 import { buildStixData } from '../database/stix';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { BYPASS, isBypassUser } from '../utils/access';
 import { adaptFiltersFrontendFormat, TYPE_FILTER } from '../utils/filtering';
 import { rebuildInstanceBeforePatch } from '../utils/patch';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixDomainObject';
 
 let heartbeat;
 export const MIN_LIVE_STREAM_EVENT_VERSION = 2;
@@ -168,7 +168,7 @@ export const computeEventsDiff = (elements) => {
     const element = elements[elemIndex];
     if (element.topic === EVENT_TYPE_MERGE) {
       const instanceData = element.data.data;
-      const mergedDeleted = instanceData.x_opencti_sources.map((s) => {
+      const mergedDeleted = instanceData.x_opencti_context.sources.map((s) => {
         return {
           id: element.id,
           topic: EVENT_TYPE_DELETE,
@@ -452,7 +452,8 @@ const createSeeMiddleware = () => {
   };
   const filteredStreamHandler = async (req, res) => {
     const { id } = req.params;
-    const startFrom = req.query.from || req.headers['Last-Event-ID'];
+    const startFrom = req.query.from || req.headers['last-event-id'];
+    const compactDepth = parseInt(req.headers['live-depth-compact'] || conf.get('redis:live_depth_compact'), 10);
     const collection = await findById(req.session.user, id);
     if (!collection) {
       res.status(500);
@@ -474,7 +475,6 @@ const createSeeMiddleware = () => {
     }
     // Create channel.
     const { channel, client } = createSseChannel(req, res);
-    const compactDepth = conf.get('redis:live_depth_compact');
     const processor = createStreamProcessor(
       req.session.user,
       req.session.user.user_email,
@@ -492,8 +492,10 @@ const createSeeMiddleware = () => {
               const createdInstance = buildStixData(currentInstance, { patchGeneration: true });
               const isMatchFilters = isInstanceMatchFilters(createdInstance, streamFilters);
               if (isMatchFilters) {
-                const data = buildStixData(currentInstance);
-                data.x_opencti_patch = patch;
+                const data = buildStixData(currentInstance, { clearEmptyValues: true });
+                if (isNotEmptyField(data.x_opencti_patch)) {
+                  data.x_opencti_patch = patch;
+                }
                 const markings = data.object_marking_refs || [];
                 client.sendEvent(eventId, EVENT_TYPE_CREATE, { data, markings });
               }
@@ -502,7 +504,9 @@ const createSeeMiddleware = () => {
           if (topic === EVENT_TYPE_DELETE) {
             const data = content;
             const markings = data.object_marking_refs || [];
-            data.x_opencti_patch = patch;
+            if (isNotEmptyField(data.x_opencti_patch)) {
+              data.x_opencti_patch = patch;
+            }
             client.sendEvent(eventId, EVENT_TYPE_DELETE, { data, markings });
           }
           if (topic === EVENT_TYPE_UPDATE) {
@@ -541,7 +545,8 @@ const createSeeMiddleware = () => {
       // If empty start date, stream all results corresponding to the filters
       if (isEmptyField(startFrom)) {
         const queryOptions = convertFiltersToQueryOptions(streamFilters);
-        const callback = async (elements) => {
+        // noinspection UnnecessaryLocalVariableJS
+        const queryCallback = async (elements) => {
           for (let index = 0; index < elements.length; index += 1) {
             const { internal_id: elemId } = elements[index];
             const instance = await stixLoadById(req.session.user, elemId);
@@ -555,8 +560,8 @@ const createSeeMiddleware = () => {
           }
           return channel.connected();
         };
-        queryOptions.callback = callback;
-        await elList(req.session.user, READ_DATA_INDICES, queryOptions);
+        queryOptions.callback = queryCallback;
+        await elList(req.session.user, [READ_INDEX_STIX_META_OBJECTS, ...READ_STIX_INDICES], queryOptions);
         // We need to sent a special event to mark the end of init with the current timestamp
         const catchId = `${new Date().getTime()}-0`;
         channel.sendEvent(catchId, EVENT_TYPE_SYNC, { message: 'Catchup done' });

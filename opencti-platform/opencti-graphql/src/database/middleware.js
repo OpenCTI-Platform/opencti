@@ -78,6 +78,7 @@ import {
   checkStixCoreRelationshipMapping,
   checkStixCyberObservableRelationshipMapping,
   cleanStixIds,
+  convertTypeToStixType,
   STIX_SPEC_VERSION,
 } from './stix';
 import {
@@ -513,12 +514,12 @@ export const listEntities = async (user, entityTypes, args = {}) => {
   const paginateArgs = buildFilters({ entityTypes, ...args });
   return elPaginate(user, indices, paginateArgs);
 };
-export const listRelations = async (user, relationshipType, args) => {
+export const listRelations = async (user, relationshipType, args = {}) => {
   const { indices = READ_RELATIONSHIPS_INDICES } = args;
   const paginateArgs = buildRelationsFilter(relationshipType, args);
   return elPaginate(user, indices, paginateArgs);
 };
-export const listAllRelations = async (user, relationshipType, args) => {
+export const listAllRelations = async (user, relationshipType, args = {}) => {
   const { indices = READ_RELATIONSHIPS_INDICES } = args;
   const paginateArgs = buildRelationsFilter(relationshipType, args);
   return elList(user, indices, paginateArgs);
@@ -1048,8 +1049,10 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     const relUpdate = {
       _index: r.relation._index,
       id: r.internal_id,
+      standard_id: r.standard_id,
       toReplace: sideToRedirect,
       entity_type: relationType,
+      side: 'source_ref',
       data: { internal_id: sideTarget, name: targetEntity.name },
     };
     updateConnections.push(relUpdate);
@@ -1088,8 +1091,10 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     const relUpdate = {
       _index: r.relation._index,
       id: r.internal_id,
+      standard_id: r.standard_id,
       toReplace: sideToRedirect,
       entity_type: relationType,
+      side: 'target_ref',
       data: { internal_id: sideTarget, name: targetEntity.name },
     };
     updateConnections.push(relUpdate);
@@ -1126,6 +1131,17 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     logApp.info(`[OPENCTI] Merging, updating relations ${currentRelsUpdateCount} / ${updateConnections.length}`);
   };
   await Promise.map(groupsOfRelsUpdate, concurrentRelsUpdate, { concurrency: ES_MAX_CONCURRENCY });
+  const updatedRelations = updateConnections
+    .filter((u) => isStixRelationShipExceptMeta(u.entity_type))
+    .map((c) => ({
+      id: c.standard_id,
+      x_opencti_id: c.id,
+      type: convertTypeToStixType(c.entity_type),
+      relationship_type: c.entity_type,
+      x_opencti_patch: {
+        replace: { [c.side]: { current: c.data.internal_id, previous: c.toReplace } },
+      },
+    }));
   // Update all impacted entities
   logApp.info(`[OPENCTI] Merging impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
   const updatesByEntity = R.groupBy((i) => i.id, updateEntities);
@@ -1145,9 +1161,8 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   await Promise.map(groupsOfEntityUpdate, concurrentEntitiesUpdate, { concurrency: ES_MAX_CONCURRENCY });
   // Take care of multi update
   const updateMultiEntities = entries.filter(([, values]) => values.length > 1);
-  await Promise.map(
-    updateMultiEntities,
-    async ([id, values]) => {
+  // eslint-disable-next-line prettier/prettier
+  await Promise.map(updateMultiEntities, async ([id, values]) => {
       logApp.info(`[OPENCTI] Merging, updating single entity ${id} / ${values.length}`);
       const changeOperations = values.filter((element) => element.toReplace !== null);
       const addOperations = values.filter((element) => element.toReplace === null);
@@ -1171,12 +1186,12 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     { concurrency: ES_MAX_CONCURRENCY }
   );
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
-  await elDeleteElements(user, sourceEntities);
+  const dependencyDeletions = await elDeleteElements(user, sourceEntities, { stixLoadById });
   // Everything if fine update remaining attributes
   const updateAttributes = [];
   // 1. Update all possible attributes
   const attributes = await queryAttributes(targetType);
-  const sourceFields = R.map((a) => a.node.value, attributes.edges).filter((s) => !s.startsWith('i_'));
+  const sourceFields = R.map((a) => a.node.value, attributes.edges).filter((s) => !s.startsWith(INTERNAL_PREFIX));
   for (let fieldIndex = 0; fieldIndex < sourceFields.length; fieldIndex += 1) {
     const sourceFieldKey = sourceFields[fieldIndex];
     const mergedEntityCurrentFieldValue = targetEntity[sourceFieldKey];
@@ -1222,6 +1237,8 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     await elUpdateElement(updateAsInstance);
     logApp.info(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateAsInstance });
   }
+  // Return extra deleted stix relations
+  return { updatedRelations, dependencyDeletions };
 };
 const computeParticipants = (entities) => {
   const participants = [];
@@ -1268,9 +1285,9 @@ export const mergeEntities = async (user, targetEntityId, sourceEntityIds, opts 
     lock = await lockResource(participantIds);
     // - TRANSACTION PART
     const initialInstance = await stixLoadById(user, targetEntityId);
-    await mergeEntitiesRaw(user, target, sources, opts);
+    const mergeImpacts = await mergeEntitiesRaw(user, target, sources, opts);
     const mergedInstance = await stixLoadById(user, targetEntityId);
-    await storeMergeEvent(user, initialInstance, mergedInstance, sources);
+    await storeMergeEvent(user, initialInstance, mergedInstance, sources, mergeImpacts);
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id));
     // - END TRANSACTION
@@ -1871,7 +1888,7 @@ const upsertRuleRaw = async (instance, input, opts = {}) => {
     const currentMarkingRels = await listAllRelations(RULE_MANAGER_USER, RELATION_OBJECT_MARKING, {
       fromId: instance.internal_id,
     });
-    await elDeleteElements(SYSTEM_USER, currentMarkingRels);
+    await elDeleteElements(SYSTEM_USER, currentMarkingRels, { stixLoadById });
     updatedRemoveRelations.push({ objectMarking: currentMarkingRels });
     // 02. Create the new relations
     const markings = await internalFindByIds(RULE_MANAGER_USER, ruleMarkings);
@@ -2492,8 +2509,9 @@ export const deleteElementById = async (user, elementId, type) => {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
     await deleteAllFiles(user, `import/${element.entity_type}/${element.internal_id}`);
-    await elDeleteElements(user, [element]);
-    await storeDeleteEvent(user, element, { stixLoadById, connectionLoaders });
+    const dependencyDeletions = await elDeleteElements(user, [element], { stixLoadById });
+    // Publish event in the stream
+    await storeDeleteEvent(user, element, dependencyDeletions, { stixLoadById, connectionLoaders });
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(participantIds);
   } catch (err) {
@@ -2514,7 +2532,6 @@ export const deleteInferredRuleElement = async (rule, instance, dependencyId) =>
   if (!rules.includes(completeRuleName)) {
     throw UnsupportedError('Cant ask a deletion on element not inferred by this rule', { rule });
   }
-  // Get useful vars
   const monoRule = rules.length === 1;
   const isPurelyInferred = isInferredIndex(instance._index);
   // Cleanup all explanation that match the dependency id
@@ -2535,7 +2552,9 @@ export const deleteInferredRuleElement = async (rule, instance, dependencyId) =>
       if (isPurelyInferred && monoRule) {
         // If purely inferred and mono rule we can safely delete it.
         await deleteElementById(RULE_MANAGER_USER, instance.id, instance.entity_type);
-        const event = await buildDeleteEvent(RULE_MANAGER_USER, instance, stixLoadById, { withoutMessage: true });
+        const loaders = { stixLoadById, connectionLoaders };
+        const opts = { withoutMessage: true };
+        const event = await buildDeleteEvent(RULE_MANAGER_USER, instance, [], loaders, opts);
         derivedEvents.push(event);
       } else {
         // If not we need to clean the rule and keep the element

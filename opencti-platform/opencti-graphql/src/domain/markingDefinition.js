@@ -2,7 +2,7 @@ import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteElementById, listEntities, loadById, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixDomainObject';
 
 export const findById = (user, markingDefinitionId) => {
   return loadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);

@@ -1,10 +1,10 @@
 import { lstatSync, readFileSync } from 'fs';
 import nconf from 'nconf';
 import * as R from 'ramda';
+import { isEmpty } from 'ramda';
 import winston, { format } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
-import { isEmpty } from 'ramda';
 import * as O from '../schema/internalObject';
 import * as M from '../schema/stixMetaObject';
 import {
@@ -15,6 +15,7 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
 } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixDomainObject';
 
 const pjson = require('../../package.json');
 
@@ -73,7 +74,7 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: 'STREAM_COLLECTION_EDIT_TOPIC',
     ADDED_TOPIC: 'STREAM_COLLECTION_ADDED_TOPIC',
   },
-  [M.ENTITY_TYPE_MARKING_DEFINITION]: {
+  [ENTITY_TYPE_MARKING_DEFINITION]: {
     EDIT_TOPIC: 'MARKING_DEFINITION_EDIT_TOPIC',
     ADDED_TOPIC: 'MARKING_DEFINITION_ADDED_TOPIC',
   },
