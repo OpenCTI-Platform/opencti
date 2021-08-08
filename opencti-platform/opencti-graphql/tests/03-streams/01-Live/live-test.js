@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { shutdownModules, startModules } from '../../../src/modules';
 import { createStreamCollection, streamCollectionDelete } from '../../../src/domain/stream';
-import { ADMIN_USER } from '../../utils/testQuery';
+import { ADMIN_USER, FIVE_MINUTES } from '../../utils/testQuery';
 import { checkInstanceDiff, checkStreamGenericContent, fetchStreamEvents } from '../../utils/testStream';
 import { fullLoadById } from '../../../src/database/middleware';
 import { buildStixData } from '../../../src/database/stix';
@@ -45,56 +45,64 @@ describe('Live streams tests', () => {
       expect(number === dbNumber).toBeTruthy();
     }
   };
-  it('Should consume compacted live stream', async () => {
-    // Create the stream
-    const liveStream = await createStreamCollection(ADMIN_USER, {
-      name: 'No filter',
-      description: 'No filter live stream',
-      filters: '{}',
-    });
-    // Check the stream rebuild
-    const report = await fullLoadById(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
-    const stixReport = buildStixData(report);
-    const events = await fetchStreamEvents(`http://localhost:4000/stream/${liveStream.id}`, { from: '0' });
-    expect(events.length).toBe(239);
-    await checkResultCounting(events);
-    for (let index = 0; index < events.length; index += 1) {
-      const { data: insideData, origin, type } = events[index];
-      expect(origin).toBeDefined();
-      checkStreamGenericContent(type, insideData);
-    }
-    const reportEvents = events.filter((e) => report.standard_id === e.data.data.id);
-    expect(reportEvents.length).toBe(1);
-    const stixInstance = R.head(reportEvents).data.data;
-    const diffElements = await checkInstanceDiff(stixReport, stixInstance);
-    expect(diffElements.length).toBe(0);
-    // Delete the stream
-    await streamCollectionDelete(ADMIN_USER, liveStream.id);
-  });
-  it('Should consume init live stream', async () => {
-    // Create the stream
-    const liveStream = await createStreamCollection(ADMIN_USER, {
-      name: 'No filter',
-      description: 'No filter live stream',
-      filters: '{}',
-    });
-    // Check the stream rebuild
-    const report = await fullLoadById(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
-    const stixReport = buildStixData(report);
-    const events = await fetchStreamEvents(`http://localhost:4000/stream/${liveStream.id}`);
-    expect(events.length).toBe(239);
-    await checkResultCounting(events);
-    for (let index = 0; index < events.length; index += 1) {
-      const { data: insideData, origin, type } = events[index];
-      expect(origin).toBeDefined();
-      checkStreamGenericContent(type, insideData);
-    }
-    const reportEvents = events.filter((e) => report.standard_id === e.data.data.id);
-    expect(reportEvents.length).toBe(1);
-    const stixInstance = R.head(reportEvents).data.data;
-    const diffElements = await checkInstanceDiff(stixReport, stixInstance);
-    expect(diffElements.length).toBe(0);
-    // Delete the stream
-    await streamCollectionDelete(ADMIN_USER, liveStream.id);
-  });
+  it(
+    'Should consume compacted live stream',
+    async () => {
+      // Create the stream
+      const liveStream = await createStreamCollection(ADMIN_USER, {
+        name: 'No filter',
+        description: 'No filter live stream',
+        filters: '{}',
+      });
+      // Check the stream rebuild
+      const report = await fullLoadById(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
+      const stixReport = buildStixData(report);
+      const events = await fetchStreamEvents(`http://localhost:4000/stream/${liveStream.id}`, { from: '0' });
+      expect(events.length).toBe(239);
+      await checkResultCounting(events);
+      for (let index = 0; index < events.length; index += 1) {
+        const { data: insideData, origin, type } = events[index];
+        expect(origin).toBeDefined();
+        checkStreamGenericContent(type, insideData);
+      }
+      const reportEvents = events.filter((e) => report.standard_id === e.data.data.id);
+      expect(reportEvents.length).toBe(1);
+      const stixInstance = R.head(reportEvents).data.data;
+      const diffElements = await checkInstanceDiff(stixReport, stixInstance);
+      expect(diffElements.length).toBe(0);
+      // Delete the stream
+      await streamCollectionDelete(ADMIN_USER, liveStream.id);
+    },
+    FIVE_MINUTES
+  );
+  it(
+    'Should consume init live stream',
+    async () => {
+      // Create the stream
+      const liveStream = await createStreamCollection(ADMIN_USER, {
+        name: 'No filter',
+        description: 'No filter live stream',
+        filters: '{}',
+      });
+      // Check the stream rebuild
+      const report = await fullLoadById(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
+      const stixReport = buildStixData(report);
+      const events = await fetchStreamEvents(`http://localhost:4000/stream/${liveStream.id}`);
+      expect(events.length).toBe(239);
+      await checkResultCounting(events);
+      for (let index = 0; index < events.length; index += 1) {
+        const { data: insideData, origin, type } = events[index];
+        expect(origin).toBeDefined();
+        checkStreamGenericContent(type, insideData);
+      }
+      const reportEvents = events.filter((e) => report.standard_id === e.data.data.id);
+      expect(reportEvents.length).toBe(1);
+      const stixInstance = R.head(reportEvents).data.data;
+      const diffElements = await checkInstanceDiff(stixReport, stixInstance);
+      expect(diffElements.length).toBe(0);
+      // Delete the stream
+      await streamCollectionDelete(ADMIN_USER, liveStream.id);
+    },
+    FIVE_MINUTES
+  );
 });
