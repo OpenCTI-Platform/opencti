@@ -25,7 +25,12 @@ class StixCoreObject:
         stix_core_objects_ids = kwargs.get("object_ids", None)
         if id is not None and stix_core_objects_ids is not None:
             self.opencti.log(
-                "info", "Merging Core object {" + id + "} with {" + ','.join(stix_core_objects_ids) + "}."
+                "info",
+                "Merging Core object {"
+                + id
+                + "} with {"
+                + ",".join(stix_core_objects_ids)
+                + "}.",
             )
             query = """
                     mutation StixCoreObjectEdit($id: ID!, $stixCoreObjectsIds: [String]!) {

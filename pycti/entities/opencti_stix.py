@@ -30,8 +30,5 @@ class Stix:
              """
             self.opencti.query(query, {"id": id})
         else:
-            self.opencti.log(
-                "error", "[opencti_stix] Missing parameters: id"
-            )
+            self.opencti.log("error", "[opencti_stix] Missing parameters: id")
             return None
-

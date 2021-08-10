@@ -558,11 +558,12 @@ class StixCoreRelationship:
                     }
                 """
             result = self.opencti.query(
-                query, {
+                query,
+                {
                     "id": id,
                     "input": {"key": key, "value": value},
-                    "operation": operation
-                }
+                    "operation": operation,
+                },
             )
             return self.opencti.process_multiple_fields(
                 result["data"]["stixCoreRelationshipEdit"]["fieldPatch"]
