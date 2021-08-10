@@ -536,6 +536,7 @@ class StixCoreRelationship:
         id = kwargs.get("id", None)
         key = kwargs.get("key", None)
         value = kwargs.get("value", None)
+        operation = kwargs.get("operation", "replace")
         if isinstance(value, list):
             value = [str(v) for v in value]
         else:
@@ -546,9 +547,9 @@ class StixCoreRelationship:
                 "Updating stix_core_relationship {" + id + "} field {" + key + "}.",
             )
             query = """
-                    mutation StixCoreRelationshipEdit($id: ID!, $input: EditInput!) {
+                    mutation StixCoreRelationshipEdit($id: ID!, $input: EditInput!, $operation: EditOperation) {
                         stixCoreRelationshipEdit(id: $id) {
-                            fieldPatch(input: $input) {
+                            fieldPatch(input: $input, operation: $operation) {
                                 id
                                 standard_id
                                 entity_type
@@ -557,7 +558,11 @@ class StixCoreRelationship:
                     }
                 """
             result = self.opencti.query(
-                query, {"id": id, "input": {"key": key, "value": value}}
+                query, {
+                    "id": id,
+                    "input": {"key": key, "value": value},
+                    "operation": operation
+                }
             )
             return self.opencti.process_multiple_fields(
                 result["data"]["stixCoreRelationshipEdit"]["fieldPatch"]
@@ -1068,16 +1073,8 @@ class StixCoreRelationship:
                 stix_relation["relationship_type"] = "part-of"
             elif stix_relation["relationship_type"] == "localization":
                 stix_relation["relationship_type"] = "located-at"
-            source_ref = (
-                stix_relation["x_opencti_source_ref"]
-                if "x_opencti_source_ref" in stix_relation
-                else stix_relation["source_ref"]
-            )
-            target_ref = (
-                stix_relation["x_opencti_target_ref"]
-                if "x_opencti_target_ref" in stix_relation
-                else stix_relation["target_ref"]
-            )
+            source_ref = stix_relation["source_ref"]
+            target_ref = stix_relation["target_ref"]
             return self.create(
                 fromId=source_ref,
                 toId=target_ref,

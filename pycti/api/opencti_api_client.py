@@ -30,6 +30,8 @@ from pycti.entities.opencti_note import Note
 from pycti.entities.opencti_observed_data import ObservedData
 from pycti.entities.opencti_opinion import Opinion
 from pycti.entities.opencti_report import Report
+from pycti.entities.opencti_stix import Stix
+from pycti.entities.opencti_stix_core_object import StixCoreObject
 from pycti.entities.opencti_stix_core_relationship import StixCoreRelationship
 from pycti.entities.opencti_stix_cyber_observable import StixCyberObservable
 from pycti.entities.opencti_stix_cyber_observable_relationship import (
@@ -113,7 +115,9 @@ class OpenCTIApiClient:
         self.opencti_stix_object_or_stix_relationship = StixObjectOrStixRelationship(
             self
         )
+        self.stix = Stix(self)
         self.stix_domain_object = StixDomainObject(self, File)
+        self.stix_core_object = StixCoreObject(self, File)
         self.stix_cyber_observable = StixCyberObservable(self, File)
         self.stix_core_relationship = StixCoreRelationship(self)
         self.stix_sighting_relationship = StixSightingRelationship(self)

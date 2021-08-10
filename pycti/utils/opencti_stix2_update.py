@@ -21,6 +21,10 @@ class OpenCTIStix2Update:
                 self.opencti.stix_core_relationship.add_marking_definition(
                     id=id, marking_definition_id=object_marking_ref
                 )
+            elif entity_type == "sighting":
+                self.opencti.stix_sighting_relationship.add_marking_definition(
+                    id=id, marking_definition_id=object_marking_ref
+                )
             elif StixCyberObservableTypes.has_value(entity_type):
                 self.opencti.stix_cyber_observable.add_marking_definition(
                     id=id, marking_definition_id=object_marking_ref
@@ -38,6 +42,10 @@ class OpenCTIStix2Update:
                 object_marking_ref = object_marking_ref["value"]
             if entity_type == "relationship":
                 self.opencti.stix_core_relationship.remove_marking_definition(
+                    id=id, marking_definition_id=object_marking_ref
+                )
+            elif entity_type == "sighting":
+                self.opencti.stix_sighting_relationship.remove_marking_definition(
                     id=id, marking_definition_id=object_marking_ref
                 )
             elif StixCyberObservableTypes.has_value(entity_type):
@@ -81,12 +89,8 @@ class OpenCTIStix2Update:
                     id=id, external_reference_id=external_reference_id
                 )
 
-    def remove_external_references(
-        self, entity_type, id, external_references, version=2
-    ):
+    def remove_external_references(self, entity_type, id, external_references):
         for external_reference in external_references:
-            if version == 2:
-                external_reference = external_reference["value"]
             if entity_type == "relationship":
                 self.opencti.stix_core_relationship.remove_external_reference(
                     id=id, external_reference_id=external_reference["id"]
@@ -125,10 +129,8 @@ class OpenCTIStix2Update:
                     id=id, kill_chain_phase_id=kill_chain_phase_id
                 )
 
-    def remove_kill_chain_phases(self, entity_type, id, kill_chain_phases, version=2):
+    def remove_kill_chain_phases(self, entity_type, id, kill_chain_phases):
         for kill_chain_phase in kill_chain_phases:
-            if version == 2:
-                kill_chain_phase = kill_chain_phase["value"]
             if entity_type == "relationship":
                 self.opencti.stix_core_relationship.remove_kill_chain_phase(
                     id=id, kill_chain_phase_id=kill_chain_phase["id"]
@@ -217,6 +219,10 @@ class OpenCTIStix2Update:
             self.opencti.stix_core_relationship.update_created_by(
                 id=id, identity_id=created_by_ref
             )
+        elif entity_type == "sighting":
+            self.opencti.stix_sighting_relationship.update_created_by(
+                id=id, identity_id=created_by_ref
+            )
         elif StixCyberObservableTypes.has_value(entity_type):
             self.opencti.stix_cyber_observable.update_created_by(
                 id=id, identity_id=created_by_ref
@@ -227,14 +233,38 @@ class OpenCTIStix2Update:
             )
 
     def update_attribute(self, entity_type, id, operation, key, value):
+        # Relations
         if entity_type == "relationship":
             self.opencti.stix_core_relationship.update_field(
                 id=id, key=key, value=value, operation=operation
             )
+        elif entity_type == "sighting":
+            self.opencti.stix_sighting_relationship.update_field(
+                id=id, key=key, value=value, operation=operation
+            )
+        # Observables
         elif StixCyberObservableTypes.has_value(entity_type):
             self.opencti.stix_cyber_observable.update_field(
                 id=id, key=key, value=value, operation=operation
             )
+        # Meta
+        elif entity_type == "marking-definition":
+            self.opencti.marking_definition.update_field(
+                id=id, key=key, value=value, operation=operation
+            )
+        elif entity_type == "label":
+            self.opencti.label.update_field(
+                id=id, key=key, value=value, operation=operation
+            )
+        elif entity_type == "kill-chain-phase":
+            self.opencti.kill_chain_phase.update_field(
+                id=id, key=key, value=value, operation=operation
+            )
+        elif entity_type == "external-reference":
+            self.opencti.external_reference.update_field(
+                id=id, key=key, value=value, operation=operation
+            )
+        # Remaining stix domain
         else:
             self.opencti.stix_domain_object.update_field(
                 id=id, key=key, value=value, operation=operation
@@ -322,14 +352,12 @@ class OpenCTIStix2Update:
                             data["type"],
                             data["id"],
                             data["x_data_update"]["remove"]["external_references"],
-                            1,
                         )
                     elif key == "kill_chain_phases":
                         self.remove_kill_chain_phases(
                             data["type"],
                             data["id"],
                             data["x_data_update"]["remove"]["kill_chain_phases"],
-                            1,
                         )
                     elif key == "created_by_ref":
                         self.replace_created_by_ref(data["type"], data["id"], None, 1)

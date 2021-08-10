@@ -177,6 +177,57 @@ class MarkingDefinition:
             )
 
     """
+        Update a Marking definition object field
+
+        :param id: the Marking definition id
+        :param key: the key of the field
+        :param value: the value of the field
+        :return The updated Marking definition object
+    """
+
+    def update_field(self, **kwargs):
+        id = kwargs.get("id", None)
+        key = kwargs.get("key", None)
+        value = kwargs.get("value", None)
+        operation = kwargs.get("operation", "replace")
+        if isinstance(value, list):
+            value = [str(v) for v in value]
+        else:
+            value = str(value)
+        if id is not None and key is not None and value is not None:
+            self.opencti.log(
+                "info", "Updating Marking Definition {" + id + "} field {" + key + "}."
+            )
+            query = """
+                    mutation MarkingDefinitionEdit($id: ID!, $input: EditInput!, $operation: EditOperation) {
+                        markingDefinitionEdit(id: $id) {
+                            fieldPatch(input: $input, operation: $operation) {
+                                id
+                                standard_id
+                                entity_type
+                            }
+                        }
+                    }
+                """
+            result = self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "input": {"key": key, "value": value},
+                    "operation": operation,
+                },
+            )
+            return self.opencti.process_multiple_fields(
+                result["data"]["markingDefinitionEdit"]["fieldPatch"]
+            )
+        else:
+            self.opencti.log(
+                "error",
+                "[opencti_marking_definition] Missing parameters: id and key and value",
+            )
+            return None
+
+    """
         Import an Marking Definition object from a STIX2 object
 
         :param stixObject: the MarkingDefinition

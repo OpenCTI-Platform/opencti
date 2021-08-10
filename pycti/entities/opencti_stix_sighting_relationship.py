@@ -525,21 +525,26 @@ class StixSightingRelationship:
         id = kwargs.get("id", None)
         key = kwargs.get("key", None)
         value = kwargs.get("value", None)
+        operation = kwargs.get("operation", "replace")
         if id is not None and key is not None and value is not None:
             self.opencti.log(
                 "info", "Updating stix_sighting {" + id + "} field {" + key + "}."
             )
             query = """
-                    mutation StixSightingRelationshipEdit($id: ID!, $input: EditInput!) {
+                    mutation StixSightingRelationshipEdit($id: ID!, $input: EditInput!, $operation: EditOperation) {
                         stixSightingRelationshipEdit(id: $id) {
-                            fieldPatch(input: $input) {
+                            fieldPatch(input: $input, operation: $operation) {
                                 id
                             }
                         }
                     }
                 """
             result = self.opencti.query(
-                query, {"id": id, "input": {"key": key, "value": value}}
+                query, {
+                    "id": id,
+                    "input": {"key": key, "value": value},
+                    "operation": operation,
+                }
             )
             return self.opencti.process_multiple_fields(
                 result["data"]["stixSightingRelationshipEdit"]["fieldPatch"]
@@ -550,6 +555,209 @@ class StixSightingRelationship:
                 "[opencti_stix_sighting] Missing parameters: id and key and value",
             )
             return None
+
+    """
+        Add a Marking-Definition object to stix_sighting_relationship object (object_marking_refs)
+
+        :param id: the id of the stix_sighting_relationship
+        :param marking_definition_id: the id of the Marking-Definition
+        :return Boolean
+    """
+
+    def add_marking_definition(self, **kwargs):
+        id = kwargs.get("id", None)
+        marking_definition_id = kwargs.get("marking_definition_id", None)
+        if id is not None and marking_definition_id is not None:
+            custom_attributes = """
+                id
+                objectMarking {
+                    edges {
+                        node {
+                            id
+                            standard_id
+                            entity_type
+                            definition_type
+                            definition
+                            x_opencti_order
+                            x_opencti_color
+                            created
+                            modified
+                        }
+                    }
+                }
+            """
+            stix_core_relationship = self.read(
+                id=id, customAttributes=custom_attributes
+            )
+            if stix_core_relationship is None:
+                self.opencti.log(
+                    "error", "Cannot add Marking-Definition, entity not found"
+                )
+                return False
+            if marking_definition_id in stix_core_relationship["objectMarkingIds"]:
+                return True
+            else:
+                self.opencti.log(
+                    "info",
+                    "Adding Marking-Definition {"
+                    + marking_definition_id
+                    + "} to stix_sighting_relationship {"
+                    + id
+                    + "}",
+                    )
+                query = """
+                   mutation StixSightingRelationshipEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
+                       stixSightingRelationshipEdit(id: $id) {
+                            relationAdd(input: $input) {
+                                id
+                            }
+                       }
+                   }
+                """
+                self.opencti.query(
+                    query,
+                    {
+                        "id": id,
+                        "input": {
+                            "toId": marking_definition_id,
+                            "relationship_type": "object-marking",
+                        },
+                    },
+                )
+                return True
+        else:
+            self.opencti.log(
+                "error", "Missing parameters: id and marking_definition_id"
+            )
+            return False
+
+    """
+        Remove a Marking-Definition object to stix_sighting_relationship
+
+        :param id: the id of the stix_sighting_relationship
+        :param marking_definition_id: the id of the Marking-Definition
+        :return Boolean
+    """
+
+    def remove_marking_definition(self, **kwargs):
+        id = kwargs.get("id", None)
+        marking_definition_id = kwargs.get("marking_definition_id", None)
+        if id is not None and marking_definition_id is not None:
+            self.opencti.log(
+                "info",
+                "Removing Marking-Definition {"
+                + marking_definition_id
+                + "} from stix_sighting_relationship {"
+                + id
+                + "}",
+                )
+            query = """
+               mutation StixSightingRelationshipEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+                   stixSightingRelationshipEdit(id: $id) {
+                        relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                            id
+                        }
+                   }
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "toId": marking_definition_id,
+                    "relationship_type": "object-marking",
+                },
+            )
+            return True
+        else:
+            self.opencti.log("error", "Missing parameters: id and label_id")
+            return False
+
+    """
+        Update the Identity author of a stix_sighting_relationship object (created_by)
+
+        :param id: the id of the stix_sighting_relationship
+        :param identity_id: the id of the Identity
+        :return Boolean
+    """
+
+    def update_created_by(self, **kwargs):
+        id = kwargs.get("id", None)
+        identity_id = kwargs.get("identity_id", None)
+        if id is not None:
+            self.opencti.log(
+                "info",
+                "Updating author of stix_sighting_relationship {"
+                + id
+                + "} with Identity {"
+                + str(identity_id)
+                + "}",
+                )
+            custom_attributes = """
+                id
+                createdBy {
+                    ... on Identity {
+                        id
+                        standard_id
+                        entity_type
+                        parent_types
+                        name
+                        x_opencti_aliases
+                        description
+                        created
+                        modified
+                    }
+                    ... on Organization {
+                        x_opencti_organization_type
+                        x_opencti_reliability
+                    }
+                    ... on Individual {
+                        x_opencti_firstname
+                        x_opencti_lastname
+                    }
+                }
+            """
+            stix_domain_object = self.read(id=id, customAttributes=custom_attributes)
+            if stix_domain_object["createdBy"] is not None:
+                query = """
+                    mutation StixSightingRelationshipEdit($id: ID!, $toId: String! $relationship_type: String!) {
+                        stixSightingRelationshipEdit(id: $id) {
+                            relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                                id
+                            }
+                        }
+                    }
+                """
+                self.opencti.query(
+                    query,
+                    {
+                        "id": id,
+                        "toId": stix_domain_object["createdBy"]["id"],
+                        "relationship_type": "created-by",
+                    },
+                )
+            if identity_id is not None:
+                # Add the new relation
+                query = """
+                    mutation StixSightingRelationshipEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
+                        stixSightingRelationshipEdit(id: $id) {
+                            relationAdd(input: $input) {
+                                id
+                            }
+                        }
+                    }
+               """
+                variables = {
+                    "id": id,
+                    "input": {
+                        "toId": identity_id,
+                        "relationship_type": "created-by",
+                    },
+                }
+                self.opencti.query(query, variables)
+        else:
+            self.opencti.log("error", "Missing parameters: id")
+            return False
 
     """
         Delete a stix_sighting
