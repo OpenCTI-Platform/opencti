@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   createEntity,
   distributionEntities,
+  internalLoadById,
   listEntities,
   loadById,
   patchAttribute,
@@ -17,7 +18,8 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/gene
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { FunctionalError } from '../config/errors';
-import { now } from '../utils/format';
+import { now, utcDate } from "../utils/format";
+import { isStixId } from '../schema/schemaUtils';
 
 export const findById = (user, observedDataId) => {
   return loadById(user, observedDataId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
@@ -29,10 +31,11 @@ export const findAll = async (user, args) => {
 
 // All entities
 export const observedDataContainsStixObjectOrStixRelationship = async (user, observedDataId, thingId) => {
+  const resolvedThingId = isStixId(thingId) ? (await internalLoadById(user, thingId)).id : thingId;
   const args = {
     filters: [
       { key: 'internal_id', values: [observedDataId] },
-      { key: buildRefRelationKey(RELATION_OBJECT), values: [thingId] },
+      { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
     ],
   };
   const observedDataFound = await findAll(user, args);
@@ -108,15 +111,20 @@ export const addObservedData = async (user, observedData) => {
   if (observedData.objects.length === 0) {
     throw FunctionalError('Observed data must contain at least 1 object');
   }
+  const objects = [];
+  // eslint-disable-next-line no-restricted-syntax
+  for (const containedObject of observedData.objects) {
+    objects.push(isStixId(containedObject) ? (await internalLoadById(user, containedObject)).id : containedObject);
+  }
   const args = {
     connectionFormat: false,
-    filters: [{ key: buildRefRelationKey(RELATION_OBJECT), values: observedData.objects }],
+    filters: [{ key: buildRefRelationKey(RELATION_OBJECT), values: objects }],
   };
   const observedDataFound = await findAll(user, args);
   if (observedDataFound.length > 0) {
     const existingObservedData = observedDataFound[0];
     // By default, we don't touch the last_observed
-    let lastObserved = existingObservedData.last_observed;
+    let lastObserved = utcDate(existingObservedData.last_observed);
     if (R.isNil(observedData.last_observed)) {
       // If the input don't contain any last_observed, then last_observed is now()
       lastObserved = now();

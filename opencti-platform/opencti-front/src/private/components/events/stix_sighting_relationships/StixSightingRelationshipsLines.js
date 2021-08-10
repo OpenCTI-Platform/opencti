@@ -14,11 +14,7 @@ const nbOfRowsToLoad = 50;
 class StixSightingRelationshipsLines extends Component {
   render() {
     const {
-      initialLoading,
-      dataColumns,
-      relay,
-      entityLink,
-      paginationOptions,
+      initialLoading, dataColumns, relay, onLabelClick,
     } = this.props;
     return (
       <ListLinesContent
@@ -40,8 +36,7 @@ class StixSightingRelationshipsLines extends Component {
         DummyLineComponent={<StixSightingRelationshipLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
-        entityLink={entityLink}
+        onLabelClick={onLabelClick.bind(this)}
       />
     );
   }
