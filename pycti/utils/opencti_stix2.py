@@ -1133,7 +1133,7 @@ class OpenCTIStix2:
             del entity["attribute_count"]
             entity["sighting_of_ref"] = entity["from"]["standard_id"]
             objects_to_get.append(entity["from"]["standard_id"])
-            entity["where_sighted_refs"] = entity["to"]["standard_id"]
+            entity["where_sighted_refs"] = [entity["to"]["standard_id"]]
             objects_to_get.append(entity["to"]["standard_id"])
             del entity["from"]
             del entity["to"]
@@ -1535,7 +1535,7 @@ class OpenCTIStix2:
                         if "x_data_update" in item:
                             self.stix2_update.process_update_v1(item)
                             continue
-                    elif bundle["x_opencti_event_version"] == "2":
+                    elif bundle["x_opencti_event_version"] == "2" or bundle["x_opencti_event_version"] == "3":
                         if "x_opencti_patch" in item:
                             self.stix2_update.process_update_v2(item)
                             continue
@@ -1548,11 +1548,7 @@ class OpenCTIStix2:
                         for where_sighted_ref in item["where_sighted_refs"]:
                             to_ids.append(where_sighted_ref)
                     # Import sighting_of_ref
-                    from_id = (
-                        item["x_opencti_sighting_of_ref"]
-                        if "x_opencti_sighting_of_ref" in item
-                        else item["sighting_of_ref"]
-                    )
+                    from_id = item["sighting_of_ref"]
                     if len(to_ids) > 0:
                         for to_id in to_ids:
                             self.import_sighting(item, from_id, to_id, update)
@@ -1564,6 +1560,12 @@ class OpenCTIStix2:
                                     self.import_sighting(
                                         item, observed_data_ref, to_id, update
                                     )
+                elif item["type"] == "label":
+                    self.opencti.label.create(**item)
+                elif item["type"] == "external-reference":
+                    self.opencti.external_reference.create(**item)
+                elif item["type"] == "kill-chain-phase":
+                    self.opencti.kill_chain_phase.create(**item)
                 elif StixCyberObservableTypes.has_value(item["type"]):
                     if types is None or len(types) == 0:
                         self.import_observable(item, update, types)

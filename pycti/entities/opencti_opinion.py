@@ -527,10 +527,10 @@ class Opinion:
                 else None,
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
-                else [],
+                else None,
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
-                else [],
+                else None,
                 revoked=stix_object["revoked"] if "revoked" in stix_object else None,
                 confidence=stix_object["confidence"]
                 if "confidence" in stix_object
@@ -542,10 +542,10 @@ class Opinion:
                     stix_object["explanation"]
                 )
                 if "explanation" in stix_object
-                else "",
+                else None,
                 authors=self.opencti.stix2.convert_markdown(stix_object["authors"])
                 if "authors" in stix_object
-                else "",
+                else None,
                 opinion=stix_object["opinion"] if "opinion" in stix_object else None,
                 update=update,
             )

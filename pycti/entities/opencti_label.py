@@ -150,3 +150,54 @@ class Label:
                 "error",
                 "[opencti_label] Missing parameters: value",
             )
+
+    """
+        Update a Label object field
+
+        :param id: the Label id
+        :param key: the key of the field
+        :param value: the value of the field
+        :return The updated Label object
+    """
+
+    def update_field(self, **kwargs):
+        id = kwargs.get("id", None)
+        key = kwargs.get("key", None)
+        value = kwargs.get("value", None)
+        operation = kwargs.get("operation", "replace")
+        if isinstance(value, list):
+            value = [str(v) for v in value]
+        else:
+            value = str(value)
+        if id is not None and key is not None and value is not None:
+            self.opencti.log(
+                "info", "Updating Label {" + id + "} field {" + key + "}."
+            )
+            query = """
+                    mutation LabelEdit($id: ID!, $input: EditInput!, $operation: EditOperation) {
+                        labelEdit(id: $id) {
+                            fieldPatch(input: $input, operation: $operation) {
+                                id
+                                standard_id
+                                entity_type
+                            }
+                        }
+                    }
+                """
+            result = self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "input": {"key": key, "value": value},
+                    "operation": operation,
+                },
+            )
+            return self.opencti.process_multiple_fields(
+                result["data"]["labelEdit"]["fieldPatch"]
+            )
+        else:
+            self.opencti.log(
+                "error",
+                "[opencti_label] Missing parameters: id and key and value",
+            )
+            return None
