@@ -1,10 +1,5 @@
 # coding: utf-8
 
-import json
-import os
-
-import magic
-
 
 class Stix:
     def __init__(self, opencti):
