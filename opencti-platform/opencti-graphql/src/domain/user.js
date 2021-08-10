@@ -45,7 +45,7 @@ import {
   USER_CREATION,
   USER_DELETION,
 } from '../config/audit';
-import { buildPagination, isEmptyField } from '../database/utils';
+import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixDomainObject';
 
@@ -352,13 +352,30 @@ export const userEditField = async (user, userId, input) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
+export const deleteBookmark = async (user, id) => {
+  const currentUser = await loadById(user, user.id, ENTITY_TYPE_USER);
+  const currentBookmarks = currentUser.bookmarks ? currentUser.bookmarks : [];
+  const newBookmarks = R.filter((n) => n.id !== id, currentBookmarks);
+  await patchAttribute(user, user.id, ENTITY_TYPE_USER, { bookmarks: newBookmarks });
+  return id;
+};
+
 export const bookmarks = async (user, types) => {
   const currentUser = await loadById(user, user.id, ENTITY_TYPE_USER);
   const bookmarkList =
     types && types.length > 0
       ? R.filter((n) => R.includes(n.type, types), currentUser.bookmarks || [])
       : currentUser.bookmarks || [];
-  const filteredBookmarks = await Promise.all(R.map((n) => loadById(user, n.id, n.type), bookmarkList));
+  const filteredBookmarks = [];
+  // eslint-disable-next-line no-restricted-syntax
+  for (const bookmark of bookmarkList) {
+    const loadedBookmark = await loadById(user, bookmark.id, bookmark.type);
+    if (isNotEmptyField(loadedBookmark)) {
+      filteredBookmarks.push(loadedBookmark);
+    } else {
+      await deleteBookmark(user, bookmark.id);
+    }
+  }
   return buildPagination(
     0,
     null,
@@ -376,14 +393,6 @@ export const addBookmark = async (user, id, type) => {
   );
   await patchAttribute(user, user.id, ENTITY_TYPE_USER, { bookmarks: newBookmarks });
   return loadById(user, id, type);
-};
-
-export const deleteBookmark = async (user, id) => {
-  const currentUser = await loadById(user, user.id, ENTITY_TYPE_USER);
-  const currentBookmarks = currentUser.bookmarks ? currentUser.bookmarks : [];
-  const newBookmarks = R.filter((n) => n.id !== id, currentBookmarks);
-  await patchAttribute(user, user.id, ENTITY_TYPE_USER, { bookmarks: newBookmarks });
-  return id;
 };
 
 export const meEditField = (user, userId, input) => {

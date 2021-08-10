@@ -2596,7 +2596,7 @@ interface Identity {
   jobs(first: Int): [Work]
 }
 input IdentityAddInput {
-  type: IdentityType! @constraint(minLength: 2)
+  type: IdentityType!
   stix_id: String
   name: String!
   description: String
