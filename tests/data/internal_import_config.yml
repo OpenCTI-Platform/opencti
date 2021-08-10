@@ -1,0 +1,9 @@
+connector:
+  id: '7f175acc-811b-465d-8a07-47ef11b92394'
+  type: 'INTERNAL_IMPORT_FILE'
+  name: 'ParseFileTest'
+  scope: 'application/pdf,text/plain'
+  auto: true # Enable/disable auto-import of file
+  only_contextual: true # Only extract data related to an entity (a report, a threat actor, etc.)
+  confidence_level: 15 # From 0 (Unknown) to 100 (Fully trusted)
+  log_level: 'debug'

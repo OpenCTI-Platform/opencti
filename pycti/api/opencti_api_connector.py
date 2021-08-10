@@ -100,3 +100,18 @@ class OpenCTIApiConnector:
            """
         result = self.api.query(query, connector.to_input())
         return result["data"]["registerConnector"]
+
+    def unregister(self, _id: str) -> Dict:
+        """unregister a connector with OpenCTI
+
+        :param _id: `OpenCTIConnector` connector id
+        :type _id: string
+        :return: the response registerConnector data dict
+        :rtype: dict
+        """
+        query = """
+            mutation ConnectorDeletionMutation($id: ID!) {
+                deleteConnector(id: $id) 
+            }
+        """
+        return self.api.query(query, {"id": _id})

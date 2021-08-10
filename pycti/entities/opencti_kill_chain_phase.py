@@ -219,3 +219,21 @@ class KillChainPhase:
                 "[opencti_kill_chain] Missing parameters: id and key and value",
             )
             return None
+
+    def delete(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is not None:
+            self.opencti.log("info", "Deleting Kill-Chain-Phase {" + id + "}.")
+            query = """
+                 mutation KillChainPhaseEdit($id: ID!) {
+                     killChainPhaseEdit(id: $id) {
+                         delete
+                     }
+                 }
+             """
+            self.opencti.query(query, {"id": id})
+        else:
+            self.opencti.log(
+                "error", "[opencti_kill_chain_phase] Missing parameters: id"
+            )
+            return None

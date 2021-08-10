@@ -248,7 +248,7 @@ class Identity:
         x_opencti_lastname = kwargs.get("x_opencti_lastname", None)
         update = kwargs.get("update", False)
 
-        if name is not None and description is not None:
+        if type is not None and name is not None and description is not None:
             self.opencti.log("info", "Creating Identity {" + name + "}.")
             input_variables = {
                 "stix_id": stix_id,
@@ -321,7 +321,7 @@ class Identity:
                 result["data"][result_data_field]
             )
         else:
-            self.opencti.log("error", "Missing parameters: name and description")
+            self.opencti.log("error", "Missing parameters: type, name and description")
 
     """
         Import an Identity object from a STIX2 object

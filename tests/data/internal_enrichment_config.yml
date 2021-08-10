@@ -1,0 +1,9 @@
+connector:
+  id: '7f175acc-869b-465d-8a07-47ef11b92394'
+  type: 'INTERNAL_ENRICHMENT'
+  name: 'SetScore100Enrichment'
+  scope: 'IPv4'
+  auto: false # Enable/disable auto-import of file
+  only_contextual: false # Only extract data related to an entity (a report, a threat actor, etc.)
+  confidence_level: 15 # From 0 (Unknown) to 100 (Fully trusted)
+  log_level: 'debug'
