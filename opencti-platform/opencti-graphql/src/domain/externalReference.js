@@ -69,8 +69,8 @@ export const externalReferenceDeleteRelation = async (user, externalReferenceId,
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
 };
 
-export const externalReferenceEditField = async (user, externalReferenceId, input) => {
-  const { element } = await updateAttribute(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, input);
+export const externalReferenceEditField = async (user, externalReferenceId, input, opts = {}) => {
+  const { element } = await updateAttribute(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, input, opts);
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, element, user);
 };
 

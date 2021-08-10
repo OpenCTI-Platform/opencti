@@ -9,14 +9,13 @@ import { isInternalObject } from './internalObject';
 import * as D from './stixDomainObject';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
-  ENTITY_TYPE_MARKING_DEFINITION,
   isStixDomainObject,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
   isStixObjectAliased,
 } from './stixDomainObject';
 import * as M from './stixMetaObject';
-import { isStixMetaObject } from './stixMetaObject';
+import { ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from './stixMetaObject';
 import * as C from './stixCyberObservable';
 import { isStixCyberObservable } from './stixCyberObservable';
 import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID } from './general';
@@ -169,7 +168,7 @@ const stixEntityContribution = {
     [D.ENTITY_TYPE_VULNERABILITY]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_INCIDENT]: [{ src: NAME_FIELD }],
     // Stix Meta
-    [ENTITY_TYPE_MARKING_DEFINITION]: [{ src: 'definition' }, { src: 'definition_type' }],
+    [M.ENTITY_TYPE_MARKING_DEFINITION]: [{ src: 'definition' }, { src: 'definition_type' }],
     [M.ENTITY_TYPE_LABEL]: [{ src: 'value' }],
     [M.ENTITY_TYPE_KILL_CHAIN_PHASE]: [{ src: 'phase_name' }, { src: 'kill_chain_name' }],
     [M.ENTITY_TYPE_EXTERNAL_REFERENCE]: [[{ src: 'url' }], [{ src: 'source_name' }, { src: 'external_id' }]],
@@ -357,7 +356,7 @@ export const getInstanceIds = (instance, withoutInternal = false) => {
     ids.push(...instance.x_opencti_stix_ids);
   }
   ids.push(...generateAliasesIdsForInstance(instance));
-  return ids;
+  return R.uniq(ids);
 };
 export const getInputIds = (type, input) => {
   const ids = [input.standard_id || generateStandardId(type, input)];
@@ -365,7 +364,7 @@ export const getInputIds = (type, input) => {
     ids.push(input.stix_id);
   }
   ids.push(...generateAliasesIdsForInstance(input));
-  return ids;
+  return R.uniq(ids);
 };
 export const getInstanceIdentifiers = (instance) => {
   const base = {
@@ -392,6 +391,11 @@ export const getInstanceIdentifiers = (instance) => {
     }
     base.target_ref = instance.to.standard_id;
     base.x_opencti_target_ref = instance.toId;
+  }
+  // Specific case for marking def. definition is required by stream events
+  if (instance.entity_type === ENTITY_TYPE_MARKING_DEFINITION) {
+    base.definition = instance.definition;
+    base.definition_type = instance.definition_type;
   }
   return base;
 };

@@ -20,7 +20,7 @@ import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { BYPASS, isBypassUser } from '../utils/access';
 import { adaptFiltersFrontendFormat, TYPE_FILTER } from '../utils/filtering';
 import { rebuildInstanceBeforePatch } from '../utils/patch';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 let heartbeat;
 export const MIN_LIVE_STREAM_EVENT_VERSION = 2;

@@ -39,8 +39,8 @@ export const addLabel = async (user, label) => {
 
 export const labelDelete = (user, labelId) => deleteElementById(user, labelId, ENTITY_TYPE_LABEL);
 
-export const labelEditField = async (user, labelId, input) => {
-  const { element } = await updateAttribute(user, labelId, ENTITY_TYPE_LABEL, input);
+export const labelEditField = async (user, labelId, input, opts = {}) => {
+  const { element } = await updateAttribute(user, labelId, ENTITY_TYPE_LABEL, input, opts);
   return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, element, user);
 };
 

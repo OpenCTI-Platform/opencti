@@ -16,7 +16,7 @@ import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 export const findById = (user, groupId) => {
   return loadById(user, groupId, ENTITY_TYPE_GROUP);

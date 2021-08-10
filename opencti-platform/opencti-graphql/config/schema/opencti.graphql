@@ -1456,7 +1456,7 @@ interface StixDomainObject {
 }
 input StixDomainObjectAddInput {
   stix_id: String
-  name: String
+  name: String! @constraint(minLength: 2)
   description: String
   confidence: Int
   pattern_type: String
@@ -8788,6 +8788,11 @@ type StreamCollectionEditMutations {
   fieldPatch(input: EditInput, operation: EditOperation): StreamCollection
 }
 
+######## STIX OBJECT
+type StixEditMutations {
+  delete: ID
+}
+
 ######## STIX OBJECT ENTITIES
 
 ######## STIX META OBJECT ENTITIES
@@ -9148,6 +9153,9 @@ type Mutation {
   streamCollectionAdd(input: StreamCollectionAddInput): StreamCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   streamCollectionEdit(id: ID!): StreamCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 
+  ######## STIX OBJECT
+  stixEdit(id: ID!): StixEditMutations @auth(for: [SETTINGS])
+
   ######## STIX OBJECT ENTITIES
 
   ######## STIX META OBJECT ENTITIES
@@ -9178,12 +9186,6 @@ type Mutation {
     filters: [StixDomainObjectsFiltering]
     filterMode: FilterMode
   ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  stixDomainObjectsMerge(
-    keepedEntityId: ID!
-    mergedEntityId: ID!
-    mergeRelations: Boolean
-    mergeAliases: Boolean
-  ): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   stixDomainObjectsDelete(id: [ID]!): [ID]!
   stixDomainObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
   attackPatternAdd(input: AttackPatternAddInput): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])

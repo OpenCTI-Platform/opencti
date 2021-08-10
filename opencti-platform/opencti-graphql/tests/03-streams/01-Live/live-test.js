@@ -65,11 +65,14 @@ describe('Live streams tests', () => {
         expect(origin).toBeDefined();
         checkStreamGenericContent(type, insideData);
       }
+      // Check report rebuild consistency
       const reportEvents = events.filter((e) => report.standard_id === e.data.data.id);
       expect(reportEvents.length).toBe(1);
       const stixInstance = R.head(reportEvents).data.data;
       const diffElements = await checkInstanceDiff(stixReport, stixInstance);
       expect(diffElements.length).toBe(0);
+      // Check another elements consistency
+      // TODO
       // Delete the stream
       await streamCollectionDelete(ADMIN_USER, liveStream.id);
     },
@@ -95,6 +98,7 @@ describe('Live streams tests', () => {
         expect(origin).toBeDefined();
         checkStreamGenericContent(type, insideData);
       }
+      // Check report rebuild consistency
       const reportEvents = events.filter((e) => report.standard_id === e.data.data.id);
       expect(reportEvents.length).toBe(1);
       const stixInstance = R.head(reportEvents).data.data;

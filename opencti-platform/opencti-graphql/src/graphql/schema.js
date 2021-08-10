@@ -60,6 +60,7 @@ import taxiiResolvers from '../resolvers/taxii';
 import taskResolvers from '../resolvers/task';
 import streamResolvers from '../resolvers/stream';
 import ruleResolvers from '../resolvers/rule';
+import stixResolvers from '../resolvers/stix';
 
 const createSchema = () => {
   const globalResolvers = {
@@ -79,7 +80,7 @@ const createSchema = () => {
     subTypeResolvers,
     fileResolvers,
     taskResolvers,
-    // ruleResolvers,
+    stixResolvers,
     // ENTITIES
     // INTERNAL OBJECT ENTITIES
     internalObjectResolvers,

@@ -50,6 +50,8 @@ import {
 import { READ_DATA_INDICES } from '../../../src/database/utils';
 import { INTERNAL_FROM_FIELD } from '../../../src/schema/identifier';
 import { SYSTEM_USER } from '../../../src/utils/access';
+import {checkObservableSyntax} from "../../../src/utils/syntax";
+import {FunctionalError} from "../../../src/config/errors";
 
 describe('Basic and utils', () => {
   it('should escape according to grakn needs', () => {
@@ -625,7 +627,7 @@ describe('Entities distribution', () => {
     // const { startDate, endDate, operation, field, inferred } = options;
     const options = { field: 'entity_type', operation: 'count', limit: 20 };
     const distribution = await distributionEntities(ADMIN_USER, 'Stix-Domain-Object', [], options);
-    expect(distribution.length).toEqual(18);
+    expect(distribution.length).toEqual(17);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Malware')).toEqual(2);
     expect(aggregationMap.get('Campaign')).toEqual(1);
@@ -725,6 +727,10 @@ const createThreat = async (input) => {
   return loadById(ADMIN_USER, threat.id, ENTITY_TYPE_THREAT_ACTOR);
 };
 const createFile = async (input) => {
+  const observableSyntaxResult = checkObservableSyntax(ENTITY_HASHED_OBSERVABLE_STIX_FILE, input);
+  if (observableSyntaxResult !== true) {
+    throw FunctionalError(`Observable of type ${ENTITY_HASHED_OBSERVABLE_STIX_FILE} is not correctly formatted.`);
+  }
   const file = await createEntity(ADMIN_USER, input, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
   return loadById(ADMIN_USER, file.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
 };
@@ -760,6 +766,10 @@ const isOneOfThisIdsExists = async (ids) => {
   const numberOfResult = looking.body.hits.total.value;
   return numberOfResult > 0;
 };
+
+const MD5 = '0a330361c8475ca475cbb5678643789b';
+const SHA1 = '4e6441ffd23006dc3be69e28ddc1978c3da2e7cd';
+const SHA256 = 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad';
 
 describe('Upsert and merge entities', () => {
   const testMarking = 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27';
@@ -938,17 +948,17 @@ describe('Upsert and merge entities', () => {
   });
   it('should observable merged by update', async () => {
     // Merged 3 Stix File into one
-    const md5 = await createFile({ hashes: { MD5: 'MERGE_MD5' }, objectMarking: [whiteMarking] });
+    const md5 = await createFile({ hashes: { MD5 }, objectMarking: [whiteMarking] });
     const sha1 = await createFile({
-      hashes: { 'SHA-1': 'MERGE_SHA-1' },
+      hashes: { 'SHA-1': SHA1 },
       objectMarking: [testMarking, whiteMarking, mitreMarking],
     });
     const sha256 = await createFile({
-      hashes: { 'SHA-256': 'MERGE_SHA-256' },
+      hashes: { 'SHA-256': SHA256 },
       objectMarking: [testMarking, whiteMarking, mitreMarking],
     });
     // merge by update
-    const md5Input = { key: 'hashes.MD5', value: ['MERGE_MD5'] };
+    const md5Input = { key: 'hashes.MD5', value: [MD5] };
     // eslint-disable-next-line prettier/prettier
     const patchSha1 = updateAttribute(SYSTEM_USER, sha1.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [md5Input]);
     // eslint-disable-next-line prettier/prettier
@@ -961,9 +971,9 @@ describe('Upsert and merge entities', () => {
     const reloadMd5 = await loadById(ADMIN_USER, md5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
     expect(reloadMd5).not.toBeNull();
     expect(reloadMd5.hashes).not.toBeNull();
-    expect(reloadMd5.hashes.MD5).toEqual('MERGE_MD5');
-    expect(reloadMd5.hashes['SHA-1']).toEqual('MERGE_SHA-1');
-    expect(reloadMd5.hashes['SHA-256']).toEqual('MERGE_SHA-256');
+    expect(reloadMd5.hashes.MD5).toEqual(MD5);
+    expect(reloadMd5.hashes['SHA-1']).toEqual(SHA1);
+    expect(reloadMd5.hashes['SHA-256']).toEqual(SHA256);
     expect(reloadMd5.object_marking_refs.length).toEqual(3); // [testMarking, whiteMarking, mitreMarking]
     // Cleanup
     await deleteElementById(ADMIN_USER, reloadMd5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);

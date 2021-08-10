@@ -34,12 +34,12 @@ import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixDomainObject';
 import {
   ENTITY_TYPE_EXTERNAL_REFERENCE,
   ENTITY_TYPE_KILL_CHAIN_PHASE,
   ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { connectorsForExport } from './connector';

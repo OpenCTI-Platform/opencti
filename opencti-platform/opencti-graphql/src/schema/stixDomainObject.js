@@ -19,7 +19,6 @@ import { RELATION_INDICATES } from './stixCoreRelationship';
 export const ATTRIBUTE_ALIASES = 'aliases';
 export const ATTRIBUTE_ALIASES_OPENCTI = 'x_opencti_aliases';
 
-export const ENTITY_TYPE_MARKING_DEFINITION = 'Marking-Definition';
 export const ENTITY_TYPE_ATTACK_PATTERN = 'Attack-Pattern';
 export const ENTITY_TYPE_CAMPAIGN = 'Campaign';
 export const ENTITY_TYPE_CONTAINER_NOTE = 'Note';
@@ -73,7 +72,6 @@ export const isStixDomainObjectLocation = (type) =>
   R.includes(type, STIX_DOMAIN_OBJECT_LOCATIONS) || type === ENTITY_TYPE_LOCATION;
 
 const STIX_DOMAIN_OBJECTS = [
-  ENTITY_TYPE_MARKING_DEFINITION,
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -148,7 +146,7 @@ export const stixDomainObjectFieldsToBeUpdated = {
     'confidence',
   ],
   [ENTITY_TYPE_CAMPAIGN]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'confidence'],
-  [ENTITY_TYPE_CONTAINER_NOTE]: ['content', 'confidence'],
+  [ENTITY_TYPE_CONTAINER_NOTE]: ['content', 'confidence', 'abstract'],
   [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: ['description', 'confidence'],
   [ENTITY_TYPE_CONTAINER_OPINION]: ['opinion', 'confidence'],
   [ENTITY_TYPE_CONTAINER_REPORT]: [
@@ -228,24 +226,6 @@ export const stixDomainObjectFieldsToBeUpdated = {
 };
 
 export const stixDomainObjectsAttributes = {
-  [ENTITY_TYPE_MARKING_DEFINITION]: [
-    'internal_id',
-    'standard_id',
-    'entity_type',
-    'x_opencti_stix_ids',
-    'spec_version',
-    'created_at',
-    'i_created_at_day',
-    'i_created_at_month',
-    'i_created_at_year',
-    'updated_at',
-    'created',
-    'modified',
-    'definition_type',
-    'definition',
-    'x_opencti_order',
-    'x_opencti_color',
-  ],
   [ENTITY_TYPE_ATTACK_PATTERN]: [
     'internal_id',
     'standard_id',
@@ -313,6 +293,7 @@ export const stixDomainObjectsAttributes = {
     'i_created_at_day',
     'i_created_at_month',
     'i_created_at_year',
+    'abstract',
     'updated_at',
     'revoked',
     'confidence',

@@ -1500,7 +1500,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
       const aliases = R.uniq(R.flatten(R.map((a) => a.value, aliasedInputs)));
       const aliasesIds = generateAliasesId(aliases, instance);
       const existingEntities = await internalFindByIds(user, aliasesIds, { type: instance.entity_type });
-      const differentEntities = R.filter((e) => e.internal_id !== id, existingEntities);
+      const differentEntities = R.filter((e) => e.internal_id !== element.id, existingEntities);
       if (differentEntities.length > 0) {
         throw FunctionalError(`This update will produce a duplicate`, { id: instance.id, type });
       }
@@ -1932,7 +1932,7 @@ const upsertElementRaw = async (user, instance, type, input) => {
   const updatedRemoveRelations = [];
   const streamInputs = [];
   // Handle attributes updates
-  if (isNotEmptyField(input.stix_id)) {
+  if (isNotEmptyField(input.stix_id) && input.stix_id !== instance.standard_id) {
     const patch = { x_opencti_stix_ids: [input.stix_id] };
     const patched = patchAttributeRaw(instance, patch, { operation: UPDATE_OPERATION_ADD });
     impactedInputs.push(...patched.impactedInputs);
@@ -2020,12 +2020,18 @@ const upsertElementRaw = async (user, instance, type, input) => {
   }
   if (impactedInputs.length > 0) {
     const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
-    // Build the input to reindex in elastic
     const indexInput = partialInstanceWithInputs(updatedInstance, impactedInputs);
-    return { type: TRX_UPDATE, element: updatedInstance, relations: rawRelations, streamInputs, indexInput };
+    return {
+      type: TRX_UPDATE,
+      base: instance,
+      element: updatedInstance,
+      relations: rawRelations,
+      streamInputs,
+      indexInput,
+    };
   }
   // Return all elements requirement for stream and indexation
-  return { type: TRX_UPDATE, element: instance, relations: rawRelations, streamInputs };
+  return { type: TRX_UPDATE, base: instance, element: instance, relations: rawRelations, streamInputs };
 };
 
 const checkRelationConsistency = (relationshipType, fromType, toType) => {
@@ -2389,8 +2395,10 @@ const createEntityRaw = async (user, participantIds, input, type) => {
   }
   // Stix-Object
   if (isStixObject(type)) {
+    const haveStixId = isNotEmptyField(input.stix_id);
+    const otherStixIds = haveStixId && input.stix_id !== standardId ? [input.stix_id.toLowerCase()] : [];
     data = R.pipe(
-      R.assoc(IDS_STIX, isNotEmptyField(input.stix_id) ? [input.stix_id.toLowerCase()] : []),
+      R.assoc(IDS_STIX, otherStixIds),
       R.dissoc('stix_id'),
       R.assoc('spec_version', STIX_SPEC_VERSION),
       R.assoc('created_at', today),
@@ -2475,7 +2483,7 @@ export const createEntity = async (user, input, type) => {
       await storeCreateEvent(user, dataEntity.element, resolvedInput, loaders);
     } else if (dataEntity.streamInputs.length > 0) {
       // If upsert with new data
-      await storeUpdateEvent(user, dataEntity.element, dataEntity.streamInputs);
+      await storeUpdateEvent(user, dataEntity.base, dataEntity.streamInputs);
     }
     // Return created element after waiting for it.
     return R.assoc('i_upserted', dataEntity.type !== TRX_CREATION, dataEntity.element);

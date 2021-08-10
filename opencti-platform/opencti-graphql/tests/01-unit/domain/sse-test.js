@@ -1,10 +1,6 @@
-import {
-  computeEventsDiff,
-  isInstanceMatchFilters,
-
-} from '../../../src/graphql/sseMiddleware';
+import { computeEventsDiff, isInstanceMatchFilters } from '../../../src/graphql/sseMiddleware';
 import { buildStixData } from '../../../src/database/stix';
-import {rebuildInstanceBeforePatch} from "../../../src/utils/patch";
+import { rebuildInstanceBeforePatch } from '../../../src/utils/patch';
 
 const testEvents = [
   {

@@ -34,12 +34,12 @@ import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixDomainObject';
 import {
   ENTITY_TYPE_EXTERNAL_REFERENCE,
   ENTITY_TYPE_KILL_CHAIN_PHASE,
   ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
 
 export const findAll = async (user, args) =>
@@ -139,12 +139,12 @@ export const stixCoreRelationshipDeleteByFromAndTo = async (user, fromId, toId, 
   return true;
 };
 
-export const stixCoreRelationshipEditField = async (user, stixCoreRelationshipId, input) => {
+export const stixCoreRelationshipEditField = async (user, stixCoreRelationshipId, input, opts = {}) => {
   const stixCoreRelationship = await loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
   if (!stixCoreRelationship) {
     throw FunctionalError('Cannot edit the field, stix-core-relationship cannot be found.');
   }
-  const { element } = await updateAttribute(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP, input);
+  const { element } = await updateAttribute(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP, input, opts);
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, element, user);
 };
 

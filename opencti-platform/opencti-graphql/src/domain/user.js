@@ -47,7 +47,7 @@ import {
 } from '../config/audit';
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';

@@ -15,6 +15,7 @@ import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { RELATION_EXTERNAL_REFERENCE } from '../schema/stixMetaRelationship';
 import { buildRefRelationKey } from '../schema/general';
+import { UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 const externalReferenceResolvers = {
   Query: {
@@ -30,7 +31,8 @@ const externalReferenceResolvers = {
   Mutation: {
     externalReferenceEdit: (_, { id }, { user }) => ({
       delete: () => externalReferenceDelete(user, id),
-      fieldPatch: ({ input }) => externalReferenceEditField(user, id, input),
+      fieldPatch: ({ input, operation = UPDATE_OPERATION_REPLACE }) =>
+        externalReferenceEditField(user, id, input, { operation }),
       contextPatch: ({ input }) => externalReferenceEditContext(user, id, input),
       contextClean: () => externalReferenceCleanContext(user, id),
       relationAdd: ({ input }) => externalReferenceAddRelation(user, id, input),

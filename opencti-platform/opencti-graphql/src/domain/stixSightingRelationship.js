@@ -27,9 +27,12 @@ import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
+import {
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION,
+} from '../schema/stixMetaObject';
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 
@@ -94,8 +97,8 @@ export const addStixSightingRelationship = async (user, stixSightingRelationship
 export const stixSightingRelationshipDelete = async (user, stixSightingRelationshipId) => {
   return deleteElementById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
 };
-export const stixSightingRelationshipEditField = async (user, relationshipId, input) => {
-  const { element } = await updateAttribute(user, relationshipId, STIX_SIGHTING_RELATIONSHIP, input);
+export const stixSightingRelationshipEditField = async (user, relationshipId, input, opts) => {
+  const { element } = await updateAttribute(user, relationshipId, STIX_SIGHTING_RELATIONSHIP, input, opts);
   return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, element, user);
 };
 export const stixSightingRelationshipAddRelation = async (user, stixSightingRelationshipId, input) => {

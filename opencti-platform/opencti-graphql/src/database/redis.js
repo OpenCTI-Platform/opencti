@@ -10,6 +10,7 @@ import {
   isEmptyField,
   isInferredIndex,
   isNotEmptyField,
+  isSyncTesting,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_CHANGE,
   UPDATE_OPERATION_REMOVE,
@@ -478,7 +479,7 @@ export const storeMergeEvent = async (user, initialInstance, mergedInstance, sou
   try {
     const event = buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities, impacts);
     // Push the event in the stream only if instance is in "real index"
-    if (!isInferredIndex(mergedInstance._index)) {
+    if (!isInferredIndex(mergedInstance._index) && !isSyncTesting(user)) {
       await pushToStream(clientBase, event);
     }
   } catch (e) {
@@ -514,7 +515,7 @@ export const storeUpdateEvent = async (user, instance, updateEvents) => {
       const publishedInstance = getInstanceIdentifiers(instance);
       const event = buildUpdateEvent(user, publishedInstance, updateEvents);
       // Push the event in the stream only if instance is in "real index"
-      if (!isInferredIndex(instance._index)) {
+      if (!isInferredIndex(instance._index) && !isSyncTesting(user)) {
         await pushToStream(clientBase, event);
       }
       return event;
@@ -562,7 +563,7 @@ export const storeCreateEvent = async (user, instance, input, loaders) => {
     try {
       const event = await buildCreateEvent(user, instance, input, loaders);
       // Push the event in the stream only if instance is in "real index"
-      if (!isInferredIndex(instance._index)) {
+      if (!isInferredIndex(instance._index) && !isSyncTesting(user)) {
         await pushToStream(clientBase, event);
       }
       return event;
@@ -604,7 +605,7 @@ export const storeDeleteEvent = async (user, instance, dependencyDeletions, load
     if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
       const event = await buildDeleteEvent(user, instance, dependencyDeletions, loaders);
       // Push the event in the stream only if instance is in "real index"
-      if (!isInferredIndex(instance._index)) {
+      if (!isInferredIndex(instance._index) && !isSyncTesting(user)) {
         await pushToStream(clientBase, event);
       }
       return event;

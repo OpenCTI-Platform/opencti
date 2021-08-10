@@ -15,7 +15,6 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
 } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixDomainObject';
 
 const pjson = require('../../package.json');
 
@@ -74,7 +73,7 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: 'STREAM_COLLECTION_EDIT_TOPIC',
     ADDED_TOPIC: 'STREAM_COLLECTION_ADDED_TOPIC',
   },
-  [ENTITY_TYPE_MARKING_DEFINITION]: {
+  [M.ENTITY_TYPE_MARKING_DEFINITION]: {
     EDIT_TOPIC: 'MARKING_DEFINITION_EDIT_TOPIC',
     ADDED_TOPIC: 'MARKING_DEFINITION_ADDED_TOPIC',
   },

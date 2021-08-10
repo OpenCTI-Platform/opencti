@@ -29,6 +29,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { creator } from '../domain/log';
 import { buildRefRelationKey } from '../schema/general';
 import { elBatchIds } from '../database/elasticSearch';
+import { UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -74,7 +75,8 @@ const stixSightingRelationshipResolvers = {
   Mutation: {
     stixSightingRelationshipEdit: (_, { id }, { user }) => ({
       delete: () => stixSightingRelationshipDelete(user, id),
-      fieldPatch: ({ input }) => stixSightingRelationshipEditField(user, id, input),
+      fieldPatch: ({ input, operation = UPDATE_OPERATION_REPLACE }) =>
+        stixSightingRelationshipEditField(user, id, input, { operation }),
       contextPatch: ({ input }) => stixSightingRelationshipEditContext(user, id, input),
       contextClean: () => stixSightingRelationshipCleanContext(user, id),
       relationAdd: ({ input }) => stixSightingRelationshipAddRelation(user, id, input),

@@ -2,7 +2,7 @@ import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteElementById, listEntities, loadById, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 export const findById = (user, markingDefinitionId) => {
   return loadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
@@ -28,8 +28,8 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
 export const markingDefinitionDelete = (user, markingDefinitionId) =>
   deleteElementById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
 
-export const markingDefinitionEditField = async (user, markingDefinitionId, input) => {
-  const { element } = await updateAttribute(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, input);
+export const markingDefinitionEditField = async (user, markingDefinitionId, input, opts = {}) => {
+  const { element } = await updateAttribute(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, input, opts);
   return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, element, user);
 };
 
