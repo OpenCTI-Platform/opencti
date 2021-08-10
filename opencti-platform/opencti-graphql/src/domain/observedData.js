@@ -18,7 +18,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/gene
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { FunctionalError } from '../config/errors';
-import { now, utcDate } from "../utils/format";
+import { now, prepareDate, utcDate } from '../utils/format';
 import { isStixId } from '../schema/schemaUtils';
 
 export const findById = (user, observedDataId) => {
@@ -140,7 +140,7 @@ export const addObservedData = async (user, observedData) => {
     }
     const patch = {
       number_observed: numberObserved,
-      last_observed: lastObserved,
+      last_observed: prepareDate(lastObserved),
     };
     await patchAttribute(user, existingObservedData.id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, patch);
     return loadById(user, existingObservedData.id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);

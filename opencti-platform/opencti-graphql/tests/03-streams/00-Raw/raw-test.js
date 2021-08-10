@@ -90,10 +90,9 @@ describe('Raw streams tests', () => {
               const isArrayValue = Array.isArray(e.current);
               if (isArrayValue) {
                 expect(Array.isArray(e.previous)).toBeTruthy();
-                // TODO Check with Julien
-                // expect(e.current.sort()).not.toEqual(e.previous.sort());
+                expect(e.current.sort()).not.toEqual(e.previous.sort());
               } else {
-                // expect(e.current).not.toEqual(e.previous);
+                expect(e.current).not.toEqual(e.previous);
               }
             });
           }
