@@ -605,7 +605,9 @@ class Report:
                 report_types=stix_object["report_types"]
                 if "report_types" in stix_object
                 else None,
-                published=stix_object["published"] if "published" in stix_object else None,
+                published=stix_object["published"]
+                if "published" in stix_object
+                else None,
                 x_opencti_graph_data=stix_object["x_opencti_graph_data"]
                 if "x_opencti_graph_data" in stix_object
                 else None,

@@ -170,9 +170,7 @@ class Label:
         else:
             value = str(value)
         if id is not None and key is not None and value is not None:
-            self.opencti.log(
-                "info", "Updating Label {" + id + "} field {" + key + "}."
-            )
+            self.opencti.log("info", "Updating Label {" + id + "} field {" + key + "}.")
             query = """
                     mutation LabelEdit($id: ID!, $input: EditInput!, $operation: EditOperation) {
                         labelEdit(id: $id) {

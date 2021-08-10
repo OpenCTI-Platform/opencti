@@ -540,11 +540,12 @@ class StixSightingRelationship:
                     }
                 """
             result = self.opencti.query(
-                query, {
+                query,
+                {
                     "id": id,
                     "input": {"key": key, "value": value},
                     "operation": operation,
-                }
+                },
             )
             return self.opencti.process_multiple_fields(
                 result["data"]["stixSightingRelationshipEdit"]["fieldPatch"]
@@ -604,7 +605,7 @@ class StixSightingRelationship:
                     + "} to stix_sighting_relationship {"
                     + id
                     + "}",
-                    )
+                )
                 query = """
                    mutation StixSightingRelationshipEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
                        stixSightingRelationshipEdit(id: $id) {
@@ -650,7 +651,7 @@ class StixSightingRelationship:
                 + "} from stix_sighting_relationship {"
                 + id
                 + "}",
-                )
+            )
             query = """
                mutation StixSightingRelationshipEdit($id: ID!, $toId: String!, $relationship_type: String!) {
                    stixSightingRelationshipEdit(id: $id) {
@@ -692,7 +693,7 @@ class StixSightingRelationship:
                 + "} with Identity {"
                 + str(identity_id)
                 + "}",
-                )
+            )
             custom_attributes = """
                 id
                 createdBy {

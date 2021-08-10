@@ -1535,7 +1535,10 @@ class OpenCTIStix2:
                         if "x_data_update" in item:
                             self.stix2_update.process_update_v1(item)
                             continue
-                    elif bundle["x_opencti_event_version"] == "2" or bundle["x_opencti_event_version"] == "3":
+                    elif (
+                        bundle["x_opencti_event_version"] == "2"
+                        or bundle["x_opencti_event_version"] == "3"
+                    ):
                         if "x_opencti_patch" in item:
                             self.stix2_update.process_update_v2(item)
                             continue
