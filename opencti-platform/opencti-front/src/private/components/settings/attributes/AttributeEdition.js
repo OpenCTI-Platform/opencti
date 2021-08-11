@@ -49,7 +49,7 @@ const styles = (theme) => ({
 });
 
 const attributeMutationUpdate = graphql`
-  mutation AttributeEditionUpdateMutation($id: ID!, $input: EditInput!) {
+  mutation AttributeEditionUpdateMutation($id: ID!, $input: [EditInput]!) {
     attributeEdit(id: $id) {
       fieldPatch(input: $input) {
         ...AttributeEdition_attribute

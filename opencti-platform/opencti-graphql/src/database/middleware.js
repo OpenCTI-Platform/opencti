@@ -859,12 +859,15 @@ const updatedInputsToData = (inputs) => {
 };
 const replacedInputsToData = (inputs) => {
   const inputPairs = R.map((input) => {
-    const { key, value, previous = null } = input;
+    const { key, value, operation = UPDATE_OPERATION_REPLACE, previous = null } = input;
     let val = value;
     if (!isMultipleAttribute(key) && val) {
       val = R.head(value);
     }
-    return { [key]: { current: val, previous } };
+    if (operation === UPDATE_OPERATION_REPLACE) {
+      return { [key]: { current: val, previous } };
+    }
+    return { [key]: val };
   }, inputs);
   return mergeDeepRightAll(...inputPairs);
 };
@@ -883,8 +886,8 @@ const partialInstanceWithInputs = (instance, inputs) => {
   };
 };
 const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) => {
-  const { forceUpdate = false, operation = UPDATE_OPERATION_REPLACE } = options;
-  const { key, value } = rawInput; // value can be multi valued
+  const { forceUpdate = false } = options;
+  const { key, value, operation = UPDATE_OPERATION_REPLACE } = rawInput; // value can be multi valued
   const isMultiple = isMultipleAttribute(key);
   let finalVal;
   let finalKey = key;
@@ -947,7 +950,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) 
     finalVal = cleanStixIds(finalVal);
   }
   // endregion
-  return { key: finalKey, value: finalVal };
+  return { key: finalKey, value: finalVal, operation };
 };
 
 const targetedRelations = (entities, direction) => {
@@ -1304,15 +1307,17 @@ export const mergeEntities = async (user, targetEntityId, sourceEntityIds, opts 
   }
 };
 
-const transformPathToInput = (patch) => {
+const transformPathToInput = (patch, operations = {}) => {
   return R.pipe(
     R.toPairs,
     R.map((t) => {
       const val = R.last(t);
+      const key = R.head(t);
+      const operation = operations[key] || UPDATE_OPERATION_REPLACE;
       if (!R.isNil(val)) {
-        return { key: R.head(t), value: Array.isArray(val) ? val : [val] };
+        return { key, value: Array.isArray(val) ? val : [val], operation };
       }
-      return { key: R.head(t), value: null };
+      return { key, value: null, operation };
     })
   )(patch);
 };
@@ -1329,11 +1334,11 @@ const checkAttributeConsistency = (entityType, key) => {
     throw FunctionalError(`This attribute key ${key} is not allowed on the type ${entityType}`);
   }
 };
-const innerUpdateAttribute = (instance, rawInput, options = {}) => {
+const innerUpdateAttribute = (instance, rawInput, opts = {}) => {
   const { key } = rawInput;
   // Check consistency
   checkAttributeConsistency(instance.entity_type, key);
-  const input = rebuildAndMergeInputFromExistingData(rawInput, instance, options);
+  const input = rebuildAndMergeInputFromExistingData(rawInput, instance, opts);
   if (R.isEmpty(input)) return [];
   const updatedInputs = [input];
   // --- 01 Get the current attribute types
@@ -1431,6 +1436,7 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
     if (input.key === VALID_UNTIL) {
       const untilDate = R.head(input.value);
       const untilDateTime = utcDate(untilDate).toDate();
+      // eslint-disable-next-line prettier/prettier
       const revokedInput = { key: REVOKED, value: [untilDateTime < utcDate().toDate()] };
       const revokedIn = innerUpdateAttribute(instance, revokedInput, options);
       if (revokedIn.length > 0) {
@@ -1466,6 +1472,7 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
     const standardInput = { key: ID_STANDARD, value: [standardId] };
     const ins = innerUpdateAttribute(instance, standardInput, options);
     if (ins.length > 0) {
+      updatedInputs.push({ key: 'id', value: [standardId], previous: instance.standard_id });
       impactedInputs.push(...ins);
     }
   }
@@ -1479,9 +1486,10 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
 // noinspection ExceptionCaughtLocallyJS
 export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
   const elements = Array.isArray(inputs) ? inputs : [inputs];
-  const { operation = UPDATE_OPERATION_REPLACE } = opts;
-  if (operation !== UPDATE_OPERATION_REPLACE && elements.length > 1) {
-    throw FunctionalError(`Unsupported operation`, { operation, elements });
+  const elementsByKey = R.groupBy((e) => e.key, elements);
+  const multiOperationKeys = Object.values(elementsByKey).filter((n) => n.length > 1);
+  if (multiOperationKeys.length > 1) {
+    throw UnsupportedError('We cant update the same attribute multiple times in the same operation');
   }
   const element = await loadById(user, id, type);
   if (!element) {
@@ -1558,14 +1566,14 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
       await elUpdateElement(updateAsInstance);
     }
     // Only push event in stream if modifications really happens
-    let event;
     if (data.updatedInputs.length > 0) {
-      const isUpdate = operation === UPDATE_OPERATION_REPLACE;
-      const updatedData = isUpdate ? replacedInputsToData(data.updatedInputs) : updatedInputsToData(data.updatedInputs);
-      event = await storeUpdateEvent(user, instance, [{ [operation]: updatedData }]);
+      const grouped = R.groupBy((d) => d.operation || UPDATE_OPERATION_REPLACE, data.updatedInputs);
+      const updateEvent = R.mergeAll(Object.keys(grouped).map((g) => ({ [g]: replacedInputsToData(grouped[g]) })));
+      const event = await storeUpdateEvent(user, instance, [updateEvent]);
+      return { element: updatedInstance, event };
     }
     // Return updated element after waiting for it.
-    return { element: updatedInstance, event };
+    return { element: updatedInstance };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -1575,13 +1583,13 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     if (lock) await lock.unlock();
   }
 };
-export const patchAttributeRaw = (instance, patch, options = {}) => {
-  const inputs = transformPathToInput(patch);
-  return updateAttributeRaw(instance, inputs, options);
+export const patchAttributeRaw = (instance, patch, opts = {}) => {
+  const inputs = transformPathToInput(patch, opts.operations);
+  return updateAttributeRaw(instance, inputs, opts);
 };
-export const patchAttribute = async (user, id, type, patch, options = {}) => {
-  const inputs = transformPathToInput(patch);
-  return updateAttribute(user, id, type, inputs, options);
+export const patchAttribute = async (user, id, type, patch, opts = {}) => {
+  const inputs = transformPathToInput(patch, opts.operations);
+  return updateAttribute(user, id, type, inputs, opts);
 };
 // endregion
 
@@ -1934,7 +1942,8 @@ const upsertElementRaw = async (user, instance, type, input) => {
   // Handle attributes updates
   if (isNotEmptyField(input.stix_id) && input.stix_id !== instance.standard_id) {
     const patch = { x_opencti_stix_ids: [input.stix_id] };
-    const patched = patchAttributeRaw(instance, patch, { operation: UPDATE_OPERATION_ADD });
+    const operations = { x_opencti_stix_ids: UPDATE_OPERATION_ADD };
+    const patched = patchAttributeRaw(instance, patch, { operations });
     impactedInputs.push(...patched.impactedInputs);
     updatedAddInputs.push(...patched.updatedInputs);
   }
@@ -1945,7 +1954,8 @@ const upsertElementRaw = async (user, instance, type, input) => {
     const aliases = [...(input[ATTRIBUTE_ALIASES] || []), ...(input[ATTRIBUTE_ALIASES_OPENCTI] || [])];
     if (normalizeName(instance.name) !== normalizeName(name)) aliases.push(name);
     const patch = { [key]: aliases };
-    const patched = patchAttributeRaw(instance, patch, { operation: UPDATE_OPERATION_ADD });
+    const operations = { [key]: UPDATE_OPERATION_ADD };
+    const patched = patchAttributeRaw(instance, patch, { operations });
     impactedInputs.push(...patched.impactedInputs);
     updatedAddInputs.push(...patched.updatedInputs);
   }
@@ -2021,17 +2031,10 @@ const upsertElementRaw = async (user, instance, type, input) => {
   if (impactedInputs.length > 0) {
     const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
     const indexInput = partialInstanceWithInputs(updatedInstance, impactedInputs);
-    return {
-      type: TRX_UPDATE,
-      base: instance,
-      element: updatedInstance,
-      relations: rawRelations,
-      streamInputs,
-      indexInput,
-    };
+    return { type: TRX_UPDATE, element: updatedInstance, relations: rawRelations, streamInputs, indexInput };
   }
   // Return all elements requirement for stream and indexation
-  return { type: TRX_UPDATE, base: instance, element: instance, relations: rawRelations, streamInputs };
+  return { type: TRX_UPDATE, element: instance, relations: rawRelations, streamInputs };
 };
 
 const checkRelationConsistency = (relationshipType, fromType, toType) => {
@@ -2483,7 +2486,7 @@ export const createEntity = async (user, input, type) => {
       await storeCreateEvent(user, dataEntity.element, resolvedInput, loaders);
     } else if (dataEntity.streamInputs.length > 0) {
       // If upsert with new data
-      await storeUpdateEvent(user, dataEntity.base, dataEntity.streamInputs);
+      await storeUpdateEvent(user, dataEntity.element, dataEntity.streamInputs);
     }
     // Return created element after waiting for it.
     return R.assoc('i_upserted', dataEntity.type !== TRX_CREATION, dataEntity.element);

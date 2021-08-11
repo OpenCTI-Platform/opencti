@@ -316,7 +316,7 @@ describe('Opinion resolver standard behavior', () => {
   });
   it('should update opinion', async () => {
     const UPDATE_QUERY = gql`
-      mutation OpinionEdit($id: ID!, $input: EditInput!) {
+      mutation OpinionEdit($id: ID!, $input: [EditInput]!) {
         opinionEdit(id: $id) {
           fieldPatch(input: $input) {
             id

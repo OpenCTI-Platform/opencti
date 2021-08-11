@@ -68,7 +68,7 @@ describe('Attribute resolver standard behavior', () => {
   });
   it('should update attribute', async () => {
     const UPDATE_QUERY = gql`
-      mutation AttributeEdit($id: ID!, $input: EditInput!) {
+      mutation AttributeEdit($id: ID!, $input: [EditInput]!) {
         attributeEdit(id: $id) {
           fieldPatch(input: $input) {
             id
@@ -80,7 +80,7 @@ describe('Attribute resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: attributeInternalId, input: { key: 'value', value: 'Test2' } },
+      variables: { id: attributeInternalId, input: { key: 'value', value: ['Test2'] } },
     });
     expect(queryResult.data.attributeEdit.fieldPatch.value).toEqual('Test2');
     attributeInternalId = queryResult.data.attributeEdit.fieldPatch.id;

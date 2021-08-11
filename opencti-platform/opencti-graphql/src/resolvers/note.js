@@ -25,7 +25,6 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import { buildRefRelationKey } from '../schema/general';
-import { UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 const noteResolvers = {
   Query: {
@@ -68,8 +67,7 @@ const noteResolvers = {
   Mutation: {
     noteEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, operation = UPDATE_OPERATION_REPLACE }) =>
-        stixDomainObjectEditField(user, id, input, { operation }),
+      fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),

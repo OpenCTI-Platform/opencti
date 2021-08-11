@@ -344,7 +344,8 @@ export const roleDeleteRelation = async (user, roleId, toId, relationshipType) =
 };
 
 // User related
-export const userEditField = async (user, userId, input) => {
+export const userEditField = async (user, userId, inputs) => {
+  const input = R.head(inputs);
   const { key } = input;
   const value = key === 'password' ? [bcrypt.hashSync(R.head(input.value).toString())] : input.value;
   const patch = { [key]: value };
@@ -395,8 +396,8 @@ export const addBookmark = async (user, id, type) => {
   return loadById(user, id, type);
 };
 
-export const meEditField = (user, userId, input) => {
-  return userEditField(user, userId, input);
+export const meEditField = (user, userId, inputs) => {
+  return userEditField(user, userId, inputs);
 };
 
 export const userDelete = async (user, userId) => {

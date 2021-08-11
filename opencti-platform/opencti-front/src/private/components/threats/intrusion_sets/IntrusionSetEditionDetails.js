@@ -18,7 +18,7 @@ import TextField from '../../../../components/TextField';
 const intrusionSetMutationFieldPatch = graphql`
   mutation IntrusionSetEditionDetailsFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     intrusionSetEdit(id: $id) {
       fieldPatch(input: $input) {

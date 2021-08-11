@@ -153,7 +153,7 @@ describe('Campaign resolver standard behavior', () => {
   });
   it('should update campaign', async () => {
     const UPDATE_QUERY = gql`
-      mutation CampaignEdit($id: ID!, $input: EditInput!) {
+      mutation CampaignEdit($id: ID!, $input: [EditInput]!) {
         campaignEdit(id: $id) {
           fieldPatch(input: $input) {
             id

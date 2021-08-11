@@ -52,7 +52,7 @@ const styles = (theme) => ({
 const intrusionSetMutationFieldPatch = graphql`
   mutation IntrusionSetEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     intrusionSetEdit(id: $id) {
       fieldPatch(input: $input) {

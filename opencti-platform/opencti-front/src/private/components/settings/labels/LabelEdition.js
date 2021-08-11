@@ -62,7 +62,7 @@ const subscription = graphql`
 `;
 
 const labelMutationFieldPatch = graphql`
-  mutation LabelEditionFieldPatchMutation($id: ID!, $input: EditInput!) {
+  mutation LabelEditionFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     labelEdit(id: $id) {
       fieldPatch(input: $input) {
         ...LabelEdition_label

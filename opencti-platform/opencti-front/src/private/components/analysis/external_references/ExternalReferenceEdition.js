@@ -64,7 +64,7 @@ const subscription = graphql`
 const externalReferenceMutationFieldPatch = graphql`
   mutation ExternalReferenceEditionFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     externalReferenceEdit(id: $id) {
       fieldPatch(input: $input) {

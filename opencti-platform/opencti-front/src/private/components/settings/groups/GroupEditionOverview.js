@@ -41,7 +41,7 @@ const styles = (theme) => ({
 const groupMutationFieldPatch = graphql`
   mutation GroupEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     groupEdit(id: $id) {
       fieldPatch(input: $input) {

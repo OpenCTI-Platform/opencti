@@ -268,8 +268,8 @@ export const stixDataConverter = (data, args = {}) => {
     const [key, val] = entries[index];
     const isEmpty = Array.isArray(val) ? val.length === 0 : isEmptyField(val);
     const clearEmptyKey = clearEmptyValues && isEmpty;
-    const isInternalKey =
-      key.startsWith(INTERNAL_PREFIX) || key.startsWith(REL_INDEX_PREFIX) || key === 'x_opencti_graph_data';
+    const isInternal = key.startsWith(INTERNAL_PREFIX) || key.startsWith(REL_INDEX_PREFIX);
+    const isInternalKey = isInternal || key === 'x_opencti_graph_data'; // Specific case of graph
     if (isInternalKey || isStixRelationShipExceptMeta(key) || clearEmptyKey) {
       // Internal opencti attributes.
     } else if (key.startsWith('attribute_')) {
@@ -297,7 +297,7 @@ export const stixDataConverter = (data, args = {}) => {
   // return { ...filteredData, extensions: { x_opencti: openctiExtension } };
   // endregion
   // region specific format for marking definition
-  if (filteredData.type === convertTypeToStixType(ENTITY_TYPE_MARKING_DEFINITION)) {
+  if (filteredData.type === convertTypeToStixType(ENTITY_TYPE_MARKING_DEFINITION) && filteredData.definition) {
     const key = filteredData.definition_type.toLowerCase();
     filteredData.name = filteredData.definition;
     filteredData.definition_type = key;

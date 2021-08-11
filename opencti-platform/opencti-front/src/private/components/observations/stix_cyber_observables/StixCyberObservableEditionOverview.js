@@ -65,7 +65,7 @@ const styles = (theme) => ({
 const stixCyberObservableMutationFieldPatch = graphql`
   mutation StixCyberObservableEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     stixCyberObservableEdit(id: $id) {
       fieldPatch(input: $input) {

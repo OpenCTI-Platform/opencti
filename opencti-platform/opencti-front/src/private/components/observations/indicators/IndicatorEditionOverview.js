@@ -59,7 +59,7 @@ const styles = (theme) => ({
 const indicatorMutationFieldPatch = graphql`
   mutation IndicatorEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     indicatorEdit(id: $id) {
       fieldPatch(input: $input) {

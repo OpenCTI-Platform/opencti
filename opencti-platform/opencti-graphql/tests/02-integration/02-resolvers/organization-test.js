@@ -115,7 +115,7 @@ describe('Organization resolver standard behavior', () => {
   });
   it('should update organization', async () => {
     const UPDATE_QUERY = gql`
-      mutation OrganizationEdit($id: ID!, $input: EditInput!) {
+      mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
         organizationEdit(id: $id) {
           fieldPatch(input: $input) {
             id

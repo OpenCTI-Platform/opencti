@@ -99,7 +99,7 @@ describe('ExternalReference resolver standard behavior', () => {
   });
   it('should update externalReference', async () => {
     const UPDATE_QUERY = gql`
-      mutation ExternalReferenceEdit($id: ID!, $input: EditInput!) {
+      mutation ExternalReferenceEdit($id: ID!, $input: [EditInput]!) {
         externalReferenceEdit(id: $id) {
           fieldPatch(input: $input) {
             id

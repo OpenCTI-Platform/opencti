@@ -50,7 +50,7 @@ const styles = (theme) => ({
 });
 
 const toolMutationFieldPatch = graphql`
-  mutation ToolEditionOverviewFieldPatchMutation($id: ID!, $input: EditInput!) {
+  mutation ToolEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     toolEdit(id: $id) {
       fieldPatch(input: $input) {
         ...ToolEditionOverview_tool

@@ -12,7 +12,6 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
-import { UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 const labelResolvers = {
   Query: {
@@ -25,7 +24,7 @@ const labelResolvers = {
   Mutation: {
     labelEdit: (_, { id }, { user }) => ({
       delete: () => labelDelete(user, id),
-      fieldPatch: ({ input, operation = UPDATE_OPERATION_REPLACE }) => labelEditField(user, id, input, { operation }),
+      fieldPatch: ({ input }) => labelEditField(user, id, input),
       contextPatch: ({ input }) => labelEditContext(user, id, input),
       contextClean: () => labelCleanContext(user, id),
     }),

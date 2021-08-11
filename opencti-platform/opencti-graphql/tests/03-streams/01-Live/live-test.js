@@ -45,9 +45,8 @@ describe('Live streams tests', () => {
       expect(number === dbNumber).toBeTruthy();
     }
   };
-  it(
-    'Should consume compacted live stream',
-    async () => {
+  // eslint-disable-next-line prettier/prettier
+  it('Should consume compacted live stream', async () => {
       // Create the stream
       const liveStream = await createStreamCollection(ADMIN_USER, {
         name: 'No filter',
@@ -78,9 +77,8 @@ describe('Live streams tests', () => {
     },
     FIVE_MINUTES
   );
-  it(
-    'Should consume init live stream',
-    async () => {
+  // eslint-disable-next-line prettier/prettier
+  it('Should consume init live stream', async () => {
       // Create the stream
       const liveStream = await createStreamCollection(ADMIN_USER, {
         name: 'No filter',

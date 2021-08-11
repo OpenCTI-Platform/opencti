@@ -112,7 +112,7 @@ describe('City resolver standard behavior', () => {
   });
   it('should update city', async () => {
     const UPDATE_QUERY = gql`
-      mutation CityEdit($id: ID!, $input: EditInput!) {
+      mutation CityEdit($id: ID!, $input: [EditInput]!) {
         cityEdit(id: $id) {
           fieldPatch(input: $input) {
             id

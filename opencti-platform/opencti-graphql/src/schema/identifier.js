@@ -366,7 +366,7 @@ export const getInputIds = (type, input) => {
   ids.push(...generateAliasesIdsForInstance(input));
   return R.uniq(ids);
 };
-export const getInstanceIdentifiers = (instance) => {
+export const buildUpdatedInstance = (instance, updateEvents = []) => {
   const base = {
     standard_id: instance.standard_id,
     internal_id: instance.internal_id,
@@ -392,10 +392,20 @@ export const getInstanceIdentifiers = (instance) => {
     base.target_ref = instance.to.standard_id;
     base.x_opencti_target_ref = instance.toId;
   }
-  // Specific case for marking def. definition is required by stream events
-  if (instance.entity_type === ENTITY_TYPE_MARKING_DEFINITION) {
-    base.definition = instance.definition;
-    base.definition_type = instance.definition_type;
+  // For all update events, keep the instance data key
+  const keys = updateEvents
+    .map((u) => Object.values(u))
+    .flat()
+    .map((d) => Object.keys(d))
+    .flat();
+  // Specific cases of dependent attributes
+  if (base.entity_type === ENTITY_TYPE_MARKING_DEFINITION) {
+    if (keys.includes('definition') && !keys.includes('definition_type')) keys.push('definition_type');
+    if (keys.includes('definition_type') && !keys.includes('definition')) keys.push('definition');
+  }
+  for (let index = 0; index < keys.length; index += 1) {
+    const key = keys[index];
+    base[key] = instance[key];
   }
   return base;
 };

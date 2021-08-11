@@ -79,7 +79,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
   });
   it('should update stixCoreRelationship', async () => {
     const UPDATE_QUERY = gql`
-      mutation StixCoreRelationshipEdit($id: ID!, $input: EditInput!) {
+      mutation StixCoreRelationshipEdit($id: ID!, $input: [EditInput]!) {
         stixCoreRelationshipEdit(id: $id) {
           fieldPatch(input: $input) {
             id

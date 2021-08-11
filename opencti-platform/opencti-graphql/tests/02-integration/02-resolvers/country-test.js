@@ -108,7 +108,7 @@ describe('Country resolver standard behavior', () => {
   });
   it('should update country', async () => {
     const UPDATE_QUERY = gql`
-      mutation CountryEdit($id: ID!, $input: EditInput!) {
+      mutation CountryEdit($id: ID!, $input: [EditInput]!) {
         countryEdit(id: $id) {
           fieldPatch(input: $input) {
             id

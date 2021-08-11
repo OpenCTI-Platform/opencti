@@ -40,7 +40,7 @@ const styles = (theme) => ({
 export const workspaceMutationFieldPatch = graphql`
   mutation WorkspaceEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     workspaceEdit(id: $id) {
       fieldPatch(input: $input) {

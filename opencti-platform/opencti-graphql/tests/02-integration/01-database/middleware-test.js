@@ -511,10 +511,10 @@ describe('Attribute updated and indexed correctly', () => {
     expect(report).not.toBeNull();
     expect(report.report_types).toEqual(['threat-report']);
     // 02. Update attribute "Threat report" to "Threat test"
-    let updatedAttribute = await attributeEditField(SYSTEM_USER, attributeId, {
+    let updatedAttribute = await attributeEditField(SYSTEM_USER, attributeId, [{
       key: 'value',
       value: ['threat-test'],
-    });
+    }]);
     expect(updatedAttribute).not.toBeNull();
     // Wait a bit for elastic refresh
     await sleep(2000);
@@ -523,10 +523,10 @@ describe('Attribute updated and indexed correctly', () => {
     expect(report).not.toBeNull();
     expect(report.report_types).toEqual(['threat-test']);
     // 04. Back to original configuration
-    updatedAttribute = await attributeEditField(SYSTEM_USER, attributeId, {
+    updatedAttribute = await attributeEditField(SYSTEM_USER, attributeId, [{
       key: 'value',
       value: ['threat-report'],
-    });
+    }]);
     expect(updatedAttribute).not.toBeNull();
     // Wait a bit for elastic refresh
     await sleep(2000);
