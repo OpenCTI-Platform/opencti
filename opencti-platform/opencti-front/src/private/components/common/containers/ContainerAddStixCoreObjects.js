@@ -15,6 +15,10 @@ import Chip from '@material-ui/core/Chip';
 import Alert from '@material-ui/lab/Alert';
 import Tooltip from '@material-ui/core/Tooltip';
 import Skeleton from '@material-ui/lab/Skeleton';
+import SpeedDial from '@material-ui/lab/SpeedDial';
+import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
+import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
+import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
@@ -30,6 +34,7 @@ const styles = (theme) => ({
     width: '50%',
     backgroundColor: theme.palette.navAlt.background,
     padding: 0,
+    zIndex: 1,
   },
   createButton: {
     position: 'fixed',
@@ -96,12 +101,25 @@ const styles = (theme) => ({
   info: {
     paddingTop: 10,
   },
+  speedDialButton: {
+    backgroundColor: theme.palette.secondary.main,
+    color: '#ffffff',
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.main,
+    },
+  },
 });
 
 class ContainerAddStixCoreObjects extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, search: '' };
+    this.state = {
+      open: false,
+      openSpeedDial: false,
+      openCreateEntity: false,
+      openCreateObservable: false,
+      search: '',
+    };
   }
 
   handleOpen() {
@@ -110,6 +128,30 @@ class ContainerAddStixCoreObjects extends Component {
 
   handleClose() {
     this.setState({ open: false });
+  }
+
+  handleOpenSpeedDial() {
+    this.setState({ openSpeedDial: true });
+  }
+
+  handleCloseSpeedDial() {
+    this.setState({ openSpeedDial: false });
+  }
+
+  handleOpenCreateEntity() {
+    this.setState({ openCreateEntity: true, openSpeedDial: false });
+  }
+
+  handleCloseCreateEntity() {
+    this.setState({ openCreateEntity: false, openSpeedDial: false });
+  }
+
+  handleOpenCreateObservable() {
+    this.setState({ openCreateObservable: true, openSpeedDial: false });
+  }
+
+  handleCloseCreateObservable() {
+    this.setState({ openCreateObservable: false, openSpeedDial: false });
   }
 
   handleSearch(keyword) {
@@ -167,6 +209,88 @@ class ContainerAddStixCoreObjects extends Component {
     );
   }
 
+  renderStixCoreObjectCreation(paginationOptions) {
+    const {
+      classes,
+      defaultCreatedBy,
+      defaultMarkingDefinitions,
+      confidence,
+      targetStixCoreObjectTypes,
+      t,
+    } = this.props;
+    const {
+      open,
+      openSpeedDial,
+      openCreateEntity,
+      openCreateObservable,
+      search,
+    } = this.state;
+    return (
+      <div>
+        <SpeedDial
+          className={classes.createButton}
+          ariaLabel="Create"
+          icon={<SpeedDialIcon />}
+          onClose={this.handleCloseSpeedDial.bind(this)}
+          onOpen={this.handleOpenSpeedDial.bind(this)}
+          open={openSpeedDial}
+          FabProps={{
+            color: 'secondary',
+          }}
+        >
+          <SpeedDialAction
+            title={t('Create an observable')}
+            icon={<HexagonOutline />}
+            tooltipTitle={t('Create an observable')}
+            onClick={this.handleOpenCreateObservable.bind(this)}
+            FabProps={{
+              classes: { root: classes.speedDialButton },
+            }}
+          />
+          <SpeedDialAction
+            title={t('Create an entity')}
+            icon={<GlobeModel />}
+            tooltipTitle={t('Create an entity')}
+            onClick={this.handleOpenCreateEntity.bind(this)}
+            FabProps={{
+              classes: { root: classes.speedDialButton },
+            }}
+          />
+        </SpeedDial>
+        <StixDomainObjectCreation
+          display={open}
+          contextual={true}
+          inputValue={search}
+          paginationKey="Pagination_stixCoreObjects"
+          paginationOptions={paginationOptions}
+          confidence={confidence}
+          defaultCreatedBy={defaultCreatedBy}
+          defaultMarkingDefinitions={defaultMarkingDefinitions}
+          targetStixDomainObjectTypes={
+            targetStixCoreObjectTypes && targetStixCoreObjectTypes.length > 0
+              ? targetStixCoreObjectTypes
+              : []
+          }
+          speeddial={true}
+          open={openCreateEntity}
+          handleClose={this.handleCloseCreateEntity.bind(this)}
+        />
+        <StixCyberObservableCreation
+          display={open}
+          contextual={true}
+          inputValue={search}
+          paginationKey="Pagination_stixCoreObjects"
+          paginationOptions={paginationOptions}
+          defaultCreatedBy={defaultCreatedBy}
+          defaultMarkingDefinitions={defaultMarkingDefinitions}
+          speeddial={true}
+          open={openCreateObservable}
+          handleClose={this.handleCloseCreateObservable.bind(this)}
+        />
+      </div>
+    );
+  }
+
   renderEntityCreation(paginationOptions) {
     const { targetStixCoreObjectTypes } = this.props;
     if (
@@ -194,7 +318,7 @@ class ContainerAddStixCoreObjects extends Component {
           targetStixCoreObjectTypes,
         ))
     ) {
-      return this.renderDomainObjectCreation(paginationOptions);
+      return this.renderStixCoreObjectCreation(paginationOptions);
     }
     return null;
   }

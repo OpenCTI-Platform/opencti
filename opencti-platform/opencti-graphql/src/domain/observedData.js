@@ -130,7 +130,9 @@ export const addObservedData = async (user, observedData) => {
       lastObserved = now();
     } else if (observedData.last_observed > lastObserved) {
       // If the provided last_observed is after, then we update with the given date
-      lastObserved = observedData.last_observed;
+      lastObserved = utcDate(observedData.last_observed).toISOString();
+    } else {
+      lastObserved = lastObserved.toISOString();
     }
     let numberObserved;
     if (R.isNil(observedData.number_observed)) {
@@ -140,7 +142,7 @@ export const addObservedData = async (user, observedData) => {
     }
     const patch = {
       number_observed: numberObserved,
-      last_observed: prepareDate(lastObserved),
+      last_observed: lastObserved,
     };
     await patchAttribute(user, existingObservedData.id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, patch);
     return loadById(user, existingObservedData.id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);

@@ -70,12 +70,6 @@ const styles = (theme) => ({
     right: 30,
     zIndex: 2000,
   },
-  createButtonSpeedDial: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -303,7 +297,11 @@ class StixDomainObjectCreation extends Component {
   }
 
   onResetContextual() {
-    this.handleClose();
+    if (this.props.speeddial) {
+      this.props.handleClose();
+    } else {
+      this.handleClose();
+    }
   }
 
   renderEntityTypesList() {
@@ -558,6 +556,7 @@ class StixDomainObjectCreation extends Component {
       classes,
       inputValue,
       display,
+      speeddial,
       defaultCreatedBy,
       defaultMarkingDefinitions,
       confidence,
@@ -593,14 +592,16 @@ class StixDomainObjectCreation extends Component {
     };
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
+        {!speeddial && (
+          <Fab
+            onClick={this.handleOpen.bind(this)}
+            color="secondary"
+            aria-label="Add"
+            className={classes.createButton}
+          >
+            <Add />
+          </Fab>
+        )}
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
@@ -617,8 +618,12 @@ class StixDomainObjectCreation extends Component {
           }) => (
             <Form>
               <Dialog
-                open={this.state.open}
-                onClose={this.handleClose.bind(this)}
+                open={speeddial ? this.props.open : this.state.open}
+                onClose={
+                  speeddial
+                    ? this.props.handleClose.bind(this)
+                    : this.handleClose.bind(this)
+                }
                 fullWidth={true}
               >
                 <DialogTitle>{t('Create an entity')}</DialogTitle>
@@ -744,7 +749,10 @@ StixDomainObjectCreation.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   contextual: PropTypes.bool,
+  speeddial: PropTypes.bool,
+  handleClose: PropTypes.func,
   display: PropTypes.bool,
+  open: PropTypes.bool,
   inputValue: PropTypes.string,
   defaultCreatedBy: PropTypes.object,
   defaultMarkingDefinitions: PropTypes.array,
