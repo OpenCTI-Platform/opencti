@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 import SpriteText from 'three-spritetext';
 import { truncate } from './String';
+import KillChainPhase from '../resources/images/entities/kill-chain-phase_dark.svg';
 import MarkingDefinition from '../resources/images/entities/marking-definition_dark.svg';
 import Label from '../resources/images/entities/label_dark.svg';
 import ExternalReference from '../resources/images/entities/external-reference_dark.svg';
@@ -49,6 +50,7 @@ const genImage = (src) => {
 };
 
 export const graphImages = {
+  'Kill-Chain-Phase': genImage(KillChainPhase),
   'Marking-Definition': genImage(MarkingDefinition),
   'External-Reference': genImage(ExternalReference),
   Label: genImage(Label),
@@ -104,6 +106,7 @@ export const graphImages = {
 };
 
 export const graphLevel = {
+  'Kill-Chain-Phase': 1,
   'Attack-Pattern': 1,
   Campaign: 1,
   Note: 1,
@@ -156,6 +159,7 @@ export const graphLevel = {
 };
 
 export const graphRawImages = {
+  'Kill-Chain-Phase': KillChainPhase,
   'Marking-Definition': MarkingDefinition,
   'External-Reference': ExternalReference,
   Label,
@@ -261,6 +265,7 @@ export const defaultValue = (n, tooltip = false) => {
       || n.value
       || n.definition
       || n.source_name
+      || n.phase_name
       || 'Unknown'
     }`;
   }
@@ -274,6 +279,7 @@ export const defaultValue = (n, tooltip = false) => {
     || n.value
     || n.definition
     || n.source_name
+    || n.phase_name
     || 'Unknown'
   }`;
 };
