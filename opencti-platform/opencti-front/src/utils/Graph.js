@@ -348,8 +348,8 @@ export const applyNodeFilters = (
     ),
     R.filter(
       (n) => markedBy.length === 0
-        || !n.objectMarking
-        || R.any((m) => R.includes(m.node.id, markedBy), n.objectMarking.edges),
+        || !n.markedBy
+        || R.any((m) => R.includes(m.id, markedBy), n.markedBy),
     ),
     R.filter(
       (n) => createdBy.length === 0 || R.includes(n.createdBy.id, createdBy),
