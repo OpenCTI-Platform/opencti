@@ -62,7 +62,22 @@ class ThreatActorKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={threatActor.id}
               relationshipTypes={['related-to', 'part-of']}
-              targetStixDomainObjectTypes={['Stix-Domain-Object']}
+              targetStixDomainObjectTypes={[
+                'Threat-Actor',
+                'Intrusion-Set',
+                'Campaign',
+                'Incident',
+                'Malware',
+                'Tool',
+                'Vulnerability',
+                'Individual',
+                'Organization',
+                'Sector',
+                'Region',
+                'Country',
+                'City',
+                'Position',
+              ]}
               entityLink={link}
               allDirections={true}
               {...routeProps}

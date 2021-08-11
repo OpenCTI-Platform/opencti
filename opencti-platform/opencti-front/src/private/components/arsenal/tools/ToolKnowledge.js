@@ -61,7 +61,22 @@ class ToolKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={tool.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={['Stix-Domain-Object']}
+                targetStixDomainObjectTypes={[
+                  'Threat-Actor',
+                  'Intrusion-Set',
+                  'Campaign',
+                  'Incident',
+                  'Malware',
+                  'Tool',
+                  'Vulnerability',
+                  'Individual',
+                  'Organization',
+                  'Sector',
+                  'Region',
+                  'Country',
+                  'City',
+                  'Position',
+                ]}
                 entityLink={link}
                 allDirections={true}
                 {...routeProps}

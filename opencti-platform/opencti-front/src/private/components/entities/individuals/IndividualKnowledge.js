@@ -76,7 +76,22 @@ class IndividualKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={individual.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={['Stix-Domain-Object']}
+                targetStixDomainObjectTypes={[
+                  'Threat-Actor',
+                  'Intrusion-Set',
+                  'Campaign',
+                  'Incident',
+                  'Malware',
+                  'Tool',
+                  'Vulnerability',
+                  'Individual',
+                  'Organization',
+                  'Sector',
+                  'Region',
+                  'Country',
+                  'City',
+                  'Position',
+                ]}
                 entityLink={link}
                 allDirections={true}
                 {...routeProps}

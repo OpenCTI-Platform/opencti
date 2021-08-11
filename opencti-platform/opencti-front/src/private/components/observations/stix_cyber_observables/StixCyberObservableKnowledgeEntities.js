@@ -132,7 +132,22 @@ class StixCyberObservableKnowledgeEntities extends Component {
           entityId={entityId}
           variant="inLine"
           isRelationReversed={relationReversed}
-          targetStixDomainObjectTypes={['Stix-Domain-Object']}
+          targetStixDomainObjectTypes={[
+            'Threat-Actor',
+            'Intrusion-Set',
+            'Campaign',
+            'Incident',
+            'Malware',
+            'Tool',
+            'Vulnerability',
+            'Individual',
+            'Organization',
+            'Sector',
+            'Region',
+            'Country',
+            'City',
+            'Position',
+          ]}
           targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
         />
         <div className="clearfix" />
