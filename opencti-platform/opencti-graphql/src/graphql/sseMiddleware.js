@@ -230,7 +230,7 @@ export const isInstanceMatchFilters = (instance, filters) => {
     }
     // Creator filtering
     if (type === CREATOR_FILTER) {
-      const creatorIds = (instance.created_by_ref || []).map((l) => l.x_opencti_internal_id);
+      const creatorIds = instance.created_by_ref?.x_opencti_internal_id;
       const found = values.map((v) => v.id).some((r) => creatorIds.includes(r));
       if (!found) return false;
     }

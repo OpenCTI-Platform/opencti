@@ -226,7 +226,7 @@ export const isTypeHasAliasIDs = (entityType) => {
   }
   return properties.length === 1 && R.head(properties).src === NAME_FIELD;
 };
-export const isFieldContributingToStandardId = (instance, keys) => {
+export const fieldsContributingToStandardId = (instance, keys) => {
   const instanceType = instance.entity_type;
   const isRelation = instance.base_type === BASE_TYPE_RELATION;
   if (isRelation) return false;
@@ -238,7 +238,10 @@ export const isFieldContributingToStandardId = (instance, keys) => {
   if (properties.length === 0) return true;
   const targetKeys = R.map((k) => (k.includes('.') ? R.head(k.split('.')) : k), keys);
   const propertiesToKeep = R.map((t) => t.src, R.flatten(properties));
-  const keysIncluded = R.filter((p) => R.includes(p, targetKeys), propertiesToKeep);
+  return R.filter((p) => R.includes(p, targetKeys), propertiesToKeep);
+};
+export const isFieldContributingToStandardId = (instance, keys) => {
+  const keysIncluded = fieldsContributingToStandardId(instance, keys);
   return keysIncluded.length > 0;
 };
 const filteredIdContributions = (contrib, way, data) => {
@@ -366,7 +369,7 @@ export const getInputIds = (type, input) => {
   ids.push(...generateAliasesIdsForInstance(input));
   return R.uniq(ids);
 };
-export const buildUpdatedInstance = (instance, updateEvents = []) => {
+export const getInstanceIdentifiers = (instance) => {
   const base = {
     standard_id: instance.standard_id,
     internal_id: instance.internal_id,
@@ -391,21 +394,6 @@ export const buildUpdatedInstance = (instance, updateEvents = []) => {
     }
     base.target_ref = instance.to.standard_id;
     base.x_opencti_target_ref = instance.toId;
-  }
-  // For all update events, keep the instance data key
-  const keys = updateEvents
-    .map((u) => Object.values(u))
-    .flat()
-    .map((d) => Object.keys(d))
-    .flat();
-  // Specific cases of dependent attributes
-  if (base.entity_type === ENTITY_TYPE_MARKING_DEFINITION) {
-    if (keys.includes('definition') && !keys.includes('definition_type')) keys.push('definition_type');
-    if (keys.includes('definition_type') && !keys.includes('definition')) keys.push('definition');
-  }
-  for (let index = 0; index < keys.length; index += 1) {
-    const key = keys[index];
-    base[key] = instance[key];
   }
   return base;
 };

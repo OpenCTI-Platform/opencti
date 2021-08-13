@@ -60,13 +60,8 @@ const ruleMergeHandler = async (event) => {
   const { data, markings } = event;
   const events = [];
   const generateInternalDeleteEvent = (instance) => {
-    return buildDeleteEvent(
-      RULE_MANAGER_USER,
-      instance,
-      [],
-      { stixLoadById, connectionLoaders },
-      { withoutMessage: true }
-    );
+    const loaders = { stixLoadById, connectionLoaders };
+    return buildDeleteEvent(RULE_MANAGER_USER, instance, [], loaders, { withoutMessage: true });
   };
   // region 01 - Generate events for deletion
   // -- sources

@@ -18,6 +18,7 @@ import {
 import { fullLoadById } from '../../../src/database/middleware';
 import { rebuildInstanceWithPatch } from '../../../src/utils/patch';
 import { buildStixData } from '../../../src/database/stix';
+import { STIX_ATTRIBUTE_TO_META_FIELD } from '../../../src/schema/stixMetaRelationship';
 
 const OPERATIONS = [UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE];
 
@@ -75,10 +76,19 @@ describe('Raw streams tests', () => {
             const elementOperations = data.x_opencti_patch[key];
             const opKeys = Object.keys(elementOperations);
             opKeys.forEach((opKey) => {
-              const isMultiple = opKey.endsWith('_refs') || isMultipleAttribute(opKey);
+              const metaKey = STIX_ATTRIBUTE_TO_META_FIELD[opKey];
+              const k = metaKey || opKey;
+              const isMultiple = isMultipleAttribute(k);
               expect(isMultiple).toBeTruthy();
               const val = elementOperations[opKey];
               expect(Array.isArray(val)).toBeTruthy();
+              if (metaKey) {
+                for (let i = 0; i < val.length; i += 1) {
+                  const metaElement = val[i];
+                  expect(metaElement.value).toBeDefined();
+                  expect(metaElement.x_opencti_internal_id).toBeDefined();
+                }
+              }
             });
           }
           if (key === UPDATE_OPERATION_REPLACE) {

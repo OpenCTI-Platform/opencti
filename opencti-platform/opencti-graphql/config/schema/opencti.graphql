@@ -78,7 +78,6 @@ enum EditOperation {
   remove
 }
 input EditInput {
-  id: ID # ID of the instance in edition
   key: String! # Field name to change
   value: [String]! # Values to apply
   operation: EditOperation
