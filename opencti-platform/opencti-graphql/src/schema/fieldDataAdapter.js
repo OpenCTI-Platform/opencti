@@ -119,6 +119,7 @@ export const booleanAttributes = [
   'can_escalate_privs',
   'is_disabled',
   'is_self_signed',
+  'platform_enable_references',
 ];
 export const numericOrBooleanAttributes = [...numericAttributes, ...booleanAttributes];
 export const dictAttributes = { hashes: { key: 'algorithm', value: 'hash' } };

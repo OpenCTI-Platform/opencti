@@ -24,6 +24,7 @@ import SelectField from '../../../components/SelectField';
 import Loader from '../../../components/Loader';
 import MarkDownField from '../../../components/MarkDownField';
 import ColorPickerField from '../../../components/ColorPickerField';
+import SwitchField from '../../../components/SwitchField';
 
 const styles = (theme) => ({
   container: {
@@ -73,6 +74,7 @@ const settingsQuery = graphql`
       platform_theme_light_primary
       platform_theme_light_secondary
       platform_theme_light_logo
+      platform_enable_references
       platform_providers {
         name
         strategy
@@ -106,6 +108,7 @@ const settingsMutationFieldPatch = graphql`
         platform_theme_light_logo
         platform_language
         platform_login_message
+        platform_enable_references
       }
     }
   }
@@ -150,6 +153,7 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_theme_light_logo: Yup.string(),
   platform_language: Yup.string(),
   platform_login_message: Yup.string(),
+  platform_enable_references: Yup.bool(),
 });
 
 class Settings extends Component {
@@ -204,6 +208,7 @@ class Settings extends Component {
                   'platform_theme_light_logo',
                   'platform_map_tile_server_dark',
                   'platform_map_tile_server_light',
+                  'platform_enable_references',
                 ],
                 settings,
               );
@@ -347,6 +352,22 @@ class Settings extends Component {
                                   <MenuItem value="en">English</MenuItem>
                                   <MenuItem value="fr">Français</MenuItem>
                                 </Field>
+                                <Field
+                                  component={SwitchField}
+                                  type="checkbox"
+                                  name="platform_enable_references"
+                                  label={t('Enable references')}
+                                  fullWidth={true}
+                                  containerstyle={{
+                                    marginTop: 20,
+                                    width: '100%',
+                                  }}
+                                  onChange={this.handleSubmitField.bind(
+                                    this,
+                                    id,
+                                  )}
+                                  helpertext={t('Commit message and/or references when updating data from the UI.')}
+                                />
                               </Form>
                             </div>
                           )}

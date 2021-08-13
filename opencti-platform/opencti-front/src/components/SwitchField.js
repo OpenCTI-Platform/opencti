@@ -1,6 +1,8 @@
 import React from 'react';
 import MuiSwitch from '@material-ui/core/Switch';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormHelperText from '@material-ui/core/FormHelperText';
 import { fieldToSwitch } from 'formik-material-ui';
 
 const SwitchField = (props) => {
@@ -8,6 +10,7 @@ const SwitchField = (props) => {
     form: { setFieldValue, setTouched },
     field: { name },
     onChange,
+    helpertext,
   } = props;
   const internalOnChange = React.useCallback(
     (event) => {
@@ -24,16 +27,19 @@ const SwitchField = (props) => {
   }, [setTouched]);
   return (
     <div style={props.containerstyle}>
-      <FormControlLabel
-        control={
-          <MuiSwitch
-            {...fieldToSwitch(props)}
-            onChange={internalOnChange}
-            onBlur={internalOnBlur}
-          />
-        }
-        label={props.label}
-      />
+      <FormGroup>
+        <FormControlLabel
+          control={
+            <MuiSwitch
+              {...fieldToSwitch(props)}
+              onChange={internalOnChange}
+              onBlur={internalOnBlur}
+            />
+          }
+          label={props.label}
+        />
+      </FormGroup>
+      <FormHelperText>{helpertext}</FormHelperText>
     </div>
   );
 };

@@ -81,6 +81,7 @@ input EditInput {
   id: ID # ID of the instance in edition
   key: String! # Field name to change
   value: [String]! # Values to apply
+  commitMessage: String
 }
 input EditContext {
   focusOn: String # Field name
@@ -692,6 +693,7 @@ type Settings implements InternalObject & BasicObject {
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
   platform_login_message: String
+  platform_enable_references: Boolean
   created_at: DateTime!
   updated_at: DateTime!
   # Technical
@@ -7847,12 +7849,14 @@ input StixMetaRelationshipAddInput {
   relationship_type: String!
   fromId: ID
   toId: ID
+  commitMessage: String
 }
 
 input StixMetaRelationshipsAddInput {
   relationship_type: String! # Will be check by code
   fromIds: [ID]
   toIds: [ID]
+  commitMessage: String
 }
 
 ### QUERIES

@@ -74,7 +74,7 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-class StixCoreObjectExternalReferencesLinesContainer extends Component {
+class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -130,11 +130,11 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
       mutation: externalReferenceMutationRelationDelete,
       variables: {
         id: externalReferenceEdge.node.id,
-        fromId: this.props.stixCoreObjectId,
+        fromId: this.props.stixCoreRelationshipId,
         relationship_type: 'external-reference',
       },
       updater: (store) => {
-        const entity = store.get(this.props.stixCoreObjectId);
+        const entity = store.get(this.props.stixCoreRelationshipId);
         const conn = ConnectionHandler.getConnection(
           entity,
           'Pagination_externalReferences',
@@ -150,10 +150,10 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, stixCoreObjectId, data,
+      t, classes, stixCoreRelationshipId, data,
     } = this.props;
     const { expanded } = this.state;
-    const externalReferencesEdges = data.stixCoreObject.externalReferences.edges;
+    const externalReferencesEdges = data.stixCoreRelationship.externalReferences.edges;
     const expandable = externalReferencesEdges.length > 7;
     return (
       <div style={{ height: '100%' }}>
@@ -162,9 +162,9 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <AddExternalReferences
-            stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
+            stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationshipId}
             stixCoreObjectOrStixCoreRelationshipReferences={
-              data.stixCoreObject.externalReferences.edges
+              data.stixCoreRelationship.externalReferences.edges
             }
           />
         </Security>
@@ -341,8 +341,8 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
   }
 }
 
-StixCoreObjectExternalReferencesLinesContainer.propTypes = {
-  stixCoreObjectId: PropTypes.string,
+StixCoreRelationshipExternalReferencesLinesContainer.propTypes = {
+  stixCoreRelationshipId: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -350,23 +350,26 @@ StixCoreObjectExternalReferencesLinesContainer.propTypes = {
   fld: PropTypes.func,
 };
 
-export const stixCoreObjectExternalReferencesLinesQuery = graphql`
-  query StixCoreObjectExternalReferencesLinesQuery($count: Int!, $id: String!) {
-    ...StixCoreObjectExternalReferencesLines_data
+export const stixCoreRelationshipExternalReferencesLinesQuery = graphql`
+  query StixCoreRelationshipExternalReferencesLinesQuery(
+    $count: Int!
+    $id: String!
+  ) {
+    ...StixCoreRelationshipExternalReferencesLines_data
       @arguments(count: $count, id: $id)
   }
 `;
 
-const StixCoreObjectExternalReferencesLines = createPaginationContainer(
-  StixCoreObjectExternalReferencesLinesContainer,
+const StixCoreRelationshipExternalReferencesLines = createPaginationContainer(
+  StixCoreRelationshipExternalReferencesLinesContainer,
   {
     data: graphql`
-      fragment StixCoreObjectExternalReferencesLines_data on Query
+      fragment StixCoreRelationshipExternalReferencesLines_data on Query
       @argumentDefinitions(
         count: { type: "Int", defaultValue: 25 }
         id: { type: "String!" }
       ) {
-        stixCoreObject(id: $id) {
+        stixCoreRelationship(id: $id) {
           id
           externalReferences(first: $count)
             @connection(key: "Pagination_externalReferences") {
@@ -388,7 +391,7 @@ const StixCoreObjectExternalReferencesLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixCoreObject.externalReferences;
+      return props.data && props.data.stixCoreRelationship.externalReferences;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -402,11 +405,11 @@ const StixCoreObjectExternalReferencesLines = createPaginationContainer(
         id: fragmentVariables.id,
       };
     },
-    query: stixCoreObjectExternalReferencesLinesQuery,
+    query: stixCoreRelationshipExternalReferencesLinesQuery,
   },
 );
 
 export default R.compose(
   inject18n,
   withStyles(styles),
-)(StixCoreObjectExternalReferencesLines);
+)(StixCoreRelationshipExternalReferencesLines);

@@ -989,6 +989,9 @@ const i18n = {
       Platforms: "Systèmes d'exploitation",
       Platform: "Système d'exploitation",
       'Required permissions': 'Permissions requises',
+      'Enable references': 'Activer le référencement',
+      'Commit message and/or references when updating data from the UI.':
+        "Message et/ou références lors de la modification des données dans l'interface.",
       None: 'Aucun',
       Nonee: 'Aucune',
       Status: 'Statut',
