@@ -95,7 +95,7 @@ const subscription = graphql`
 const stixSightingRelationshipMutationFieldPatch = graphql`
   mutation StixSightingRelationshipEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     stixSightingRelationshipEdit(id: $id) {
       fieldPatch(input: $input) {

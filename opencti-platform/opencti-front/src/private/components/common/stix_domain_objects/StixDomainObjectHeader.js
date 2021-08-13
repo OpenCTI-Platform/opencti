@@ -68,7 +68,7 @@ const styles = () => ({
 });
 
 const stixDomainObjectMutation = graphql`
-  mutation StixDomainObjectHeaderFieldMutation($id: ID!, $input: EditInput!) {
+  mutation StixDomainObjectHeaderFieldMutation($id: ID!, $input: [EditInput]!) {
     stixDomainObjectEdit(id: $id) {
       fieldPatch(input: $input) {
         ... on AttackPattern {

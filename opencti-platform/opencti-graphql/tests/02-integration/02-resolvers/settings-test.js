@@ -64,7 +64,7 @@ describe('Settings resolver standard behavior', () => {
   });
   it('should update settings', async () => {
     const UPDATE_QUERY = gql`
-      mutation SettingsEdit($id: ID!, $input: EditInput!) {
+      mutation SettingsEdit($id: ID!, $input: [EditInput]!) {
         settingsEdit(id: $id) {
           fieldPatch(input: $input) {
             id

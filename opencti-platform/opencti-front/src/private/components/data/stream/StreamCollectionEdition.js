@@ -62,7 +62,7 @@ const styles = (theme) => ({
 const streamCollectionMutationFieldPatch = graphql`
   mutation StreamCollectionEditionFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     streamCollectionEdit(id: $id) {
       fieldPatch(input: $input) {

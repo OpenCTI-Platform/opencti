@@ -14,7 +14,6 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
-import { UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 const killChainPhaseResolvers = {
   Query: {
@@ -27,8 +26,7 @@ const killChainPhaseResolvers = {
   Mutation: {
     killChainPhaseEdit: (_, { id }, { user }) => ({
       delete: () => killChainPhaseDelete(user, id),
-      fieldPatch: ({ input, operation = UPDATE_OPERATION_REPLACE }) =>
-        killChainPhaseEditField(user, id, input, { operation }),
+      fieldPatch: ({ input }) => killChainPhaseEditField(user, id, input),
       contextPatch: ({ input }) => killChainPhaseEditContext(user, id, input),
       contextClean: () => killChainPhaseCleanContext(user, id),
       relationAdd: ({ input }) => killChainPhaseAddRelation(user, id, input),

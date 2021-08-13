@@ -51,7 +51,7 @@ const styles = (theme) => ({
 const regionMutationFieldPatch = graphql`
   mutation RegionEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     regionEdit(id: $id) {
       fieldPatch(input: $input) {

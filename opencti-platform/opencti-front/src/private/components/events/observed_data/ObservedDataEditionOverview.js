@@ -52,7 +52,7 @@ const styles = (theme) => ({
 export const observedDataMutationFieldPatch = graphql`
   mutation ObservedDataEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     observedDataEdit(id: $id) {
       fieldPatch(input: $input) {

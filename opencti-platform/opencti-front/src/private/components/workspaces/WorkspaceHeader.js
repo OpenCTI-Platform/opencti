@@ -61,7 +61,7 @@ const styles = () => ({
 });
 
 const workspaceMutation = graphql`
-  mutation WorkspaceHeaderFieldMutation($id: ID!, $input: EditInput!) {
+  mutation WorkspaceHeaderFieldMutation($id: ID!, $input: [EditInput]!) {
     workspaceEdit(id: $id) {
       fieldPatch(input: $input) {
         tags

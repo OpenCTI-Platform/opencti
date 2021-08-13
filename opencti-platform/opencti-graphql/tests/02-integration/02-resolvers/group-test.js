@@ -66,7 +66,7 @@ describe('Group resolver standard behavior', () => {
   });
   it('should update group', async () => {
     const UPDATE_QUERY = gql`
-      mutation GroupEdit($id: ID!, $input: EditInput!) {
+      mutation GroupEdit($id: ID!, $input: [EditInput]!) {
         groupEdit(id: $id) {
           fieldPatch(input: $input) {
             id

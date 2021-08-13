@@ -63,7 +63,7 @@ describe('Label resolver standard behavior', () => {
   });
   it('should update label', async () => {
     const UPDATE_QUERY = gql`
-      mutation LabelEdit($id: ID!, $input: EditInput!) {
+      mutation LabelEdit($id: ID!, $input: [EditInput]!) {
         labelEdit(id: $id) {
           fieldPatch(input: $input) {
             id

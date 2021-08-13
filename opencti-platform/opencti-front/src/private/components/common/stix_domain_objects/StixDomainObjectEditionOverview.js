@@ -87,7 +87,7 @@ const subscription = graphql`
 export const stixDomainObjectMutationFieldPatch = graphql`
   mutation StixDomainObjectEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     stixDomainObjectEdit(id: $id) {
       fieldPatch(input: $input) {

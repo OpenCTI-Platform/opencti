@@ -12,7 +12,6 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { convertDataToStix } from '../database/stix';
-import { UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 const markingDefinitionResolvers = {
   Query: {
@@ -26,8 +25,7 @@ const markingDefinitionResolvers = {
   Mutation: {
     markingDefinitionEdit: (_, { id }, { user }) => ({
       delete: () => markingDefinitionDelete(user, id),
-      fieldPatch: ({ input, operation = UPDATE_OPERATION_REPLACE }) =>
-        markingDefinitionEditField(user, id, input, { operation }),
+      fieldPatch: ({ input }) => markingDefinitionEditField(user, id, input),
       contextPatch: ({ input }) => markingDefinitionEditContext(user, id, input),
       contextClean: () => markingDefinitionCleanContext(user, id),
     }),

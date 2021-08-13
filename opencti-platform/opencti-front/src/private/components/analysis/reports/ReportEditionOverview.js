@@ -46,7 +46,7 @@ const styles = () => ({
 export const reportMutationFieldPatch = graphql`
   mutation ReportEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     reportEdit(id: $id) {
       fieldPatch(input: $input) {

@@ -129,7 +129,7 @@ describe('AttackPattern resolver standard behavior', () => {
   });
   it('should update attackPattern', async () => {
     const UPDATE_QUERY = gql`
-      mutation AttackPatternEdit($id: ID!, $input: EditInput!) {
+      mutation AttackPatternEdit($id: ID!, $input: [EditInput]!) {
         attackPatternEdit(id: $id) {
           fieldPatch(input: $input) {
             id

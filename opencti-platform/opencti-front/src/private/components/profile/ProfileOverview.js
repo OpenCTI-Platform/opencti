@@ -29,7 +29,7 @@ const styles = () => ({
 });
 
 const profileOverviewFieldPatch = graphql`
-  mutation ProfileOverviewFieldPatchMutation($input: EditInput!) {
+  mutation ProfileOverviewFieldPatchMutation($input: [EditInput]!) {
     meEdit(input: $input) {
       ...UserEditionOverview_user
     }

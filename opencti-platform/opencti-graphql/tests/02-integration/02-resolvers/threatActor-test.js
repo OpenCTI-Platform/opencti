@@ -91,7 +91,7 @@ describe('Threat actor resolver standard behavior', () => {
   });
   it('should update threat actor', async () => {
     const UPDATE_QUERY = gql`
-      mutation ThreatActorEdit($id: ID!, $input: EditInput!) {
+      mutation ThreatActorEdit($id: ID!, $input: [EditInput]!) {
         threatActorEdit(id: $id) {
           fieldPatch(input: $input) {
             id

@@ -29,7 +29,6 @@ import { creator } from '../domain/log';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { elBatchIds } from '../database/elasticSearch';
-import { UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const createdByLoader = batchLoader(batchCreatedBy);
@@ -72,8 +71,7 @@ const stixCoreRelationshipResolvers = {
   Mutation: {
     stixCoreRelationshipEdit: (_, { id }, { user }) => ({
       delete: () => stixCoreRelationshipDelete(user, id),
-      fieldPatch: ({ input, operation = UPDATE_OPERATION_REPLACE }) =>
-        stixCoreRelationshipEditField(user, id, input, { operation }),
+      fieldPatch: ({ input }) => stixCoreRelationshipEditField(user, id, input),
       contextPatch: ({ input }) => stixCoreRelationshipEditContext(user, id, input),
       contextClean: () => stixCoreRelationshipCleanContext(user, id),
       relationAdd: ({ input }) => stixCoreRelationshipAddRelation(user, id, input),

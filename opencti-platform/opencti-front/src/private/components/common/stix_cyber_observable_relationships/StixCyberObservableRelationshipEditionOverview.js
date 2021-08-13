@@ -80,7 +80,7 @@ const subscription = graphql`
 const stixCyberObservableRelationshipMutationFieldPatch = graphql`
   mutation StixCyberObservableRelationshipEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     stixCyberObservableRelationshipEdit(id: $id) {
       fieldPatch(input: $input) {

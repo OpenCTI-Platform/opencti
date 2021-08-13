@@ -1,6 +1,15 @@
 import * as R from 'ramda';
 import { UnsupportedError } from '../config/errors';
-import { INTERNAL_IDS_ALIASES, IDS_STIX, RULE_PREFIX } from './general';
+import {
+  INTERNAL_IDS_ALIASES,
+  IDS_STIX,
+  RULE_PREFIX,
+  INPUT_MARKINGS,
+  INPUT_OBJECTS,
+  INPUT_LABELS,
+  INPUT_EXTERNAL_REFS,
+  INPUT_KILLCHAIN,
+} from './general';
 import { STANDARD_HASHES } from './identifier';
 import { isDatedInternalObject } from './internalObject';
 import { isStixCoreObject } from './stixCoreObject';
@@ -35,13 +44,17 @@ const multipleAttributes = [
   'x_mitre_permissions_required',
   'x_opencti_aliases',
   'x_opencti_additional_names',
-  'labels',
-  'external_references',
-  'kill_chain_phases',
   'tags',
   'bookmarks',
   'protocols',
   'x_opencti_log_sources',
+  'x_opencti_stix_ids',
+  // meta
+  INPUT_OBJECTS,
+  INPUT_MARKINGS,
+  INPUT_LABELS,
+  INPUT_EXTERNAL_REFS,
+  INPUT_KILLCHAIN,
 ];
 export const statsDateAttributes = [
   'created_at',

@@ -62,7 +62,7 @@ const styles = (theme) => ({
 const taxiiCollectionMutationFieldPatch = graphql`
   mutation TaxiiCollectionEditionFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     taxiiCollectionEdit(id: $id) {
       fieldPatch(input: $input) {

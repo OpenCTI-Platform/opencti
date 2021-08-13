@@ -64,7 +64,7 @@ const subscription = graphql`
 const markingDefinitionMutationFieldPatch = graphql`
   mutation MarkingDefinitionEditionFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     markingDefinitionEdit(id: $id) {
       fieldPatch(input: $input) {

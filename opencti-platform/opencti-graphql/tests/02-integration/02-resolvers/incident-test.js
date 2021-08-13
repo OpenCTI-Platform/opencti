@@ -151,7 +151,7 @@ describe('Incident resolver standard behavior', () => {
   });
   it('should update Incident', async () => {
     const UPDATE_QUERY = gql`
-      mutation IncidentEdit($id: ID!, $input: EditInput!) {
+      mutation IncidentEdit($id: ID!, $input: [EditInput]!) {
         incidentEdit(id: $id) {
           fieldPatch(input: $input) {
             id

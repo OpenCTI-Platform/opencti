@@ -52,7 +52,7 @@ const styles = (theme) => ({
 export const opinionMutationFieldPatch = graphql`
   mutation OpinionEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     opinionEdit(id: $id) {
       fieldPatch(input: $input) {

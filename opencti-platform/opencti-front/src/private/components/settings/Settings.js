@@ -92,7 +92,7 @@ const settingsQuery = graphql`
 `;
 
 const settingsMutationFieldPatch = graphql`
-  mutation SettingsFieldPatchMutation($id: ID!, $input: EditInput!) {
+  mutation SettingsFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     settingsEdit(id: $id) {
       fieldPatch(input: $input) {
         id

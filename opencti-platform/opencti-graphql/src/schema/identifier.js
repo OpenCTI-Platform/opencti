@@ -226,7 +226,7 @@ export const isTypeHasAliasIDs = (entityType) => {
   }
   return properties.length === 1 && R.head(properties).src === NAME_FIELD;
 };
-export const isFieldContributingToStandardId = (instance, keys) => {
+export const fieldsContributingToStandardId = (instance, keys) => {
   const instanceType = instance.entity_type;
   const isRelation = instance.base_type === BASE_TYPE_RELATION;
   if (isRelation) return false;
@@ -238,7 +238,10 @@ export const isFieldContributingToStandardId = (instance, keys) => {
   if (properties.length === 0) return true;
   const targetKeys = R.map((k) => (k.includes('.') ? R.head(k.split('.')) : k), keys);
   const propertiesToKeep = R.map((t) => t.src, R.flatten(properties));
-  const keysIncluded = R.filter((p) => R.includes(p, targetKeys), propertiesToKeep);
+  return R.filter((p) => R.includes(p, targetKeys), propertiesToKeep);
+};
+export const isFieldContributingToStandardId = (instance, keys) => {
+  const keysIncluded = fieldsContributingToStandardId(instance, keys);
   return keysIncluded.length > 0;
 };
 const filteredIdContributions = (contrib, way, data) => {
@@ -391,11 +394,6 @@ export const getInstanceIdentifiers = (instance) => {
     }
     base.target_ref = instance.to.standard_id;
     base.x_opencti_target_ref = instance.toId;
-  }
-  // Specific case for marking def. definition is required by stream events
-  if (instance.entity_type === ENTITY_TYPE_MARKING_DEFINITION) {
-    base.definition = instance.definition;
-    base.definition_type = instance.definition_type;
   }
   return base;
 };

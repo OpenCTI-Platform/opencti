@@ -114,7 +114,7 @@ describe('Individual resolver standard behavior', () => {
   });
   it('should update individual', async () => {
     const UPDATE_QUERY = gql`
-      mutation IndividualEdit($id: ID!, $input: EditInput!) {
+      mutation IndividualEdit($id: ID!, $input: [EditInput]!) {
         individualEdit(id: $id) {
           fieldPatch(input: $input) {
             id

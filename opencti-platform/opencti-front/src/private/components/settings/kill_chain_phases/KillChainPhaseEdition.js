@@ -65,7 +65,7 @@ const subscription = graphql`
 const killChainPhaseMutationFieldPatch = graphql`
   mutation KillChainPhaseEditionFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     killChainPhaseEdit(id: $id) {
       fieldPatch(input: $input) {

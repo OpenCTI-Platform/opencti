@@ -92,7 +92,7 @@ describe('Intrusion set resolver standard behavior', () => {
   });
   it('should update intrusion set', async () => {
     const UPDATE_QUERY = gql`
-      mutation IntrusionSetEdit($id: ID!, $input: EditInput!) {
+      mutation IntrusionSetEdit($id: ID!, $input: [EditInput]!) {
         intrusionSetEdit(id: $id) {
           fieldPatch(input: $input) {
             id

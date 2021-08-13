@@ -204,7 +204,7 @@ describe('StixDomainObject resolver standard behavior', () => {
   });
   it('should update stixDomainObject', async () => {
     const UPDATE_QUERY = gql`
-      mutation StixDomainObjectEdit($id: ID!, $input: EditInput!) {
+      mutation StixDomainObjectEdit($id: ID!, $input: [EditInput]!) {
         stixDomainObjectEdit(id: $id) {
           fieldPatch(input: $input) {
             id

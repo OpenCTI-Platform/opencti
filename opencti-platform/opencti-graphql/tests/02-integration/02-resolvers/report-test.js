@@ -318,7 +318,7 @@ describe('Report resolver standard behavior', () => {
   });
   it('should update report', async () => {
     const UPDATE_QUERY = gql`
-      mutation ReportEdit($id: ID!, $input: EditInput!) {
+      mutation ReportEdit($id: ID!, $input: [EditInput]!) {
         reportEdit(id: $id) {
           fieldPatch(input: $input) {
             id

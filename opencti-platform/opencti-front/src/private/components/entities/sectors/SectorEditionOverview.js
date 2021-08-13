@@ -28,7 +28,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 const sectorMutationFieldPatch = graphql`
   mutation SectorEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     sectorEdit(id: $id) {
       fieldPatch(input: $input) {

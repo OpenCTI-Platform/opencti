@@ -51,7 +51,7 @@ const styles = (theme) => ({
 const positionMutationFieldPatch = graphql`
   mutation PositionEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     positionEdit(id: $id) {
       fieldPatch(input: $input) {

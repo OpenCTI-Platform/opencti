@@ -86,7 +86,7 @@ describe('Role resolver standard behavior', () => {
   });
   it('should update role', async () => {
     const UPDATE_QUERY = gql`
-      mutation RoleEdit($id: ID!, $input: EditInput!) {
+      mutation RoleEdit($id: ID!, $input: [EditInput]!) {
         roleEdit(id: $id) {
           fieldPatch(input: $input) {
             id

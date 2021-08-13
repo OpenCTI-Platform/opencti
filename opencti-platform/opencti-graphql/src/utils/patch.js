@@ -37,8 +37,8 @@ export const rebuildInstanceWithPatch = (instance, patch) => {
     for (let elemIndex = 0; elemIndex < elementEntries.length; elemIndex += 1) {
       const [key, changes] = elementEntries[elemIndex];
       if (type === UPDATE_OPERATION_REPLACE) {
-        const { current } = changes;
-        rebuild[key] = current;
+        const { value } = changes;
+        rebuild[key] = value;
       }
       if (type === UPDATE_OPERATION_ADD) {
         const ops = rebuild[key] || [];

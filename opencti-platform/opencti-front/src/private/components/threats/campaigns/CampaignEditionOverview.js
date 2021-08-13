@@ -52,7 +52,7 @@ const styles = (theme) => ({
 const campaignMutationFieldPatch = graphql`
   mutation CampaignEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     campaignEdit(id: $id) {
       fieldPatch(input: $input) {

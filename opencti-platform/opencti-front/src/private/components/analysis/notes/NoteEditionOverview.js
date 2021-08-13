@@ -50,7 +50,7 @@ const styles = (theme) => ({
 });
 
 export const noteMutationFieldPatch = graphql`
-  mutation NoteEditionOverviewFieldPatchMutation($id: ID!, $input: EditInput!) {
+  mutation NoteEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     noteEdit(id: $id) {
       fieldPatch(input: $input) {
         ...NoteEditionOverview_note
