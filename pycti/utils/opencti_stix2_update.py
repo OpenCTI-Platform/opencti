@@ -232,266 +232,73 @@ class OpenCTIStix2Update:
                 id=id, identity_id=created_by_ref
             )
 
-    def update_attribute(self, entity_type, id, operation, key, value):
+    def update_attribute(self, entity_type, id, input):
         # Relations
         if entity_type == "relationship":
-            self.opencti.stix_core_relationship.update_field(
-                id=id, key=key, value=value, operation=operation
-            )
+            self.opencti.stix_core_relationship.update_field(id=id, input=input)
         elif entity_type == "sighting":
-            self.opencti.stix_sighting_relationship.update_field(
-                id=id, key=key, value=value, operation=operation
-            )
+            self.opencti.stix_sighting_relationship.update_field(id=id, input=input)
         # Observables
         elif StixCyberObservableTypes.has_value(entity_type):
-            self.opencti.stix_cyber_observable.update_field(
-                id=id, key=key, value=value, operation=operation
-            )
+            self.opencti.stix_cyber_observable.update_field(id=id, input=input)
         # Meta
         elif entity_type == "marking-definition":
-            self.opencti.marking_definition.update_field(
-                id=id, key=key, value=value, operation=operation
-            )
+            self.opencti.marking_definition.update_field(id=id, input=input)
         elif entity_type == "label":
-            self.opencti.label.update_field(
-                id=id, key=key, value=value, operation=operation
-            )
+            self.opencti.label.update_field(id=id, input=input)
         elif entity_type == "kill-chain-phase":
-            self.opencti.kill_chain_phase.update_field(
-                id=id, key=key, value=value, operation=operation
-            )
+            self.opencti.kill_chain_phase.update_field(id=id, input=input)
         elif entity_type == "external-reference":
-            self.opencti.external_reference.update_field(
-                id=id, key=key, value=value, operation=operation
-            )
+            self.opencti.external_reference.update_field(id=id, input=input)
         # Remaining stix domain
         else:
-            self.opencti.stix_domain_object.update_field(
-                id=id, key=key, value=value, operation=operation
-            )
+            self.opencti.stix_domain_object.update_field(id=id, input=input)
 
-    def process_update_v1(self, data):
+    def process_update(self, data):
         try:
-            if "add" in data["x_data_update"]:
-                for key in data["x_data_update"]["add"].keys():
-                    if key == "object_marking_refs":
-                        self.add_object_marking_refs(
-                            data["type"],
-                            data["id"],
-                            data["x_data_update"]["add"]["object_marking_refs"],
-                            1,
-                        )
-                    elif key == "object_refs":
-                        self.add_object_refs(
-                            data["type"],
-                            data["id"],
-                            data["x_data_update"]["add"]["object_refs"],
-                            1,
-                        )
-                    elif key == "labels":
-                        self.add_labels(
-                            data["type"],
-                            data["id"],
-                            data["x_data_update"]["add"]["labels"],
-                            1,
-                        )
-                    elif key == "external_references":
-                        self.add_external_references(
-                            data["type"],
-                            data["id"],
-                            data["x_data_update"]["add"]["external_references"],
-                            1,
-                        )
-                    elif key == "kill_chain_phases":
-                        self.add_kill_chain_phases(
-                            data["type"],
-                            data["id"],
-                            data["x_data_update"]["add"]["kill_chain_phases"],
-                            1,
-                        )
-                    elif key == "created_by_ref":
-                        self.replace_created_by_ref(
-                            data["type"],
-                            data["id"],
-                            data["x_data_update"]["add"]["created_by_ref"],
-                            1,
-                        )
-                    else:
-                        self.update_attribute(
-                            data["type"],
-                            data["id"],
-                            "add",
-                            key,
-                            data["x_data_update"]["add"][key],
-                        )
-            if "remove" in data["x_data_update"]:
-                for key in data["x_data_update"]["remove"].keys():
-                    if key == "object_marking_refs":
-                        self.remove_object_marking_refs(
-                            data["type"],
-                            data["id"],
-                            data["x_data_update"]["remove"]["object_marking_refs"],
-                            1,
-                        )
-                    elif key == "object_refs":
-                        self.remove_object_refs(
-                            data["type"],
-                            data["id"],
-                            data["x_data_update"]["remove"]["object_refs"],
-                            1,
-                        )
-                    elif key == "labels":
-                        self.remove_labels(
-                            data["type"],
-                            data["id"],
-                            data["x_data_update"]["remove"]["labels"],
-                            1,
-                        )
-                    elif key == "external_references":
-                        self.remove_external_references(
-                            data["type"],
-                            data["id"],
-                            data["x_data_update"]["remove"]["external_references"],
-                        )
-                    elif key == "kill_chain_phases":
-                        self.remove_kill_chain_phases(
-                            data["type"],
-                            data["id"],
-                            data["x_data_update"]["remove"]["kill_chain_phases"],
-                        )
-                    elif key == "created_by_ref":
-                        self.replace_created_by_ref(data["type"], data["id"], None, 1)
-                    else:
-                        self.update_attribute(
-                            data["type"],
-                            data["id"],
-                            "remove",
-                            key,
-                            data["x_data_update"]["remove"][key],
-                        )
-            if "replace" in data["x_data_update"]:
-                for key in data["x_data_update"]["replace"].keys():
-                    if key == "created_by_ref":
-                        self.replace_created_by_ref(
-                            data["type"],
-                            data["id"],
-                            data["x_data_update"]["replace"]["created_by_ref"],
-                        )
-                    else:
-                        self.update_attribute(
-                            data["type"],
-                            data["id"],
-                            "replace",
-                            key,
-                            data["x_data_update"]["replace"][key],
-                        )
-        except:
-            self.opencti.log("error", "Cannot process this message")
-            pass
-
-    def process_update_v2(self, data):
-        try:
+            # Build the inputs fo update api
+            inputs = []
             if "add" in data["x_opencti_patch"]:
                 for key in data["x_opencti_patch"]["add"].keys():
-                    if key == "object_marking_refs":
-                        self.add_object_marking_refs(
-                            data["type"],
-                            data["id"],
-                            data["x_opencti_patch"]["add"]["object_marking_refs"],
-                        )
-                    elif key == "object_refs":
-                        self.add_object_refs(
-                            data["type"],
-                            data["id"],
-                            data["x_opencti_patch"]["add"]["object_refs"],
-                        )
-                    elif key == "labels":
-                        self.add_labels(
-                            data["type"],
-                            data["id"],
-                            data["x_opencti_patch"]["add"]["labels"],
-                        )
-                    elif key == "external_references":
-                        self.add_external_references(
-                            data["type"],
-                            data["id"],
-                            data["x_opencti_patch"]["add"]["external_references"],
-                        )
-                    elif key == "kill_chain_phases":
-                        self.add_kill_chain_phases(
-                            data["type"],
-                            data["id"],
-                            data["x_opencti_patch"]["add"]["kill_chain_phases"],
-                        )
-                    elif key == "created_by_ref":
-                        self.replace_created_by_ref(
-                            data["type"],
-                            data["id"],
-                            data["x_opencti_patch"]["add"]["created_by_ref"],
-                        )
-                    else:
-                        self.update_attribute(
-                            data["type"],
-                            data["id"],
-                            "add",
-                            key,
-                            data["x_opencti_patch"]["add"][key],
-                        )
+                    val = data["x_opencti_patch"]["add"][key]
+                    values = list(map(lambda x: x["value"] if "value" in x else x, val))
+                    inputs.append({"key": key, "value": values, "operation": "add"})
             if "remove" in data["x_opencti_patch"]:
                 for key in data["x_opencti_patch"]["remove"].keys():
-                    if key == "object_marking_refs":
-                        self.remove_object_marking_refs(
-                            data["type"],
-                            data["id"],
-                            data["x_opencti_patch"]["remove"]["object_marking_refs"],
-                        )
-                    elif key == "object_refs":
-                        self.remove_object_refs(
-                            data["type"],
-                            data["id"],
-                            data["x_opencti_patch"]["remove"]["object_refs"],
-                        )
-                    elif key == "labels":
-                        self.remove_labels(
-                            data["type"],
-                            data["id"],
-                            data["x_opencti_patch"]["remove"]["labels"],
-                        )
-                    elif key == "external_references":
-                        self.remove_external_references(
-                            data["type"],
-                            data["id"],
-                            data["x_opencti_patch"]["remove"]["external_references"],
-                        )
-                    elif key == "kill_chain_phases":
-                        self.remove_kill_chain_phases(
-                            data["type"],
-                            data["id"],
-                            data["x_opencti_patch"]["remove"]["kill_chain_phases"],
-                        )
-                    elif key == "created_by_ref":
-                        self.replace_created_by_ref(
-                            data["type"],
-                            data["id"],
-                            None,
-                        )
-                    else:
-                        self.update_attribute(
-                            data["type"],
-                            data["id"],
-                            "remove",
-                            key,
-                            data["x_opencti_patch"]["remove"][key],
-                        )
+                    val = data["x_opencti_patch"]["remove"][key]
+                    values = list(map(lambda x: x["value"] if "value" in x else x, val))
+                    inputs.append({"key": key, "value": values, "operation": "remove"})
             if "replace" in data["x_opencti_patch"]:
                 for key in data["x_opencti_patch"]["replace"].keys():
-                    self.update_attribute(
-                        data["type"],
-                        data["id"],
-                        "replace",
-                        key,
-                        data["x_opencti_patch"]["replace"][key]["current"],
-                    )
+                    if (
+                        key != "id"
+                    ):  # ID replace is a side effect handled by the platform
+                        val = data["x_opencti_patch"]["replace"][key]
+                        current_val = val["current"]
+                        if type(current_val) is list:
+                            values = list(
+                                map(
+                                    lambda x: x["value"]
+                                    if (type(current_val) is dict and "value" in x)
+                                    else x,
+                                    str(current_val),
+                                )
+                            )
+                            inputs.append(
+                                {"key": key, "value": values, "operation": "remove"}
+                            )
+                        else:
+                            values = (
+                                current_val["value"]
+                                if (
+                                    type(current_val) is dict and "value" in current_val
+                                )
+                                else str(current_val)
+                            )
+                            inputs.append(
+                                {"key": key, "value": values, "operation": "remove"}
+                            )
+            self.update_attribute(data["type"], data["id"], inputs)
         except Exception as e:
             print(e)
             print(data)

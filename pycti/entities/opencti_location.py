@@ -234,6 +234,7 @@ class Location:
         longitude = kwargs.get("longitude", None)
         precision = kwargs.get("precision", None)
         x_opencti_aliases = kwargs.get("x_opencti_aliases", None)
+        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
 
         if name is not None:
@@ -269,6 +270,7 @@ class Location:
                         "longitude": longitude,
                         "precision": precision,
                         "x_opencti_aliases": x_opencti_aliases,
+                        "x_opencti_stix_ids": x_opencti_stix_ids,
                         "update": update,
                     }
                 },
@@ -345,6 +347,9 @@ class Location:
                 else None,
                 precision=stix_object["precision"]
                 if "precision" in stix_object
+                else None,
+                x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
+                if "x_opencti_stix_ids" in stix_object
                 else None,
                 x_opencti_aliases=self.opencti.stix2.pick_aliases(stix_object),
                 update=update,

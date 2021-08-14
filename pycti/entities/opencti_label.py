@@ -121,6 +121,7 @@ class Label:
         stix_id = kwargs.get("stix_id", None)
         value = kwargs.get("value", None)
         color = kwargs.get("color", None)
+        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
 
         if value is not None:
             query = (
@@ -141,6 +142,7 @@ class Label:
                         "stix_id": stix_id,
                         "value": value,
                         "color": color,
+                        "x_opencti_stix_ids": x_opencti_stix_ids,
                     }
                 },
             )
@@ -155,26 +157,19 @@ class Label:
         Update a Label object field
 
         :param id: the Label id
-        :param key: the key of the field
-        :param value: the value of the field
+        :param input: the input of the field
         :return The updated Label object
     """
 
     def update_field(self, **kwargs):
         id = kwargs.get("id", None)
-        key = kwargs.get("key", None)
-        value = kwargs.get("value", None)
-        operation = kwargs.get("operation", "replace")
-        if isinstance(value, list):
-            value = [str(v) for v in value]
-        else:
-            value = str(value)
-        if id is not None and key is not None and value is not None:
-            self.opencti.log("info", "Updating Label {" + id + "} field {" + key + "}.")
+        input = kwargs.get("input", None)
+        if id is not None and input is not None:
+            self.opencti.log("info", "Updating Label {" + id + "}.")
             query = """
-                    mutation LabelEdit($id: ID!, $input: EditInput!, $operation: EditOperation) {
+                    mutation LabelEdit($id: ID!, $input: [EditInput]!) {
                         labelEdit(id: $id) {
-                            fieldPatch(input: $input, operation: $operation) {
+                            fieldPatch(input: $input) {
                                 id
                                 standard_id
                                 entity_type
@@ -186,8 +181,7 @@ class Label:
                 query,
                 {
                     "id": id,
-                    "input": {"key": key, "value": value},
-                    "operation": operation,
+                    "input": input,
                 },
             )
             return self.opencti.process_multiple_fields(

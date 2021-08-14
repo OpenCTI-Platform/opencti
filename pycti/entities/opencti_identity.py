@@ -246,6 +246,7 @@ class Identity:
         x_opencti_reliability = kwargs.get("x_opencti_reliability", None)
         x_opencti_firstname = kwargs.get("x_opencti_firstname", None)
         x_opencti_lastname = kwargs.get("x_opencti_lastname", None)
+        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
 
         if type is not None and name is not None and description is not None:
@@ -266,6 +267,7 @@ class Identity:
                 "contact_information": contact_information,
                 "roles": roles,
                 "x_opencti_aliases": x_opencti_aliases,
+                "x_opencti_stix_ids": x_opencti_stix_ids,
                 "update": update,
             }
             if type == IdentityTypes.ORGANIZATION.value:
@@ -387,6 +389,9 @@ class Identity:
                 else None,
                 x_opencti_lastname=stix_object["x_opencti_lastname"]
                 if "x_opencti_lastname" in stix_object
+                else None,
+                x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
+                if "x_opencti_stix_ids" in stix_object
                 else None,
                 update=update,
             )

@@ -341,6 +341,7 @@ class ObservedData:
         last_observed = kwargs.get("last_observed", None)
         number_observed = kwargs.get("number_observed", None)
         objects = kwargs.get("objects", None)
+        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
 
         if (
@@ -377,6 +378,7 @@ class ObservedData:
                         "last_observed": last_observed,
                         "number_observed": number_observed,
                         "objects": objects,
+                        "x_opencti_stix_ids": x_opencti_stix_ids,
                         "update": update,
                     }
                 },
@@ -534,6 +536,9 @@ class ObservedData:
                 else None,
                 objects=stix_object["object_refs"]
                 if "object_refs" in stix_object
+                else None,
+                x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
+                if "x_opencti_stix_ids" in stix_object
                 else None,
                 update=update,
             )

@@ -401,6 +401,7 @@ class Report:
         published = kwargs.get("published", None)
         x_opencti_graph_data = kwargs.get("x_opencti_graph_data", None)
         x_opencti_report_status = kwargs.get("x_opencti_report_status", None)
+        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
 
         if name is not None and description is not None and published is not None:
@@ -435,6 +436,7 @@ class Report:
                         "published": published,
                         "x_opencti_graph_data": x_opencti_graph_data,
                         "x_opencti_report_status": x_opencti_report_status,
+                        "x_opencti_stix_ids": x_opencti_stix_ids,
                         "update": update,
                     }
                 },
@@ -613,6 +615,9 @@ class Report:
                 else None,
                 x_opencti_report_status=stix_object["x_opencti_report_status"]
                 if "x_opencti_report_status" in stix_object
+                else None,
+                x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
+                if "x_opencti_stix_ids" in stix_object
                 else None,
                 update=update,
             )

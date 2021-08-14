@@ -1531,16 +1531,9 @@ class OpenCTIStix2:
         for bundle in bundles:
             for item in bundle["objects"]:
                 if "x_opencti_event_version" in bundle:
-                    if bundle["x_opencti_event_version"] == "1":
-                        if "x_data_update" in item:
-                            self.stix2_update.process_update_v1(item)
-                            continue
-                    elif (
-                        bundle["x_opencti_event_version"] == "2"
-                        or bundle["x_opencti_event_version"] == "3"
-                    ):
+                    if bundle["x_opencti_event_version"] == "3":
                         if "x_opencti_patch" in item:
-                            self.stix2_update.process_update_v2(item)
+                            self.stix2_update.process_update(item)
                             continue
                 if item["type"] == "relationship":
                     self.import_relationship(item, update, types)

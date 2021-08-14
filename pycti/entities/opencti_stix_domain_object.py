@@ -568,28 +568,18 @@ class StixDomainObject:
         Update a Stix-Domain-Object object field
 
         :param id: the Stix-Domain-Object id
-        :param key: the key of the field
-        :param value: the value of the field
-        :return The updated Stix-Domain-Object object
+        :param input: the input of the field
     """
 
     def update_field(self, **kwargs):
         id = kwargs.get("id", None)
-        key = kwargs.get("key", None)
-        value = kwargs.get("value", None)
-        operation = kwargs.get("operation", "replace")
-        if isinstance(value, list):
-            value = [str(v) for v in value]
-        else:
-            value = str(value)
-        if id is not None and key is not None and value is not None:
-            self.opencti.log(
-                "info", "Updating Stix-Domain-Object {" + id + "} field {" + key + "}."
-            )
+        input = kwargs.get("input", None)
+        if id is not None and input is not None:
+            self.opencti.log("info", "Updating Stix-Domain-Object {" + id + "}")
             query = """
-                    mutation StixDomainObjectEdit($id: ID!, $input: EditInput!, $operation: EditOperation) {
+                    mutation StixDomainObjectEdit($id: ID!, $input: [EditInput]!) {
                         stixDomainObjectEdit(id: $id) {
-                            fieldPatch(input: $input, operation: $operation) {
+                            fieldPatch(input: $input) {
                                 id
                                 standard_id
                                 entity_type
@@ -601,8 +591,7 @@ class StixDomainObject:
                 query,
                 {
                     "id": id,
-                    "input": {"key": key, "value": value},
-                    "operation": operation,
+                    "input": input,
                 },
             )
             return self.opencti.process_multiple_fields(
