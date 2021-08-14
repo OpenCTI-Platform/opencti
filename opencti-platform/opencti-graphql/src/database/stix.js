@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { version as uuidVersion } from 'uuid';
 import uuidTime from 'uuid-time';
-import {FunctionalError, UnsupportedError} from '../config/errors';
+import { FunctionalError, UnsupportedError } from '../config/errors';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -75,7 +75,7 @@ import {
   INTERNAL_PREFIX,
   REL_INDEX_PREFIX,
 } from '../schema/general';
-import {isEmptyField, isNotEmptyField, UPDATE_OPERATION_REPLACE} from './utils';
+import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_REPLACE } from './utils';
 import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isMultipleAttribute } from '../schema/fieldDataAdapter';
@@ -209,7 +209,7 @@ export const stixDataConverter = (data, args = {}) => {
   if (isDefinedValue(finalData.createdBy)) {
     const creator = Array.isArray(finalData.createdBy) ? R.head(finalData.createdBy) : finalData.createdBy;
     const created = patchGeneration
-      ? { value: creator.standard_id, x_opencti_internal_id: creator.internal_id }
+      ? [{ value: creator.standard_id, x_opencti_internal_id: creator.internal_id }]
       : creator.standard_id;
     finalData = R.pipe(R.dissoc(INPUT_CREATED_BY), R.assoc('created_by_ref', created))(finalData);
   } else {
@@ -255,9 +255,7 @@ export const stixDataConverter = (data, args = {}) => {
   // endregion
   // region StixID V1 are transient and so not in data output
   if (isDefinedValue(finalData.x_opencti_stix_ids)) {
-    const ids = finalData.x_opencti_stix_ids;
-    const stixIds = Array.isArray(ids) ? ids : [ids];
-    finalData.x_opencti_stix_ids = stixIds.filter((stixId) => {
+    finalData.x_opencti_stix_ids = finalData.x_opencti_stix_ids.filter((stixId) => {
       const segments = stixId.split('--');
       const [, uuid] = segments;
       return uuidVersion(uuid) !== 1;
@@ -283,21 +281,6 @@ export const stixDataConverter = (data, args = {}) => {
       filteredData[key] = val;
     }
   }
-  // endregion
-  // region Add x_ in extension
-  // https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_ct36xlv6obo7
-  // const dataEntries = Object.entries(filteredData);
-  // const openctiExtension = {};
-  // for (let attr = 0; attr < dataEntries.length; attr += 1) {
-  //   const [key, val] = dataEntries[attr];
-  //   if (key.startsWith('x_opencti_')) {
-  //     openctiExtension[key.substring('x_opencti_'.length)] = val;
-  //   }
-  // }
-  // if (R.isEmpty(openctiExtension)) {
-  //   return filteredData;
-  // }
-  // return { ...filteredData, extensions: { x_opencti: openctiExtension } };
   // endregion
   // region specific format for marking definition
   if (filteredData.type === convertTypeToStixType(ENTITY_TYPE_MARKING_DEFINITION) && filteredData.definition) {
@@ -349,10 +332,13 @@ export const updateInputsToPatch = (inputs) => {
     }
     const opts = { patchGeneration: true };
     const keyConvert = R.head(Object.keys(stixDataConverter({ [key]: value || previous }, opts)));
-    const converter = (val) => val.map((v) => stixDataConverter({ [key]: v }, opts)).map((d) => d[keyConvert]);
+    const converter = (val) => {
+      const converted = stixDataConverter({ [key]: val }, opts);
+      return converted[keyConvert];
+    };
     const convertedVal = value ? converter(value) : value;
     const convertedPrevious = previous ? converter(previous) : previous;
-    if (isMultipleAttribute(keyConvert)) {
+    if (isMultipleAttribute(key)) {
       if (operation === UPDATE_OPERATION_REPLACE) {
         return { [operation]: { [keyConvert]: { current: convertedVal, previous: convertedPrevious } } };
       }

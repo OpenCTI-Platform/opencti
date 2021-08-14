@@ -47,8 +47,14 @@ export const checkInstanceDiff = async (loaded, rebuilt) => {
   const diffElements = [];
   for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
     const attributeKey = attributes[attrIndex];
-    if (attributeKey === 'revoked' || attributeKey === 'lang') {
-      // Currently some attributes are valuated by default
+    if (
+      attributeKey === 'x_opencti_id' ||
+      attributeKey === 'created_at' ||
+      attributeKey === 'updated_at' ||
+      attributeKey === 'revoked' ||
+      attributeKey === 'lang'
+    ) {
+      // Currently some attributes are valuated by default or different by design
     } else {
       const fetchAttr = loaded[attributeKey];
       let rebuildAttr = rebuilt[attributeKey];
@@ -61,7 +67,15 @@ export const checkInstanceDiff = async (loaded, rebuilt) => {
         rebuildAttr = data.map((r) => r.standard_id);
       }
       if (Array.isArray(fetchAttr)) {
-        if (!R.equals(fetchAttr.sort(), rebuildAttr.sort())) {
+        if (fetchAttr.length !== rebuildAttr.length) {
+          diffElements.push({ attributeKey, fetchAttr: fetchAttr.length, rebuildAttr: rebuildAttr.length });
+        } else if (attributeKey.endsWith('_refs')) {
+          const fetch = fetchAttr.sort().filter((f) => !f.startsWith('relationship--'));
+          const rebuild = rebuildAttr.sort().filter((f) => !f.startsWith('relationship--'));
+          if (!R.equals(fetch.sort(), rebuild.sort())) {
+            diffElements.push({ attributeKey, fetchAttr, rebuildAttr });
+          }
+        } else if (!R.equals(fetchAttr.sort(), rebuildAttr.sort())) {
           diffElements.push({ attributeKey, fetchAttr, rebuildAttr });
         }
       } else if (!R.equals(fetchAttr, rebuildAttr)) {
