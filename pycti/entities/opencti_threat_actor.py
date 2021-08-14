@@ -289,6 +289,7 @@ class ThreatActor:
         primary_motivation = kwargs.get("primary_motivation", None)
         secondary_motivations = kwargs.get("secondary_motivations", None)
         personal_motivations = kwargs.get("personal_motivations", None)
+        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
 
         if name is not None and description is not None:
@@ -329,6 +330,7 @@ class ThreatActor:
                         "primary_motivation": primary_motivation,
                         "secondary_motivations": secondary_motivations,
                         "personal_motivations": personal_motivations,
+                        "x_opencti_stix_ids": x_opencti_stix_ids,
                         "update": update,
                     }
                 },
@@ -406,6 +408,9 @@ class ThreatActor:
                 else None,
                 personal_motivations=stix_object["personal_motivations"]
                 if "personal_motivations" in stix_object
+                else None,
+                x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
+                if "x_opencti_stix_ids" in stix_object
                 else None,
                 update=update,
             )

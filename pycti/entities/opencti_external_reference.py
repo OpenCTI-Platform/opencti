@@ -138,6 +138,7 @@ class ExternalReference:
         url = kwargs.get("url", None)
         external_id = kwargs.get("external_id", None)
         description = kwargs.get("description", None)
+        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
 
         if source_name is not None and url is not None:
@@ -166,6 +167,7 @@ class ExternalReference:
                         "external_id": external_id,
                         "description": description,
                         "url": url,
+                        "x_opencti_stix_ids": x_opencti_stix_ids,
                         "update": update,
                     }
                 },
@@ -183,21 +185,17 @@ class ExternalReference:
         Update a External Reference object field
 
         :param id: the External Reference id
-        :param key: the key of the field
-        :param value: the value of the field
+        :param input: the input of the field
         :return The updated External Reference object
     """
 
     def update_field(self, **kwargs):
         id = kwargs.get("id", None)
-        key = kwargs.get("key", None)
-        value = kwargs.get("value", None)
-        if id is not None and key is not None and value is not None:
-            self.opencti.log(
-                "info", "Updating External-Reference {" + id + "} field {" + key + "}."
-            )
+        input = kwargs.get("input", None)
+        if id is not None and input is not None:
+            self.opencti.log("info", "Updating External-Reference {" + id + "}.")
             query = """
-                    mutation ExternalReferenceEdit($id: ID!, $input: EditInput!) {
+                    mutation ExternalReferenceEdit($id: ID!, $input: [EditInput]!) {
                         externalReferenceEdit(id: $id) {
                             fieldPatch(input: $input) {
                                 id
@@ -205,9 +203,7 @@ class ExternalReference:
                         }
                     }
                 """
-            result = self.opencti.query(
-                query, {"id": id, "input": {"key": key, "value": value}}
-            )
+            result = self.opencti.query(query, {"id": id, "input": input})
             return self.opencti.process_multiple_fields(
                 result["data"]["externalReferenceEdit"]["fieldPatch"]
             )

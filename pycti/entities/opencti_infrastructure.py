@@ -285,6 +285,7 @@ class Infrastructure:
         first_seen = kwargs.get("first_seen", None)
         last_seen = kwargs.get("last_seen", None)
         kill_chain_phases = kwargs.get("killChainPhases", None)
+        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
 
         if name is not None:
@@ -320,6 +321,7 @@ class Infrastructure:
                         "first_seen": first_seen,
                         "last_seen": last_seen,
                         "killChainPhases": kill_chain_phases,
+                        "x_opencti_stix_ids": x_opencti_stix_ids,
                         "update": update,
                     }
                 },
@@ -384,6 +386,9 @@ class Infrastructure:
                 else None,
                 killChainPhases=extras["kill_chain_phases_ids"]
                 if "kill_chain_phases_ids" in extras
+                else None,
+                x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
+                if "x_opencti_stix_ids" in stix_object
                 else None,
                 update=update,
             )

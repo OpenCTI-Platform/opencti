@@ -228,6 +228,7 @@ class CourseOfAction:
         name = kwargs.get("name", None)
         description = kwargs.get("description", "")
         x_opencti_aliases = kwargs.get("x_opencti_aliases", None)
+        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         x_mitre_id = kwargs.get("x_mitre_id", None)
         update = kwargs.get("update", False)
 
@@ -260,6 +261,7 @@ class CourseOfAction:
                         "name": name,
                         "description": description,
                         "x_opencti_aliases": x_opencti_aliases,
+                        "x_opencti_stix_ids": x_opencti_stix_ids,
                         "x_mitre_id": x_mitre_id,
                         "update": update,
                     }
@@ -327,6 +329,9 @@ class CourseOfAction:
                 )
                 if "description" in stix_object
                 else "",
+                x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
+                if "x_opencti_stix_ids" in stix_object
+                else None,
                 x_opencti_aliases=self.opencti.stix2.pick_aliases(stix_object),
                 x_mitre_id=x_mitre_id,
                 update=update,

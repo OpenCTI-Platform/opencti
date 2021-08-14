@@ -527,29 +527,22 @@ class StixCoreRelationship:
         Update a stix_core_relationship object field
 
         :param id: the stix_core_relationship id
-        :param key: the key of the field
-        :param value: the value of the field
+        :param input: the input of the field
         :return The updated stix_core_relationship object
     """
 
     def update_field(self, **kwargs):
         id = kwargs.get("id", None)
-        key = kwargs.get("key", None)
-        value = kwargs.get("value", None)
-        operation = kwargs.get("operation", "replace")
-        if isinstance(value, list):
-            value = [str(v) for v in value]
-        else:
-            value = str(value)
-        if id is not None and key is not None and value is not None:
+        input = kwargs.get("input", None)
+        if id is not None and input is not None:
             self.opencti.log(
                 "info",
-                "Updating stix_core_relationship {" + id + "} field {" + key + "}.",
+                "Updating stix_core_relationship {" + id + "}",
             )
             query = """
-                    mutation StixCoreRelationshipEdit($id: ID!, $input: EditInput!, $operation: EditOperation) {
+                    mutation StixCoreRelationshipEdit($id: ID!, $input: [EditInput]!) {
                         stixCoreRelationshipEdit(id: $id) {
-                            fieldPatch(input: $input, operation: $operation) {
+                            fieldPatch(input: $input) {
                                 id
                                 standard_id
                                 entity_type
@@ -561,8 +554,7 @@ class StixCoreRelationship:
                 query,
                 {
                     "id": id,
-                    "input": {"key": key, "value": value},
-                    "operation": operation,
+                    "input": input,
                 },
             )
             return self.opencti.process_multiple_fields(

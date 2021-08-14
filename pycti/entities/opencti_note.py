@@ -364,6 +364,7 @@ class Note:
         content = kwargs.get("content", None)
         authors = kwargs.get("authors", None)
         update = kwargs.get("update", False)
+        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
 
         if content is not None:
             self.opencti.log("info", "Creating Note {" + content + "}.")
@@ -394,6 +395,7 @@ class Note:
                         "attribute_abstract": abstract,
                         "content": content,
                         "authors": authors,
+                        "x_opencti_stix_ids": x_opencti_stix_ids,
                         "update": update,
                     }
                 },
@@ -544,6 +546,9 @@ class Note:
                 content=self.opencti.stix2.convert_markdown(stix_object["content"])
                 if "content" in stix_object
                 else "",
+                x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
+                if "x_opencti_stix_ids" in stix_object
+                else None,
                 authors=stix_object["authors"] if "authors" in stix_object else None,
                 update=update,
             )

@@ -211,6 +211,7 @@ class StixCyberObservableRelationship:
         modified = kwargs.get("modified", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
+        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
         self.opencti.log(
             "info",
@@ -240,6 +241,7 @@ class StixCyberObservableRelationship:
                     "modified": modified,
                     "createdBy": created_by,
                     "objectMarking": object_marking,
+                    "x_opencti_stix_ids": x_opencti_stix_ids,
                     "update": update,
                 }
             },
@@ -252,27 +254,21 @@ class StixCyberObservableRelationship:
         Update a stix_observable_relationship object field
 
         :param id: the stix_observable_relationship id
-        :param key: the key of the field
-        :param value: the value of the field
+        :param input: the input of the field
         :return The updated stix_observable_relationship object
     """
 
     def update_field(self, **kwargs):
         id = kwargs.get("id", None)
-        key = kwargs.get("key", None)
-        value = kwargs.get("value", None)
-        if id is not None and key is not None and value is not None:
+        input = kwargs.get("input", None)
+        if id is not None and input is not None:
             self.opencti.log(
                 "info",
-                "Updating stix_observable_relationship {"
-                + id
-                + "} field {"
-                + key
-                + "}.",
+                "Updating stix_observable_relationship {" + id + "}.",
             )
             query = (
                 """
-                mutation StixCyberObservableRelationshipEdit($id: ID!, $input: EditInput!) {
+                mutation StixCyberObservableRelationshipEdit($id: ID!, $input: [EditInput]!) {
                     stixCyberObservableRelationshipEdit(id: $id) {
                         fieldPatch(input: $input) {
                             """
@@ -283,9 +279,7 @@ class StixCyberObservableRelationship:
                 }
             """
             )
-            result = self.opencti.query(
-                query, {"id": id, "input": {"key": key, "value": value}}
-            )
+            result = self.opencti.query(query, {"id": id, "input": input})
             return self.opencti.process_multiple_fields(
                 result["data"]["stixCyberObservableRelationshipEdit"]["fieldPatch"]
             )

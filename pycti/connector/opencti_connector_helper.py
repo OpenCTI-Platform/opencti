@@ -251,7 +251,7 @@ class ListenStream(threading.Thread):
         self.token = token
         self.verify_ssl = verify_ssl
         self.start_timestamp = start_timestamp
-        self.exit_event = threading.Event()
+        self.exit = False
 
     def run(self) -> None:  # pylint: disable=too-many-branches
         current_state = self.helper.get_state()
@@ -335,8 +335,10 @@ class ListenStream(threading.Thread):
                 headers={"authorization": "Bearer " + self.helper.opencti_token},
                 verify=self.helper.opencti_ssl_verify,
             )
-
+        # Iter on stream messages
         for msg in messages:
+            if self.exit:
+                break
             if msg.event == "heartbeat" or msg.event == "connected":
                 continue
             if msg.event == "sync":
@@ -350,6 +352,9 @@ class ListenStream(threading.Thread):
                     state = self.helper.get_state()
                     state["connectorLastEventId"] = str(msg.id)
                     self.helper.set_state(state)
+
+    def stop(self):
+        self.exit = True
 
 
 class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
@@ -504,7 +509,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         token=None,
         verify_ssl=None,
         start_timestamp=None,
-    ) -> None:
+    ) -> ListenStream:
         """listen for messages and register callback function
 
         :param message_callback: callback function to process messages
@@ -514,6 +519,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self, message_callback, url, token, verify_ssl, start_timestamp
         )
         self.listen_stream.start()
+        return self.listen_stream
 
     def get_opencti_url(self) -> Optional[Union[bool, int, str]]:
         return self.opencti_url

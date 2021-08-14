@@ -231,6 +231,7 @@ class Campaign:
         last_seen = kwargs.get("last_seen", None)
         objective = kwargs.get("objective", None)
         update = kwargs.get("update", False)
+        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Campaign {" + name + "}.")
@@ -265,6 +266,7 @@ class Campaign:
                         "last_seen": last_seen,
                         "objective": objective,
                         "update": update,
+                        "x_opencti_stix_ids": x_opencti_stix_ids,
                     }
                 },
             )
@@ -322,6 +324,9 @@ class Campaign:
                 else None,
                 last_seen=stix_object["last_seen"]
                 if "last_seen" in stix_object
+                else None,
+                x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
+                if "x_opencti_stix_ids" in stix_object
                 else None,
                 update=update,
             )

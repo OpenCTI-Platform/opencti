@@ -469,6 +469,7 @@ class StixSightingRelationship:
         object_marking = kwargs.get("objectMarking", None)
         object_label = kwargs.get("objectLabel", None)
         external_references = kwargs.get("externalReferences", None)
+        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
 
         self.opencti.log(
@@ -504,6 +505,7 @@ class StixSightingRelationship:
                     "objectMarking": object_marking,
                     "objectLabel": object_label,
                     "externalReferences": external_references,
+                    "x_opencti_stix_ids": x_opencti_stix_ids,
                     "update": update,
                 }
             },
@@ -516,24 +518,19 @@ class StixSightingRelationship:
         Update a stix_sighting object field
 
         :param id: the stix_sighting id
-        :param key: the key of the field
-        :param value: the value of the field
+        :param input: the input of the field
         :return The updated stix_sighting object
     """
 
     def update_field(self, **kwargs):
         id = kwargs.get("id", None)
-        key = kwargs.get("key", None)
-        value = kwargs.get("value", None)
-        operation = kwargs.get("operation", "replace")
-        if id is not None and key is not None and value is not None:
-            self.opencti.log(
-                "info", "Updating stix_sighting {" + id + "} field {" + key + "}."
-            )
+        input = kwargs.get("input", None)
+        if id is not None and input is not None:
+            self.opencti.log("info", "Updating stix_sighting {" + id + "}")
             query = """
-                    mutation StixSightingRelationshipEdit($id: ID!, $input: EditInput!, $operation: EditOperation) {
+                    mutation StixSightingRelationshipEdit($id: ID!, $input: [EditInput]!) {
                         stixSightingRelationshipEdit(id: $id) {
-                            fieldPatch(input: $input, operation: $operation) {
+                            fieldPatch(input: $input) {
                                 id
                             }
                         }
@@ -543,8 +540,7 @@ class StixSightingRelationship:
                 query,
                 {
                     "id": id,
-                    "input": {"key": key, "value": value},
-                    "operation": operation,
+                    "input": input,
                 },
             )
             return self.opencti.process_multiple_fields(
