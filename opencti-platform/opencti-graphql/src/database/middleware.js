@@ -47,7 +47,6 @@ import {
   ROLE_TO,
 } from './elasticSearch';
 import {
-  fieldsContributingToStandardId,
   generateAliasesId,
   generateAliasesIdsForInstance,
   generateInternalId,
@@ -865,7 +864,9 @@ const updatedInputsToData = (inputs) => {
   return mergeDeepRightAll(...inputPairs);
 };
 const mergeInstanceWithInputs = (instance, inputs) => {
-  const data = updatedInputsToData(inputs);
+  // standard_id must be maintained
+  const inputsWithoutId = inputs.filter((i) => i.key !== ID_STANDARD);
+  const data = updatedInputsToData(inputsWithoutId);
   const updatedInstance = R.mergeRight(instance, data);
   return R.reject(R.equals(null))(updatedInstance);
 };
@@ -1720,7 +1721,12 @@ const buildRelationInput = (input) => {
   relationAttributes.updated_at = today;
   // stix-relationship
   if (isStixRelationShipExceptMeta(relationshipType)) {
-    relationAttributes.x_opencti_stix_ids = isNotEmptyField(input.stix_id) ? [input.stix_id] : [];
+    const stixIds = input.x_opencti_stix_ids || [];
+    const haveStixId = isNotEmptyField(input.stix_id);
+    if (haveStixId && input.stix_id !== standardId) {
+      stixIds.push(input.stix_id.toLowerCase());
+    }
+    relationAttributes.x_opencti_stix_ids = stixIds;
     relationAttributes.spec_version = STIX_SPEC_VERSION;
     relationAttributes.revoked = R.isNil(input.revoked) ? false : input.revoked;
     relationAttributes.confidence = R.isNil(input.confidence) ? 0 : input.confidence;
@@ -2010,8 +2016,7 @@ const upsertRuleRaw = async (instance, input, opts = {}) => {
   }
   if (impactedInputs.length > 0) {
     const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
-    // Build the input to reindex in elastic
-    const indexInput = partialInstanceWithInputs(updatedInstance, impactedInputs);
+    const indexInput = partialInstanceWithInputs(instance, impactedInputs);
     return { type: TRX_UPDATE, element: updatedInstance, relations: rawRelations, patchInputs, indexInput };
   }
   // Return all elements requirement for stream and indexation
@@ -2107,7 +2112,7 @@ const upsertElementRaw = async (user, instance, type, input) => {
   }
   if (impactedInputs.length > 0) {
     const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
-    const indexInput = partialInstanceWithInputs(updatedInstance, impactedInputs);
+    const indexInput = partialInstanceWithInputs(instance, impactedInputs);
     return { type: TRX_UPDATE, element: updatedInstance, relations: rawRelations, patchInputs, indexInput };
   }
   // Return all elements requirement for stream and indexation
@@ -2203,7 +2208,12 @@ const buildRelationData = async (user, input, opts = {}) => {
   data.updated_at = today;
   // stix-relationship
   if (isStixRelationShipExceptMeta(relationshipType)) {
-    data.x_opencti_stix_ids = isNotEmptyField(input.stix_id) ? [input.stix_id] : [];
+    const stixIds = input.x_opencti_stix_ids || [];
+    const haveStixId = isNotEmptyField(input.stix_id);
+    if (haveStixId && input.stix_id !== standardId) {
+      stixIds.push(input.stix_id.toLowerCase());
+    }
+    data.x_opencti_stix_ids = stixIds;
     data.spec_version = STIX_SPEC_VERSION;
     data.revoked = R.isNil(input.revoked) ? false : input.revoked;
     data.confidence = R.isNil(input.confidence) ? computeConfidenceLevel(input) : input.confidence;
@@ -2478,10 +2488,13 @@ const createEntityRaw = async (user, participantIds, input, type) => {
   }
   // Stix-Object
   if (isStixObject(type)) {
+    const stixIds = input.x_opencti_stix_ids || [];
     const haveStixId = isNotEmptyField(input.stix_id);
-    const otherStixIds = haveStixId && input.stix_id !== standardId ? [input.stix_id.toLowerCase()] : [];
+    if (haveStixId && input.stix_id !== standardId) {
+      stixIds.push(input.stix_id.toLowerCase());
+    }
     data = R.pipe(
-      R.assoc(IDS_STIX, otherStixIds),
+      R.assoc(IDS_STIX, stixIds),
       R.dissoc('stix_id'),
       R.assoc('spec_version', STIX_SPEC_VERSION),
       R.assoc('created_at', today),

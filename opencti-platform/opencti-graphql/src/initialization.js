@@ -231,7 +231,7 @@ export const createBasicRolesAndCapabilities = async () => {
   });
 };
 
-const initializeDefaultValues = async () => {
+const initializeDefaultValues = async (withMarkings = true) => {
   logApp.info(`[INIT] Initialization of settings and basic elements`);
   // Create default elements
   await addSettings(SYSTEM_USER, {
@@ -242,12 +242,14 @@ const initializeDefaultValues = async () => {
     platform_language: 'auto',
   });
   await createAttributesTypes();
-  await createMarkingDefinitions();
   await createBasicRolesAndCapabilities();
+  if (withMarkings) {
+    await createMarkingDefinitions();
+  }
 };
 
-const initializeData = async () => {
-  await initializeDefaultValues();
+const initializeData = async (withMarkings = true) => {
+  await initializeDefaultValues(withMarkings);
   logApp.info(`[INIT] Platform default initialized`);
   return true;
 };
@@ -275,7 +277,7 @@ const isCompatiblePlatform = async () => {
 };
 
 // eslint-disable-next-line
-const platformInit = async () => {
+const platformInit = async (withMarkings = true) => {
   let lock;
   try {
     await checkSystemDependencies();
@@ -287,7 +289,7 @@ const platformInit = async () => {
       logApp.info(`[INIT] New platform detected, initialization...`);
       await initializeSchema();
       await initializeMigration();
-      await initializeData();
+      await initializeData(withMarkings);
       await initializeAdminUser();
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');

@@ -80,7 +80,7 @@ enum EditOperation {
 input EditInput {
   key: String! # Field name to change
   value: [String]! # Values to apply
-  operation: EditOperation
+  operation: EditOperation # Undefined = REPLACE
 }
 input EditContext {
   focusOn: String # Field name
@@ -1048,6 +1048,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
 }
 input MarkingDefinitionAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   definition_type: String!
   definition: String!
   x_opencti_order: Int!
@@ -1110,6 +1111,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
 }
 input LabelAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   value: String!
   color: String
   created: DateTime
@@ -1175,6 +1177,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
 }
 input ExternalReferenceAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   source_name: String!
   description: String
   url: String
@@ -1239,6 +1242,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
 }
 input KillChainPhaseAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   kill_chain_name: String!
   phase_name: String!
   x_opencti_order: Int!
@@ -1456,6 +1460,7 @@ interface StixDomainObject {
 }
 input StixDomainObjectAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String
   confidence: Int
@@ -1588,6 +1593,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
 }
 input AttackPatternAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String!
   aliases: [String]
@@ -1714,6 +1720,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
 }
 input CampaignAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String!
   aliases: [String]
@@ -1948,6 +1955,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
 }
 input NoteAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   attribute_abstract: String
   content: String! @constraint(minLength: 2)
   authors: [String]
@@ -2081,6 +2089,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
 }
 input ObservedDataAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   first_observed: DateTime
   last_observed: DateTime
   number_observed: Int
@@ -2212,6 +2221,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 }
 input OpinionAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   opinion: String!
   explanation: String
   authors: [String]
@@ -2349,6 +2359,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 }
 input ReportAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String
   published: DateTime!
@@ -2472,6 +2483,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
 }
 input CourseOfActionAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String!
   x_opencti_aliases: [String]
@@ -2596,8 +2608,9 @@ interface Identity {
   jobs(first: Int): [Work]
 }
 input IdentityAddInput {
-  type: IdentityType!
   stix_id: String
+  x_opencti_stix_ids: [String]
+  type: IdentityType!
   name: String!
   description: String
   contact_information: String
@@ -2723,6 +2736,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
 }
 input IndividualAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String!
   contact_information: String
@@ -2859,6 +2873,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
 }
 input OrganizationAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String!
   contact_information: String
@@ -2989,6 +3004,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 }
 input SectorAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String!
   contact_information: String
@@ -3135,6 +3151,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
 }
 input IndicatorAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   pattern_type: String!
   pattern_version: String
   pattern: String!
@@ -3270,6 +3287,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
 }
 input InfrastructureAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String
   aliases: [String]
@@ -3396,6 +3414,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
 }
 input IntrusionSetAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String!
   aliases: [String]
@@ -3521,8 +3540,9 @@ interface Location {
   jobs(first: Int): [Work]
 }
 input LocationAddInput {
-  type: LocationType!
   stix_id: String
+  x_opencti_stix_ids: [String]
+  type: LocationType!
   name: String!
   description: String
   latitude: Float
@@ -3648,6 +3668,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
 }
 input PositionAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String
   latitude: Float
@@ -3776,6 +3797,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
 }
 input CityAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String
   latitude: Float
@@ -3897,6 +3919,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 }
 input CountryAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String
   latitude: Float
@@ -4021,6 +4044,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 }
 input RegionAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String
   latitude: Float
@@ -4156,6 +4180,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 }
 input MalwareAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String!
   malware_types: [String]
@@ -4290,6 +4315,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
 }
 input ThreatActorAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String!
   aliases: [String]
@@ -4416,6 +4442,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
 }
 input ToolAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String!
   aliases: [String]
@@ -4543,6 +4570,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
 }
 input VulnerabilityAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String!
   x_opencti_base_score: Float
@@ -4667,6 +4695,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
 }
 input IncidentAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String!
   confidence: Int
@@ -7626,6 +7655,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
 }
 input StixCoreRelationshipAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   fromId: String!
   toId: String!
   relationship_type: String!
@@ -7732,6 +7762,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
 }
 input StixSightingRelationshipAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   fromId: String!
   toId: String
   description: String
@@ -7809,6 +7840,7 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
 }
 input StixCyberObservableRelationshipAddInput {
   stix_id: String
+  x_opencti_stix_ids: [String]
   fromId: String!
   toId: String!
   relationship_type: String!

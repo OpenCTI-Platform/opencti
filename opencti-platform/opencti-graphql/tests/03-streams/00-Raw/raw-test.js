@@ -93,8 +93,8 @@ describe('Raw streams tests', () => {
           }
           if (key === UPDATE_OPERATION_REPLACE) {
             const elementOperations = data.x_opencti_patch[UPDATE_OPERATION_REPLACE];
-            const opValues = Object.values(elementOperations);
-            opValues.forEach((e) => {
+            const opEntries = Object.entries(elementOperations);
+            opEntries.forEach(([keyElem, e]) => {
               expect(e.current).toBeDefined();
               expect(e.previous).toBeDefined();
               const isArrayValue = Array.isArray(e.current);
@@ -103,6 +103,11 @@ describe('Raw streams tests', () => {
                 expect(e.current.sort()).not.toEqual(e.previous.sort());
               } else {
                 expect(e.current).not.toEqual(e.previous);
+              }
+              // Special check for standard id evolution
+              if (keyElem === 'id') {
+                expect(data.id).not.toEqual(e.current);
+                expect(data.id).toEqual(e.previous);
               }
             });
           }
