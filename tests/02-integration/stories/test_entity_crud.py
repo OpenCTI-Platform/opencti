@@ -87,7 +87,7 @@ def test_update(entity_class):
         if function_present:
             for update_field, update_value in entity_class.update_data().items():
                 class_data[update_field] = update_value
-                input = [{"key": update_field, "value": update_value}]
+                input = [{"key": update_field, "value": str(update_value)}]
                 result = entity_class.ownclass().update_field(
                     id=test_indicator["id"], input=input
                 )
