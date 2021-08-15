@@ -122,6 +122,16 @@ type AppMemory {
   does_zap_garbage: Float
 }
 
+type AppDebugDistribution {
+  label: String!
+  value: Int
+}
+
+type AppDebugStatistics {
+  objects: [AppDebugDistribution]
+  relationships: [AppDebugDistribution]
+}
+
 """
 Retrieve the application information version add dependencies
 """
@@ -138,6 +148,10 @@ type AppInfo {
   The list of OpenCTI software dependencies
   """
   dependencies: [DependencyVersion!]!
+  """
+  The objects statistics
+  """
+  debugStats: AppDebugStatistics
 }
 
 ### STATS
