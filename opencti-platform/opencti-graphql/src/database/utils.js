@@ -338,7 +338,15 @@ export const generateUpdateMessage = (patch) => {
       return `${operation}s ${elemEntries.map(([key, val]) => {
         const values = Array.isArray(val) ? val : [val];
         const valMessage = values
-          .map((v) => (operation === UPDATE_OPERATION_REPLACE ? v.current?.value || v.current : v.value || v))
+          .map((v) => {
+            if (operation === UPDATE_OPERATION_REPLACE) {
+              if (Array.isArray(v.current)) {
+                return v.current.map((c) => c.value || c);
+              }
+              return v.current?.value || v.current;
+            }
+            return v.value || v;
+          })
           .join(', ');
         return `\`${valMessage || 'nothing'}\` in \`${key}\``;
       })}`;
