@@ -50,7 +50,10 @@ const styles = (theme) => ({
 });
 
 export const noteMutationFieldPatch = graphql`
-  mutation NoteEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+  mutation NoteEditionOverviewFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput]!
+  ) {
     noteEdit(id: $id) {
       fieldPatch(input: $input) {
         ...NoteEditionOverview_note
@@ -134,47 +137,13 @@ class NoteEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { note } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], note),
-      value: pathOr(null, ['createdBy', 'id'], note),
-    };
-
-    if (currentCreatedBy.value === null) {
-      commitMutation({
-        mutation: noteMutationRelationAdd,
-        variables: {
-          id: this.props.note.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: noteMutationRelationDelete,
-        variables: {
-          id: this.props.note.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: noteMutationRelationAdd,
-              variables: {
-                id: this.props.note.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
-        },
-      });
-    }
+    commitMutation({
+      mutation: noteMutationFieldPatch,
+      variables: {
+        id: this.props.note.id,
+        input: { key: 'createdBy', value: value.value },
+      },
+    });
   }
 
   handleChangeObjectMarking(name, values) {

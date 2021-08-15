@@ -160,44 +160,12 @@ class StixDomainObjectEditionContainer extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { stixDomainObject } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], stixDomainObject),
-      value: pathOr(null, ['createdBy', 'id'], stixDomainObject),
-    };
-
-    if (currentCreatedBy.value === null) {
+    if (!this.props.enableReferences) {
       commitMutation({
-        mutation: stixDomainObjectMutationRelationAdd,
+        mutation: stixDomainObjectMutationFieldPatch,
         variables: {
-          id: stixDomainObject.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: stixDomainObjectMutationRelationDelete,
-        variables: {
-          id: stixDomainObject.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: stixDomainObjectMutationRelationAdd,
-              variables: {
-                id: stixDomainObject.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          id: this.props.stixDomainObject.id,
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }

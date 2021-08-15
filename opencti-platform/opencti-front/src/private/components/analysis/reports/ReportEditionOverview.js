@@ -134,44 +134,12 @@ class ReportEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { report } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], report),
-      value: pathOr(null, ['createdBy', 'id'], report),
-    };
-
-    if (currentCreatedBy.value === null) {
+    if (!this.props.enableReferences) {
       commitMutation({
-        mutation: reportMutationRelationAdd,
+        mutation: reportMutationFieldPatch,
         variables: {
           id: this.props.report.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: reportMutationRelationDelete,
-        variables: {
-          id: this.props.report.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: reportMutationRelationAdd,
-              variables: {
-                id: this.props.report.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }

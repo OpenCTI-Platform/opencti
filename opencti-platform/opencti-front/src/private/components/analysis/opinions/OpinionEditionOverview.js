@@ -134,47 +134,13 @@ class OpinionEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { opinion } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], opinion),
-      value: pathOr(null, ['createdBy', 'id'], opinion),
-    };
-
-    if (currentCreatedBy.value === null) {
-      commitMutation({
-        mutation: opinionMutationRelationAdd,
-        variables: {
-          id: this.props.opinion.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: opinionMutationRelationDelete,
-        variables: {
-          id: this.props.opinion.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: opinionMutationRelationAdd,
-              variables: {
-                id: this.props.opinion.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
-        },
-      });
-    }
+    commitMutation({
+      mutation: opinionMutationFieldPatch,
+      variables: {
+        id: this.props.opinion.id,
+        input: { key: 'createdBy', value: value.value },
+      },
+    });
   }
 
   handleChangeObjectMarking(name, values) {

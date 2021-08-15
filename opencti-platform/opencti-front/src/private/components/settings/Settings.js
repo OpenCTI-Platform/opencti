@@ -356,7 +356,7 @@ class Settings extends Component {
                                   component={SwitchField}
                                   type="checkbox"
                                   name="platform_enable_references"
-                                  label={t('Enable references')}
+                                  label={t('Enable commit messages')}
                                   fullWidth={true}
                                   containerstyle={{
                                     marginTop: 20,
@@ -366,7 +366,7 @@ class Settings extends Component {
                                     this,
                                     id,
                                   )}
-                                  helpertext={t('Commit message and/or references when updating data from the UI.')}
+                                  helpertext={t('Commit message when updating data from the UI.')}
                                 />
                               </Form>
                             </div>

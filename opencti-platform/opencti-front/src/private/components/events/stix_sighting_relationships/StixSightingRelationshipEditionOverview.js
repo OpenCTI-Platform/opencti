@@ -223,45 +223,13 @@ const StixSightingRelationshipEditionContainer = ({
     }
   };
   const handleChangeCreatedBy = (name, value) => {
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], stixSightingRelationship),
-      value: pathOr(null, ['createdBy', 'id'], stixSightingRelationship),
-    };
-    if (currentCreatedBy.value === null) {
-      commitMutation({
-        mutation: stixSightingRelationshipMutationRelationAdd,
-        variables: {
-          id: stixSightingRelationship.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: stixSightingRelationshipMutationRelationDelete,
-        variables: {
-          id: stixSightingRelationship.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: stixSightingRelationshipMutationRelationAdd,
-              variables: {
-                id: stixSightingRelationship.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
-        },
-      });
-    }
+    commitMutation({
+      mutation: stixSightingRelationshipMutationFieldPatch,
+      variables: {
+        id: stixSightingRelationship.id,
+        input: { key: 'createdBy', value: value.value },
+      },
+    });
   };
   const handleChangeFocus = (name) => {
     commitMutation({

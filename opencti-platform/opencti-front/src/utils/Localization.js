@@ -990,9 +990,9 @@ const i18n = {
       Platform: "Système d'exploitation",
       'Commit message': 'Message de justification',
       'Required permissions': 'Permissions requises',
-      'Enable references': 'Activer le référencement',
-      'Commit message and/or references when updating data from the UI.':
-        "Message et/ou références lors de la modification des données dans l'interface.",
+      'Enable commit messages': 'Activer les messages de justification',
+      'Commit message when updating data from the UI.':
+        "Message lors de la modification des données dans l'interface.",
       None: 'Aucun',
       Nonee: 'Aucune',
       Status: 'Statut',

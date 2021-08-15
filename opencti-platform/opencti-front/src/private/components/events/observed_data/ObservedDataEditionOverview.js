@@ -140,44 +140,12 @@ class ObservedDataEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { observedData } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], observedData),
-      value: pathOr(null, ['createdBy', 'id'], observedData),
-    };
-
-    if (currentCreatedBy.value === null) {
+    if (!this.props.enableReferences) {
       commitMutation({
-        mutation: observedDataMutationRelationAdd,
+        mutation: observedDataMutationFieldPatch,
         variables: {
           id: this.props.observedData.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: observedDataMutationRelationDelete,
-        variables: {
-          id: this.props.observedData.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: observedDataMutationRelationAdd,
-              variables: {
-                id: this.props.observedData.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }

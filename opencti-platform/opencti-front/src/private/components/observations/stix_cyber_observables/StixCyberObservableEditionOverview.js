@@ -166,44 +166,12 @@ class StixCyberObservableEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { stixCyberObservable } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], stixCyberObservable),
-      value: pathOr(null, ['createdBy', 'id'], stixCyberObservable),
-    };
-
-    if (currentCreatedBy.value === null) {
+    if (!this.props.enableReferences) {
       commitMutation({
-        mutation: stixCyberObservableMutationRelationAdd,
+        mutation: stixCyberObservableMutationFieldPatch,
         variables: {
           id: this.props.stixCyberObservable.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: stixCyberObservableMutationRelationDelete,
-        variables: {
-          id: this.props.stixCyberObservable.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: stixCyberObservableMutationRelationAdd,
-              variables: {
-                id: this.props.stixCyberObservable.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }
