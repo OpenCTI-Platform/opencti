@@ -2033,12 +2033,18 @@ const upsertElementRaw = async (user, instance, type, input) => {
   const impactedInputs = []; // Inputs impacted by updated inputs + updated inputs
   const rawRelations = [];
   // Handle attributes updates
-  if (isNotEmptyField(input.stix_id) && input.stix_id !== instance.standard_id) {
-    const patch = { x_opencti_stix_ids: [input.stix_id] };
-    const operations = { x_opencti_stix_ids: UPDATE_OPERATION_ADD };
-    const patched = patchAttributeRaw(instance, patch, { operations });
-    impactedInputs.push(...patched.impactedInputs);
-    patchInputs.push(...patched.updatedInputs);
+  if (isNotEmptyField(input.stix_id) || isNotEmptyField(input.x_opencti_stix_ids)) {
+    const ids = [...(input.x_opencti_stix_ids || [])];
+    if (input.stix_id !== instance.standard_id) {
+      ids.push(input.stix_id);
+    }
+    if (ids.length > 0) {
+      const patch = { x_opencti_stix_ids: ids };
+      const operations = { x_opencti_stix_ids: UPDATE_OPERATION_ADD };
+      const patched = patchAttributeRaw(instance, patch, { operations });
+      impactedInputs.push(...patched.impactedInputs);
+      patchInputs.push(...patched.updatedInputs);
+    }
   }
   // Upsert the aliases
   if (isStixObjectAliased(type)) {
