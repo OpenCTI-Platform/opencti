@@ -266,6 +266,7 @@ type ContextData {
   from_id: String
   to_id: String
   message: String!
+  commit: String
 }
 type Log {
   id: ID!

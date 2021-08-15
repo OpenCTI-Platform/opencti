@@ -53,6 +53,7 @@
     "react-virtualized": "9.22.3",
     "recharts": "2.1.0",
     "relay-runtime": "11.0.2",
+    "rich-markdown-editor": "^11.17.2",
     "rxjs": "7.3.0",
     "showdown": "1.9.1",
     "subscriptions-transport-ws": "0.9.19",
