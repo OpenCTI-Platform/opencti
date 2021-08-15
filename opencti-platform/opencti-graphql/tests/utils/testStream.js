@@ -120,6 +120,8 @@ export const checkStreamData = (type, data) => {
 export const checkStreamGenericContent = (type, dataEvent) => {
   const { data, markings, message } = dataEvent;
   expect(markings).toBeDefined();
+  expect(message.includes('undefined')).toBeFalsy();
+  expect(message.includes('[object Object]')).toBeFalsy();
   if (markings.length > 0) {
     markings.forEach((m) => {
       // Markings can have internal or stix depending on the loading.

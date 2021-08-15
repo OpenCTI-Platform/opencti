@@ -185,7 +185,10 @@ export const stixDataConverter = (data, args = {}) => {
   if (isDefinedValue(finalData.objects)) {
     const objectSet = Array.isArray(finalData.objects) ? finalData.objects : [finalData.objects];
     const objects = R.map(
-      (m) => (patchGeneration ? { value: m.standard_id, x_opencti_internal_id: m.internal_id } : m.standard_id),
+      (m) =>
+        patchGeneration
+          ? { value: m.standard_id, reference: m.name, x_opencti_internal_id: m.internal_id }
+          : m.standard_id,
       objectSet
     );
     finalData = R.pipe(R.dissoc(INPUT_OBJECTS), R.assoc('object_refs', objects))(finalData);
@@ -197,7 +200,10 @@ export const stixDataConverter = (data, args = {}) => {
   if (isDefinedValue(finalData.objectMarking)) {
     const markingSet = Array.isArray(finalData.objectMarking) ? finalData.objectMarking : [finalData.objectMarking];
     const markings = R.map(
-      (m) => (patchGeneration ? { value: m.standard_id, x_opencti_internal_id: m.internal_id } : m.standard_id),
+      (m) =>
+        patchGeneration
+          ? { value: m.standard_id, reference: m.definition, x_opencti_internal_id: m.internal_id }
+          : m.standard_id,
       markingSet
     );
     finalData = R.pipe(R.dissoc(INPUT_MARKINGS), R.assoc('object_marking_refs', markings))(finalData);
@@ -209,7 +215,7 @@ export const stixDataConverter = (data, args = {}) => {
   if (isDefinedValue(finalData.createdBy)) {
     const creator = Array.isArray(finalData.createdBy) ? R.head(finalData.createdBy) : finalData.createdBy;
     const created = patchGeneration
-      ? [{ value: creator.standard_id, x_opencti_internal_id: creator.internal_id }]
+      ? [{ value: creator.standard_id, reference: creator.name, x_opencti_internal_id: creator.internal_id }]
       : creator.standard_id;
     finalData = R.pipe(R.dissoc(INPUT_CREATED_BY), R.assoc('created_by_ref', created))(finalData);
   } else {
@@ -221,7 +227,7 @@ export const stixDataConverter = (data, args = {}) => {
     const labelSet = Array.isArray(finalData.objectLabel) ? finalData.objectLabel : [finalData.objectLabel];
     const labels = R.map((m) => {
       const { value } = m;
-      return patchGeneration ? { value: m.standard_id, x_opencti_internal_id: m.internal_id } : value;
+      return patchGeneration ? { value: m.standard_id, reference: value, x_opencti_internal_id: m.internal_id } : value;
     }, labelSet);
     finalData = R.pipe(R.dissoc(INPUT_LABELS), R.assoc('labels', labels))(finalData);
   } else {
@@ -233,7 +239,9 @@ export const stixDataConverter = (data, args = {}) => {
     const killSet = Array.isArray(finalData.killChainPhases) ? finalData.killChainPhases : [finalData.killChainPhases];
     const kills = R.map((k) => {
       const value = { kill_chain_name: k.kill_chain_name, phase_name: k.phase_name };
-      return patchGeneration ? { value: k.standard_id, x_opencti_internal_id: k.internal_id } : value;
+      return patchGeneration
+        ? { value: k.standard_id, reference: k.kill_chain_name, x_opencti_internal_id: k.internal_id }
+        : value;
     }, killSet);
     finalData = R.pipe(R.dissoc(INPUT_KILLCHAIN), R.assoc('kill_chain_phases', kills))(finalData);
   } else {
@@ -246,7 +254,9 @@ export const stixDataConverter = (data, args = {}) => {
     const externalSet = Array.isArray(refs) ? refs : [refs];
     const externals = R.map((e) => {
       const value = R.pick(['source_name', 'description', 'url', 'hashes', 'external_id'], e);
-      return patchGeneration ? { value: e.standard_id, x_opencti_internal_id: e.internal_id } : value;
+      return patchGeneration
+        ? { value: e.standard_id, reference: e.source_name, x_opencti_internal_id: e.internal_id }
+        : value;
     }, externalSet);
     finalData = R.pipe(R.dissoc(INPUT_EXTERNAL_REFS), R.assoc('external_references', externals))(finalData);
   } else {
@@ -332,6 +342,10 @@ export const updateInputsToPatch = (inputs) => {
     }
     const opts = { patchGeneration: true };
     const keyConvert = R.head(Object.keys(stixDataConverter({ [key]: value || previous }, opts)));
+    // Sometime the key will be empty because the patch include a none stix modification
+    if (isEmptyField(keyConvert)) {
+      return {};
+    }
     const converter = (val) => {
       const converted = stixDataConverter({ [key]: val }, opts);
       return converted[keyConvert];

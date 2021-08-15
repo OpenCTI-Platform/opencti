@@ -341,11 +341,11 @@ export const generateUpdateMessage = (patch) => {
           .map((v) => {
             if (operation === UPDATE_OPERATION_REPLACE) {
               if (Array.isArray(v.current)) {
-                return v.current.map((c) => c.value || c);
+                return v.current.map((c) => c.reference || c.value || c);
               }
-              return v.current?.value || v.current;
+              return v.reference?.value || v.current?.value || v.current;
             }
-            return v.value || v;
+            return v.reference || v.value || v;
           })
           .join(', ');
         return `\`${valMessage || 'nothing'}\` in \`${key}\``;
