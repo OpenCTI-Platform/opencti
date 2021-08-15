@@ -91,13 +91,17 @@ class IntrusionSetEditionContainer extends Component {
           {this.state.currentTab === 0 && (
             <IntrusionSetEditionOverview
               intrusionSet={intrusionSet}
+              enableReferences={this.props.enableReferences}
               context={editContext}
+              handleClose={handleClose.bind(this)}
             />
           )}
           {this.state.currentTab === 1 && (
             <IntrusionSetEditionDetails
               intrusionSet={intrusionSet}
+              enableReferences={this.props.enableReferences}
               context={editContext}
+              handleClose={handleClose.bind(this)}
             />
           )}
         </div>

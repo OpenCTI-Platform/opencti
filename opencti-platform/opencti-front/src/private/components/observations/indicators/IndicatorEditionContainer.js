@@ -68,7 +68,9 @@ class IndicatorEditionContainer extends Component {
         <div className={classes.container}>
           <IndicatorEditionOverview
             indicator={this.props.indicator}
+            enableReferences={this.props.enableReferences}
             context={editContext}
+            handleClose={handleClose.bind(this)}
           />
         </div>
       </div>

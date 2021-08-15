@@ -37,6 +37,9 @@ export const regionEditionQuery = graphql`
     region(id: $id) {
       ...RegionEditionContainer_region
     }
+    settings {
+      platform_enable_references
+    }
   }
 `;
 
@@ -87,6 +90,7 @@ class RegionEdition extends Component {
                 return (
                   <RegionEditionContainer
                     region={props.region}
+                    enableReferences={props.settings.platform_enable_references}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

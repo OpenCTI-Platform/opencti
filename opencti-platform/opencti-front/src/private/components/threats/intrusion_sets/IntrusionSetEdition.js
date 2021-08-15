@@ -37,6 +37,9 @@ export const intrusionSetEditionQuery = graphql`
     intrusionSet(id: $id) {
       ...IntrusionSetEditionContainer_intrusionSet
     }
+    settings {
+      platform_enable_references
+    }
   }
 `;
 
@@ -87,6 +90,7 @@ class IntrusionSetEdition extends Component {
                 return (
                   <IntrusionSetEditionContainer
                     intrusionSet={props.intrusionSet}
+                    enableReferences={props.settings.platform_enable_references}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

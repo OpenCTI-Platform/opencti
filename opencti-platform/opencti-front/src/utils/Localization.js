@@ -988,6 +988,7 @@ const i18n = {
         'Ce panneau montre par défaut les dernières entités créées, utilisez la recherche pour en trouver plus.',
       Platforms: "Systèmes d'exploitation",
       Platform: "Système d'exploitation",
+      'Commit message': 'Message de justification',
       'Required permissions': 'Permissions requises',
       'Enable references': 'Activer le référencement',
       'Commit message and/or references when updating data from the UI.':

@@ -93,6 +93,7 @@ class ThreatActorEditionContainer extends Component {
               threatActor={this.props.threatActor}
               enableReferences={this.props.enableReferences}
               context={editContext}
+              handleClose={handleClose.bind(this)}
             />
           )}
           {this.state.currentTab === 1 && (
@@ -100,6 +101,7 @@ class ThreatActorEditionContainer extends Component {
               threatActor={this.props.threatActor}
               enableReferences={this.props.enableReferences}
               context={editContext}
+              handleClose={handleClose.bind(this)}
             />
           )}
         </div>

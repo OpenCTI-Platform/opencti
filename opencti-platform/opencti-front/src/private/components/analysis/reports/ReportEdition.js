@@ -37,6 +37,9 @@ export const reportEditionQuery = graphql`
     report(id: $id) {
       ...ReportEditionContainer_report
     }
+    settings {
+      platform_enable_references
+    }
   }
 `;
 
@@ -87,6 +90,7 @@ class ReportEdition extends Component {
                 return (
                   <ReportEditionContainer
                     report={props.report}
+                    enableReferences={props.settings.platform_enable_references}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

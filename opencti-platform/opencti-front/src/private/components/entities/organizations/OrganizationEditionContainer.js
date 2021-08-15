@@ -68,7 +68,9 @@ class OrganizationEditionContainer extends Component {
         <div className={classes.container}>
           <OrganizationEditionOverview
             organization={this.props.organization}
+            enableReferences={this.props.enableReferences}
             context={editContext}
+            handleClose={handleClose.bind(this)}
           />
         </div>
       </div>

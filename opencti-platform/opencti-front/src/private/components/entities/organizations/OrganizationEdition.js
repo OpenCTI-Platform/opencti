@@ -37,6 +37,9 @@ export const organizationEditionQuery = graphql`
     organization(id: $id) {
       ...OrganizationEditionContainer_organization
     }
+    settings {
+      platform_enable_references
+    }
   }
 `;
 
@@ -87,6 +90,7 @@ class OrganizationEdition extends Component {
                 return (
                   <OrganizationEditionContainer
                     organization={props.organization}
+                    enableReferences={props.settings.platform_enable_references}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

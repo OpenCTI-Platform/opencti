@@ -66,6 +66,9 @@ export const statsDateAttributes = [
   'valid_from',
   'valid_until',
 ];
+export const dateForStartAttributes = ['first_seen', 'start_time', 'valid_from'];
+export const dateForEndAttributes = ['last_seen', 'stop_time', 'valid_until'];
+export const dateForLimitsAttributes = [...dateForStartAttributes, ...dateForEndAttributes];
 export const dateAttributes = [
   'created',
   'modified',

@@ -68,7 +68,9 @@ class InfrastructureEditionContainer extends Component {
         <div className={classes.container}>
           <InfrastructureEditionOverview
             infrastructure={infrastructure}
+            enableReferences={this.props.enableReferences}
             context={editContext}
+            handleClose={handleClose.bind(this)}
           />
         </div>
       </div>

@@ -2365,7 +2365,6 @@ input ReportAddInput {
   description: String
   published: DateTime!
   report_types: [String]
-  x_opencti_graph_data: String
   x_opencti_report_status: Int
   revoked: Boolean
   lang: String

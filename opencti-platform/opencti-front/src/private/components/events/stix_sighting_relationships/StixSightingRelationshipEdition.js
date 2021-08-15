@@ -29,6 +29,9 @@ const stixSightingRelationshipEditionQuery = graphql`
     stixSightingRelationship(id: $id) {
       ...StixSightingRelationshipEditionOverview_stixSightingRelationship
     }
+    settings {
+      platform_enable_references
+    }
   }
 `;
 
@@ -67,6 +70,7 @@ class StixSightingRelationshipEdition extends Component {
                   <StixSightingRelationshipEditionOverview
                     stixDomainObject={stixDomainObject}
                     stixSightingRelationship={props.stixSightingRelationship}
+                    enableReferences={props.settings.platform_enable_references}
                     handleClose={handleClose.bind(this)}
                     handleDelete={
                       typeof handleDelete === 'function'

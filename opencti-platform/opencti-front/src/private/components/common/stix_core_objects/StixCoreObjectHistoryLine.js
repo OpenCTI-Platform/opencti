@@ -133,7 +133,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('replaces the')) {
+      if (eventType === 'update' && eventMesage.includes('replaces')) {
         return (
           <Avatar
             style={{
@@ -146,7 +146,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('changes the')) {
+      if (eventType === 'update' && eventMesage.includes('changes')) {
         return (
           <Avatar
             style={{
@@ -159,7 +159,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('adds the')) {
+      if (eventType === 'update' && eventMesage.includes('adds')) {
         return (
           <Avatar
             style={{
@@ -172,7 +172,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('removes the')) {
+      if (eventType === 'update' && eventMesage.includes('removes')) {
         return (
           <Avatar
             style={{

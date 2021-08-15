@@ -50,6 +50,7 @@ import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import ConfidenceField from '../form/ConfidenceField';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
+import ExternalReferencesField from '../form/ExternalReferencesField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -385,6 +386,10 @@ class StixCoreRelationshipCreationFromEntity extends Component {
         ),
         R.assoc('createdBy', values.createdBy.value),
         R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
+        R.assoc(
+          'externalReferences',
+          R.pluck('value', values.externalReferences),
+        ),
         R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       )(values);
       // eslint-disable-next-line no-await-in-loop
@@ -632,6 +637,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
       stop_time: null,
       description: '',
       killChainPhases: [],
+      externalReferences: [],
       objectMarking: [],
       createdBy: '',
     };
@@ -826,6 +832,10 @@ class StixCoreRelationshipCreationFromEntity extends Component {
               />
               <ObjectMarkingField
                 name="objectMarking"
+                style={{ marginTop: 20, width: '100%' }}
+              />
+              <ExternalReferencesField
+                name="externalReferences"
                 style={{ marginTop: 20, width: '100%' }}
               />
               <div className={classes.buttonBack}>

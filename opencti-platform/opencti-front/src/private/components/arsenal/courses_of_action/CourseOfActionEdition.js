@@ -37,6 +37,9 @@ export const courseOfActionEditionQuery = graphql`
     courseOfAction(id: $id) {
       ...CourseOfActionEditionContainer_courseOfAction
     }
+    settings {
+      platform_enable_references
+    }
   }
 `;
 
@@ -87,6 +90,7 @@ class CourseOfActionEdition extends Component {
                 return (
                   <CourseOfActionEditionContainer
                     courseOfAction={props.courseOfAction}
+                    enableReferences={props.settings.platform_enable_references}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

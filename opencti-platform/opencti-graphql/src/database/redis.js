@@ -341,7 +341,7 @@ const mapJSToStream = (event) => {
   });
   return cmdArgs;
 };
-export const buildEvent = (eventType, user, markings, message, data) => {
+export const buildEvent = (eventType, user, markings, message, data, commitMessage = null) => {
   if (!data.id || !data.x_opencti_id || !data.type) {
     throw UnsupportedError('Stream event requires id, type and x_opencti_id');
   }
@@ -351,6 +351,7 @@ export const buildEvent = (eventType, user, markings, message, data) => {
     origin: user.origin,
     markings: markings || [],
     message,
+    commit: commitMessage,
     data,
   };
 };
@@ -477,7 +478,7 @@ export const buildUpdateEvent = (user, instance, patch, opts = {}) => {
   const message = withoutMessage ? '-' : generateUpdateMessage(patch);
   // Build and send the event
   const dataEvent = buildStixData(data, { clearEmptyValues });
-  return buildEvent(EVENT_TYPE_UPDATE, user, instance.object_marking_refs, message, dataEvent);
+  return buildEvent(EVENT_TYPE_UPDATE, user, instance.object_marking_refs, message, dataEvent, opts.commitMessage);
 };
 export const storeUpdateEvent = async (user, instance, patchInputs, opts = {}) => {
   const { mustBeRepublished = false } = opts;
@@ -624,8 +625,8 @@ const processStreamResult = async (results, callback) => {
   const processedResults = [];
   for (let index = 0; index < streamData.length; index += 1) {
     const dataElement = streamData[index];
-    const { eventId, type, markings, origin, data, message, version } = dataElement;
-    const eventData = { markings, origin, data, message, version };
+    const { eventId, type, markings, origin, data, message, commit, version } = dataElement;
+    const eventData = { markings, origin, data, message, commit, version };
     processedResults.push({ id: eventId, topic: type, data: eventData });
   }
   // Callback the data

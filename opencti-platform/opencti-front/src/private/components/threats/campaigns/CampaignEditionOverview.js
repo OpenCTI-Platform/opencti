@@ -4,17 +4,8 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import {
-  assoc,
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pick,
-  difference,
-  head,
-} from 'ramda';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -23,6 +14,8 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import CommitMessage from '../../common/form/CommitMessage';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -53,9 +46,10 @@ const campaignMutationFieldPatch = graphql`
   mutation CampaignEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
   ) {
     campaignEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(input: $input, commitMessage: $commitMessage) {
         ...CampaignEditionOverview_campaign
         ...Campaign_campaign
       }
@@ -127,131 +121,140 @@ class CampaignEditionOverviewComponent extends Component {
     });
   }
 
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: campaignMutationFieldPatch,
+      variables: {
+        id: this.props.campaign.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
   handleSubmitField(name, value) {
-    campaignValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: campaignMutationFieldPatch,
-          variables: {
-            id: this.props.campaign.id,
-            input: { key: name, value },
-          },
-        });
-      })
-      .catch(() => false);
+    if (!this.props.enableReferences) {
+      campaignValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: campaignMutationFieldPatch,
+            variables: {
+              id: this.props.campaign.id,
+              input: { key: name, value },
+            },
+          });
+        })
+        .catch(() => false);
+    }
   }
 
   handleChangeCreatedBy(name, value) {
-    const { campaign } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], campaign),
-      value: pathOr(null, ['createdBy', 'id'], campaign),
-    };
-
-    if (currentCreatedBy.value === null) {
+    if (!this.props.enableReferences) {
       commitMutation({
-        mutation: campaignMutationRelationAdd,
+        mutation: campaignMutationFieldPatch,
         variables: {
           id: this.props.campaign.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: campaignMutationRelationDelete,
-        variables: {
-          id: this.props.campaign.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: campaignMutationRelationAdd,
-              variables: {
-                id: this.props.campaign.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }
   }
 
   handleChangeObjectMarking(name, values) {
-    const { campaign } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(campaign);
+    if (!this.props.enableReferences) {
+      const { campaign } = this.props;
+      const currentMarkingDefinitions = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(campaign);
 
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
+      const added = R.difference(values, currentMarkingDefinitions);
+      const removed = R.difference(currentMarkingDefinitions, values);
 
-    if (added.length > 0) {
-      commitMutation({
-        mutation: campaignMutationRelationAdd,
-        variables: {
-          id: this.props.campaign.id,
-          input: {
-            toId: head(added).value,
+      if (added.length > 0) {
+        commitMutation({
+          mutation: campaignMutationRelationAdd,
+          variables: {
+            id: this.props.campaign.id,
+            input: {
+              toId: R.head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: campaignMutationRelationDelete,
+          variables: {
+            id: this.props.campaign.id,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: campaignMutationRelationDelete,
-        variables: {
-          id: this.props.campaign.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
+        });
+      }
     }
   }
 
   render() {
-    const { t, campaign, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], campaign) === null
+    const {
+      t, campaign, context, enableReferences,
+    } = this.props;
+    const createdBy = R.pathOr(null, ['createdBy', 'name'], campaign) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'name'], campaign),
-        value: pathOr(null, ['createdBy', 'id'], campaign),
+        label: R.pathOr(null, ['createdBy', 'name'], campaign),
+        value: R.pathOr(null, ['createdBy', 'id'], campaign),
       };
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
+    const objectMarking = R.pipe(
+      R.pathOr([], ['objectMarking', 'edges']),
+      R.map((n) => ({
         label: n.node.definition,
         value: n.node.id,
       })),
     )(campaign);
-    const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('objectMarking', objectMarking),
-      pick(['name', 'confidence', 'description', 'createdBy', 'objectMarking']),
+    const initialValues = R.pipe(
+      R.assoc('createdBy', createdBy),
+      R.assoc('objectMarking', objectMarking),
+      R.pick([
+        'name',
+        'confidence',
+        'description',
+        'createdBy',
+        'objectMarking',
+      ]),
     )(campaign);
     return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={campaignValidation(t)}
-        onSubmit={() => true}
+        onSubmit={this.onSubmit.bind(this)}
       >
-        {({ setFieldValue }) => (
+        {({
+          submitForm, isSubmitting, validateForm, setFieldValue,
+        }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
@@ -308,6 +311,13 @@ class CampaignEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeObjectMarking.bind(this)}
             />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                validateForm={validateForm}
+              />
+            )}
           </Form>
         )}
       </Formik>
@@ -353,7 +363,7 @@ const CampaignEditionOverview = createFragmentContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(CampaignEditionOverview);

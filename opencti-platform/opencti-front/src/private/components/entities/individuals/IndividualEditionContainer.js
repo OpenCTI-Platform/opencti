@@ -68,7 +68,9 @@ class IndividualEditionContainer extends Component {
         <div className={classes.container}>
           <IndividualEditionOverview
             individual={this.props.individual}
+            enableReferences={this.props.enableReferences}
             context={editContext}
+            handleClose={handleClose.bind(this)}
           />
         </div>
       </div>

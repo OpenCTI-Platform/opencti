@@ -113,6 +113,7 @@ import {
   EXTERNAL_META_TO_STIX_ATTRIBUTE,
   isStixMetaRelationship,
   isStixSingleMetaRelationship,
+  OPENCTI_ATTRIBUTE_TO_META_REL,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
@@ -120,8 +121,6 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
   STIX_ATTRIBUTE_TO_META_FIELD,
-  STIX_ATTRIBUTE_TO_META_REL,
-  STIX_CREATED_BY_REF,
   STIX_META_RELATION_TO_OPENCTI_INPUT,
 } from '../schema/stixMetaRelationship';
 import { internalObjectsFieldsToBeUpdated, isDatedInternalObject, isInternalObject } from '../schema/internalObject';
@@ -130,6 +129,9 @@ import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/sti
 import {
   booleanAttributes,
   dateAttributes,
+  dateForEndAttributes,
+  dateForLimitsAttributes,
+  dateForStartAttributes,
   dictAttributes,
   isDateAttribute,
   isDictionaryAttribute,
@@ -929,10 +931,16 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) 
     const isDate = dateAttributes.includes(key);
     if (!forceUpdate) {
       const evaluateValue = value ? R.head(value) : null;
-      if (isDate && utcDate(instance[key]).isSame(utcDate(evaluateValue))) {
-        return {};
+      if (isDate) {
+        if (isEmptyField(evaluateValue)) {
+          if (instance[key] === FROM_START_STR || instance[key] === UNTIL_END_STR) {
+            return {};
+          }
+        } else if (utcDate(instance[key]).isSame(utcDate(evaluateValue))) {
+          return {};
+        }
       }
-      if (R.equals(instance[key], evaluateValue)) {
+      if (R.equals(instance[key], evaluateValue) || (isEmptyField(instance[key]) && isEmptyField(evaluateValue))) {
         return {}; // No need to update the attribute
       }
     }
@@ -944,6 +952,15 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) 
     finalVal = cleanStixIds(finalVal);
   }
   // endregion
+  if (dateForLimitsAttributes.includes(finalKey)) {
+    const finalValElement = R.head(finalVal);
+    if (dateForStartAttributes.includes(finalKey) && isEmptyField(finalValElement)) {
+      finalVal = [FROM_START_STR];
+    }
+    if (dateForEndAttributes.includes(finalKey) && isEmptyField(finalValElement)) {
+      finalVal = [UNTIL_END_STR];
+    }
+  }
   return { key: finalKey, value: finalVal, operation };
 };
 
@@ -1164,7 +1181,9 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   // Take care of multi update
   const updateMultiEntities = entries.filter(([, values]) => values.length > 1);
   // eslint-disable-next-line prettier/prettier
-  await Promise.map(updateMultiEntities, async ([id, values]) => {
+  await Promise.map(
+    updateMultiEntities,
+    async ([id, values]) => {
       logApp.info(`[OPENCTI] Merging, updating single entity ${id} / ${values.length}`);
       const changeOperations = values.filter((element) => element.toReplace !== null);
       const addOperations = values.filter((element) => element.toReplace === null);
@@ -1422,8 +1441,13 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
     const ins = innerUpdateAttribute(instance, input, options);
     if (ins.length > 0) {
       // Updated inputs must not be internals
-      if (!input.key.startsWith(INTERNAL_PREFIX)) {
-        updatedInputs.push({ ...input, previous: getPreviousInstanceValue(input.key, instance) });
+      const filteredIns = ins.filter((n) => n.key === input.key);
+      if (filteredIns.length > 0) {
+        const updatedInputsFiltered = filteredIns.map((i) => ({
+          ...i,
+          previous: getPreviousInstanceValue(i.key, instance),
+        }));
+        updatedInputs.push(...updatedInputsFiltered);
       }
       impactedInputs.push(...ins);
     }
@@ -1497,7 +1521,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     throw UnsupportedError('We cant update the same attribute multiple times in the same operation');
   }
   // Split attributes and meta
-  const metaKeys = Object.values(EXTERNAL_META_TO_STIX_ATTRIBUTE);
+  const metaKeys = [...Object.values(EXTERNAL_META_TO_STIX_ATTRIBUTE), ...Object.values(STIX_ATTRIBUTE_TO_META_FIELD)];
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
   // Load the element to update
@@ -1591,15 +1615,16 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     let mustBeRepublished = false;
     const streamOpts = { publishStreamEvent: false, locks: participantIds };
     for (let metaIndex = 0; metaIndex < meta.length; metaIndex += 1) {
-      const { key } = meta[metaIndex];
+      const { key: metaKey } = meta[metaIndex];
+      const key = STIX_ATTRIBUTE_TO_META_FIELD[metaKey] || metaKey;
       // ref and _refs are expecting direct identifier in the value
       // We dont care about the operation here, the only thing we can do is replace
-      if (key === STIX_CREATED_BY_REF) {
+      if (key === INPUT_CREATED_BY) {
         const currentCreated = R.head(updatedInstance.createdBy || []);
         const { value: createdRefIds } = meta[metaIndex];
         const targetCreated = R.head(createdRefIds);
         // If asking for a real change
-        if (currentCreated?.standard_id !== targetCreated) {
+        if (currentCreated?.standard_id !== targetCreated && currentCreated?.id !== targetCreated) {
           // Delete the current relation
           if (currentCreated?.standard_id) {
             const currentRels = await listAllRelations(user, RELATION_CREATED_BY, { fromId: id });
@@ -1613,38 +1638,45 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
             await createRelationRaw(user, inputRel, streamOpts);
             const creator = await loadById(user, targetCreated, ENTITY_TYPE_IDENTITY);
             const previous = currentCreated ? [currentCreated] : currentCreated;
-            updatedInputs.push({ key: INPUT_CREATED_BY, value: [creator], previous });
+            updatedInputs.push({ key, value: [creator], previous });
             updatedInstance[INPUT_CREATED_BY] = creator;
           } else if (currentCreated) {
             // Just replace by nothing
-            updatedInputs.push({ key: INPUT_CREATED_BY, value: null, previous: [currentCreated] });
+            updatedInputs.push({ key, value: null, previous: [currentCreated] });
             updatedInstance[INPUT_CREATED_BY] = null;
           }
         }
       } else {
-        const relType = STIX_ATTRIBUTE_TO_META_REL[key];
+        const relType = OPENCTI_ATTRIBUTE_TO_META_REL[key];
         const { value: refs, operation = UPDATE_OPERATION_REPLACE } = meta[metaIndex];
-        const currentKey = STIX_ATTRIBUTE_TO_META_FIELD[key];
         if (operation === UPDATE_OPERATION_REPLACE) {
           // Delete all relations
           const currentRels = await listAllRelations(user, relType, { fromId: id });
-          // eslint-disable-next-line no-use-before-define
-          await deleteElements(user, currentRels, streamOpts);
-          // 02. Create the new relations
+          const currentRelsToIds = currentRels.map((n) => n.toId);
           const newTargets = await internalFindByIds(user, refs);
-          for (let delIndex = 0; delIndex < refs.length; delIndex += 1) {
-            const ref = refs[delIndex];
-            const inputRel = { fromId: id, toId: ref, relationship_type: relType };
-            // eslint-disable-next-line no-use-before-define
-            await createRelationRaw(user, inputRel, streamOpts);
+          const newTargetsIds = newTargets.map((n) => n.id);
+          if (R.symmetricDifference(newTargetsIds, currentRelsToIds).length > 0) {
+            if (currentRels.length > 0) {
+              // eslint-disable-next-line no-use-before-define
+              await deleteElements(user, currentRels, streamOpts);
+            }
+            // 02. Create the new relations
+            if (newTargets.length > 0) {
+              for (let delIndex = 0; delIndex < refs.length; delIndex += 1) {
+                const ref = refs[delIndex];
+                const inputRel = { fromId: id, toId: ref, relationship_type: relType };
+                // eslint-disable-next-line no-use-before-define
+                await createRelationRaw(user, inputRel, streamOpts);
+              }
+            }
+            updatedInputs.push({ key, value: newTargets, previous: updatedInstance[key] });
+            updatedInstance[key] = newTargets;
+            mustBeRepublished = relType === RELATION_OBJECT_MARKING;
           }
-          updatedInputs.push({ key: currentKey, value: newTargets, previous: updatedInstance[currentKey] });
-          updatedInstance[currentKey] = newTargets;
-          mustBeRepublished = relType === RELATION_OBJECT_MARKING;
         }
         if (operation === UPDATE_OPERATION_ADD) {
-          const currentStandardIds = (updatedInstance[currentKey] || []).map((o) => o.standard_id);
-          const refsToCreate = refs.filter((r) => !currentStandardIds.includes(r));
+          const currentIds = (updatedInstance[key] || []).map((o) => [o.id, o.standard_id]).flat();
+          const refsToCreate = refs.filter((r) => !currentIds.includes(r));
           if (refsToCreate.length > 0) {
             const newTargets = await internalFindByIds(user, refsToCreate);
             for (let createIndex = 0; createIndex < refsToCreate.length; createIndex += 1) {
@@ -1653,9 +1685,9 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
               // eslint-disable-next-line no-use-before-define
               await createRelationRaw(user, inputRel, streamOpts);
             }
-            updatedInputs.push({ key: currentKey, value: newTargets, operation });
+            updatedInputs.push({ key, value: newTargets, operation });
             mustBeRepublished = relType === RELATION_OBJECT_MARKING;
-            updatedInstance[currentKey] = [...(updatedInstance[currentKey] || []), ...newTargets];
+            updatedInstance[key] = [...(updatedInstance[key] || []), ...newTargets];
           }
         }
         if (operation === UPDATE_OPERATION_REMOVE) {
@@ -1666,11 +1698,9 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
           if (relsToDelete.length > 0) {
             // eslint-disable-next-line no-use-before-define
             await deleteElements(user, relsToDelete, streamOpts);
-            updatedInputs.push({ key: currentKey, value: relsToDelete, operation });
+            updatedInputs.push({ key, value: relsToDelete, operation });
             mustBeRepublished = relType === RELATION_OBJECT_MARKING;
-            updatedInstance[currentKey] = (updatedInstance[currentKey] || []).filter(
-              (c) => !targetIds.includes(c.internal_id)
-            );
+            updatedInstance[key] = (updatedInstance[key] || []).filter((c) => !targetIds.includes(c.internal_id));
           }
         }
       }
@@ -1678,7 +1708,10 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     // endregion
     // Only push event in stream if modifications really happens
     if (updatedInputs.length > 0) {
-      const event = await storeUpdateEvent(user, updatedInstance, updatedInputs, { mustBeRepublished });
+      const event = await storeUpdateEvent(user, updatedInstance, updatedInputs, {
+        mustBeRepublished,
+        commitMessage: opts.commitMessage,
+      });
       return { element: updatedInstance, event };
     }
     // Return updated element after waiting for it.
@@ -2035,7 +2068,7 @@ const upsertElementRaw = async (user, instance, type, input) => {
   // Handle attributes updates
   if (isNotEmptyField(input.stix_id) || isNotEmptyField(input.x_opencti_stix_ids)) {
     const ids = [...(input.x_opencti_stix_ids || [])];
-    if (input.stix_id !== instance.standard_id) {
+    if (isNotEmptyField(input.stix_id) && input.stix_id !== instance.standard_id) {
       ids.push(input.stix_id);
     }
     if (ids.length > 0) {
@@ -2291,6 +2324,7 @@ const buildRelationData = async (user, input, opts = {}) => {
     relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
     relToCreate.push(...buildInnerRelation(data, input.objectMarking, RELATION_OBJECT_MARKING));
     relToCreate.push(...buildInnerRelation(data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE));
+    relToCreate.push(...buildInnerRelation(data, input.externalReferences, RELATION_EXTERNAL_REFERENCE));
   }
   if (isStixSightingRelationship(relationshipType)) {
     relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));

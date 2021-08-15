@@ -91,11 +91,18 @@ class CampaignEditionContainer extends Component {
           {this.state.currentTab === 0 && (
             <CampaignEditionOverview
               campaign={campaign}
+              enableReferences={this.props.enableReferences}
               context={editContext}
+              handleClose={handleClose.bind(this)}
             />
           )}
           {this.state.currentTab === 1 && (
-            <CampaignEditionDetails campaign={campaign} context={editContext} />
+            <CampaignEditionDetails
+              campaign={campaign}
+              enableReferences={this.props.enableReferences}
+              context={editContext}
+              handleClose={handleClose.bind(this)}
+            />
           )}
         </div>
       </div>

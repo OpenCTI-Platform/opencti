@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import { Field } from 'formik';
 import { compose } from 'ramda';
-import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -11,7 +10,6 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import inject18n from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
-import { commitMutation } from '../../../../relay/environment';
 
 const styles = () => ({
   container: {
@@ -19,81 +17,72 @@ const styles = () => ({
   },
 });
 
-const commitMessageValidation = () => Yup.object().shape({
-  message: Yup.string(),
-});
-
 class CommitMessage extends Component {
-  onSubmit(values) {
-    const { mutation, variables, handleClose } = this.props;
-    const finalVariables = variables;
-    if (values.message && values.message.length > 0) {
-      if (variables.input) {
-        finalVariables.input.commitMessage = values.message;
-      } else {
-        finalVariables.commitMessage = values.message;
-      }
-    }
-    commitMutation({
-      mutation,
-      variables: finalVariables,
-    });
-    handleClose();
+  constructor(props) {
+    super(props);
+    this.state = { open: false };
+  }
+
+  handleOpen() {
+    this.setState({ open: true });
+  }
+
+  handleClose() {
+    this.setState({ open: false });
+  }
+
+  handleSubmit() {
+    this.setState({ open: false }, () => this.props.submitForm());
   }
 
   render() {
-    const { open, handleClose, t } = this.props;
+    const { disabled, t } = this.props;
     return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={{ message: '' }}
-        validationSchema={commitMessageValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
-        onReset={this.onSubmit.bind(this)}
-      >
-        {({ submitForm, handleReset, isSubmitting }) => (
-          <Form>
-            <Dialog
-              open={open}
-              onClose={handleClose.bind(this)}
+      <div>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={this.handleOpen.bind(this)}
+          style={{ marginTop: 20, float: 'right' }}
+        >
+          {t('Update')}
+        </Button>
+        <Dialog
+          open={this.state.open}
+          onClose={this.handleClose.bind(this)}
+          fullWidth={true}
+        >
+          <DialogTitle>{t('Commit message')}</DialogTitle>
+          <DialogContent>
+            <Field
+              component={MarkDownField}
+              name="message"
+              label={t('Message')}
               fullWidth={true}
+              multiline={true}
+              rows="4"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              color="primary"
+              onClick={this.handleSubmit.bind(this)}
+              disabled={disabled}
             >
-              <DialogTitle>{t('Commit message')}</DialogTitle>
-              <DialogContent>
-                <Field
-                  component={MarkDownField}
-                  name="message"
-                  label={t('Message')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                />
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleReset} disabled={isSubmitting}>
-                  {t('Cancel')}
-                </Button>
-                <Button
-                  color="primary"
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
-                  {t('Create')}
-                </Button>
-              </DialogActions>
-            </Dialog>
-          </Form>
-        )}
-      </Formik>
+              {t('Update')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
     );
   }
 }
 
 CommitMessage.propTypes = {
-  mutation: PropTypes.func,
-  variables: PropTypes.object,
-  open: PropTypes.bool,
-  handleClose: PropTypes.func,
+  t: PropTypes.func,
+  submitForm: PropTypes.func,
+  disabled: PropTypes.bool,
+  validateForm: PropTypes.func,
 };
 
 export default compose(

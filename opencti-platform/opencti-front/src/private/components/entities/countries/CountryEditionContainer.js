@@ -68,7 +68,9 @@ class CountryEditionContainer extends Component {
         <div className={classes.container}>
           <CountryEditionOverview
             country={this.props.country}
+            enableReferences={this.props.enableReferences}
             context={editContext}
+            handleClose={handleClose.bind(this)}
           />
         </div>
       </div>

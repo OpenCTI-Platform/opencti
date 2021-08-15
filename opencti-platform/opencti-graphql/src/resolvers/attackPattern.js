@@ -48,7 +48,7 @@ const attackPatternResolvers = {
   Mutation: {
     attackPatternEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
+      fieldPatch: ({ input, commitMessage }) => stixDomainObjectEditField(user, id, input, { commitMessage }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),

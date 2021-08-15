@@ -1,19 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import {
-  assoc,
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pick,
-  difference,
-  head,
-} from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../../components/i18n';
@@ -25,6 +16,8 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import CommitMessage from '../../common/form/CommitMessage';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -55,9 +48,10 @@ const threatActorMutationFieldPatch = graphql`
   mutation ThreatActorEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
   ) {
     threatActorEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(input: $input, commitMessage: $commitMessage) {
         ...ThreatActorEditionOverview_threatActor
         ...ThreatActor_threatActor
       }
@@ -130,134 +124,135 @@ class ThreatActorEditionOverviewComponent extends Component {
     });
   }
 
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: threatActorMutationFieldPatch,
+      variables: {
+        id: this.props.threatActor.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
   handleSubmitField(name, value) {
-    threatActorValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: threatActorMutationFieldPatch,
-          variables: {
-            id: this.props.threatActor.id,
-            input: { key: name, value },
-          },
-        });
-      })
-      .catch(() => false);
+    if (!this.props.enableReferences) {
+      threatActorValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: threatActorMutationFieldPatch,
+            variables: {
+              id: this.props.threatActor.id,
+              input: { key: name, value },
+            },
+          });
+        })
+        .catch(() => false);
+    }
   }
 
   handleChangeCreatedBy(name, value) {
-    const { threatActor } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], threatActor),
-      value: pathOr(null, ['createdBy', 'id'], threatActor),
-    };
-
-    if (currentCreatedBy.value === null) {
+    if (!this.props.enableReferences) {
       commitMutation({
-        mutation: threatActorMutationRelationAdd,
+        mutation: threatActorMutationFieldPatch,
         variables: {
           id: this.props.threatActor.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: threatActorMutationRelationDelete,
-        variables: {
-          id: this.props.threatActor.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: threatActorMutationRelationAdd,
-              variables: {
-                id: this.props.threatActor.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }
   }
 
   handleChangeObjectMarking(name, values) {
-    const { threatActor } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(threatActor);
+    if (!this.props.enableReferences) {
+      const { threatActor } = this.props;
+      const currentMarkingDefinitions = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(threatActor);
 
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
+      const added = R.difference(values, currentMarkingDefinitions);
+      const removed = R.difference(currentMarkingDefinitions, values);
 
-    if (added.length > 0) {
-      commitMutation({
-        mutation: threatActorMutationRelationAdd,
-        variables: {
-          id: this.props.threatActor.id,
-          input: {
-            toId: head(added).value,
+      if (added.length > 0) {
+        commitMutation({
+          mutation: threatActorMutationRelationAdd,
+          variables: {
+            id: this.props.threatActor.id,
+            input: {
+              toId: R.head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: threatActorMutationRelationDelete,
+          variables: {
+            id: this.props.threatActor.id,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: threatActorMutationRelationDelete,
-        variables: {
-          id: this.props.threatActor.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
+        });
+      }
     }
   }
 
   render() {
-    const { t, threatActor, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], threatActor) === null
+    const {
+      t, threatActor, context, enableReferences,
+    } = this.props;
+    const createdBy = R.pathOr(null, ['createdBy', 'name'], threatActor) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'name'], threatActor),
-        value: pathOr(null, ['createdBy', 'id'], threatActor),
+        label: R.pathOr(null, ['createdBy', 'name'], threatActor),
+        value: R.pathOr(null, ['createdBy', 'id'], threatActor),
       };
-    const killChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
+    const killChainPhases = R.pipe(
+      R.pathOr([], ['killChainPhases', 'edges']),
+      R.map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
       })),
     )(threatActor);
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
+    const objectMarking = R.pipe(
+      R.pathOr([], ['objectMarking', 'edges']),
+      R.map((n) => ({
         label: n.node.definition,
         value: n.node.id,
       })),
     )(threatActor);
-    const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('killChainPhases', killChainPhases),
-      assoc('objectMarking', objectMarking),
-      assoc(
+    const initialValues = R.pipe(
+      R.assoc('createdBy', createdBy),
+      R.assoc('killChainPhases', killChainPhases),
+      R.assoc('objectMarking', objectMarking),
+      R.assoc(
         'threat_actor_types',
         threatActor.threat_actor_types ? threatActor.threat_actor_types : [],
       ),
-      pick([
+      R.pick([
         'name',
         'threat_actor_types',
         'confidence',
@@ -272,9 +267,11 @@ class ThreatActorEditionOverviewComponent extends Component {
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={threatActorValidation(t)}
-        onSubmit={() => true}
+        onSubmit={this.onSubmit.bind(this)}
       >
-        {({ setFieldValue }) => (
+        {({
+          submitForm, isSubmitting, validateForm, setFieldValue,
+        }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
@@ -384,6 +381,13 @@ class ThreatActorEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeObjectMarking.bind(this)}
             />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                validateForm={validateForm}
+              />
+            )}
           </Form>
         )}
       </Formik>
@@ -398,6 +402,7 @@ ThreatActorEditionOverviewComponent.propTypes = {
   threatActor: PropTypes.object,
   enableReferences: PropTypes.bool,
   context: PropTypes.array,
+  handleClose: PropTypes.func,
 };
 
 const ThreatActorEditionOverview = createFragmentContainer(
@@ -431,7 +436,7 @@ const ThreatActorEditionOverview = createFragmentContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(ThreatActorEditionOverview);

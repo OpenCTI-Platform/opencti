@@ -2,12 +2,10 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
+import * as Yup from 'yup';
+import * as R from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import {
-  compose, pipe, split, assoc, join, pick,
-} from 'ramda';
-import * as Yup from 'yup';
 import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -15,8 +13,10 @@ import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { dateFormat } from '../../../../utils/Time';
+import { dateFormat, parse } from '../../../../utils/Time';
 import DatePickerField from '../../../../components/DatePickerField';
+import CommitMessage from '../../common/form/CommitMessage';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -47,9 +47,10 @@ const threatActorMutationFieldPatch = graphql`
   mutation ThreatActorEditionDetailsFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
   ) {
     threatActorEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(input: $input, commitMessage: $commitMessage) {
         ...ThreatActorEditionDetails_threatActor
         ...ThreatActor_threatActor
       }
@@ -71,16 +72,18 @@ const threatActorEditionDetailsFocus = graphql`
 `;
 
 const threatActorValidation = (t) => Yup.object().shape({
-  first_seen: Yup.date().typeError(
-    t('The value must be a date (YYYY-MM-DD)'),
-  ),
-  last_seen: Yup.date().typeError(t('The value must be a date (YYYY-MM-DD)')),
-  sophistication: Yup.string(),
-  resource_level: Yup.string(),
-  primary_motivation: Yup.string(),
-  secondary_motivations: Yup.array(),
-  personal_motivations: Yup.array(),
-  goals: Yup.string(),
+  first_seen: Yup.date()
+    .nullable()
+    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+  last_seen: Yup.date()
+    .nullable()
+    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+  sophistication: Yup.string().nullable(),
+  resource_level: Yup.string().nullable(),
+  primary_motivation: Yup.string().nullable(),
+  secondary_motivations: Yup.array().nullable(),
+  personal_motivations: Yup.array().nullable(),
+  goals: Yup.string().nullable(),
 });
 
 class ThreatActorEditionDetailsComponent extends Component {
@@ -96,42 +99,86 @@ class ThreatActorEditionDetailsComponent extends Component {
     });
   }
 
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.assoc(
+        'first_seen',
+        values.first_seen ? parse(values.first_seen).format() : null,
+      ),
+      R.assoc(
+        'last_seen',
+        values.last_seen ? parse(values.last_seen).format() : null,
+      ),
+      R.assoc(
+        'goals',
+        values.goals && values.goals.length ? R.split('\n', values.goals) : [],
+      ),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: threatActorMutationFieldPatch,
+      variables: {
+        id: this.props.threatActor.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
   handleSubmitField(name, value) {
-    let finalValue = value;
-    if (name === 'goals') {
-      finalValue = split('\n', value);
+    if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'goals') {
+        finalValue = R.split('\n', value);
+      }
+      threatActorValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: threatActorMutationFieldPatch,
+            variables: {
+              id: this.props.threatActor.id,
+              input: { key: name, value: finalValue },
+            },
+          });
+        })
+        .catch(() => false);
     }
-    threatActorValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: threatActorMutationFieldPatch,
-          variables: {
-            id: this.props.threatActor.id,
-            input: { key: name, value: finalValue },
-          },
-        });
-      })
-      .catch(() => false);
   }
 
   render() {
-    const { t, threatActor, context } = this.props;
-    const initialValues = pipe(
-      assoc('first_seen', dateFormat(threatActor.first_seen)),
-      assoc('last_seen', dateFormat(threatActor.last_seen)),
-      assoc(
+    const {
+      t, threatActor, context, enableReferences,
+    } = this.props;
+    const initialValues = R.pipe(
+      R.assoc('first_seen', dateFormat(threatActor.first_seen)),
+      R.assoc('last_seen', dateFormat(threatActor.last_seen)),
+      R.assoc(
         'secondary_motivations',
         threatActor.secondary_motivations
           ? threatActor.secondary_motivations
           : [],
       ),
-      assoc(
+      R.assoc(
         'personal_motivations',
         threatActor.personal_motivations ? threatActor.personal_motivations : [],
       ),
-      assoc('goals', join('\n', threatActor.goals ? threatActor.goals : [])),
-      pick([
+      R.assoc(
+        'goals',
+        R.join('\n', threatActor.goals ? threatActor.goals : []),
+      ),
+      R.pick([
         'first_seen',
         'last_seen',
         'sophistication',
@@ -148,9 +195,9 @@ class ThreatActorEditionDetailsComponent extends Component {
           enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={threatActorValidation(t)}
-          onSubmit={() => true}
+          onSubmit={this.onSubmit.bind(this)}
         >
-          {() => (
+          {({ submitForm, isSubmitting, validateForm }) => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
@@ -283,6 +330,13 @@ class ThreatActorEditionDetailsComponent extends Component {
                     <SubscriptionFocus context={context} fieldName="goals" />
                   }
                 />
+                {enableReferences && (
+                  <CommitMessage
+                    submitForm={submitForm}
+                    disabled={isSubmitting}
+                    validateForm={validateForm}
+                  />
+                )}
               </Form>
             </div>
           )}
@@ -297,7 +351,9 @@ ThreatActorEditionDetailsComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   threatActor: PropTypes.object,
+  enableReferences: PropTypes.bool,
   context: PropTypes.array,
+  handleClose: PropTypes.func,
 };
 
 const ThreatActorEditionDetails = createFragmentContainer(
@@ -306,6 +362,8 @@ const ThreatActorEditionDetails = createFragmentContainer(
     threatActor: graphql`
       fragment ThreatActorEditionDetails_threatActor on ThreatActor {
         id
+        first_seen
+        last_seen
         sophistication
         resource_level
         primary_motivation
@@ -317,7 +375,7 @@ const ThreatActorEditionDetails = createFragmentContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(ThreatActorEditionDetails);

@@ -7,21 +7,25 @@ import {
   assoc, compose, join, pick, pipe, split,
 } from 'ramda';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import DatePickerField from '../../../../components/DatePickerField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import { dateFormat } from '../../../../utils/Time';
+import { dateFormat, parse } from '../../../../utils/Time';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import TextField from '../../../../components/TextField';
+import CommitMessage from '../../common/form/CommitMessage';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const intrusionSetMutationFieldPatch = graphql`
   mutation IntrusionSetEditionDetailsFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
   ) {
     intrusionSetEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(input: $input, commitMessage: $commitMessage) {
         ...IntrusionSetEditionDetails_intrusionSet
         ...IntrusionSet_intrusionSet
       }
@@ -43,14 +47,16 @@ const intrusionSetEditionDetailsFocus = graphql`
 `;
 
 const intrusionSetValidation = (t) => Yup.object().shape({
-  first_seen: Yup.date().typeError(
-    t('The value must be a date (YYYY-MM-DD)'),
-  ),
-  last_seen: Yup.date().typeError(t('The value must be a date (YYYY-MM-DD)')),
-  resource_level: Yup.string(),
-  primary_motivation: Yup.string(),
-  secondary_motivations: Yup.array(),
-  goals: Yup.string(),
+  first_observed: Yup.date()
+    .nullable()
+    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+  last_observed: Yup.date()
+    .nullable()
+    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+  resource_level: Yup.string().nullable(),
+  primary_motivation: Yup.string().nullable(),
+  secondary_motivations: Yup.array().nullable(),
+  goals: Yup.string().nullable(),
 });
 
 class IntrusionSetEditionDetailsComponent extends Component {
@@ -66,27 +72,68 @@ class IntrusionSetEditionDetailsComponent extends Component {
     });
   }
 
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.assoc(
+        'first_seen',
+        values.first_seen ? parse(values.first_seen).format() : null,
+      ),
+      R.assoc(
+        'last_seen',
+        values.last_seen ? parse(values.last_seen).format() : null,
+      ),
+      R.assoc(
+        'goals',
+        values.goals && values.goals.length ? R.split('\n', values.goals) : [],
+      ),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: intrusionSetMutationFieldPatch,
+      variables: {
+        id: this.props.intrusionSet.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
   handleSubmitField(name, value) {
-    let finalValue = value;
-    if (name === 'goals') {
-      finalValue = split('\n', value);
+    if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'goals') {
+        finalValue = split('\n', value);
+      }
+      intrusionSetValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: intrusionSetMutationFieldPatch,
+            variables: {
+              id: this.props.intrusionSet.id,
+              input: { key: name, value: finalValue },
+            },
+          });
+        })
+        .catch(() => false);
     }
-    intrusionSetValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: intrusionSetMutationFieldPatch,
-          variables: {
-            id: this.props.intrusionSet.id,
-            input: { key: name, value: finalValue },
-          },
-        });
-      })
-      .catch(() => false);
   }
 
   render() {
-    const { t, intrusionSet, context } = this.props;
+    const {
+      t, intrusionSet, context, enableReferences,
+    } = this.props;
     const initialValues = pipe(
       assoc('first_seen', dateFormat(intrusionSet.first_seen)),
       assoc('last_seen', dateFormat(intrusionSet.last_seen)),
@@ -111,9 +158,9 @@ class IntrusionSetEditionDetailsComponent extends Component {
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={intrusionSetValidation(t)}
-        onSubmit={() => true}
+        onSubmit={this.onSubmit.bind(this)}
       >
-        {() => (
+        {({ submitForm, isSubmitting, validateForm }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={DatePickerField}
@@ -187,6 +234,13 @@ class IntrusionSetEditionDetailsComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="goals" />
               }
             />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                validateForm={validateForm}
+              />
+            )}
           </Form>
         )}
       </Formik>
