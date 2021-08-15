@@ -233,7 +233,10 @@ const testEvents = [
 test('Should compute events differential', () => {
   const elements = computeEventsDiff(testEvents);
   const ids = elements.map((e) => e.id);
-  expect(ids).toEqual(['f499ceab-b3bf-4f39-827d-aea43beed391', '3ae87124-b240-42b7-b309-89d8eb66e9cc']);
+  expect(ids).toEqual([
+    'threat-actor--b3486bf4-2cf8-527c-ab40-3fd2ff54de77',
+    'identity--d969b177-497f-598d-8428-b128c8f5f819',
+  ]);
 });
 
 const instance = {
