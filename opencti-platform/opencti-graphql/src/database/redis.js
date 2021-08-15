@@ -36,13 +36,15 @@ import { BASE_TYPE_RELATION } from '../schema/general';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path) => readFileSync(path));
+const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:namespace')}:` : '';
+const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
 
 const BASE_DATABASE = 0; // works key for tracking / stream
 const CONTEXT_DATABASE = 1; // locks / user context
-const OPENCTI_STREAM = 'stream.opencti';
 const REDIS_EXPIRE_TIME = 90;
 
 const redisOptions = (database) => ({
+  keyPrefix: REDIS_PREFIX,
   db: database,
   port: conf.get('redis:port'),
   host: conf.get('redis:hostname'),
@@ -196,10 +198,10 @@ export const redisTx = async (client, callback) => {
 };
 export const updateObjectRaw = async (tx, id, input) => {
   const data = R.flatten(R.toPairs(input));
-  await tx.call('HSET', id, data);
+  await tx.hset(id, data);
 };
 export const updateObjectCounterRaw = async (tx, id, field, number) => {
-  await tx.call('HINCRBY', id, field, number);
+  await tx.hincrby(id, field, number);
 };
 // endregion
 
@@ -208,7 +210,7 @@ export const redisAddDeletions = async (internalIds) => {
   const deletionId = new Date().getTime();
   const ids = Array.isArray(internalIds) ? internalIds : [internalIds];
   return redisTx(clientContext, (tx) => {
-    tx.call('SETEX', `deletion-${deletionId}`, REDIS_EXPIRE_TIME, JSON.stringify(ids));
+    tx.setex(`deletion-${deletionId}`, REDIS_EXPIRE_TIME, JSON.stringify(ids));
   });
 };
 export const redisFetchLatestDeletions = async () => {
@@ -286,11 +288,11 @@ export const cacheSet = async (elements) => {
     await redisTx(clientCache, (tx) => {
       for (let index = 0; index < elements.length; index += 1) {
         const element = elements[index];
-        tx.call('SET', `cache:${element.internal_id}`, JSON.stringify(element), 'ex', 5 * 60);
+        tx.set(`cache:${element.internal_id}`, JSON.stringify(element), 'ex', 5 * 60);
         const ids = cacheExtraIds(element);
         for (let indexId = 0; indexId < ids.length; indexId += 1) {
           const id = ids[indexId];
-          tx.call('SET', id, `@${element.internal_id}`, 'ex', 5 * 60);
+          tx.set(id, `@${element.internal_id}`, 'ex', 5 * 60);
         }
       }
     });
@@ -361,9 +363,9 @@ const pushToStream = (client, event) => {
     return true;
   }
   if (streamTrimming) {
-    return client.call('XADD', OPENCTI_STREAM, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(event));
+    return client.call('XADD', REDIS_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(event));
   }
-  return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+  return client.call('XADD', REDIS_STREAM_NAME, '*', ...mapJSToStream(event));
 };
 const DIFF_ADDED = 1;
 const DIFF_CHANGE = 2;
@@ -606,7 +608,7 @@ export const storeDeleteEvent = async (user, instance, dependencyDeletions, load
 };
 
 const fetchStreamInfo = async () => {
-  const res = await clientBase.call('XINFO', 'STREAM', OPENCTI_STREAM);
+  const res = await clientBase.call('XINFO', 'STREAM', REDIS_STREAM_NAME);
   const [, size, , , , , , lastId, , , , , ,] = res;
   return { lastEventId: lastId, streamSize: size };
 };
@@ -655,7 +657,7 @@ export const createStreamProcessor = (user, provider, callback, maxRange = MAX_R
       'COUNT',
       maxRange,
       'STREAMS',
-      OPENCTI_STREAM,
+      REDIS_STREAM_NAME,
       startEventId
     );
     if (streamResult && streamResult.length > 0) {
@@ -702,13 +704,13 @@ export const createStreamProcessor = (user, provider, callback, maxRange = MAX_R
 export const redisDeleteWork = async (internalIds) => {
   const ids = Array.isArray(internalIds) ? internalIds : [internalIds];
   return redisTx(clientBase, (tx) => {
-    tx.call('DEL', ...ids);
+    tx.del(...ids);
   });
 };
 export const redisCreateWork = async (element) => {
   return redisTx(clientBase, (tx) => {
     const data = R.flatten(R.toPairs(element));
-    tx.call('HSET', element.internal_id, data);
+    tx.hset(element.internal_id, data);
   });
 };
 export const redisGetWork = async (internalId) => {
@@ -718,7 +720,7 @@ export const redisGetWork = async (internalId) => {
 export const redisUpdateWork = async (id, input) => {
   const data = R.flatten(R.toPairs(input));
   return redisTx(clientBase, (tx) => {
-    tx.call('HSET', id, data);
+    tx.hset(id, data);
   });
 };
 export const redisUpdateWorkFigures = async (workId) => {
@@ -726,7 +728,7 @@ export const redisUpdateWorkFigures = async (workId) => {
   const [, , fetched] = await redisTx(clientBase, async (tx) => {
     await updateObjectCounterRaw(tx, workId, 'import_processed_number', 1);
     await updateObjectRaw(tx, workId, { import_last_processed: timestamp });
-    await tx.call('HGETALL', workId);
+    await tx.hgetall(workId);
   });
   const updatedMetrics = R.fromPairs(R.splitEvery(2, R.last(fetched)));
   const { import_processed_number: pn, import_expected_number: en } = updatedMetrics;

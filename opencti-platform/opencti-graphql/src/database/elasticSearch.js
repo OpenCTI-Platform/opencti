@@ -5,6 +5,7 @@ import * as R from 'ramda';
 import {
   buildPagination,
   cursorToOffset,
+  ES_INDEX_PREFIX,
   isEmptyField,
   isNotEmptyField,
   offsetToCursor,
@@ -57,6 +58,11 @@ import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result');
+const ES_INDEX_PATTERN_SUFFIX = conf.get('elasticsearch:index_creation_pattern');
+const ES_MAX_RESULT_WINDOW = conf.get('elasticsearch:max_result_window') || 100000;
+const ES_INDEX_SHARD_NUMBER = conf.get('elasticsearch:number_of_shards');
+const ES_INDEX_REPLICA_NUMBER = conf.get('elasticsearch:number_of_replicas');
+
 const ES_RETRY_ON_CONFLICT = 5;
 export const MAX_SPLIT = 250; // Max number of terms resolutions (ES limitation)
 export const BULK_TIMEOUT = '5m';
@@ -187,170 +193,198 @@ export const elIndexExists = async (indexName) => {
   const existIndex = await el.indices.exists({ index: indexName });
   return existIndex.body === true;
 };
-export const elCreateIndexes = async (indexesToCreate = WRITE_PLATFORM_INDICES) => {
-  const defaultIndexPattern = conf.get('elasticsearch:index_creation_pattern');
-  return Promise.all(
-    indexesToCreate.map((index) => {
-      return el.indices.exists({ index }).then((result) => {
-        if (result.body === false) {
-          return el.indices
-            .create({
-              index: `${index}${defaultIndexPattern}`,
-              body: {
-                aliases: { [index]: {} },
-                settings: {
-                  index: {
-                    max_result_window: 100000,
-                  },
-                  analysis: {
-                    normalizer: {
-                      string_normalizer: {
-                        type: 'custom',
-                        filter: ['lowercase', 'asciifolding'],
-                      },
-                    },
+const elCreateIndexTemplate = async () => {
+  // eslint-disable-next-line prettier/prettier
+  await el.cluster.putComponentTemplate({
+      name: 'opencti-core-settings',
+      create: false,
+      body: {
+        template: {
+          settings: {
+            index: {
+              max_result_window: ES_MAX_RESULT_WINDOW,
+              number_of_shards: ES_INDEX_SHARD_NUMBER,
+              number_of_replicas: ES_INDEX_REPLICA_NUMBER,
+            },
+            analysis: {
+              normalizer: {
+                string_normalizer: {
+                  type: 'custom',
+                  filter: ['lowercase', 'asciifolding'],
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+    .catch((e) => {
+      throw DatabaseError('Error creating opencti component', { error: e });
+    });
+  // eslint-disable-next-line prettier/prettier
+  await el.indices.putIndexTemplate({
+      name: 'opencti-index-template',
+      create: false,
+      body: {
+        index_patterns: [`${ES_INDEX_PREFIX}*`],
+        template: {
+          mappings: {
+            dynamic_templates: [
+              {
+                integers: {
+                  match_mapping_type: 'long',
+                  mapping: {
+                    type: 'integer',
                   },
                 },
-                mappings: {
-                  dynamic_templates: [
-                    {
-                      integers: {
-                        match_mapping_type: 'long',
-                        mapping: {
-                          type: 'integer',
-                        },
+              },
+              {
+                strings: {
+                  match_mapping_type: 'string',
+                  mapping: {
+                    type: 'text',
+                    fields: {
+                      keyword: {
+                        type: 'keyword',
+                        normalizer: 'string_normalizer',
+                        ignore_above: 512,
                       },
-                    },
-                    {
-                      strings: {
-                        match_mapping_type: 'string',
-                        mapping: {
-                          type: 'text',
-                          fields: {
-                            keyword: {
-                              type: 'keyword',
-                              normalizer: 'string_normalizer',
-                              ignore_above: 512,
-                            },
-                          },
-                        },
-                      },
-                    },
-                  ],
-                  properties: {
-                    standard_id: {
-                      type: 'text',
-                      fields: {
-                        keyword: {
-                          type: 'keyword',
-                          normalizer: 'string_normalizer',
-                          ignore_above: 512,
-                        },
-                      },
-                    },
-                    timestamp: {
-                      type: 'date',
-                    },
-                    created: {
-                      type: 'date',
-                    },
-                    modified: {
-                      type: 'date',
-                    },
-                    first_seen: {
-                      type: 'date',
-                    },
-                    last_seen: {
-                      type: 'date',
-                    },
-                    start_time: {
-                      type: 'date',
-                    },
-                    stop_time: {
-                      type: 'date',
-                    },
-                    published: {
-                      type: 'date',
-                    },
-                    valid_from: {
-                      type: 'date',
-                    },
-                    valid_until: {
-                      type: 'date',
-                    },
-                    observable_date: {
-                      type: 'date',
-                    },
-                    event_date: {
-                      type: 'date',
-                    },
-                    received_time: {
-                      type: 'date',
-                    },
-                    processed_time: {
-                      type: 'date',
-                    },
-                    completed_time: {
-                      type: 'date',
-                    },
-                    ctime: {
-                      type: 'date',
-                    },
-                    mtime: {
-                      type: 'date',
-                    },
-                    atime: {
-                      type: 'date',
-                    },
-                    confidence: {
-                      type: 'integer',
-                    },
-                    x_opencti_report_status: {
-                      type: 'integer',
-                    },
-                    attribute_order: {
-                      type: 'integer',
-                    },
-                    base_score: {
-                      type: 'integer',
-                    },
-                    is_family: {
-                      type: 'boolean',
-                    },
-                    number_observed: {
-                      type: 'integer',
-                    },
-                    x_opencti_negative: {
-                      type: 'boolean',
-                    },
-                    default_assignation: {
-                      type: 'boolean',
-                    },
-                    x_opencti_detection: {
-                      type: 'boolean',
-                    },
-                    x_opencti_order: {
-                      type: 'integer',
-                    },
-                    import_expected_number: {
-                      type: 'integer',
-                    },
-                    import_processed_number: {
-                      type: 'integer',
-                    },
-                    x_opencti_score: {
-                      type: 'integer',
-                    },
-                    connections: {
-                      type: 'nested',
                     },
                   },
                 },
               },
-            })
-            .catch((e) => {
-              throw DatabaseError('Error creating index', { error: e });
-            });
+            ],
+            properties: {
+              standard_id: {
+                type: 'text',
+                fields: {
+                  keyword: {
+                    type: 'keyword',
+                    normalizer: 'string_normalizer',
+                    ignore_above: 512,
+                  },
+                },
+              },
+              timestamp: {
+                type: 'date',
+              },
+              created: {
+                type: 'date',
+              },
+              modified: {
+                type: 'date',
+              },
+              first_seen: {
+                type: 'date',
+              },
+              last_seen: {
+                type: 'date',
+              },
+              start_time: {
+                type: 'date',
+              },
+              stop_time: {
+                type: 'date',
+              },
+              published: {
+                type: 'date',
+              },
+              valid_from: {
+                type: 'date',
+              },
+              valid_until: {
+                type: 'date',
+              },
+              observable_date: {
+                type: 'date',
+              },
+              event_date: {
+                type: 'date',
+              },
+              received_time: {
+                type: 'date',
+              },
+              processed_time: {
+                type: 'date',
+              },
+              completed_time: {
+                type: 'date',
+              },
+              ctime: {
+                type: 'date',
+              },
+              mtime: {
+                type: 'date',
+              },
+              atime: {
+                type: 'date',
+              },
+              confidence: {
+                type: 'integer',
+              },
+              x_opencti_report_status: {
+                type: 'integer',
+              },
+              attribute_order: {
+                type: 'integer',
+              },
+              base_score: {
+                type: 'integer',
+              },
+              is_family: {
+                type: 'boolean',
+              },
+              number_observed: {
+                type: 'integer',
+              },
+              x_opencti_negative: {
+                type: 'boolean',
+              },
+              default_assignation: {
+                type: 'boolean',
+              },
+              x_opencti_detection: {
+                type: 'boolean',
+              },
+              x_opencti_order: {
+                type: 'integer',
+              },
+              import_expected_number: {
+                type: 'integer',
+              },
+              import_processed_number: {
+                type: 'integer',
+              },
+              x_opencti_score: {
+                type: 'integer',
+              },
+              connections: {
+                type: 'nested',
+              },
+            },
+          },
+        },
+        composed_of: ['opencti-core-settings'],
+        version: 3,
+        _meta: {
+          description: 'To generate opencti expected index mappings',
+        },
+      },
+    })
+    .catch((e) => {
+      throw DatabaseError('Error creating opencti template', { error: e });
+    });
+};
+export const elCreateIndexes = async (indexesToCreate = WRITE_PLATFORM_INDICES) => {
+  await elCreateIndexTemplate();
+  return Promise.all(
+    indexesToCreate.map((index) => {
+      const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
+      return el.indices.exists({ index: indexName }).then((result) => {
+        if (result.body === false) {
+          return el.indices.create({ index: indexName, body: { aliases: { [index]: {} } } }).catch((e) => {
+            throw DatabaseError('Error creating index', { error: e });
+          });
         }
         /* istanbul ignore next */
         return result;

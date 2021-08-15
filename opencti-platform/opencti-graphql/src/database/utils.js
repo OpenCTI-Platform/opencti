@@ -26,7 +26,9 @@ import { isStixCyberObservableRelationship } from '../schema/stixCyberObservable
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from './rabbitmq';
+import conf from '../config/conf';
 
+export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 export const SYNC_USER_EMAIL = 'sync@opencti.io';
 export const SYNC_USER_TOKEN = '579240ac-498d-4492-85f9-59b158efcba9';
 
@@ -37,33 +39,33 @@ export const UPDATE_OPERATION_REMOVE = 'remove';
 export const UPDATE_OPERATION_CHANGE = 'change';
 
 // Entities
-export const INDEX_HISTORY = 'opencti_history';
+export const INDEX_HISTORY = `${ES_INDEX_PREFIX}_history`;
 export const READ_INDEX_HISTORY = `${INDEX_HISTORY}*`;
-export const INDEX_INTERNAL_OBJECTS = 'opencti_internal_objects';
+export const INDEX_INTERNAL_OBJECTS = `${ES_INDEX_PREFIX}_internal_objects`;
 export const READ_INDEX_INTERNAL_OBJECTS = `${INDEX_INTERNAL_OBJECTS}*`;
-const INDEX_STIX_META_OBJECTS = 'opencti_stix_meta_objects';
+const INDEX_STIX_META_OBJECTS = `${ES_INDEX_PREFIX}_stix_meta_objects`;
 export const READ_INDEX_STIX_META_OBJECTS = `${INDEX_STIX_META_OBJECTS}*`;
-const INDEX_STIX_DOMAIN_OBJECTS = 'opencti_stix_domain_objects';
+const INDEX_STIX_DOMAIN_OBJECTS = `${ES_INDEX_PREFIX}_stix_domain_objects`;
 export const READ_INDEX_STIX_DOMAIN_OBJECTS = `${INDEX_STIX_DOMAIN_OBJECTS}*`;
-const INDEX_STIX_CYBER_OBSERVABLES = 'opencti_stix_cyber_observables';
+const INDEX_STIX_CYBER_OBSERVABLES = `${ES_INDEX_PREFIX}_stix_cyber_observables`;
 export const READ_INDEX_STIX_CYBER_OBSERVABLES = `${INDEX_STIX_CYBER_OBSERVABLES}*`;
 
 // Relations
-const INDEX_INTERNAL_RELATIONSHIPS = 'opencti_internal_relationships';
+const INDEX_INTERNAL_RELATIONSHIPS = `${ES_INDEX_PREFIX}_internal_relationships`;
 export const READ_INDEX_INTERNAL_RELATIONSHIPS = `${INDEX_INTERNAL_RELATIONSHIPS}*`;
-const INDEX_STIX_CORE_RELATIONSHIPS = 'opencti_stix_core_relationships';
+const INDEX_STIX_CORE_RELATIONSHIPS = `${ES_INDEX_PREFIX}_stix_core_relationships`;
 export const READ_INDEX_STIX_CORE_RELATIONSHIPS = `${INDEX_STIX_CORE_RELATIONSHIPS}*`;
-const INDEX_STIX_SIGHTING_RELATIONSHIPS = 'opencti_stix_sighting_relationships';
+const INDEX_STIX_SIGHTING_RELATIONSHIPS = `${ES_INDEX_PREFIX}_stix_sighting_relationships`;
 export const READ_INDEX_STIX_SIGHTING_RELATIONSHIPS = `${INDEX_STIX_SIGHTING_RELATIONSHIPS}*`;
-const INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = 'opencti_stix_cyber_observable_relationships';
+const INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = `${ES_INDEX_PREFIX}_stix_cyber_observable_relationships`;
 export const READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = `${INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS}*`;
-const INDEX_STIX_META_RELATIONSHIPS = 'opencti_stix_meta_relationships';
+const INDEX_STIX_META_RELATIONSHIPS = `${ES_INDEX_PREFIX}_stix_meta_relationships`;
 export const READ_INDEX_STIX_META_RELATIONSHIPS = `${INDEX_STIX_META_RELATIONSHIPS}*`;
 
 // Inferences
-export const INDEX_INFERRED_ENTITIES = 'opencti_inferred_entities';
+export const INDEX_INFERRED_ENTITIES = `${ES_INDEX_PREFIX}_inferred_entities`;
 export const READ_INDEX_INFERRED_ENTITIES = `${INDEX_INFERRED_ENTITIES}*`;
-export const INDEX_INFERRED_RELATIONSHIPS = 'opencti_inferred_relationships';
+export const INDEX_INFERRED_RELATIONSHIPS = `${ES_INDEX_PREFIX}_inferred_relationships`;
 export const READ_INDEX_INFERRED_RELATIONSHIPS = `${INDEX_INFERRED_RELATIONSHIPS}*`;
 export const isInferredIndex = (index) =>
   index.startsWith(INDEX_INFERRED_ENTITIES) || index.startsWith(INDEX_INFERRED_RELATIONSHIPS);
