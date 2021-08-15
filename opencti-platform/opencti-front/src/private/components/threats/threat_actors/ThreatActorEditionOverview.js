@@ -396,6 +396,7 @@ ThreatActorEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   threatActor: PropTypes.object,
+  enableReferences: PropTypes.bool,
   context: PropTypes.array,
 };
 
