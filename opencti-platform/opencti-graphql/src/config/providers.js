@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 import passport from 'passport/lib';
 import GitHub from 'github-api';
-import jwtDecode from 'jwt-decode';
 import FacebookStrategy from 'passport-facebook';
 import GithubStrategy from 'passport-github';
 import LocalStrategy from 'passport-local';
@@ -244,14 +243,13 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const openIdScope = `openid email profile ${R.uniq(additionalScope).join(' ')}`;
         const options = { client, passReqToCallback: true, params: { scope: openIdScope } };
         const openIDStrategy = new OpenIDStrategy(options, (req, tokenset, userinfo, done) => {
-          logApp.debug(`[OPENID] Successfully logged`, { userinfo });
+          logApp.debug(`[OPENID] Successfully logged`, { userinfo, claims: tokenset.claims() });
           // region roles mapping
           const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
           const computeRolesMapping = () => {
-            const rolesPath = mappedConfig.roles_management?.roles_path || [];
+            const rolesPath = mappedConfig.roles_management?.roles_path || ['roles'];
             const rolesMapping = mappedConfig.roles_management?.roles_mapping || [];
-            const decodedUser = jwtDecode(tokenset.access_token);
-            const availableRoles = R.flatten(rolesPath.map((path) => R.path(path.split('.'), decodedUser) || []));
+            const availableRoles = R.flatten(rolesPath.map((path) => R.path(path.split('.'), tokenset.claims()) || []));
             const rolesMapper = genConfigMapper(rolesMapping);
             return availableRoles.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
           };
@@ -259,10 +257,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           // endregion
           // region groups mapping
           const computeGroupsMapping = () => {
-            const groupsPath = mappedConfig.groups_management?.groups_path || [];
+            const groupsPath = mappedConfig.groups_management?.groups_path || ['groups'];
             const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
-            const decodedUser = jwtDecode(tokenset.access_token);
-            const availableGroups = R.flatten(groupsPath.map((path) => R.path(path.split('.'), decodedUser) || []));
+            const availableGroups = R.flatten(groupsPath.map((path) => R.path(path.split('.'), tokenset.claims()) || []));
             const groupsMapper = genConfigMapper(groupsMapping);
             return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
           };
