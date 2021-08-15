@@ -550,10 +550,12 @@ const createSeeMiddleware = () => {
           for (let index = 0; index < elements.length; index += 1) {
             const { internal_id: elemId } = elements[index];
             const instance = await stixLoadById(req.session.user, elemId);
-            const data = buildStixData(instance);
+            const data = buildStixData(instance, { clearEmptyValues: true });
             const markings = data.object_marking_refs || [];
             if (channel.connected()) {
-              channel.sendEvent(undefined, EVENT_TYPE_CREATE, { data, markings });
+              const eventId = utcDate(data.updated_at).toDate().getTime();
+              const message = generateCreateMessage(instance);
+              channel.sendEvent(eventId, EVENT_TYPE_CREATE, { data, markings, message, version });
             } else {
               return false;
             }
