@@ -65,7 +65,7 @@ class ExternalReferenceEnrichment extends Component {
         <Tooltip title={t('Enrichment')}>
           <IconButton
             onClick={this.handleOpen.bind(this)}
-            color="primary"
+            color="inherit"
             aria-label="Refresh"
           >
             <CloudRefresh />

@@ -35,6 +35,7 @@ import inject18n from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from './StixCoreObjectHistory';
+import FileExternalReferencesViewer from '../files/FileExternalReferencesViewer';
 
 const styles = () => ({
   container: {
@@ -59,8 +60,13 @@ export const stixCoreObjectFilesAndHistoryAskJobImportMutation = graphql`
   mutation StixCoreObjectFilesAndHistoryAskJobImportMutation(
     $fileName: ID!
     $connectorId: String
+    $bypassEntityId: String
   ) {
-    askJobImport(fileName: $fileName, connectorId: $connectorId) {
+    askJobImport(
+      fileName: $fileName
+      connectorId: $connectorId
+      bypassEntityId: $bypassEntityId
+    ) {
       ...FileLine_file
     }
   }
@@ -131,6 +137,7 @@ const StixCoreObjectFilesAndHistory = ({
   connectorsExport,
   connectorsImport,
   withoutRelations,
+  bypassEntityId,
 }) => {
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);
@@ -152,6 +159,7 @@ const StixCoreObjectFilesAndHistory = ({
       variables: {
         fileName: fileToImport.id,
         connectorId: values.connector_id,
+        bypassEntityId: bypassEntityId ? id : null,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -220,6 +228,11 @@ const StixCoreObjectFilesAndHistory = ({
           entity={entity}
           handleOpenExport={handleOpenExport}
           isExportPossible={isExportPossible}
+        />
+        <FileExternalReferencesViewer
+          entity={entity}
+          connectors={importConnsPerFormat}
+          handleOpenImport={handleOpenImport}
         />
       </Grid>
       <div className={classes.historyContainer}>
@@ -412,6 +425,7 @@ StixCoreObjectFilesAndHistory.propTypes = {
   connectorsExport: PropTypes.array.isRequired,
   connectorsImport: PropTypes.array.isRequired,
   withoutRelations: PropTypes.bool,
+  bypassEntityId: PropTypes.bool,
 };
 
 const StixCoreObjectFilesAndHistoryFragment = createFragmentContainer(

@@ -165,6 +165,7 @@ class RootReport extends Component {
                             connectorsImport={props.connectorsForImport}
                             entity={props.report}
                             withoutRelations={false}
+                            bypassEntityId={true}
                           />
                         </React.Fragment>
                       )}

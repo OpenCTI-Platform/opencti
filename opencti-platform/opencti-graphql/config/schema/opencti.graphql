@@ -8868,6 +8868,7 @@ type ExternalReferenceEditMutations {
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(fromId: String!, relationship_type: String!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
 }
 type KillChainPhaseEditMutations {
   delete: ID
@@ -9160,7 +9161,7 @@ type Mutation {
   ###### INTERNAL
   deleteImport(fileName: String): Boolean @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadImport(file: Upload!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  askJobImport(fileName: ID!, connectorId: String): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  askJobImport(fileName: ID!, connectorId: String, bypassEntityId: String): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
 
   ### WORK
   workAdd(connectorId: String!, friendlyName: String): Work!

@@ -25,7 +25,7 @@ const styles = () => ({
   },
 });
 
-const FilterExternalReferencesViewerBase = ({
+const FileExternalReferencesViewerBase = ({
   entity,
   disableImport,
   handleOpenImport,
@@ -103,7 +103,7 @@ const FilterExternalReferencesViewerBase = ({
 const FileExternalReferencesViewerComponent = R.compose(
   inject18n,
   withStyles(styles),
-)(FilterExternalReferencesViewerBase);
+)(FileExternalReferencesViewerBase);
 
 const FileExternalReferencesViewerRefetchQuery = graphql`
   query FileExternalReferencesViewerRefetchQuery($id: String!) {

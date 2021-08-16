@@ -217,7 +217,10 @@ const FileManager = ({
           handleOpenExport={handleOpenExport}
           isExportPossible={isExportPossible}
         />
-        <FileExternalReferencesViewer entity={entity} />
+        <FileExternalReferencesViewer
+          entity={entity}
+          handleOpenImport={handleOpenImport}
+        />
       </Grid>
       <div>
         <Formik

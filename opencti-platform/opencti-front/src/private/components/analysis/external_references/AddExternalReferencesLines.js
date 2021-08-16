@@ -250,6 +250,18 @@ const AddExternalReferencesLines = createPaginationContainer(
               description
               url
               external_id
+              importFiles(first: 1000) {
+                edges {
+                  node {
+                    id
+                    lastModified
+                    ...FileLine_file
+                    metaData {
+                      mimetype
+                    }
+                  }
+                }
+              }
             }
           }
         }
