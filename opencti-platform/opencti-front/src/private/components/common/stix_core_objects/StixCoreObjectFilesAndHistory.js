@@ -23,8 +23,8 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
-import FileExportViewer from './FileExportViewer';
-import FileImportViewer from './FileImportViewer';
+import FileExportViewer from '../files/FileExportViewer';
+import FileImportViewer from '../files/FileImportViewer';
 import SelectField from '../../../../components/SelectField';
 import {
   commitMutation,
@@ -34,7 +34,7 @@ import {
 import inject18n from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import Loader from '../../../../components/Loader';
-import FileExternalReferencesViewer from './FileExternalReferencesViewer';
+import StixCoreObjectHistory from './StixCoreObjectHistory';
 
 const styles = () => ({
   container: {
@@ -42,6 +42,9 @@ const styles = () => ({
   },
   gridContainer: {
     marginBottom: 20,
+  },
+  historyContainer: {
+    marginTop: 40,
   },
   paper: {
     height: '100%',
@@ -52,8 +55,8 @@ const styles = () => ({
   },
 });
 
-export const fileManagerAskJobImportMutation = graphql`
-  mutation FileManagerAskJobImportMutation(
+export const stixCoreObjectFilesAndHistoryAskJobImportMutation = graphql`
+  mutation StixCoreObjectFilesAndHistoryAskJobImportMutation(
     $fileName: ID!
     $connectorId: String
   ) {
@@ -63,8 +66,8 @@ export const fileManagerAskJobImportMutation = graphql`
   }
 `;
 
-export const fileManagerExportMutation = graphql`
-  mutation FileManagerExportMutation(
+export const stixCoreObjectFilesAndHistoryExportMutation = graphql`
+  mutation StixCoreObjectFilesAndHistoryExportMutation(
     $id: ID!
     $format: String!
     $exportType: String!
@@ -120,13 +123,14 @@ const importValidation = (t) => Yup.object().shape({
   connector_id: Yup.string().required(t('This field is required')),
 });
 
-const FileManager = ({
+const StixCoreObjectFilesAndHistory = ({
   id,
   entity,
   t,
   classes,
   connectorsExport,
   connectorsImport,
+  withoutRelations,
 }) => {
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);
@@ -144,7 +148,7 @@ const FileManager = ({
 
   const onSubmitImport = (values, { setSubmitting, resetForm }) => {
     commitMutation({
-      mutation: fileManagerAskJobImportMutation,
+      mutation: stixCoreObjectFilesAndHistoryAskJobImportMutation,
       variables: {
         fileName: fileToImport.id,
         connectorId: values.connector_id,
@@ -163,7 +167,7 @@ const FileManager = ({
       ? null
       : values.maxMarkingDefinition;
     commitMutation({
-      mutation: fileManagerExportMutation,
+      mutation: stixCoreObjectFilesAndHistoryExportMutation,
       variables: {
         id,
         format: values.format,
@@ -217,8 +221,13 @@ const FileManager = ({
           handleOpenExport={handleOpenExport}
           isExportPossible={isExportPossible}
         />
-        <FileExternalReferencesViewer entity={entity} />
       </Grid>
+      <div className={classes.historyContainer}>
+        <StixCoreObjectHistory
+          stixCoreObjectId={id}
+          withoutRelations={withoutRelations}
+        />
+      </div>
       <div>
         <Formik
           enableReinitialize={true}
@@ -396,33 +405,42 @@ const FileManager = ({
   );
 };
 
-FileManager.propTypes = {
+StixCoreObjectFilesAndHistory.propTypes = {
   nsdt: PropTypes.func,
   id: PropTypes.string.isRequired,
   entity: PropTypes.object.isRequired,
   connectorsExport: PropTypes.array.isRequired,
   connectorsImport: PropTypes.array.isRequired,
+  withoutRelations: PropTypes.bool,
 };
 
-const FileManagerFragment = createFragmentContainer(FileManager, {
-  connectorsExport: graphql`
-    fragment FileManager_connectorsExport on Connector @relay(plural: true) {
-      id
-      name
-      active
-      connector_scope
-      updated_at
-    }
-  `,
-  connectorsImport: graphql`
-    fragment FileManager_connectorsImport on Connector @relay(plural: true) {
-      id
-      name
-      active
-      connector_scope
-      updated_at
-    }
-  `,
-});
+const StixCoreObjectFilesAndHistoryFragment = createFragmentContainer(
+  StixCoreObjectFilesAndHistory,
+  {
+    connectorsExport: graphql`
+      fragment StixCoreObjectFilesAndHistory_connectorsExport on Connector
+      @relay(plural: true) {
+        id
+        name
+        active
+        connector_scope
+        updated_at
+      }
+    `,
+    connectorsImport: graphql`
+      fragment StixCoreObjectFilesAndHistory_connectorsImport on Connector
+      @relay(plural: true) {
+        id
+        name
+        active
+        connector_scope
+        updated_at
+      }
+    `,
+  },
+);
 
-export default compose(inject18n, withStyles(styles))(FileManagerFragment);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCoreObjectFilesAndHistoryFragment);

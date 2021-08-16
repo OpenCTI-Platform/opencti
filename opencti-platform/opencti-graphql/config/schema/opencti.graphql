@@ -1190,6 +1190,10 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   external_id: String
   # Technical
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
 }
 input ExternalReferenceAddInput {
   stix_id: String
@@ -8863,6 +8867,7 @@ type ExternalReferenceEditMutations {
   contextClean: ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(fromId: String!, relationship_type: String!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
+  askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
 }
 type KillChainPhaseEditMutations {
   delete: ID

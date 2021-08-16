@@ -950,6 +950,8 @@ const i18n = {
       'has created the entity': "a créé l'éntité",
       'has created a relation': 'a créé une relation',
       History: 'Activité',
+      'Files & history': 'Fichiers & activité',
+      'External references files': 'Fichiers des références externes',
       to: 'vers',
       'Relations of the entity': 'Relations de cette entité',
       'No entities of this type has been found.':

@@ -15,6 +15,9 @@ import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
+import { ENTITY_TYPE_CONNECTOR } from "../schema/internalObject";
+import { createWork } from "./work";
+import { pushToConnector } from "../database/rabbitmq";
 
 export const findById = (user, externalReferenceId) => {
   return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
@@ -86,4 +89,20 @@ export const externalReferenceEditContext = async (user, externalReferenceId, in
   return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) =>
     notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user)
   );
+};
+
+export const externalReferenceAskEnrichment = async (user, externalReferenceId, connectorId) => {
+  const connector = await loadById(user, connectorId, ENTITY_TYPE_CONNECTOR);
+  const work = await createWork(user, connector, 'Manual enrichment', externalReferenceId);
+  const message = {
+    internal: {
+      work_id: work.id, // Related action for history
+      applicant_id: user.id, // User asking for the import
+    },
+    event: {
+      entity_id: externalReferenceId,
+    },
+  };
+  await pushToConnector(connector, message);
+  return work;
 };

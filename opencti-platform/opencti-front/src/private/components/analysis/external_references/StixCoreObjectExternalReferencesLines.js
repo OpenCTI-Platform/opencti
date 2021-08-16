@@ -31,6 +31,7 @@ import { commitMutation } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
 import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
 
 const styles = (theme) => ({
   paper: {
@@ -212,6 +213,9 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                           secondary={truncate(externalReferenceSecondary, 90)}
                         />
                         <ListItemSecondaryAction>
+                          <ExternalReferenceEnrichment
+                            externalReferenceId={externalReference.id}
+                          />
                           <IconButton
                             aria-label="Remove"
                             onClick={this.handleOpenDialog.bind(
@@ -378,6 +382,30 @@ const StixCoreObjectExternalReferencesLines = createPaginationContainer(
                 url
                 hash
                 external_id
+                jobs(first: 100) {
+                  id
+                  timestamp
+                  connector {
+                    id
+                    name
+                  }
+                  messages {
+                    timestamp
+                    message
+                  }
+                  errors {
+                    timestamp
+                    message
+                  }
+                  status
+                }
+                connectors(onlyAlive: false) {
+                  id
+                  connector_type
+                  name
+                  active
+                  updated_at
+                }
               }
             }
           }
