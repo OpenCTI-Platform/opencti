@@ -141,7 +141,7 @@ const FileWorkComponent = (props) => {
                   primary={computeLabel()}
                   secondary={secondaryLabel}
                 />
-                <ListItemSecondaryAction style={{ right: 0 }}>
+                <ListItemSecondaryAction>
                   <IconButton
                     color="primary"
                     onClick={() => deleteWork(work.id)}

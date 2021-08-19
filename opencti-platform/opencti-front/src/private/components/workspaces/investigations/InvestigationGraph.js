@@ -1708,6 +1708,10 @@ const InvestigationGraph = createFragmentContainer(
                 definition
                 x_opencti_color
               }
+              ... on KillChainPhase {
+                kill_chain_name
+                phase_name
+              }
               ... on ExternalReference {
                 url
                 source_name

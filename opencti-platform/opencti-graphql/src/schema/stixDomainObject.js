@@ -146,7 +146,7 @@ export const stixDomainObjectFieldsToBeUpdated = {
     'confidence',
   ],
   [ENTITY_TYPE_CAMPAIGN]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'confidence'],
-  [ENTITY_TYPE_CONTAINER_NOTE]: ['content', 'confidence'],
+  [ENTITY_TYPE_CONTAINER_NOTE]: ['content', 'confidence', 'abstract'],
   [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: ['description', 'confidence'],
   [ENTITY_TYPE_CONTAINER_OPINION]: ['opinion', 'confidence'],
   [ENTITY_TYPE_CONTAINER_REPORT]: [
@@ -293,6 +293,7 @@ export const stixDomainObjectsAttributes = {
     'i_created_at_day',
     'i_created_at_month',
     'i_created_at_year',
+    'abstract',
     'updated_at',
     'revoked',
     'confidence',

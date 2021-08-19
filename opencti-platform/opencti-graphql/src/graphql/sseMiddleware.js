@@ -2,32 +2,37 @@ import * as R from 'ramda';
 import conf, { basePath, logApp } from '../config/conf';
 import { authenticateUserFromRequest, STREAMAPI } from '../domain/user';
 import { createStreamProcessor } from '../database/redis';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { generateInternalId } from '../schema/identifier';
 import { findById } from '../domain/stream';
 import {
-  EVENT_TYPE_SYNC,
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
   EVENT_TYPE_MERGE,
+  EVENT_TYPE_SYNC,
   EVENT_TYPE_UPDATE,
 } from '../database/rabbitmq';
 import { stixLoadById } from '../database/middleware';
 import { convertFiltersToQueryOptions } from '../domain/taxii';
 import { elList } from '../database/elasticSearch';
 import {
+  generateCreateMessage,
+  generateDeleteMessage,
+  generateUpdateMessage,
   isEmptyField,
-  READ_DATA_INDICES,
-  UPDATE_OPERATION_ADD,
-  UPDATE_OPERATION_REMOVE,
-  UPDATE_OPERATION_REPLACE,
+  isNotEmptyField,
+  READ_INDEX_STIX_META_OBJECTS,
+  READ_STIX_INDICES,
 } from '../database/utils';
 import { buildStixData } from '../database/stix';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { BYPASS, isBypassUser } from '../utils/access';
 import { adaptFiltersFrontendFormat, TYPE_FILTER } from '../utils/filtering';
+import { rebuildInstanceBeforePatch } from '../utils/patch';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { utcDate } from '../utils/format';
 
 let heartbeat;
+const STREAM_EVENT_VERSION = 3;
 export const MIN_LIVE_STREAM_EVENT_VERSION = 2;
 const KEEP_ALIVE_INTERVAL_MS = 20000;
 const broadcastClients = {};
@@ -150,21 +155,24 @@ const isElementEvolved = (openctiId, events) => {
     return undefined;
   }
   const eventId = R.last(events).id;
+  const lastEventData = R.last(events).data.data;
+  const standardId = lastEventData.x_opencti_patch?.replace?.id?.previous || lastEventData.id;
   // If is a creation or a deletion, considering as an evolution
   const patch = computeAggregatePatch(events);
   if (isCreatedElement) {
-    return { id: openctiId, eventId, topic: EVENT_TYPE_CREATE, patch };
+    return { id: standardId, eventId, topic: EVENT_TYPE_CREATE, patch };
   }
   if (isDeleteElement) {
-    const content = R.head(deletionEvents).data.data;
-    return { id: openctiId, eventId, topic: EVENT_TYPE_DELETE, content, patch };
+    const inside = R.head(deletionEvents).data;
+    const { data, message } = inside;
+    return { id: standardId, eventId, topic: EVENT_TYPE_DELETE, content: data, message, patch };
   }
   // 02. Handle update differential
   // In this case, we only take care about element evolution
   if (R.isEmpty(patch)) {
     return undefined;
   }
-  return { id: openctiId, eventId, topic: EVENT_TYPE_UPDATE, patch };
+  return { id: standardId, eventId, topic: EVENT_TYPE_UPDATE, patch };
 };
 export const computeEventsDiff = (elements) => {
   // If merge elements are inside, we need to flatten the deletion
@@ -173,14 +181,13 @@ export const computeEventsDiff = (elements) => {
     const element = elements[elemIndex];
     if (element.topic === EVENT_TYPE_MERGE) {
       const instanceData = element.data.data;
-      const mergedDeleted = instanceData.x_opencti_sources.map((s) => {
-        return {
-          id: element.id,
-          topic: EVENT_TYPE_DELETE,
-          data: { markings: s.object_marking_refs, origin: element.origin, data: s, version: element.version },
-        };
-      });
-      flattenElements.push(...mergedDeleted);
+      const { sources, deletions } = instanceData.x_opencti_context;
+      const mergedDeletions = [...sources, ...deletions].map((s) => ({
+        id: element.id,
+        topic: EVENT_TYPE_DELETE,
+        data: { markings: s.object_marking_refs, origin: element.origin, data: s, version: element.version },
+      }));
+      flattenElements.push(...mergedDeletions);
     }
     flattenElements.push(element);
   }
@@ -284,73 +291,6 @@ export const isInstanceMatchFilters = (instance, filters) => {
   return true;
 };
 
-// Concept here is to recreate the instance before is change
-// Basically reverting the patch.
-export const rebuildInstanceBeforePatch = (stixWithInternalRefs, patch) => {
-  const rebuild = R.clone(stixWithInternalRefs);
-  const patchEntries = Object.entries(patch);
-  for (let index = 0; index < patchEntries.length; index += 1) {
-    const [type, actionPatch] = patchEntries[index];
-    const elementEntries = Object.entries(actionPatch);
-    for (let elemIndex = 0; elemIndex < elementEntries.length; elemIndex += 1) {
-      const [key, changes] = elementEntries[elemIndex];
-      if (type === UPDATE_OPERATION_REPLACE) {
-        const { previous } = changes;
-        rebuild[key] = previous;
-      }
-      if (type === UPDATE_OPERATION_ADD) {
-        const ids = changes.map((c) => c.x_opencti_internal_id);
-        rebuild[key] = (rebuild[key] || []).filter((e) => !ids.includes(e.x_opencti_internal_id));
-      }
-      if (type === UPDATE_OPERATION_REMOVE) {
-        const ops = rebuild[key] || [];
-        ops.push(...changes);
-        rebuild[key] = ops;
-      }
-    }
-  }
-  return rebuild;
-};
-export const rebuildInstanceWithPatch = (instance, patch) => {
-  const rebuild = R.clone(instance);
-  const patchEntries = Object.entries(patch);
-  for (let index = 0; index < patchEntries.length; index += 1) {
-    const [type, actionPatch] = patchEntries[index];
-    const elementEntries = Object.entries(actionPatch);
-    for (let elemIndex = 0; elemIndex < elementEntries.length; elemIndex += 1) {
-      const [key, changes] = elementEntries[elemIndex];
-      if (type === UPDATE_OPERATION_REPLACE) {
-        const { current } = changes;
-        rebuild[key] = current;
-      }
-      if (type === UPDATE_OPERATION_ADD) {
-        const ops = rebuild[key] || [];
-        ops.push(...changes.map((c) => c.value));
-        rebuild[key] = key.endsWith('_ref') ? R.head(ops) : ops;
-      }
-      if (type === UPDATE_OPERATION_REMOVE) {
-        const ids = changes.map((c) => [c.value, c.x_opencti_internal_id]).flat();
-        const elements = (instance[key] || []).filter((e) => !ids.includes(e));
-        rebuild[key] = key.endsWith('_ref') ? null : elements;
-      }
-    }
-  }
-  return rebuild;
-};
-export const extractFieldsOfPatch = (patch) => {
-  const fields = [];
-  const patchEntries = Object.entries(patch);
-  for (let index = 0; index < patchEntries.length; index += 1) {
-    const [, actionPatch] = patchEntries[index];
-    const elementEntries = Object.entries(actionPatch);
-    for (let elemIndex = 0; elemIndex < elementEntries.length; elemIndex += 1) {
-      const [key] = elementEntries[elemIndex];
-      fields.push(key);
-    }
-  }
-  return R.uniq(fields);
-};
-
 const isEventGranted = (event, user) => {
   const { data } = event;
   // Granted if:
@@ -424,8 +364,8 @@ const createSeeMiddleware = () => {
     const broadcasterInfo = await processor.info();
     req.on('close', () => {
       req.finished = true;
-      processor.shutdown();
       delete broadcastClients[client.id];
+      processor.shutdown();
     });
     res.writeHead(200, {
       Connection: 'keep-alive',
@@ -434,6 +374,7 @@ const createSeeMiddleware = () => {
       'Cache-Control': 'no-cache, no-transform', // no-transform is required for dev proxy
     });
     client.sendConnected({ ...broadcasterInfo, connectionId: client.id });
+    broadcastClients[client.id] = client;
   };
   const createSseChannel = (req, res) => {
     const channel = {
@@ -486,8 +427,7 @@ const createSeeMiddleware = () => {
     });
     try {
       await initBroadcasting(req, res, client, processor);
-      await processor.start(req.query.from || req.headers['Last-Event-ID']);
-      broadcastClients[client.id] = client;
+      await processor.start(req.query.from || req.headers['last-event-id']);
     } catch (err) {
       res.status(500);
       res.json({ error: 'Error accessing stream (empty stream or redis client connection problem)' });
@@ -524,7 +464,9 @@ const createSeeMiddleware = () => {
   };
   const filteredStreamHandler = async (req, res) => {
     const { id } = req.params;
-    const startFrom = req.query.from || req.headers['Last-Event-ID'];
+    const version = STREAM_EVENT_VERSION;
+    const startFrom = req.query.from || req.headers['last-event-id'];
+    const compactDepth = parseInt(req.headers['live-depth-compact'] || conf.get('redis:live_depth_compact'), 10);
     const collection = await findById(req.session.user, id);
     if (!collection) {
       res.status(500);
@@ -546,7 +488,6 @@ const createSeeMiddleware = () => {
     }
     // Create channel.
     const { channel, client } = createSseChannel(req, res);
-    const compactDepth = conf.get('redis:live_depth_compact');
     const processor = createStreamProcessor(
       req.session.user,
       req.session.user.user_email,
@@ -556,7 +497,8 @@ const createSeeMiddleware = () => {
         // Need to compute the diff change
         const diffElements = computeEventsDiff(processingMessages);
         for (let index = 0; index < diffElements.length; index += 1) {
-          const { id: diffId, eventId, topic, content, patch } = diffElements[index];
+          const diffElement = diffElements[index];
+          const { id: diffId, eventId, topic, content, patch } = diffElement;
           if (topic === EVENT_TYPE_CREATE) {
             const currentInstance = await stixLoadById(req.session.user, diffId);
             // Could be null because of user markings restriction
@@ -564,18 +506,24 @@ const createSeeMiddleware = () => {
               const createdInstance = buildStixData(currentInstance, { patchGeneration: true });
               const isMatchFilters = isInstanceMatchFilters(createdInstance, streamFilters);
               if (isMatchFilters) {
-                const data = buildStixData(currentInstance);
-                data.x_opencti_patch = patch;
+                const data = buildStixData(currentInstance, { clearEmptyValues: true });
+                const message = generateCreateMessage(currentInstance);
+                if (isNotEmptyField(patch)) {
+                  data.x_opencti_patch = patch;
+                }
                 const markings = data.object_marking_refs || [];
-                client.sendEvent(eventId, EVENT_TYPE_CREATE, { data, markings });
+                client.sendEvent(eventId, EVENT_TYPE_CREATE, { data, markings, message, version });
               }
             }
           }
           if (topic === EVENT_TYPE_DELETE) {
             const data = content;
             const markings = data.object_marking_refs || [];
-            data.x_opencti_patch = patch;
-            client.sendEvent(eventId, EVENT_TYPE_DELETE, { data, markings });
+            if (isNotEmptyField(patch)) {
+              data.x_opencti_patch = patch;
+            }
+            const { message } = diffElement;
+            client.sendEvent(eventId, EVENT_TYPE_DELETE, { data, markings, message, version });
           }
           if (topic === EVENT_TYPE_UPDATE) {
             const currentInstance = await stixLoadById(req.session.user, diffId);
@@ -590,14 +538,17 @@ const createSeeMiddleware = () => {
               data.x_opencti_patch = patch;
               // If updatedInstance pass the filtering but not initialInstance -> creation event
               if (isCurrentVisible && !isBeforePatchVisible) {
-                client.sendEvent(eventId, EVENT_TYPE_CREATE, { data, markings });
+                const message = generateCreateMessage(currentInstance);
+                client.sendEvent(eventId, EVENT_TYPE_CREATE, { data, markings, message, version });
               }
               // If initialInstance pass the filtering but not updatedInstance -> deletion event
               if (isBeforePatchVisible && !isCurrentVisible) {
-                client.sendEvent(eventId, EVENT_TYPE_DELETE, { data, markings });
+                const message = generateDeleteMessage(currentInstance);
+                client.sendEvent(eventId, EVENT_TYPE_DELETE, { data, markings, message, version });
               }
               if (isBeforePatchVisible && isCurrentVisible) {
-                client.sendEvent(eventId, topic, { data, markings });
+                const message = generateUpdateMessage(patch);
+                client.sendEvent(eventId, topic, { data, markings, message, version });
               }
             }
           }
@@ -613,29 +564,31 @@ const createSeeMiddleware = () => {
       // If empty start date, stream all results corresponding to the filters
       if (isEmptyField(startFrom)) {
         const queryOptions = convertFiltersToQueryOptions(streamFilters);
-        const callback = async (elements) => {
+        // noinspection UnnecessaryLocalVariableJS
+        const queryCallback = async (elements) => {
           for (let index = 0; index < elements.length; index += 1) {
             const { internal_id: elemId } = elements[index];
             const instance = await stixLoadById(req.session.user, elemId);
-            const data = buildStixData(instance);
+            const data = buildStixData(instance, { clearEmptyValues: true });
             const markings = data.object_marking_refs || [];
             if (channel.connected()) {
-              channel.sendEvent(undefined, EVENT_TYPE_CREATE, { data, markings });
+              const eventId = utcDate(data.updated_at).toDate().getTime();
+              const message = generateCreateMessage(instance);
+              channel.sendEvent(eventId, EVENT_TYPE_CREATE, { data, markings, message, version });
             } else {
               return false;
             }
           }
           return channel.connected();
         };
-        queryOptions.callback = callback;
-        await elList(req.session.user, READ_DATA_INDICES, queryOptions);
+        queryOptions.callback = queryCallback;
+        await elList(req.session.user, [READ_INDEX_STIX_META_OBJECTS, ...READ_STIX_INDICES], queryOptions);
         // We need to sent a special event to mark the end of init with the current timestamp
         const catchId = `${new Date().getTime()}-0`;
-        channel.sendEvent(catchId, EVENT_TYPE_SYNC, { message: 'Catchup done' });
+        channel.sendEvent(catchId, EVENT_TYPE_SYNC, { message: 'Catchup done', version });
       }
       // After start to stream the live.
       await processor.start(startFrom);
-      broadcastClients[client.id] = client;
     } catch (e) {
       res.status(500);
       res.json({ error: 'Error accessing stream (empty stream or redis client connection problem)' });

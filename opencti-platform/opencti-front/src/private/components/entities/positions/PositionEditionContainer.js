@@ -68,7 +68,9 @@ class PositionEditionContainer extends Component {
         <div className={classes.container}>
           <PositionEditionOverview
             position={this.props.position}
+            enableReferences={this.props.enableReferences}
             context={editContext}
+            handleClose={handleClose.bind(this)}
           />
         </div>
       </div>

@@ -140,7 +140,7 @@ describe('Sector resolver standard behavior', () => {
   });
   it('should update sector', async () => {
     const UPDATE_QUERY = gql`
-      mutation SectorEdit($id: ID!, $input: EditInput!) {
+      mutation SectorEdit($id: ID!, $input: [EditInput]!) {
         sectorEdit(id: $id) {
           fieldPatch(input: $input) {
             id

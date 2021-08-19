@@ -20,7 +20,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../schema/internalObject';
 import withCancel from '../graphql/subscriptionWrapper';
 import { SYSTEM_USER } from '../utils/access';
 
-const toolResolvers = {
+const workspaceResolvers = {
   Query: {
     workspace: (_, { id }, { user }) => findById(user, id),
     workspaces: (_, args, { user }) => findAll(user, args),
@@ -68,4 +68,4 @@ const toolResolvers = {
   },
 };
 
-export default toolResolvers;
+export default workspaceResolvers;

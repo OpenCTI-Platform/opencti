@@ -105,7 +105,7 @@ describe('Indicator resolver standard behavior', () => {
   });
   it('should update indicator', async () => {
     const UPDATE_QUERY = gql`
-      mutation IndicatorEdit($id: ID!, $input: EditInput!) {
+      mutation IndicatorEdit($id: ID!, $input: [EditInput]!) {
         indicatorEdit(id: $id) {
           fieldPatch(input: $input) {
             id

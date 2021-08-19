@@ -66,7 +66,12 @@ class CityEditionContainer extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <CityEditionOverview city={this.props.city} context={editContext} />
+          <CityEditionOverview
+            city={this.props.city}
+            enableReferences={this.props.enableReferences}
+            context={editContext}
+            handleClose={handleClose.bind(this)}
+          />
         </div>
       </div>
     );

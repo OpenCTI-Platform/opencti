@@ -77,7 +77,9 @@ class ObservedDataEditionContainer extends Component {
         <div className={classes.container}>
           <ObservedDataEditionOverview
             observedData={this.props.observedData}
+            enableReferences={this.props.enableReferences}
             context={editContext}
+            handleClose={handleClose.bind(this)}
           />
         </div>
       </div>

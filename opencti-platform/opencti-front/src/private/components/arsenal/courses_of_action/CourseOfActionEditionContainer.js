@@ -77,7 +77,9 @@ class CourseOfActionEditionContainer extends Component {
         <div className={classes.container}>
           <CourseOfActionEditionOverview
             courseOfAction={courseOfAction}
+            enableReferences={this.props.enableReferences}
             context={editContext}
+            handleClose={handleClose.bind(this)}
           />
         </div>
       </div>

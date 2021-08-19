@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, withTheme } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
@@ -64,6 +64,13 @@ const styles = (theme) => ({
   },
   container: {
     padding: '10px 20px 20px 20px',
+  },
+  speedDialButton: {
+    backgroundColor: theme.palette.secondary.main,
+    color: '#ffffff',
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.main,
+    },
   },
 });
 
@@ -201,22 +208,25 @@ class RegionOrCountryCreation extends Component {
           onClose={this.handleClose.bind(this)}
           onOpen={this.handleOpen.bind(this)}
           open={this.state.open}
-          direction="left"
           FabProps={{ color: 'secondary' }}
         >
           <SpeedDialAction
-            title="Create a region"
+            title={t('Create a region')}
             icon={<LocalPlayOutlined />}
             tooltipTitle={t('Create a region')}
             onClick={this.handleOpenRegion.bind(this)}
-            FabProps={{ color: 'primary' }}
+            FabProps={{
+              classes: { root: classes.speedDialButton },
+            }}
           />
           <SpeedDialAction
-            title="Create a country"
+            title={t('Create a country')}
             icon={<FlagOutlined />}
             tooltipTitle={t('Create a country')}
             onClick={this.handleOpenCountry.bind(this)}
-            FabProps={{ color: 'primary' }}
+            FabProps={{
+              classes: { root: classes.speedDialButton },
+            }}
           />
         </SpeedDial>
         <Drawer
@@ -395,5 +405,6 @@ RegionOrCountryCreation.propTypes = {
 
 export default compose(
   inject18n,
+  withTheme,
   withStyles(styles, { withTheme: true }),
 )(RegionOrCountryCreation);

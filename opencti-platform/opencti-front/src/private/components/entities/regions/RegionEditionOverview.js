@@ -51,7 +51,7 @@ const styles = (theme) => ({
 const regionMutationFieldPatch = graphql`
   mutation RegionEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     regionEdit(id: $id) {
       fieldPatch(input: $input) {
@@ -135,44 +135,12 @@ class RegionEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { region } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], region),
-      value: pathOr(null, ['createdBy', 'id'], region),
-    };
-
-    if (currentCreatedBy.value === null) {
+    if (!this.props.enableReferences) {
       commitMutation({
-        mutation: regionMutationRelationAdd,
+        mutation: regionMutationFieldPatch,
         variables: {
           id: this.props.region.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: regionMutationRelationDelete,
-        variables: {
-          id: this.props.region.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: regionMutationRelationAdd,
-              variables: {
-                id: this.props.region.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }

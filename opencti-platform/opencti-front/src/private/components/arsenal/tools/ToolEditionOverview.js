@@ -50,7 +50,10 @@ const styles = (theme) => ({
 });
 
 const toolMutationFieldPatch = graphql`
-  mutation ToolEditionOverviewFieldPatchMutation($id: ID!, $input: EditInput!) {
+  mutation ToolEditionOverviewFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput]!
+  ) {
     toolEdit(id: $id) {
       fieldPatch(input: $input) {
         ...ToolEditionOverview_tool
@@ -133,43 +136,12 @@ class ToolEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { tool } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], tool),
-      value: pathOr(null, ['createdBy', 'id'], tool),
-    };
-
-    if (currentCreatedBy.value === null) {
+    if (!this.props.enableReferences) {
       commitMutation({
-        mutation: toolMutationRelationAdd,
+        mutation: toolMutationFieldPatch,
         variables: {
           id: this.props.tool.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: toolMutationRelationDelete,
-        variables: {
-          id: this.props.tool.id,
-          relationId: currentCreatedBy.relation,
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: toolMutationRelationAdd,
-              variables: {
-                id: this.props.tool.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }

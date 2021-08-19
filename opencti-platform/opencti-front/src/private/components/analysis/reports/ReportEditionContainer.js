@@ -68,7 +68,9 @@ class ReportEditionContainer extends Component {
         <div className={classes.container}>
           <ReportEditionOverview
             report={this.props.report}
+            enableReferences={this.props.enableReferences}
             context={editContext}
+            handleClose={handleClose.bind(this)}
           />
         </div>
       </div>

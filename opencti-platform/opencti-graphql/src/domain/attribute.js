@@ -46,10 +46,10 @@ export const addAttribute = async (user, attribute) => {
 
 export const attributeDelete = (user, attributeId) => deleteElementById(user, attributeId, ENTITY_TYPE_ATTRIBUTE);
 
-export const attributeEditField = async (user, attributeId, input) => {
+export const attributeEditField = async (user, attributeId, inputs) => {
   const previous = await loadById(user, attributeId, ENTITY_TYPE_ATTRIBUTE);
-  const { value } = input;
+  const { value } = R.head(inputs);
   await elUpdateAttributeValue(previous.key, previous.value, R.head(value));
-  const { element } = await updateAttribute(user, attributeId, ENTITY_TYPE_ATTRIBUTE, input);
+  const { element } = await updateAttribute(user, attributeId, ENTITY_TYPE_ATTRIBUTE, inputs);
   return notify(BUS_TOPICS[ENTITY_TYPE_ATTRIBUTE].EDIT_TOPIC, element, user);
 };

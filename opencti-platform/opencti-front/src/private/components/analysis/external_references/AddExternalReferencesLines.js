@@ -76,30 +76,33 @@ const sharedUpdater = (store, stixCoreObjectId, newEdge) => {
 
 class AddExternalReferencesLinesContainer extends Component {
   toggleExternalReference(externalReference, onlyCreate = false) {
-    const { stixCoreObjectId, stixCoreObjectExternalReferences } = this.props;
-    const stixCoreObjectExternalReferencesIds = map(
+    const {
+      stixCoreObjectOrStixCoreRelationshipId,
+      stixCoreObjectOrStixCoreRelationshipReferences,
+    } = this.props;
+    const stixCoreObjectOrStixCoreRelationshipReferencesIds = map(
       (n) => n.node.id,
-      stixCoreObjectExternalReferences,
+      stixCoreObjectOrStixCoreRelationshipReferences,
     );
-    const alreadyAdded = stixCoreObjectExternalReferencesIds.includes(
+    const alreadyAdded = stixCoreObjectOrStixCoreRelationshipReferencesIds.includes(
       externalReference.id,
     );
     if (alreadyAdded && !onlyCreate) {
       const existingExternalReference = head(
         filter(
           (n) => n.node.id === externalReference.id,
-          stixCoreObjectExternalReferences,
+          stixCoreObjectOrStixCoreRelationshipReferences,
         ),
       );
       commitMutation({
         mutation: externalReferenceMutationRelationDelete,
         variables: {
           id: existingExternalReference.node.id,
-          fromId: stixCoreObjectId,
+          fromId: stixCoreObjectOrStixCoreRelationshipId,
           relationship_type: 'external-reference',
         },
         updater: (store) => {
-          const entity = store.get(stixCoreObjectId);
+          const entity = store.get(stixCoreObjectOrStixCoreRelationshipId);
           const conn = ConnectionHandler.getConnection(
             entity,
             'Pagination_externalReferences',
@@ -109,7 +112,7 @@ class AddExternalReferencesLinesContainer extends Component {
       });
     } else if (!alreadyAdded) {
       const input = {
-        fromId: stixCoreObjectId,
+        fromId: stixCoreObjectOrStixCoreRelationshipId,
         relationship_type: 'external-reference',
       };
       commitMutation({
@@ -127,7 +130,7 @@ class AddExternalReferencesLinesContainer extends Component {
           const relation = store.get(relationId);
           payload.setLinkedRecord(node, 'node');
           payload.setLinkedRecord(relation, 'relation');
-          sharedUpdater(store, stixCoreObjectId, payload);
+          sharedUpdater(store, stixCoreObjectOrStixCoreRelationshipId, payload);
         },
       });
     }
@@ -137,21 +140,21 @@ class AddExternalReferencesLinesContainer extends Component {
     const {
       classes,
       data,
-      stixCoreObjectExternalReferences,
+      stixCoreObjectOrStixCoreRelationshipReferences,
       open,
       search,
       paginationOptions,
     } = this.props;
-    const stixCoreObjectExternalReferencesIds = map(
+    const stixCoreObjectOrStixCoreRelationshipReferencesIds = map(
       (n) => n.node.id,
-      stixCoreObjectExternalReferences,
+      stixCoreObjectOrStixCoreRelationshipReferences,
     );
     return (
       <div>
         <List>
           {data.externalReferences.edges.map((externalReferenceNode) => {
             const externalReference = externalReferenceNode.node;
-            const alreadyAdded = stixCoreObjectExternalReferencesIds.includes(
+            const alreadyAdded = stixCoreObjectOrStixCoreRelationshipReferencesIds.includes(
               externalReference.id,
             );
             const externalReferenceId = externalReference.external_id
@@ -205,8 +208,8 @@ class AddExternalReferencesLinesContainer extends Component {
 }
 
 AddExternalReferencesLinesContainer.propTypes = {
-  stixCoreObjectId: PropTypes.string,
-  stixCoreObjectExternalReferences: PropTypes.array,
+  stixCoreObjectOrStixCoreRelationshipId: PropTypes.string,
+  stixCoreObjectOrStixCoreRelationshipReferences: PropTypes.array,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -247,6 +250,18 @@ const AddExternalReferencesLines = createPaginationContainer(
               description
               url
               external_id
+              importFiles(first: 1000) {
+                edges {
+                  node {
+                    id
+                    lastModified
+                    ...FileLine_file
+                    metaData {
+                      mimetype
+                    }
+                  }
+                }
+              }
             }
           }
         }

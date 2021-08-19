@@ -35,7 +35,6 @@ import { findAll as allMarkings } from './markingDefinition';
 import { findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
 import { elLoadBy } from '../database/elasticSearch';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { now } from '../utils/format';
 import { applicationSession } from '../database/session';
 import {
@@ -46,8 +45,9 @@ import {
   USER_CREATION,
   USER_DELETION,
 } from '../config/audit';
-import { buildPagination, isEmptyField } from '../database/utils';
+import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -81,8 +81,8 @@ const extractTokenFromBasicAuth = async (authorization) => {
     const b64auth = authorization.substring(BASIC.length);
     const [username, password] = Buffer.from(b64auth, 'base64').toString().split(':');
     // eslint-disable-next-line no-use-before-define
-    const { token } = await login(username, password);
-    return token?.uuid;
+    const { api_token: tokenUUID } = await login(username, password);
+    return tokenUUID;
   }
   return null;
 };
@@ -344,12 +344,21 @@ export const roleDeleteRelation = async (user, roleId, toId, relationshipType) =
 };
 
 // User related
-export const userEditField = async (user, userId, input) => {
+export const userEditField = async (user, userId, inputs) => {
+  const input = R.head(inputs);
   const { key } = input;
-  const value = key === 'password' ? [bcrypt.hashSync(R.head(input.value).toString(), 10)] : input.value;
+  const value = key === 'password' ? [bcrypt.hashSync(R.head(input.value).toString())] : input.value;
   const patch = { [key]: value };
   const { element } = await patchAttribute(user, userId, ENTITY_TYPE_USER, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
+};
+
+export const deleteBookmark = async (user, id) => {
+  const currentUser = await loadById(user, user.id, ENTITY_TYPE_USER);
+  const currentBookmarks = currentUser.bookmarks ? currentUser.bookmarks : [];
+  const newBookmarks = R.filter((n) => n.id !== id, currentBookmarks);
+  await patchAttribute(user, user.id, ENTITY_TYPE_USER, { bookmarks: newBookmarks });
+  return id;
 };
 
 export const bookmarks = async (user, types) => {
@@ -358,7 +367,16 @@ export const bookmarks = async (user, types) => {
     types && types.length > 0
       ? R.filter((n) => R.includes(n.type, types), currentUser.bookmarks || [])
       : currentUser.bookmarks || [];
-  const filteredBookmarks = await Promise.all(R.map((n) => loadById(user, n.id, n.type), bookmarkList));
+  const filteredBookmarks = [];
+  // eslint-disable-next-line no-restricted-syntax
+  for (const bookmark of bookmarkList) {
+    const loadedBookmark = await loadById(user, bookmark.id, bookmark.type);
+    if (isNotEmptyField(loadedBookmark)) {
+      filteredBookmarks.push(loadedBookmark);
+    } else {
+      await deleteBookmark(user, bookmark.id);
+    }
+  }
   return buildPagination(
     0,
     null,
@@ -378,16 +396,8 @@ export const addBookmark = async (user, id, type) => {
   return loadById(user, id, type);
 };
 
-export const deleteBookmark = async (user, id) => {
-  const currentUser = await loadById(user, user.id, ENTITY_TYPE_USER);
-  const currentBookmarks = currentUser.bookmarks ? currentUser.bookmarks : [];
-  const newBookmarks = R.filter((n) => n.id !== id, currentBookmarks);
-  await patchAttribute(user, user.id, ENTITY_TYPE_USER, { bookmarks: newBookmarks });
-  return id;
-};
-
-export const meEditField = (user, userId, input) => {
-  return userEditField(user, userId, input);
+export const meEditField = (user, userId, inputs) => {
+  return userEditField(user, userId, inputs);
 };
 
 export const userDelete = async (user, userId) => {
@@ -591,7 +601,7 @@ export const initAdmin = async (email, password, tokenValue) => {
     // If admin user exists, just patch the fields
     const patch = {
       user_email: email,
-      password: bcrypt.hashSync(password, 10),
+      password: bcrypt.hashSync(password),
       api_token: tokenValue,
       external: true,
     };

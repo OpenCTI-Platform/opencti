@@ -91,13 +91,17 @@ class AttackPatternEditionContainer extends Component {
           {this.state.currentTab === 0 && (
             <AttackPatternEditionOverview
               attackPattern={attackPattern}
+              enableReferences={this.props.enableReferences}
               context={editContext}
+              handleClose={handleClose.bind(this)}
             />
           )}
           {this.state.currentTab === 1 && (
             <AttackPatternEditionDetails
               attackPattern={attackPattern}
+              enableReferences={this.props.enableReferences}
               context={editContext}
+              handleClose={handleClose.bind(this)}
             />
           )}
         </div>

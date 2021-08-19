@@ -91,11 +91,18 @@ class IncidentEditionContainer extends Component {
           {this.state.currentTab === 0 && (
             <IncidentEditionOverview
               incident={incident}
+              enableReferences={this.props.enableReferences}
               context={editContext}
+              handleClose={handleClose.bind(this)}
             />
           )}
           {this.state.currentTab === 1 && (
-            <IncidentEditionDetails incident={incident} context={editContext} />
+            <IncidentEditionDetails
+              incident={incident}
+              enableReferences={this.props.enableReferences}
+              context={editContext}
+              handleClose={handleClose.bind(this)}
+            />
           )}
         </div>
       </div>

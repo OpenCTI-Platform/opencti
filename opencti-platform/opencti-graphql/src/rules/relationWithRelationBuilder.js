@@ -1,12 +1,8 @@
 /* eslint-disable camelcase */
-import {
-  computeRuleConfidence,
-  createInferredRelation,
-  deleteInferredRuleElement,
-  listAllRelations,
-} from '../../database/middleware';
-import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
-import { createRuleContent, RULE_MANAGER_USER } from '../RuleUtils';
+import { createInferredRelation, deleteInferredRuleElement, listAllRelations } from '../database/middleware';
+import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format';
+import { createRuleContent, RULE_MANAGER_USER } from './rules';
+import { computeAverage } from '../database/utils';
 
 const buildRelationWithRelationRule = (ruleDefinition, relationTypes) => {
   const { id } = ruleDefinition;
@@ -33,7 +29,7 @@ const buildRelationWithRelationRule = (ruleDefinition, relationTypes) => {
         const existingRange = buildPeriodFromDates(start_time, stop_time);
         const range = computeRangeIntersection(creationRange, existingRange);
         const elementMarkings = [...(markings || []), ...(object_marking_refs || [])];
-        const computedConfidence = computeRuleConfidence([createdConfidence, confidence]);
+        const computedConfidence = computeAverage([createdConfidence, confidence]);
         // Rule content
         const dependencies = [sourceRef, createdId, targetRef, foundRelationId, toId];
         const explanation = [foundRelationId, createdId];

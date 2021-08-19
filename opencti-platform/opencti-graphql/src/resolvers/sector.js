@@ -19,7 +19,6 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } f
 import { RELATION_PART_OF } from '../schema/stixCoreRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
-import { UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 const parentSectorsLoader = batchLoader(batchParentSectors);
 const subSectorsLoader = batchLoader(batchSubSectors);
@@ -45,8 +44,7 @@ const sectorResolvers = {
   Mutation: {
     sectorEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, operation = UPDATE_OPERATION_REPLACE }) =>
-        stixDomainObjectEditField(user, id, input, { operation }),
+      fieldPatch: ({ input, commitMessage }) => stixDomainObjectEditField(user, id, input, { commitMessage }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),

@@ -1,51 +1,107 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import * as R from 'ramda';
+import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import inject18n from '../../../components/i18n';
 import StixSightingRelationshipsLines, {
   stixSightingRelationshipsLinesQuery,
 } from './stix_sighting_relationships/StixSightingRelationshipsLines';
-
-const styles = (theme) => ({
-  container: {
-    marginTop: 15,
-    paddingBottom: 70,
-  },
-  chips: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
-  chip: {
-    margin: theme.spacing(1) / 4,
-  },
-});
+import { isUniqFilter } from '../common/lists/Filters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 
 class StixSightingRelationships extends Component {
   constructor(props) {
     super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      'view-stix-sighting-relationships',
+    );
     this.state = {
-      sortBy: 'first_seen',
-      orderAsc: true,
-      searchTerm: '',
-      view: 'lines',
+      sortBy: R.propOr('created', 'sortBy', params),
+      orderAsc: R.propOr(false, 'orderAsc', params),
+      searchTerm: R.propOr('', 'searchTerm', params),
+      view: R.propOr('lines', 'view', params),
+      filters: R.propOr({}, 'filters', params),
+      openExports: false,
+      numberOfElements: { number: 0, symbol: '' },
     };
   }
 
-  handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      'view-stix-sighting-relationships',
+      this.state,
+    );
   }
 
   handleSearch(value) {
-    this.setState({ searchTerm: value });
+    this.setState({ searchTerm: value }, () => this.saveView());
+  }
+
+  handleSort(field, orderAsc) {
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
+  }
+
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
+  }
+
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (this.state.filters[key] && this.state.filters[key].length > 0) {
+      this.setState(
+        {
+          filters: R.assoc(
+            key,
+            isUniqFilter(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
+            this.state.filters,
+          ),
+        },
+        () => this.saveView(),
+      );
+    } else {
+      this.setState(
+        {
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
+        },
+        () => this.saveView(),
+      );
+    }
+  }
+
+  handleRemoveFilter(key) {
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
+  }
+
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc } = this.state;
-    const { entityLink } = this.props;
-    // sort only when inferences are disabled or inferences are resolved
+    const {
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      openExports,
+      numberOfElements,
+    } = this.state;
     const dataColumns = {
       x_opencti_negative: {
         label: 'Status',
@@ -89,8 +145,22 @@ class StixSightingRelationships extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
-        displayImport={true}
-        secondaryAction={true}
+        handleAddFilter={this.handleAddFilter.bind(this)}
+        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
+        exportEntityType="stix-sighting-relationship"
+        keyword={searchTerm}
+        filters={filters}
+        paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
+        availableFilterKeys={[
+          'labelledBy',
+          'markedBy',
+          'created_start_date',
+          'created_end_date',
+          'createdBy',
+        ]}
       >
         <QueryRenderer
           query={stixSightingRelationshipsLinesQuery}
@@ -99,9 +169,10 @@ class StixSightingRelationships extends Component {
             <StixSightingRelationshipsLines
               data={props}
               paginationOptions={paginationOptions}
-              entityLink={entityLink}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              onLabelClick={this.handleAddFilter.bind(this)}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         />
@@ -110,7 +181,6 @@ class StixSightingRelationships extends Component {
   }
 
   render() {
-    const { classes } = this.props;
     const {
       view, searchTerm, sortBy, orderAsc,
     } = this.state;
@@ -121,20 +191,14 @@ class StixSightingRelationships extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div className={classes.container}>
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-      </div>
+      <div>{view === 'lines' ? this.renderLines(paginationOptions) : ''}</div>
     );
   }
 }
 
 StixSightingRelationships.propTypes = {
-  classes: PropTypes.object,
-  t: PropTypes.func,
   history: PropTypes.object,
+  location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixSightingRelationships);
+export default R.compose(inject18n, withRouter)(StixSightingRelationships);

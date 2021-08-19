@@ -165,29 +165,9 @@ class TopMenuReport extends Component {
             }
             classes={{ root: classes.button }}
           >
-            {t('Files')}
+            {t('Files & history')}
           </Button>
         </Security>
-        <Button
-          component={Link}
-          to={`/dashboard/analysis/reports/${reportId}/history`}
-          variant={
-            location.pathname
-            === `/dashboard/analysis/reports/${reportId}/history`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/analysis/reports/${reportId}/history`
-              ? 'secondary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('History')}
-        </Button>
       </div>
     );
   }

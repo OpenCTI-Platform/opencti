@@ -4,17 +4,8 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import {
-  assoc,
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pick,
-  difference,
-  head,
-} from 'ramda';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -23,6 +14,8 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import CommitMessage from '../../common/form/CommitMessage';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -52,10 +45,11 @@ const styles = (theme) => ({
 const intrusionSetMutationFieldPatch = graphql`
   mutation IntrusionSetEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
+    $commitMessage: String
   ) {
     intrusionSetEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(input: $input, commitMessage: $commitMessage) {
         ...IntrusionSetEditionOverview_intrusionSet
         ...IntrusionSet_intrusionSet
       }
@@ -127,130 +121,131 @@ class IntrusionSetEditionOverviewComponent extends Component {
     });
   }
 
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: intrusionSetMutationFieldPatch,
+      variables: {
+        id: this.props.intrusionSet.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
   handleSubmitField(name, value) {
-    intrusionSetValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: intrusionSetMutationFieldPatch,
-          variables: {
-            id: this.props.intrusionSet.id,
-            input: { key: name, value },
-          },
-        });
-      })
-      .catch(() => false);
+    if (!this.props.enableReferences) {
+      intrusionSetValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: intrusionSetMutationFieldPatch,
+            variables: {
+              id: this.props.intrusionSet.id,
+              input: { key: name, value },
+            },
+          });
+        })
+        .catch(() => false);
+    }
   }
 
   handleChangeCreatedBy(name, value) {
-    const { intrusionSet } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], intrusionSet),
-      value: pathOr(null, ['createdBy', 'id'], intrusionSet),
-    };
-
-    if (currentCreatedBy.value === null) {
+    if (!this.props.enableReferences) {
       commitMutation({
-        mutation: intrusionSetMutationRelationAdd,
+        mutation: intrusionSetMutationFieldPatch,
         variables: {
           id: this.props.intrusionSet.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: intrusionSetMutationRelationDelete,
-        variables: {
-          id: this.props.intrusionSet.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: intrusionSetMutationRelationAdd,
-              variables: {
-                id: this.props.intrusionSet.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }
   }
 
   handleChangeObjectMarking(name, values) {
-    const { intrusionSet } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(intrusionSet);
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
+    if (!this.props.enableReferences) {
+      const { intrusionSet } = this.props;
+      const currentMarkingDefinitions = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(intrusionSet);
+      const added = R.difference(values, currentMarkingDefinitions);
+      const removed = R.difference(currentMarkingDefinitions, values);
 
-    if (added.length > 0) {
-      commitMutation({
-        mutation: intrusionSetMutationRelationAdd,
-        variables: {
-          id: this.props.intrusionSet.id,
-          input: {
-            toId: head(added).value,
+      if (added.length > 0) {
+        commitMutation({
+          mutation: intrusionSetMutationRelationAdd,
+          variables: {
+            id: this.props.intrusionSet.id,
+            input: {
+              toId: R.head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: intrusionSetMutationRelationDelete,
+          variables: {
+            id: this.props.intrusionSet.id,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: intrusionSetMutationRelationDelete,
-        variables: {
-          id: this.props.intrusionSet.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
+        });
+      }
     }
   }
 
   render() {
-    const { t, intrusionSet, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], intrusionSet) === null
+    const {
+      t, intrusionSet, context, enableReferences,
+    } = this.props;
+    const createdBy = R.pathOr(null, ['createdBy', 'name'], intrusionSet) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'name'], intrusionSet),
-        value: pathOr(null, ['createdBy', 'id'], intrusionSet),
+        label: R.pathOr(null, ['createdBy', 'name'], intrusionSet),
+        value: R.pathOr(null, ['createdBy', 'id'], intrusionSet),
       };
-    const killChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
+    const killChainPhases = R.pipe(
+      R.pathOr([], ['killChainPhases', 'edges']),
+      R.map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
         relationId: n.relation.id,
       })),
     )(intrusionSet);
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
+    const objectMarking = R.pipe(
+      R.pathOr([], ['objectMarking', 'edges']),
+      R.map((n) => ({
         label: n.node.definition,
         value: n.node.id,
       })),
     )(intrusionSet);
-    const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('killChainPhases', killChainPhases),
-      assoc('objectMarking', objectMarking),
-      pick([
+    const initialValues = R.pipe(
+      R.assoc('createdBy', createdBy),
+      R.assoc('killChainPhases', killChainPhases),
+      R.assoc('objectMarking', objectMarking),
+      R.pick([
         'name',
         'confidence',
         'description',
@@ -264,9 +259,11 @@ class IntrusionSetEditionOverviewComponent extends Component {
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={intrusionSetValidation(t)}
-        onSubmit={() => true}
+        onSubmit={this.onSubmit.bind(this)}
       >
-        {({ setFieldValue }) => (
+        {({
+          submitForm, isSubmitting, validateForm, setFieldValue,
+        }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
@@ -323,6 +320,13 @@ class IntrusionSetEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeObjectMarking.bind(this)}
             />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                validateForm={validateForm}
+              />
+            )}
           </Form>
         )}
       </Formik>
@@ -368,7 +372,7 @@ const IntrusionSetEditionOverview = createFragmentContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(IntrusionSetEditionOverview);

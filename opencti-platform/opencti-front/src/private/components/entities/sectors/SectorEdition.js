@@ -37,6 +37,9 @@ export const sectorEditionQuery = graphql`
     sector(id: $id) {
       ...SectorEditionContainer_sector
     }
+    settings {
+      platform_enable_references
+    }
   }
 `;
 
@@ -84,10 +87,10 @@ class SectorEdition extends Component {
             variables={{ id: sectorId }}
             render={({ props }) => {
               if (props) {
-                // Done
                 return (
                   <SectorEditionContainer
                     sector={props.sector}
+                    enableReferences={props.settings.platform_enable_references}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

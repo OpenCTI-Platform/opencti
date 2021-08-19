@@ -15,6 +15,11 @@ import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
+import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { createWork } from './work';
+import { pushToConnector } from '../database/rabbitmq';
+import { upload } from '../database/minio';
+import { uploadJobImport } from './file';
 
 export const findById = (user, externalReferenceId) => {
   return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
@@ -69,8 +74,8 @@ export const externalReferenceDeleteRelation = async (user, externalReferenceId,
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
 };
 
-export const externalReferenceEditField = async (user, externalReferenceId, input) => {
-  const { element } = await updateAttribute(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, input);
+export const externalReferenceEditField = async (user, externalReferenceId, input, opts = {}) => {
+  const { element } = await updateAttribute(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, input, opts);
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, element, user);
 };
 
@@ -86,4 +91,27 @@ export const externalReferenceEditContext = async (user, externalReferenceId, in
   return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) =>
     notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user)
   );
+};
+
+export const externalReferenceAskEnrichment = async (user, externalReferenceId, connectorId) => {
+  const connector = await loadById(user, connectorId, ENTITY_TYPE_CONNECTOR);
+  const work = await createWork(user, connector, 'Manual enrichment', externalReferenceId);
+  const message = {
+    internal: {
+      work_id: work.id, // Related action for history
+      applicant_id: user.id, // User asking for the import
+    },
+    event: {
+      entity_id: externalReferenceId,
+    },
+  };
+  await pushToConnector(connector, message);
+  return work;
+};
+
+export const externalReferenceImportPush = async (user, entityId, file) => {
+  const entity = await internalLoadById(user, entityId);
+  const up = await upload(user, `import/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
+  await uploadJobImport(user, up.id, up.metaData.mimetype, up.metaData.entity_id);
+  return up;
 };

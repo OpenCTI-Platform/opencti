@@ -23,7 +23,7 @@ const LIST_QUERY = gql`
       edges {
         node {
           id
-          ... on Report {
+          ... on Tool {
             name
             description
           }
@@ -43,7 +43,7 @@ const READ_QUERY = gql`
         focusOn
         name
       }
-      ... on Report {
+      ... on Tool {
         name
         description
       }
@@ -53,7 +53,7 @@ const READ_QUERY = gql`
 
 describe('StixDomainObject resolver standard behavior', () => {
   let stixDomainObjectInternalId;
-  const stixDomainObjectStixId = 'report--34c9875d-8206-4f4b-bf17-f58d9cf7ebec';
+  const stixDomainObjectStixId = 'tool--34c9875d-8206-4f4b-bf17-f58d9cf7ebec';
   it('should stixDomainObject created', async () => {
     const CREATE_QUERY = gql`
       mutation StixDomainObjectAdd($input: StixDomainObjectAddInput) {
@@ -67,7 +67,7 @@ describe('StixDomainObject resolver standard behavior', () => {
               }
             }
           }
-          ... on Report {
+          ... on Tool {
             name
             description
           }
@@ -78,7 +78,7 @@ describe('StixDomainObject resolver standard behavior', () => {
     const STIX_DOMAIN_ENTITY_TO_CREATE = {
       input: {
         name: 'StixDomainObject',
-        type: 'Report',
+        type: 'Tool',
         stix_id: stixDomainObjectStixId,
         description: 'StixDomainObject description',
         objectLabel: ['TrickBot', 'COVID-19'],
@@ -108,7 +108,7 @@ describe('StixDomainObject resolver standard behavior', () => {
               }
             }
           }
-          ... on Report {
+          ... on Tool {
             name
             description
           }
@@ -119,8 +119,8 @@ describe('StixDomainObject resolver standard behavior', () => {
     const STIX_DOMAIN_ENTITY_TO_CREATE = {
       input: {
         name: 'StixDomainObject',
-        type: 'Report',
-        stix_id: 'report--84dddb68-f440-4cb5-b9f6-a59159079ef5',
+        type: 'Tool',
+        stix_id: 'tool--84dddb68-f440-4cb5-b9f6-a59159079ef5',
         description: 'StixDomainObject description',
         objectLabel: ['TrickBot', 'COVID-19'],
       },
@@ -134,7 +134,7 @@ describe('StixDomainObject resolver standard behavior', () => {
     expect(stixDomainObject.data.stixDomainObjectAdd.name).toEqual('StixDomainObject');
     expect(stixDomainObject.data.stixDomainObjectAdd.objectLabel.edges.length).toEqual(2);
     expect(stixDomainObject.data.stixDomainObjectAdd.x_opencti_stix_ids).toEqual(
-      expect.arrayContaining(['report--84dddb68-f440-4cb5-b9f6-a59159079ef5'])
+      expect.arrayContaining(['tool--84dddb68-f440-4cb5-b9f6-a59159079ef5'])
     );
   });
   it('should stixDomainObject loaded by internal id', async () => {
@@ -204,11 +204,11 @@ describe('StixDomainObject resolver standard behavior', () => {
   });
   it('should update stixDomainObject', async () => {
     const UPDATE_QUERY = gql`
-      mutation StixDomainObjectEdit($id: ID!, $input: EditInput!) {
+      mutation StixDomainObjectEdit($id: ID!, $input: [EditInput]!) {
         stixDomainObjectEdit(id: $id) {
           fieldPatch(input: $input) {
             id
-            ... on Report {
+            ... on Tool {
               name
             }
           }

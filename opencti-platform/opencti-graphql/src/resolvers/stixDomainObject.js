@@ -28,7 +28,6 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/minio';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions } from '../schema/stixDomainObject';
-import { UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 const stixDomainObjectResolvers = {
   Query: {
@@ -65,8 +64,7 @@ const stixDomainObjectResolvers = {
   Mutation: {
     stixDomainObjectEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, operation = UPDATE_OPERATION_REPLACE }) =>
-        stixDomainObjectEditField(user, id, input, { operation }),
+      fieldPatch: ({ input, commitMessage }) => stixDomainObjectEditField(user, id, input, { commitMessage }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),

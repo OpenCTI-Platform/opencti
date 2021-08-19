@@ -52,7 +52,7 @@ const styles = (theme) => ({
 const IncidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     incidentEdit(id: $id) {
       fieldPatch(input: $input) {
@@ -141,44 +141,12 @@ class IncidentEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { Incident } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], Incident),
-      value: pathOr(null, ['createdBy', 'id'], Incident),
-    };
-
-    if (currentCreatedBy.value === null) {
+    if (!this.props.enableReferences) {
       commitMutation({
-        mutation: IncidentMutationRelationAdd,
+        mutation: IncidentMutationFieldPatch,
         variables: {
           id: this.props.incident.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: IncidentMutationRelationDelete,
-        variables: {
-          id: this.props.incident.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: IncidentMutationRelationAdd,
-              variables: {
-                id: this.props.incident.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }

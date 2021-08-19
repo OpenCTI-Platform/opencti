@@ -59,7 +59,7 @@ const styles = (theme) => ({
 const indicatorMutationFieldPatch = graphql`
   mutation IndicatorEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     indicatorEdit(id: $id) {
       fieldPatch(input: $input) {
@@ -196,44 +196,12 @@ class IndicatorEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { indicator } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], indicator),
-      value: pathOr(null, ['createdBy', 'id'], indicator),
-    };
-
-    if (currentCreatedBy.value === null) {
-      commitMutation({
-        mutation: indicatorMutationRelationAdd,
-        variables: {
-          id: this.props.indicator.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
+    if (!this.props.enableReferences) {
       commitMutation({
         mutation: indicatorMutationRelationDelete,
         variables: {
           id: this.props.indicator.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: indicatorMutationRelationAdd,
-              variables: {
-                id: this.props.indicator.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }

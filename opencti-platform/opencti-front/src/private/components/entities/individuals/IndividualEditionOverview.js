@@ -51,7 +51,7 @@ const styles = (theme) => ({
 const individualMutationFieldPatch = graphql`
   mutation IndividualEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     individualEdit(id: $id) {
       fieldPatch(input: $input) {
@@ -142,44 +142,12 @@ class IndividualEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { individual } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], individual),
-      value: pathOr(null, ['createdBy', 'id'], individual),
-    };
-
-    if (currentCreatedBy.value === null) {
+    if (!this.props.enableReferences) {
       commitMutation({
-        mutation: individualMutationRelationAdd,
+        mutation: individualMutationFieldPatch,
         variables: {
           id: this.props.individual.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: individualMutationRelationDelete,
-        variables: {
-          id: this.props.individual.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: individualMutationRelationAdd,
-              variables: {
-                id: this.props.individual.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }

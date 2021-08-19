@@ -6,7 +6,8 @@
       "ca": [],
       "key": null,
       "crt": null,
-      "reject_unauthorized": true
+      "reject_unauthorized": true,
+      "cookie_secure": false
     },
     "app_logs": {
       "logs_level": "info",
@@ -61,6 +62,7 @@
     "interval": 300000
   },
   "redis": {
+    "namespace": "",
     "hostname": "localhost",
     "use_ssl": false,
     "ca": [],
@@ -70,6 +72,7 @@
     "use_as_cache": false
   },
   "elasticsearch": {
+    "index_prefix": "opencti",
     "url": "http://localhost:9200",
     "index_creation_pattern": "-000001",
     "search_ignore_throttled": false,
@@ -77,6 +80,7 @@
     "max_concurrency": 2
   },
   "minio": {
+    "bucket_name": "opencti-bucket",
     "endpoint": "localhost",
     "port": 9000,
     "use_ssl": false,

@@ -37,6 +37,7 @@ export const getApplicationInfo = () => ({
     { name: 'Redis', version: getRedisVersion() },
     { name: 'MinIO', version: getMinIOVersion() },
   ],
+  debugStats: {}, // Lazy loaded
 });
 
 export const getSettings = async () => {

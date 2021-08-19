@@ -28,6 +28,8 @@ import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/repo
 import ItemAuthor from '../../../../components/ItemAuthor';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreRelationshipInference from './StixCoreRelationshipInference';
+import StixCoreRelationshipExternalReferences from '../../analysis/external_references/StixCoreRelationshipExternalReferences';
+import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHistory';
 
 const styles = (theme) => ({
   container: {
@@ -99,6 +101,9 @@ const styles = (theme) => ({
     margin: '10px 0 0 0',
     padding: '25px 15px 15px 15px',
     borderRadius: 6,
+  },
+  gridContainer: {
+    marginBottom: 20,
   },
 });
 
@@ -382,7 +387,11 @@ class StixCoreRelationshipContainer extends Component {
             </div>
           ) : (
             <div style={{ margin: '40px 0 0px 0' }}>
-              <Grid container={true} spacing={3}>
+              <Grid
+                container={true}
+                spacing={3}
+                classes={{ container: classes.gridContainer }}
+              >
                 <Grid item={true} xs={6}>
                   <StixCoreRelationshipStixCoreRelationships
                     entityId={stixCoreRelationship.id}
@@ -393,6 +402,18 @@ class StixCoreRelationshipContainer extends Component {
                     stixCoreObjectOrStixCoreRelationshipId={
                       stixCoreRelationship.id
                     }
+                  />
+                </Grid>
+              </Grid>
+              <Grid container={true} spacing={3} style={{ marginTop: 25 }}>
+                <Grid item={true} xs={6}>
+                  <StixCoreRelationshipExternalReferences
+                    stixCoreRelationshipId={stixCoreRelationship.id}
+                  />
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <StixCoreRelationshipLatestHistory
+                    stixCoreRelationshipId={stixCoreRelationship.id}
                   />
                 </Grid>
               </Grid>

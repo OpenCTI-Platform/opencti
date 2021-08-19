@@ -27,6 +27,7 @@ import KillChainPhasesField from '../form/KillChainPhasesField';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import ConfidenceField from '../form/ConfidenceField';
+import ExternalReferencesField from '../form/ExternalReferencesField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -307,6 +308,7 @@ class StixCoreRelationshipCreation extends Component {
           R.assoc('createdBy', values.createdBy.value),
           R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
           R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+          R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
         )(values);
         commitMutation({
           mutation: stixCoreRelationshipCreationMutation,
@@ -409,6 +411,7 @@ class StixCoreRelationshipCreation extends Component {
       stop_time: defaultEndTime,
       description: '',
       killChainPhases: [],
+      externalReferences: [],
       createdBy: defaultCreatedBy
         ? {
           label: defaultCreatedBy.name,
@@ -605,6 +608,10 @@ class StixCoreRelationshipCreation extends Component {
               />
               <ObjectMarkingField
                 name="objectMarking"
+                style={{ marginTop: 20, width: '100%' }}
+              />
+              <ExternalReferencesField
+                name="externalReferences"
                 style={{ marginTop: 20, width: '100%' }}
               />
               <div className={classes.buttons}>

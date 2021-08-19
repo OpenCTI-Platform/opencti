@@ -34,6 +34,7 @@ import {
 import inject18n from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import Loader from '../../../../components/Loader';
+import FileExternalReferencesViewer from './FileExternalReferencesViewer';
 
 const styles = () => ({
   container: {
@@ -215,6 +216,10 @@ const FileManager = ({
           entity={entity}
           handleOpenExport={handleOpenExport}
           isExportPossible={isExportPossible}
+        />
+        <FileExternalReferencesViewer
+          entity={entity}
+          handleOpenImport={handleOpenImport}
         />
       </Grid>
       <div>

@@ -61,7 +61,22 @@ class PositionKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={position.id}
               relationshipTypes={['related-to']}
-              targetStixDomainObjectTypes={['Stix-Domain-Object']}
+              targetStixDomainObjectTypes={[
+                'Threat-Actor',
+                'Intrusion-Set',
+                'Campaign',
+                'Incident',
+                'Malware',
+                'Tool',
+                'Vulnerability',
+                'Individual',
+                'Organization',
+                'Sector',
+                'Region',
+                'Country',
+                'City',
+                'Position',
+              ]}
               entityLink={link}
               allDirections={true}
               {...routeProps}

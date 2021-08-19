@@ -37,6 +37,9 @@ export const countryEditionQuery = graphql`
     country(id: $id) {
       ...CountryEditionContainer_country
     }
+    settings {
+      platform_enable_references
+    }
   }
 `;
 
@@ -87,6 +90,7 @@ class CountryEdition extends Component {
                 return (
                   <CountryEditionContainer
                     country={props.country}
+                    enableReferences={props.settings.platform_enable_references}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

@@ -1,4 +1,5 @@
 const path = require('path');
+const glob = require('glob');
 const { DefinePlugin, HotModuleReplacementPlugin } = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 const TerserPlugin = require('terser-webpack-plugin');
@@ -16,7 +17,11 @@ module.exports = (env, argv) => {
   const buildDate = new Date().toISOString();
   return {
     entry: {
-      index: [resolvePath('src/index'), ...addIf(isDev, [`${require.resolve('webpack/hot/poll')}?1000`])],
+      index: [
+        resolvePath('src/index'),
+        ...glob.sync('./src/rules/**/*.js'),
+        ...addIf(isDev, [`${require.resolve('webpack/hot/poll')}?1000`]),
+      ],
     },
     resolve: {
       extensions: ['.wasm', '.mjs', '.js', '.json', '.graphql'],

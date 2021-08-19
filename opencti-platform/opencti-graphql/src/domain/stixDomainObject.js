@@ -18,12 +18,13 @@ import {
 import { elCount } from '../database/elasticSearch';
 import { upload } from '../database/minio';
 import { workToExportFile } from './work';
-import { FunctionalError } from '../config/errors';
-import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { FunctionalError, UnsupportedError } from '../config/errors';
+import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import {
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
+  isStixDomainObjectContainer,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
   stixDomainObjectOptions,
@@ -120,14 +121,25 @@ export const stixDomainObjectImportPush = async (user, entityId, file) => {
 
 export const addStixDomainObject = async (user, stixDomainObject) => {
   const innerType = stixDomainObject.type;
-  let data = stixDomainObject;
+  if (!isStixDomainObject(innerType)) {
+    throw UnsupportedError('This method can only create Stix domain');
+  }
+  if (isStixDomainObjectContainer(innerType)) {
+    throw UnsupportedError('This method cant create Stix domain container');
+  }
+  const data = stixDomainObject;
   if (isStixDomainObjectIdentity(innerType)) {
-    const identityClass = innerType === ENTITY_TYPE_IDENTITY_SECTOR ? 'class' : innerType.toLowerCase();
-    data = assoc('identity_class', identityClass, data);
+    data.identity_class = innerType === ENTITY_TYPE_IDENTITY_SECTOR ? 'class' : innerType.toLowerCase();
   }
   if (isStixDomainObjectLocation(innerType)) {
-    data = assoc('x_opencti_location_type', innerType, data);
+    data.x_opencti_location_type = innerType;
   }
+  if (innerType === ENTITY_TYPE_INDICATOR) {
+    if (isEmptyField(stixDomainObject.pattern) || isEmptyField(stixDomainObject.pattern_type)) {
+      throw UnsupportedError('You need to specify a pattern/pattern_type to create an indicator');
+    }
+  }
+  // Create the element
   const created = await createEntity(user, dissoc('type', data), innerType);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
@@ -193,8 +205,8 @@ export const stixDomainObjectDeleteRelation = async (user, stixDomainObjectId, t
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, stixDomainObject, user);
 };
 
-export const stixDomainObjectEditField = async (user, stixDomainObjectId, input, options = {}) => {
-  const stixDomainObject = await loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
+export const stixDomainObjectEditField = async (user, stixObjectId, input, opts = {}) => {
+  const stixDomainObject = await loadById(user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
   if (!stixDomainObject) {
     throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.');
   }
@@ -209,22 +221,14 @@ export const stixDomainObjectEditField = async (user, stixDomainObjectId, input,
       })
     );
   }
-  const { element: updatedStixDomainObject } = await updateAttribute(
-    user,
-    stixDomainObjectId,
-    ABSTRACT_STIX_DOMAIN_OBJECT,
-    input,
-    options
-  );
+  const { element: updatedElem } = await updateAttribute(user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input, opts);
   if (stixDomainObject.entity_type === ENTITY_TYPE_INDICATOR && input.key === 'x_opencti_score') {
-    const observables = await listThroughGetTo(user, [stixDomainObjectId], RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
+    const observables = await listThroughGetTo(user, [stixObjectId], RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
     await Promise.all(
-      observables.map((observable) =>
-        updateAttribute(user, observable.id, ABSTRACT_STIX_CYBER_OBSERVABLE, input, options)
-      )
+      observables.map((observable) => updateAttribute(user, observable.id, ABSTRACT_STIX_CYBER_OBSERVABLE, input, opts))
     );
   }
-  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedStixDomainObject, user);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
 
 // region context

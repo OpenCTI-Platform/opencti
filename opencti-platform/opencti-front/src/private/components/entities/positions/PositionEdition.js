@@ -37,6 +37,9 @@ export const positionEditionQuery = graphql`
     position(id: $id) {
       ...PositionEditionContainer_position
     }
+    settings {
+      platform_enable_references
+    }
   }
 `;
 
@@ -87,6 +90,7 @@ class PositionEdition extends Component {
                 return (
                   <PositionEditionContainer
                     position={props.position}
+                    enableReferences={props.settings.platform_enable_references}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

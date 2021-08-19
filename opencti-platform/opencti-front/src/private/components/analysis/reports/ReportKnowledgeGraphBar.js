@@ -308,8 +308,8 @@ class ReportKnowledgeGraphBar extends Component {
         : R.tail(selectedNodes);
     } else if (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1) {
       relationFromObjects = relationReversed
-        ? selectedNodes[0]
-        : selectedLinks[0];
+        ? [selectedNodes[0]]
+        : [selectedLinks[0]];
       relationToObjects = relationReversed
         ? [selectedLinks[0]]
         : [selectedNodes[0]];

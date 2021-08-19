@@ -140,7 +140,7 @@ describe('Region resolver standard behavior', () => {
   });
   it('should update region', async () => {
     const UPDATE_QUERY = gql`
-      mutation RegionEdit($id: ID!, $input: EditInput!) {
+      mutation RegionEdit($id: ID!, $input: [EditInput]!) {
         regionEdit(id: $id) {
           fieldPatch(input: $input) {
             id

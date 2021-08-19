@@ -2,7 +2,14 @@
 import * as R from 'ramda';
 import { buildDeleteEvent, buildEvent, buildScanEvent, createStreamProcessor, lockResource } from '../database/redis';
 import conf, { ENABLED_RULE_ENGINE, logApp } from '../config/conf';
-import { createEntity, internalLoadById, listAllRelations, patchAttribute, stixLoadById } from '../database/middleware';
+import {
+  connectionLoaders,
+  createEntity,
+  internalLoadById,
+  listAllRelations,
+  patchAttribute,
+  stixLoadById,
+} from '../database/middleware';
 import { INDEX_INTERNAL_OBJECTS, isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/rabbitmq';
 import { elList, elUpdate } from '../database/elasticSearch';
@@ -11,11 +18,12 @@ import { ENTITY_TYPE_RULE, ENTITY_TYPE_RULE_MANAGER } from '../schema/internalOb
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { createRuleTask, deleteTask, findAll } from '../domain/task';
 import { getActivatedRules, getRule } from '../domain/rule';
-import { RULE_MANAGER_USER } from '../rules/RuleUtils';
-import { extractFieldsOfPatch, MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/sseMiddleware';
+import { RULE_MANAGER_USER, RULES_DECLARATION } from '../rules/rules';
+import { MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/sseMiddleware';
 import { buildStixData } from '../database/stix';
 import { generateInternalType, getParentTypes, getTypeFromStixId } from '../schema/schemaUtils';
-import declaredRules from '../rules/RuleDeclarations';
+import { now } from '../utils/format';
+import { extractFieldsOfPatch } from '../utils/patch';
 
 let activatedRules = [];
 const RULE_ENGINE_ID = 'rule_engine_settings';
@@ -50,60 +58,111 @@ export const setRuleActivation = async (user, ruleId, active) => {
 
 const ruleMergeHandler = async (event) => {
   const { data, markings } = event;
-  // Need to generate events for deletion
-  const events = await Promise.all(
-    data.x_opencti_sources.map((s) => {
-      const instance = { ...s, standard_id: s.id, internal_id: s.x_opencti_id, entity_type: generateInternalType(s) };
-      return buildDeleteEvent(RULE_MANAGER_USER, instance, stixLoadById, { withoutMessage: true });
-    })
-  );
-  // Add the update event
+  const events = [];
+  const generateInternalDeleteEvent = (instance) => {
+    const loaders = { stixLoadById, connectionLoaders };
+    return buildDeleteEvent(RULE_MANAGER_USER, instance, [], loaders, { withoutMessage: true });
+  };
+  // region 01 - Generate events for deletion
+  // -- sources
+  const { x_opencti_context } = data;
+  const sourceDeleteEventsPromise = x_opencti_context.sources.map((s) => {
+    const instance = { ...s, standard_id: s.id, internal_id: s.x_opencti_id, entity_type: generateInternalType(s) };
+    return generateInternalDeleteEvent(instance);
+  });
+  const sourceDeleteEvents = await Promise.all(sourceDeleteEventsPromise);
+  events.push(...sourceDeleteEvents);
+  // -- derived deletions
+  const derivedDeleteEventsPromise = x_opencti_context.deletions.map((s) => {
+    const instance = { ...s, standard_id: s.id, internal_id: s.x_opencti_id, entity_type: generateInternalType(s) };
+    return generateInternalDeleteEvent(instance);
+  });
+  const derivedDeleteEvents = await Promise.all(derivedDeleteEventsPromise);
+  events.push(...derivedDeleteEvents);
+  // endregion
+  // region 02 - Generate event for merged entity
   const updateEvent = buildEvent(EVENT_TYPE_UPDATE, RULE_MANAGER_USER, markings, '-', data);
   events.push(updateEvent);
-  // Need to generate event for redo rule on updated element
-  const mergeCallback = async (relationships) => {
-    const creationEvents = relationships.map((r) => buildScanEvent(RULE_MANAGER_USER, r));
-    events.push(...creationEvents);
-  };
-  const listToArgs = { elementId: data.x_opencti_id, callback: mergeCallback };
-  await listAllRelations(RULE_MANAGER_USER, ABSTRACT_STIX_RELATIONSHIP, listToArgs);
+  // endregion
+  // region 03 - Generate events for shifted relations
+  // We need to cleanup the element associated with this relation and then rescan it
+  if (x_opencti_context.shifts.length > 0) {
+    const shiftDeleteEventsPromise = x_opencti_context.shifts.map((s) => {
+      const instance = { ...s, standard_id: s.id, internal_id: s.x_opencti_id, entity_type: generateInternalType(s) };
+      return generateInternalDeleteEvent(instance);
+    });
+    const shiftDeleteEvents = await Promise.all(shiftDeleteEventsPromise);
+    events.push(shiftDeleteEvents);
+    // Then we need to generate event for redo rule on updated element
+    const mergeCallback = async (relationships) => {
+      const creationEvents = relationships.map((r) => buildScanEvent(RULE_MANAGER_USER, r));
+      events.push(...creationEvents);
+    };
+    const ids = x_opencti_context.shifts.map((s) => s.x_opencti_id);
+    const listToArgs = { ids, callback: mergeCallback };
+    await listAllRelations(RULE_MANAGER_USER, ABSTRACT_STIX_RELATIONSHIP, listToArgs);
+  }
+  // endregion
   return events;
 };
 
-const isMatchRuleFilters = (rule, element) => {
+const isMatchRuleFilters = (rule, element, matchUpdateFields = false) => {
   // Handle types filtering
-  const { types = [], fromTypes = [], toTypes = [] } = rule.scopeFilters ?? {};
-  if (types.length > 0) {
-    const instanceType = element.relationship_type || generateInternalType(element);
-    const elementTypes = [instanceType, ...getParentTypes(instanceType)];
-    const isCompatibleType = types.some((r) => elementTypes.includes(r));
-    if (!isCompatibleType) return false;
+  const scopeFilters = rule.scopes ?? [];
+  for (let index = 0; index < scopeFilters.length; index += 1) {
+    const scopeFilter = scopeFilters[index];
+    const { filters, attributes } = scopeFilter;
+    const { types = [], fromTypes = [], toTypes = [] } = filters ?? {};
+    let isValidFilter = true;
+    if (types.length > 0) {
+      const instanceType = element.relationship_type || generateInternalType(element);
+      const elementTypes = [instanceType, ...getParentTypes(instanceType)];
+      const isCompatibleType = types.some((r) => elementTypes.includes(r));
+      if (!isCompatibleType) isValidFilter = false;
+    }
+    if (fromTypes.length > 0) {
+      const { source_ref: fromId } = element;
+      if (fromId) {
+        const fromType = getTypeFromStixId(fromId);
+        const instanceFromTypes = [fromType, ...getParentTypes(fromType)];
+        const isCompatibleType = fromTypes.some((r) => instanceFromTypes.includes(r));
+        if (!isCompatibleType) isValidFilter = false;
+      } else {
+        isValidFilter = false;
+      }
+    }
+    if (toTypes.length > 0) {
+      const { target_ref: toId } = element;
+      if (toId) {
+        const toType = getTypeFromStixId(toId);
+        const instanceToTypes = [toType, ...getParentTypes(toType)];
+        const isCompatibleType = toTypes.some((r) => instanceToTypes.includes(r));
+        if (!isCompatibleType) isValidFilter = false;
+      } else {
+        isValidFilter = false;
+      }
+    }
+    if (isValidFilter) {
+      if (matchUpdateFields) {
+        const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
+        return attributes.some((f) => patchedFields.includes(f));
+      }
+      return true;
+    }
   }
-  if (fromTypes.length > 0) {
-    const { source_ref: fromId } = element;
-    const fromType = getTypeFromStixId(fromId);
-    const instanceFromTypes = [fromType, ...getParentTypes(fromType)];
-    const isCompatibleType = fromTypes.some((r) => instanceFromTypes.includes(r));
-    if (!isCompatibleType) return false;
-  }
-  if (toTypes.length > 0) {
-    const { target_ref: toId } = element;
-    const toType = getTypeFromStixId(toId);
-    const instanceToTypes = [toType, ...getParentTypes(toType)];
-    const isCompatibleType = toTypes.some((r) => instanceToTypes.includes(r));
-    if (!isCompatibleType) return false;
-  }
-  return true;
+  // No filter match, return false
+  return false;
 };
 
 const handleRuleError = async (event, error) => {
-  const { eventId, type } = event;
+  const { type } = event;
+  const params = { now: now(), source: JSON.stringify(event), error: error.stack };
   logApp.error(`Error applying ${type} event rule`, { event, error });
   const initIfNotExist = `if (ctx._source.errors == null) ctx._source.errors = [];`;
-  const addError = `ctx._source.errors.add(["eventId": "${eventId}", "message": "${error.message}"]); `;
+  const addError = `ctx._source.errors.add(["timestamp": params.now, "source": params.source, "error": params.error]); `;
   const source = `${initIfNotExist} ${addError}`;
   await elUpdate(INDEX_INTERNAL_OBJECTS, RULE_ENGINE_ID, {
-    script: { source, lang: 'painless' },
+    script: { source, lang: 'painless', params },
   });
 };
 
@@ -128,22 +187,25 @@ export const rulesApplyHandler = async (events, forRules = []) => {
       }
       // In case of deletion, call clean on every impacted elements
       if (type === EVENT_TYPE_DELETE) {
-        const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: [data.x_opencti_id], operator: 'wildcard' }];
-        // eslint-disable-next-line no-use-before-define,prettier/prettier
-        const opts = { filters, callback: (elements) => rulesCleanHandler(eventId, elements, declaredRules, data.x_opencti_id) };
-        await elList(RULE_MANAGER_USER, READ_DATA_INDICES, opts);
+        const contextDeletions = data.x_opencti_context.deletions.map((d) => d.x_opencti_id);
+        const deletionIds = [data.x_opencti_id, ...contextDeletions];
+        for (let deleteIndex = 0; deleteIndex < deletionIds.length; deleteIndex += 1) {
+          const deletionId = deletionIds[deleteIndex];
+          const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: [deletionId], operator: 'wildcard' }];
+          // eslint-disable-next-line no-use-before-define,prettier/prettier
+          const opts = { filters, callback: (elements) => rulesCleanHandler(eventId, elements, RULES_DECLARATION, deletionId) };
+          await elList(RULE_MANAGER_USER, READ_DATA_INDICES, opts);
+        }
       }
       // In case of update apply the event on every rules
       if (type === EVENT_TYPE_UPDATE) {
         for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
           const rule = rules[ruleIndex];
-          // const instance = rebuildInstanceWithPatch(element, element.x_opencti_patch);
-          const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
-          const isImpactedFields = rule.scopePatch.some((f) => patchedFields.includes(f));
-          const isImpactedElement = isMatchRuleFilters(rule, element);
-          if (isImpactedElement && isImpactedFields) {
+          const isImpactedElement = isMatchRuleFilters(rule, element, true);
+          if (isImpactedElement) {
             const instance = await internalLoadById(RULE_MANAGER_USER, element.id);
             const stixData = buildStixData(instance);
+            const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
             const derivedEvents = await rule.update(stixData, patchedFields);
             await rulesApplyDerivedEvents(eventId, derivedEvents);
           }

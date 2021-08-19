@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import express from 'express';
 import * as R from 'ramda';
+import { URL } from 'url';
 // noinspection NodeCoreCodingAssistance
 import { readFileSync } from 'fs';
 // noinspection NodeCoreCodingAssistance
@@ -12,7 +13,7 @@ import nconf from 'nconf';
 import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
-import { basePath, DEV_MODE, logApp, logAudit } from '../config/conf';
+import { basePath, booleanConf, DEV_MODE, logApp, logAudit } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
 import { downloadFile, loadFile } from '../database/minio';
@@ -26,7 +27,17 @@ import { LOGIN_ACTION } from '../config/audit';
 const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 
 const setCookieError = (res, message) => {
-  res.cookie('opencti_flash', message || 'Unknown error', { maxAge: 5000, httpOnly: false });
+  res.cookie('opencti_flash', message || 'Unknown error', {
+    maxAge: 5000,
+    httpOnly: false,
+    secure: booleanConf('app:https_cert:cookie_secure', false),
+  });
+};
+
+const extractRefererPathFromReq = (req) => {
+  const refererUrl = new URL(req.headers.referer);
+  // Keep only the pathname to prevent OPEN REDIRECT CWE-601
+  return refererUrl.pathname;
 };
 
 const createApp = async (apolloServer) => {
@@ -127,32 +138,33 @@ const createApp = async (apolloServer) => {
   // -- Client HTTPS Cert login custom strategy
   app.get(`${basePath}/auth/cert`, (req, res, next) => {
     try {
+      const redirect = extractRefererPathFromReq(req);
       const isActivated = isStrategyActivated(STRATEGY_CERT);
       if (!isActivated) {
         setCookieError(res, 'Cert authentication is not available');
-        res.redirect(req.headers.referer);
+        res.redirect(redirect);
       } else {
         const cert = req.socket.getPeerCertificate();
         if (!R.isEmpty(cert) && req.client.authorized) {
           const { CN, emailAddress } = cert.subject;
           if (empty(emailAddress)) {
             setCookieError(res, 'Client certificate need a correct emailAddress');
-            res.redirect(req.headers.referer);
+            res.redirect(redirect);
           } else {
             const userInfo = { email: emailAddress, name: empty(CN) ? emailAddress : CN };
             loginFromProvider(userInfo)
               .then(async (user) => {
                 await authenticateUser(req, user, 'cert');
-                res.redirect(req.headers.referer);
+                res.redirect(redirect);
               })
               .catch((err) => {
                 setCookieError(res, err?.message);
-                res.redirect(req.headers.referer);
+                res.redirect(redirect);
               });
           }
         } else {
           setCookieError(res, 'You must select a correct certificate');
-          res.redirect(req.headers.referer);
+          res.redirect(redirect);
         }
       }
     } catch (e) {
@@ -165,7 +177,7 @@ const createApp = async (apolloServer) => {
   app.get(`${basePath}/auth/:provider`, (req, res, next) => {
     try {
       const { provider } = req.params;
-      req.session.referer = req.headers.referer;
+      req.session.referer = extractRefererPathFromReq(req);
       passport.authenticate(provider, {}, (err) => {
         setCookieError(res, err?.message);
         next(err);

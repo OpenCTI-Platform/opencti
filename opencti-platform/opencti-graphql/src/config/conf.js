@@ -1,10 +1,10 @@
 import { lstatSync, readFileSync } from 'fs';
 import nconf from 'nconf';
 import * as R from 'ramda';
+import { isEmpty } from 'ramda';
 import winston, { format } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
-import { isEmpty } from 'ramda';
 import * as O from '../schema/internalObject';
 import * as M from '../schema/stixMetaObject';
 import {

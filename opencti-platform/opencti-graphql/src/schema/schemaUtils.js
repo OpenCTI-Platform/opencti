@@ -43,7 +43,7 @@ import { isInternalRelationship } from './internalRelationship';
 import { isBasicObject, isStixCoreObject, isStixObject } from './stixCoreObject';
 import { STIX_SIGHTING_RELATIONSHIP } from './stixSightingRelationship';
 
-const isStixId = (id) => id.match(/[a-z-]+--[\w-]{36}/g);
+export const isStixId = (id) => id.match(/[a-z-]+--[\w-]{36}/g);
 export const isInternalId = (id) => validator.isUUID(id);
 export const isAnId = (id) => {
   return isStixId(id) || isInternalId(id);
@@ -66,6 +66,7 @@ export const convertEntityTypeToStixType = (type) => {
     case ENTITY_TYPE_LOCATION_POSITION:
       return 'location';
     case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
+    case 'Stixfile': // Because of aggregation lowercase + pascalize
       return 'file';
     default:
       return type.toLowerCase();

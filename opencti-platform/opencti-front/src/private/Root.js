@@ -25,6 +25,7 @@ const rootPrivateQuery = graphql`
     settings {
       platform_map_tile_server_dark
       platform_map_tile_server_light
+      platform_enable_references
       ...AppThemeProvider_settings
       ...AppIntlProvider_settings
     }

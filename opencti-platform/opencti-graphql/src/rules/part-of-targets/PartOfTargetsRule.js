@@ -1,11 +1,13 @@
 /* eslint-disable camelcase */
 import { RELATION_PART_OF, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import def from './PartOfTargetsDefinition';
-import buildRelationToRelationRule from '../relation-to-relation/RelationToRelationBuilder';
+import buildRelationToRelationRule from '../relationToRelationBuilder';
+import { RULES_DECLARATION } from '../rules';
 
 const PartOfTargetsRule = buildRelationToRelationRule(def, {
   leftType: RELATION_TARGETS,
   rightType: RELATION_PART_OF,
   creationType: RELATION_TARGETS,
 });
-export default PartOfTargetsRule;
+
+RULES_DECLARATION.push(PartOfTargetsRule);

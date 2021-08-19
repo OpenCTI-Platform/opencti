@@ -72,13 +72,13 @@ const computeRuleTaskElements = async (user, task) => {
   const processingElements = [];
   const ruleDefinition = await getRule(rule);
   if (enable) {
-    const { scanFilters } = ruleDefinition;
+    const { scan } = ruleDefinition;
     const options = {
       first: MAX_TASK_ELEMENTS,
       orderMode: 'asc',
       orderBy: 'updated_at',
       after: task_position,
-      ...buildFilters(scanFilters),
+      ...buildFilters(scan),
     };
     const data = await elPaginate(user, READ_STIX_INDICES, options);
     const elements = data.edges;

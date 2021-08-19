@@ -7,11 +7,12 @@ const description =
   'is `located-at` **entity C**, then **entity A** is `located-at` **entity C**.';
 
 // For rescan
-const scanFilters = { types: [RELATION_LOCATED_AT] };
+const scan = { types: [RELATION_LOCATED_AT] };
 
 // For live
-const scopeFilters = { types: [RELATION_LOCATED_AT] };
-const scopePatch = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];
+const filters = { types: [RELATION_LOCATED_AT] };
+const attributes = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];
+const scopes = [{ filters, attributes }];
 
-const definition = { id, name, description, scanFilters, scopeFilters, scopePatch };
+const definition = { id, name, description, scan, scopes };
 export default definition;

@@ -52,7 +52,7 @@ const styles = (theme) => ({
 const attackPatternMutationFieldPatch = graphql`
   mutation AttackPatternEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     attackPatternEdit(id: $id) {
       fieldPatch(input: $input) {
@@ -142,44 +142,12 @@ class AttackPatternEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { attackPattern } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], attackPattern),
-      value: pathOr(null, ['createdBy', 'id'], attackPattern),
-    };
-
-    if (currentCreatedBy.value === null) {
+    if (!this.props.enableReferences) {
       commitMutation({
-        mutation: attackPatternMutationRelationAdd,
+        mutation: attackPatternMutationFieldPatch,
         variables: {
           id: this.props.attackPattern.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: attackPatternMutationRelationDelete,
-        variables: {
-          id: this.props.attackPattern.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: attackPatternMutationRelationAdd,
-              variables: {
-                id: this.props.attackPattern.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }

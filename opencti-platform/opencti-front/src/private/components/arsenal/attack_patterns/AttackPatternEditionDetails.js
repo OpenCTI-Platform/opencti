@@ -43,7 +43,7 @@ const styles = (theme) => ({
 const attackPatternMutationFieldPatch = graphql`
   mutation AttackPatternEditionDetailsFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     attackPatternEdit(id: $id) {
       fieldPatch(input: $input) {
