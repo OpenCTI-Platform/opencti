@@ -181,6 +181,8 @@ const relationsTypesMapping = {
   'IPv6-Addr_Country': ['located-at'],
   'IPv6-Addr_City': ['located-at'],
   'IPv6-Addr_Position': ['located-at'],
+  'IPv4-Addr_Autonomous-System': ['belongs-to'],
+  'IPv6-Addr_Autonomous-System': ['belongs-to'],
   'IPv4-Addr_Organization': ['belongs-to'],
   'IPv4-Addr_Individual': ['belongs-to'],
   'Artifact_IPv4-Addr': ['communicates-with'],
