@@ -16,6 +16,7 @@ const i18n = {
       'You have successfully logged out.': 'Vous avez bien été déconnecté.',
       'You do not have any access to the knowledge of this OpenCTI instance.':
         "Vous n'avez aucun accès à la connaissance de cette instance OpenCTI.",
+      'Write something awesome...': 'Ecrivez quelque chose de génial...',
       // Dependencies
       Grakn: 'Grakn',
       Elasticsearch: 'Elasticsearch',

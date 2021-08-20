@@ -16,6 +16,7 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
+import ReportContent from './ReportContent';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -42,6 +43,7 @@ const reportQuery = graphql`
       ...ContainerHeader_container
       ...ContainerStixDomainObjects_container
       ...ContainerStixCyberObservables_container
+      ...ReportContent_report
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -137,6 +139,22 @@ class RootReport extends Component {
                         <Redirect
                           to={`/dashboard/analysis/reports/${reportId}/knowledge/graph`}
                         />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/analysis/reports/:reportId/content"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <ContainerHeader
+                            container={props.report}
+                            PopoverComponent={<ReportPopover />}
+                          />
+                          <ReportContent
+                            {...routeProps}
+                            report={props.report}
+                          />
+                        </React.Fragment>
                       )}
                     />
                     <Route

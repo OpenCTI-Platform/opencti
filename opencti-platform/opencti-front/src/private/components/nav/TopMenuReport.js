@@ -86,6 +86,48 @@ class TopMenuReport extends Component {
         </Button>
         <Button
           component={Link}
+          to={`/dashboard/analysis/reports/${reportId}/knowledge`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/analysis/reports/${reportId}/knowledge`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/analysis/reports/${reportId}/knowledge`,
+            )
+              ? 'secondary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/analysis/reports/${reportId}/content`}
+          variant={
+            location.pathname
+            === `/dashboard/analysis/reports/${reportId}/content`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/analysis/reports/${reportId}/content`
+              ? 'secondary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Content')}
+        </Button>
+        <Button
+          component={Link}
           to={`/dashboard/analysis/reports/${reportId}/entities`}
           variant={
             location.pathname
@@ -123,28 +165,6 @@ class TopMenuReport extends Component {
           classes={{ root: classes.button }}
         >
           {t('Observables')}
-        </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/analysis/reports/${reportId}/knowledge`}
-          variant={
-            location.pathname.includes(
-              `/dashboard/analysis/reports/${reportId}/knowledge`,
-            )
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes(
-              `/dashboard/analysis/reports/${reportId}/knowledge`,
-            )
-              ? 'secondary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Knowledge')}
         </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
