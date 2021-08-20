@@ -208,9 +208,8 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                   }
                   if (externalReference.url) {
                     return (
-                      <div>
+                      <div key={externalReference.id}>
                         <ListItem
-                          key={externalReference.id}
                           dense={true}
                           divider={true}
                           button={true}

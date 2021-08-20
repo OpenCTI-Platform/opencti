@@ -15,7 +15,7 @@ import {
   isStixObjectAliased,
 } from './stixDomainObject';
 import * as M from './stixMetaObject';
-import { ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from './stixMetaObject';
+import { isStixMetaObject } from './stixMetaObject';
 import * as C from './stixCyberObservable';
 import { isStixCyberObservable } from './stixCyberObservable';
 import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID } from './general';

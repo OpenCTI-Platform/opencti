@@ -2229,7 +2229,7 @@ const buildRelationData = async (user, input, opts = {}) => {
       return upsertRuleRaw(existingRelationship, input, opts);
     }
     // If user try to create an existing inferred relationship but she's already exists
-    return upsertElementRaw(user, existingRelationship, relationshipType, input, opts);
+    return upsertElementRaw(user, existingRelationship, relationshipType, input);
   }
   // Default attributes
   // basic-relationship
