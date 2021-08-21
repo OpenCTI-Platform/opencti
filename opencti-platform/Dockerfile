@@ -14,7 +14,8 @@ WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
 RUN yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
-RUN yarn run webpack --mode production
+RUN apk add --no-cache fontconfig curl curl-dev chromium; \
+    yarn run webpack --mode production;
 
 
 FROM base AS front-builder

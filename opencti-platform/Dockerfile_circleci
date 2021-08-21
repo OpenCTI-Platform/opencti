@@ -16,7 +16,9 @@ COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
 RUN yarn config set network-timeout 900000 -g
 RUN yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
-RUN yarn run webpack --mode production
+RUN apk add --no-cache fontconfig curl curl-dev chromium; \
+    yarn run webpack --mode production;
+
 
 FROM base AS app
 
