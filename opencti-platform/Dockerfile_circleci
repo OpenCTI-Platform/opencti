@@ -16,7 +16,7 @@ COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
 RUN yarn config set network-timeout 900000 -g
 RUN apk add --no-cache fontconfig curl curl-dev chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=`which chromium`
+ENV PUPPETEER_EXECUTABLE_PATH=\`which chromium\`
 RUN yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
 RUN yarn run webpack --mode production
@@ -42,6 +42,8 @@ COPY opencti-graphql/script ./script
 ENV PYTHONUNBUFFERED=1
 ENV NODE_OPTIONS=--max_old_space_size=8192
 ENV NODE_ENV=production
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=\`which chromium\`
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "build/index.js"]
