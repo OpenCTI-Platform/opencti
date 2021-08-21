@@ -12,10 +12,12 @@ FROM base AS graphql-builder
 
 WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
+RUN apk add --no-cache fontconfig curl curl-dev chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=`which chromium`
 RUN yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
-RUN apk add --no-cache fontconfig curl curl-dev chromium; \
-    yarn run webpack --mode production;
+RUN yarn run webpack --mode production
 
 
 FROM base AS front-builder
