@@ -20,6 +20,7 @@ import StixCoreRelationshipPopover from '../../common/stix_core_relationships/St
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import { defaultValue } from '../../../../utils/Graph';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   item: {
@@ -165,11 +166,13 @@ class StixCyberObservableEntityLineComponent extends Component {
               <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
             </Tooltip>
           ) : (
-            <StixCoreRelationshipPopover
-              stixCoreRelationshipId={node.id}
-              paginationOptions={paginationOptions}
-              disabled={restricted}
-            />
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <StixCoreRelationshipPopover
+                stixCoreRelationshipId={node.id}
+                paginationOptions={paginationOptions}
+                disabled={restricted}
+              />
+            </Security>
           )}
         </ListItemSecondaryAction>
       </ListItem>

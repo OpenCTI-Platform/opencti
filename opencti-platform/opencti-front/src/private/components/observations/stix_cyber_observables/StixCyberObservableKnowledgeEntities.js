@@ -11,6 +11,7 @@ import StixCyberObservableEntitiesLines, {
   stixCyberObservableEntitiesLinesQuery,
 } from './StixCyberObservableEntitiesLines';
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   paper: {
@@ -126,30 +127,35 @@ class StixCyberObservableKnowledgeEntities extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Relations')}
         </Typography>
-        <StixCoreRelationshipCreationFromEntity
-          paginationOptions={paginationOptions}
-          handleReverseRelation={this.handleReverseRelation.bind(this)}
-          entityId={entityId}
-          variant="inLine"
-          isRelationReversed={relationReversed}
-          targetStixDomainObjectTypes={[
-            'Threat-Actor',
-            'Intrusion-Set',
-            'Campaign',
-            'Incident',
-            'Malware',
-            'Tool',
-            'Vulnerability',
-            'Individual',
-            'Organization',
-            'Sector',
-            'Region',
-            'Country',
-            'City',
-            'Position',
-          ]}
-          targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
-        />
+        <Security
+          needs={[KNOWLEDGE_KNUPDATE]}
+          placeholder={<div style={{ height: 29 }} />}
+        >
+          <StixCoreRelationshipCreationFromEntity
+            paginationOptions={paginationOptions}
+            handleReverseRelation={this.handleReverseRelation.bind(this)}
+            entityId={entityId}
+            variant="inLine"
+            isRelationReversed={relationReversed}
+            targetStixDomainObjectTypes={[
+              'Threat-Actor',
+              'Intrusion-Set',
+              'Campaign',
+              'Incident',
+              'Malware',
+              'Tool',
+              'Vulnerability',
+              'Individual',
+              'Organization',
+              'Sector',
+              'Region',
+              'Country',
+              'City',
+              'Position',
+            ]}
+            targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
+          />
+        </Security>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {view === 'lines' ? this.renderLines(paginationOptions) : ''}

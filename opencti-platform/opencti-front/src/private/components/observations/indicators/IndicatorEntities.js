@@ -9,6 +9,7 @@ import IndicatorEntitiesLines, {
   indicatorEntitiesLinesQuery,
 } from './IndicatorEntitiesLines';
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -114,21 +115,23 @@ class IndicatorEntities extends Component {
     return (
       <div className={classes.container}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <StixCoreRelationshipCreationFromEntity
-          paginationOptions={paginationOptions}
-          entityId={indicatorId}
-          isRelationReversed={false}
-          targetStixDomainObjectTypes={[
-            'Threat-Actor',
-            'Intrusion-Set',
-            'Campaign',
-            'Malware',
-            'Tool',
-            'Vulnerability',
-            'Attack-Pattern',
-            'Indicator',
-          ]}
-        />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <StixCoreRelationshipCreationFromEntity
+            paginationOptions={paginationOptions}
+            entityId={indicatorId}
+            isRelationReversed={false}
+            targetStixDomainObjectTypes={[
+              'Threat-Actor',
+              'Intrusion-Set',
+              'Campaign',
+              'Malware',
+              'Tool',
+              'Vulnerability',
+              'Attack-Pattern',
+              'Indicator',
+            ]}
+          />
+        </Security>
       </div>
     );
   }

@@ -30,6 +30,7 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/Stix
 import StixCoreRelationshipInference from './StixCoreRelationshipInference';
 import StixCoreRelationshipExternalReferences from '../../analysis/external_references/StixCoreRelationshipExternalReferences';
 import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHistory';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -426,7 +427,7 @@ class StixCoreRelationshipContainer extends Component {
           )}
         </div>
         {!stixCoreRelationship.is_inferred && (
-          <div>
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <Fab
               onClick={this.handleOpenEdition.bind(this)}
               color="secondary"
@@ -445,7 +446,7 @@ class StixCoreRelationshipContainer extends Component {
               handleClose={this.handleCloseEdition.bind(this)}
               handleDelete={this.handleDelete.bind(this)}
             />
-          </div>
+          </Security>
         )}
       </div>
     );

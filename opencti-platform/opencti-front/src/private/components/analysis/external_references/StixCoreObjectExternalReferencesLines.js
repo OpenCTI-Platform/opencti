@@ -231,15 +231,17 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                             <ExternalReferenceEnrichment
                               externalReferenceId={externalReference.id}
                             />
-                            <IconButton
-                              aria-label="Remove"
-                              onClick={this.handleOpenDialog.bind(
-                                this,
-                                externalReferenceEdge,
-                              )}
-                            >
-                              <LinkOff />
-                            </IconButton>
+                            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                              <IconButton
+                                aria-label="Remove"
+                                onClick={this.handleOpenDialog.bind(
+                                  this,
+                                  externalReferenceEdge,
+                                )}
+                              >
+                                <LinkOff />
+                              </IconButton>
+                            </Security>
                           </ListItemSecondaryAction>
                         </ListItem>
                         {externalReference.importFiles.edges.length > 0 && (
@@ -275,15 +277,17 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                         secondary={truncate(externalReference.description, 120)}
                       />
                       <ListItemSecondaryAction>
-                        <IconButton
-                          aria-label="Remove"
-                          onClick={this.handleOpenDialog.bind(
-                            this,
-                            externalReferenceEdge,
-                          )}
-                        >
-                          <LinkOff />
-                        </IconButton>
+                        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                          <IconButton
+                            aria-label="Remove"
+                            onClick={this.handleOpenDialog.bind(
+                              this,
+                              externalReferenceEdge,
+                            )}
+                          >
+                            <LinkOff />
+                          </IconButton>
+                        </Security>
                       </ListItemSecondaryAction>
                     </ListItem>
                   );
