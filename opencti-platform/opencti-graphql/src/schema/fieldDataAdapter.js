@@ -49,6 +49,8 @@ const multipleAttributes = [
   'protocols',
   'x_opencti_log_sources',
   'x_opencti_stix_ids',
+  'options',
+  'entities_ids',
   // meta
   INPUT_OBJECTS,
   INPUT_MARKINGS,

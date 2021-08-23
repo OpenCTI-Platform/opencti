@@ -425,6 +425,38 @@ enum StreamCollectionOrdering {
   description
 }
 
+############## Subcription
+type UserSubscription {
+  id: ID!
+  user_id: String
+  user: User
+  name: String
+  options: [String]
+  entities_ids: [String]
+  entities: [StixDomainObject]
+  filters: String
+  cron: String
+  last_run: DateTime
+}
+type UserSubscriptionConnection {
+  pageInfo: PageInfo!
+  edges: [UserSubscriptionEdge]
+}
+type UserSubscriptionEdge {
+  cursor: String!
+  node: UserSubscription!
+}
+input UserSubscriptionAddInput {
+  name: String!
+  options: [String]
+  entities_ids: [String]
+  filters: String
+  cron: String
+}
+enum UserSubscriptionOrdering {
+  created_at
+}
+
 ############## SubTypes
 enum SubTypesOrdering {
   label
@@ -804,6 +836,7 @@ type User implements BasicObject & InternalObject {
   updated_at: DateTime!
   allowed_marking: [MarkingDefinition]
   sessions: [SessionDetail]
+  userSubscriptions(first: Int): UserSubscriptionConnection
   # Technical
   editContext: [EditUserContext]
 }
@@ -8020,6 +8053,14 @@ type Query {
     orderMode: OrderingMode
     search: String
   ): StreamCollectionConnection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  userSubscription(id: String!): UserSubscription @auth(for: [KNOWLEDGE])
+  userSubscriptions(
+    first: Int
+    after: ID
+    orderBy: UserSubscriptionOrdering
+    orderMode: OrderingMode
+    search: String
+  ): UserSubscriptionConnection @auth(for: [KNOWLEDGE])
   task(id: String!): Task @auth(for: [KNOWLEDGE])
   tasks(
     first: Int
@@ -8846,6 +8887,11 @@ type StreamCollectionEditMutations {
   fieldPatch(input: [EditInput]!): StreamCollection
 }
 
+type UserSubscriptionEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!): UserSubscription
+}
+
 ######## STIX OBJECT
 type StixEditMutations {
   delete: ID
@@ -9212,6 +9258,8 @@ type Mutation {
   taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   streamCollectionAdd(input: StreamCollectionAddInput): StreamCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   streamCollectionEdit(id: ID!): StreamCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  userSubscriptionAdd(input: UserSubscriptionAddInput): UserSubscription @auth(for: [KNOWLEDGE])
+  userSubscriptionEdit(id: ID!): UserSubscriptionEditMutations @auth(for: [KNOWLEDGE])
 
   ######## STIX OBJECT
   stixEdit(id: ID!): StixEditMutations @auth(for: [SETTINGS])

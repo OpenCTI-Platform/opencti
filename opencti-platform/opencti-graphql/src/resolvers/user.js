@@ -47,6 +47,7 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { batchLoader } from '../database/middleware';
 import { LOGIN_ACTION } from '../config/audit';
+import { getUserSubscriptions } from '../domain/userSubscription';
 
 const groupsLoader = batchLoader(batchGroups);
 const rolesLoader = batchLoader(batchRoles);
@@ -70,6 +71,7 @@ const userResolvers = {
     capabilities: (current) => getCapabilities(current.id),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
+    userSubscriptions: (current, _, { user }) => getUserSubscriptions(user, current.id),
   },
   UserSession: {
     user: (session, _, { user }) => findById(user, session.user_id),
