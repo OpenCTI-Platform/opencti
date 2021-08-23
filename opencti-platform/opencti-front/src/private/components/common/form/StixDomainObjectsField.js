@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import {
   compose, pathOr, pipe, map, union,
 } from 'ramda';
+import { debounce } from 'rxjs/operators';
+import { Subject, timer } from 'rxjs';
 import { Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
@@ -11,9 +13,15 @@ import inject18n from '../../../../components/i18n';
 import { defaultValue } from '../../../../utils/Graph';
 import ItemIcon from '../../../../components/ItemIcon';
 
+const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
+
 export const stixDomainObjectsFieldSearchQuery = graphql`
-  query StixDomainObjectsFieldSearchQuery($types: [String], $search: String) {
-    stixDomainObjects(types: $types, search: $search) {
+  query StixDomainObjectsFieldSearchQuery(
+    $types: [String]
+    $search: String
+    $first: Int
+  ) {
+    stixDomainObjects(types: $types, search: $search, first: $first) {
       edges {
         node {
           id
@@ -158,13 +166,29 @@ const styles = () => ({
 class StixDomainObjectsField extends Component {
   constructor(props) {
     super(props);
-    this.state = { stixDomainObjects: [] };
+    this.state = { stixDomainObjects: [], keyword: '' };
   }
 
-  searchStixDomainObjects(event) {
+  componentDidMount() {
+    this.subscription = SEARCH$.subscribe({
+      next: () => this.searchStixDomainObjects(),
+    });
+  }
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
+  }
+
+  handleSearch(event) {
+    this.setState({ keyword: event.target.value });
+    SEARCH$.next({ action: 'Search' });
+  }
+
+  searchStixDomainObjects() {
     fetchQuery(stixDomainObjectsFieldSearchQuery, {
       types: this.props.types || ['Stix-Domain-Object'],
-      search: event && event.target.value !== 0 ? event.target.value : '',
+      search: this.state.keyword,
+      first: 20,
     })
       .toPromise()
       .then((data) => {
@@ -200,7 +224,7 @@ class StixDomainObjectsField extends Component {
           }}
           noOptionsText={t('No available options')}
           options={this.state.stixDomainObjects}
-          onInputChange={this.searchStixDomainObjects.bind(this)}
+          onInputChange={this.handleSearch.bind(this)}
           onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
           renderOption={(option) => (
             <React.Fragment>
