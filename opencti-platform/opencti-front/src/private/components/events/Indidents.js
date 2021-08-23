@@ -178,12 +178,12 @@ class Indidents extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '35%',
+        width: '30%',
         isSortable: true,
       },
       objectLabel: {
         label: 'Labels',
-        width: '25%',
+        width: '20%',
         isSortable: false,
       },
       created: {
@@ -195,6 +195,10 @@ class Indidents extends Component {
         label: 'Modification date',
         width: '15%',
         isSortable: true,
+      },
+      objectMarking: {
+        label: 'Marking',
+        isSortable: false,
       },
     };
     return (
