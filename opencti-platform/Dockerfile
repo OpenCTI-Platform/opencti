@@ -4,8 +4,9 @@ FROM node:16.6.0-alpine3.14 AS base
 FROM base AS graphql-deps-builder
 
 WORKDIR /opt/opencti-build/opencti-graphql
+RUN apk add --no-cache fontconfig curl curl-dev chromium
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
-RUN yarn install --frozen-lockfile --production && yarn cache clean --all
+RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser yarn install --frozen-lockfile --production && yarn cache clean --all
 
 
 FROM base AS graphql-builder
