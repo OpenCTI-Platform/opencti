@@ -19,7 +19,7 @@ const containerResolvers = {
   Query: {
     container: (_, { id }, { user }) => findById(user, id),
     containers: (_, args, { user }) => findAll(user, args),
-    containersObjectsOfObject: (_, { id, types }, { user }) => containersObjectsOfObject(user, id, types),
+    containersObjectsOfObject: (_, args, { user }) => containersObjectsOfObject(user, args),
   },
   Container: {
     __resolveType(obj) {

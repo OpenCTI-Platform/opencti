@@ -39,11 +39,12 @@ export const objects = async (user, containerId, args) => {
 };
 // endregion
 
-export const containersObjectsOfObject = async (user, id, types) => {
+export const containersObjectsOfObject = async (user, { id, types, filters = [], search = null }) => {
   const containers = await findAll(user, {
     connectionFormat: false,
     first: 500,
-    filters: [{ key: buildRefRelationKey(RELATION_OBJECT), values: [id] }],
+    search,
+    filters: [...filters, { key: buildRefRelationKey(RELATION_OBJECT), values: [id] }],
   });
   const containersObjects = await Promise.all(R.map((n) => objects(user, n.id, { first: 1000, types }), containers));
   const containersObjectsResult = R.uniqBy(R.path(['node', 'id']), R.flatten(R.map((n) => n.edges, containersObjects)));

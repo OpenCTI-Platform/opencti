@@ -1773,6 +1773,7 @@ enum ContainersOrdering {
 enum ContainersFilter {
   entity_type
   attribute_abstract
+  report_types
   content
   authors
   created
@@ -8171,8 +8172,13 @@ type Query {
     search: String
     toStix: Boolean
   ): ContainerConnection @auth(for: [KNOWLEDGE])
-  containersObjectsOfObject(id: String!, types: [String]): StixObjectOrStixRelationshipConnection
-    @auth(for: [KNOWLEDGE])
+  containersObjectsOfObject(
+    id: String!
+    types: [String]
+    filters: [ContainersFiltering]
+    filterMode: FilterMode
+    search: String
+  ): StixObjectOrStixRelationshipConnection @auth(for: [KNOWLEDGE])
   note(id: String): Note @auth(for: [KNOWLEDGE])
   notes(
     first: Int
@@ -8749,7 +8755,8 @@ type Query {
 
   ####### ALL
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE, EXPLORE])
-  stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
+    @auth(for: [KNOWLEDGE, EXPLORE])
 }
 
 ### SUBSCRIPTIONS
