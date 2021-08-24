@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import Axios from 'axios';
+import pdfMake from 'pdfmake';
 import Editor from 'rich-markdown-editor';
 import { light, dark } from 'rich-markdown-editor/dist/theme';
 import SunEditor from 'suneditor-react';
+import htmlToPdfmake from 'html-to-pdfmake';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles, withTheme } from '@material-ui/core/styles';
@@ -27,6 +29,10 @@ import Loader from '../../../../components/Loader';
 import { stixDomainObjectsLinesSearchQuery } from '../../common/stix_domain_objects/StixDomainObjectsLines';
 import { defaultValue, graphRawImages } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
+import RobotoRegular from '../../../../resources/fonts/Roboto-Regular.ttf';
+import RobotoBold from '../../../../resources/fonts/Roboto-Bold.ttf';
+import RobotoItalic from '../../../../resources/fonts/Roboto-Italic.ttf';
+import RobotoBoldItalic from '../../../../resources/fonts/Roboto-BoldItalic.ttf';
 
 const styles = (theme) => ({
   container: {
@@ -137,6 +143,7 @@ class ReportContentComponent extends Component {
       },
       initialContent: props.t('Write something awesome...'),
       currentContent: props.t('Write something awesome...'),
+      currentConvertedContent: null,
       mentions: [],
       mentionKeyword: '',
     };
@@ -243,8 +250,34 @@ class ReportContentComponent extends Component {
     }
   }
 
+  handleConvertPdf() {
+    const htmlData = this.state.currentContent.replaceAll(
+      'id="undefined" ',
+      '',
+    );
+    const pdfData = { content: htmlToPdfmake(htmlData) };
+    const { protocol, hostname, port } = window.location;
+    const url = `${protocol}//${hostname}:${port || ''}`;
+    const fonts = {
+      Roboto: {
+        normal: url + RobotoRegular,
+        bold: url + RobotoBold,
+        italics: url + RobotoItalic,
+        bolditalics: url + RobotoBoldItalic,
+      },
+    };
+    const gen = pdfMake.createPdf(pdfData, null, fonts);
+    gen.getDataUrl((dataUrl) => {
+      this.setState({ currentConvertedContent: dataUrl });
+    });
+  }
+
   saveFileAndChangeTab(value) {
+    const { currentFile } = this.state;
     this.setState({ isLoading: true }, () => {
+      if (currentFile.metaData.mimetype === 'text/html' && value === 2) {
+        this.handleConvertPdf();
+      }
       const { currentId, isExternalReference, file } = this.prepareSaveFile();
       commitMutation({
         mutation: isExternalReference
@@ -268,6 +301,8 @@ class ReportContentComponent extends Component {
   handleChangeTab(event, value) {
     if (this.state.currentTab === 0 || this.state.currentTab === 1) {
       this.saveFileAndChangeTab(value);
+    } else if (this.state.currentFile === 2) {
+      this.setState({ currentConvertedContent: null });
     } else {
       this.setState({ currentTab: value });
     }
@@ -319,6 +354,7 @@ class ReportContentComponent extends Component {
       initialContent,
       currentContent,
       currentFile,
+      currentConvertedContent,
     } = this.state;
     const currentTitle = R.last(currentFile.id.split('/'));
     const currentUrl = `/storage/view/${currentFile.id}`;
@@ -469,13 +505,25 @@ class ReportContentComponent extends Component {
         )}
         {this.state.currentTab === 2 && isFilePdf && (
           <div style={{ marginTop: 20 }}>
-            <embed src={currentUrl} width="100%" height={height} />
+            <iframe src={currentUrl} width="100%" height={height} />
           </div>
         )}
-        {this.state.currentTab === 2 && !isFilePdf && (
-          <div style={{ marginTop: 20 }}>
-            <embed src={currentPdfUrl} width="100%" height={height} />
-          </div>
+        {this.state.currentTab === 2
+          && currentFile.metaData.mimetype === 'text/markdown' && (
+            <div style={{ marginTop: 20 }}>
+              <iframe src={currentPdfUrl} width="100%" height={height} />
+            </div>
+        )}
+        {this.state.currentTab === 2
+          && currentFile.metaData.mimetype === 'text/html'
+          && currentConvertedContent && (
+            <div style={{ marginTop: 20 }}>
+              <iframe
+                width="100%"
+                height={height}
+                src={currentConvertedContent}
+              />
+            </div>
         )}
       </div>
     );

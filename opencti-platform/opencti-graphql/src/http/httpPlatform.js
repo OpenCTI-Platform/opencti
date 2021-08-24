@@ -10,7 +10,6 @@ import bodyParser from 'body-parser';
 import compression from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
-import puppeteer from 'puppeteer';
 import markdownPdf from 'markdown-pdf';
 import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
@@ -18,7 +17,7 @@ import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, logApp, logAudit } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
-import { downloadFile, loadFile, getFileContent } from '../database/minio';
+import { downloadFile, loadFile } from '../database/minio';
 import { checkSystemDependencies } from '../initialization';
 import { getSettings } from '../domain/settings';
 import createSeeMiddleware from '../graphql/sseMiddleware';
@@ -129,6 +128,9 @@ const createApp = async (apolloServer) => {
       const data = await loadFile(auth, file);
       res.setHeader('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
       res.setHeader('Content-type', data.metaData.mimetype);
+      if (data.metaData.mimetype === 'text/html') {
+        res.set({ 'content-type': 'text/html; charset=utf-8' });
+      }
       const stream = await downloadFile(file);
       stream.pipe(res);
     } catch (e) {
@@ -157,29 +159,6 @@ const createApp = async (apolloServer) => {
         res.setHeader('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
         res.setHeader('Content-type', 'application/pdf');
         pdfStream.pipe(res);
-      } else if (data.metaData.mimetype === 'text/html') {
-        const content = await getFileContent(file);
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
-        await page.setContent(`
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>HTML to PDF Example</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-  ${content}
-</body>
-</html>
-`);
-        const buffer = await page.pdf({ format: 'A4', margin: 20 });
-        await browser.close();
-        res.setHeader('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
-        res.setHeader('Content-type', 'application/pdf');
-        res.send(buffer);
       } else {
         res.send('Unsupported file type');
       }

@@ -1,6 +1,6 @@
-import { jsPDF } from 'jspdf';
 import * as htmlToImage from 'html-to-image';
 import fileDownload from 'js-file-download';
+import pdfMake from 'pdfmake';
 
 const ignoredClasses = [
   'MuiDialog-root',
@@ -9,7 +9,12 @@ const ignoredClasses = [
   'MuiInputBase-root',
 ];
 
-export const exportImage = (domElementId, name, backgroundColor = null, pixelRatio = 2) => {
+export const exportImage = (
+  domElementId,
+  name,
+  backgroundColor = null,
+  pixelRatio = 3,
+) => {
   const container = document.getElementById(domElementId);
   return new Promise((resolve) => {
     htmlToImage
@@ -37,8 +42,19 @@ export const exportImage = (domElementId, name, backgroundColor = null, pixelRat
   });
 };
 
-export const exportPdf = (domElementId, name, backgroundColor = null, pixelRatio = 2) => {
+export const exportPdf = (
+  domElementId,
+  name,
+  backgroundColor = null,
+  pixelRatio = 3,
+) => {
+  const documentWidth = 595.28;
+  const documentHeight = 841.89;
   const container = document.getElementById(domElementId);
+  const { offsetWidth, offsetHeight } = container;
+  const imageWidth = offsetWidth * pixelRatio;
+  const imageHeight = offsetHeight * pixelRatio;
+  const isLandscape = imageWidth >= imageHeight;
   return new Promise((resolve) => {
     htmlToImage
       .toPng(container, {
@@ -59,29 +75,35 @@ export const exportPdf = (domElementId, name, backgroundColor = null, pixelRatio
         },
       })
       .then((image) => {
-        // eslint-disable-next-line new-cap
-        let pdf = new jsPDF({ orientation: 'landscape', unit: 'px' });
-        const imgProps = pdf.getImageProperties(image);
-        if (imgProps.height > imgProps.width) {
-          // eslint-disable-next-line new-cap
-          pdf = new jsPDF({ orientation: 'portrait', unit: 'px' });
-        }
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        pdf.setFillColor(backgroundColor);
-        pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
-        const width = (imgProps.width * pdfHeight) / imgProps.height;
-        const height = (imgProps.height * pdfWidth) / imgProps.width;
-        if (height <= pdfHeight) {
-          const marginX = 0;
-          const marginY = (pdfHeight - height) / 2;
-          pdf.addImage(image, 'PNG', marginX, marginY, pdfWidth, height);
-        } else {
-          const marginX = (pdfWidth - width) / 2;
-          const marginY = 0;
-          pdf.addImage(image, 'PNG', marginX, marginY, width, pdfHeight);
-        }
-        pdf.save(`${name}.pdf`);
+        const docDefinition = {
+          pageSize: {
+            width: documentWidth,
+            height: documentHeight,
+          },
+          pageOrientation: isLandscape ? 'landscape' : 'portrait',
+          pageMargins: [0, 0, 0, 0],
+          background: () => ({
+            canvas: [
+              {
+                type: 'rect',
+                x: 0,
+                y: 0,
+                w: documentWidth,
+                h: documentHeight,
+                color: backgroundColor,
+              },
+            ],
+          }),
+          content: [
+            {
+              image,
+              width: isLandscape ? documentHeight : documentWidth,
+              alignment: 'center',
+            },
+          ],
+        };
+        const pdf = pdfMake.createPdf(docDefinition);
+        pdf.download(`${name}.pdf`);
         resolve();
       });
   });

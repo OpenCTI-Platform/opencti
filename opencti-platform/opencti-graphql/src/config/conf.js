@@ -15,7 +15,6 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
 } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { ENTITY_TYPE_USER_SUBSCRIPTION } from "../schema/internalObject";
 
 const pjson = require('../../package.json');
 

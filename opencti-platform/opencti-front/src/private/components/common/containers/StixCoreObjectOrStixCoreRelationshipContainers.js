@@ -287,7 +287,6 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       'container_type',
       'report_types',
     ];
-    const noHeaders = false;
     return (
       <div>
         <div className={classes.parameters}>
@@ -300,15 +299,11 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
               />
             </div>
           )}
-          {availableFilterKeys && availableFilterKeys.length > 0 && (
-            <Filters
-              availableFilterKeys={availableFilterKeys}
-              handleAddFilter={this.handleAddFilter.bind(this)}
-              currentFilters={filters}
-            />
-          )}
-          {(!availableFilterKeys || availableFilterKeys.length === 0)
-            && !noHeaders && <div style={{ height: 38 }}> &nbsp; </div>}
+          <Filters
+            availableFilterKeys={availableFilterKeys}
+            handleAddFilter={this.handleAddFilter.bind(this)}
+            currentFilters={filters}
+          />
           <div className={classes.filters}>
             {map((currentFilter) => {
               const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;

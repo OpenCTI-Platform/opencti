@@ -4,31 +4,17 @@ FROM node:16.6.0-alpine3.14 AS base
 FROM base AS graphql-deps-builder
 
 WORKDIR /opt/opencti-build/opencti-graphql
-RUN apk add --no-cache fontconfig curl curl-dev chromium
-RUN mkdir -p /usr/share && \
-    cd /usr/share \
-    && curl -L https://github.com/Overbryd/docker-phantomjs-alpine/releases/download/2.11/phantomjs-alpine-x86_64.tar.bz2 | tar xj \
-    && ln -s /usr/share/phantomjs/phantomjs /usr/bin/phantomjs \
-    && ls -l /usr/share/phantomjs && ls -l /usr/bin
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
-RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser yarn install --frozen-lockfile --production && yarn cache clean --all
-RUN apk del curl curl-dev
+RUN yarn install --frozen-lockfile --production && yarn cache clean --all
 
 
 FROM base AS graphql-builder
 
 WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
-RUN apk add --no-cache fontconfig curl curl-dev chromium
-RUN mkdir -p /usr/share && \
-    cd /usr/share \
-    && curl -L https://github.com/Overbryd/docker-phantomjs-alpine/releases/download/2.11/phantomjs-alpine-x86_64.tar.bz2 | tar xj \
-    && ln -s /usr/share/phantomjs/phantomjs /usr/bin/phantomjs \
-    && ls -l /usr/share/phantomjs && ls -l /usr/bin
-RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser yarn install
+RUN yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
 RUN yarn run webpack --mode production
-RUN apk del curl curl-dev
 
 
 FROM base AS front-builder
@@ -44,16 +30,11 @@ RUN yarn relay && yarn generate
 FROM base AS app
 
 RUN set -ex; \
-    apk add --no-cache fontconfig curl curl-dev chromium tini~=0.19 gcc~=10.3 musl-dev~=1.2 python3~=3.9 python3-dev~=3.9; \
+    apk add --no-cache tini~=0.19 gcc~=10.3 musl-dev~=1.2 python3~=3.9 python3-dev~=3.9; \
     python3 -m ensurepip; \
     rm -rv /usr/lib/python*/ensurepip; \
     pip3 install --no-cache-dir --upgrade pip setuptools wheel; \
     ln -sf python3 /usr/bin/python;
-RUN mkdir -p /usr/share && \
-    cd /usr/share \
-    && curl -L https://github.com/Overbryd/docker-phantomjs-alpine/releases/download/2.11/phantomjs-alpine-x86_64.tar.bz2 | tar xj \
-    && ln -s /usr/share/phantomjs/phantomjs /usr/bin/phantomjs \
-    && ls -l /usr/share/phantomjs && ls -l /usr/bin
 WORKDIR /opt/opencti
 COPY opencti-graphql/src/python/requirements.txt ./src/python/requirements.txt
 RUN pip3 install --no-cache-dir --requirement ./src/python/requirements.txt
@@ -66,8 +47,6 @@ COPY opencti-graphql/script ./script
 ENV PYTHONUNBUFFERED=1
 ENV NODE_OPTIONS=--max_old_space_size=8192
 ENV NODE_ENV=production
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "build/index.js"]
