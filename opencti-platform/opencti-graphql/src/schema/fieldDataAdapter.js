@@ -105,6 +105,7 @@ export const dateAttributes = [
   'received_time',
   'processed_time',
   'completed_time',
+  'last_run',
 ];
 export const numericAttributes = [
   'attribute_order',

@@ -62,8 +62,10 @@ class CreatedByField extends Component {
   }
 
   handleSearch(event) {
-    this.setState({ keyword: event.target.value });
-    SEARCH$.next({ action: 'Search' });
+    if (event && event.target && event.target.value) {
+      this.setState({ keyword: event.target.value });
+      SEARCH$.next({ action: 'Search' });
+    }
   }
 
   handleOpenIdentityCreation() {

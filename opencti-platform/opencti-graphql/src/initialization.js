@@ -20,6 +20,7 @@ import { createEntity, loadEntity, patchAttribute } from './database/middleware'
 import { INDEX_INTERNAL_OBJECTS } from './database/utils';
 import { ConfigurationError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
 import { BYPASS, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
+import { smtpIsAlive } from './database/smtp';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -118,6 +119,9 @@ export const checkSystemDependencies = async () => {
   // Check if redis is here
   await redisIsAlive();
   logApp.info(`[CHECK] Redis is alive`);
+  // Check if SMTP is here
+  await smtpIsAlive();
+  logApp.info(`[CHECK] SMTP is alive`);
   // Check if Python is available
   await checkPythonStix2();
   logApp.info(`[CHECK] Python3 is available`);

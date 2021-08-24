@@ -76,7 +76,7 @@ const passwordValidation = (t) => Yup.object().shape({
 
 const ProfileOverviewComponent = (props) => {
   const {
-    t, me, classes, fd,
+    t, me, classes, fldt,
   } = props;
   const external = false;
   const initialValues = pick(
@@ -250,7 +250,7 @@ const ProfileOverviewComponent = (props) => {
                             userSubscription.cron === '5-minutes'
                               ? t('As it happens')
                               : userSubscription.cron
-                          } - ${t('Last run:')} ${fd(
+                          } - ${t('Last run:')} ${fldt(
                             userSubscription.last_run,
                           )}`}
                         />

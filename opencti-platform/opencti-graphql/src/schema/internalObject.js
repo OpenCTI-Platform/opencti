@@ -180,7 +180,16 @@ export const internalObjectsAttributes = {
   ],
   [ENTITY_TYPE_TAXII_COLLECTION]: ['internal_id', 'standard_id', 'name', 'description', 'filters'],
   [ENTITY_TYPE_STREAM_COLLECTION]: ['internal_id', 'standard_id', 'name', 'description', 'filters'],
-  [ENTITY_TYPE_USER_SUBSCRIPTION]: ['internal_id', 'standard_id', 'name', 'cron', 'options', 'entities_ids', 'filters'],
+  [ENTITY_TYPE_USER_SUBSCRIPTION]: [
+    'internal_id',
+    'standard_id',
+    'name',
+    'cron',
+    'options',
+    'entities_ids',
+    'filters',
+    'last_run',
+  ],
   [ENTITY_TYPE_TASK]: [
     'standard_id',
     'task_position',

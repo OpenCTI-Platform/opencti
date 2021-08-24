@@ -436,7 +436,7 @@ type UserSubscription {
   entities: [StixDomainObject]
   filters: String
   cron: String
-  last_run: DateTime
+  last_run: DateTime!
 }
 type UserSubscriptionConnection {
   pageInfo: PageInfo!
@@ -1418,8 +1418,7 @@ enum StixDomainObjectsFilter {
   name
   entity_type
   aliases
-  x_opencti_aliases
-  created
+  x_opencti_aliases  created
   modified
   created_at
   createdBy
@@ -7910,6 +7909,27 @@ input StixCyberObservableRelationshipAddInput {
 }
 
 ############## StixMetaRelationships
+enum StixMetaRelationshipsOrdering {
+  created_at
+  updated_at
+}
+enum StixMetaRelationshipsFilter {
+  created_at
+}
+input StixMetaRelationshipsFiltering {
+  key: StixMetaRelationshipsFilter!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+type StixMetaRelationshipConnection {
+  pageInfo: PageInfo!
+  edges: [StixMetaRelationshipEdge]
+}
+type StixMetaRelationshipEdge {
+  cursor: String!
+  node: StixMetaRelationship!
+}
 type StixMetaRelationship implements BasicRelationship & StixRelationship {
   # BasicRelationship
   id: ID! # internal_id
@@ -8596,6 +8616,38 @@ type Query {
     @auth(for: [KNOWLEDGE, EXPLORE])
 
   ######## STIX META RELATIONSHIPS
+  stixMetaRelationship(id: String): StixMetaRelationship @auth(for: [KNOWLEDGE])
+  stixMetaRelationships(
+    first: Int
+    after: ID
+    orderBy: StixMetaRelationshipsOrdering
+    orderMode: OrderingMode
+    elementId: String
+    elementWithTargetTypes: [String]
+    fromId: String
+    fromRole: String
+    fromTypes: [String]
+    toId: String
+    toRole: String
+    toTypes: [String]
+    relationship_type: String
+    relationshipTypes: [String]
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    startDate: DateTime
+    endDate: DateTime
+    confidences: [Int]
+    search: String
+    filters: [StixMetaRelationshipsFiltering]
+    filterMode: FilterMode
+    stix: Boolean
+  ): StixMetaRelationshipConnection @auth(for: [KNOWLEDGE])
   stixMetaRelationshipsDistribution(
     field: String!
     operation: StatsOperation!

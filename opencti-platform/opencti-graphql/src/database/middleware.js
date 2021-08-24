@@ -389,7 +389,6 @@ const buildRelationsFilter = (relationshipType, args) => {
   const { relationFilter = false } = args;
   const {
     filters = [],
-    search,
     elementId,
     fromId,
     fromRole,
@@ -413,21 +412,6 @@ const buildRelationsFilter = (relationshipType, args) => {
     endDate,
     confidences = [],
   } = args;
-  // Use $from, $to only if fromId or toId specified.
-  // Else, just ask for the relation only.
-  // fromType or toType only allow if fromId or toId available
-  const definedRoles = !R.isNil(fromRole) || !R.isNil(toRole);
-  const askForConnections = !R.isNil(elementId) || !R.isNil(fromId) || !R.isNil(toId) || definedRoles;
-  const haveTargetFilters = filters && filters.length > 0; // For now filters only contains target to filtering
-  const elementWithTargetTypesFilter = elementWithTargetTypes && elementWithTargetTypes.length > 0;
-  const fromTypesFilter = fromTypes && fromTypes.length > 0;
-  const toTypesFilter = toTypes && toTypes.length > 0;
-  if (
-    askForConnections === false &&
-    (haveTargetFilters || fromTypesFilter || toTypesFilter || elementWithTargetTypesFilter || search)
-  ) {
-    throw DatabaseError('Cant list relation with types filtering or search if from or to id are not specified');
-  }
   // Handle relation type(s)
   const relationToGet = relationshipType || 'stix-core-relationship';
   // 0 - Check if we can support the query by Elastic

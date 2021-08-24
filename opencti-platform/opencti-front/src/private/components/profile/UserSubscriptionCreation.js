@@ -96,6 +96,7 @@ const userSubscriptionMutation = graphql`
       cron
       options
       filters
+      last_run
       entities {
         ... on BasicObject {
           id
@@ -370,7 +371,7 @@ class UserSubscriptionCreation extends Component {
                     <MenuItem value="5-minutes">{t('As it happens')}</MenuItem>
                     <MenuItem value="1-hours">{t('Every 1 hour')}</MenuItem>
                     <MenuItem value="24-hours">{t('Every 24 hours')}</MenuItem>
-                    <MenuItem value="1-week">{t('Every week')}</MenuItem>
+                    <MenuItem value="1-weeks">{t('Every week')}</MenuItem>
                   </Field>
                   <FormControl component="fieldset" style={{ marginTop: 20 }}>
                     <FormGroup>
