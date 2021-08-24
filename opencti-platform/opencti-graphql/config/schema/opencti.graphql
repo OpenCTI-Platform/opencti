@@ -769,6 +769,7 @@ type Group implements InternalObject & BasicObject {
   # Group
   name: String!
   default_assignation: Boolean
+  auto_new_marking: Boolean
   description: String
   members: UserConnection
   created_at: DateTime

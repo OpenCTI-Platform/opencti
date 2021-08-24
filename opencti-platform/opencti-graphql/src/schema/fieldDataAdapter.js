@@ -139,6 +139,7 @@ export const booleanAttributes = [
   'is_disabled',
   'is_self_signed',
   'platform_enable_references',
+  'auto_new_marking',
 ];
 export const numericOrBooleanAttributes = [...numericAttributes, ...booleanAttributes];
 export const dictAttributes = { hashes: { key: 'algorithm', value: 'hash' } };

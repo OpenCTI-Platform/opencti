@@ -84,6 +84,7 @@ export const internalObjectsAttributes = {
     'name',
     'description',
     'default_assignation',
+    'auto_new_marking',
     'created_at',
     'i_created_at_day',
     'i_created_at_month',
