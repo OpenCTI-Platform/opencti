@@ -15,6 +15,7 @@ import {
   head,
 } from 'ramda';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -23,6 +24,8 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import CommitMessage from '../../common/form/CommitMessage';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -49,20 +52,21 @@ const styles = (theme) => ({
   },
 });
 
-const IncidentMutationFieldPatch = graphql`
+const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
   ) {
     incidentEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(input: $input, commitMessage: $commitMessage) {
         ...IncidentEditionOverview_incident
       }
     }
   }
 `;
 
-export const IncidentEditionOverviewFocus = graphql`
+export const incidentEditionOverviewFocus = graphql`
   mutation IncidentEditionOverviewFocusMutation(
     $id: ID!
     $input: EditContext!
@@ -75,7 +79,7 @@ export const IncidentEditionOverviewFocus = graphql`
   }
 `;
 
-const IncidentMutationRelationAdd = graphql`
+const incidentMutationRelationAdd = graphql`
   mutation IncidentEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixMetaRelationshipAddInput
@@ -90,7 +94,7 @@ const IncidentMutationRelationAdd = graphql`
   }
 `;
 
-const IncidentMutationRelationDelete = graphql`
+const incidentMutationRelationDelete = graphql`
   mutation IncidentEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
@@ -115,7 +119,7 @@ const IncidentValidation = (t) => Yup.object().shape({
 class IncidentEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
     commitMutation({
-      mutation: IncidentEditionOverviewFocus,
+      mutation: incidentEditionOverviewFocus,
       variables: {
         id: this.props.incident.id,
         input: {
@@ -125,12 +129,39 @@ class IncidentEditionOverviewComponent extends Component {
     });
   }
 
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: incidentMutationFieldPatch,
+      variables: {
+        id: this.props.incident.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
   handleSubmitField(name, value) {
     IncidentValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
-          mutation: IncidentMutationFieldPatch,
+          mutation: incidentMutationFieldPatch,
           variables: {
             id: this.props.incident.id,
             input: { key: name, value },
@@ -143,7 +174,7 @@ class IncidentEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     if (!this.props.enableReferences) {
       commitMutation({
-        mutation: IncidentMutationFieldPatch,
+        mutation: incidentMutationFieldPatch,
         variables: {
           id: this.props.incident.id,
           input: { key: 'createdBy', value: value.value },
@@ -153,45 +184,49 @@ class IncidentEditionOverviewComponent extends Component {
   }
 
   handleChangeObjectMarking(name, values) {
-    const { Incident } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(Incident);
+    if (!this.props.enableReferences) {
+      const { incident } = this.props;
+      const currentMarkingDefinitions = pipe(
+        pathOr([], ['objectMarking', 'edges']),
+        map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(incident);
 
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
+      const added = difference(values, currentMarkingDefinitions);
+      const removed = difference(currentMarkingDefinitions, values);
 
-    if (added.length > 0) {
-      commitMutation({
-        mutation: IncidentMutationRelationAdd,
-        variables: {
-          id: this.props.incident.id,
-          input: {
-            toId: head(added).value,
+      if (added.length > 0) {
+        commitMutation({
+          mutation: incidentMutationRelationAdd,
+          variables: {
+            id: this.props.incident.id,
+            input: {
+              toId: head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: incidentMutationRelationDelete,
+          variables: {
+            id: this.props.incident.id,
+            toId: head(removed).value,
             relationship_type: 'object-marking',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: IncidentMutationRelationDelete,
-        variables: {
-          id: this.props.incident.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
+        });
+      }
     }
   }
 
   render() {
-    const { t, incident, context } = this.props;
+    const {
+      t, incident, context, enableReferences,
+    } = this.props;
     const createdBy = pathOr(null, ['createdBy', 'name'], incident) === null
       ? ''
       : {
@@ -230,9 +265,11 @@ class IncidentEditionOverviewComponent extends Component {
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={IncidentValidation(t)}
-        onSubmit={() => true}
+        onSubmit={this.onSubmit.bind(this)}
       >
-        {({ setFieldValue }) => (
+        {({
+          submitForm, isSubmitting, validateForm, setFieldValue,
+        }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
@@ -289,6 +326,13 @@ class IncidentEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeObjectMarking.bind(this)}
             />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                validateForm={validateForm}
+              />
+            )}
           </Form>
         )}
       </Formik>
@@ -301,6 +345,7 @@ IncidentEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   incident: PropTypes.object,
+  enableReferences: PropTypes.bool,
   context: PropTypes.array,
 };
 
