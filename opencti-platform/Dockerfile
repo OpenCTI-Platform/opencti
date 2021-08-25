@@ -1,11 +1,19 @@
 FROM node:16.6.0-alpine3.14 AS base
-
+ARG TARGETPLATFORM
 
 FROM base AS graphql-deps-builder
 
 WORKDIR /opt/opencti-build/opencti-graphql
+RUN apk add --no-cache fontconfig curl curl-dev 
+RUN [[ "$TARGETPLATFORM" != "linux/amd64" ]] \
+    && mkdir -p /usr/share \
+    && cd /usr/share \
+    && curl -L https://raw.githubusercontent.com/ApioLab/phantomjs-2.1.1-linux-arm/master/phantomjs-2.1.1-linux-arm.tar.bz2 | tar xj \
+    && ln -s /usr/share/phantomjs-2.1.1-linux-arm/bin/phantomjs /usr/bin/phantomjs \
+    && phantomjs --version
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
 RUN yarn install --frozen-lockfile --production && yarn cache clean --all
+RUN apk del --no-cache curl curl-dev
 
 
 FROM base AS graphql-builder
@@ -30,11 +38,17 @@ RUN yarn relay && yarn generate
 FROM base AS app
 
 RUN set -ex; \
-    apk add --no-cache tini~=0.19 gcc~=10.3 musl-dev~=1.2 python3~=3.9 python3-dev~=3.9; \
+    apk add --no-cache fontconfig curl curl-dev tini~=0.19 gcc~=10.3 musl-dev~=1.2 python3~=3.9 python3-dev~=3.9; \
     python3 -m ensurepip; \
     rm -rv /usr/lib/python*/ensurepip; \
     pip3 install --no-cache-dir --upgrade pip setuptools wheel; \
     ln -sf python3 /usr/bin/python;
+RUN [[ "$TARGETPLATFORM" != "linux/amd64" ]] \
+    && mkdir -p /usr/share \
+    && cd /usr/share \
+    && curl -L https://raw.githubusercontent.com/ApioLab/phantomjs-2.1.1-linux-arm/master/phantomjs-2.1.1-linux-arm.tar.bz2 | tar xj \
+    && ln -s /usr/share/phantomjs-2.1.1-linux-arm/bin/phantomjs /usr/bin/phantomjs \
+    && phantomjs --version    
 WORKDIR /opt/opencti
 COPY opencti-graphql/src/python/requirements.txt ./src/python/requirements.txt
 RUN pip3 install --no-cache-dir --requirement ./src/python/requirements.txt

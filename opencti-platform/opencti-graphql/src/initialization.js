@@ -2,7 +2,7 @@
 import { ApolloError } from 'apollo-errors';
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
-import { logApp, PLATFORM_VERSION } from './config/conf';
+import { booleanConf, logApp, PLATFORM_VERSION } from './config/conf';
 import { elCreateIndexes, elIndexExists, elIsAlive } from './database/elasticSearch';
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
@@ -119,9 +119,11 @@ export const checkSystemDependencies = async () => {
   // Check if redis is here
   await redisIsAlive();
   logApp.info(`[CHECK] Redis is alive`);
-  // Check if SMTP is here
-  await smtpIsAlive();
-  logApp.info(`[CHECK] SMTP is alive`);
+  if (booleanConf('subscription_scheduler:enabled', true)) {
+    // Check if SMTP is here
+    await smtpIsAlive();
+    logApp.info(`[CHECK] SMTP is alive`);
+  }
   // Check if Python is available
   await checkPythonStix2();
   logApp.info(`[CHECK] Python3 is available`);
