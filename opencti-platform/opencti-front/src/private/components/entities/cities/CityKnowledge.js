@@ -13,6 +13,7 @@ import CityPopover from './CityPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
 const styles = () => ({
   container: {
@@ -38,6 +39,17 @@ class CityKnowledgeComponent extends Component {
             path="/dashboard/entities/cities/:cityId/knowledge/relations/:relationId"
             render={(routeProps) => (
               <StixCoreRelationship
+                entityId={city.id}
+                paddingRight={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/entities/cities/:cityId/knowledge/sightings/:sightingId"
+            render={(routeProps) => (
+              <StixSightingRelationship
                 entityId={city.id}
                 paddingRight={true}
                 {...routeProps}

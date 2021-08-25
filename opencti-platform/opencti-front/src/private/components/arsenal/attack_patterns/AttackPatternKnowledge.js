@@ -11,6 +11,7 @@ import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDoma
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import AttackPatternPopover from './AttackPatternPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
 const styles = () => ({
   container: {
@@ -35,6 +36,16 @@ class AttackPatternKnowledgeComponent extends Component {
             path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge/relations/:relationId"
             render={(routeProps) => (
               <StixCoreRelationship
+                entityId={attackPattern.id}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge/sightings/:sightingId"
+            render={(routeProps) => (
+              <StixSightingRelationship
                 entityId={attackPattern.id}
                 {...routeProps}
               />

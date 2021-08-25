@@ -154,6 +154,7 @@ class StixSightingRelationships extends Component {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        secondaryAction={true}
         availableFilterKeys={[
           'labelledBy',
           'markedBy',

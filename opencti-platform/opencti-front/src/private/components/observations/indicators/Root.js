@@ -15,6 +15,7 @@ import IndicatorHeader from './IndicatorHeader';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import IndicatorEntities from './IndicatorEntities';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -138,6 +139,16 @@ class RootIndicator extends Component {
                       path="/dashboard/observations/indicators/:indicatorId/knowledge/relations/:relationId"
                       render={(routeProps) => (
                         <StixCoreRelationship
+                          entityId={indicatorId}
+                          {...routeProps}
+                        />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/indicators/:indicatorId/knowledge/sightings/:sightingId"
+                      render={(routeProps) => (
+                        <StixSightingRelationship
                           entityId={indicatorId}
                           {...routeProps}
                         />

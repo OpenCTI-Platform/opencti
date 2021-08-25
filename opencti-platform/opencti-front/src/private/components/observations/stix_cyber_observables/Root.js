@@ -15,6 +15,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixCyberObservableHeader from './StixCyberObservableHeader';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
 const subscription = graphql`
   subscription RootStixCyberObservableSubscription($id: ID!) {
@@ -144,6 +145,16 @@ class RootStixCyberObservable extends Component {
                       path="/dashboard/observations/observables/:observableId/knowledge/relations/:relationId"
                       render={(routeProps) => (
                         <StixCoreRelationship
+                          entityId={observableId}
+                          {...routeProps}
+                        />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/observables/:observableId/knowledge/sightings/:sightingId"
+                      render={(routeProps) => (
+                        <StixSightingRelationship
                           entityId={observableId}
                           {...routeProps}
                         />

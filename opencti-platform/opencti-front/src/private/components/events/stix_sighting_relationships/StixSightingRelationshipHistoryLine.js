@@ -76,8 +76,8 @@ const styles = (theme) => ({
   },
 });
 
-class StixCoreRelationshipHistoryLineComponent extends Component {
-// eslint-disable-next-line class-methods-use-this
+class StixSightingRelationshipHistoryLineComponent extends Component {
+  // eslint-disable-next-line class-methods-use-this
   renderIcon(eventType, isRelation, eventMesage, commit) {
     if (isRelation) {
       if (eventType === 'create') {
@@ -255,7 +255,7 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
   }
 }
 
-StixCoreRelationshipHistoryLineComponent.propTypes = {
+StixSightingRelationshipHistoryLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -263,11 +263,11 @@ StixCoreRelationshipHistoryLineComponent.propTypes = {
   isRelation: PropTypes.bool,
 };
 
-const StixCoreRelationshipHistoryLine = createFragmentContainer(
-  StixCoreRelationshipHistoryLineComponent,
+const StixSightingRelationshipHistoryLine = createFragmentContainer(
+  StixSightingRelationshipHistoryLineComponent,
   {
     node: graphql`
-      fragment StixCoreRelationshipHistoryLine_node on Log {
+      fragment StixSightingRelationshipHistoryLine_node on Log {
         id
         event_type
         timestamp
@@ -285,4 +285,4 @@ const StixCoreRelationshipHistoryLine = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixCoreRelationshipHistoryLine);
+)(StixSightingRelationshipHistoryLine);

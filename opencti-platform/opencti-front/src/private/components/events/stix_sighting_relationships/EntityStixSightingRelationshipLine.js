@@ -69,15 +69,15 @@ class EntityStixSightingRelationshipLineComponent extends Component {
     } = this.props;
     const entity = isTo ? node.from : node.to;
     const restricted = entity === null;
+    const entityLink = `${resolveLink(entity.entity_type)}/${entity.id}`;
+    const link = `${entityLink}/knowledge/sightings/${node.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         button={true}
         component={Link}
-        to={
-          !restricted ? `${resolveLink(entity.entity_type)}/${entity.id}` : null
-        }
+        to={link}
         disabled={restricted}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>

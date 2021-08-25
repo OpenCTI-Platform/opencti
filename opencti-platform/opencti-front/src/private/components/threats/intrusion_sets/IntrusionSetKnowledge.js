@@ -15,6 +15,7 @@ import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/Sti
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
 const styles = () => ({
   container: {
@@ -39,6 +40,17 @@ class IntrusionSetKnowledgeComponent extends Component {
             path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/relations/:relationId"
             render={(routeProps) => (
               <StixCoreRelationship
+                entityId={intrusionSet.id}
+                paddingRight={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/sightings/:sightingId"
+            render={(routeProps) => (
+              <StixSightingRelationship
                 entityId={intrusionSet.id}
                 paddingRight={true}
                 {...routeProps}

@@ -14,6 +14,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
+import StixSightingRelationship from '../stix_sighting_relationships/StixSightingRelationship';
 
 const styles = () => ({
   container: {
@@ -37,6 +38,17 @@ class IncidentKnowledgeComponent extends Component {
           path="/dashboard/events/incidents/:incidentId/knowledge/relations/:relationId"
           render={(routeProps) => (
             <StixCoreRelationship
+              entityId={incident.id}
+              paddingRight={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/events/incidents/:incidentId/knowledge/sightings/:sightingId"
+          render={(routeProps) => (
+            <StixSightingRelationship
               entityId={incident.id}
               paddingRight={true}
               {...routeProps}
