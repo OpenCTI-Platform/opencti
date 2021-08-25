@@ -10,7 +10,7 @@ RUN if [[ $TARGETPLATFORM != "linux/amd64"]]; then \
     && cd /usr/share \
     && curl -L https://raw.githubusercontent.com/ApioLab/phantomjs-2.1.1-linux-arm/master/phantomjs-2.1.1-linux-arm.tar.bz2 | tar xj \
     && ln -s /usr/share/phantomjs-2.1.1-linux-arm/bin/phantomjs /usr/bin/phantomjs \
-    && phantomjs --version
+    && phantomjs --version \
     fi
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
 RUN yarn install --frozen-lockfile --production && yarn cache clean --all
@@ -49,7 +49,7 @@ RUN if [[ $TARGETPLATFORM != "linux/amd64"]]; then \
     && cd /usr/share \
     && curl -L https://raw.githubusercontent.com/ApioLab/phantomjs-2.1.1-linux-arm/master/phantomjs-2.1.1-linux-arm.tar.bz2 | tar xj \
     && ln -s /usr/share/phantomjs-2.1.1-linux-arm/bin/phantomjs /usr/bin/phantomjs \
-    && phantomjs --version
+    && phantomjs --version \
     fi
 WORKDIR /opt/opencti
 COPY opencti-graphql/src/python/requirements.txt ./src/python/requirements.txt

@@ -63,8 +63,10 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
     const filterByKeyword = (n) => searchTerm === ''
       || n.to.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
       || n.to.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-      || n.to.x_mitre_id.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-      || R.propOr('', 'subattackPatterns_text', n)
+      || R.propOr('', 'x_mitre_id', n.to)
+        .toLowerCase()
+        .indexOf(searchTerm.toLowerCase()) !== -1
+      || R.propOr('', 'subattackPatterns_text', n.to)
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1;
     const killChainPhases = R.pipe(

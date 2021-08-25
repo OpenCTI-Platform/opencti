@@ -200,7 +200,9 @@ class AttackPatternsMatrixColumnsComponent extends Component {
     const filterByKeyword = (n) => searchTerm === ''
       || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
       || n.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-      || n.x_mitre_id.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || R.propOr('', 'x_mitre_id', n)
+        .toLowerCase()
+        .indexOf(searchTerm.toLowerCase()) !== -1
       || R.propOr('', 'subattackPatterns_text', n)
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1;

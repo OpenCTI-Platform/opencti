@@ -36,7 +36,9 @@ class AttackPatternsLinesComponent extends Component {
     const filterByKeyword = (n) => keyword === ''
       || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || n.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-      || n.x_mitre_id.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+      || propOr('', 'x_mitre_id', n)
+        .toLowerCase()
+        .indexOf(keyword.toLowerCase()) !== -1
       || propOr('', 'subattackPatterns_text', n)
         .toLowerCase()
         .indexOf(keyword.toLowerCase()) !== -1;

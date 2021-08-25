@@ -1226,6 +1226,7 @@ const i18n = {
       EXPIRATION_SCHEDULER: "Planificateur d'expiration",
       TASK_MANAGER: 'Manager des tâches',
       RULE_ENGINE: 'Moteur de règles',
+      SUBSCRIPTION_MANAGER: 'Manager des souscriptions',
     },
     en: {
       progress: 'In progress',
@@ -1456,6 +1457,7 @@ const i18n = {
       EXPIRATION_SCHEDULER: 'Expiration scheduler',
       TASK_MANAGER: 'Tasks manager',
       RULE_ENGINE: 'Rules engine',
+      SUBSCRIPTION_MANAGER: 'Subscriptions manager',
     },
   },
 };
