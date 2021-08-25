@@ -49,7 +49,7 @@ describe('Settings resolver standard behavior', () => {
     const { about } = queryResult.data;
     expect(about).not.toBeNull();
     expect(about.version).toContain('5.0.0');
-    expect(about.dependencies.length).toEqual(4);
+    expect(about.dependencies.length).toEqual(3);
   });
   it('should settings information', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });

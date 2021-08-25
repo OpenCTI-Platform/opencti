@@ -55,7 +55,12 @@ class StixDomainObjectVictimology extends Component {
 
   render() {
     const { viewMode, searchTerm } = this.state;
-    const { classes, stixDomainObjectId, entityLink } = this.props;
+    const {
+      classes,
+      stixDomainObjectId,
+      entityLink,
+      mode = 'killchain',
+    } = this.props;
     const paginationOptions = {
       fromId: stixDomainObjectId,
       toTypes: ['Attack-Pattern'],
@@ -63,29 +68,31 @@ class StixDomainObjectVictimology extends Component {
     };
     return (
       <div className={classes.container}>
-        <QueryRenderer
-          query={
-            stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery
-          }
-          variables={{ first: 500, ...paginationOptions }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <StixDomainObjectAttackPatternsKillChain
-                  data={props}
-                  entityLink={entityLink}
-                  paginationOptions={paginationOptions}
-                  stixDomainObjectId={stixDomainObjectId}
-                  handleChangeView={this.handleChangeView.bind(this)}
-                  handleSearch={this.handleSearch.bind(this)}
-                  searchTerm={searchTerm}
-                  currentView={viewMode}
-                />
-              );
+        {mode === 'killchain' && (
+          <QueryRenderer
+            query={
+              stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery
             }
-            return <Loader withRightPadding={true} />;
-          }}
-        />
+            variables={{ first: 500, ...paginationOptions }}
+            render={({ props }) => {
+              if (props) {
+                return (
+                  <StixDomainObjectAttackPatternsKillChain
+                    data={props}
+                    entityLink={entityLink}
+                    paginationOptions={paginationOptions}
+                    stixDomainObjectId={stixDomainObjectId}
+                    handleChangeView={this.handleChangeView.bind(this)}
+                    handleSearch={this.handleSearch.bind(this)}
+                    searchTerm={searchTerm}
+                    currentView={viewMode}
+                  />
+                );
+              }
+              return <Loader withRightPadding={true} />;
+            }}
+          />
+        )}
       </div>
     );
   }
@@ -97,6 +104,7 @@ StixDomainObjectVictimology.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  mode: PropTypes.string,
 };
 
 export default compose(
