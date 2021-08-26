@@ -70,6 +70,16 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               <ViewListOutlined />
             </IconButton>
           </Tooltip>
+          <Tooltip title={t('Courses of action view')}>
+            <IconButton
+              color={
+                currentView === 'courses-of-action' ? 'secondary' : 'primary'
+              }
+              onClick={handleChangeView.bind(this, 'courses-of-action')}
+            >
+              <ViewListOutlined />
+            </IconButton>
+          </Tooltip>
           <div className={classes.export}>
             <ExportButtons
               domElementId="container"
@@ -165,6 +175,16 @@ const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
                   x_mitre_permissions_required
                   x_mitre_detection
                   isSubAttackPattern
+                  coursesOfAction {
+                    edges {
+                      node {
+                        id
+                        name
+                        description
+                        x_mitre_id
+                      }
+                    }
+                  }
                   parentAttackPatterns {
                     edges {
                       node {

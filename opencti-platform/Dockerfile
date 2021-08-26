@@ -6,11 +6,11 @@ FROM base AS graphql-deps-builder
 WORKDIR /opt/opencti-build/opencti-graphql
 RUN apk add --no-cache fontconfig curl curl-dev 
 RUN if [[ $TARGETPLATFORM != "linux/amd64"]]; then \
-    mkdir -p /usr/share \
-    && cd /usr/share \
-    && curl -L https://raw.githubusercontent.com/ApioLab/phantomjs-2.1.1-linux-arm/master/phantomjs-2.1.1-linux-arm.tar.bz2 | tar xj \
-    && ln -s /usr/share/phantomjs-2.1.1-linux-arm/bin/phantomjs /usr/bin/phantomjs \
-    && phantomjs --version \
+    	mkdir -p /usr/share \
+    	&& cd /usr/share \
+    	&& curl -L https://raw.githubusercontent.com/ApioLab/phantomjs-2.1.1-linux-arm/master/phantomjs-2.1.1-linux-arm.tar.bz2 | tar xj \
+    	&& ln -s /usr/share/phantomjs-2.1.1-linux-arm/bin/phantomjs /usr/bin/phantomjs \
+    	&& phantomjs --version; \
     fi
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
 RUN yarn install --frozen-lockfile --production && yarn cache clean --all
@@ -45,11 +45,11 @@ RUN set -ex; \
     pip3 install --no-cache-dir --upgrade pip setuptools wheel; \
     ln -sf python3 /usr/bin/python;
 RUN if [[ $TARGETPLATFORM != "linux/amd64"]]; then \
-    mkdir -p /usr/share \
-    && cd /usr/share \
-    && curl -L https://raw.githubusercontent.com/ApioLab/phantomjs-2.1.1-linux-arm/master/phantomjs-2.1.1-linux-arm.tar.bz2 | tar xj \
-    && ln -s /usr/share/phantomjs-2.1.1-linux-arm/bin/phantomjs /usr/bin/phantomjs \
-    && phantomjs --version \
+    	mkdir -p /usr/share \
+    	&& cd /usr/share \
+    	&& curl -L https://raw.githubusercontent.com/ApioLab/phantomjs-2.1.1-linux-arm/master/phantomjs-2.1.1-linux-arm.tar.bz2 | tar xj \
+    	&& ln -s /usr/share/phantomjs-2.1.1-linux-arm/bin/phantomjs /usr/bin/phantomjs \
+    	&& phantomjs --version; \
     fi
 WORKDIR /opt/opencti
 COPY opencti-graphql/src/python/requirements.txt ./src/python/requirements.txt
