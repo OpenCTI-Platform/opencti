@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -47,6 +47,14 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
       relationship_type: 'uses',
       search: searchTerm,
     };
+    let csvData = null;
+    if (currentView === 'courses-of-action') {
+      csvData = R.pipe(
+        R.map((n) => n.node.to.coursesOfAction.edges),
+        R.flatten,
+        R.map((n) => n.node),
+      )(data.stixCoreRelationships.edges);
+    }
     return (
       <div className={classes.container}>
         <SearchInput
@@ -85,6 +93,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             <ExportButtons
               domElementId="container"
               name={t('Attack patterns kill chain')}
+              csvData={csvData}
             />
           </div>
         </div>
@@ -254,7 +263,7 @@ const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
   stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(stixDomainObjectAttackPatternsKillChainLines);

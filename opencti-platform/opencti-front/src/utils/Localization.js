@@ -273,6 +273,9 @@ const i18n = {
       'Update an observed data': 'Modifier une donnée observée',
       'Create a subscription': 'Créer une souscription',
       'Update a subscription': 'Modifier une souscription',
+      'Export to image': 'Exporter en image',
+      'Export to PDF': 'Exporter en PDF',
+      'Export to CSV': 'Exporter en CSV',
       Periodicity: 'Périodicité',
       'Knowledge update (except indicators & observables)':
         'Modification des connaissances (sauf indicateurs et observables)',
