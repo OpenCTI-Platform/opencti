@@ -115,6 +115,5 @@ services:
     - apk add build-base git libffi-dev
     - cd opencti-platform/opencti-graphql
     - yarn install
-    - yarn build
     - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
     - yarn start
