@@ -7,6 +7,7 @@ import graphql from 'babel-plugin-relay/macro';
 import Tooltip from '@material-ui/core/Tooltip';
 import IconButton from '@material-ui/core/IconButton';
 import { ViewListOutlined, ViewColumnOutlined } from '@material-ui/icons';
+import { ProgressWrench } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
@@ -77,7 +78,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               }
               onClick={handleChangeView.bind(this, 'courses-of-action')}
             >
-              <ViewListOutlined />
+              <ProgressWrench />
             </IconButton>
           </Tooltip>
           <div className={classes.export}>
@@ -101,6 +102,16 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             data={data}
             entityLink={entityLink}
             searchTerm={searchTerm}
+          />
+        )}
+        {currentView === 'courses-of-action' && (
+          <StixDomainObjectAttackPatternsKillChainLines
+            data={data}
+            entityLink={entityLink}
+            paginationOptions={paginationOptions}
+            handleDelete={this.props.relay.refetch.bind(this)}
+            searchTerm={searchTerm}
+            coursesOfAction={true}
           />
         )}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>

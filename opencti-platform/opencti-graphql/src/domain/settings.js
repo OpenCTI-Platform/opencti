@@ -12,7 +12,6 @@ import {
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { elVersion } from '../database/elasticSearch';
 import { getRabbitMQVersion } from '../database/rabbitmq';
-import { getMinIOVersion } from '../database/minio';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 

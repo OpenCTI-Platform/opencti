@@ -271,6 +271,25 @@ const i18n = {
       'Update a malware': 'Modifier un code malveillant',
       'Create an observed data': 'Créer une donnée observée',
       'Update an observed data': 'Modifier une donnée observée',
+      'Create a subscription': 'Créer une souscription',
+      'Update a subscription': 'Modifier une souscription',
+      Periodicity: 'Périodicité',
+      'Knowledge update (except indicators & observables)':
+        'Modification des connaissances (sauf indicateurs et observables)',
+      'Containers (reports, notes & opinions)':
+        'Conteneurs (rapports, notes et opinions)',
+      'Technical elements (indicators & observables)':
+        'Eléments techniques (indicateurs & observables)',
+      'As it happens': "Au fil de l'eau",
+      'Rich editor': 'Editeur enrichi',
+      'Markdown source': 'Source markdown',
+      'PDF viewer': 'Visualiseur PDF',
+      'Last run:': 'Dernière exécution :',
+      'Optional, you may want to subscribe to specific entities.':
+        'Optionnel, si vous souhaitez souscrire à des entités spécifiques',
+      'Every 1 hour': 'Toutes les heures',
+      'Every 24 hours': 'Toutes les 24 heures',
+      'Every week': 'Toutes les semaines',
       'New alias': 'Nouvel alias',
       'Aliases separated by commas': 'Alias séparés par des virgules',
       Alias: 'Alias',
@@ -346,6 +365,7 @@ const i18n = {
       'Cards view': 'Vue cartes',
       'Lines view': 'Vue lignes',
       'Kill chain view': 'Vue kill chain',
+      'Courses of action view': 'Vue conduites à suivre',
       'Graph view': 'Vue graphe',
       'Correlation view': 'Vue des corrélations',
       'Matrix view': 'Vue matricielle',
@@ -368,6 +388,7 @@ const i18n = {
       'Registered connectors': 'Connecteurs enregistrés',
       'The relations attached to selected entities will be copied to the merged entity.':
         "Les relations attachées aux entités sélectionnées seront copiées sur l'entité fusionnée.",
+      'Subscriptions & digests': 'Souscriptions & résumés',
       Scope: 'Périmètre',
       Modified: 'Modifié',
       'No import connectors on this platform':

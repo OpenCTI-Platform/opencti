@@ -71,6 +71,7 @@ const createApp = async (apolloServer) => {
         imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
         connectSrc: ["'self'", 'wss://*', 'ws://*', 'http://*', 'https://*'],
         objectSrc: ["'self'", 'data:', 'http://*', 'https://*'],
+        frameSrc: ["'self'", 'data:', 'http://*', 'https://*'],
       },
     },
   });
