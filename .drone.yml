@@ -97,7 +97,7 @@ services:
 - name: opencti
   image: nikolaik/python-nodejs:python3.9-nodejs15-alpine
   environment:
-    APP_PORT: 4100
+    APP__PORT: 4100
     APP__ADMIN__PASSWORD: admin
     APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
     REDIS__HOSTNAME: redis
