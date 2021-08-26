@@ -563,20 +563,54 @@ const createSeeMiddleware = () => {
       await initBroadcasting(req, res, client, processor);
       // If empty start date, stream all results corresponding to the filters
       if (isEmptyField(startFrom)) {
-        const queryOptions = convertFiltersToQueryOptions(streamFilters);
+        const queryOptions = convertFiltersToQueryOptions(streamFilters, { field: 'created_at' });
+        const resolutionCache = new Set();
+        const waitingElementRefs = new Map();
         // noinspection UnnecessaryLocalVariableJS
         const queryCallback = async (elements) => {
           for (let index = 0; index < elements.length; index += 1) {
             const { internal_id: elemId } = elements[index];
             const instance = await stixLoadById(req.session.user, elemId);
             const data = buildStixData(instance, { clearEmptyValues: true });
-            const markings = data.object_marking_refs || [];
-            if (channel.connected()) {
-              const eventId = utcDate(data.updated_at).toDate().getTime();
-              const message = generateCreateMessage(instance);
-              channel.sendEvent(eventId, EVENT_TYPE_CREATE, { data, markings, message, version });
+            resolutionCache.add(data.id);
+            // Get all refs and look into the batch if its available
+            const refs = [
+              ...(data.object_marking_refs || []),
+              ...(data.object_refs || []),
+              ...(data.created_by_ref ? [data.created_by_ref] : []),
+              ...(data.sighting_of_ref ? [data.sighting_of_ref] : []),
+              ...(data.where_sighted_refs || []),
+              ...(data.source_ref ? [data.source_ref] : []),
+              ...(data.target_ref ? [data.target_ref] : []),
+            ];
+            const allRefsVisible = refs.every((r) => resolutionCache.has(r));
+            if (allRefsVisible) {
+              if (channel.connected()) {
+                const markings = data.object_marking_refs || [];
+                const eventId = utcDate(data.updated_at).toDate().getTime();
+                const message = generateCreateMessage(instance);
+                channel.sendEvent(eventId, EVENT_TYPE_CREATE, { data, markings, message, version });
+              } else {
+                return false;
+              }
             } else {
-              return false;
+              waitingElementRefs.set(data, refs);
+            }
+            // Publish element if the new data unblock waiting refs
+            // eslint-disable-next-line no-restricted-syntax
+            for (const [key, value] of waitingElementRefs.entries()) {
+              const refsNowVisible = value.every((r) => resolutionCache.has(r));
+              if (refsNowVisible) {
+                if (channel.connected()) {
+                  const markings = key.object_marking_refs || [];
+                  const eventId = utcDate(key.updated_at).toDate().getTime();
+                  const message = generateCreateMessage(instance);
+                  channel.sendEvent(eventId, EVENT_TYPE_CREATE, { data: key, markings, message, version });
+                  waitingElementRefs.delete(key);
+                } else {
+                  return false;
+                }
+              }
             }
           }
           return channel.connected();
@@ -584,6 +618,8 @@ const createSeeMiddleware = () => {
         queryOptions.callback = queryCallback;
         await elList(req.session.user, [READ_INDEX_STIX_META_OBJECTS, ...READ_STIX_INDICES], queryOptions);
         // We need to sent a special event to mark the end of init with the current timestamp
+        resolutionCache.clear();
+        waitingElementRefs.clear();
         const catchId = `${new Date().getTime()}-0`;
         channel.sendEvent(catchId, EVENT_TYPE_SYNC, { message: 'Catchup done', version });
       }

@@ -21,6 +21,8 @@ import { INDEX_INTERNAL_OBJECTS } from './database/utils';
 import { ConfigurationError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
 import { BYPASS, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
 import { smtpIsAlive } from './database/smtp';
+import { generateStandardId } from './schema/identifier';
+import { ENTITY_TYPE_MARKING_DEFINITION } from './schema/stixMetaObject';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -174,35 +176,35 @@ const createAttributesTypes = async () => {
 
 const createMarkingDefinitions = async () => {
   // Create marking defs
+  const WHITE = { definition_type: 'TLP', definition: 'TLP:WHITE' };
   await addMarkingDefinition(SYSTEM_USER, {
     standard_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
-    stix_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
-    definition_type: 'TLP',
-    definition: 'TLP:WHITE',
+    stix_id: generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, WHITE),
+    ...WHITE,
     x_opencti_color: '#ffffff',
     x_opencti_order: 1,
   });
+  const GREEN = { definition_type: 'TLP', definition: 'TLP:GREEN' };
   await addMarkingDefinition(SYSTEM_USER, {
     standard_id: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
-    stix_id: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
-    definition_type: 'TLP',
-    definition: 'TLP:GREEN',
+    stix_id: generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, GREEN),
+    ...GREEN,
     x_opencti_color: '#2e7d32',
     x_opencti_order: 2,
   });
+  const AMBER = { definition_type: 'TLP', definition: 'TLP:AMBER' };
   await addMarkingDefinition(SYSTEM_USER, {
     standard_id: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
-    stix_id: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
-    definition_type: 'TLP',
-    definition: 'TLP:AMBER',
+    stix_id: generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, AMBER),
+    ...AMBER,
     x_opencti_color: '#d84315',
     x_opencti_order: 3,
   });
+  const RED = { definition_type: 'TLP', definition: 'TLP:RED' };
   await addMarkingDefinition(SYSTEM_USER, {
     standard_id: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
-    stix_id: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
-    definition_type: 'TLP',
-    definition: 'TLP:RED',
+    stix_id: generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, RED),
+    ...RED,
     x_opencti_color: '#c62828',
     x_opencti_order: 4,
   });

@@ -32,12 +32,7 @@ import {
   ENTITY_URL,
   isStixCyberObservable,
 } from '../schema/stixCyberObservable';
-import {
-  isStixInternalMetaRelationship,
-  isStixMetaRelationship,
-  RELATION_CREATED_BY,
-} from '../schema/stixMetaRelationship';
-import { isStixObject } from '../schema/stixCoreObject';
+import { isStixInternalMetaRelationship, RELATION_CREATED_BY } from '../schema/stixMetaRelationship';
 import {
   isStixCoreRelationship,
   RELATION_ATTRIBUTED_TO,
@@ -63,7 +58,7 @@ import {
   RELATION_USES,
 } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { isStixCyberObservableRelationship, RELATION_LINKED } from '../schema/stixCyberObservableRelationship';
+import { RELATION_LINKED } from '../schema/stixCyberObservableRelationship';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   INPUT_CREATED_BY,
@@ -134,35 +129,43 @@ export const stixDataConverter = (data, args = {}) => {
   const { patchGeneration = false, clearEmptyValues = false } = args;
   let finalData = data;
   const isSighting = data.type === 'sighting';
-  const relationSourceFieldName = isSighting ? 'sighting_of_ref' : 'source_ref';
   // region Relationships
   if (isDefinedValue(finalData.fromId)) {
-    finalData = R.pipe(
-      R.dissoc('fromId'),
-      R.dissoc('fromRole'),
-      R.dissoc('fromType'),
-      R.assoc(`x_opencti_${relationSourceFieldName}`, data.fromId)
-    )(finalData);
+    finalData = R.pipe(R.dissoc('fromId'), R.dissoc('fromRole'), R.dissoc('fromType'))(finalData);
+    if (isSighting) {
+      finalData = R.assoc('x_opencti_sighting_of_ref', data.fromId, finalData);
+    } else {
+      finalData = R.assoc('x_opencti_source_ref', data.fromId, finalData);
+    }
   }
   if (isDefinedValue(finalData.from)) {
-    finalData = R.pipe(
-      R.dissoc('from'),
-      R.assoc(relationSourceFieldName, data.from.standard_id),
-      R.assoc(`x_opencti_${relationSourceFieldName}`, data.from.internal_id)
-    )(finalData);
+    finalData = R.pipe(R.dissoc('from'))(finalData);
+    if (isSighting) {
+      finalData = R.pipe(
+        R.dissoc('source_ref'),
+        R.assoc('sighting_of_ref', data.from.standard_id),
+        R.assoc(`x_opencti_sighting_of_ref`, data.from.internal_id)
+      )(finalData);
+    } else {
+      finalData = R.pipe(
+        R.assoc('source_ref', data.from.standard_id),
+        R.assoc(`x_opencti_source_ref`, data.from.internal_id)
+      )(finalData);
+    }
   }
   if (isDefinedValue(finalData.toId)) {
     finalData = R.pipe(R.dissoc('toId'), R.dissoc('toRole'), R.dissoc('toType'))(finalData);
     if (isSighting) {
-      finalData = R.assoc('where_sighted_refs', [data.toId], finalData);
+      finalData = R.assoc('x_opencti_where_sighted_refs', [data.toId], finalData);
     } else {
       finalData = R.assoc('x_opencti_target_ref', data.toId, finalData);
     }
   }
   if (isDefinedValue(finalData.to)) {
-    finalData = R.pipe(R.dissoc('to'), R.assoc('target_ref', data.to.standard_id))(finalData);
+    finalData = R.pipe(R.dissoc('to'))(finalData);
     if (isSighting) {
       finalData = R.pipe(
+        R.dissoc('target_ref'),
         R.assoc('where_sighted_refs', [data.to.standard_id]),
         R.assoc(`x_opencti_where_sighted_refs`, [data.to.internal_id])
       )(finalData);
@@ -387,34 +390,6 @@ export const convertStixCyberObservableRelationshipToStix = (data) => {
   const entityType = data.entity_type;
   let finalData = buildStixData(data.from, { onlyBase: true });
   finalData = R.assoc(`${entityType.replace('-', '_')}_ref`, data.to.standard_id, finalData);
-  return finalData;
-};
-
-export const convertDataToStix = (data, args = {}) => {
-  if (!data) {
-    /* istanbul ignore next */
-    throw FunctionalError('No data provided to STIX converter');
-  }
-  const entityType = data.entity_type;
-  let finalData;
-  if (isStixObject(entityType)) {
-    finalData = buildStixData(data, args);
-  }
-  if (isStixCoreRelationship(entityType)) {
-    finalData = buildStixData(data, args);
-  }
-  if (isStixSightingRelationship(entityType)) {
-    finalData = buildStixData(data, args);
-  }
-  if (isStixMetaRelationship(entityType)) {
-    finalData = convertStixMetaRelationshipToStix(data);
-  }
-  if (isStixCyberObservableRelationship(entityType)) {
-    finalData = convertStixCyberObservableRelationshipToStix(data);
-  }
-  if (!finalData) {
-    throw FunctionalError(`The converter is not able to convert this type of entity: ${entityType}`);
-  }
   return finalData;
 };
 

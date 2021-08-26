@@ -22,8 +22,7 @@ import {
 } from '../domain/stixSightingRelationship';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { distributionRelations, timeSeriesRelations, batchLoader } from '../database/middleware';
-import { convertDataToStix } from '../database/stix';
+import { distributionRelations, timeSeriesRelations, batchLoader, convertDataToRawStix } from '../database/middleware';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { creator } from '../domain/log';
@@ -60,7 +59,7 @@ const stixSightingRelationshipResolvers = {
   StixSightingRelationship: {
     from: (rel, _, { user }) => loadByIdLoader.load(rel.fromId, user),
     to: (rel, _, { user }) => loadByIdLoader.load(rel.toId, user),
-    toStix: (rel) => JSON.stringify(convertDataToStix(rel)),
+    toStix: (rel, _, { user }) => convertDataToRawStix(user, rel.id),
     creator: (rel, _, { user }) => creator(user, rel.id),
     createdBy: (rel, _, { user }) => createdByLoader.load(rel.id, user),
     objectMarking: (rel, _, { user }) => markingDefinitionsLoader.load(rel.id, user),

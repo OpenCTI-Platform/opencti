@@ -636,16 +636,20 @@ export const stixLoadById = async (user, id, type = null) => {
     fullResolve: false,
   });
 };
+export const convertDataToRawStix = async (user, id, args = {}) => {
+  const data = await stixLoadById(user, id);
+  if (data) {
+    const stixData = buildStixData(data, args);
+    return JSON.stringify(stixData);
+  }
+  return data;
+};
 export const stixLoadByQuery = async (user, query) => {
   return loadByQueryWithDependencies(user, query, {
     dependencyType: ABSTRACT_STIX_META_RELATIONSHIP,
     onlyMarking: false,
     fullResolve: false,
   });
-};
-export const stixElementLoader = async (user, id, type) => {
-  const element = await stixLoadById(user, id, type);
-  return element && buildStixData(element);
 };
 // endregion
 
