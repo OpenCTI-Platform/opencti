@@ -112,6 +112,8 @@ services:
     SMTP__USERNAME: jennyfer.mraz@ethereal.email
     SMTP__PASSWORD: frhJ2mSPTfaEutpbug
   commands:
+    - apk add build-base git libffi-dev
     - cd opencti-platform/opencti-graphql
     - yarn install
+    - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
     - yarn start
