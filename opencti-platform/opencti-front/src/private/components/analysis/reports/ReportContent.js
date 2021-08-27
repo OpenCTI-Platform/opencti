@@ -4,10 +4,17 @@ import * as R from 'ramda';
 import Axios from 'axios';
 import pdfMake from 'pdfmake';
 import Editor from 'rich-markdown-editor';
+import {
+  pdfjs,
+  Document,
+  Page,
+  Outline,
+} from 'react-pdf/dist/esm/entry.webpack';
 import { light, dark } from 'rich-markdown-editor/dist/theme';
 import SunEditor from 'suneditor-react';
 import htmlToPdfmake from 'html-to-pdfmake';
 import { createFragmentContainer } from 'react-relay';
+
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles, withTheme } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
@@ -33,6 +40,9 @@ import RobotoRegular from '../../../../resources/fonts/Roboto-Regular.ttf';
 import RobotoBold from '../../../../resources/fonts/Roboto-Bold.ttf';
 import RobotoItalic from '../../../../resources/fonts/Roboto-Italic.ttf';
 import RobotoBoldItalic from '../../../../resources/fonts/Roboto-BoldItalic.ttf';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
 const styles = (theme) => ({
   container: {
@@ -60,6 +70,14 @@ const styles = (theme) => ({
     margin: '20px 0 0 0',
     padding: '15px 30px 15px 30px',
     borderRadius: 6,
+  },
+  pdfViewer: {
+    margin: '0 auto',
+    textAlign: 'center',
+  },
+  pdfPage: {
+    marginBottom: 20,
+    textAlign: 'center',
   },
 });
 
@@ -143,26 +161,60 @@ class ReportContentComponent extends Component {
       },
       initialContent: props.t('Write something awesome...'),
       currentContent: props.t('Write something awesome...'),
-      currentConvertedContent: null,
+      currentHtmlContent: null,
+      currentBase64Content: null,
+      totalPdfPageNumber: null,
+      currentPdfPageNumber: 1,
       mentions: [],
       mentionKeyword: '',
     };
+  }
+
+  onDocumentLoadSuccess({ numPages: nextNumPages }) {
+    this.setState({ totalPdfPageNumber: nextNumPages });
+  }
+
+  handleChangePage(mode = 'next') {
+    this.setState({
+      currentPdfPageNumber:
+        mode === 'next'
+          ? this.state.currentPdfPageNumber + 1
+          : this.state.currentPdfPageNumber - 1,
+    });
+  }
+
+  onItemClick({ pageNumber: itemPageNumber }) {
+    this.setState({ totalPdfPageNumber: itemPageNumber });
   }
 
   setSunEditorInstance(editor) {
     this.editorRef.current = editor;
   }
 
-  loadFileContent() {
+  loadFileContent(convertToHtmlPdf = false) {
     this.setState({ isLoading: true }, () => {
-      const url = `/storage/view/${this.state.currentFile.id}`;
+      const url = `/storage/${convertToHtmlPdf ? 'html' : 'view'}/${
+        this.state.currentFile.id
+      }`;
       Axios.get(url).then((res) => {
         const content = res.data;
-        this.setState({
-          initialContent: content,
-          currentContent: content,
-          isLoading: false,
-        });
+        if (convertToHtmlPdf) {
+          this.setState(
+            {
+              currentHtmlContent: content,
+              isLoading: false,
+            },
+            () => {
+              this.handleConvertPdf(true);
+            },
+          );
+        } else {
+          this.setState({
+            initialContent: content,
+            currentContent: content,
+            isLoading: false,
+          });
+        }
       });
     });
   }
@@ -235,40 +287,85 @@ class ReportContentComponent extends Component {
   }
 
   handleSelectFile(file) {
-    if (this.state.currentTab === 0 || this.state.currentTab === 1) {
-      this.saveFileAndSelectFile(file);
-    } else {
-      const isPdf = file.metaData.mimetype === 'application/pdf';
-      this.setState(
-        {
-          currentFile: file,
-          currentTab: isPdf ? 2 : 0,
-          isLoading: !isPdf,
-        },
-        () => !isPdf && this.loadFileContent(),
-      );
-    }
+    this.setState({ currentBase64Content: null }, () => {
+      if (this.state.currentTab === 0 || this.state.currentTab === 1) {
+        this.saveFileAndSelectFile(file);
+      } else {
+        const isPdf = file.metaData.mimetype === 'application/pdf';
+        this.setState(
+          {
+            currentFile: file,
+            currentTab: isPdf ? 2 : 0,
+            isLoading: !isPdf,
+          },
+          () => !isPdf && this.loadFileContent(),
+        );
+      }
+    });
   }
 
-  handleConvertPdf() {
-    const htmlData = this.state.currentContent.replaceAll(
-      'id="undefined" ',
-      '',
-    );
-    const pdfData = { content: htmlToPdfmake(htmlData) };
-    const { protocol, hostname, port } = window.location;
-    const url = `${protocol}//${hostname}:${port || ''}`;
-    const fonts = {
-      Roboto: {
-        normal: url + RobotoRegular,
-        bold: url + RobotoBold,
-        italics: url + RobotoItalic,
-        bolditalics: url + RobotoBoldItalic,
-      },
-    };
-    const gen = pdfMake.createPdf(pdfData, null, fonts);
-    gen.getDataUrl((dataUrl) => {
-      this.setState({ currentConvertedContent: dataUrl });
+  handleConvertPdf(convertToHtmlPdf = false) {
+    const regex = /<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi;
+    const htmlData = convertToHtmlPdf
+      ? this.state.currentHtmlContent
+        .replaceAll('id="undefined" ', '')
+        .replaceAll(regex, '')
+      : this.state.currentContent
+        .replaceAll('id="undefined" ', '')
+        .replaceAll(regex, '');
+    const ret = htmlToPdfmake(htmlData, { imagesByReference: true });
+    Promise.all(
+      R.pipe(
+        R.toPairs,
+        R.map((n) => Axios.get(n[1], { responseType: 'arraybuffer' })
+          .then((response) => {
+            if (
+              ['image/jpeg', 'image/png'].includes(
+                response.headers['content-type'],
+              )
+            ) {
+              return {
+                ref: n[0],
+                mime: response.headers['content-type'],
+                data: Buffer.from(response.data, 'binary').toString('base64'),
+              };
+            }
+            return null;
+          })
+          .catch(() => null)),
+      )(ret.images),
+    ).then((result) => {
+      const imagesIndex = R.indexBy(R.prop('ref'), result);
+      const images = R.pipe(
+        R.toPairs,
+        R.map((n) => (imagesIndex[n[0]]
+          ? [
+            n[0],
+            `data:${imagesIndex[n[0]].mime};base64,${
+              imagesIndex[n[0]].data
+            }`,
+          ]
+          : [n[0], 'https://static.thenounproject.com/png/3482632-200.png'])),
+        R.fromPairs,
+      )(ret.images);
+      const pdfData = {
+        content: ret.content,
+        images,
+      };
+      const { protocol, hostname, port } = window.location;
+      const url = `${protocol}//${hostname}:${port || ''}`;
+      const fonts = {
+        Roboto: {
+          normal: url + RobotoRegular,
+          bold: url + RobotoBold,
+          italics: url + RobotoItalic,
+          bolditalics: url + RobotoBoldItalic,
+        },
+      };
+      const gen = pdfMake.createPdf(pdfData, null, fonts);
+      gen.getDataUrl((data) => {
+        this.setState({ currentBase64Content: data });
+      });
     });
   }
 
@@ -288,11 +385,18 @@ class ReportContentComponent extends Component {
           id: currentId,
         },
         onCompleted: () => {
-          this.setState({
-            currentTab: value,
-            initialContent: this.state.currentContent,
-            isLoading: false,
-          });
+          this.setState(
+            {
+              currentTab: value,
+              initialContent: this.state.currentContent,
+              isLoading: false,
+            },
+            () => {
+              if (currentFile.metaData.mimetype === 'text/markdown') {
+                this.loadFileContent(value === 2);
+              }
+            },
+          );
         },
       });
     });
@@ -302,7 +406,7 @@ class ReportContentComponent extends Component {
     if (this.state.currentTab === 0 || this.state.currentTab === 1) {
       this.saveFileAndChangeTab(value);
     } else if (this.state.currentFile === 2) {
-      this.setState({ currentConvertedContent: null });
+      this.setState({ currentBase64Content: null });
     } else {
       this.setState({ currentTab: value });
     }
@@ -354,11 +458,11 @@ class ReportContentComponent extends Component {
       initialContent,
       currentContent,
       currentFile,
-      currentConvertedContent,
+      currentBase64Content,
+      totalPdfPageNumber,
     } = this.state;
     const currentTitle = R.last(currentFile.id.split('/'));
     const currentUrl = `/storage/view/${currentFile.id}`;
-    const currentPdfUrl = `/storage/pdf/${currentFile.id}`;
     const isFilePdf = currentFile.metaData.mimetype === 'application/pdf';
     const isFileHtml = currentFile.metaData.mimetype === 'text/html';
     const isReadOnly = isFilePdf;
@@ -509,20 +613,26 @@ class ReportContentComponent extends Component {
           </div>
         )}
         {this.state.currentTab === 2
-          && currentFile.metaData.mimetype === 'text/markdown' && (
+          && (currentFile.metaData.mimetype === 'text/html'
+            || currentFile.metaData.mimetype === 'text/markdown')
+          && currentBase64Content && (
             <div style={{ marginTop: 20 }}>
-              <iframe src={currentPdfUrl} width="100%" height={height} />
-            </div>
-        )}
-        {this.state.currentTab === 2
-          && currentFile.metaData.mimetype === 'text/html'
-          && currentConvertedContent && (
-            <div style={{ marginTop: 20 }}>
-              <iframe
-                width="100%"
-                height={height}
-                src={currentConvertedContent}
-              />
+              <Document
+                className={classes.pdfViewer}
+                onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
+                loading={<Loader variant="inElement" />}
+                file={currentBase64Content}
+              >
+                <Outline onItemClick={this.onItemClick.bind(this)} />
+                {Array.from(new Array(totalPdfPageNumber), (el, index) => (
+                  <Page
+                    key={`page_${index + 1}`}
+                    className={classes.pdfPage}
+                    pageNumber={index + 1}
+                    height={height}
+                  />
+                ))}
+              </Document>
             </div>
         )}
       </div>

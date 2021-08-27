@@ -46,6 +46,7 @@
     "react-leaflet": "2.8.0",
     "react-markdown": "6.0.3",
     "react-mde": "11.5.0",
+    "react-pdf": "^5.3.2",
     "react-relay": "11.0.2",
     "react-relay-network-modern": "6.0.0",
     "react-router-dom": "5.2.0",

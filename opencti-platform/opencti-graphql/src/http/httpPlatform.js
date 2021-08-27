@@ -10,14 +10,14 @@ import bodyParser from 'body-parser';
 import compression from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
-import markdownPdf from 'markdown-pdf';
+import showdown from 'showdown';
 import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, logApp, logAudit } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
-import { downloadFile, loadFile } from '../database/minio';
+import { downloadFile, getFileContent, loadFile } from "../database/minio";
 import { checkSystemDependencies } from '../initialization';
 import { getSettings } from '../domain/settings';
 import createSeeMiddleware from '../graphql/sseMiddleware';
@@ -128,9 +128,10 @@ const createApp = async (apolloServer) => {
       const { file } = req.params;
       const data = await loadFile(auth, file);
       res.setHeader('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
-      res.setHeader('Content-type', data.metaData.mimetype);
       if (data.metaData.mimetype === 'text/html') {
-        res.set({ 'content-type': 'text/html; charset=utf-8' });
+        res.set({ 'Content-type': 'text/html; charset=utf-8' });
+      } else {
+        res.setHeader('Content-type', data.metaData.mimetype);
       }
       const stream = await downloadFile(file);
       stream.pipe(res);
@@ -141,25 +142,17 @@ const createApp = async (apolloServer) => {
   });
 
   // -- Pdf view
-  app.get(`${basePath}/storage/pdf/:file(*)`, async (req, res, next) => {
+  app.get(`${basePath}/storage/html/:file(*)`, async (req, res, next) => {
     try {
       const auth = await authenticateUserFromRequest(req);
       if (!auth) res.sendStatus(403);
       const { file } = req.params;
       const data = await loadFile(auth, file);
       if (data.metaData.mimetype === 'text/markdown') {
-        const stream = await downloadFile(file);
-        const pdfStream = stream.pipe(
-          markdownPdf({
-            remarkable: {
-              // eslint-disable-next-line global-require
-              plugins: [require('remarkable-classy'), require('remarkable-admonitions')],
-            },
-          })
-        );
-        res.setHeader('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
-        res.setHeader('Content-type', 'application/pdf');
-        pdfStream.pipe(res);
+        const markDownData = await getFileContent(file);
+        const converter = new showdown.Converter();
+        const html = converter.makeHtml(markDownData);
+        res.send(html);
       } else {
         res.send('Unsupported file type');
       }
