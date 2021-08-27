@@ -77,7 +77,7 @@ export const collectionCount = async (taxiiCollection, user) => {
 };
 
 export const convertFiltersToQueryOptions = (filters, opts = {}) => {
-  const { after, field = 'updated_at' } = opts;
+  const { after, before, field = 'updated_at' } = opts;
   const queryFilters = [];
   const types = [];
   if (filters) {
@@ -95,6 +95,9 @@ export const convertFiltersToQueryOptions = (filters, opts = {}) => {
   }
   if (after) {
     queryFilters.push({ key: field, values: [after], operator: 'gte' });
+  }
+  if (before) {
+    queryFilters.push({ key: field, values: [before], operator: 'lte' });
   }
   return { types, orderMode: 'asc', orderBy: field, filters: queryFilters };
 };
