@@ -3,9 +3,14 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { withTheme, withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
-import { ZoomInOutlined, ZoomOutOutlined, CloudDownloadOutlined } from '@material-ui/icons';
+import {
+  ZoomInOutlined,
+  ZoomOutOutlined,
+  CloudDownloadOutlined,
+} from '@material-ui/icons';
 import Drawer from '@material-ui/core/Drawer';
 import Slide from '@material-ui/core/Slide';
+import { Link } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
@@ -25,7 +30,12 @@ Transition.displayName = 'TransitionSlide';
 class ReportContentPdfBar extends Component {
   render() {
     const {
-      classes, handleZoomIn, handleZoomOut, currentZoom, handleDownload,
+      classes,
+      handleZoomIn,
+      handleZoomOut,
+      currentZoom,
+      handleDownload,
+      directDownload,
     } = this.props;
     return (
       <Drawer
@@ -72,12 +82,21 @@ class ReportContentPdfBar extends Component {
               marginRight: 260,
             }}
           >
-            <IconButton
-              color="primary"
-              onClick={handleDownload.bind(this)}
-            >
-              <CloudDownloadOutlined />
-            </IconButton>
+            {directDownload ? (
+              <IconButton
+                color="primary"
+                component={Link}
+                to={directDownload}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <CloudDownloadOutlined />
+              </IconButton>
+            ) : (
+              <IconButton color="primary" onClick={handleDownload.bind(this)}>
+                <CloudDownloadOutlined />
+              </IconButton>
+            )}
           </div>
         </div>
       </Drawer>
@@ -91,6 +110,7 @@ ReportContentPdfBar.propTypes = {
   handleZoomIn: PropTypes.func,
   handleZoomOut: PropTypes.func,
   handleDownload: PropTypes.func,
+  directDownload: PropTypes.string,
   currentZoom: PropTypes.number,
   theme: PropTypes.object,
 };

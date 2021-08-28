@@ -536,6 +536,7 @@ class ReportContentComponent extends Component {
     } = this.state;
     const currentTitle = R.last(currentFile.id.split('/'));
     const currentUrl = `/storage/view/${currentFile.id}`;
+    const currentGetUrl = `/storage/get/${currentFile.id}`;
     const isFilePdf = currentFile.metaData.mimetype === 'application/pdf';
     const isFileHtml = currentFile.metaData.mimetype === 'text/html';
     const isReadOnly = isFilePdf;
@@ -685,7 +686,7 @@ class ReportContentComponent extends Component {
             <ReportContentPdfBar
               handleZoomIn={this.handleZoomIn.bind(this)}
               handleZoomOut={this.handleZoomOut.bind(this)}
-              handleDownload={this.handleConvertPdf.bind(this, true)}
+              directDownload={currentGetUrl}
               currentZoom={this.state.pdfViewerZoom}
             />
             <div className={classes.documentContainer}>
