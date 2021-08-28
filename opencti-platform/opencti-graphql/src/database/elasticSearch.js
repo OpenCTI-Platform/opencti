@@ -5,6 +5,7 @@ import * as R from 'ramda';
 import {
   buildPagination,
   cursorToOffset,
+  ES_INDEX_PREFIX,
   isEmptyField,
   isNotEmptyField,
   offsetToCursor,
@@ -45,10 +46,10 @@ import {
   isMultipleAttribute,
   numericOrBooleanAttributes,
 } from '../schema/fieldDataAdapter';
-import { getParentTypes } from '../schema/schemaUtils';
+import { convertEntityTypeToStixType, getParentTypes } from '../schema/schemaUtils';
 import { isStixObjectAliased } from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
-import { isBasicRelationship } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { getInstanceIds, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
@@ -57,6 +58,11 @@ import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result');
+const ES_INDEX_PATTERN_SUFFIX = conf.get('elasticsearch:index_creation_pattern');
+const ES_MAX_RESULT_WINDOW = conf.get('elasticsearch:max_result_window') || 100000;
+const ES_INDEX_SHARD_NUMBER = conf.get('elasticsearch:number_of_shards');
+const ES_INDEX_REPLICA_NUMBER = conf.get('elasticsearch:number_of_replicas');
+
 const ES_RETRY_ON_CONFLICT = 5;
 export const MAX_SPLIT = 250; // Max number of terms resolutions (ES limitation)
 export const BULK_TIMEOUT = '5m';
@@ -187,170 +193,198 @@ export const elIndexExists = async (indexName) => {
   const existIndex = await el.indices.exists({ index: indexName });
   return existIndex.body === true;
 };
-export const elCreateIndexes = async (indexesToCreate = WRITE_PLATFORM_INDICES) => {
-  const defaultIndexPattern = conf.get('elasticsearch:index_creation_pattern');
-  return Promise.all(
-    indexesToCreate.map((index) => {
-      return el.indices.exists({ index }).then((result) => {
-        if (result.body === false) {
-          return el.indices
-            .create({
-              index: `${index}${defaultIndexPattern}`,
-              body: {
-                aliases: { [index]: {} },
-                settings: {
-                  index: {
-                    max_result_window: 100000,
-                  },
-                  analysis: {
-                    normalizer: {
-                      string_normalizer: {
-                        type: 'custom',
-                        filter: ['lowercase', 'asciifolding'],
-                      },
-                    },
+const elCreateIndexTemplate = async () => {
+  // eslint-disable-next-line prettier/prettier
+  await el.cluster.putComponentTemplate({
+      name: 'opencti-core-settings',
+      create: false,
+      body: {
+        template: {
+          settings: {
+            index: {
+              max_result_window: ES_MAX_RESULT_WINDOW,
+              number_of_shards: ES_INDEX_SHARD_NUMBER,
+              number_of_replicas: ES_INDEX_REPLICA_NUMBER,
+            },
+            analysis: {
+              normalizer: {
+                string_normalizer: {
+                  type: 'custom',
+                  filter: ['lowercase', 'asciifolding'],
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+    .catch((e) => {
+      throw DatabaseError('Error creating opencti component', { error: e });
+    });
+  // eslint-disable-next-line prettier/prettier
+  await el.indices.putIndexTemplate({
+      name: 'opencti-index-template',
+      create: false,
+      body: {
+        index_patterns: [`${ES_INDEX_PREFIX}*`],
+        template: {
+          mappings: {
+            dynamic_templates: [
+              {
+                integers: {
+                  match_mapping_type: 'long',
+                  mapping: {
+                    type: 'integer',
                   },
                 },
-                mappings: {
-                  dynamic_templates: [
-                    {
-                      integers: {
-                        match_mapping_type: 'long',
-                        mapping: {
-                          type: 'integer',
-                        },
+              },
+              {
+                strings: {
+                  match_mapping_type: 'string',
+                  mapping: {
+                    type: 'text',
+                    fields: {
+                      keyword: {
+                        type: 'keyword',
+                        normalizer: 'string_normalizer',
+                        ignore_above: 512,
                       },
-                    },
-                    {
-                      strings: {
-                        match_mapping_type: 'string',
-                        mapping: {
-                          type: 'text',
-                          fields: {
-                            keyword: {
-                              type: 'keyword',
-                              normalizer: 'string_normalizer',
-                              ignore_above: 512,
-                            },
-                          },
-                        },
-                      },
-                    },
-                  ],
-                  properties: {
-                    standard_id: {
-                      type: 'text',
-                      fields: {
-                        keyword: {
-                          type: 'keyword',
-                          normalizer: 'string_normalizer',
-                          ignore_above: 512,
-                        },
-                      },
-                    },
-                    timestamp: {
-                      type: 'date',
-                    },
-                    created: {
-                      type: 'date',
-                    },
-                    modified: {
-                      type: 'date',
-                    },
-                    first_seen: {
-                      type: 'date',
-                    },
-                    last_seen: {
-                      type: 'date',
-                    },
-                    start_time: {
-                      type: 'date',
-                    },
-                    stop_time: {
-                      type: 'date',
-                    },
-                    published: {
-                      type: 'date',
-                    },
-                    valid_from: {
-                      type: 'date',
-                    },
-                    valid_until: {
-                      type: 'date',
-                    },
-                    observable_date: {
-                      type: 'date',
-                    },
-                    event_date: {
-                      type: 'date',
-                    },
-                    received_time: {
-                      type: 'date',
-                    },
-                    processed_time: {
-                      type: 'date',
-                    },
-                    completed_time: {
-                      type: 'date',
-                    },
-                    ctime: {
-                      type: 'date',
-                    },
-                    mtime: {
-                      type: 'date',
-                    },
-                    atime: {
-                      type: 'date',
-                    },
-                    confidence: {
-                      type: 'integer',
-                    },
-                    x_opencti_report_status: {
-                      type: 'integer',
-                    },
-                    attribute_order: {
-                      type: 'integer',
-                    },
-                    base_score: {
-                      type: 'integer',
-                    },
-                    is_family: {
-                      type: 'boolean',
-                    },
-                    number_observed: {
-                      type: 'integer',
-                    },
-                    x_opencti_negative: {
-                      type: 'boolean',
-                    },
-                    default_assignation: {
-                      type: 'boolean',
-                    },
-                    x_opencti_detection: {
-                      type: 'boolean',
-                    },
-                    x_opencti_order: {
-                      type: 'integer',
-                    },
-                    import_expected_number: {
-                      type: 'integer',
-                    },
-                    import_processed_number: {
-                      type: 'integer',
-                    },
-                    x_opencti_score: {
-                      type: 'integer',
-                    },
-                    connections: {
-                      type: 'nested',
                     },
                   },
                 },
               },
-            })
-            .catch((e) => {
-              throw DatabaseError('Error creating index', { error: e });
-            });
+            ],
+            properties: {
+              standard_id: {
+                type: 'text',
+                fields: {
+                  keyword: {
+                    type: 'keyword',
+                    normalizer: 'string_normalizer',
+                    ignore_above: 512,
+                  },
+                },
+              },
+              timestamp: {
+                type: 'date',
+              },
+              created: {
+                type: 'date',
+              },
+              modified: {
+                type: 'date',
+              },
+              first_seen: {
+                type: 'date',
+              },
+              last_seen: {
+                type: 'date',
+              },
+              start_time: {
+                type: 'date',
+              },
+              stop_time: {
+                type: 'date',
+              },
+              published: {
+                type: 'date',
+              },
+              valid_from: {
+                type: 'date',
+              },
+              valid_until: {
+                type: 'date',
+              },
+              observable_date: {
+                type: 'date',
+              },
+              event_date: {
+                type: 'date',
+              },
+              received_time: {
+                type: 'date',
+              },
+              processed_time: {
+                type: 'date',
+              },
+              completed_time: {
+                type: 'date',
+              },
+              ctime: {
+                type: 'date',
+              },
+              mtime: {
+                type: 'date',
+              },
+              atime: {
+                type: 'date',
+              },
+              confidence: {
+                type: 'integer',
+              },
+              x_opencti_report_status: {
+                type: 'integer',
+              },
+              attribute_order: {
+                type: 'integer',
+              },
+              base_score: {
+                type: 'integer',
+              },
+              is_family: {
+                type: 'boolean',
+              },
+              number_observed: {
+                type: 'integer',
+              },
+              x_opencti_negative: {
+                type: 'boolean',
+              },
+              default_assignation: {
+                type: 'boolean',
+              },
+              x_opencti_detection: {
+                type: 'boolean',
+              },
+              x_opencti_order: {
+                type: 'integer',
+              },
+              import_expected_number: {
+                type: 'integer',
+              },
+              import_processed_number: {
+                type: 'integer',
+              },
+              x_opencti_score: {
+                type: 'integer',
+              },
+              connections: {
+                type: 'nested',
+              },
+            },
+          },
+        },
+        composed_of: ['opencti-core-settings'],
+        version: 3,
+        _meta: {
+          description: 'To generate opencti expected index mappings',
+        },
+      },
+    })
+    .catch((e) => {
+      throw DatabaseError('Error creating opencti template', { error: e });
+    });
+};
+export const elCreateIndexes = async (indexesToCreate = WRITE_PLATFORM_INDICES) => {
+  await elCreateIndexTemplate();
+  return Promise.all(
+    indexesToCreate.map((index) => {
+      const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
+      return el.indices.exists({ index: indexName }).then((result) => {
+        if (result.body === false) {
+          return el.indices.create({ index: indexName, body: { aliases: { [index]: {} } } }).catch((e) => {
+            throw DatabaseError('Error creating index', { error: e });
+          });
         }
         /* istanbul ignore next */
         return result;
@@ -514,7 +548,7 @@ export const elCount = (user, indexName, options = {}) => {
       throw DatabaseError('Count data fail', { error: err, query });
     });
 };
-export const elAggregationCount = (user, type, aggregationField, start, end, filters) => {
+export const elAggregationCount = (user, type, aggregationField, start, end, filters = []) => {
   const isIdFields = aggregationField.endsWith('internal_id');
   const haveRange = start && end;
   const dateFilter = [];
@@ -591,7 +625,9 @@ const elMergeRelation = (concept, fromConnection, toConnection) => {
     throw DatabaseError(`[ELASTIC] Something fail in reconstruction of the relation`, concept.internal_id);
   }
   const from = elBuildRelation('from', fromConnection);
+  from.source_ref = `${convertEntityTypeToStixType(from.fromType)}--temporary`;
   const to = elBuildRelation('to', toConnection);
+  to.target_ref = `${convertEntityTypeToStixType(to.toType)}--temporary`;
   return R.mergeAll([concept, from, to]);
 };
 export const elRebuildRelation = (concept) => {
@@ -601,6 +637,7 @@ export const elRebuildRelation = (concept) => {
     const fromConnection = R.find((connection) => connection.role === `${entityType}_from`, connections);
     const toConnection = R.find((connection) => connection.role === `${entityType}_to`, connections);
     const relation = elMergeRelation(concept, fromConnection, toConnection);
+    relation.relationship_type = relation.entity_type;
     return R.dissoc('connections', relation);
   }
   return concept;
@@ -619,9 +656,12 @@ const elDataConverter = (esHit) => {
     const [key, val] = entries[index];
     if (key.startsWith(RULE_PREFIX)) {
       const rule = key.substr(RULE_PREFIX.length);
-      const { inferred, explanation } = val;
-      const attributes = R.toPairs(inferred).map((s) => ({ field: R.head(s), value: String(R.last(s)) }));
-      ruleInferences.push({ rule, explanation, attributes });
+      const ruleDefinitions = Object.values(val);
+      for (let rIndex = 0; rIndex < ruleDefinitions.length; rIndex += 1) {
+        const { inferred, explanation } = ruleDefinitions[rIndex];
+        const attributes = R.toPairs(inferred).map((s) => ({ field: R.head(s), value: String(R.last(s)) }));
+        ruleInferences.push({ rule, explanation, attributes });
+      }
       data[key] = val;
     } else if (key.startsWith(REL_INDEX_PREFIX)) {
       const rel = key.substr(REL_INDEX_PREFIX.length);
@@ -1573,10 +1613,14 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
   }
 };
 
-export const elDeleteElements = async (user, elements) => {
-  if (elements.length === 0) return;
+export const elDeleteElements = async (user, elements, loaders) => {
+  if (elements.length === 0) return [];
+  const { stixLoadById } = loaders;
+  const opts = { concurrency: ES_MAX_CONCURRENCY };
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(user, elements);
-  // 02. Compute the id that needs to be remove from rel
+  const stixRelations = relations.filter((r) => isStixRelationShipExceptMeta(r.relationship_type));
+  const dependencyDeletions = await Promise.map(stixRelations, (r) => stixLoadById(user, r.internal_id), opts);
+  // Compute the id that needs to be remove from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
   const cleanupRelations = relations.concat(basicCleanup);
   const relsFromToImpacts = cleanupRelations
@@ -1596,7 +1640,7 @@ export const elDeleteElements = async (user, elements) => {
     currentRelationsCount += relsToClean.length;
     logApp.debug(`[OPENCTI] Updating relations for deletion ${currentRelationsCount} / ${relsFromToImpacts.length}`);
   };
-  await Promise.map(groupsOfRelsFromTo, concurrentRelsFromTo, { concurrency: ES_MAX_CONCURRENCY });
+  await Promise.map(groupsOfRelsFromTo, concurrentRelsFromTo, opts);
   // Remove all relations
   let currentRelationsDelete = 0;
   const groupsOfDeletions = R.splitEvery(MAX_SPLIT, relations);
@@ -1605,9 +1649,11 @@ export const elDeleteElements = async (user, elements) => {
     currentRelationsDelete += deletions.length;
     logApp.debug(`[OPENCTI] Deleting related relations ${currentRelationsDelete} / ${relations.length}`);
   };
-  await Promise.map(groupsOfDeletions, concurrentDeletions, { concurrency: ES_MAX_CONCURRENCY });
+  await Promise.map(groupsOfDeletions, concurrentDeletions, opts);
   // Remove the elements
   await elDeleteInstanceIds(elements); // Bulk
+  // Return the relations deleted because of the entity deletion
+  return dependencyDeletions;
 };
 
 export const prepareElementForIndexing = (element) => {

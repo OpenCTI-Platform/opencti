@@ -16,6 +16,7 @@ const i18n = {
       'You have successfully logged out.': 'Vous avez bien été déconnecté.',
       'You do not have any access to the knowledge of this OpenCTI instance.':
         "Vous n'avez aucun accès à la connaissance de cette instance OpenCTI.",
+      'Write something awesome...': 'Ecrivez quelque chose de génial...',
       // Dependencies
       Grakn: 'Grakn',
       Elasticsearch: 'Elasticsearch',
@@ -268,6 +269,30 @@ const i18n = {
       'Update an incident': 'Modifier un incident',
       'Create a malware': 'Créer un code malveillant',
       'Update a malware': 'Modifier un code malveillant',
+      'Create an observed data': 'Créer une donnée observée',
+      'Update an observed data': 'Modifier une donnée observée',
+      'Create a subscription': 'Créer une souscription',
+      'Update a subscription': 'Modifier une souscription',
+      'Export to image': 'Exporter en image',
+      'Export to PDF': 'Exporter en PDF',
+      'Export to CSV': 'Exporter en CSV',
+      Periodicity: 'Périodicité',
+      'Knowledge update (except indicators & observables)':
+        'Modification des connaissances (sauf indicateurs et observables)',
+      'Containers (reports, notes & opinions)':
+        'Conteneurs (rapports, notes et opinions)',
+      'Technical elements (indicators & observables)':
+        'Eléments techniques (indicateurs & observables)',
+      'As it happens': "Au fil de l'eau",
+      'Rich editor': 'Editeur enrichi',
+      'Markdown source': 'Source markdown',
+      'PDF viewer': 'Visualiseur PDF',
+      'Last run:': 'Dernière exécution :',
+      'Optional, you may want to subscribe to specific entities.':
+        'Optionnel, si vous souhaitez souscrire à des entités spécifiques',
+      'Every 1 hour': 'Toutes les heures',
+      'Every 24 hours': 'Toutes les 24 heures',
+      'Every week': 'Toutes les semaines',
       'New alias': 'Nouvel alias',
       'Aliases separated by commas': 'Alias séparés par des virgules',
       Alias: 'Alias',
@@ -343,6 +368,7 @@ const i18n = {
       'Cards view': 'Vue cartes',
       'Lines view': 'Vue lignes',
       'Kill chain view': 'Vue kill chain',
+      'Courses of action view': 'Vue conduites à suivre',
       'Graph view': 'Vue graphe',
       'Correlation view': 'Vue des corrélations',
       'Matrix view': 'Vue matricielle',
@@ -365,6 +391,7 @@ const i18n = {
       'Registered connectors': 'Connecteurs enregistrés',
       'The relations attached to selected entities will be copied to the merged entity.':
         "Les relations attachées aux entités sélectionnées seront copiées sur l'entité fusionnée.",
+      'Subscriptions & digests': 'Souscriptions & résumés',
       Scope: 'Périmètre',
       Modified: 'Modifié',
       'No import connectors on this platform':
@@ -948,6 +975,8 @@ const i18n = {
       'has created the entity': "a créé l'éntité",
       'has created a relation': 'a créé une relation',
       History: 'Activité',
+      'Files & history': 'Fichiers & activité',
+      'External references files': 'Fichiers des références externes',
       to: 'vers',
       'Relations of the entity': 'Relations de cette entité',
       'No entities of this type has been found.':
@@ -986,7 +1015,11 @@ const i18n = {
         'Ce panneau montre par défaut les dernières entités créées, utilisez la recherche pour en trouver plus.',
       Platforms: "Systèmes d'exploitation",
       Platform: "Système d'exploitation",
+      'Commit message': 'Message de justification',
       'Required permissions': 'Permissions requises',
+      'Enable commit messages': 'Activer les messages de justification',
+      'Commit message when updating data from the UI.':
+        "Message lors de la modification des données dans l'interface.",
       None: 'Aucun',
       Nonee: 'Aucune',
       Status: 'Statut',
@@ -1078,6 +1111,7 @@ const i18n = {
       relationship_contains: 'contains',
       'relationship_external-reference': 'référence',
       'relationship_created-by': 'créé par',
+      'relationship_kill-chain-phase': 'phase de kill chain',
       'relationship_object-marking': 'a le marquage',
       'relationship_object-label': 'a le label',
       'relationship_revoked-by': 'révoqué par',
@@ -1216,6 +1250,7 @@ const i18n = {
       EXPIRATION_SCHEDULER: "Planificateur d'expiration",
       TASK_MANAGER: 'Manager des tâches',
       RULE_ENGINE: 'Moteur de règles',
+      SUBSCRIPTION_MANAGER: 'Manager des souscriptions',
     },
     en: {
       progress: 'In progress',
@@ -1304,6 +1339,7 @@ const i18n = {
       relationship_contains: 'contains',
       'relationship_external-reference': 'references',
       'relationship_created-by': 'created by',
+      'relationship_kill-chain-phase': 'kill chain phase',
       'relationship_object-label': 'has label',
       'relationship_object-marking': 'has marking',
       'relationship_revoked-by': 'revoked by',
@@ -1445,6 +1481,7 @@ const i18n = {
       EXPIRATION_SCHEDULER: 'Expiration scheduler',
       TASK_MANAGER: 'Tasks manager',
       RULE_ENGINE: 'Rules engine',
+      SUBSCRIPTION_MANAGER: 'Subscriptions manager',
     },
   },
 };

@@ -33,8 +33,8 @@ export const findAll = (user, args) => {
   return listEntities(user, [ENTITY_TYPE_TAXII_COLLECTION], args);
 };
 export const taxiiCollectionEditField = async (user, collectionId, input) => {
-  const collection = await updateAttribute(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION, input);
-  return notify(BUS_TOPICS[ENTITY_TYPE_TAXII_COLLECTION].EDIT_TOPIC, collection, user);
+  const { element } = await updateAttribute(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION, input);
+  return notify(BUS_TOPICS[ENTITY_TYPE_TAXII_COLLECTION].EDIT_TOPIC, element, user);
 };
 export const taxiiCollectionDelete = async (user, collectionId) => {
   await deleteElementById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
@@ -76,7 +76,8 @@ export const collectionCount = async (taxiiCollection, user) => {
   return data.pageInfo.globalCount;
 };
 
-export const convertFiltersToQueryOptions = (filters, updated_at) => {
+export const convertFiltersToQueryOptions = (filters, opts = {}) => {
+  const { after, before, field = 'updated_at' } = opts;
   const queryFilters = [];
   const types = [];
   if (filters) {
@@ -92,15 +93,13 @@ export const convertFiltersToQueryOptions = (filters, updated_at) => {
       }
     }
   }
-  if (updated_at) {
-    queryFilters.push({ key: 'updated_at', values: [updated_at], operator: 'gte' });
+  if (after) {
+    queryFilters.push({ key: field, values: [after], operator: 'gte' });
   }
-  return {
-    types,
-    orderMode: 'asc',
-    orderBy: 'updated_at',
-    filters: queryFilters,
-  };
+  if (before) {
+    queryFilters.push({ key: field, values: [before], operator: 'lte' });
+  }
+  return { types, orderMode: 'asc', orderBy: field, filters: queryFilters };
 };
 
 const collectionQuery = async (user, collectionId, args) => {
@@ -114,7 +113,7 @@ const collectionQuery = async (user, collectionId, args) => {
     throw ResourceNotFoundError({ id: collectionId });
   }
   const filters = collection.filters ? JSON.parse(collection.filters) : undefined;
-  const options = convertFiltersToQueryOptions(filters, added_after);
+  const options = convertFiltersToQueryOptions(filters, { after: added_after });
   options.after = next;
   let maxSize = 100;
   if (limit) {

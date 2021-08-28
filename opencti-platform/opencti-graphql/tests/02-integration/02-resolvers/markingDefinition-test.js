@@ -92,7 +92,7 @@ describe('MarkingDefinition resolver standard behavior', () => {
   });
   it('should update markingDefinition', async () => {
     const UPDATE_QUERY = gql`
-      mutation MarkingDefinitionEdit($id: ID!, $input: EditInput!) {
+      mutation MarkingDefinitionEdit($id: ID!, $input: [EditInput]!) {
         markingDefinitionEdit(id: $id) {
           fieldPatch(input: $input) {
             id

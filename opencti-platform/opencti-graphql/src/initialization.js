@@ -2,7 +2,7 @@
 import { ApolloError } from 'apollo-errors';
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
-import { logApp, PLATFORM_VERSION } from './config/conf';
+import { booleanConf, logApp, PLATFORM_VERSION } from './config/conf';
 import { elCreateIndexes, elIndexExists, elIsAlive } from './database/elasticSearch';
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
@@ -20,6 +20,9 @@ import { createEntity, loadEntity, patchAttribute } from './database/middleware'
 import { INDEX_INTERNAL_OBJECTS } from './database/utils';
 import { ConfigurationError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
 import { BYPASS, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
+import { smtpIsAlive } from './database/smtp';
+import { generateStandardId } from './schema/identifier';
+import { ENTITY_TYPE_MARKING_DEFINITION } from './schema/stixMetaObject';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -118,6 +121,11 @@ export const checkSystemDependencies = async () => {
   // Check if redis is here
   await redisIsAlive();
   logApp.info(`[CHECK] Redis is alive`);
+  if (booleanConf('subscription_scheduler:enabled', true)) {
+    // Check if SMTP is here
+    await smtpIsAlive();
+    logApp.info(`[CHECK] SMTP is alive`);
+  }
   // Check if Python is available
   await checkPythonStix2();
   logApp.info(`[CHECK] Python3 is available`);
@@ -168,35 +176,35 @@ const createAttributesTypes = async () => {
 
 const createMarkingDefinitions = async () => {
   // Create marking defs
+  const WHITE = { definition_type: 'TLP', definition: 'TLP:WHITE' };
   await addMarkingDefinition(SYSTEM_USER, {
     standard_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
-    stix_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
-    definition_type: 'TLP',
-    definition: 'TLP:WHITE',
+    stix_id: generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, WHITE),
+    ...WHITE,
     x_opencti_color: '#ffffff',
     x_opencti_order: 1,
   });
+  const GREEN = { definition_type: 'TLP', definition: 'TLP:GREEN' };
   await addMarkingDefinition(SYSTEM_USER, {
     standard_id: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
-    stix_id: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
-    definition_type: 'TLP',
-    definition: 'TLP:GREEN',
+    stix_id: generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, GREEN),
+    ...GREEN,
     x_opencti_color: '#2e7d32',
     x_opencti_order: 2,
   });
+  const AMBER = { definition_type: 'TLP', definition: 'TLP:AMBER' };
   await addMarkingDefinition(SYSTEM_USER, {
     standard_id: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
-    stix_id: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
-    definition_type: 'TLP',
-    definition: 'TLP:AMBER',
+    stix_id: generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, AMBER),
+    ...AMBER,
     x_opencti_color: '#d84315',
     x_opencti_order: 3,
   });
+  const RED = { definition_type: 'TLP', definition: 'TLP:RED' };
   await addMarkingDefinition(SYSTEM_USER, {
     standard_id: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
-    stix_id: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
-    definition_type: 'TLP',
-    definition: 'TLP:RED',
+    stix_id: generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, RED),
+    ...RED,
     x_opencti_color: '#c62828',
     x_opencti_order: 4,
   });
@@ -231,7 +239,7 @@ export const createBasicRolesAndCapabilities = async () => {
   });
 };
 
-const initializeDefaultValues = async () => {
+const initializeDefaultValues = async (withMarkings = true) => {
   logApp.info(`[INIT] Initialization of settings and basic elements`);
   // Create default elements
   await addSettings(SYSTEM_USER, {
@@ -242,12 +250,14 @@ const initializeDefaultValues = async () => {
     platform_language: 'auto',
   });
   await createAttributesTypes();
-  await createMarkingDefinitions();
   await createBasicRolesAndCapabilities();
+  if (withMarkings) {
+    await createMarkingDefinitions();
+  }
 };
 
-const initializeData = async () => {
-  await initializeDefaultValues();
+const initializeData = async (withMarkings = true) => {
+  await initializeDefaultValues(withMarkings);
   logApp.info(`[INIT] Platform default initialized`);
   return true;
 };
@@ -275,7 +285,7 @@ const isCompatiblePlatform = async () => {
 };
 
 // eslint-disable-next-line
-const platformInit = async () => {
+const platformInit = async (withMarkings = true) => {
   let lock;
   try {
     await checkSystemDependencies();
@@ -287,7 +297,7 @@ const platformInit = async () => {
       logApp.info(`[INIT] New platform detected, initialization...`);
       await initializeSchema();
       await initializeMigration();
-      await initializeData();
+      await initializeData(withMarkings);
       await initializeAdminUser();
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');

@@ -98,7 +98,6 @@ export class QueryRenderer extends Component {
     return (
       <QR
         environment={environment}
-        fetchPolicy="store-and-network"
         query={query}
         variables={variables}
         render={(data) => {
@@ -164,6 +163,6 @@ export const commitMutation = ({
 
 export const requestSubscription = (args) => RS(environment, args);
 
-export const fetchQuery = (query, args) => FQ(environment, query, args, { fetchPolicy: 'store-or-network' });
+export const fetchQuery = (query, args) => FQ(environment, query, args);
 
 export const commitLocalUpdate = (updater) => CLU(environment, updater);

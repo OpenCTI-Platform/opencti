@@ -25,12 +25,18 @@ import {
   ExpandLessOutlined,
 } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
+import { interval } from 'rxjs';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
 import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
+import FileLine from '../../common/files/FileLine';
+import { FIVE_SECONDS } from '../../../../utils/Time';
+
+const interval$ = interval(FIVE_SECONDS);
 
 const styles = (theme) => ({
   paper: {
@@ -85,6 +91,16 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
       removing: false,
       expanded: false,
     };
+  }
+
+  componentDidMount() {
+    this.subscription = interval$.subscribe(() => {
+      this.props.relay.refetchConnection(200);
+    });
+  }
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
   }
 
   handleToggleExpand() {
@@ -162,8 +178,8 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <AddExternalReferences
-            stixCoreObjectId={stixCoreObjectId}
-            stixCoreObjectExternalReferences={
+            stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
+            stixCoreObjectOrStixCoreRelationshipReferences={
               data.stixCoreObject.externalReferences.edges
             }
           />
@@ -192,37 +208,56 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                   }
                   if (externalReference.url) {
                     return (
-                      <ListItem
-                        key={externalReference.id}
-                        dense={true}
-                        divider={true}
-                        button={true}
-                        onClick={this.handleOpenExternalLink.bind(
-                          this,
-                          externalReference.url,
+                      <div key={externalReference.id}>
+                        <ListItem
+                          dense={true}
+                          divider={true}
+                          button={true}
+                          onClick={this.handleOpenExternalLink.bind(
+                            this,
+                            externalReference.url,
+                          )}
+                        >
+                          <ListItemIcon>
+                            <Avatar classes={{ root: classes.avatar }}>
+                              {externalReference.source_name.substring(0, 1)}
+                            </Avatar>
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={`${externalReference.source_name} ${externalReferenceId}`}
+                            secondary={truncate(externalReferenceSecondary, 90)}
+                          />
+                          <ListItemSecondaryAction>
+                            <ExternalReferenceEnrichment
+                              externalReferenceId={externalReference.id}
+                            />
+                            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                              <IconButton
+                                aria-label="Remove"
+                                onClick={this.handleOpenDialog.bind(
+                                  this,
+                                  externalReferenceEdge,
+                                )}
+                              >
+                                <LinkOff />
+                              </IconButton>
+                            </Security>
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                        {externalReference.importFiles.edges.length > 0 && (
+                          <List>
+                            {externalReference.importFiles.edges.map((file) => (
+                              <FileLine
+                                key={file.node.id}
+                                dense={true}
+                                disableImport={true}
+                                file={file.node}
+                                nested={true}
+                              />
+                            ))}
+                          </List>
                         )}
-                      >
-                        <ListItemIcon>
-                          <Avatar classes={{ root: classes.avatar }}>
-                            {externalReference.source_name.substring(0, 1)}
-                          </Avatar>
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={`${externalReference.source_name} ${externalReferenceId}`}
-                          secondary={truncate(externalReferenceSecondary, 90)}
-                        />
-                        <ListItemSecondaryAction>
-                          <IconButton
-                            aria-label="Remove"
-                            onClick={this.handleOpenDialog.bind(
-                              this,
-                              externalReferenceEdge,
-                            )}
-                          >
-                            <LinkOff />
-                          </IconButton>
-                        </ListItemSecondaryAction>
-                      </ListItem>
+                      </div>
                     );
                   }
                   return (
@@ -242,15 +277,17 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                         secondary={truncate(externalReference.description, 120)}
                       />
                       <ListItemSecondaryAction>
-                        <IconButton
-                          aria-label="Remove"
-                          onClick={this.handleOpenDialog.bind(
-                            this,
-                            externalReferenceEdge,
-                          )}
-                        >
-                          <LinkOff />
-                        </IconButton>
+                        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                          <IconButton
+                            aria-label="Remove"
+                            onClick={this.handleOpenDialog.bind(
+                              this,
+                              externalReferenceEdge,
+                            )}
+                          >
+                            <LinkOff />
+                          </IconButton>
+                        </Security>
                       </ListItemSecondaryAction>
                     </ListItem>
                   );
@@ -348,6 +385,7 @@ StixCoreObjectExternalReferencesLinesContainer.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  relay: PropTypes.object,
 };
 
 export const stixCoreObjectExternalReferencesLinesQuery = graphql`
@@ -378,6 +416,42 @@ const StixCoreObjectExternalReferencesLines = createPaginationContainer(
                 url
                 hash
                 external_id
+                jobs(first: 100) {
+                  id
+                  timestamp
+                  connector {
+                    id
+                    name
+                  }
+                  messages {
+                    timestamp
+                    message
+                  }
+                  errors {
+                    timestamp
+                    message
+                  }
+                  status
+                }
+                connectors(onlyAlive: false) {
+                  id
+                  connector_type
+                  name
+                  active
+                  updated_at
+                }
+                importFiles(first: 1000) {
+                  edges {
+                    node {
+                      id
+                      lastModified
+                      ...FileLine_file
+                      metaData {
+                        mimetype
+                      }
+                    }
+                  }
+                }
               }
             }
           }

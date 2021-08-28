@@ -34,12 +34,7 @@ export const stixCyberObservableRelationshipEditContext = (user, stixCyberObserv
   stixCoreRelationshipEditContext(user, stixCyberObservableRelationshipId, input);
 
 export const stixCyberObservableRelationshipEditField = async (user, relationshipId, input) => {
-  const stixRelationship = await updateAttribute(
-    user,
-    relationshipId,
-    ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
-    input
-  );
-  return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP].EDIT_TOPIC, stixRelationship, user);
+  const { element } = await updateAttribute(user, relationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, input);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP].EDIT_TOPIC, element, user);
 };
 // endregion

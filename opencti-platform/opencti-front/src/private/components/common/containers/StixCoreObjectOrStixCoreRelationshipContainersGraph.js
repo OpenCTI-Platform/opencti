@@ -375,7 +375,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       selectedTimeRangeInterval,
     } = this.state;
     const width = window.innerWidth - 210;
-    const height = window.innerHeight - 180;
+    const height = window.innerHeight - 210;
     const stixCoreObjectsTypes = R.uniq(
       R.map((n) => n.entity_type, this.graphData.nodes),
     );
@@ -626,6 +626,8 @@ export const stixCoreObjectOrStixCoreRelationshipContainersGraphQuery = graphql`
   query StixCoreObjectOrStixCoreRelationshipContainersGraphQuery(
     $id: String!
     $types: [String]
+    $filters: [ContainersFiltering]
+    $search: String
   ) {
     ...StixCoreObjectOrStixCoreRelationshipContainersGraph_data
   }
@@ -636,7 +638,12 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContain
   {
     data: graphql`
         fragment StixCoreObjectOrStixCoreRelationshipContainersGraph_data on Query {
-          containersObjectsOfObject(id: $id, types: $types) {
+          containersObjectsOfObject(
+            id: $id
+            types: $types
+            filters: $filters
+            search: $search
+          ) {
             edges {
               node {
                 ... on BasicObject {

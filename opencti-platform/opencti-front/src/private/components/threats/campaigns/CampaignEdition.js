@@ -37,6 +37,9 @@ export const campaignEditionQuery = graphql`
     campaign(id: $id) {
       ...CampaignEditionContainer_campaign
     }
+    settings {
+      platform_enable_references
+    }
   }
 `;
 
@@ -87,6 +90,7 @@ class CampaignEdition extends Component {
                 return (
                   <CampaignEditionContainer
                     campaign={props.campaign}
+                    enableReferences={props.settings.platform_enable_references}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

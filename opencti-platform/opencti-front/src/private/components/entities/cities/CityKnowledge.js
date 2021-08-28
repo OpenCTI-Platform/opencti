@@ -13,6 +13,7 @@ import CityPopover from './CityPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
 const styles = () => ({
   container: {
@@ -46,6 +47,17 @@ class CityKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/entities/cities/:cityId/knowledge/sightings/:sightingId"
+            render={(routeProps) => (
+              <StixSightingRelationship
+                entityId={city.id}
+                paddingRight={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/entities/cities/:cityId/knowledge/overview"
             render={(routeProps) => (
               <StixDomainObjectKnowledge
@@ -62,7 +74,22 @@ class CityKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={city.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={['Stix-Domain-Object']}
+                targetStixDomainObjectTypes={[
+                  'Threat-Actor',
+                  'Intrusion-Set',
+                  'Campaign',
+                  'Incident',
+                  'Malware',
+                  'Tool',
+                  'Vulnerability',
+                  'Individual',
+                  'Organization',
+                  'Sector',
+                  'Region',
+                  'Country',
+                  'City',
+                  'Position',
+                ]}
                 entityLink={link}
                 allDirections={true}
                 {...routeProps}

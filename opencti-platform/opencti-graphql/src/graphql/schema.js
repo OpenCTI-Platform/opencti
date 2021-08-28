@@ -59,7 +59,9 @@ import organizationOrIndividualResolvers from '../resolvers/organizationOrIndivi
 import taxiiResolvers from '../resolvers/taxii';
 import taskResolvers from '../resolvers/task';
 import streamResolvers from '../resolvers/stream';
+import userSubscriptionResolvers from '../resolvers/userSubscription';
 import ruleResolvers from '../resolvers/rule';
+import stixResolvers from '../resolvers/stix';
 
 const createSchema = () => {
   const globalResolvers = {
@@ -71,6 +73,7 @@ const createSchema = () => {
     globalResolvers,
     taxiiResolvers,
     streamResolvers,
+    userSubscriptionResolvers,
     logResolvers,
     rabbitmqMetricsResolvers,
     elasticSearchMetricsResolvers,
@@ -79,7 +82,7 @@ const createSchema = () => {
     subTypeResolvers,
     fileResolvers,
     taskResolvers,
-    // ruleResolvers,
+    stixResolvers,
     // ENTITIES
     // INTERNAL OBJECT ENTITIES
     internalObjectResolvers,

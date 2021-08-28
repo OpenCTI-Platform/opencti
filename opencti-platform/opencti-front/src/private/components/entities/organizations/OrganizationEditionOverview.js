@@ -53,7 +53,7 @@ const styles = (theme) => ({
 const organizationMutationFieldPatch = graphql`
   mutation OrganizationEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     organizationEdit(id: $id) {
       fieldPatch(input: $input) {
@@ -148,44 +148,12 @@ class OrganizationEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { organization } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], organization),
-      value: pathOr(null, ['createdBy', 'id'], organization),
-    };
-
-    if (currentCreatedBy.value === null) {
+    if (!this.props.enableReferences) {
       commitMutation({
-        mutation: organizationMutationRelationAdd,
+        mutation: organizationMutationFieldPatch,
         variables: {
           id: this.props.organization.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: organizationMutationRelationDelete,
-        variables: {
-          id: this.props.organization.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: organizationMutationRelationAdd,
-              variables: {
-                id: this.props.organization.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }

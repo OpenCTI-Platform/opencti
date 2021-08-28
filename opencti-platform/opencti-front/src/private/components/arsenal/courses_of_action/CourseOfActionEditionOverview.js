@@ -52,7 +52,7 @@ const styles = (theme) => ({
 const courseOfActionMutationFieldPatch = graphql`
   mutation CourseOfActionEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     courseOfActionEdit(id: $id) {
       fieldPatch(input: $input) {
@@ -148,43 +148,12 @@ class CourseOfActionEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { courseOfAction } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], courseOfAction),
-      value: pathOr(null, ['createdBy', 'id'], courseOfAction),
-    };
-
-    if (currentCreatedBy.value === null) {
+    if (!this.props.enableReferences) {
       commitMutation({
-        mutation: courseOfActionMutationRelationAdd,
+        mutation: courseOfActionMutationFieldPatch,
         variables: {
           id: this.props.courseOfAction.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: courseOfActionMutationRelationDelete,
-        variables: {
-          id: this.props.courseOfAction.id,
-          relationId: currentCreatedBy.relation,
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: courseOfActionMutationRelationAdd,
-              variables: {
-                id: this.props.courseOfAction.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }

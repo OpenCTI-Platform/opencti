@@ -11,41 +11,49 @@ import random
 import sys
 import threading
 import time
-from typing import Any, Optional, Dict, List
+from dataclasses import dataclass, field
+from threading import Thread
+from typing import Any, Dict, List, Optional, Union
 
 import pika
 import yaml
 from pika.adapters.blocking_connection import BlockingChannel
 from pycti import OpenCTIApiClient
-from pycti.connector.opencti_connector_helper import create_ssl_context
+from pycti.connector.opencti_connector_helper import (
+    create_ssl_context,
+    get_config_variable,
+)
 from requests.exceptions import RequestException, Timeout
 
 PROCESSING_COUNT: int = 5
 MAX_PROCESSING_COUNT: int = 30
 
 
-class Consumer(threading.Thread):
-    def __init__(
-        self,
-        connector: Dict[str, Any],
-        opencti_url: str,
-        opencti_token: str,
-        log_level: str,
-    ) -> None:
-        threading.Thread.__init__(self)
-        self.api = OpenCTIApiClient(opencti_url, opencti_token, log_level)
-        self.queue_name = connector["config"]["push"]
+@dataclass(unsafe_hash=True)
+class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
+    connector: Dict[str, Any] = field(hash=False)
+    opencti_url: str
+    opencti_token: str
+    log_level: str
+    ssl_verify: Union[bool, str] = False
+
+    def __post_init__(self) -> None:
+        super().__init__()
+        self.api = OpenCTIApiClient(
+            self.opencti_url, self.opencti_token, self.log_level, self.ssl_verify
+        )
+        self.queue_name = self.connector["config"]["push"]
         self.pika_credentials = pika.PlainCredentials(
-            connector["config"]["connection"]["user"],
-            connector["config"]["connection"]["pass"],
+            self.connector["config"]["connection"]["user"],
+            self.connector["config"]["connection"]["pass"],
         )
         self.pika_parameters = pika.ConnectionParameters(
-            connector["config"]["connection"]["host"],
-            connector["config"]["connection"]["port"],
+            self.connector["config"]["connection"]["host"],
+            self.connector["config"]["connection"]["port"],
             "/",
             self.pika_credentials,
             ssl_options=pika.SSLOptions(create_ssl_context())
-            if connector["config"]["connection"]["use_ssl"]
+            if self.connector["config"]["connection"]["use_ssl"]
             else None,
         )
 
@@ -54,16 +62,17 @@ class Consumer(threading.Thread):
         self.channel.basic_qos(prefetch_count=1)
         self.processing_count: int = 0
 
-    def get_id(self) -> Any:  # pylint: disable=inconsistent-return-statements
+    @property
+    def id(self) -> Any:  # pylint: disable=inconsistent-return-statements
         if hasattr(self, "_thread_id"):
             return self._thread_id  # type: ignore  # pylint: disable=no-member
-        # pylint: disable=protected-access,redefined-builtin
-        for id, thread in threading._active.items():  # type: ignore
+        # pylint: disable=protected-access
+        for id_, thread in threading._active.items():  # type: ignore
             if thread is self:
-                return id
+                return id_
 
     def terminate(self) -> None:
-        thread_id = self.get_id()
+        thread_id = self.id
         res = ctypes.pythonapi.PyThreadState_SetAsyncExc(
             thread_id, ctypes.py_object(SystemExit)
         )
@@ -114,7 +123,7 @@ class Consumer(threading.Thread):
                 ", launching a thread..."
             ),
         )
-        thread = threading.Thread(
+        thread = Thread(
             target=self.data_handler,
             args=[self.pika_connection, channel, method.delivery_tag, data],
         )
@@ -125,7 +134,7 @@ class Consumer(threading.Thread):
         logging.info("Message processed, thread terminated")
 
     # Data handling
-    def data_handler(  # pylint: disable=too-many-statements,too-many-locals
+    def data_handler(  # pylint: disable=too-many-statements, too-many-locals
         self,
         connection: Any,
         channel: BlockingChannel,
@@ -228,28 +237,36 @@ class Consumer(threading.Thread):
             logging.info("%s", f"Thread for queue {self.queue_name} terminated")
 
 
-class Worker:
-    def __init__(self) -> None:
-        self.logs_all_queue: str = "logs_all"
-        self.consumer_threads: Dict[str, Any] = {}
-        self.logger_threads: Dict[str, Any] = {}
+@dataclass(unsafe_hash=True)
+class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attributes
+    logs_all_queue: str = "logs_all"
+    consumer_threads: Dict[str, Any] = field(default_factory=dict, hash=False)
+    logger_threads: Dict[str, Any] = field(default_factory=dict, hash=False)
 
+    def __post_init__(self) -> None:
         # Get configuration
         config_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "config.yml"
         )
-        config = (
-            yaml.load(open(config_file_path), Loader=yaml.FullLoader)
-            if os.path.isfile(config_file_path)
-            else {}
-        )
+        if os.path.isfile(config_file_path):
+            with open(config_file_path, "r") as f:
+                config = yaml.load(f, Loader=yaml.FullLoader)
+        else:
+            config = {}
+
         self.log_level = os.getenv("WORKER_LOG_LEVEL") or config["worker"]["log_level"]
         self.opencti_url = os.getenv("OPENCTI_URL") or config["opencti"]["url"]
         self.opencti_token = os.getenv("OPENCTI_TOKEN") or config["opencti"]["token"]
+        self.opencti_ssl_verify = get_config_variable(
+            "OPENCTI_SSL_VERIFY", ["opencti", "ssl_verify"], config, False, False
+        )
 
         # Check if openCTI is available
         self.api = OpenCTIApiClient(
-            self.opencti_url, self.opencti_token, self.log_level
+            self.opencti_url,
+            self.opencti_token,
+            self.log_level,
+            self.opencti_ssl_verify,
         )
 
         # Configure logger
@@ -289,6 +306,7 @@ class Worker:
                                 self.opencti_url,
                                 self.opencti_token,
                                 self.log_level,
+                                self.opencti_ssl_verify,
                             )
                             self.consumer_threads[queue].start()
                     else:
@@ -297,6 +315,7 @@ class Worker:
                             self.opencti_url,
                             self.opencti_token,
                             self.log_level,
+                            self.opencti_ssl_verify,
                         )
                         self.consumer_threads[queue].start()
 

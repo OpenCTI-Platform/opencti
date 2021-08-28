@@ -51,7 +51,7 @@ const styles = (theme) => ({
 const positionMutationFieldPatch = graphql`
   mutation PositionEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     positionEdit(id: $id) {
       fieldPatch(input: $input) {
@@ -141,44 +141,12 @@ class PositionEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { position } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], position),
-      value: pathOr(null, ['createdBy', 'id'], position),
-    };
-
-    if (currentCreatedBy.value === null) {
+    if (!this.props.enableReferences) {
       commitMutation({
-        mutation: positionMutationRelationAdd,
+        mutation: positionMutationFieldPatch,
         variables: {
           id: this.props.position.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: positionMutationRelationDelete,
-        variables: {
-          id: this.props.position.id,
-          toId: currentCreatedBy.value,
-          relationship_type: 'created-by',
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: positionMutationRelationAdd,
-              variables: {
-                id: this.props.position.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }

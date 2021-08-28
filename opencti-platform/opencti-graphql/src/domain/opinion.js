@@ -1,5 +1,12 @@
 import { assoc, dissoc, pipe } from 'ramda';
-import { createEntity, distributionEntities, listEntities, loadById, timeSeriesEntities } from '../database/middleware';
+import {
+  createEntity,
+  distributionEntities,
+  internalLoadById,
+  listEntities,
+  loadById,
+  timeSeriesEntities,
+} from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_OPINION } from '../schema/stixDomainObject';
@@ -7,6 +14,7 @@ import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelation
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { isStixId } from '../schema/schemaUtils';
 
 export const findById = (user, opinionId) => {
   return loadById(user, opinionId, ENTITY_TYPE_CONTAINER_OPINION);
@@ -18,10 +26,11 @@ export const findAll = async (user, args) => {
 // Entities tab
 
 export const opinionContainsStixObjectOrStixRelationship = async (user, opinionId, thingId) => {
+  const resolvedThingId = isStixId(thingId) ? (await internalLoadById(user, thingId)).id : thingId;
   const args = {
     filters: [
       { key: 'internal_id', values: [opinionId] },
-      { key: buildRefRelationKey(RELATION_OBJECT), values: [thingId] },
+      { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
     ],
   };
   const opinionFound = await findAll(user, args);

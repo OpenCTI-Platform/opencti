@@ -139,18 +139,13 @@ export const stixCoreRelationshipDeleteByFromAndTo = async (user, fromId, toId, 
   return true;
 };
 
-export const stixCoreRelationshipEditField = async (user, stixCoreRelationshipId, input) => {
+export const stixCoreRelationshipEditField = async (user, stixCoreRelationshipId, input, opts = {}) => {
   const stixCoreRelationship = await loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
   if (!stixCoreRelationship) {
     throw FunctionalError('Cannot edit the field, stix-core-relationship cannot be found.');
   }
-  const updatedRelationship = await updateAttribute(
-    user,
-    stixCoreRelationshipId,
-    ABSTRACT_STIX_CORE_RELATIONSHIP,
-    input
-  );
-  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, updatedRelationship, user);
+  const { element } = await updateAttribute(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP, input, opts);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, element, user);
 };
 
 export const stixCoreRelationshipAddRelation = async (user, stixCoreRelationshipId, input) => {

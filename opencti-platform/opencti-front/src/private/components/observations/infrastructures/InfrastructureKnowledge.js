@@ -14,6 +14,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixCoreObjectStixCyberObservables from '../stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
 const styles = () => ({
   container: {
@@ -58,6 +59,17 @@ class InfrastructureKnowledgeComponent extends Component {
         />
         <Route
           exact
+          path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/sightings/:sightingId"
+          render={(routeProps) => (
+            <StixSightingRelationship
+              entityId={infrastructure.id}
+              paddingRight={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/overview"
           render={(routeProps) => (
             <StixDomainObjectThreatKnowledge
@@ -74,7 +86,22 @@ class InfrastructureKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={infrastructure.id}
               relationshipTypes={['related-to']}
-              targetStixDomainObjectTypes={['Stix-Domain-Object']}
+              targetStixDomainObjectTypes={[
+                'Threat-Actor',
+                'Intrusion-Set',
+                'Campaign',
+                'Incident',
+                'Malware',
+                'Tool',
+                'Vulnerability',
+                'Individual',
+                'Organization',
+                'Sector',
+                'Region',
+                'Country',
+                'City',
+                'Position',
+              ]}
               entityLink={link}
               allDirections={true}
               {...routeProps}

@@ -2,7 +2,7 @@
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import * as R from 'ramda';
 import jsonCanonicalize from 'canonicalize';
-import { DatabaseError, UnsupportedError } from '../config/errors';
+import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { convertEntityTypeToStixType } from './schemaUtils';
 import * as I from './internalObject';
 import { isInternalObject } from './internalObject';
@@ -137,21 +137,19 @@ const stixEntityContribution = {
     [I.ENTITY_TYPE_ROLE]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CAPABILITY]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CONNECTOR]: [{ src: 'internal_id' }],
+    [I.ENTITY_TYPE_RULE_MANAGER]: [{ src: 'internal_id' }],
     [I.ENTITY_TYPE_RULE]: [{ src: 'internal_id' }],
     [I.ENTITY_TYPE_ATTRIBUTE]: [], // ALL
     [I.ENTITY_TYPE_WORKSPACE]: [], // ALL
     [I.ENTITY_TYPE_TAXII_COLLECTION]: [], // ALL
     [I.ENTITY_TYPE_TASK]: [], // ALL
     [I.ENTITY_TYPE_STREAM_COLLECTION]: [], // ALL
+    [I.ENTITY_TYPE_USER_SUBSCRIPTION]: [], // ALL
     // Stix Domain
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_CAMPAIGN]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_CONTAINER_NOTE]: [{ src: CONTENT_FIELD }],
-    [D.ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [
-      { src: 'first_observed' },
-      { src: 'last_observed' },
-      { src: 'number_observed' },
-    ],
+    [D.ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [{ src: 'internal_id' }],
     [D.ENTITY_TYPE_CONTAINER_OPINION]: [{ src: OPINION_FIELD }],
     [D.ENTITY_TYPE_CONTAINER_REPORT]: [{ src: NAME_FIELD }, { src: 'published' }],
     [D.ENTITY_TYPE_COURSE_OF_ACTION]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
@@ -229,7 +227,7 @@ export const isTypeHasAliasIDs = (entityType) => {
   }
   return properties.length === 1 && R.head(properties).src === NAME_FIELD;
 };
-export const isFieldContributingToStandardId = (instance, keys) => {
+export const fieldsContributingToStandardId = (instance, keys) => {
   const instanceType = instance.entity_type;
   const isRelation = instance.base_type === BASE_TYPE_RELATION;
   if (isRelation) return false;
@@ -241,7 +239,10 @@ export const isFieldContributingToStandardId = (instance, keys) => {
   if (properties.length === 0) return true;
   const targetKeys = R.map((k) => (k.includes('.') ? R.head(k.split('.')) : k), keys);
   const propertiesToKeep = R.map((t) => t.src, R.flatten(properties));
-  const keysIncluded = R.filter((p) => R.includes(p, targetKeys), propertiesToKeep);
+  return R.filter((p) => R.includes(p, targetKeys), propertiesToKeep);
+};
+export const isFieldContributingToStandardId = (instance, keys) => {
+  const keysIncluded = fieldsContributingToStandardId(instance, keys);
   return keysIncluded.length > 0;
 };
 const filteredIdContributions = (contrib, way, data) => {
@@ -359,7 +360,7 @@ export const getInstanceIds = (instance, withoutInternal = false) => {
     ids.push(...instance.x_opencti_stix_ids);
   }
   ids.push(...generateAliasesIdsForInstance(instance));
-  return ids;
+  return R.uniq(ids);
 };
 export const getInputIds = (type, input) => {
   const ids = [input.standard_id || generateStandardId(type, input)];
@@ -367,5 +368,33 @@ export const getInputIds = (type, input) => {
     ids.push(input.stix_id);
   }
   ids.push(...generateAliasesIdsForInstance(input));
-  return ids;
+  return R.uniq(ids);
+};
+export const getInstanceIdentifiers = (instance) => {
+  const base = {
+    standard_id: instance.standard_id,
+    internal_id: instance.internal_id,
+    entity_type: instance.entity_type,
+  };
+  if (instance.identity_class) {
+    base.identity_class = instance.identity_class;
+  }
+  if (instance.x_opencti_location_type) {
+    base.x_opencti_location_type = instance.x_opencti_location_type;
+  }
+  // Need to put everything needed to identified a relationship
+  if (instance.relationship_type) {
+    base.relationship_type = instance.relationship_type;
+    if (!instance.from) {
+      throw FunctionalError(`Inconsistent relation to update (from)`, { id: instance.id, from: instance.fromId });
+    }
+    base.source_ref = instance.from.standard_id;
+    base.x_opencti_source_ref = instance.fromId;
+    if (!instance.to) {
+      throw FunctionalError(`Inconsistent relation to update (to)`, { id: instance.id, to: instance.toId });
+    }
+    base.target_ref = instance.to.standard_id;
+    base.x_opencti_target_ref = instance.toId;
+  }
+  return base;
 };

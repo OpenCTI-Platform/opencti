@@ -68,13 +68,15 @@ class StixSightingRelationshipLineComponent extends Component {
     const {
       fsd, t, fd, classes, dataColumns, node, paginationOptions,
     } = this.props;
+    const entityLink = `${resolveLink(node.from.entity_type)}/${node.from.id}`;
+    const link = `${entityLink}/knowledge/sightings/${node.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         button={true}
         component={Link}
-        to={`${resolveLink(node.from.entity_type)}/${node.from.id}`}
+        to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon type={node.from.entity_type} />

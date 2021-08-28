@@ -4,7 +4,7 @@ import { now } from '../utils/format';
 import { elIndex, elPaginate } from '../database/elasticSearch';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_STIX_INDICES } from '../database/utils';
 import { ENTITY_TYPE_TASK } from '../schema/internalObject';
-import { deleteElementById, listEntities, loadById, patchAttribute } from '../database/middleware';
+import { buildFilters, deleteElementById, listEntities, loadById, patchAttribute } from '../database/middleware';
 import { GlobalFilters } from '../utils/filtering';
 import { ForbiddenAccess } from '../config/errors';
 import { KNOWLEDGE_DELETE } from '../initialization';
@@ -102,8 +102,8 @@ const checkActionValidity = (user, actions) => {
 export const createRuleTask = async (user, input) => {
   const { rule, enable } = input;
   const ruleDefinition = await getRule(rule);
-  const { scopeFilters } = ruleDefinition;
-  const opts = enable ? scopeFilters : { filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }] };
+  const { scan } = ruleDefinition;
+  const opts = enable ? buildFilters(scan) : { filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }] };
   const queryData = await elPaginate(user, READ_DATA_INDICES, { ...opts, first: 1 });
   const countExpected = queryData.pageInfo.globalCount;
   const task = createDefaultTask(user, input, TASK_TYPE_RULE, countExpected);

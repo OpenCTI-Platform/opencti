@@ -308,15 +308,16 @@ export const stixCyberObservableDeleteRelation = async (user, stixCyberObservabl
   return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
 };
 
-export const stixCyberObservableEditField = async (user, stixCyberObservableId, input, options = {}) => {
-  const stixCyberObservable = await updateAttribute(
+export const stixCyberObservableEditField = async (user, stixCyberObservableId, input, opts = {}) => {
+  const { element: stixCyberObservable } = await updateAttribute(
     user,
     stixCyberObservableId,
     ABSTRACT_STIX_CYBER_OBSERVABLE,
     input,
-    options
+    opts
   );
   if (input.key === 'x_opencti_score') {
+    // eslint-disable-next-line prettier/prettier
     const indicators = await listThroughGetFrom(
       user,
       [stixCyberObservableId],
@@ -324,7 +325,7 @@ export const stixCyberObservableEditField = async (user, stixCyberObservableId, 
       ENTITY_TYPE_INDICATOR
     );
     await Promise.all(
-      indicators.map((indicator) => updateAttribute(user, indicator.id, ENTITY_TYPE_INDICATOR, input, options))
+      indicators.map((indicator) => updateAttribute(user, indicator.id, ENTITY_TYPE_INDICATOR, input, opts))
     );
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);

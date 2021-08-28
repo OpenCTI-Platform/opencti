@@ -1,7 +1,7 @@
-import sys
 import json
+import sys
 
-from stix2 import ObjectPath, EqualityComparisonExpression, ObservationExpression
+from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpression
 
 PATTERN_MAPPING = {
     "Autonomous-System": ["number"],

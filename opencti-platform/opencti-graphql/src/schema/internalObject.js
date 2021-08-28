@@ -4,6 +4,7 @@ import { ABSTRACT_INTERNAL_OBJECT, schemaTypes } from './general';
 export const ENTITY_TYPE_SETTINGS = 'Settings';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
 export const ENTITY_TYPE_MIGRATION_REFERENCE = 'MigrationReference';
+export const ENTITY_TYPE_RULE_MANAGER = 'RuleManager';
 export const ENTITY_TYPE_GROUP = 'Group';
 export const ENTITY_TYPE_USER = 'User';
 export const ENTITY_TYPE_RULE = 'Rule';
@@ -16,6 +17,7 @@ export const ENTITY_TYPE_WORK = 'work';
 export const ENTITY_TYPE_TASK = 'Task';
 export const ENTITY_TYPE_TAXII_COLLECTION = 'TaxiiCollection';
 export const ENTITY_TYPE_STREAM_COLLECTION = 'StreamCollection';
+export const ENTITY_TYPE_USER_SUBSCRIPTION = 'UserSubscription';
 const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_GROUP,
@@ -29,6 +31,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_TAXII_COLLECTION,
   ENTITY_TYPE_STREAM_COLLECTION,
+  ENTITY_TYPE_USER_SUBSCRIPTION,
   ENTITY_TYPE_TASK,
   ENTITY_TYPE_MIGRATION_STATUS,
   ENTITY_TYPE_MIGRATION_REFERENCE,
@@ -36,6 +39,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_USER,
   ENTITY_TYPE_ROLE,
   ENTITY_TYPE_RULE,
+  ENTITY_TYPE_RULE_MANAGER,
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_ATTRIBUTE,
@@ -64,6 +68,7 @@ export const internalObjectsAttributes = {
     'platform_theme_light_logo',
     'platform_language',
     'platform_login_message',
+    'platform_enable_references',
     'created_at',
     'i_created_at_day',
     'i_created_at_month',
@@ -79,6 +84,7 @@ export const internalObjectsAttributes = {
     'name',
     'description',
     'default_assignation',
+    'auto_new_marking',
     'created_at',
     'i_created_at_day',
     'i_created_at_month',
@@ -121,6 +127,7 @@ export const internalObjectsAttributes = {
     'updated_at',
   ],
   [ENTITY_TYPE_RULE]: ['internal_id', 'standard_id', 'entity_type', 'active'],
+  [ENTITY_TYPE_RULE_MANAGER]: ['internal_id', 'lastEventId', 'errors'],
   [ENTITY_TYPE_CAPABILITY]: [
     'internal_id',
     'standard_id',
@@ -174,6 +181,16 @@ export const internalObjectsAttributes = {
   ],
   [ENTITY_TYPE_TAXII_COLLECTION]: ['internal_id', 'standard_id', 'name', 'description', 'filters'],
   [ENTITY_TYPE_STREAM_COLLECTION]: ['internal_id', 'standard_id', 'name', 'description', 'filters'],
+  [ENTITY_TYPE_USER_SUBSCRIPTION]: [
+    'internal_id',
+    'standard_id',
+    'name',
+    'cron',
+    'options',
+    'entities_ids',
+    'filters',
+    'last_run',
+  ],
   [ENTITY_TYPE_TASK]: [
     'standard_id',
     'task_position',

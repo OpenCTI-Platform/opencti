@@ -101,8 +101,8 @@ export const workspaceDeleteRelations = async (user, workspaceId, toIds, relatio
 };
 
 export const workspaceEditField = async (user, workspaceId, input) => {
-  const workspace = await updateAttribute(user, workspaceId, ENTITY_TYPE_WORKSPACE, input);
-  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
+  const { element } = await updateAttribute(user, workspaceId, ENTITY_TYPE_WORKSPACE, input);
+  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, element, user);
 };
 
 export const workspaceDelete = async (user, workspaceId) => {

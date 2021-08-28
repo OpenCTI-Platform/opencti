@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Tooltip from '@material-ui/core/Tooltip';
 import IconButton from '@material-ui/core/IconButton';
 import { ViewListOutlined, ViewColumnOutlined } from '@material-ui/icons';
+import { ProgressWrench } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
@@ -46,6 +47,14 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
       relationship_type: 'uses',
       search: searchTerm,
     };
+    let csvData = null;
+    if (currentView === 'courses-of-action') {
+      csvData = R.pipe(
+        R.map((n) => n.node.to.coursesOfAction.edges),
+        R.flatten,
+        R.map((n) => n.node),
+      )(data.stixCoreRelationships.edges);
+    }
     return (
       <div className={classes.container}>
         <SearchInput
@@ -70,10 +79,21 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               <ViewListOutlined />
             </IconButton>
           </Tooltip>
+          <Tooltip title={t('Courses of action view')}>
+            <IconButton
+              color={
+                currentView === 'courses-of-action' ? 'secondary' : 'primary'
+              }
+              onClick={handleChangeView.bind(this, 'courses-of-action')}
+            >
+              <ProgressWrench />
+            </IconButton>
+          </Tooltip>
           <div className={classes.export}>
             <ExportButtons
               domElementId="container"
               name={t('Attack patterns kill chain')}
+              csvData={csvData}
             />
           </div>
         </div>
@@ -91,6 +111,16 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             data={data}
             entityLink={entityLink}
             searchTerm={searchTerm}
+          />
+        )}
+        {currentView === 'courses-of-action' && (
+          <StixDomainObjectAttackPatternsKillChainLines
+            data={data}
+            entityLink={entityLink}
+            paginationOptions={paginationOptions}
+            handleDelete={this.props.relay.refetch.bind(this)}
+            searchTerm={searchTerm}
+            coursesOfAction={true}
           />
         )}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -165,6 +195,16 @@ const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
                   x_mitre_permissions_required
                   x_mitre_detection
                   isSubAttackPattern
+                  coursesOfAction {
+                    edges {
+                      node {
+                        id
+                        name
+                        description
+                        x_mitre_id
+                      }
+                    }
+                  }
                   parentAttackPatterns {
                     edges {
                       node {
@@ -223,7 +263,7 @@ const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
   stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(stixDomainObjectAttackPatternsKillChainLines);

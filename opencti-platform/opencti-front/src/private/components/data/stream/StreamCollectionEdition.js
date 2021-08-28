@@ -62,7 +62,7 @@ const styles = (theme) => ({
 const streamCollectionMutationFieldPatch = graphql`
   mutation StreamCollectionEditionFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     streamCollectionEdit(id: $id) {
       fieldPatch(input: $input) {
@@ -227,6 +227,7 @@ const StreamCollectionEditionContainer = (props) => {
                             <strong>{label}</strong>: {values}
                           </div>
                         }
+                        disabled={Object.keys(filters).length === 1}
                         onDelete={() => handleRemoveFilter(currentFilter[0])}
                       />
                       {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (

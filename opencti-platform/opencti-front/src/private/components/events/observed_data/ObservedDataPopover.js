@@ -94,7 +94,7 @@ class ObservedDataPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/analysis/ObservedData');
+        this.props.history.push('/dashboard/events/observed_data');
       },
     });
   }

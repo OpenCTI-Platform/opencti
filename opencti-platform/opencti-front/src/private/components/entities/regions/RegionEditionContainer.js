@@ -68,7 +68,9 @@ class RegionEditionContainer extends Component {
         <div className={classes.container}>
           <RegionEditionOverview
             region={this.props.region}
+            enableReferences={this.props.enableReferences}
             context={editContext}
+            handleClose={handleClose.bind(this)}
           />
         </div>
       </div>

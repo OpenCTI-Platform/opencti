@@ -88,7 +88,9 @@ class ContainerStixDomainObjectsComponent extends Component {
     this.setState({ numberOfElements });
   }
 
-  handleToggleSelectEntity(entity) {
+  handleToggleSelectEntity(entity, event) {
+    event.stopPropagation();
+    event.preventDefault();
     const { selectedElements } = this.state;
     if (entity.id in (selectedElements || {})) {
       const newSelectedElements = R.omit([entity.id], selectedElements);
@@ -166,8 +168,12 @@ class ContainerStixDomainObjectsComponent extends Component {
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
+    const filters = [{ key: 'containedBy', values: [container.id] }];
+    if (types.length > 0) {
+      filters.push({ key: 'entity_type', values: types });
+    }
     const exportPaginationOptions = {
-      filters: [{ key: 'containedBy', values: [container.id] }],
+      filters,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       search: searchTerm,

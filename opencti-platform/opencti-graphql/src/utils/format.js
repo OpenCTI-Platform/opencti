@@ -32,3 +32,5 @@ export const computeRangeIntersection = (a, b) => {
   const range = a.intersect(b);
   return { start: range?.start.toISOString(), end: range?.end.toISOString() };
 };
+export const minutesAgo = (minutes) => moment().utc().subtract(minutes, 'minutes');
+export const hoursAgo = (hours) => moment().utc().subtract(hours, 'hours');

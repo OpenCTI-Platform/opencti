@@ -80,5 +80,6 @@ const initHttpServer = () => {
     },
   };
 };
+const httpServer = initHttpServer();
 
-export default initHttpServer;
+export default httpServer;

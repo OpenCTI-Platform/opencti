@@ -1,7 +1,7 @@
 import session from 'express-session';
 import nconf from 'nconf';
 import { createMemorySessionStore, createRedisSessionStore } from './redis';
-import conf, { OPENCTI_SESSION } from '../config/conf';
+import conf, { booleanConf, OPENCTI_SESSION } from '../config/conf';
 
 const sessionManager = nconf.get('app:session_manager');
 const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
@@ -20,6 +20,7 @@ const createSessionMiddleware = () => {
       resave: false,
       cookie: {
         _expires: conf.get('app:session_timeout'),
+        secure: booleanConf('app:https_cert:cookie_secure', false),
       },
     }),
     store,

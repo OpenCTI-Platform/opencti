@@ -29,6 +29,7 @@ const subscription = graphql`
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
     }
   }
 `;
@@ -44,6 +45,7 @@ const cityQuery = graphql`
       ...CityKnowledge_city
       ...FileImportViewer_entity
       ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
     }
     connectorsForExport {
       ...FileManager_connectorsExport

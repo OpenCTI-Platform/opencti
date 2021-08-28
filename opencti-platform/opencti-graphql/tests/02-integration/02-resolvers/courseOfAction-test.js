@@ -117,7 +117,7 @@ describe('CourseOfAction resolver standard behavior', () => {
   });
   it('should update courseOfAction', async () => {
     const UPDATE_QUERY = gql`
-      mutation CourseOfActionEdit($id: ID!, $input: EditInput!) {
+      mutation CourseOfActionEdit($id: ID!, $input: [EditInput]!) {
         courseOfActionEdit(id: $id) {
           fieldPatch(input: $input) {
             id

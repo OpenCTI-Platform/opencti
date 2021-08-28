@@ -68,7 +68,9 @@ class SectorEditionContainer extends Component {
         <div className={classes.container}>
           <SectorEditionOverview
             sector={this.props.sector}
+            enableReferences={this.props.enableReferences}
             context={editContext}
+            handleClose={handleClose.bind(this)}
           />
         </div>
       </div>

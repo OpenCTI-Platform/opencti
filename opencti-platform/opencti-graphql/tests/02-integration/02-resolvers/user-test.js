@@ -174,7 +174,7 @@ describe('User resolver standard behavior', () => {
   });
   it('should update user', async () => {
     const UPDATE_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: EditInput!) {
+      mutation UserEdit($id: ID!, $input: [EditInput]!) {
         userEdit(id: $id) {
           fieldPatch(input: $input) {
             id

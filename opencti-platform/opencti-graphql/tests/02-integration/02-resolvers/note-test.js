@@ -316,7 +316,7 @@ describe('Note resolver standard behavior', () => {
   });
   it('should update note', async () => {
     const UPDATE_QUERY = gql`
-      mutation NoteEdit($id: ID!, $input: EditInput!) {
+      mutation NoteEdit($id: ID!, $input: [EditInput]!) {
         noteEdit(id: $id) {
           fieldPatch(input: $input) {
             id

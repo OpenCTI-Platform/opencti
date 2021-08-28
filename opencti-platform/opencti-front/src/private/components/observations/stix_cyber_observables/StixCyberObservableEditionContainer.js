@@ -68,7 +68,9 @@ class StixCyberObservableEditionContainer extends Component {
         <div className={classes.container}>
           <StixCyberObservableEditionOverview
             stixCyberObservable={this.props.stixCyberObservable}
+            enableReferences={this.props.enableReferences}
             context={editContext}
+            handleClose={handleClose.bind(this)}
           />
         </div>
       </div>

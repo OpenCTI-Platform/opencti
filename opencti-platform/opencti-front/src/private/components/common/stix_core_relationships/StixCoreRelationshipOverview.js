@@ -28,6 +28,9 @@ import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/repo
 import ItemAuthor from '../../../../components/ItemAuthor';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreRelationshipInference from './StixCoreRelationshipInference';
+import StixCoreRelationshipExternalReferences from '../../analysis/external_references/StixCoreRelationshipExternalReferences';
+import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHistory';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -99,6 +102,9 @@ const styles = (theme) => ({
     margin: '10px 0 0 0',
     padding: '25px 15px 15px 15px',
     borderRadius: 6,
+  },
+  gridContainer: {
+    marginBottom: 20,
   },
 });
 
@@ -276,8 +282,8 @@ class StixCoreRelationshipContainer extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Marking')}
               </Typography>
-              {stixCoreRelationship.objectMarking.edges.length > 0 ? (
-                R.map(
+              {stixCoreRelationship.objectMarking.edges.length > 0
+                && R.map(
                   (markingDefinition) => (
                     <ItemMarking
                       key={markingDefinition.node.id}
@@ -286,10 +292,7 @@ class StixCoreRelationshipContainer extends Component {
                     />
                   ),
                   stixCoreRelationship.objectMarking.edges,
-                )
-              ) : (
-                <ItemMarking label="TLP:WHITE" />
-              )}
+                )}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -385,7 +388,11 @@ class StixCoreRelationshipContainer extends Component {
             </div>
           ) : (
             <div style={{ margin: '40px 0 0px 0' }}>
-              <Grid container={true} spacing={3}>
+              <Grid
+                container={true}
+                spacing={3}
+                classes={{ container: classes.gridContainer }}
+              >
                 <Grid item={true} xs={6}>
                   <StixCoreRelationshipStixCoreRelationships
                     entityId={stixCoreRelationship.id}
@@ -399,6 +406,18 @@ class StixCoreRelationshipContainer extends Component {
                   />
                 </Grid>
               </Grid>
+              <Grid container={true} spacing={3} style={{ marginTop: 25 }}>
+                <Grid item={true} xs={6}>
+                  <StixCoreRelationshipExternalReferences
+                    stixCoreRelationshipId={stixCoreRelationship.id}
+                  />
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <StixCoreRelationshipLatestHistory
+                    stixCoreRelationshipId={stixCoreRelationship.id}
+                  />
+                </Grid>
+              </Grid>
               <StixCoreObjectOrStixCoreRelationshipNotes
                 marginTop={55}
                 stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
@@ -408,7 +427,7 @@ class StixCoreRelationshipContainer extends Component {
           )}
         </div>
         {!stixCoreRelationship.is_inferred && (
-          <div>
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <Fab
               onClick={this.handleOpenEdition.bind(this)}
               color="secondary"
@@ -427,7 +446,7 @@ class StixCoreRelationshipContainer extends Component {
               handleClose={this.handleCloseEdition.bind(this)}
               handleDelete={this.handleDelete.bind(this)}
             />
-          </div>
+          </Security>
         )}
       </div>
     );

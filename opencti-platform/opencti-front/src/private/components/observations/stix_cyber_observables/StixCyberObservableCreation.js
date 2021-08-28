@@ -147,12 +147,6 @@ const styles = (theme) => ({
     right: 30,
     zIndex: 2000,
   },
-  createButtonContextualSpeedDial: {
-    position: 'fixed',
-    bottom: 90,
-    right: 30,
-    zIndex: 2000,
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -178,6 +172,13 @@ const styles = (theme) => ({
   },
   container: {
     padding: '10px 20px 20px 20px',
+  },
+  speedDialButton: {
+    backgroundColor: theme.palette.secondary.main,
+    color: '#ffffff',
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.main,
+    },
   },
 });
 
@@ -424,7 +425,11 @@ class StixCyberObservableCreation extends Component {
   }
 
   onReset() {
-    this.handleClose();
+    if (this.props.speeddial) {
+      this.props.handleClose();
+    } else {
+      this.handleClose();
+    }
   }
 
   renderList() {
@@ -710,20 +715,28 @@ class StixCyberObservableCreation extends Component {
 
   renderContextual() {
     const { type } = this.state;
-    const { t, classes, display } = this.props;
+    const {
+      t, classes, display, speeddial,
+    } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButtonContextual}
-        >
-          <Add />
-        </Fab>
+        {!speeddial && (
+          <Fab
+            onClick={this.handleOpen.bind(this)}
+            color="secondary"
+            aria-label="Add"
+            className={classes.createButtonContextual}
+          >
+            <Add />
+          </Fab>
+        )}
         <Dialog
-          open={this.state.open}
-          onClose={this.handleClose.bind(this)}
+          open={speeddial ? this.props.open : this.state.open}
+          onClose={
+            speeddial
+              ? this.props.handleClose.bind(this)
+              : this.handleClose.bind(this)
+          }
           fullWidth={true}
         >
           <DialogTitle>{t('Create an observable')}</DialogTitle>
@@ -751,6 +764,9 @@ StixCyberObservableCreation.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   contextual: PropTypes.bool,
+  speeddial: PropTypes.bool,
+  handleClose: PropTypes.func,
+  open: PropTypes.bool,
   display: PropTypes.bool,
   inputValue: PropTypes.string,
   openExports: PropTypes.bool,

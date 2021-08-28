@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
+import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -14,6 +15,22 @@ import ExternalReferencesLines, {
 } from './external_references/ExternalReferencesLines';
 import ExternalReferenceCreation from './external_references/ExternalReferenceCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+
+export const externalReferencesSearchQuery = graphql`
+  query ExternalReferencesSearchQuery($search: String) {
+    externalReferences(search: $search) {
+      edges {
+        node {
+          id
+          source_name
+          external_id
+          description
+          url
+        }
+      }
+    }
+  }
+`;
 
 class ExternalReferences extends Component {
   constructor(props) {

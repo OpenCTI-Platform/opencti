@@ -30,6 +30,7 @@ const subscription = graphql`
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
     }
   }
 `;
@@ -46,6 +47,7 @@ const vulnerabilityQuery = graphql`
       ...VulnerabilityKnowledge_vulnerability
       ...FileImportViewer_entity
       ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
     }
     connectorsForExport {
       ...FileManager_connectorsExport

@@ -14,13 +14,12 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import { buildRefRelationKey } from '../schema/general';
-import { UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 const containerResolvers = {
   Query: {
     container: (_, { id }, { user }) => findById(user, id),
     containers: (_, args, { user }) => findAll(user, args),
-    containersObjectsOfObject: (_, { id, types }, { user }) => containersObjectsOfObject(user, id, types),
+    containersObjectsOfObject: (_, args, { user }) => containersObjectsOfObject(user, args),
   },
   Container: {
     __resolveType(obj) {
@@ -43,8 +42,7 @@ const containerResolvers = {
   Mutation: {
     containerEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, operation = UPDATE_OPERATION_REPLACE }) =>
-        stixDomainObjectEditField(user, id, input, { operation }),
+      fieldPatch: ({ input, commitMessage }) => stixDomainObjectEditField(user, id, input, { commitMessage }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),

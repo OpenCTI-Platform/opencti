@@ -11,7 +11,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Collapse from '@material-ui/core/Collapse';
-import { Launch, LockPattern } from 'mdi-material-ui';
+import { Launch, LockPattern, ProgressWrench } from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -28,6 +28,9 @@ const styles = (theme) => ({
   },
   nested: {
     paddingLeft: theme.spacing(4),
+  },
+  nested2: {
+    paddingLeft: theme.spacing(8),
   },
 });
 
@@ -58,13 +61,16 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
       paginationOptions,
       onDelete,
       searchTerm,
+      coursesOfAction,
     } = this.props;
     // Extract all kill chain phases
     const filterByKeyword = (n) => searchTerm === ''
       || n.to.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
       || n.to.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-      || n.to.x_mitre_id.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-      || R.propOr('', 'subattackPatterns_text', n)
+      || R.propOr('', 'x_mitre_id', n.to)
+        .toLowerCase()
+        .indexOf(searchTerm.toLowerCase()) !== -1
+      || R.propOr('', 'subattackPatterns_text', n.to)
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1;
     const killChainPhases = R.pipe(
@@ -160,63 +166,145 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                       (attackPattern) => {
                         const link = `${entityLink}/relations/${attackPattern.id}`;
                         return (
-                          <ListItem
-                            key={attackPattern.id}
-                            classes={{ root: classes.nested }}
-                            divider={true}
-                            button={true}
-                            dense={true}
-                            component={Link}
-                            to={link}
-                          >
-                            <ListItemIcon>
-                              <LockPattern color="primary" role="img" />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={
-                                <span>
-                                  <strong>{attackPattern.to.x_mitre_id}</strong>{' '}
-                                  - {attackPattern.to.name}
-                                </span>
-                              }
-                              secondary={
-                                attackPattern.description
-                                && attackPattern.description.length > 0 ? (
-                                  <Markdown className="markdown">
-                                    {attackPattern.description}
-                                  </Markdown>
-                                  ) : (
-                                    t('No description of this usage')
+                          <div key={attackPattern.id}>
+                            <ListItem
+                              classes={{ root: classes.nested }}
+                              divider={true}
+                              button={true}
+                              dense={true}
+                              component={coursesOfAction ? 'ul' : Link}
+                              to={coursesOfAction ? null : link}
+                              onClick={
+                                coursesOfAction
+                                  ? this.handleToggleLine.bind(
+                                    this,
+                                    attackPattern.id,
                                   )
+                                  : null
                               }
-                            />
-                            {R.take(
-                              1,
-                              R.pathOr(
-                                [],
-                                ['markingDefinitions', 'edges'],
-                                attackPattern,
-                              ),
-                            ).map((markingDefinition) => (
-                              <ItemMarking
-                                key={markingDefinition.node.id}
-                                variant="inList"
-                                label={markingDefinition.node.definition}
-                                color={markingDefinition.node.x_opencti_color}
+                            >
+                              <ListItemIcon>
+                                <LockPattern color="primary" role="img" />
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={
+                                  <span>
+                                    <strong>
+                                      {attackPattern.to.x_mitre_id}
+                                    </strong>{' '}
+                                    - {attackPattern.to.name}
+                                  </span>
+                                }
+                                secondary={
+                                  attackPattern.description
+                                  && attackPattern.description.length > 0 ? (
+                                    <Markdown className="markdown">
+                                      {attackPattern.description}
+                                    </Markdown>
+                                    ) : (
+                                      t('No description of this usage')
+                                    )
+                                }
                               />
-                            ))}
-                            <ItemYears
-                              variant="inList"
-                              years={attackPattern.years}
-                            />
-                            <ListItemSecondaryAction>
-                              <StixCoreRelationshipPopover
-                                stixCoreRelationshipId={attackPattern.id}
-                                paginationOptions={paginationOptions}
-                                onDelete={onDelete}
-                              />
-                            </ListItemSecondaryAction>
-                          </ListItem>
+                              {R.take(
+                                1,
+                                R.pathOr(
+                                  [],
+                                  ['markingDefinitions', 'edges'],
+                                  attackPattern,
+                                ),
+                              ).map((markingDefinition) => (
+                                <ItemMarking
+                                  key={markingDefinition.node.id}
+                                  variant="inList"
+                                  label={markingDefinition.node.definition}
+                                  color={markingDefinition.node.x_opencti_color}
+                                />
+                              ))}
+                              {!coursesOfAction && (
+                                <ItemYears
+                                  variant="inList"
+                                  years={attackPattern.years}
+                                />
+                              )}
+                              <ListItemSecondaryAction>
+                                {coursesOfAction ? (
+                                  <IconButton
+                                    onClick={this.handleToggleLine.bind(
+                                      this,
+                                      attackPattern.id,
+                                    )}
+                                    aria-haspopup="true"
+                                  >
+                                    {this.state.expandedLines[
+                                      attackPattern.id
+                                    ] === false ? (
+                                      <ExpandMore />
+                                      ) : (
+                                      <ExpandLess />
+                                      )}
+                                  </IconButton>
+                                ) : (
+                                  <StixCoreRelationshipPopover
+                                    stixCoreRelationshipId={attackPattern.id}
+                                    paginationOptions={paginationOptions}
+                                    onDelete={onDelete}
+                                  />
+                                )}
+                              </ListItemSecondaryAction>
+                            </ListItem>
+                            {coursesOfAction && (
+                              <Collapse
+                                in={
+                                  this.state.expandedLines[attackPattern.id]
+                                  !== false
+                                }
+                              >
+                                <List>
+                                  {attackPattern.to.coursesOfAction.edges.map(
+                                    (courseOfActionEdge) => {
+                                      const courseOfAction = courseOfActionEdge.node;
+                                      const courseOfActionLink = `/dashboard/arsenal/courses_of_action/${courseOfAction.id}`;
+                                      return (
+                                        <ListItem
+                                          key={courseOfAction.id}
+                                          classes={{ root: classes.nested2 }}
+                                          divider={true}
+                                          button={true}
+                                          dense={true}
+                                          component={Link}
+                                          to={courseOfActionLink}
+                                        >
+                                          <ListItemIcon>
+                                            <ProgressWrench
+                                              color="primary"
+                                              role="img"
+                                            />
+                                          </ListItemIcon>
+                                          <ListItemText
+                                            primary={courseOfAction.name}
+                                            secondary={
+                                              courseOfAction.description
+                                              && courseOfAction.description
+                                                .length > 0 ? (
+                                                <Markdown className="markdown">
+                                                  {courseOfAction.description}
+                                                </Markdown>
+                                                ) : (
+                                                  t(
+                                                    'No description of this course of action',
+                                                  )
+                                                )
+                                            }
+                                          />
+                                        </ListItem>
+                                      );
+                                    },
+                                  )}
+                                </List>
+                              </Collapse>
+                            )}
+                          </div>
                         );
                       },
                     )}
@@ -239,6 +327,7 @@ StixDomainObjectAttackPatternsKillChainLines.propTypes = {
   entityLink: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
+  coursesOfAction: PropTypes.bool,
   t: PropTypes.func,
 };
 

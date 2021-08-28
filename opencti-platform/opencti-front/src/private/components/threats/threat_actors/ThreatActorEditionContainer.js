@@ -91,13 +91,17 @@ class ThreatActorEditionContainer extends Component {
           {this.state.currentTab === 0 && (
             <ThreatActorEditionOverview
               threatActor={this.props.threatActor}
+              enableReferences={this.props.enableReferences}
               context={editContext}
+              handleClose={handleClose.bind(this)}
             />
           )}
           {this.state.currentTab === 1 && (
             <ThreatActorEditionDetails
               threatActor={this.props.threatActor}
+              enableReferences={this.props.enableReferences}
               context={editContext}
+              handleClose={handleClose.bind(this)}
             />
           )}
         </div>
@@ -110,6 +114,7 @@ ThreatActorEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   threatActor: PropTypes.object,
+  enableReferences: PropTypes.bool,
   theme: PropTypes.object,
   t: PropTypes.func,
 };

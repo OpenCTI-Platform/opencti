@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { ConnectionHandler } from 'relay-runtime';
 import {
   compose, evolve, path, pluck,
 } from 'ramda';
@@ -29,6 +28,8 @@ import SelectField from '../../../../components/SelectField';
 import { dayStartDate, parse } from '../../../../utils/Time';
 import DatePickerField from '../../../../components/DatePickerField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
+import { insertNode } from '../../../../utils/Store';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -84,6 +85,7 @@ const observedDataCreationMutation = graphql`
 `;
 
 const observedDataValidation = (t) => Yup.object().shape({
+  objects: Yup.array().required(t('This field is required')),
   first_observed: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
@@ -93,16 +95,6 @@ const observedDataValidation = (t) => Yup.object().shape({
   number_observed: Yup.number().required(t('This field is required')),
   confidence: Yup.number(),
 });
-
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_observedDatas',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
 
 class ObservedDataCreation extends Component {
   constructor(props) {
@@ -127,6 +119,7 @@ class ObservedDataCreation extends Component {
         createdBy: path(['value']),
         objectMarking: pluck('value'),
         objectLabel: pluck('value'),
+        objects: pluck('value'),
       },
       values,
     );
@@ -135,17 +128,12 @@ class ObservedDataCreation extends Component {
       variables: {
         input: adaptedValues,
       },
-      updater: (store) => {
-        const payload = store.getRootField('observedDataAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          this.props.paginationOptions,
-          newEdge,
-        );
-      },
+      updater: (store) => insertNode(
+        store,
+        'Pagination_observedDatas',
+        this.props.paginationOptions,
+        'observedDataAdd',
+      ),
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
@@ -189,11 +177,12 @@ class ObservedDataCreation extends Component {
             >
               <Close fontSize="small" />
             </IconButton>
-            <Typography variant="h6">{t('Create a ObservedData')}</Typography>
+            <Typography variant="h6">{t('Create an observed data')}</Typography>
           </div>
           <div className={classes.container}>
             <Formik
               initialValues={{
+                objects: [],
                 first_observed: dayStartDate(),
                 last_observed: dayStartDate(),
                 number_observed: 1,
@@ -214,6 +203,12 @@ class ObservedDataCreation extends Component {
                 values,
               }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
+                  <StixCoreObjectsField
+                    name="objects"
+                    style={{ width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.objects}
+                  />
                   <Field
                     component={DatePickerField}
                     name="first_observed"
@@ -222,6 +217,7 @@ class ObservedDataCreation extends Component {
                       'The value must be a date (YYYY-MM-DD)',
                     )}
                     fullWidth={true}
+                    style={{ marginTop: 20 }}
                   />
                   <Field
                     component={DatePickerField}

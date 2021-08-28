@@ -10,11 +10,16 @@ import {
   externalReferenceEditField,
   findAll,
   findById,
+  externalReferenceAskEnrichment,
+  externalReferenceImportPush,
 } from '../domain/externalReference';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { RELATION_EXTERNAL_REFERENCE } from '../schema/stixMetaRelationship';
 import { buildRefRelationKey } from '../schema/general';
+import { worksForSource } from '../domain/work';
+import { connectorsForEnrichment } from '../domain/enrichment';
+import { filesListing } from '../database/minio';
 
 const externalReferenceResolvers = {
   Query: {
@@ -26,6 +31,13 @@ const externalReferenceResolvers = {
   },
   ExternalReference: {
     editContext: (externalReference) => fetchEditContext(externalReference.id),
+    jobs: (externalReference, args, { user }) => worksForSource(user, externalReference.id, args),
+    connectors: (externalReference, { onlyAlive = false }, { user }) =>
+      connectorsForEnrichment(user, externalReference.entity_type, onlyAlive),
+    importFiles: (entity, { first }, { user }) =>
+      filesListing(user, first, `import/${entity.entity_type}/${entity.id}/`),
+    exportFiles: (entity, { first }, { user }) =>
+      filesListing(user, first, `export/${entity.entity_type}/${entity.id}/`),
   },
   Mutation: {
     externalReferenceEdit: (_, { id }, { user }) => ({
@@ -36,6 +48,8 @@ const externalReferenceResolvers = {
       relationAdd: ({ input }) => externalReferenceAddRelation(user, id, input),
       relationDelete: ({ fromId, relationship_type: relationshipType }) =>
         externalReferenceDeleteRelation(user, id, fromId, relationshipType),
+      askEnrichment: ({ connectorId }) => externalReferenceAskEnrichment(user, id, connectorId),
+      importPush: ({ file }) => externalReferenceImportPush(user, id, file),
     }),
     externalReferenceAdd: (_, { input }, { user }) => addExternalReference(user, input),
   },

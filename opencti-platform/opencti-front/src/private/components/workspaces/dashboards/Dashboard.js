@@ -420,52 +420,108 @@ class DashboardComponent extends Component {
           variant="permanent"
           classes={{ paper: classes.bottomNav }}
         >
-          <Grid container={true} spacing={1}>
-            <Grid item={true} xs="auto">
-              <FormControl style={{ width: 194, marginRight: 20 }}>
-                <InputLabel id="relative">{t('Relative time')}</InputLabel>
-                <Select
-                  labelId="relative"
-                  value={relativeDate === null ? '' : relativeDate}
-                  onChange={this.handleDateChange.bind(this, 'relativeDate')}
-                >
-                  <MenuItem value="none">{t('None')}</MenuItem>
-                  <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
-                  <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
-                  <MenuItem value="months-1">{t('Last month')}</MenuItem>
-                  <MenuItem value="months-6">{t('Last 6 months')}</MenuItem>
-                  <MenuItem value="years-1">{t('Last year')}</MenuItem>
-                </Select>
-              </FormControl>
+          <Security
+            needs={[EXPLORE_EXUPDATE]}
+            placeholder={
+              <Grid container={true} spacing={1}>
+                <Grid item={true} xs="auto">
+                  <FormControl style={{ width: 194, marginRight: 20 }}>
+                    <InputLabel id="relative">{t('Relative time')}</InputLabel>
+                    <Select
+                      labelId="relative"
+                      value={relativeDate === null ? '' : relativeDate}
+                      onChange={this.handleDateChange.bind(
+                        this,
+                        'relativeDate',
+                      )}
+                      disabled={true}
+                    >
+                      <MenuItem value="none">{t('None')}</MenuItem>
+                      <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
+                      <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
+                      <MenuItem value="months-1">{t('Last month')}</MenuItem>
+                      <MenuItem value="months-6">{t('Last 6 months')}</MenuItem>
+                      <MenuItem value="years-1">{t('Last year')}</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item={true} xs="auto">
+                  <DatePicker
+                    value={R.propOr(null, 'startDate', manifest.config)}
+                    disableToolbar={true}
+                    format="YYYY-MM-DD"
+                    autoOk={true}
+                    label={t('Start date')}
+                    clearable={true}
+                    disableFuture={true}
+                    disabled={true}
+                    onChange={this.handleDateChange.bind(this, 'startDate')}
+                    style={{ marginRight: 20 }}
+                  />
+                </Grid>
+                <Grid item={true} xs="auto">
+                  <DatePicker
+                    value={R.propOr(null, 'endDate', manifest.config)}
+                    disableToolbar={true}
+                    format="YYYY-MM-DD"
+                    autoOk={true}
+                    label={t('End date')}
+                    clearable={true}
+                    disabled={true}
+                    disableFuture={true}
+                    onChange={this.handleDateChange.bind(this, 'endDate')}
+                  />
+                </Grid>
+              </Grid>
+            }
+          >
+            <Grid container={true} spacing={1}>
+              <Grid item={true} xs="auto">
+                <FormControl style={{ width: 194, marginRight: 20 }}>
+                  <InputLabel id="relative">{t('Relative time')}</InputLabel>
+                  <Select
+                    labelId="relative"
+                    value={relativeDate === null ? '' : relativeDate}
+                    onChange={this.handleDateChange.bind(this, 'relativeDate')}
+                  >
+                    <MenuItem value="none">{t('None')}</MenuItem>
+                    <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
+                    <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
+                    <MenuItem value="months-1">{t('Last month')}</MenuItem>
+                    <MenuItem value="months-6">{t('Last 6 months')}</MenuItem>
+                    <MenuItem value="years-1">{t('Last year')}</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item={true} xs="auto">
+                <DatePicker
+                  value={R.propOr(null, 'startDate', manifest.config)}
+                  disableToolbar={true}
+                  format="YYYY-MM-DD"
+                  autoOk={true}
+                  label={t('Start date')}
+                  clearable={true}
+                  disableFuture={true}
+                  disabled={relativeDate !== null}
+                  onChange={this.handleDateChange.bind(this, 'startDate')}
+                  style={{ marginRight: 20 }}
+                />
+              </Grid>
+              <Grid item={true} xs="auto">
+                <DatePicker
+                  value={R.propOr(null, 'endDate', manifest.config)}
+                  disableToolbar={true}
+                  format="YYYY-MM-DD"
+                  autoOk={true}
+                  label={t('End date')}
+                  clearable={true}
+                  disabled={relativeDate !== null}
+                  disableFuture={true}
+                  onChange={this.handleDateChange.bind(this, 'endDate')}
+                />
+              </Grid>
             </Grid>
-            <Grid item={true} xs="auto">
-              <DatePicker
-                value={R.propOr(null, 'startDate', manifest.config)}
-                disableToolbar={true}
-                format="YYYY-MM-DD"
-                autoOk={true}
-                label={t('Start date')}
-                clearable={true}
-                disableFuture={true}
-                disabled={relativeDate !== null}
-                onChange={this.handleDateChange.bind(this, 'startDate')}
-                style={{ marginRight: 20 }}
-              />
-            </Grid>
-            <Grid item={true} xs="auto">
-              <DatePicker
-                value={R.propOr(null, 'endDate', manifest.config)}
-                disableToolbar={true}
-                format="YYYY-MM-DD"
-                autoOk={true}
-                label={t('End date')}
-                clearable={true}
-                disabled={relativeDate !== null}
-                disableFuture={true}
-                onChange={this.handleDateChange.bind(this, 'endDate')}
-              />
-            </Grid>
-          </Grid>
+          </Security>
         </Drawer>
         <Security
           needs={[EXPLORE_EXUPDATE]}

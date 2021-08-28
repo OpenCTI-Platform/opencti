@@ -1,8 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 import { generateAliasesId, normalizeName } from '../../../src/schema/identifier';
 import { cleanStixIds } from '../../../src/database/stix';
-import { relationTypeToInputName } from '../../../src/database/utils';
 import { generateInternalType } from '../../../src/schema/schemaUtils';
+import { STIX_META_RELATION_TO_OPENCTI_INPUT } from '../../../src/schema/stixMetaRelationship';
 
 test('should name correctly normalize', () => {
   let normalize = normalizeName('My data %test     ');
@@ -142,8 +142,11 @@ test('should multi stix id correctly max sized', () => {
 });
 
 test('should relation to input name', () => {
-  const name = relationTypeToInputName('object-marking');
+  let name = STIX_META_RELATION_TO_OPENCTI_INPUT['object-marking'];
   expect(name).toEqual('objectMarking');
+  // eslint-disable-next-line dot-notation
+  name = STIX_META_RELATION_TO_OPENCTI_INPUT['object'];
+  expect(name).toEqual('objects');
 });
 
 test('should stix type converter work', () => {

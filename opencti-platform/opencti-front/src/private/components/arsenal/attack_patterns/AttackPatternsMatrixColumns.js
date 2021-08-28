@@ -4,6 +4,7 @@ import * as R from 'ramda';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withTheme, withStyles } from '@material-ui/core';
+import { Link } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 import { attackPatternsLinesQuery } from './AttackPatternsLines';
 import { computeLevel } from '../../../../utils/Number';
@@ -62,11 +63,13 @@ const styles = (theme) => ({
     margin: '0 5px 0 5px',
   },
   element: {
+    color: theme.palette.text.primary,
     padding: 10,
     width: '100%',
     whiteSpace: 'normal',
     backgroundColor: theme.palette.background.paper,
     verticalAlign: 'top',
+    cursor: 'pointer',
   },
   name: {
     fontSize: 10,
@@ -75,7 +78,8 @@ const styles = (theme) => ({
 });
 
 const colors = (defaultColor) => [
-  [defaultColor, 'transparent'],
+  [defaultColor, 'transparent', 'rgba(255,255,255,0.1)'],
+  ['#ffffff', 'rgba(255,255,255,0.2)'],
   ['#fff59d', 'rgba(255,245,157,0.2)'],
   ['#ffe082', 'rgba(255,224,130,0.2)'],
   ['#ffb300', 'rgba(255,179,0,0.2)'],
@@ -89,7 +93,8 @@ const colors = (defaultColor) => [
 ];
 
 const colorsReversed = (defaultColor) => [
-  [defaultColor, 'transparent'],
+  [defaultColor, 'transparent', 'rgba(255,255,255,0.1)'],
+  ['#ffffff', 'rgba(255,255,255,0.2)'],
   ['#c5e1a5', 'rgba(197,225,165,0.2)'],
   ['#aed581', 'rgba(174,213,129,0.2)'],
   ['#9ccc65', 'rgba(156,204,101,0.2)'],
@@ -109,7 +114,14 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       currentModeOnlyActive: false,
       currentColorsReversed: false,
       currentKillChain: 'mitre-attack',
+      hover: {},
     };
+  }
+
+  handleToggleHover(elementId) {
+    const { hover } = this.state;
+    hover[elementId] = hover[elementId] !== true;
+    this.setState({ hover });
   }
 
   handleToggleModeOnlyActive() {
@@ -158,6 +170,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       currentColorsReversed,
       currentModeOnlyActive,
     } = this.props;
+    const { hover } = this.state;
     let changeKillChain = handleChangeKillChain;
     if (typeof changeKillChain !== 'function') {
       changeKillChain = this.handleChangeKillChain;
@@ -187,7 +200,9 @@ class AttackPatternsMatrixColumnsComponent extends Component {
     const filterByKeyword = (n) => searchTerm === ''
       || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
       || n.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-      || n.x_mitre_id.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || R.propOr('', 'x_mitre_id', n)
+        .toLowerCase()
+        .indexOf(searchTerm.toLowerCase()) !== -1
       || R.propOr('', 'subattackPatterns_text', n)
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1;
@@ -293,28 +308,41 @@ class AttackPatternsMatrixColumnsComponent extends Component {
           <div className={classes.body}>
             {attackPatternsOfPhases.map((k) => (
               <div key={k.id} className={classes.column}>
-                {k.attackPatterns.map((a) => (
-                  <div
-                    key={a.id}
-                    className={classes.element}
-                    style={{
-                      border: `1px solid ${
-                        modeColorsReversed
-                          ? colorsReversed(theme.palette.background.chip)[
-                            a.level
-                          ][0]
-                          : colors(theme.palette.background.chip)[a.level][0]
-                      }`,
-                      backgroundColor: modeColorsReversed
-                        ? colorsReversed(theme.palette.background.chip)[
-                          a.level
-                        ][1]
-                        : colors(theme.palette.background.chip)[a.level][1],
-                    }}
-                  >
-                    <div className={classes.name}>{a.name}</div>
-                  </div>
-                ))}
+                {k.attackPatterns.map((a) => {
+                  const isHover = hover[a.id] === true;
+                  const level = isHover && a.level !== 0 ? a.level - 1 : a.level;
+                  const position = isHover && level === 0 ? 2 : 1;
+                  return (
+                    <Link
+                      key={a.id}
+                      to={`/dashboard/arsenal/attack_patterns/${a.id}`}
+                    >
+                      <div
+                        className={classes.element}
+                        style={{
+                          border: `1px solid ${
+                            modeColorsReversed
+                              ? colorsReversed(theme.palette.background.chip)[
+                                level
+                              ][0]
+                              : colors(theme.palette.background.chip)[level][0]
+                          }`,
+                          backgroundColor: modeColorsReversed
+                            ? colorsReversed(theme.palette.background.chip)[
+                              level
+                            ][position]
+                            : colors(theme.palette.background.chip)[level][
+                              position
+                            ],
+                        }}
+                        onMouseEnter={this.handleToggleHover.bind(this, a.id)}
+                        onMouseLeave={this.handleToggleHover.bind(this, a.id)}
+                      >
+                        <div className={classes.name}>{a.name}</div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             ))}
           </div>

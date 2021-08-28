@@ -84,7 +84,7 @@ describe('stixSightingRelationship resolver standard behavior', () => {
   });
   it('should update stixSightingRelationship', async () => {
     const UPDATE_QUERY = gql`
-      mutation stixSightingRelationshipEdit($id: ID!, $input: EditInput!) {
+      mutation stixSightingRelationshipEdit($id: ID!, $input: [EditInput]!) {
         stixSightingRelationshipEdit(id: $id) {
           fieldPatch(input: $input) {
             id

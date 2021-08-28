@@ -1,6 +1,15 @@
 import * as R from 'ramda';
 import { UnsupportedError } from '../config/errors';
-import { INTERNAL_IDS_ALIASES, IDS_STIX } from './general';
+import {
+  INTERNAL_IDS_ALIASES,
+  IDS_STIX,
+  RULE_PREFIX,
+  INPUT_MARKINGS,
+  INPUT_OBJECTS,
+  INPUT_LABELS,
+  INPUT_EXTERNAL_REFS,
+  INPUT_KILLCHAIN,
+} from './general';
 import { STANDARD_HASHES } from './identifier';
 import { isDatedInternalObject } from './internalObject';
 import { isStixCoreObject } from './stixCoreObject';
@@ -9,7 +18,7 @@ import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isStixMetaObject } from './stixMetaObject';
 import { isStixDomainObject } from './stixDomainObject';
 
-export const multipleAttributes = [
+const multipleAttributes = [
   IDS_STIX,
   'aliases',
   INTERNAL_IDS_ALIASES,
@@ -35,13 +44,19 @@ export const multipleAttributes = [
   'x_mitre_permissions_required',
   'x_opencti_aliases',
   'x_opencti_additional_names',
-  'labels',
-  'external_references',
-  'kill_chain_phases',
   'tags',
   'bookmarks',
   'protocols',
   'x_opencti_log_sources',
+  'x_opencti_stix_ids',
+  'options',
+  'entities_ids',
+  // meta
+  INPUT_OBJECTS,
+  INPUT_MARKINGS,
+  INPUT_LABELS,
+  INPUT_EXTERNAL_REFS,
+  INPUT_KILLCHAIN,
 ];
 export const statsDateAttributes = [
   'created_at',
@@ -53,6 +68,9 @@ export const statsDateAttributes = [
   'valid_from',
   'valid_until',
 ];
+export const dateForStartAttributes = ['first_seen', 'start_time', 'valid_from'];
+export const dateForEndAttributes = ['last_seen', 'stop_time', 'valid_until'];
+export const dateForLimitsAttributes = [...dateForStartAttributes, ...dateForEndAttributes];
 export const dateAttributes = [
   'created',
   'modified',
@@ -87,6 +105,7 @@ export const dateAttributes = [
   'received_time',
   'processed_time',
   'completed_time',
+  'last_run',
 ];
 export const numericAttributes = [
   'attribute_order',
@@ -119,13 +138,17 @@ export const booleanAttributes = [
   'can_escalate_privs',
   'is_disabled',
   'is_self_signed',
+  'platform_enable_references',
+  'auto_new_marking',
 ];
 export const numericOrBooleanAttributes = [...numericAttributes, ...booleanAttributes];
 export const dictAttributes = { hashes: { key: 'algorithm', value: 'hash' } };
 
 export const isDictionaryAttribute = (key) => dictAttributes[key];
 export const isBooleanAttribute = (key) => booleanAttributes.includes(key);
-export const isMultipleAttribute = (key) => multipleAttributes.includes(key);
+export const isNumericAttribute = (key) => numericAttributes.includes(key);
+export const isDateAttribute = (key) => dateAttributes.includes(key);
+export const isMultipleAttribute = (key) => key.startsWith(RULE_PREFIX) || multipleAttributes.includes(key);
 
 // Must be call as soon as possible in the according resolvers
 export const apiAttributeToComplexFormat = (attribute, data) => {

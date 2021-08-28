@@ -15,6 +15,7 @@ import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/Sti
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
 const styles = () => ({
   container: {
@@ -47,6 +48,17 @@ class IntrusionSetKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/sightings/:sightingId"
+            render={(routeProps) => (
+              <StixSightingRelationship
+                entityId={intrusionSet.id}
+                paddingRight={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/overview"
             render={(routeProps) => (
               <StixDomainObjectThreatKnowledge
@@ -63,7 +75,22 @@ class IntrusionSetKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={intrusionSet.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={['Stix-Domain-Object']}
+                targetStixDomainObjectTypes={[
+                  'Threat-Actor',
+                  'Intrusion-Set',
+                  'Campaign',
+                  'Incident',
+                  'Malware',
+                  'Tool',
+                  'Vulnerability',
+                  'Individual',
+                  'Organization',
+                  'Sector',
+                  'Region',
+                  'Country',
+                  'City',
+                  'Position',
+                ]}
                 entityLink={link}
                 allDirections={true}
                 {...routeProps}

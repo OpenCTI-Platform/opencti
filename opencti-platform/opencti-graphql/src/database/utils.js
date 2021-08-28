@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import moment from 'moment';
-import { DatabaseError, FunctionalError } from '../config/errors';
+import { DatabaseError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject } from '../schema/stixDomainObject';
@@ -23,13 +23,14 @@ import { isInternalRelationship } from '../schema/internalRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
-import {
-  isStixInternalMetaRelationship,
-  isStixMetaRelationship,
-  RELATION_OBJECT_LABEL,
-} from '../schema/stixMetaRelationship';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE } from './rabbitmq';
+import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from './rabbitmq';
+import conf from '../config/conf';
+
+export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
+export const SYNC_USER_EMAIL = 'sync@opencti.io';
+export const SYNC_USER_TOKEN = '579240ac-498d-4492-85f9-59b158efcba9';
 
 // Operations definition
 export const UPDATE_OPERATION_ADD = 'add';
@@ -38,33 +39,33 @@ export const UPDATE_OPERATION_REMOVE = 'remove';
 export const UPDATE_OPERATION_CHANGE = 'change';
 
 // Entities
-export const INDEX_HISTORY = 'opencti_history';
+export const INDEX_HISTORY = `${ES_INDEX_PREFIX}_history`;
 export const READ_INDEX_HISTORY = `${INDEX_HISTORY}*`;
-export const INDEX_INTERNAL_OBJECTS = 'opencti_internal_objects';
+export const INDEX_INTERNAL_OBJECTS = `${ES_INDEX_PREFIX}_internal_objects`;
 export const READ_INDEX_INTERNAL_OBJECTS = `${INDEX_INTERNAL_OBJECTS}*`;
-const INDEX_STIX_META_OBJECTS = 'opencti_stix_meta_objects';
+const INDEX_STIX_META_OBJECTS = `${ES_INDEX_PREFIX}_stix_meta_objects`;
 export const READ_INDEX_STIX_META_OBJECTS = `${INDEX_STIX_META_OBJECTS}*`;
-const INDEX_STIX_DOMAIN_OBJECTS = 'opencti_stix_domain_objects';
+const INDEX_STIX_DOMAIN_OBJECTS = `${ES_INDEX_PREFIX}_stix_domain_objects`;
 export const READ_INDEX_STIX_DOMAIN_OBJECTS = `${INDEX_STIX_DOMAIN_OBJECTS}*`;
-const INDEX_STIX_CYBER_OBSERVABLES = 'opencti_stix_cyber_observables';
+const INDEX_STIX_CYBER_OBSERVABLES = `${ES_INDEX_PREFIX}_stix_cyber_observables`;
 export const READ_INDEX_STIX_CYBER_OBSERVABLES = `${INDEX_STIX_CYBER_OBSERVABLES}*`;
 
 // Relations
-const INDEX_INTERNAL_RELATIONSHIPS = 'opencti_internal_relationships';
+const INDEX_INTERNAL_RELATIONSHIPS = `${ES_INDEX_PREFIX}_internal_relationships`;
 export const READ_INDEX_INTERNAL_RELATIONSHIPS = `${INDEX_INTERNAL_RELATIONSHIPS}*`;
-const INDEX_STIX_CORE_RELATIONSHIPS = 'opencti_stix_core_relationships';
+const INDEX_STIX_CORE_RELATIONSHIPS = `${ES_INDEX_PREFIX}_stix_core_relationships`;
 export const READ_INDEX_STIX_CORE_RELATIONSHIPS = `${INDEX_STIX_CORE_RELATIONSHIPS}*`;
-const INDEX_STIX_SIGHTING_RELATIONSHIPS = 'opencti_stix_sighting_relationships';
+const INDEX_STIX_SIGHTING_RELATIONSHIPS = `${ES_INDEX_PREFIX}_stix_sighting_relationships`;
 export const READ_INDEX_STIX_SIGHTING_RELATIONSHIPS = `${INDEX_STIX_SIGHTING_RELATIONSHIPS}*`;
-const INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = 'opencti_stix_cyber_observable_relationships';
+const INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = `${ES_INDEX_PREFIX}_stix_cyber_observable_relationships`;
 export const READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = `${INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS}*`;
-const INDEX_STIX_META_RELATIONSHIPS = 'opencti_stix_meta_relationships';
+const INDEX_STIX_META_RELATIONSHIPS = `${ES_INDEX_PREFIX}_stix_meta_relationships`;
 export const READ_INDEX_STIX_META_RELATIONSHIPS = `${INDEX_STIX_META_RELATIONSHIPS}*`;
 
 // Inferences
-export const INDEX_INFERRED_ENTITIES = 'opencti_inferred_entities';
+export const INDEX_INFERRED_ENTITIES = `${ES_INDEX_PREFIX}_inferred_entities`;
 export const READ_INDEX_INFERRED_ENTITIES = `${INDEX_INFERRED_ENTITIES}*`;
-export const INDEX_INFERRED_RELATIONSHIPS = 'opencti_inferred_relationships';
+export const INDEX_INFERRED_RELATIONSHIPS = `${ES_INDEX_PREFIX}_inferred_relationships`;
 export const READ_INDEX_INFERRED_RELATIONSHIPS = `${INDEX_INFERRED_RELATIONSHIPS}*`;
 export const isInferredIndex = (index) =>
   index.startsWith(INDEX_INFERRED_ENTITIES) || index.startsWith(INDEX_INFERRED_RELATIONSHIPS);
@@ -208,6 +209,7 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
   // Inferred support
   if (inferred) {
     if (isStixCoreRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
+    if (isStixSightingRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
     throw DatabaseError(`Cant find inferred index for type ${conceptType}`);
   }
   // Entities
@@ -297,73 +299,61 @@ const extractEntityMainValue = (entityData) => {
   return mainValue;
 };
 
-export const relationTypeToInputName = (type) => {
-  let inputName = '';
-  const isMeta = isStixInternalMetaRelationship(type) && type !== RELATION_OBJECT_LABEL;
-  const elements = type.split('-');
-  for (let index = 0; index < elements.length; index += 1) {
-    const element = elements[index];
-    if (index > 0) {
-      inputName += element.charAt(0).toUpperCase() + element.slice(1);
-    } else {
-      inputName += element;
-    }
-  }
-  return inputName + (isMeta ? 's' : '');
-};
-
-const valToMessage = (val) => {
-  if (Array.isArray(val)) {
-    const values = R.filter((v) => isNotEmptyField(v), val);
-    return values.length > 0 ? values.map((item) => valToMessage(item)) : null;
-  }
-  if (val && typeof val === 'object') {
-    const valEntries = R.filter(([, v]) => isNotEmptyField(v), Object.entries(val));
-    return valEntries.map(([k, v]) => `${k}: ${v}`).join(', ');
-  }
-  return isNotEmptyField(val) ? val.toString() : null;
-};
-
-export const generateLogMessage = (type, instance, input = null) => {
+export const generateMergeMessage = (instance, sources) => {
   const name = extractEntityMainValue(instance);
-  if (type === EVENT_TYPE_MERGE) {
-    const sourcesNames = input.map((source) => extractEntityMainValue(source)).join(', ');
-    return `${type}s ${instance.entity_type} \`${sourcesNames}\` in \`${name}\``;
-  }
-  if (type === EVENT_TYPE_CREATE || type === EVENT_TYPE_DELETE) {
-    if (isStixObject(instance.entity_type)) {
-      let entityType = instance.entity_type;
-      if (entityType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
-        entityType = 'File';
-      }
-      return `${type}s a ${entityType} \`${name}\``;
+  const sourcesNames = sources.map((source) => extractEntityMainValue(source)).join(', ');
+  return `$merges ${instance.entity_type} \`${sourcesNames}\` in \`${name}\``;
+};
+const generateCreateDeleteMessage = (type, instance) => {
+  const name = extractEntityMainValue(instance);
+  if (isStixObject(instance.entity_type)) {
+    let entityType = instance.entity_type;
+    if (entityType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
+      entityType = 'File';
     }
-    // Relation
-    const from = extractEntityMainValue(instance.from);
-    let fromType = instance.from.entity_type;
-    if (fromType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
-      fromType = 'File';
-    }
-    const to = extractEntityMainValue(instance.to);
-    let toType = instance.to.entity_type;
-    if (toType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
-      toType = 'File';
-    }
-    return `${type}s the relation ${instance.entity_type} from \`${from}\` (${fromType}) to \`${to}\` (${toType})`;
+    return `${type}s a ${entityType} \`${name}\``;
   }
-  if (
-    type === UPDATE_OPERATION_REPLACE ||
-    type === UPDATE_OPERATION_ADD ||
-    type === UPDATE_OPERATION_REMOVE ||
-    type === UPDATE_OPERATION_CHANGE
-  ) {
-    const joiner = type === UPDATE_OPERATION_REPLACE ? 'by' : 'value';
-    const fieldMessage = R.map(([key, val]) => {
-      return `\`${key}\` ${joiner} \`${valToMessage(val) || 'nothing'}\``;
-    }, Object.entries(input)).join(', ');
-    return `${type}s the ${fieldMessage}`;
+  // Relation
+  const from = extractEntityMainValue(instance.from);
+  let fromType = instance.from.entity_type;
+  if (fromType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
+    fromType = 'File';
   }
-  throw FunctionalError(`Cant generated message for event type ${type}`);
+  const to = extractEntityMainValue(instance.to);
+  let toType = instance.to.entity_type;
+  if (toType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
+    toType = 'File';
+  }
+  return `${type}s the relation ${instance.entity_type} from \`${from}\` (${fromType}) to \`${to}\` (${toType})`;
+};
+export const generateCreateMessage = (instance) => {
+  return generateCreateDeleteMessage(EVENT_TYPE_CREATE, instance);
+};
+export const generateDeleteMessage = (instance) => {
+  return generateCreateDeleteMessage(EVENT_TYPE_DELETE, instance);
+};
+export const generateUpdateMessage = (patch) => {
+  const patchElements = Object.entries(patch);
+  return patchElements
+    .map(([operation, element]) => {
+      const elemEntries = Object.entries(element);
+      return `${operation}s ${elemEntries.map(([key, val]) => {
+        const values = Array.isArray(val) ? val : [val];
+        const valMessage = values
+          .map((v) => {
+            if (operation === UPDATE_OPERATION_REPLACE) {
+              if (Array.isArray(v.current)) {
+                return v.current.map((c) => c.reference || c.value || c);
+              }
+              return v.reference?.value || v.current?.value || v.current;
+            }
+            return v.reference || v.value || v;
+          })
+          .join(', ');
+        return `\`${valMessage || 'nothing'}\` in \`${key}\``;
+      })}`;
+    })
+    .join(', ');
 };
 
 export const pascalize = (s) => {
@@ -371,3 +361,10 @@ export const pascalize = (s) => {
     return g1.toUpperCase() + g2.toLowerCase();
   });
 };
+
+export const computeAverage = (numbers) => {
+  const sum = numbers.reduce((a, b) => a + b, 0);
+  return Math.round(sum / numbers.length || 0);
+};
+
+export const isSyncTesting = (user) => user.api_token === SYNC_USER_TOKEN;

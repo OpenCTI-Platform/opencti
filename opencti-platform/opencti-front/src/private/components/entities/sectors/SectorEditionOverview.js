@@ -28,7 +28,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 const sectorMutationFieldPatch = graphql`
   mutation SectorEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: EditInput!
+    $input: [EditInput]!
   ) {
     sectorEdit(id: $id) {
       fieldPatch(input: $input) {
@@ -136,43 +136,12 @@ class SectorEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { sector } = this.props;
-    const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'name'], sector),
-      value: pathOr(null, ['createdBy', 'id'], sector),
-    };
-
-    if (currentCreatedBy.value === null) {
+    if (!this.props.enableReferences) {
       commitMutation({
-        mutation: sectorMutationRelationAdd,
+        mutation: sectorMutationFieldPatch,
         variables: {
           id: this.props.sector.id,
-          input: {
-            toId: value.value,
-            relationship_type: 'created-by',
-          },
-        },
-      });
-    } else if (currentCreatedBy.value !== value.value) {
-      commitMutation({
-        mutation: sectorMutationRelationDelete,
-        variables: {
-          id: this.props.sector.id,
-          relationId: currentCreatedBy.relation,
-        },
-        onCompleted: () => {
-          if (value.value) {
-            commitMutation({
-              mutation: sectorMutationRelationAdd,
-              variables: {
-                id: this.props.sector.id,
-                input: {
-                  toId: value.value,
-                  relationship_type: 'created-by',
-                },
-              },
-            });
-          }
+          input: { key: 'createdBy', value: value.value },
         },
       });
     }

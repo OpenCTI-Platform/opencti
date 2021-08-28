@@ -27,13 +27,12 @@ import {
 } from '../domain/stixCyberObservable';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { convertDataToStix } from '../database/stix';
 import { stixCoreRelationships } from '../domain/stixCoreObject';
 import { filesListing } from '../database/minio';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { complexAttributeToApiFormat } from '../schema/fieldDataAdapter';
 import { stixCyberObservableOptions } from '../schema/stixCyberObservable';
-import { batchLoader } from '../database/middleware';
+import { batchLoader, convertDataToRawStix } from '../database/middleware';
 
 const indicatorsLoader = batchLoader(batchIndicators);
 
@@ -66,7 +65,7 @@ const stixCyberObservableResolvers = {
     observable_value: (stixCyberObservable) => observableValue(stixCyberObservable),
     indicators: (stixCyberObservable, _, { user }) => indicatorsLoader.load(stixCyberObservable.id, user),
     stixCoreRelationships: (rel, args, { user }) => stixCoreRelationships(user, rel.id, args),
-    toStix: (stixCyberObservable) => JSON.stringify(convertDataToStix(stixCyberObservable)),
+    toStix: (stixCyberObservable, _, { user }) => convertDataToRawStix(user, stixCyberObservable.id),
   },
   Artifact: {
     importFiles: (stixCyberObservable, { first }, { user }) =>
@@ -75,7 +74,7 @@ const stixCyberObservableResolvers = {
   Mutation: {
     stixCyberObservableEdit: (_, { id }, { user }) => ({
       delete: () => stixCyberObservableDelete(user, id),
-      fieldPatch: ({ input, operation }) => stixCyberObservableEditField(user, id, input, { operation }),
+      fieldPatch: ({ input, commitMessage }) => stixCyberObservableEditField(user, id, input, { commitMessage }),
       contextPatch: ({ input }) => stixCyberObservableEditContext(user, id, input),
       contextClean: () => stixCyberObservableCleanContext(user, id),
       relationAdd: ({ input }) => stixCyberObservableAddRelation(user, id, input),

@@ -28,7 +28,6 @@ import {
 import { buildRefRelationKey } from '../schema/general';
 import { distributionEntities } from '../database/middleware';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-import { UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 const reportResolvers = {
   Query: {
@@ -74,8 +73,7 @@ const reportResolvers = {
   Mutation: {
     reportEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, operation = UPDATE_OPERATION_REPLACE }) =>
-        stixDomainObjectEditField(user, id, input, { operation }),
+      fieldPatch: ({ input, commitMessage }) => stixDomainObjectEditField(user, id, input, { commitMessage }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),

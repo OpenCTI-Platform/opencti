@@ -13,11 +13,16 @@ import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { PROVIDERS } from '../config/providers';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { elAggregationCount } from '../database/elasticSearch';
 
 const settingsResolvers = {
   Query: {
     about: () => getApplicationInfo(),
     settings: () => getSettings(),
+  },
+  AppDebugStatistics: {
+    objects: (_, __, { user }) => elAggregationCount(user, 'Stix-Object', 'entity_type'),
+    relationships: (_, __, { user }) => elAggregationCount(user, 'stix-relationship', 'entity_type'),
   },
   Settings: {
     platform_providers: () => PROVIDERS,

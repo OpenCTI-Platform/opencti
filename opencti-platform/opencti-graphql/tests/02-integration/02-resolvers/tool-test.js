@@ -105,7 +105,7 @@ describe('Tool resolver standard behavior', () => {
   });
   it('should update tool', async () => {
     const UPDATE_QUERY = gql`
-      mutation ToolEdit($id: ID!, $input: EditInput!) {
+      mutation ToolEdit($id: ID!, $input: [EditInput]!) {
         toolEdit(id: $id) {
           fieldPatch(input: $input) {
             id

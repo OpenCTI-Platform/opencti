@@ -9,7 +9,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import IncidentEditionContainer from './IncidentEditionContainer';
-import { IncidentEditionOverviewFocus } from './IncidentEditionOverview';
+import { incidentEditionOverviewFocus } from './IncidentEditionOverview';
 import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
@@ -37,6 +37,9 @@ export const IncidentEditionQuery = graphql`
     incident(id: $id) {
       ...IncidentEditionContainer_incident
     }
+    settings {
+      platform_enable_references
+    }
   }
 `;
 
@@ -52,7 +55,7 @@ class IncidentEdition extends Component {
 
   handleClose() {
     commitMutation({
-      mutation: IncidentEditionOverviewFocus,
+      mutation: incidentEditionOverviewFocus,
       variables: {
         id: this.props.incidentId,
         input: { focusOn: '' },
@@ -87,6 +90,7 @@ class IncidentEdition extends Component {
                 return (
                   <IncidentEditionContainer
                     incident={props.incident}
+                    enableReferences={props.settings.platform_enable_references}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

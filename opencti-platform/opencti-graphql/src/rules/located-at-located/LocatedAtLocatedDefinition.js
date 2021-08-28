@@ -3,10 +3,16 @@ import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 const id = 'location_location';
 const name = 'Location via location';
 const description =
-  'If `entity A` is **located-at** `entity B` and `entity B` ' +
-  'is **located-at** `entity C`, then `entity A` is **located-at** `entity C`.';
-const scopeFields = [];
-const scopeFilters = { types: [RELATION_LOCATED_AT] };
+  'If **entity A** is `located-at` **entity B** and **entity B** ' +
+  'is `located-at` **entity C**, then **entity A** is `located-at` **entity C**.';
 
-const definition = { id, name, description, scopeFields, scopeFilters };
+// For rescan
+const scan = { types: [RELATION_LOCATED_AT] };
+
+// For live
+const filters = { types: [RELATION_LOCATED_AT] };
+const attributes = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];
+const scopes = [{ filters, attributes }];
+
+const definition = { id, name, description, scan, scopes };
 export default definition;

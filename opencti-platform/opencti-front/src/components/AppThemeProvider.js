@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { pathOr } from 'ramda';
-import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import { UserContext } from '../utils/Security';
 import themeDark from './ThemeDark';
 import themeLight from './ThemeLight';
@@ -52,11 +52,11 @@ const AppThemeProvider = (props) => {
     ['settings', 'platform_theme_light_secondary'],
     props,
   );
-  let muiTheme = createMuiTheme(
+  let muiTheme = createTheme(
     themeDark(platformThemeDarkLogo, platformThemeDarkPrimary, platformThemeDarkSecondary),
   );
   if (theme === 'light') {
-    muiTheme = createMuiTheme(
+    muiTheme = createTheme(
       themeLight(platformThemeLightLogo, platformThemeLightPrimary, platformThemeLightSecondary),
     );
   }

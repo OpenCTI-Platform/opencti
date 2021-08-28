@@ -1,26 +1,17 @@
 /* eslint-disable camelcase */
-import {
-  createInferredRelation,
-  deleteInferredRuleElement,
-  internalLoadById,
-  listAllRelations,
-} from '../../database/middleware';
-import { extractFieldsOfPatch } from '../../graphql/sseMiddleware';
-import { getTypeFromStixId } from '../../schema/schemaUtils';
-import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { createInferredRelation, deleteInferredRuleElement, listAllRelations } from '../../database/middleware';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
 import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
 import def from './ObservableRelatedDefinition';
-import { createRulePatch, RULE_MANAGER_USER } from '../RuleUtils';
+import { createRuleContent, RULE_MANAGER_USER, RULES_DECLARATION } from '../rules';
+import { computeAverage } from '../../database/utils';
 
 const ruleRelatedObservableBuilder = () => {
-  // config
-  const relationType = RELATION_RELATED_TO;
-  const listenedFields = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];
-  // execution
-  const applyUpsert = async (markings, data) => {
+  // Execution
+  const applyUpsert = async (data) => {
     const events = [];
-    const { x_opencti_source_ref: sourceRef, x_opencti_target_ref: targetRef, x_opencti_id: createdId } = data;
+    const { x_opencti_id: createdId, object_marking_refs: markings } = data;
+    const { x_opencti_source_ref: sourceRef, x_opencti_target_ref: targetRef } = data;
     const { confidence: createdConfidence, start_time: startTime, stop_time: stopTime } = data;
     const creationRange = buildPeriodFromDates(startTime, stopTime);
     // Need to find every other relations
@@ -30,55 +21,51 @@ const ruleRelatedObservableBuilder = () => {
         const { id: foundRelationId, toId, confidence, start_time, stop_time, object_marking_refs } = rels[relIndex];
         const existingRange = buildPeriodFromDates(start_time, stop_time);
         const range = computeRangeIntersection(creationRange, existingRange);
-        // We do not need to propagate the creation here.
-        // Because created relation have the same type.
+        const elementMarkings = [...(markings || []), ...(object_marking_refs || [])];
+        const computedConfidence = computeAverage([createdConfidence, confidence]);
+        // -----------------------------------------------------------------------------------------------------------
+        // Because of related-to exists both side, we need to force the both directions
+        // -----------------------------------------------------------------------------------------------------------
+        // Create relation FROM = TO
         const dependencies = [sourceRef, createdId, targetRef, foundRelationId, toId];
-        const explanation = [foundRelationId, createdId];
-        const input = {
-          fromId: targetRef,
-          toId,
-          relationship_type: relationType,
-          objectMarking: [...(markings || []), ...(object_marking_refs || [])],
-          confidence: createdConfidence < confidence ? createdConfidence : confidence,
+        // Create the inferred relation
+        const ruleContent = createRuleContent(def.id, dependencies, [foundRelationId, createdId], {
+          confidence: computedConfidence,
           start_time: range.start,
           stop_time: range.end,
-          ...createRulePatch(def.id, dependencies, explanation),
-        };
-        const event = await createInferredRelation(def.id, input);
+          objectMarking: elementMarkings,
+        });
+        const input = { fromId: targetRef, toId, relationship_type: RELATION_RELATED_TO };
+        const event = await createInferredRelation(input, ruleContent);
         if (event) {
           events.push(event);
+        }
+        // -----------------------------------------------------------------------------------------------------------
+        // Create relation TO = FROM
+        // Create the inferred relation
+        const reverseRuleContent = createRuleContent(def.id, dependencies, [createdId, foundRelationId], {
+          confidence: computedConfidence,
+          start_time: range.start,
+          stop_time: range.end,
+          objectMarking: elementMarkings,
+        });
+        const reverseInput = { fromId: toId, toId: targetRef, relationship_type: RELATION_RELATED_TO };
+        const reverseEvent = await createInferredRelation(reverseInput, reverseRuleContent);
+        if (reverseEvent) {
+          events.push(reverseEvent);
         }
       }
     };
     const listFromArgs = { fromId: sourceRef, callback: listFromCallback };
-    await listAllRelations(RULE_MANAGER_USER, relationType, listFromArgs);
+    await listAllRelations(RULE_MANAGER_USER, RELATION_RELATED_TO, listFromArgs);
     return events;
   };
-  const clean = async (element) => deleteInferredRuleElement(def.id, element);
-  const insert = async (element) => {
-    const isCorrectType = element.relationship_type === relationType;
-    const { source_ref: sourceRef, object_marking_refs: markings } = element;
-    const sourceType = sourceRef ? getTypeFromStixId(sourceRef) : null;
-    const isImpactedEvent = isCorrectType && sourceType && isStixCyberObservable(sourceType);
-    if (isImpactedEvent) {
-      return applyUpsert(markings, element);
-    }
-    return [];
-  };
-  const update = async (element) => {
-    const isCorrectType = element.relationship_type === relationType;
-    const { source_ref: sourceRef, object_marking_refs: markings } = element;
-    const sourceType = sourceRef ? getTypeFromStixId(sourceRef) : null;
-    const isImpactedEvent = isCorrectType && sourceType && isStixCyberObservable(sourceType);
-    const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
-    const isImpactedFields = listenedFields.some((f) => patchedFields.includes(f));
-    if (isImpactedEvent && isImpactedFields) {
-      const rel = await internalLoadById(RULE_MANAGER_USER, element.x_opencti_id);
-      return applyUpsert(markings, { ...element, ...rel });
-    }
-    return [];
-  };
+  // Contract
+  const clean = async (element, dependencyId) => deleteInferredRuleElement(def.id, element, dependencyId);
+  const insert = async (element) => applyUpsert(element);
+  const update = async (element) => applyUpsert(element);
   return { ...def, insert, update, clean };
 };
 const RuleObservableRelatedObservable = ruleRelatedObservableBuilder();
-export default RuleObservableRelatedObservable;
+
+RULES_DECLARATION.push(RuleObservableRelatedObservable);

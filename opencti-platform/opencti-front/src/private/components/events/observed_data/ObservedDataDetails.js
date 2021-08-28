@@ -57,10 +57,10 @@ class ObservedDataDetailsComponent extends Component {
           <EntityStixCoreRelationshipsDonut
             variant="inEntity"
             entityId={observedData.id}
-            toTypes={['Stix-Cyber-Observable']}
-            relationshipTypes={['object']}
+            toTypes={['Stix-Core-Object']}
+            relationshipType="object"
             field="entity_type"
-            height={260}
+            height={290}
           />
         </Paper>
       </div>

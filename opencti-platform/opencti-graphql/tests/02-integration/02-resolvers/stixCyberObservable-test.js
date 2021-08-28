@@ -85,7 +85,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
   });
   it('should update stixCyberObservable', async () => {
     const UPDATE_QUERY = gql`
-      mutation StixCyberObservableEdit($id: ID!, $input: EditInput!) {
+      mutation StixCyberObservableEdit($id: ID!, $input: [EditInput]!) {
         stixCyberObservableEdit(id: $id) {
           fieldPatch(input: $input) {
             id

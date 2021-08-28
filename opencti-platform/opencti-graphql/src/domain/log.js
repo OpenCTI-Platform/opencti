@@ -43,12 +43,15 @@ export const logsTimeSeries = (user, args) => {
   return timeSeriesEntities(user, null, filters, args);
 };
 
-export const logsWorkerConfig = () => ({
-  elasticsearch_url: conf.get('elasticsearch:url'),
-  elasticsearch_proxy: conf.get('elasticsearch:proxy') || null,
-  elasticsearch_index: INDEX_HISTORY,
-  elasticsearch_username: conf.get('elasticsearch:username') || null,
-  elasticsearch_password: conf.get('elasticsearch:password') || null,
-  elasticsearch_api_key: conf.get('elasticsearch:api_key') || null,
-  elasticsearch_ssl_reject_unauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
-});
+export const logsWorkerConfig = () => {
+  const elasticSearchUrl = conf.get('elasticsearch:url');
+  return {
+    elasticsearch_url: Array.isArray(elasticSearchUrl) ? elasticSearchUrl : [elasticSearchUrl],
+    elasticsearch_proxy: conf.get('elasticsearch:proxy') || null,
+    elasticsearch_index: INDEX_HISTORY,
+    elasticsearch_username: conf.get('elasticsearch:username') || null,
+    elasticsearch_password: conf.get('elasticsearch:password') || null,
+    elasticsearch_api_key: conf.get('elasticsearch:api_key') || null,
+    elasticsearch_ssl_reject_unauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
+  };
+};

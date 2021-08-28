@@ -15,6 +15,7 @@ import {
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
+import Badge from '@material-ui/core/Badge';
 import Avatar from '@material-ui/core/Avatar';
 import {
   AddOutlined,
@@ -25,6 +26,11 @@ import {
 } from '@material-ui/icons';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip/Tooltip';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
@@ -77,8 +83,21 @@ const styles = (theme) => ({
 });
 
 class StixCoreObjectHistoryLineComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { open: false };
+  }
+
+  handleOpen() {
+    this.setState({ open: true });
+  }
+
+  handleClose() {
+    this.setState({ open: false });
+  }
+
   // eslint-disable-next-line class-methods-use-this
-  renderIcon(eventType, isRelation, eventMesage) {
+  renderIcon(eventType, isRelation, eventMesage, commit) {
     if (isRelation) {
       if (eventType === 'create') {
         return (
@@ -87,7 +106,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
               marginTop: 5,
               backgroundColor: pink[500],
               color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
             }}
+            onClick={() => commit && this.handleOpen()}
           >
             <LinkOutlined />
           </Avatar>
@@ -100,7 +121,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
               marginTop: 5,
               backgroundColor: deepPurple[500],
               color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
             }}
+            onClick={() => commit && this.handleOpen()}
           >
             <LinkOffOutlined />
           </Avatar>
@@ -114,7 +137,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
               marginTop: 5,
               backgroundColor: pink[500],
               color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
             }}
+            onClick={() => commit && this.handleOpen()}
           >
             <AddOutlined />
           </Avatar>
@@ -127,59 +152,69 @@ class StixCoreObjectHistoryLineComponent extends Component {
               marginTop: 5,
               backgroundColor: teal[500],
               color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
             }}
+            onClick={() => commit && this.handleOpen()}
           >
             <Merge />
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('replaces the')) {
+      if (eventType === 'update' && eventMesage.includes('replaces')) {
         return (
           <Avatar
             style={{
               marginTop: 5,
               backgroundColor: green[500],
               color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
             }}
+            onClick={() => commit && this.handleOpen()}
           >
             <EditOutlined />
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('changes the')) {
+      if (eventType === 'update' && eventMesage.includes('changes')) {
         return (
           <Avatar
             style={{
               marginTop: 5,
               backgroundColor: green[500],
               color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
             }}
+            onClick={() => commit && this.handleOpen()}
           >
             <EditOutlined />
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('adds the')) {
+      if (eventType === 'update' && eventMesage.includes('adds')) {
         return (
           <Avatar
             style={{
               marginTop: 5,
               backgroundColor: indigo[500],
               color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
             }}
+            onClick={() => commit && this.handleOpen()}
           >
             <LinkVariantPlus />
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('removes the')) {
+      if (eventType === 'update' && eventMesage.includes('removes')) {
         return (
           <Avatar
             style={{
               marginTop: 5,
               backgroundColor: deepOrange[500],
               color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
             }}
+            onClick={() => commit && this.handleOpen()}
           >
             <LinkVariantRemove />
           </Avatar>
@@ -192,7 +227,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
           marginTop: 5,
           backgroundColor: yellow[800],
           color: '#ffffff',
+          cursor: commit ? 'pointer' : 'auto',
         }}
+        onClick={() => commit && this.handleOpen()}
       >
         <HelpOutlined />
       </Avatar>
@@ -201,16 +238,24 @@ class StixCoreObjectHistoryLineComponent extends Component {
 
   render() {
     const {
-      nsdt, classes, node, isRelation,
+      nsdt, classes, node, isRelation, t,
     } = this.props;
     return (
       <div className={classes.container}>
         <div className={classes.avatar}>
-          {this.renderIcon(
-            node.event_type,
-            isRelation,
-            node.context_data.message,
-          )}
+          <Badge
+            color="secondary"
+            overlap="circle"
+            badgeContent="M"
+            invisible={node.context_data.commit === null}
+          >
+            {this.renderIcon(
+              node.event_type,
+              isRelation,
+              node.context_data.message,
+              node.context_data.commit,
+            )}
+          </Badge>
         </div>
         <div className={classes.content}>
           <Paper classes={{ root: classes.paper }}>
@@ -232,6 +277,21 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Paper>
         </div>
         <div className={classes.line} />
+        <Dialog
+          open={this.state.open}
+          onClose={this.handleClose.bind(this)}
+          fullWidth={true}
+        >
+          <DialogTitle>{t('Commit message')}</DialogTitle>
+          <DialogContent>
+            <Markdown className="markdown">{node.context_data.commit}</Markdown>
+          </DialogContent>
+          <DialogActions>
+            <Button color="primary" onClick={this.handleClose.bind(this)}>
+              {t('Close')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
@@ -258,6 +318,7 @@ const StixCoreObjectHistoryLine = createFragmentContainer(
         }
         context_data {
           message
+          commit
         }
       }
     `,

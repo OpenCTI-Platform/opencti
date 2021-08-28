@@ -27,9 +27,13 @@ import {
 import inject18n from '../../../../components/i18n';
 import FileWork from './FileWork';
 
-const styles = () => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
+    height: 50,
+  },
+  itemNested: {
+    paddingLeft: theme.spacing(4),
     height: 50,
   },
   itemText: {
@@ -94,6 +98,7 @@ class FileLineComponent extends Component {
       disableImport,
       directDownload,
       handleOpenImport,
+      nested,
     } = this.props;
     const { lastModifiedSinceMin, uploadStatus, metaData } = file;
     const { messages, errors } = metaData;
@@ -110,7 +115,7 @@ class FileLineComponent extends Component {
         <ListItem
           divider={true}
           dense={dense === true}
-          classes={{ root: classes.item }}
+          classes={{ root: nested ? classes.itemNested : classes.item }}
           button={true}
           component={Link}
           disabled={isProgress}
@@ -123,11 +128,21 @@ class FileLineComponent extends Component {
           rel="noopener noreferrer"
         >
           <ListItemIcon>
-            {isProgress && <CircularProgress size={20} />}
-            {!isProgress && isFail && (
-              <WarningOutlined style={{ fontSize: 15, color: '#f44336' }} />
+            {isProgress && (
+              <CircularProgress
+                size={20}
+                color={nested ? 'primary' : 'inherit'}
+              />
             )}
-            {!isProgress && !isFail && <FileOutline />}
+            {!isProgress && isFail && (
+              <WarningOutlined
+                color={nested ? 'primary' : 'inherit'}
+                style={{ fontSize: 15, color: '#f44336' }}
+              />
+            )}
+            {!isProgress && !isFail && (
+              <FileOutline color={nested ? 'primary' : 'inherit'} />
+            )}
           </ListItemIcon>
           <Tooltip title={toolTip !== 'null' ? toolTip : ''}>
             <ListItemText
@@ -136,7 +151,7 @@ class FileLineComponent extends Component {
               secondary={fld(propOr(moment(), 'lastModified', file))}
             />
           </Tooltip>
-          <ListItemSecondaryAction style={{ right: 0 }}>
+          <ListItemSecondaryAction>
             {!disableImport && (
               <Tooltip title={t('Launch an import of this file')}>
                 <span>
@@ -144,7 +159,7 @@ class FileLineComponent extends Component {
                     disabled={isProgress || !isImportActive()}
                     onClick={handleOpenImport.bind(this, file)}
                     aria-haspopup="true"
-                    color="primary"
+                    color={nested ? 'inherit' : 'primary'}
                   >
                     <ProgressUpload />
                   </IconButton>
@@ -158,7 +173,7 @@ class FileLineComponent extends Component {
                     disabled={isProgress}
                     href={`${APP_BASE_PATH}/storage/get/${file.id}`}
                     aria-haspopup="true"
-                    color="primary"
+                    color={nested ? 'inherit' : 'primary'}
                   >
                     <GetAppOutlined />
                   </IconButton>
@@ -169,7 +184,7 @@ class FileLineComponent extends Component {
               <Tooltip title={t('Delete this file')}>
                 <span>
                   <IconButton
-                    color="secondary"
+                    color={nested ? 'inherit' : 'primary'}
                     onClick={this.handleRemoveJob.bind(this, file.id)}
                   >
                     <DeleteOutlined />
@@ -181,7 +196,7 @@ class FileLineComponent extends Component {
                 <span>
                   <IconButton
                     disabled={isProgress}
-                    color="primary"
+                    color={nested ? 'inherit' : 'primary'}
                     onClick={this.handleRemoveFile.bind(this, file.id)}
                   >
                     <DeleteOutlined />
@@ -207,6 +222,7 @@ FileLineComponent.propTypes = {
   disableImport: PropTypes.bool,
   directDownload: PropTypes.bool,
   handleOpenImport: PropTypes.func,
+  nested: PropTypes.bool,
 };
 
 const FileLine = createFragmentContainer(FileLineComponent, {

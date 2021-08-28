@@ -10,13 +10,13 @@ import TopBar from '../../nav/TopBar';
 import Report from './Report';
 import ReportPopover from './ReportPopover';
 import ReportKnowledge from './ReportKnowledge';
-import FileManager from '../../common/files/FileManager';
-import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
+import ReportContent from './ReportContent';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -28,6 +28,7 @@ const subscription = graphql`
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
     }
   }
 `;
@@ -42,14 +43,16 @@ const reportQuery = graphql`
       ...ContainerHeader_container
       ...ContainerStixDomainObjects_container
       ...ContainerStixCyberObservables_container
+      ...ReportContent_report
       ...FileImportViewer_entity
       ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
     }
     connectorsForExport {
-      ...FileManager_connectorsExport
+      ...StixCoreObjectFilesAndHistory_connectorsExport
     }
     connectorsForImport {
-      ...FileManager_connectorsImport
+      ...StixCoreObjectFilesAndHistory_connectorsImport
     }
   }
 `;
@@ -140,6 +143,22 @@ class RootReport extends Component {
                     />
                     <Route
                       exact
+                      path="/dashboard/analysis/reports/:reportId/content"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <ContainerHeader
+                            container={props.report}
+                            PopoverComponent={<ReportPopover />}
+                          />
+                          <ReportContent
+                            {...routeProps}
+                            report={props.report}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
                       path="/dashboard/analysis/reports/:reportId/knowledge/:mode"
                       render={(routeProps) => (
                         <ReportKnowledge
@@ -157,29 +176,14 @@ class RootReport extends Component {
                             container={props.report}
                             PopoverComponent={<ReportPopover />}
                           />
-                          <FileManager
+                          <StixCoreObjectFilesAndHistory
                             {...routeProps}
                             id={reportId}
                             connectorsExport={props.connectorsForExport}
                             connectorsImport={props.connectorsForImport}
                             entity={props.report}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/analysis/reports/:reportId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <ContainerHeader
-                            container={props.report}
-                            PopoverComponent={<ReportPopover />}
-                          />
-                          <StixCoreObjectHistory
-                            {...routeProps}
-                            stixCoreObjectId={reportId}
-                            withoutRelations={true}
+                            withoutRelations={false}
+                            bypassEntityId={true}
                           />
                         </React.Fragment>
                       )}

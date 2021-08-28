@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import * as R from 'ramda';
-import { lockResource } from '../database/redis';
+import { buildScanEvent, lockResource } from '../database/redis';
 import {
   ACTION_TYPE_ADD,
   ACTION_TYPE_DELETE,
@@ -21,6 +21,7 @@ import {
 import conf, { logApp } from '../config/conf';
 import { resolveUserById } from '../domain/user';
 import {
+  buildFilters,
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
@@ -41,7 +42,7 @@ import { elPaginate, elUpdate } from '../database/elasticSearch';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_BASIC_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
-import { handleRuleApply, handleRuleClean } from './ruleManager';
+import { rulesCleanHandler, rulesApplyDerivedEvents } from './ruleManager';
 import { getRule } from '../domain/rule';
 
 // Task manager responsible to execute long manual tasks
@@ -69,15 +70,15 @@ const findTaskToExecute = async () => {
 const computeRuleTaskElements = async (user, task) => {
   const { task_position, rule, enable } = task;
   const processingElements = [];
+  const ruleDefinition = await getRule(rule);
   if (enable) {
-    const ruleDefinition = await getRule(rule);
-    const { scopeFilters } = ruleDefinition;
+    const { scan } = ruleDefinition;
     const options = {
       first: MAX_TASK_ELEMENTS,
       orderMode: 'asc',
-      orderBy: 'internal_id',
+      orderBy: 'updated_at',
       after: task_position,
-      ...scopeFilters,
+      ...buildFilters(scan),
     };
     const data = await elPaginate(user, READ_STIX_INDICES, options);
     const elements = data.edges;
@@ -86,7 +87,7 @@ const computeRuleTaskElements = async (user, task) => {
       const element = elements[elementIndex];
       processingElements.push({
         element: element.node,
-        actions: [{ type: ACTION_TYPE_RULE_APPLY }],
+        actions: [{ type: ACTION_TYPE_RULE_APPLY, context: { rule: ruleDefinition } }],
         next: element.cursor,
       });
     }
@@ -95,7 +96,7 @@ const computeRuleTaskElements = async (user, task) => {
     const options = {
       first: MAX_TASK_ELEMENTS,
       orderMode: 'asc',
-      orderBy: 'internal_id',
+      orderBy: 'updated_at',
       after: task_position,
       filters,
     };
@@ -106,7 +107,7 @@ const computeRuleTaskElements = async (user, task) => {
       const element = elements[elementIndex];
       processingElements.push({
         element: element.node,
-        actions: [{ type: ACTION_TYPE_RULE_CLEAR }],
+        actions: [{ type: ACTION_TYPE_RULE_CLEAR, context: { rule: ruleDefinition } }],
         next: element.cursor,
       });
     }
@@ -212,15 +213,19 @@ const executeMerge = async (user, context, element) => {
   await mergeEntities(user, element.internal_id, values);
 };
 
-const executeRuleApply = async (user, element) => {
-  await handleRuleApply(user, element);
+const executeRuleApply = async (user, taskId, context, element) => {
+  const { rule } = context;
+  // Execute rules over one element, act as element creation
+  const event = buildScanEvent(user, element);
+  await rulesApplyDerivedEvents(`task--${taskId}`, [event], [rule]);
 };
 
-const executeRuleClean = async (element) => {
-  await handleRuleClean([element]);
+const executeRuleClean = async (context, taskId, element) => {
+  const { rule } = context;
+  await rulesCleanHandler(`task--${taskId}`, [element], [rule], null);
 };
 
-const executeProcessing = async (user, processingElements) => {
+const executeProcessing = async (user, taskId, processingElements) => {
   const errors = [];
   for (let index = 0; index < processingElements.length; index += 1) {
     const { element, actions } = processingElements[index];
@@ -244,10 +249,10 @@ const executeProcessing = async (user, processingElements) => {
           await executeMerge(user, context, element);
         }
         if (type === ACTION_TYPE_RULE_APPLY) {
-          await executeRuleApply(user, element);
+          await executeRuleApply(user, taskId, context, element);
         }
         if (type === ACTION_TYPE_RULE_CLEAR) {
-          await executeRuleClean(element);
+          await executeRuleClean(context, taskId, element);
         }
       }
     } catch (err) {
@@ -278,6 +283,8 @@ const taskHandler = async () => {
       return;
     }
     // endregion
+    const startPatch = { last_execution_date: now() };
+    await updateTask(task.id, startPatch);
     // Fetch the user responsible for the task
     const rawUser = await resolveUserById(task.initiator_id);
     const user = { ...rawUser, origin: { user_id: rawUser.id, referer: 'background_task' } };
@@ -293,7 +300,7 @@ const taskHandler = async () => {
     }
     // Process the elements (empty = end of execution)
     if (processingElements.length > 0) {
-      const errors = await executeProcessing(user, processingElements);
+      const errors = await executeProcessing(user, task.id, processingElements);
       await appendTaskErrors(task.id, errors);
     }
     // Update the task
@@ -302,7 +309,6 @@ const taskHandler = async () => {
     const patch = {
       task_position: processingElements.length > 0 ? R.last(processingElements).next : null,
       task_processed_number: processedNumber,
-      last_execution_date: now(),
       completed: processingElements.length < MAX_TASK_ELEMENTS,
     };
     await updateTask(task.id, patch);
@@ -340,5 +346,6 @@ const initTaskManager = () => {
     },
   };
 };
+const taskManager = initTaskManager();
 
-export default initTaskManager;
+export default taskManager;

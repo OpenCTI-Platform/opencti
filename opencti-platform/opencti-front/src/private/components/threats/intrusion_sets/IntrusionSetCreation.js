@@ -13,7 +13,6 @@ import {
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
-import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -22,6 +21,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import { insertNode } from '../../../../utils/Store';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -85,16 +85,6 @@ const intrusionSetValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_intrusionSets',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 class IntrusionSetCreation extends Component {
   constructor(props) {
     super(props);
@@ -123,17 +113,12 @@ class IntrusionSetCreation extends Component {
       variables: {
         input: adaptedValues,
       },
-      updater: (store) => {
-        const payload = store.getRootField('intrusionSetAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          this.props.paginationOptions,
-          newEdge,
-        );
-      },
+      updater: (store) => insertNode(
+        store,
+        'Pagination_intrusionSets',
+        this.props.paginationOptions,
+        'intrusionSetAdd',
+      ),
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);

@@ -1,27 +1,23 @@
 import conf, {
   ENABLED_API,
   ENABLED_EXPIRED_MANAGER,
+  ENABLED_SUBSCRIPTION_MANAGER,
   ENABLED_RULE_ENGINE,
   ENABLED_TASK_SCHEDULER,
   logApp,
 } from './config/conf';
-import initExpiredManager from './manager/expiredManager';
-import initTaskManager from './manager/taskManager';
-import initRuleManager from './manager/ruleManager';
-import initHttpServer from './http/httpServer';
+import expiredManager from './manager/expiredManager';
+import subscriptionManager from './manager/subscriptionManager';
+import taskManager from './manager/taskManager';
+import ruleEngine from './manager/ruleManager';
+import httpServer from './http/httpServer';
 
 // Http server
-const API_PORT = conf.get('app:port');
-const httpServer = initHttpServer();
-const expiredManager = initExpiredManager();
-const taskManager = initTaskManager();
-const ruleEngine = initRuleManager();
-
 export const startModules = async () => {
   // region API initialization
   if (ENABLED_API) {
     await httpServer.start();
-    logApp.info(`[OPENCTI] API ready on port ${API_PORT}`);
+    logApp.info(`[OPENCTI] API ready on port ${conf.get('app:port')}`);
   } else {
     logApp.info(`[OPENCTI] API not started (disabled by configuration)`);
   }
@@ -54,6 +50,14 @@ export const startModules = async () => {
     logApp.info(`[OPENCTI] Rule engine not started (disabled by configuration)`);
   }
   // endregion
+  // region Subscription manager
+  if (ENABLED_SUBSCRIPTION_MANAGER) {
+    await subscriptionManager.start();
+    logApp.info(`[OPENCTI] Subscription manager started`);
+  } else {
+    logApp.info(`[OPENCTI] Subscription manager not started (disabled by configuration)`);
+  }
+  // endregion
 };
 
 export const shutdownModules = async () => {
@@ -72,5 +76,9 @@ export const shutdownModules = async () => {
   // region Inference engine
   await ruleEngine.shutdown();
   logApp.info(`[OPENCTI] Rule engine stopped`);
+  // endregion
+  // region Subscription manager
+  await subscriptionManager.shutdown();
+  logApp.info(`[OPENCTI] Subscription manager stopped`);
   // endregion
 };

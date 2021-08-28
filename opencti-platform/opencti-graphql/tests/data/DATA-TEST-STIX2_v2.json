@@ -40,7 +40,8 @@
           },
           "type": "file"
         }
-      }
+      },
+      "object_refs": ["malware--faa5b705-cf44-4e50-8472-29e5fec43c3c"]
     },
     {
       "id": "identity--5556c4ab-3e5e-4d56-8410-60b29cecbeb6",
