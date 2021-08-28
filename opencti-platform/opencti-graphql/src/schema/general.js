@@ -100,4 +100,16 @@ export const schemaTypes = {
     return this.attributes[type] || [];
   },
 };
+
+export const refsExtractor = (data) => {
+  return [
+    ...(data.object_marking_refs || []),
+    ...(data.object_refs || []),
+    ...(data.created_by_ref ? [data.created_by_ref] : []),
+    ...(data.sighting_of_ref ? [data.sighting_of_ref] : []),
+    ...(data.where_sighted_refs || []),
+    ...(data.source_ref ? [data.source_ref] : []),
+    ...(data.target_ref ? [data.target_ref] : []),
+  ];
+};
 // region utils

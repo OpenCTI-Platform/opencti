@@ -13,13 +13,12 @@ import {
 } from '../database/rabbitmq';
 import { stixLoadById } from '../database/middleware';
 import { convertFiltersToQueryOptions } from '../domain/taxii';
-import { elList, elPaginate } from '../database/elasticSearch';
+import { elList } from '../database/elasticSearch';
 import {
   generateCreateMessage,
   generateDeleteMessage,
   generateUpdateMessage,
   isEmptyField,
-  isNotEmptyField,
   READ_INDEX_STIX_META_OBJECTS,
   READ_STIX_INDICES,
 } from '../database/utils';
@@ -30,6 +29,7 @@ import { adaptFiltersFrontendFormat, TYPE_FILTER } from '../utils/filtering';
 import { rebuildInstanceBeforePatch } from '../utils/patch';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { utcDate } from '../utils/format';
+import { refsExtractor } from '../schema/general';
 
 let heartbeat;
 const STREAM_EVENT_VERSION = 3;
@@ -140,7 +140,7 @@ const computeAggregatePatch = (events) => {
   const mergeDeepAll = R.unapply(R.reduce(R.mergeDeepRight, {}));
   return mergeDeepAll(...patchElements);
 };
-const isElementEvolved = (openctiId, events) => {
+const isElementEvolved = (events) => {
   // 01. Handle create/delete differential
   // - (CREATION) Create => YES
   // - (RECREATION) Delete - Create = Not possible because x_opencti_id will be different
@@ -154,7 +154,7 @@ const isElementEvolved = (openctiId, events) => {
   if (isCreatedElement && isDeleteElement) {
     return undefined;
   }
-  const eventId = R.last(events).id;
+  const eventId = R.head(events).id;
   const lastEventData = R.last(events).data.data;
   const standardId = lastEventData.x_opencti_patch?.replace?.id?.previous || lastEventData.id;
   // If is a creation or a deletion, considering as an evolution
@@ -173,6 +173,25 @@ const isElementEvolved = (openctiId, events) => {
     return undefined;
   }
   return { id: standardId, eventId, topic: EVENT_TYPE_UPDATE, patch };
+};
+const resolveMissingEvents = (sortedEvents, sortedIndex, event) => {
+  const missingEvents = [];
+  const data = { ...event.patch.add, ...event.patch.replace };
+  const patchedRefs = refsExtractor(data);
+  if (patchedRefs.length > 0) {
+    const refs = patchedRefs.map((p) => p.current?.value || p.value);
+    // Looking for refs after in the process
+    const lookingElements = sortedEvents.slice(sortedIndex + 1);
+    const findIndex = R.findIndex((e) => refs.includes(e.id), lookingElements);
+    if (findIndex !== -1) {
+      const find = lookingElements[findIndex];
+      find.eventId = event.eventId;
+      missingEvents.push(find);
+      const newMissing = resolveMissingEvents(sortedEvents, findIndex, find);
+      missingEvents.unshift(...newMissing);
+    }
+  }
+  return missingEvents;
 };
 export const computeEventsDiff = (elements) => {
   // If merge elements are inside, we need to flatten the deletion
@@ -196,17 +215,31 @@ export const computeEventsDiff = (elements) => {
   const entries = Object.entries(groupedById);
   const retainElements = [];
   for (let i = 0; i < entries.length; i += 1) {
-    const [k, v] = entries[i];
-    const isElementEvolve = isElementEvolved(k, v);
+    const [, v] = entries[i];
+    const isElementEvolve = isElementEvolved(v);
     if (isElementEvolve) {
       retainElements.push(isElementEvolve);
     }
   }
-  return R.sort((a, b) => {
-    const [timeA] = a.id.split('-');
-    const [timeB] = b.id.split('-');
+  // Reorder the events with the timing of the base stream events
+  const sortedEvents = R.sort((a, b) => {
+    const [timeA] = a.eventId.split('-');
+    const [timeB] = b.eventId.split('-');
     return parseInt(timeA, 10) - parseInt(timeB, 10);
   }, retainElements);
+  // In same case refs are not ordered due to late update
+  const reorderedEvents = [];
+  for (let sortedIndex = 0; sortedIndex < sortedEvents.length; sortedIndex += 1) {
+    const sortedEvent = sortedEvents[sortedIndex];
+    if (!R.find((e) => e.id === sortedEvent.id, reorderedEvents)) {
+      const missing = resolveMissingEvents(sortedEvents, sortedIndex, sortedEvent);
+      if (missing.length > 0) {
+        reorderedEvents.push(...missing);
+      }
+      reorderedEvents.push(sortedEvent);
+    }
+  }
+  return reorderedEvents;
 };
 
 export const isInstanceMatchFilters = (instance, filters) => {
@@ -359,7 +392,28 @@ const authenticate = async (req, res, next) => {
 };
 
 const createSeeMiddleware = () => {
+  const queryIndices = [READ_INDEX_STIX_META_OBJECTS, ...READ_STIX_INDICES];
   createHeartbeatProcessor();
+  const resolveMissingReferences = async (req, streamFilters, startingDate, data) => {
+    const refs = refsExtractor(data);
+    const missingElements = [];
+    if (refs.length > 0) {
+      const missingOptions = convertFiltersToQueryOptions(streamFilters, {
+        field: 'created_at',
+        after: data.created_at,
+        before: startingDate.toISOString(),
+      });
+      const idsOpts = { ids: refs, ...missingOptions, connectionFormat: false };
+      const findMissing = await elList(req.session.user, queryIndices, idsOpts);
+      missingElements.push(...findMissing);
+      for (let index = 0; index < findMissing.length; index += 1) {
+        const findMissingElement = findMissing[index];
+        const newMissing = await resolveMissingReferences(req, streamFilters, startingDate, findMissingElement);
+        missingElements.unshift(...newMissing);
+      }
+    }
+    return missingElements;
+  };
   const initBroadcasting = async (req, res, client, processor) => {
     const broadcasterInfo = await processor.info();
     req.on('close', () => {
@@ -556,7 +610,6 @@ const createSeeMiddleware = () => {
     try {
       await initBroadcasting(req, res, client, processor);
       // If empty start date, stream all results corresponding to the filters
-      const queryIndices = [READ_INDEX_STIX_META_OBJECTS, ...READ_STIX_INDICES];
       if (isEmptyField(startFrom)) {
         const startingDate = utcDate();
         const reorderedCache = new Set();
@@ -573,30 +626,9 @@ const createSeeMiddleware = () => {
             const data = buildStixData(instance, { clearEmptyValues: true });
             if (!reorderedCache.has(data.id)) {
               const eventId = utcDate(data.created_at).toDate().getTime();
-              // Get all refs and look into the batch if its available
               // Looking for elements published after
-              const refs = [
-                ...(data.object_marking_refs || []),
-                ...(data.object_refs || []),
-                ...(data.created_by_ref ? [data.created_by_ref] : []),
-                ...(data.sighting_of_ref ? [data.sighting_of_ref] : []),
-                ...(data.where_sighted_refs || []),
-                ...(data.source_ref ? [data.source_ref] : []),
-                ...(data.target_ref ? [data.target_ref] : []),
-              ];
-              const missingElements = [];
-              if (refs.length > 0) {
-                const missingOptions = convertFiltersToQueryOptions(streamFilters, {
-                  field: 'created_at',
-                  after: instance.created_at,
-                  before: startingDate.toISOString(),
-                });
-                const idsOpts = { ids: refs, ...missingOptions, connectionFormat: false };
-                const findMissing = await elList(req.session.user, queryIndices, idsOpts);
-                missingElements.push(...findMissing);
-              }
+              const missingElements = await resolveMissingReferences(req, streamFilters, startingDate, data);
               if (channel.connected()) {
-                let eventIndex = 0;
                 // publish missing
                 for (let missingId = 0; missingId < missingElements.length; missingId += 1) {
                   const missing = missingElements[missingId];
@@ -605,14 +637,13 @@ const createSeeMiddleware = () => {
                   const markings = missingData.object_marking_refs || [];
                   const message = generateCreateMessage(missingInstance);
                   const content = { data: missingData, markings, message, version };
-                  channel.sendEvent(`${eventId}-${eventIndex}`, EVENT_TYPE_CREATE, content);
+                  channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
                   reorderedCache.add(missingData.id);
-                  eventIndex += 1;
                 }
                 // publish element
                 const markings = data.object_marking_refs || [];
                 const message = generateCreateMessage(instance);
-                channel.sendEvent(`${eventId}-${eventIndex}`, EVENT_TYPE_CREATE, { data, markings, message, version });
+                channel.sendEvent(eventId, EVENT_TYPE_CREATE, { data, markings, message, version });
               } else {
                 return false;
               }

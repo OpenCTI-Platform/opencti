@@ -103,6 +103,7 @@ import {
   INPUT_OBJECTS,
   INTERNAL_IDS_ALIASES,
   INTERNAL_PREFIX,
+  refsExtractor,
   REL_INDEX_PREFIX,
   RULE_PREFIX,
   schemaTypes,
@@ -767,10 +768,7 @@ const inputResolveRefs = async (user, input, type) => {
     }
   }
   // eslint-disable-next-line prettier/prettier
-  const resolvedElements = await internalFindByIds(
-    user,
-    fetchingIds.map((i) => i.id)
-  );
+  const resolvedElements = await internalFindByIds(user, fetchingIds.map((i) => i.id));
   const resolvedElementWithConfGroup = resolvedElements.map((d) => {
     const elementIds = getInstanceIds(d);
     const matchingConfigs = R.filter((a) => elementIds.includes(a.id), fetchingIds);
@@ -2146,7 +2144,10 @@ const upsertElementRaw = async (user, instance, type, input) => {
   return { type: TRX_UPDATE, element: instance, relations: rawRelations, patchInputs };
 };
 
-const checkRelationConsistency = (relationshipType, fromType, toType) => {
+const checkRelationConsistency = (relationshipType, from, to) => {
+  // 01 - check type consistency
+  const fromType = from.entity_type;
+  const toType = to.entity_type;
   // Check if StixCoreRelationship is allowed
   if (isStixCoreRelationship(relationshipType)) {
     if (!checkStixCoreRelationshipMapping(fromType, toType, relationshipType)) {
@@ -2162,6 +2163,11 @@ const checkRelationConsistency = (relationshipType, fromType, toType) => {
         `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
       );
     }
+  }
+  // 02 - check cyclic reference consistency
+  const toRefs = refsExtractor(to);
+  if (toRefs.includes(from.internal_id)) {
+    throw FunctionalError(`You cant create a cyclic relation between ${from.standard_id} and ${to.standard_id}`);
   }
 };
 const buildRelationData = async (user, input, opts = {}) => {
@@ -2363,7 +2369,7 @@ export const createRelationRaw = async (user, input, opts = {}) => {
     throw UnsupportedError(`Relation cant be created with the same source and target`, errorData);
   }
   // Check consistency
-  checkRelationConsistency(relationshipType, from.entity_type, to.entity_type);
+  checkRelationConsistency(relationshipType, from, to);
   // Build lock ids
   const inputIds = getInputIds(relationshipType, resolvedInput);
   if (isImpactedTypeAndSide(relationshipType, ROLE_FROM)) inputIds.push(from.internal_id);
