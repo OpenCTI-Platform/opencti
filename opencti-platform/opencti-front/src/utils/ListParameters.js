@@ -106,7 +106,7 @@ export const buildViewParamsFromUrlAndStorage = (
     finalParams.currentTab = parseInt(finalParams.currentTab, 10);
   }
   if (finalParams.pdfViewerZoom) {
-    finalParams.pdfViewerZoom = parseFloat(finalParams.pdfViewerZoom, 10);
+    finalParams.pdfViewerZoom = parseFloat(finalParams.pdfViewerZoom);
   }
   if (finalParams.currentModeOnlyActive) {
     finalParams.currentModeOnlyActive = finalParams.currentModeOnlyActive.toString() === 'true';
