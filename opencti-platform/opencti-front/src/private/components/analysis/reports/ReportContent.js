@@ -8,7 +8,6 @@ import {
   pdfjs,
   Document,
   Page,
-  Outline,
 } from 'react-pdf/dist/esm/entry.webpack';
 import { light, dark } from 'rich-markdown-editor/dist/theme';
 import SunEditor from 'suneditor-react';
@@ -28,6 +27,7 @@ import ReportContentFiles, {
   reportContentFilesRefetchQuery,
 } from './ReportContentFiles';
 import {
+  APP_BASE_PATH,
   commitMutation,
   fetchQuery,
   QueryRenderer,
@@ -41,8 +41,13 @@ import RobotoBold from '../../../../resources/fonts/Roboto-Bold.ttf';
 import RobotoItalic from '../../../../resources/fonts/Roboto-Italic.ttf';
 import RobotoBoldItalic from '../../../../resources/fonts/Roboto-BoldItalic.ttf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import ReportContentPdfBar from './ReportContentPdfBar';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 
-pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/pdf.worker.js`;
 
 const styles = (theme) => ({
   container: {
@@ -71,11 +76,27 @@ const styles = (theme) => ({
     padding: '15px 30px 15px 30px',
     borderRadius: 6,
   },
+  documentContainer: {
+    margin: '15px 0 -24px 0',
+    overflow: 'scroll',
+    whiteSpace: 'nowrap',
+    minWidth: 'calc(100vw - 500px)',
+    minHeight: 'calc(100vh - 300px)',
+    width: 'calc(100vw - 500px)',
+    height: 'calc(100vh - 300px)',
+    maxWidth: 'calc(100vw - 500px)',
+    maxHeight: 'calc(100vh - 300px)',
+    display: 'flex',
+    justifyContent: 'center',
+    position: 'relative',
+  },
   pdfViewer: {
     margin: '0 auto',
     textAlign: 'center',
+    position: 'relative',
   },
   pdfPage: {
+    width: '100%',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -149,25 +170,43 @@ class ReportContentComponent extends Component {
   constructor(props) {
     super(props);
     this.editorRef = React.createRef();
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      `view-report-content-${props.report.id}`,
+    );
     this.state = {
-      isLoading: true,
-      currentTab: 0,
-      currentFile: {
-        id: `import/Report/${props.report.id}/Main.html`,
-        name: 'Main.html',
-        metaData: {
-          mimetype: 'text/html',
+      currentTab: R.propOr(0, 'currentTab', params),
+      currentFile: R.propOr(
+        {
+          id: `import/Report/${props.report.id}/Main.html`,
+          name: 'Main.html',
+          metaData: {
+            mimetype: 'text/html',
+          },
         },
-      },
+        'currentFile',
+        params,
+      ),
       initialContent: props.t('Write something awesome...'),
       currentContent: props.t('Write something awesome...'),
       currentHtmlContent: null,
       currentBase64Content: null,
       totalPdfPageNumber: null,
       currentPdfPageNumber: 1,
+      pdfViewerZoom: 2,
       mentions: [],
       mentionKeyword: '',
     };
+  }
+
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      `view-report-content-${this.props.report.id}`,
+      this.state,
+    );
   }
 
   onDocumentLoadSuccess({ numPages: nextNumPages }) {
@@ -191,7 +230,9 @@ class ReportContentComponent extends Component {
     this.editorRef.current = editor;
   }
 
-  loadFileContent(convertToHtmlPdf = false) {
+  loadFileContent() {
+    const convertToHtmlPdf = this.state.currentTab === 2
+      && this.state.currentFile.metaData.mimetype === 'text/markdown';
     this.setState({ isLoading: true }, () => {
       const url = `/storage/${convertToHtmlPdf ? 'html' : 'view'}/${
         this.state.currentFile.id
@@ -205,15 +246,20 @@ class ReportContentComponent extends Component {
               isLoading: false,
             },
             () => {
-              this.handleConvertPdf(true);
+              this.handleConvertPdf();
             },
           );
         } else {
-          this.setState({
-            initialContent: content,
-            currentContent: content,
-            isLoading: false,
-          });
+          this.setState(
+            {
+              initialContent: content,
+              currentContent: content,
+              isLoading: false,
+            },
+            () => this.state.currentTab === 2
+              && this.state.currentFile.metaData.mimetype === 'text/html'
+              && this.handleConvertPdf(),
+          );
         }
       });
     });
@@ -279,7 +325,12 @@ class ReportContentComponent extends Component {
               currentTab: isPdf ? 2 : 0,
               isLoading: !isPdf,
             },
-            () => !isPdf && this.loadFileContent(),
+            () => {
+              this.saveView();
+              if (!isPdf) {
+                this.loadFileContent();
+              }
+            },
           );
         },
       });
@@ -298,13 +349,20 @@ class ReportContentComponent extends Component {
             currentTab: isPdf ? 2 : 0,
             isLoading: !isPdf,
           },
-          () => !isPdf && this.loadFileContent(),
+          () => {
+            this.saveView();
+            if (!isPdf) {
+              this.loadFileContent();
+            }
+          },
         );
       }
     });
   }
 
-  handleConvertPdf(convertToHtmlPdf = false) {
+  handleConvertPdf(download = false) {
+    const convertToHtmlPdf = this.state.currentTab === 2
+      && this.state.currentFile.metaData.mimetype === 'text/markdown';
     const regex = /<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi;
     const htmlData = convertToHtmlPdf
       ? this.state.currentHtmlContent
@@ -362,10 +420,16 @@ class ReportContentComponent extends Component {
           bolditalics: url + RobotoBoldItalic,
         },
       };
-      const gen = pdfMake.createPdf(pdfData, null, fonts);
-      gen.getDataUrl((data) => {
-        this.setState({ currentBase64Content: data });
-      });
+      if (download) {
+        const fragment = this.state.currentFile.id.split('/');
+        const currentName = R.last(fragment);
+        pdfMake.createPdf(pdfData, null, fonts).download(`${currentName}.pdf`);
+      } else {
+        const gen = pdfMake.createPdf(pdfData, null, fonts);
+        gen.getDataUrl((data) => {
+          this.setState({ currentBase64Content: data });
+        });
+      }
     });
   }
 
@@ -392,8 +456,9 @@ class ReportContentComponent extends Component {
               isLoading: false,
             },
             () => {
+              this.saveView();
               if (currentFile.metaData.mimetype === 'text/markdown') {
-                this.loadFileContent(value === 2);
+                this.loadFileContent();
               }
             },
           );
@@ -406,9 +471,9 @@ class ReportContentComponent extends Component {
     if (this.state.currentTab === 0 || this.state.currentTab === 1) {
       this.saveFileAndChangeTab(value);
     } else if (this.state.currentFile === 2) {
-      this.setState({ currentBase64Content: null });
+      this.setState({ currentBase64Content: null, currentTab: value }, () => this.saveView());
     } else {
-      this.setState({ currentTab: value });
+      this.setState({ currentTab: value }, () => this.saveView());
     }
   }
 
@@ -422,6 +487,14 @@ class ReportContentComponent extends Component {
 
   onHtmlEditorChange(value) {
     this.setState({ currentContent: value });
+  }
+
+  handleZoomIn() {
+    this.setState({ pdfViewerZoom: this.state.pdfViewerZoom + 0.2 }, () => this.saveView());
+  }
+
+  handleZoomOut() {
+    this.setState({ pdfViewerZoom: this.state.pdfViewerZoom - 0.2 }, () => this.saveView());
   }
 
   handleMentionFilter({ value: mentionKeyword }) {
@@ -609,7 +682,30 @@ class ReportContentComponent extends Component {
         )}
         {this.state.currentTab === 2 && isFilePdf && (
           <div style={{ marginTop: 20 }}>
-            <iframe src={currentUrl} width="100%" height={height} />
+            <ReportContentPdfBar
+              handleZoomIn={this.handleZoomIn.bind(this)}
+              handleZoomOut={this.handleZoomOut.bind(this)}
+              handleDownload={this.handleConvertPdf.bind(this, true)}
+              currentZoom={this.state.pdfViewerZoom}
+            />
+            <div className={classes.documentContainer}>
+              <Document
+                className={classes.pdfViewer}
+                onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
+                loading={<Loader variant="inElement" />}
+                file={currentUrl}
+              >
+                {Array.from(new Array(totalPdfPageNumber), (el, index) => (
+                  <Page
+                    key={`page_${index + 1}`}
+                    className={classes.pdfPage}
+                    pageNumber={index + 1}
+                    height={height}
+                    scale={this.state.pdfViewerZoom}
+                  />
+                ))}
+              </Document>
+            </div>
           </div>
         )}
         {this.state.currentTab === 2
@@ -617,22 +713,30 @@ class ReportContentComponent extends Component {
             || currentFile.metaData.mimetype === 'text/markdown')
           && currentBase64Content && (
             <div style={{ marginTop: 20 }}>
-              <Document
-                className={classes.pdfViewer}
-                onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
-                loading={<Loader variant="inElement" />}
-                file={currentBase64Content}
-              >
-                <Outline onItemClick={this.onItemClick.bind(this)} />
-                {Array.from(new Array(totalPdfPageNumber), (el, index) => (
-                  <Page
-                    key={`page_${index + 1}`}
-                    className={classes.pdfPage}
-                    pageNumber={index + 1}
-                    height={height}
-                  />
-                ))}
-              </Document>
+              <ReportContentPdfBar
+                handleZoomIn={this.handleZoomIn.bind(this)}
+                handleZoomOut={this.handleZoomOut.bind(this)}
+                handleDownload={this.handleConvertPdf.bind(this, true)}
+                currentZoom={this.state.pdfViewerZoom}
+              />
+              <div className={classes.documentContainer}>
+                <Document
+                  className={classes.pdfViewer}
+                  onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
+                  loading={<Loader variant="inElement" />}
+                  file={currentBase64Content}
+                >
+                  {Array.from(new Array(totalPdfPageNumber), (el, index) => (
+                    <Page
+                      key={`page_${index + 1}`}
+                      className={classes.pdfPage}
+                      pageNumber={index + 1}
+                      height={height}
+                      scale={this.state.pdfViewerZoom}
+                    />
+                  ))}
+                </Document>
+              </div>
             </div>
         )}
       </div>
