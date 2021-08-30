@@ -144,12 +144,14 @@ export const stixDataConverter = (data, args = {}) => {
       finalData = R.pipe(
         R.dissoc('source_ref'),
         R.assoc('sighting_of_ref', data.from.standard_id),
-        R.assoc(`x_opencti_sighting_of_ref`, data.from.internal_id)
+        R.assoc(`x_opencti_sighting_of_ref`, data.from.internal_id),
+        R.assoc(`x_opencti_sighting_of_type`, data.from.entity_type)
       )(finalData);
     } else {
       finalData = R.pipe(
         R.assoc('source_ref', data.from.standard_id),
-        R.assoc(`x_opencti_source_ref`, data.from.internal_id)
+        R.assoc(`x_opencti_source_ref`, data.from.internal_id),
+        R.assoc(`x_opencti_source_type`, data.from.entity_type)
       )(finalData);
     }
   }
@@ -167,12 +169,14 @@ export const stixDataConverter = (data, args = {}) => {
       finalData = R.pipe(
         R.dissoc('target_ref'),
         R.assoc('where_sighted_refs', [data.to.standard_id]),
-        R.assoc(`x_opencti_where_sighted_refs`, [data.to.internal_id])
+        R.assoc(`x_opencti_where_sighted_refs`, [data.to.internal_id]),
+        R.assoc(`x_opencti_where_sighted_types`, [data.to.entity_type])
       )(finalData);
     } else {
       finalData = R.pipe(
         R.assoc('target_ref', data.to.standard_id),
-        R.assoc(`x_opencti_target_ref`, data.to.internal_id)
+        R.assoc(`x_opencti_target_ref`, data.to.internal_id),
+        R.assoc(`x_opencti_target_type`, data.to.entity_type)
       )(finalData);
     }
   }
@@ -313,6 +317,7 @@ export const buildStixData = (data, args = {}) => {
     R.assoc('id', data.standard_id),
     R.assoc('x_opencti_id', data.internal_id),
     R.assoc('type', convertTypeToStixType(type)),
+    R.assoc('x_opencti_type', type),
     R.dissoc('_index'),
     R.dissoc('standard_id'),
     R.dissoc('internal_id'),

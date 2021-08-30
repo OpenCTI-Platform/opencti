@@ -115,7 +115,7 @@ describe('Database provision', () => {
     ['0', SYNC_LIVE_END_REMOTE_URI],
   ];
   // eslint-disable-next-line prettier/prettier
-  it.each(cases)('Should live sync succeed', async (startTime, remoteUri) => {
+  it.each(cases)('Should live sync succeed (from = %s)', async (startTime, remoteUri) => {
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
       // Create live stream

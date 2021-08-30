@@ -110,11 +110,6 @@ export const generateInternalType = (entity) => {
   }
 };
 
-export const getTypeFromStixId = (stixId) => {
-  const [type] = stixId.split('--');
-  return generateInternalType({ type, identity_class: type });
-};
-
 export const getParentTypes = (type) => {
   const parentTypes = [];
   if (isBasicObject(type)) {

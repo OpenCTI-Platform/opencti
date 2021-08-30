@@ -21,7 +21,7 @@ import { getActivatedRules, getRule } from '../domain/rule';
 import { RULE_MANAGER_USER, RULES_DECLARATION } from '../rules/rules';
 import { MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/sseMiddleware';
 import { buildStixData } from '../database/stix';
-import { generateInternalType, getParentTypes, getTypeFromStixId } from '../schema/schemaUtils';
+import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { now } from '../utils/format';
 import { extractFieldsOfPatch } from '../utils/patch';
 
@@ -115,15 +115,14 @@ const isMatchRuleFilters = (rule, element, matchUpdateFields = false) => {
     const { types = [], fromTypes = [], toTypes = [] } = filters ?? {};
     let isValidFilter = true;
     if (types.length > 0) {
-      const instanceType = element.relationship_type || generateInternalType(element);
+      const instanceType = element.x_opencti_type;
       const elementTypes = [instanceType, ...getParentTypes(instanceType)];
       const isCompatibleType = types.some((r) => elementTypes.includes(r));
       if (!isCompatibleType) isValidFilter = false;
     }
     if (fromTypes.length > 0) {
-      const { source_ref: fromId } = element;
+      const { source_ref: fromId, x_opencti_source_type: fromType } = element;
       if (fromId) {
-        const fromType = getTypeFromStixId(fromId);
         const instanceFromTypes = [fromType, ...getParentTypes(fromType)];
         const isCompatibleType = fromTypes.some((r) => instanceFromTypes.includes(r));
         if (!isCompatibleType) isValidFilter = false;
@@ -132,9 +131,8 @@ const isMatchRuleFilters = (rule, element, matchUpdateFields = false) => {
       }
     }
     if (toTypes.length > 0) {
-      const { target_ref: toId } = element;
+      const { target_ref: toId, x_opencti_target_type: toType } = element;
       if (toId) {
-        const toType = getTypeFromStixId(toId);
         const instanceToTypes = [toType, ...getParentTypes(toType)];
         const isCompatibleType = toTypes.some((r) => instanceToTypes.includes(r));
         if (!isCompatibleType) isValidFilter = false;
@@ -236,8 +234,11 @@ export const rulesCleanHandler = async (eventId, instances, rules, dependencyId)
       const isElementCleanable = isNotEmptyField(instance[RULE_PREFIX + rule.id]);
       if (isElementCleanable) {
         const processingElement = await internalLoadById(RULE_MANAGER_USER, instance.internal_id);
-        const derivedEvents = await rule.clean(processingElement, dependencyId);
-        await rulesApplyDerivedEvents(eventId, derivedEvents);
+        // In case of inference of inference, element can be recursively cleanup by the deletion system
+        if (processingElement) {
+          const derivedEvents = await rule.clean(processingElement, dependencyId);
+          await rulesApplyDerivedEvents(eventId, derivedEvents);
+        }
       }
     }
   }

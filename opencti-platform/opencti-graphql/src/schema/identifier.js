@@ -386,15 +386,13 @@ export const getInstanceIdentifiers = (instance) => {
   if (instance.relationship_type) {
     base.relationship_type = instance.relationship_type;
     if (!instance.from) {
-      throw FunctionalError(`Inconsistent relation to update (from)`, { id: instance.id, from: instance.fromId });
+      throw FunctionalError(`Inconsistent from to identify`, { id: instance.id, from: instance.fromId });
     }
-    base.source_ref = instance.from.standard_id;
-    base.x_opencti_source_ref = instance.fromId;
+    base.from = instance.from;
     if (!instance.to) {
-      throw FunctionalError(`Inconsistent relation to update (to)`, { id: instance.id, to: instance.toId });
+      throw FunctionalError(`Inconsistent to to identify`, { id: instance.id, to: instance.toId });
     }
-    base.target_ref = instance.to.standard_id;
-    base.x_opencti_target_ref = instance.toId;
+    base.to = instance.to;
   }
   return base;
 };
