@@ -145,7 +145,6 @@ class StixObjectOrStixRelationship:
                 description
                 report_types
                 published
-                x_opencti_report_status
             }
             ... on CourseOfAction {
                 name
