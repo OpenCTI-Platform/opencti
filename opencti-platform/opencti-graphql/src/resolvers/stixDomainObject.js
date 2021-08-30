@@ -1,5 +1,4 @@
 import { withFilter } from 'graphql-subscriptions';
-import { assoc } from 'ramda';
 import * as R from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import {
@@ -79,7 +78,7 @@ const stixDomainObjectResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType }) =>
         stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
       importPush: ({ file }) => stixDomainObjectImportPush(user, id, file),
-      exportAsk: (args) => stixDomainObjectExportAsk(user, assoc('stixDomainObjectId', id, args)),
+      exportAsk: (args) => stixDomainObjectExportAsk(user, R.assoc('stixDomainObjectId', id, args)),
       exportPush: ({ file }) => stixDomainObjectExportPush(user, id, file),
     }),
     stixDomainObjectsDelete: (_, { id }, { user }) => stixDomainObjectsDelete(user, id),

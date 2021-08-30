@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import { findAll, findById } from '../domain/subType';
 import { createStatus, getTypeStatuses, statusDelete, statusEditField } from '../domain/status';
 
