@@ -1,5 +1,4 @@
 import { withFilter } from 'graphql-subscriptions';
-import * as R from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixCoreRelationship,
