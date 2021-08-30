@@ -2,7 +2,6 @@
 
 import json
 import os
-
 import magic
 
 
@@ -183,7 +182,6 @@ class StixDomainObject:
                 description
                 report_types
                 published
-                x_opencti_report_status
                 objects {
                     edges {
                         node {

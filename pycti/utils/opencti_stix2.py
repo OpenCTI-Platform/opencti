@@ -455,7 +455,6 @@ class OpenCTIStix2:
                         else "",
                         report_types="threat-report",
                         published=published,
-                        x_opencti_report_status=2,
                         update=True,
                     )
                     reports[external_reference_id] = report

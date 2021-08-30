@@ -110,7 +110,7 @@ class OpenCTIApiClient:
         # Define the entities
         self.label = Label(self)
         self.marking_definition = MarkingDefinition(self)
-        self.external_reference = ExternalReference(self)
+        self.external_reference = ExternalReference(self, File)
         self.kill_chain_phase = KillChainPhase(self)
         self.opencti_stix_object_or_stix_relationship = StixObjectOrStixRelationship(
             self
