@@ -64,6 +64,16 @@ class SettingsMenu extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
+            to={'/dashboard/settings/accesses/marking'}
+            selected={
+              location.pathname === '/dashboard/settings/accesses/marking'
+            }
+            dense={false}
+          >
+            <ListItemText primary={t('Marking definitions')} />
+          </MenuItem>
+          <MenuItem
+            component={Link}
             to={'/dashboard/settings/accesses/sessions'}
             selected={
               location.pathname === '/dashboard/settings/accesses/sessions'

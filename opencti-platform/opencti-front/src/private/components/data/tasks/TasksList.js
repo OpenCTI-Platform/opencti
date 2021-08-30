@@ -23,7 +23,7 @@ import Slide from '@material-ui/core/Slide';
 import { interval } from 'rxjs';
 import { Delete } from 'mdi-material-ui';
 import Chip from '@material-ui/core/Chip';
-import ItemStatus from '../../../../components/ItemStatus';
+import TaskStatus from '../../../../components/TaskStatus';
 import inject18n from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
@@ -340,7 +340,7 @@ class TasksListComponent extends Component {
                       <Typography variant="h3" gutterBottom={true}>
                         {t('Status')}
                       </Typography>
-                      <ItemStatus status={status} label={t(status)} />
+                      <TaskStatus status={status} label={t(status)} />
                     </Grid>
                     <Grid item={true} xs={12}>
                       <Typography variant="h3" gutterBottom={true}>

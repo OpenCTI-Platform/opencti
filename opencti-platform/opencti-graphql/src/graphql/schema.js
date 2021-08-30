@@ -60,6 +60,7 @@ import taxiiResolvers from '../resolvers/taxii';
 import taskResolvers from '../resolvers/task';
 import streamResolvers from '../resolvers/stream';
 import userSubscriptionResolvers from '../resolvers/userSubscription';
+import statusResolvers from '../resolvers/status';
 import ruleResolvers from '../resolvers/rule';
 import stixResolvers from '../resolvers/stix';
 
@@ -74,6 +75,7 @@ const createSchema = () => {
     taxiiResolvers,
     streamResolvers,
     userSubscriptionResolvers,
+    statusResolvers,
     logResolvers,
     rabbitmqMetricsResolvers,
     elasticSearchMetricsResolvers,

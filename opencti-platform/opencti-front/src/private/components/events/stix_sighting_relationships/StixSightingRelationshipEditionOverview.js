@@ -38,6 +38,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
+import StatusField from '../../common/form/StatusField';
 
 const styles = (theme) => ({
   header: {
@@ -164,6 +165,7 @@ const stixSightingRelationshipValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
   description: Yup.string(),
   x_opencti_negative: Yup.boolean(),
+  status_id: Yup.object(),
 });
 
 const StixSightingRelationshipEditionContainer = ({
@@ -243,6 +245,10 @@ const StixSightingRelationshipEditionContainer = ({
     });
   };
   const handleSubmitField = (name, value) => {
+    let finalValue = value;
+    if (name === 'status_id') {
+      finalValue = value.value;
+    }
     stixSightingRelationshipValidation(t)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -250,7 +256,7 @@ const StixSightingRelationshipEditionContainer = ({
           mutation: stixSightingRelationshipMutationFieldPatch,
           variables: {
             id: stixSightingRelationship.id,
-            input: { key: name, value },
+            input: { key: name, value: finalValue },
           },
         });
       })
@@ -261,6 +267,25 @@ const StixSightingRelationshipEditionContainer = ({
     : {
       label: pathOr(null, ['createdBy', 'name'], stixSightingRelationship),
       value: pathOr(null, ['createdBy', 'id'], stixSightingRelationship),
+    };
+  const status = pathOr(null, ['status', 'template', 'name'], stixSightingRelationship)
+    === null
+    ? ''
+    : {
+      label: t(
+        `status_${pathOr(
+          null,
+          ['status', 'template', 'name'],
+          stixSightingRelationship,
+        )}`,
+      ),
+      color: pathOr(
+        null,
+        ['status', 'template', 'color'],
+        stixSightingRelationship,
+      ),
+      value: pathOr(null, ['status', 'id'], stixSightingRelationship),
+      order: pathOr(null, ['status', 'order'], stixSightingRelationship),
     };
   const objectMarking = pipe(
     pathOr([], ['objectMarking', 'edges']),
@@ -274,6 +299,7 @@ const StixSightingRelationshipEditionContainer = ({
     assoc('last_seen', dateFormat(stixSightingRelationship.last_seen)),
     assoc('createdBy', createdBy),
     assoc('objectMarking', objectMarking),
+    assoc('status_id', status),
     pick([
       'attribute_count',
       'confidence',
@@ -384,6 +410,22 @@ const StixSightingRelationshipEditionContainer = ({
                   />
                 }
               />
+              {stixSightingRelationship.workflowEnabled && (
+                <StatusField
+                  name="status_id"
+                  type="stix-sighting-relationship"
+                  onFocus={handleChangeFocus}
+                  onChange={handleSubmitField}
+                  setFieldValue={setFieldValue}
+                  style={{ marginTop: 20 }}
+                  helpertext={
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="status_id"
+                    />
+                  }
+                />
+              )}
               <CreatedByField
                 name="createdBy"
                 style={{ marginTop: 20, width: '100%' }}
@@ -495,6 +537,15 @@ const StixSightingRelationshipEditionFragment = createFragmentContainer(
           name
           focusOn
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

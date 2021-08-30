@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
-import Incidents from './Indidents';
+import Incidents from './Incidents';
 import RootIncident from './incidents/Root';
 import ObservedDatas from './ObservedDatas';
 import RootObservedData from './observed_data/Root';

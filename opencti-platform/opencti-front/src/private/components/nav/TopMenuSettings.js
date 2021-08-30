@@ -72,21 +72,21 @@ class TopMenuSettings extends Component {
         <Security needs={[SETTINGS_SETMARKINGS]}>
           <Button
             component={Link}
-            to="/dashboard/settings/marking"
+            to="/dashboard/settings/workflow"
             variant={
-              location.pathname.includes('/dashboard/settings/marking')
+              location.pathname.includes('/dashboard/settings/workflow')
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
-              location.pathname === '/dashboard/settings/marking'
+              location.pathname === '/dashboard/settings/workflow'
                 ? 'secondary'
                 : 'inherit'
             }
             classes={{ root: classes.button }}
           >
-            {t('Marking')}
+            {t('Workflows')}
           </Button>
         </Security>
         <Button
