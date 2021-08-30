@@ -36,6 +36,7 @@ import { resolveUserById } from './user';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
+  BASE_TYPE_ENTITY,
   ENTITY_TYPE_IDENTITY,
   ENTITY_TYPE_LOCATION,
 } from '../schema/general';
@@ -49,6 +50,7 @@ import {
   technicalElementToHtml,
 } from '../utils/mailData';
 import { getSettings } from './settings';
+import { getParentTypes } from '../schema/schemaUtils';
 
 // Stream graphQL handlers
 export const createUserSubscription = async (user, input) => {
@@ -58,6 +60,8 @@ export const createUserSubscription = async (user, input) => {
     internal_id: userSubscriptionId,
     standard_id: generateStandardId(ENTITY_TYPE_USER_SUBSCRIPTION, input),
     entity_type: ENTITY_TYPE_USER_SUBSCRIPTION,
+    parent_types: getParentTypes(ENTITY_TYPE_USER_SUBSCRIPTION),
+    base_type: BASE_TYPE_ENTITY,
     user_id: user.id,
     last_run: FROM_START_STR,
     ...input,

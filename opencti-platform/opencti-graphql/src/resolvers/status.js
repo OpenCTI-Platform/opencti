@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import { findById, findAll, findTemplateById, findAllTemplates } from '../domain/status';
 
 const statusResolvers = {
