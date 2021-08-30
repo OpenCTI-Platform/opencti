@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteElementById, listEntities, loadById, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
@@ -7,7 +7,6 @@ import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 import { groupAddRelation } from './group';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
-import * as R from "ramda";
 
 export const findById = (user, markingDefinitionId) => {
   return loadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
@@ -19,7 +18,7 @@ export const findAll = (user, args) => {
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
   const markingColor = markingDefinition.x_opencti_color ? markingDefinition.x_opencti_color : '#ffffff';
-  const markingToCreate = assoc('x_opencti_color', markingColor, markingDefinition);
+  const markingToCreate = R.assoc('x_opencti_color', markingColor, markingDefinition);
   const created = await createEntity(user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION);
   const filters = [{ key: 'auto_new_marking', values: [true] }];
   // Bypass current right to read group

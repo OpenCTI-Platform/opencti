@@ -195,8 +195,8 @@ export const internalObjectsAttributes = {
     'filters',
     'last_run',
   ],
-  [ENTITY_TYPE_STATUS]: ['internal_id', 'standard_id', 'name', 'color', 'type', 'order', 'assign_default'],
-  [ENTITY_TYPE_STATUS]: ['internal_id', 'standard_id', 'template_id', 'color', 'type', 'order', 'assign_default'],
+  [ENTITY_TYPE_STATUS_TEMPLATE]: ['internal_id', 'standard_id', 'name', 'color'],
+  [ENTITY_TYPE_STATUS]: ['internal_id', 'standard_id', 'template_id', 'type', 'order'],
   [ENTITY_TYPE_TASK]: [
     'standard_id',
     'task_position',
