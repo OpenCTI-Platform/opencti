@@ -29,6 +29,7 @@ import StixSightingRelationshipInference from './StixSightingRelationshipInferen
 import StixSightingRelationshipExternalReferences from '../../analysis/external_references/StixSightingRelationshipExternalReferences';
 import StixSightingRelationshipLatestHistory from './StixSightingRelationshipLatestHistory';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import ItemStatus from '../../../../components/ItemStatus';
 
 const styles = (theme) => ({
   container: {
@@ -122,15 +123,11 @@ class StixSightingRelationshipContainer extends Component {
   }
 
   handleCloseEdition() {
-    const {
-      match: {
-        params: { relationId },
-      },
-    } = this.props;
+    const { stixSightingRelationship } = this.props;
     commitMutation({
       mutation: stixSightingRelationshipEditionFocus,
       variables: {
-        id: relationId,
+        id: stixSightingRelationship.id,
         input: { focusOn: '' },
       },
     });
@@ -138,21 +135,19 @@ class StixSightingRelationshipContainer extends Component {
   }
 
   handleDelete() {
-    const {
-      location,
-      match: {
-        params: { relationId },
-      },
-    } = this.props;
+    const { location, stixSightingRelationship } = this.props;
     commitMutation({
       mutation: stixSightingRelationshipEditionDeleteMutation,
       variables: {
-        id: relationId,
+        id: stixSightingRelationship.id,
       },
       onCompleted: () => {
         this.handleCloseEdition();
         this.props.history.push(
-          location.pathname.replace(`/relations/${relationId}`, ''),
+          location.pathname.replace(
+            `/sightings/${stixSightingRelationship.id}`,
+            '',
+          ),
         );
       },
     });
@@ -160,7 +155,7 @@ class StixSightingRelationshipContainer extends Component {
 
   render() {
     const {
-      t, nsdt, classes, stixSightingRelationship, paddingRight,
+      t, n, nsdt, classes, stixSightingRelationship, paddingRight,
     } = this.props;
     const { from } = stixSightingRelationship;
     const { to } = stixSightingRelationship;
@@ -229,11 +224,6 @@ class StixSightingRelationshipContainer extends Component {
             }}
           >
             <strong>{t('sighted in/at')}</strong>
-            <br />
-            <span className={classes.number}>
-              {stixSightingRelationship.attribute_count}
-            </span>{' '}
-            hits
           </div>
         </div>
         <Link to={`${linkTo}/${to.id}`}>
@@ -340,42 +330,65 @@ class StixSightingRelationshipContainer extends Component {
               {t('Details')}
             </Typography>
             <Paper classes={{ root: classes.paper }} elevation={2}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Confidence level')}
-              </Typography>
-              <ItemConfidence
-                confidence={stixSightingRelationship.confidence}
-              />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('First seen')}
-              </Typography>
-              {nsdt(stixSightingRelationship.first_seen)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Last seen')}
-              </Typography>
-              {nsdt(stixSightingRelationship.last_seen)}
-              {stixSightingRelationship.x_opencti_inferences === null && (
-                <div>
+              <Grid container={true} spacing={3}>
+                <Grid item={true} xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Confidence level')}
+                  </Typography>
+                  <ItemConfidence
+                    confidence={stixSightingRelationship.confidence}
+                  />
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20, fontWeight: 500 }}
+                  >
+                    {t('First seen')}
+                  </Typography>
+                  {nsdt(stixSightingRelationship.first_seen)}
                   <Typography
                     variant="h3"
                     gutterBottom={true}
                     style={{ marginTop: 20 }}
                   >
-                    {t('Description')}
+                    {t('Last seen')}
                   </Typography>
-                  <Markdown className="markdown">
-                    {stixSightingRelationship.description}
-                  </Markdown>
-                </div>
-              )}
+                  {nsdt(stixSightingRelationship.last_seen)}
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Count')}
+                  </Typography>
+                  <span style={{ fontSize: 20 }}>
+                    {n(stixSightingRelationship.attribute_count)}
+                  </span>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Processing status')}
+                  </Typography>
+                  <ItemStatus
+                    status={stixSightingRelationship.status}
+                    disabled={!stixSightingRelationship.workflowEnabled}
+                  />
+                  {stixSightingRelationship.x_opencti_inferences === null && (
+                    <div>
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
+                      >
+                        {t('Description')}
+                      </Typography>
+                      <Markdown className="markdown">
+                        {stixSightingRelationship.description}
+                      </Markdown>
+                    </div>
+                  )}
+                </Grid>
+              </Grid>
             </Paper>
           </Grid>
         </Grid>
@@ -475,6 +488,15 @@ const StixSightingRelationshipOverview = createFragmentContainer(
         created_at
         updated_at
         is_inferred
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
         x_opencti_inferences {
           rule {
             id

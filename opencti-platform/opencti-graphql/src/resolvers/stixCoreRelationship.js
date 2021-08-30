@@ -1,4 +1,5 @@
 import { withFilter } from 'graphql-subscriptions';
+import * as R from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixCoreRelationship,
@@ -28,6 +29,7 @@ import { creator } from '../domain/log';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { elBatchIds } from '../database/elasticSearch';
+import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const createdByLoader = batchLoader(batchCreatedBy);
@@ -66,6 +68,11 @@ const stixCoreRelationshipResolvers = {
     notes: (rel, _, { user }) => notesLoader.load(rel.id, user),
     opinions: (rel, _, { user }) => opinionsLoader.load(rel.id, user),
     editContext: (rel) => fetchEditContext(rel.id),
+    status: (entity, _, { user }) => (entity.status_id ? findStatusById(user, entity.status_id) : null),
+    workflowEnabled: async (entity, _, { user }) => {
+      const statusesEdges = await getTypeStatuses(user, entity.entity_type);
+      return statusesEdges.edges.length > 0;
+    },
   },
   Mutation: {
     stixCoreRelationshipEdit: (_, { id }, { user }) => ({

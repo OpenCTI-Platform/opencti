@@ -113,12 +113,12 @@ export const numericAttributes = [
   'confidence',
   'number_observed',
   'x_opencti_order',
-  'x_opencti_report_status',
   'import_expected_number',
   'import_processed_number',
   'x_opencti_score',
   'size',
   'attribute_count',
+  'order',
 ];
 export const booleanAttributes = [
   'completed',

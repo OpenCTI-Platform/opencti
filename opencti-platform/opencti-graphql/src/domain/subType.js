@@ -1,4 +1,6 @@
-import { querySubTypes, queryAttributes } from '../database/middleware';
+import { querySubTypes, queryAttributes, querySubType } from '../database/middleware';
+
+export const findById = (subTypeId) => querySubType(subTypeId);
 
 export const findAll = (args) => querySubTypes(args);
 

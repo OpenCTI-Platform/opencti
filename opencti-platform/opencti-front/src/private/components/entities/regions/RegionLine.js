@@ -18,6 +18,8 @@ import {
   prop,
   sortBy,
   toLower,
+  uniqBy,
+  concat,
 } from 'ramda';
 import List from '@material-ui/core/List';
 import Skeleton from '@material-ui/lab/Skeleton';
@@ -90,13 +92,15 @@ class RegionLineComponent extends Component {
             <KeyboardArrowRightOutlined />
           </ListItemIcon>
         </ListItem>
-        {subRegions && subRegions.length > 0 && (
+        {subRegions && subRegions.length > 0 ? (
           <List style={{ margin: 0, padding: 0 }}>
             {subRegions.map((subRegion) => {
               const subRegionCountries = pipe(
                 pathOr([], ['countries', 'edges']),
                 map((n) => n.node),
+                concat(countries),
                 filter(filterByKeyword),
+                uniqBy(prop('id')),
                 sortByNameCaseInsensitive,
               )(subRegion);
               return (
@@ -109,13 +113,15 @@ class RegionLineComponent extends Component {
               );
             })}
           </List>
-        )}
-        {countries && countries.length > 0 && (
-          <List style={{ margin: 0, padding: 0 }}>
-            {countries.map((country) => (
-              <CountryLine key={country.id} node={country} />
-            ))}
-          </List>
+        ) : (
+          countries
+          && countries.length > 0 && (
+            <List style={{ margin: 0, padding: 0 }}>
+              {countries.map((country) => (
+                <CountryLine key={country.id} node={country} />
+              ))}
+            </List>
+          )
         )}
       </div>
     );

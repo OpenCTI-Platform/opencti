@@ -26,6 +26,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import StatusField from '../../common/form/StatusField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -114,6 +115,7 @@ const IncidentValidation = (t) => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
+  status_id: Yup.object(),
 });
 
 class IncidentEditionOverviewComponent extends Component {
@@ -133,6 +135,7 @@ class IncidentEditionOverviewComponent extends Component {
     const commitMessage = values.message;
     const inputValues = R.pipe(
       R.dissoc('message'),
+      R.assoc('status_id', values.status_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
@@ -157,6 +160,10 @@ class IncidentEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
+    let finalValue = value;
+    if (name === 'status_id') {
+      finalValue = value.value;
+    }
     IncidentValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -164,7 +171,7 @@ class IncidentEditionOverviewComponent extends Component {
           mutation: incidentMutationFieldPatch,
           variables: {
             id: this.props.incident.id,
-            input: { key: name, value },
+            input: { key: name, value: finalValue },
           },
         });
       })
@@ -233,6 +240,16 @@ class IncidentEditionOverviewComponent extends Component {
         label: pathOr(null, ['createdBy', 'name'], incident),
         value: pathOr(null, ['createdBy', 'id'], incident),
       };
+    const status = pathOr(null, ['status', 'template', 'name'], incident) === null
+      ? ''
+      : {
+        label: t(
+          `status_${pathOr(null, ['status', 'template', 'name'], incident)}`,
+        ),
+        color: pathOr(null, ['status', 'template', 'color'], incident),
+        value: pathOr(null, ['status', 'id'], incident),
+        order: pathOr(null, ['status', 'order'], incident),
+      };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
@@ -251,6 +268,7 @@ class IncidentEditionOverviewComponent extends Component {
       assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
       assoc('objectMarking', objectMarking),
+      assoc('status_id', status),
       pick([
         'name',
         'confidence',
@@ -258,6 +276,7 @@ class IncidentEditionOverviewComponent extends Component {
         'createdBy',
         'killChainPhases',
         'objectMarking',
+        'status_id',
       ]),
     )(incident);
     return (
@@ -306,6 +325,19 @@ class IncidentEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
+            {incident.workflowEnabled && (
+              <StatusField
+                name="status_id"
+                type="Incident"
+                onFocus={this.handleChangeFocus.bind(this)}
+                onChange={this.handleSubmitField.bind(this)}
+                setFieldValue={setFieldValue}
+                style={{ marginTop: 20 }}
+                helpertext={
+                  <SubscriptionFocus context={context} fieldName="status_id" />
+                }
+              />
+            )}
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
@@ -374,6 +406,15 @@ const IncidentEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

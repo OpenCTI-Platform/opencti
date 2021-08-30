@@ -27,6 +27,7 @@ import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_defin
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import { stixDomainObjectsLinesSearchQuery } from '../stix_domain_objects/StixDomainObjectsLines';
+import { statusFieldStatusesSearchQuery } from '../form/StatusField';
 
 const styles = (theme) => ({
   filters: {
@@ -435,28 +436,28 @@ class Filters extends Component {
             });
           });
         break;
-      case 'x_opencti_report_status':
-        fetchQuery(attributesSearchQuery, {
-          fieldKey: 'x_opencti_report_status',
+      case 'status_id':
+        fetchQuery(statusFieldStatusesSearchQuery, {
           search: event && event.target.value !== 0 ? event.target.value : '',
-          first: 10,
+          first: 50,
         })
           .toPromise()
           .then((data) => {
-            const reportStatusEntities = R.pipe(
-              R.pathOr([], ['attributes', 'edges']),
+            const statusEntities = R.pipe(
+              R.pathOr([], ['statuses', 'edges']),
               R.map((n) => ({
-                label: t(`report_status_${n.node.value}`),
-                value: n.node.value,
-                type: 'attribute',
+                label: t(`status_${n.node.template.name}`),
+                color: n.node.template.color,
+                value: n.node.id,
+                order: n.node.order,
               })),
             )(data);
             this.setState({
               entities: {
                 ...this.state.entities,
-                x_opencti_report_status: R.union(
-                  reportStatusEntities,
-                  this.state.entities.x_opencti_report_status,
+                status_id: R.union(
+                  statusEntities,
+                  this.state.entities.status_id,
                 ),
               },
             });

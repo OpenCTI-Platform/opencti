@@ -84,6 +84,7 @@ import {
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
@@ -153,7 +154,7 @@ import {
   stixDomainObjectFieldsToBeUpdated,
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { isStixCyberObservable, stixCyberObservableFieldsToBeUpdated } from '../schema/stixCyberObservable';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import {
@@ -194,7 +195,31 @@ export const batchLoader = (loader) => {
     },
   };
 };
-export const querySubTypes = async ({ type }) => {
+export const querySubType = async (subTypeId) => {
+  const attributes = schemaTypes.getAttributes(subTypeId);
+  if (attributes.length > 0) {
+    return {
+      id: subTypeId,
+      label: subTypeId,
+    };
+  }
+  return null;
+};
+export const queryDefaultSubTypes = async () => {
+  const sortByLabel = R.sortBy(R.toLower);
+  const types = schemaTypes.get(ABSTRACT_STIX_DOMAIN_OBJECT);
+  const finalResult = R.pipe(
+    sortByLabel,
+    R.map((n) => ({ node: { id: n, label: n } })),
+    R.append({ node: { id: ABSTRACT_STIX_CORE_RELATIONSHIP, label: ABSTRACT_STIX_CORE_RELATIONSHIP } }),
+    R.append({ node: { id: STIX_SIGHTING_RELATIONSHIP, label: STIX_SIGHTING_RELATIONSHIP } })
+  )(types);
+  return buildPagination(0, null, finalResult, finalResult.length);
+};
+export const querySubTypes = async ({ type = null }) => {
+  if (type === null) {
+    return queryDefaultSubTypes();
+  }
   const sortByLabel = R.sortBy(R.toLower);
   const types = schemaTypes.get(type);
   const finalResult = R.pipe(

@@ -154,7 +154,6 @@ export const stixDomainObjectFieldsToBeUpdated = {
     'revoked',
     'description',
     'confidence',
-    'x_opencti_report_status',
     'confidence',
   ],
   [ENTITY_TYPE_COURSE_OF_ACTION]: [
@@ -251,6 +250,7 @@ export const stixDomainObjectsAttributes = {
     'x_mitre_detection',
     'x_mitre_id',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_CAMPAIGN]: [
     'internal_id',
@@ -282,6 +282,7 @@ export const stixDomainObjectsAttributes = {
     'i_last_seen_year',
     'objective',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_CONTAINER_NOTE]: [
     'internal_id',
@@ -304,6 +305,7 @@ export const stixDomainObjectsAttributes = {
     'content',
     'authors',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [
     'internal_id',
@@ -325,6 +327,7 @@ export const stixDomainObjectsAttributes = {
     'last_observed',
     'number_observed',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_CONTAINER_OPINION]: [
     'internal_id',
@@ -346,6 +349,7 @@ export const stixDomainObjectsAttributes = {
     'authors',
     'opinion',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_CONTAINER_REPORT]: [
     'internal_id',
@@ -366,12 +370,12 @@ export const stixDomainObjectsAttributes = {
     'name',
     'description',
     'report_types',
-    'x_opencti_report_status',
     'published',
     'i_published_day',
     'i_published_year',
     'i_published_month',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_COURSE_OF_ACTION]: [
     'internal_id',
@@ -397,6 +401,7 @@ export const stixDomainObjectsAttributes = {
     'x_opencti_threat_hunting',
     'x_opencti_log_sources',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [
     'internal_id',
@@ -424,6 +429,7 @@ export const stixDomainObjectsAttributes = {
     'x_opencti_firstname',
     'x_opencti_lastname',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_IDENTITY_ORGANIZATION]: [
     'internal_id',
@@ -451,6 +457,7 @@ export const stixDomainObjectsAttributes = {
     'x_opencti_organization_type',
     'x_opencti_reliability',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_IDENTITY_SECTOR]: [
     'internal_id',
@@ -476,6 +483,7 @@ export const stixDomainObjectsAttributes = {
     'x_opencti_aliases',
     'i_aliases_ids',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_INDICATOR]: [
     'internal_id',
@@ -512,6 +520,7 @@ export const stixDomainObjectsAttributes = {
     'x_opencti_main_observable_type',
     'x_mitre_platforms',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_INFRASTRUCTURE]: [
     'internal_id',
@@ -543,6 +552,7 @@ export const stixDomainObjectsAttributes = {
     'i_last_seen_month',
     'i_last_seen_year',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_INTRUSION_SET]: [
     'internal_id',
@@ -577,6 +587,7 @@ export const stixDomainObjectsAttributes = {
     'primary_motivation',
     'secondary_motivations',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_LOCATION_CITY]: [
     'internal_id',
@@ -603,6 +614,7 @@ export const stixDomainObjectsAttributes = {
     'i_aliases_ids',
     'x_opencti_location_type',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_LOCATION_COUNTRY]: [
     'internal_id',
@@ -629,6 +641,7 @@ export const stixDomainObjectsAttributes = {
     'i_aliases_ids',
     'x_opencti_location_type',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_LOCATION_REGION]: [
     'internal_id',
@@ -655,6 +668,7 @@ export const stixDomainObjectsAttributes = {
     'i_aliases_ids',
     'x_opencti_location_type',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_LOCATION_POSITION]: [
     'internal_id',
@@ -683,6 +697,7 @@ export const stixDomainObjectsAttributes = {
     'street_address',
     'postal_code',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_MALWARE]: [
     'internal_id',
@@ -718,6 +733,7 @@ export const stixDomainObjectsAttributes = {
     'implementation_languages',
     'capabilities',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_THREAT_ACTOR]: [
     'internal_id',
@@ -755,6 +771,7 @@ export const stixDomainObjectsAttributes = {
     'secondary_motivations',
     'personal_motivations',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_TOOL]: [
     'internal_id',
@@ -779,6 +796,7 @@ export const stixDomainObjectsAttributes = {
     'tool_types',
     'tool_version',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_VULNERABILITY]: [
     'internal_id',
@@ -805,6 +823,7 @@ export const stixDomainObjectsAttributes = {
     'x_opencti_availability_impact',
     'x_opencti_confidentiality_impact',
     'x_opencti_graph_data',
+    'status_id',
   ],
   [ENTITY_TYPE_INCIDENT]: [
     'internal_id',
@@ -836,6 +855,7 @@ export const stixDomainObjectsAttributes = {
     'i_last_seen_year',
     'objective',
     'x_opencti_graph_data',
+    'status_id',
   ],
 };
 R.forEachObjIndexed((value, key) => schemaTypes.registerAttributes(key, value), stixDomainObjectsAttributes);

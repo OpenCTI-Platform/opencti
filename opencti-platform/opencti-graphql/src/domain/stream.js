@@ -6,6 +6,8 @@ import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { deleteElementById, listEntities, loadById, updateAttribute } from '../database/middleware';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
+import { BASE_TYPE_ENTITY } from '../schema/general';
+import { getParentTypes } from '../schema/schemaUtils';
 
 // Stream graphQL handlers
 export const createStreamCollection = async (user, input) => {
@@ -15,6 +17,8 @@ export const createStreamCollection = async (user, input) => {
     internal_id: collectionId,
     standard_id: generateStandardId(ENTITY_TYPE_STREAM_COLLECTION, input),
     entity_type: ENTITY_TYPE_STREAM_COLLECTION,
+    parent_types: getParentTypes(ENTITY_TYPE_STREAM_COLLECTION),
+    base_type: BASE_TYPE_ENTITY,
     ...input,
   };
   await elIndex(INDEX_INTERNAL_OBJECTS, data);

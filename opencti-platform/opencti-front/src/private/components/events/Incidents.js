@@ -21,7 +21,7 @@ import IncidentCreation from './incidents/IncidentCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 
-class Indidents extends Component {
+class Incidents extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
@@ -178,7 +178,7 @@ class Indidents extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '30%',
+        width: '28%',
         isSortable: true,
       },
       objectLabel: {
@@ -193,7 +193,12 @@ class Indidents extends Component {
       },
       modified: {
         label: 'Modification date',
-        width: '15%',
+        width: '13%',
+        isSortable: true,
+      },
+      status: {
+        label: 'Status',
+        width: '10%',
         isSortable: true,
       },
       objectMarking: {
@@ -221,6 +226,7 @@ class Indidents extends Component {
         availableFilterKeys={[
           'labelledBy',
           'markedBy',
+          'status_id',
           'created_start_date',
           'created_end_date',
           'createdBy',
@@ -267,9 +273,9 @@ class Indidents extends Component {
   }
 }
 
-Indidents.propTypes = {
+Incidents.propTypes = {
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default R.compose(inject18n, withRouter)(Indidents);
+export default R.compose(inject18n, withRouter)(Incidents);
