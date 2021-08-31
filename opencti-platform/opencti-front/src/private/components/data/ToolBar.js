@@ -62,6 +62,10 @@ import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMar
 import { defaultValue } from '../../../utils/Graph';
 import { identityCreationIdentitiesSearchQuery } from '../common/identities/IdentityCreation';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
+import Security, {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../utils/Security';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -820,53 +824,57 @@ class ToolBar extends Component {
               <ClearOutlined fontSize="small" />
             </IconButton>
           </Typography>
-          <Tooltip title={t('Update')}>
-            <span>
-              <IconButton
-                aria-label="update"
-                disabled={
-                  numberOfSelectedElements === 0 || this.state.processing
-                }
-                onClick={this.handleOpenUpdate.bind(this)}
-                color="primary"
-              >
-                <BrushOutlined />
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title={t('Merge')}>
-            <span>
-              <IconButton
-                aria-label="merge"
-                disabled={
-                  typesAreNotMergable
-                  || typesAreDifferent
-                  || numberOfSelectedElements < 2
-                  || numberOfSelectedElements > 4
-                  || selectAll
-                  || this.state.processing
-                }
-                onClick={this.handleOpenMerge.bind(this)}
-                color="primary"
-              >
-                <Merge />
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title={t('Delete')}>
-            <span>
-              <IconButton
-                aria-label="delete"
-                disabled={
-                  numberOfSelectedElements === 0 || this.state.processing
-                }
-                onClick={this.handleLaunchDelete.bind(this)}
-                color="primary"
-              >
-                <DeleteOutlined />
-              </IconButton>
-            </span>
-          </Tooltip>
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <Tooltip title={t('Update')}>
+              <span>
+                <IconButton
+                  aria-label="update"
+                  disabled={
+                    numberOfSelectedElements === 0 || this.state.processing
+                  }
+                  onClick={this.handleOpenUpdate.bind(this)}
+                  color="primary"
+                >
+                  <BrushOutlined />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title={t('Merge')}>
+              <span>
+                <IconButton
+                  aria-label="merge"
+                  disabled={
+                    typesAreNotMergable
+                    || typesAreDifferent
+                    || numberOfSelectedElements < 2
+                    || numberOfSelectedElements > 4
+                    || selectAll
+                    || this.state.processing
+                  }
+                  onClick={this.handleOpenMerge.bind(this)}
+                  color="primary"
+                >
+                  <Merge />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Security>
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+            <Tooltip title={t('Delete')}>
+              <span>
+                <IconButton
+                  aria-label="delete"
+                  disabled={
+                    numberOfSelectedElements === 0 || this.state.processing
+                  }
+                  onClick={this.handleLaunchDelete.bind(this)}
+                  color="primary"
+                >
+                  <DeleteOutlined />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Security>
         </Toolbar>
         <Dialog
           open={this.state.displayTask}
