@@ -1004,6 +1004,45 @@ class InvestigationGraphComponent extends Component {
     );
   }
 
+  handleAddRelation(stixCoreRelationship) {
+    if (R.map((n) => n.id, this.graphObjects).includes(stixCoreRelationship.id)) return;
+    this.graphObjects = [...this.graphObjects, stixCoreRelationship];
+    this.graphData = buildGraphData(
+      this.graphObjects,
+      decodeGraphData(this.props.workspace.graph_data),
+      this.props.t,
+    );
+    const selectedTimeRangeInterval = computeTimeRangeInterval(
+      this.graphObjects,
+    );
+    this.setState(
+      {
+        selectedTimeRangeInterval,
+        graphData: applyFilters(
+          this.graphData,
+          this.state.stixCoreObjectsTypes,
+          this.state.markedBy,
+          this.state.createdBy,
+          [],
+          selectedTimeRangeInterval,
+        ),
+      },
+      () => {
+        commitMutation({
+          mutation: investigationGraphRelationsAddMutation,
+          variables: {
+            id: this.props.workspace.id,
+            input: {
+              toIds: [stixCoreRelationship.id],
+              relationship_type: 'has-reference',
+            },
+          },
+        });
+        setTimeout(() => this.handleZoomToFit(), 1500);
+      },
+    );
+  }
+
   handleDelete(stixCoreObject) {
     const relationshipsToRemove = R.filter(
       (n) => n.from?.id === stixCoreObject.id || n.to?.id === stixCoreObject.id,
@@ -1374,6 +1413,7 @@ class InvestigationGraphComponent extends Component {
           workspace={workspace}
           onAdd={this.handleAddEntity.bind(this)}
           onDelete={this.handleDelete.bind(this)}
+          onAddRelation={this.handleAddRelation.bind(this)}
           handleExpandElements={this.handleExpandElements.bind(this)}
           handleDeleteSelected={this.handleDeleteSelected.bind(this)}
           selectedNodes={Array.from(this.selectedNodes)}
