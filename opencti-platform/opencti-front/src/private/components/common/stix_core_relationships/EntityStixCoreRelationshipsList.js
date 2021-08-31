@@ -12,7 +12,6 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import TableBody from '@material-ui/core/TableBody';
-import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
