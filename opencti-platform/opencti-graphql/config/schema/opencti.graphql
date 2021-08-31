@@ -8028,6 +8028,7 @@ type Query {
   connectors: [Connector] @auth(for: [MODULES])
   connectorsForExport: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForImport: [Connector] @auth(for: [KNOWLEDGE])
+  work(id: ID!): Work @auth(for: [MODULES])
   works(
     first: Int
     after: ID
