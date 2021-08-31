@@ -316,7 +316,7 @@ class EntityStixCoreRelationships extends Component {
         isSortable: true,
       },
       confidence: {
-        label: 'Confidence level',
+        label: 'Confidence',
         isSortable: true,
       },
     };

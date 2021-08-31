@@ -207,6 +207,9 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
         ... on Sector {
           name
         }
+        ... on System {
+          name
+        }
         ... on Indicator {
           name
         }

@@ -22,6 +22,7 @@ import {
   OpenWithOutlined,
   ScatterPlotOutlined,
   DateRangeOutlined,
+  LinkOutlined,
 } from '@material-ui/icons';
 import {
   Video3d,
@@ -60,6 +61,7 @@ import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
 import { dateFormat } from '../../../../utils/Time';
 import { parseDomain } from '../../../../utils/Graph';
+import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -97,6 +99,8 @@ class InvestigationGraphBar extends Component {
       openEditEntity: false,
       openExpandElements: false,
       displayRemove: false,
+      relationReversed: false,
+      openCreatedRelation: false,
     };
   }
 
@@ -144,6 +148,14 @@ class InvestigationGraphBar extends Component {
     this.setState({ openMarkedBy: false, anchorElMarkedBy: null });
   }
 
+  handleOpenCreateRelationship() {
+    this.setState({ openCreatedRelation: true });
+  }
+
+  handleCloseCreateRelationship() {
+    this.setState({ openCreatedRelation: false });
+  }
+
   handleOpenSelectByType(event) {
     this.setState({
       openSelectByType: true,
@@ -156,6 +168,10 @@ class InvestigationGraphBar extends Component {
       openSelectByType: false,
       anchorElSelectByType: null,
     });
+  }
+
+  handleReverseRelation() {
+    this.setState({ relationReversed: !this.state.relationReversed });
   }
 
   handleOpenEditItem() {
@@ -230,6 +246,7 @@ class InvestigationGraphBar extends Component {
       markedBy,
       workspace,
       onAdd,
+      onAddRelation,
       onDelete,
       handleDeleteSelected,
       numberOfSelectedNodes,
@@ -246,6 +263,8 @@ class InvestigationGraphBar extends Component {
       handleTimeRangeChange,
       timeRangeValues,
       theme,
+      lastLinkFirstSeen,
+      lastLinkLastSeen,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -259,6 +278,8 @@ class InvestigationGraphBar extends Component {
       openEditRelation,
       openEditEntity,
       openExpandElements,
+      relationReversed,
+      openCreatedRelation,
     } = this.state;
     const viewEnabled = (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
@@ -290,6 +311,39 @@ class InvestigationGraphBar extends Component {
         && numberOfSelectedLinks === 1
         && !selectedLinks[0].parent_types.includes('stix-meta-relationship'));
     const expandEnabled = numberOfSelectedNodes > 0 || numberOfSelectedLinks > 0;
+    const fromSelectedTypes = numberOfSelectedNodes >= 2
+      ? R.uniq(R.map((n) => n.entity_type, R.init(selectedNodes)))
+      : [];
+    const toSelectedTypes = numberOfSelectedNodes >= 2
+      ? R.uniq(R.map((n) => n.entity_type, R.tail(selectedNodes)))
+      : [];
+    const relationEnabled = (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
+      || (toSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
+      || (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1);
+    let relationFromObjects = null;
+    let relationToObjects = null;
+    if (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0) {
+      relationFromObjects = relationReversed
+        ? [R.last(selectedNodes)]
+        : R.init(selectedNodes);
+      relationToObjects = relationReversed
+        ? R.init(selectedNodes)
+        : [R.last(selectedNodes)];
+    } else if (toSelectedTypes.length === 1 && numberOfSelectedLinks === 0) {
+      relationFromObjects = relationReversed
+        ? R.tail(selectedNodes)
+        : [R.head(selectedNodes)];
+      relationToObjects = relationReversed
+        ? [R.head(selectedNodes)]
+        : R.tail(selectedNodes);
+    } else if (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1) {
+      relationFromObjects = relationReversed
+        ? [selectedNodes[0]]
+        : [selectedLinks[0]];
+      relationToObjects = relationReversed
+        ? [selectedLinks[0]]
+        : [selectedNodes[0]];
+    }
     return (
       <Drawer
         anchor="bottom"
@@ -351,7 +405,9 @@ class InvestigationGraphBar extends Component {
               >
                 <span>
                   <IconButton
-                    color={currentModeTree === 'vertical' ? 'secondary' : 'primary'}
+                    color={
+                      currentModeTree === 'vertical' ? 'secondary' : 'primary'
+                    }
                     onClick={handleToggleTreeMode.bind(this, 'vertical')}
                     disabled={currentModeFixed}
                   >
@@ -368,7 +424,9 @@ class InvestigationGraphBar extends Component {
               >
                 <span>
                   <IconButton
-                    color={currentModeTree === 'horizontal' ? 'secondary' : 'primary'}
+                    color={
+                      currentModeTree === 'horizontal' ? 'secondary' : 'primary'
+                    }
                     onClick={handleToggleTreeMode.bind(this, 'horizontal')}
                     disabled={currentModeFixed}
                   >
@@ -700,6 +758,34 @@ class InvestigationGraphBar extends Component {
                     </IconButton>
                   </span>
                 </Tooltip>
+                {onAddRelation && (
+                  <Tooltip title={t('Create a relationship')}>
+                    <span>
+                      <IconButton
+                        color="primary"
+                        onClick={this.handleOpenCreateRelationship.bind(this)}
+                        disabled={!relationEnabled}
+                      >
+                        <LinkOutlined />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                )}
+                {onAddRelation && (
+                  <StixCoreRelationshipCreation
+                    open={openCreatedRelation}
+                    fromObjects={relationFromObjects}
+                    toObjects={relationToObjects}
+                    startTime={lastLinkFirstSeen || null}
+                    stopTime={lastLinkLastSeen || null}
+                    confidence={50}
+                    handleClose={this.handleCloseCreateRelationship.bind(this)}
+                    handleResult={onAddRelation}
+                    handleReverseRelation={this.handleReverseRelation.bind(
+                      this,
+                    )}
+                  />
+                )}
                 <Tooltip title={t('Remove selected items')}>
                   <span>
                     <IconButton
@@ -946,6 +1032,7 @@ InvestigationGraphBar.propTypes = {
   elementsDates: PropTypes.array,
   onAdd: PropTypes.func,
   onDelete: PropTypes.func,
+  onAddRelation: PropTypes.func,
   handleExpandElements: PropTypes.func,
   handleDeleteSelected: PropTypes.func,
   handleCloseEntityEdition: PropTypes.func,
@@ -960,6 +1047,8 @@ InvestigationGraphBar.propTypes = {
   selectedTimeRangeInterval: PropTypes.array,
   timeRangeValues: PropTypes.array,
   theme: PropTypes.object,
+  lastLinkFirstSeen: PropTypes.string,
+  lastLinkLastSeen: PropTypes.string,
 };
 
 export default R.compose(

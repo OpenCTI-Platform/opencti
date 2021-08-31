@@ -247,6 +247,10 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
             name
             description
           }
+          ... on System {
+            name
+            description
+          }
           ... on Indicator {
             name
           }
@@ -335,6 +339,10 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
                 name
                 description
               }
+              ... on System {
+                name
+                description
+              }
               ... on Indicator {
                 name
               }
@@ -420,6 +428,10 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
                 description
               }
               ... on Sector {
+                name
+                description
+              }
+              ... on System {
                 name
                 description
               }
@@ -509,7 +521,11 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
             name
             description
           }
-          ... on Sector {
+          ... on System {
+            name
+            description
+          }
+          ... on System {
             name
             description
           }
@@ -601,6 +617,10 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
                 name
                 description
               }
+              ... on System {
+                name
+                description
+              }
               ... on Indicator {
                 name
               }
@@ -686,6 +706,10 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
                 description
               }
               ... on Sector {
+                name
+                description
+              }
+              ... on System {
                 name
                 description
               }

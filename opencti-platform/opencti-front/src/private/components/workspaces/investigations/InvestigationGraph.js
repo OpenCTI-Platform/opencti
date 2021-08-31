@@ -100,6 +100,9 @@ const investigationGraphStixCoreObjectQuery = graphql`
       ... on Sector {
         name
       }
+      ... on System {
+        name
+      }
       ... on Indicator {
         name
         valid_from
@@ -350,6 +353,9 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on Sector {
               name
             }
+            ... on System {
+              name
+            }
             ... on Indicator {
               name
               valid_from
@@ -541,6 +547,9 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on Sector {
               name
             }
+            ... on System {
+              name
+            }
             ... on Indicator {
               name
               valid_from
@@ -711,7 +720,7 @@ class InvestigationGraphComponent extends Component {
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
       modeFixed: R.propOr(false, 'modeFixed', params),
-      modeTree: R.propOr(false, 'modeTree', params),
+      modeTree: R.propOr('', 'modeTree', params),
       displayTimeRange: R.propOr(false, 'displayTimeRange', params),
       selectedTimeRangeInterval: timeRangeInterval,
       stixCoreObjectsTypes,
@@ -735,6 +744,9 @@ class InvestigationGraphComponent extends Component {
     if (this.initialized) return;
     if (this.graph && this.graph.current) {
       this.graph.current.d3Force('link').distance(50);
+      if (this.state.modeTree !== '') {
+        this.graph.current.d3Force('charge').strength(-1000);
+      }
       if (this.zoom && this.zoom.k && !this.state.mode3D) {
         this.graph.current.zoom(this.zoom.k, 400);
       } else {
@@ -815,16 +827,30 @@ class InvestigationGraphComponent extends Component {
     if (modeTree === 'horizontal') {
       this.setState(
         {
-          modeTree: this.state.modeTree === 'horizontal' ? null : 'horizontal',
+          modeTree: this.state.modeTree === 'horizontal' ? '' : 'horizontal',
         },
-        () => this.saveParameters(),
+        () => {
+          if (this.state.modeTree === 'horizontal') {
+            this.graph.current.d3Force('charge').strength(-1000);
+          } else {
+            this.graph.current.d3Force('charge').strength(-30);
+          }
+          this.saveParameters();
+        },
       );
     } else if (modeTree === 'vertical') {
       this.setState(
         {
-          modeTree: this.state.modeTree === 'vertical' ? null : 'vertical',
+          modeTree: this.state.modeTree === 'vertical' ? '' : 'vertical',
         },
-        () => this.saveParameters(),
+        () => {
+          if (this.state.modeTree === 'vertical') {
+            this.graph.current.d3Force('charge').strength(-1000);
+          } else {
+            this.graph.current.d3Force('charge').strength(-30);
+          }
+          this.saveParameters();
+        },
       );
     }
   }
@@ -990,6 +1016,45 @@ class InvestigationGraphComponent extends Component {
         ),
       },
       () => {
+        setTimeout(() => this.handleZoomToFit(), 1500);
+      },
+    );
+  }
+
+  handleAddRelation(stixCoreRelationship) {
+    if (R.map((n) => n.id, this.graphObjects).includes(stixCoreRelationship.id)) return;
+    this.graphObjects = [...this.graphObjects, stixCoreRelationship];
+    this.graphData = buildGraphData(
+      this.graphObjects,
+      decodeGraphData(this.props.workspace.graph_data),
+      this.props.t,
+    );
+    const selectedTimeRangeInterval = computeTimeRangeInterval(
+      this.graphObjects,
+    );
+    this.setState(
+      {
+        selectedTimeRangeInterval,
+        graphData: applyFilters(
+          this.graphData,
+          this.state.stixCoreObjectsTypes,
+          this.state.markedBy,
+          this.state.createdBy,
+          [],
+          selectedTimeRangeInterval,
+        ),
+      },
+      () => {
+        commitMutation({
+          mutation: investigationGraphRelationsAddMutation,
+          variables: {
+            id: this.props.workspace.id,
+            input: {
+              toIds: [stixCoreRelationship.id],
+              relationship_type: 'has-reference',
+            },
+          },
+        });
         setTimeout(() => this.handleZoomToFit(), 1500);
       },
     );
@@ -1365,6 +1430,7 @@ class InvestigationGraphComponent extends Component {
           workspace={workspace}
           onAdd={this.handleAddEntity.bind(this)}
           onDelete={this.handleDelete.bind(this)}
+          onAddRelation={this.handleAddRelation.bind(this)}
           handleExpandElements={this.handleExpandElements.bind(this)}
           handleDeleteSelected={this.handleDeleteSelected.bind(this)}
           selectedNodes={Array.from(this.selectedNodes)}
@@ -1646,6 +1712,9 @@ const InvestigationGraph = createFragmentContainer(
                 name
               }
               ... on Sector {
+                name
+              }
+              ... on System {
                 name
               }
               ... on Indicator {

@@ -109,6 +109,8 @@ export const stixCoreRelationshipsAttributes = [
   'i_stop_time_month',
   'i_stop_time_year',
   'i_inference_rule',
+  'i_inference_weight',
+  'status_id',
 ];
 R.map(
   (stixCoreRelationshipType) =>

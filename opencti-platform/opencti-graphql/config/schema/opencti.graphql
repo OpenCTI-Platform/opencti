@@ -25,7 +25,7 @@ scalar DateTime
 scalar ConstraintString
 scalar ConstraintNumber
 scalar Upload
-enum Status {
+enum State {
   wait
   progress
   complete
@@ -472,6 +472,58 @@ type SubTypeEdge {
 type SubType {
   id: ID!
   label: String!
+  statuses: StatusConnection
+  workflowEnabled: Boolean
+}
+
+############## Statuses
+enum StatusTemplateOrdering {
+  name
+}
+type StatusTemplate {
+  id: ID!
+  name: String!
+  color: String!
+}
+type StatusTemplateConnection {
+  pageInfo: PageInfo!
+  edges: [StatusTemplateEdge]
+}
+type StatusTemplateEdge {
+  cursor: String!
+  node: StatusTemplate!
+}
+enum StatusOrdering {
+  type
+  order
+}
+enum StatusFilter {
+  type
+}
+input StatusesFiltering {
+  key: StatusFilter!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+type Status {
+  id: ID!
+  template: StatusTemplate
+  type: String!
+  order: Int!
+  disabled: Boolean
+}
+type StatusConnection {
+  pageInfo: PageInfo!
+  edges: [StatusEdge]
+}
+type StatusEdge {
+  cursor: String!
+  node: Status!
+}
+input StatusAddInput {
+  template_id: String!
+  order: Int!
 }
 
 ############## Files
@@ -508,7 +560,7 @@ type Work {
   user: User
   connector: Connector
   timestamp: DateTime!
-  status: Status!
+  status: State!
   event_source_id: String
   received_time: DateTime
   processed_time: DateTime
@@ -540,7 +592,7 @@ type File {
   lastModified: DateTime
   lastModifiedSinceMin: Int
   metaData: FileMetadata
-  uploadStatus: Status!
+  uploadStatus: State!
   works: [Work]
 }
 type FileEdge {
@@ -1414,12 +1466,14 @@ enum StixDomainObjectsOrdering {
   valid_from
   valid_until
   indicator_pattern
+  status_id
 }
 enum StixDomainObjectsFilter {
   name
   entity_type
   aliases
-  x_opencti_aliases  created
+  x_opencti_aliases
+  created
   modified
   created_at
   createdBy
@@ -1435,9 +1489,9 @@ enum StixDomainObjectsFilter {
   pattern_type
   x_opencti_main_observable_type
   report_types
-  x_opencti_report_status
   x_opencti_organization_type
   published
+  status_id
 }
 input StixDomainObjectsFiltering {
   key: StixDomainObjectsFilter!
@@ -1510,6 +1564,8 @@ interface StixDomainObject {
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input StixDomainObjectAddInput {
   stix_id: String
@@ -1542,6 +1598,7 @@ enum AttackPatternsOrdering {
   modified
   created_at
   updated_at
+  status_id
 }
 enum AttackPatternsFilter {
   name
@@ -1556,6 +1613,7 @@ enum AttackPatternsFilter {
   labelledBy
   mitigatedBy
   revoked
+  status_id
 }
 input AttackPatternsFiltering {
   key: AttackPatternsFilter!
@@ -1643,6 +1701,8 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input AttackPatternAddInput {
   stix_id: String
@@ -1678,6 +1738,7 @@ enum CampaignsOrdering {
   modified
   created_at
   updated_at
+  status_id
 }
 enum CampaignsFilter {
   name
@@ -1689,6 +1750,7 @@ enum CampaignsFilter {
   createdBy
   markedBy
   labelledBy
+  status_id
 }
 input CampaignsFiltering {
   key: CampaignsFilter!
@@ -1770,6 +1832,8 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input CampaignAddInput {
   stix_id: String
@@ -1802,6 +1866,7 @@ enum ContainersOrdering {
   created_at
   updated_at
   createdBy
+  status_id
 }
 enum ContainersFilter {
   entity_type
@@ -1817,6 +1882,7 @@ enum ContainersFilter {
   markedBy
   labelledBy
   objectContains
+  status_id
 }
 input ContainersFiltering {
   key: ContainersFilter!
@@ -1903,6 +1969,7 @@ enum NotesOrdering {
   created_at
   updated_at
   createdBy
+  status_id
 }
 enum NotesFilter {
   attribute_abstract
@@ -1916,6 +1983,7 @@ enum NotesFilter {
   markedBy
   labelledBy
   objectContains
+  status_id
 }
 input NotesFiltering {
   key: NotesFilter!
@@ -2006,6 +2074,8 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input NoteAddInput {
   stix_id: String
@@ -2037,6 +2107,7 @@ enum ObservedDatasOrdering {
   created_at
   updated_at
   createdBy
+  status_id
 }
 enum ObservedDatasFilter {
   first_observed
@@ -2050,6 +2121,7 @@ enum ObservedDatasFilter {
   markedBy
   labelledBy
   objectContains
+  status_id
 }
 input ObservedDatasFiltering {
   key: ObservedDatasFilter!
@@ -2140,6 +2212,8 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input ObservedDataAddInput {
   stix_id: String
@@ -2169,6 +2243,7 @@ enum OpinionsOrdering {
   created_at
   updated_at
   createdBy
+  status_id
 }
 enum OpinionsFilter {
   explanation
@@ -2182,6 +2257,7 @@ enum OpinionsFilter {
   markedBy
   labelledBy
   objectContains
+  status_id
 }
 input OpinionsFiltering {
   key: OpinionsFilter!
@@ -2272,6 +2348,8 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input OpinionAddInput {
   stix_id: String
@@ -2299,10 +2377,10 @@ enum ReportsOrdering {
   created
   modified
   published
-  x_opencti_report_status
   created_at
   updated_at
   createdBy
+  status_id
 }
 enum ReportsFilter {
   name
@@ -2311,13 +2389,13 @@ enum ReportsFilter {
   created
   created_at
   report_types
-  x_opencti_report_status
   confidence
   objectLabel
   createdBy
   markedBy
   labelledBy
   objectContains
+  status_id
 }
 input ReportsFiltering {
   key: ReportsFilter!
@@ -2401,7 +2479,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   description: String
   report_types: [String]
   published: DateTime
-  x_opencti_report_status: Int
   # Technical
   creator: User
   toStix: String
@@ -2410,6 +2487,8 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input ReportAddInput {
   stix_id: String
@@ -2418,7 +2497,6 @@ input ReportAddInput {
   description: String
   published: DateTime!
   report_types: [String]
-  x_opencti_report_status: Int
   revoked: Boolean
   lang: String
   confidence: Int
@@ -2440,6 +2518,7 @@ enum CoursesOfActionOrdering {
   modified
   created_at
   updated_at
+  status_id
 }
 enum CoursesOfActionFilter {
   name
@@ -2451,6 +2530,7 @@ enum CoursesOfActionFilter {
   markedBy
   labelledBy
   mitigatedBy
+  status_id
 }
 input CoursesOfActionFiltering {
   key: CoursesOfActionFilter!
@@ -2533,6 +2613,8 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input CourseOfActionAddInput {
   stix_id: String
@@ -2561,6 +2643,7 @@ enum IdentitiesOrdering {
   modified
   created_at
   updated_at
+  status_id
 }
 enum IdentitiesFilter {
   entity_type
@@ -2575,6 +2658,7 @@ enum IdentitiesFilter {
   createdBy
   markedBy
   labelledBy
+  status_id
 }
 input IdentitiesFiltering {
   key: IdentitiesFilter!
@@ -2659,6 +2743,8 @@ interface Identity {
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input IdentityAddInput {
   stix_id: String
@@ -2690,6 +2776,7 @@ enum IndividualsOrdering {
   lastname
   created
   modified
+  status_id
 }
 enum IndividualsFilter {
   name
@@ -2701,6 +2788,7 @@ enum IndividualsFilter {
   createdBy
   markedBy
   labelledBy
+  status_id
 }
 input IndividualsFiltering {
   key: IndividualsFilter!
@@ -2786,6 +2874,8 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input IndividualAddInput {
   stix_id: String
@@ -2817,6 +2907,7 @@ enum OrganizationsOrdering {
   created
   modified
   x_opencti_organization_type
+  status_id
 }
 enum OrganizationsFilter {
   name
@@ -2830,6 +2921,7 @@ enum OrganizationsFilter {
   createdBy
   markedBy
   labelledBy
+  status_id
 }
 input OrganizationsFiltering {
   key: OrganizationsFilter!
@@ -2923,6 +3015,8 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input OrganizationAddInput {
   stix_id: String
@@ -2956,6 +3050,7 @@ enum SectorsOrdering {
   modified
   created_at
   updated_at
+  status_id
 }
 enum SectorsFilter {
   name
@@ -2968,6 +3063,7 @@ enum SectorsFilter {
   markedBy
   labelledBy
   partOf
+  status_id
 }
 input SectorsFiltering {
   key: SectorsFilter!
@@ -3054,6 +3150,8 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input SectorAddInput {
   stix_id: String
@@ -3063,6 +3161,138 @@ input SectorAddInput {
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+  update: Boolean
+}
+
+################ Systems
+enum SystemsOrdering {
+  name
+  confidence
+  firstname
+  lastname
+  created
+  modified
+  status_id
+}
+enum SystemsFilter {
+  name
+  aliases
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  markedBy
+  labelledBy
+  status_id
+}
+input SystemsFiltering {
+  key: SystemsFilter!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+type SystemConnection {
+  pageInfo: PageInfo!
+  edges: [SystemEdge]
+}
+type SystemEdge {
+  cursor: String!
+  node: System!
+}
+type System implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): StixCoreRelationshipConnection
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  # Identity
+  identity_class: String!
+  name: String!
+  description: String
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  # System
+  x_opencti_firstname: String
+  x_opencti_lastname: String
+  organizations: OrganizationConnection
+  # Technical
+  creator: User
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+}
+input SystemAddInput {
+  stix_id: String
+  x_opencti_stix_ids: [String]
+  name: String! @constraint(minLength: 2)
+  description: String!
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  x_opencti_firstname: String
+  x_opencti_lastname: String
   confidence: Int
   revoked: Boolean
   lang: String
@@ -3092,6 +3322,7 @@ enum IndicatorsOrdering {
   modified
   created_at
   updated_at
+  status_id
 }
 enum IndicatorsFilter {
   name
@@ -3112,6 +3343,7 @@ enum IndicatorsFilter {
   labelledBy
   basedOn
   indicates
+  status_id
 }
 input IndicatorsFiltering {
   key: IndicatorsFilter!
@@ -3201,6 +3433,8 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input IndicatorAddInput {
   stix_id: String
@@ -3241,6 +3475,7 @@ enum InfrastructuresOrdering {
   modified
   created_at
   updated_at
+  status_id
 }
 enum InfrastructuresFilter {
   name
@@ -3255,6 +3490,7 @@ enum InfrastructuresFilter {
   createdBy
   markedBy
   labelledBy
+  status_id
 }
 input InfrastructuresFiltering {
   key: InfrastructuresFilter!
@@ -3337,6 +3573,8 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input InfrastructureAddInput {
   stix_id: String
@@ -3368,6 +3606,7 @@ enum IntrusionSetsOrdering {
   modified
   created_at
   updated_at
+  status_id
 }
 enum IntrusionSetsFilter {
   name
@@ -3379,6 +3618,7 @@ enum IntrusionSetsFilter {
   createdBy
   markedBy
   labelledBy
+  status_id
 }
 input IntrusionSetsFiltering {
   key: IntrusionSetsFilter!
@@ -3464,6 +3704,8 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input IntrusionSetAddInput {
   stix_id: String
@@ -3499,6 +3741,7 @@ enum LocationsOrdering {
   modified
   created_at
   updated_at
+  status_id
 }
 enum LocationsFilter {
   entity_type
@@ -3512,6 +3755,7 @@ enum LocationsFilter {
   createdBy
   markedBy
   labelledBy
+  status_id
 }
 input LocationsFiltering {
   key: LocationsFilter!
@@ -3591,6 +3835,8 @@ interface Location {
   x_opencti_aliases: [String]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input LocationAddInput {
   stix_id: String
@@ -3624,6 +3870,7 @@ enum PositionsOrdering {
   modified
   created_at
   updated_at
+  status_id
 }
 enum PositionsFilter {
   created
@@ -3633,6 +3880,7 @@ enum PositionsFilter {
   createdBy
   markedBy
   labelledBy
+  status_id
 }
 input PositionsFiltering {
   key: PositionsFilter!
@@ -3718,6 +3966,8 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input PositionAddInput {
   stix_id: String
@@ -3754,6 +4004,7 @@ enum CitiesOrdering {
   updated_at
   objectMarking
   objectLabel
+  status_id
 }
 enum CitiesFilter {
   name
@@ -3764,6 +4015,7 @@ enum CitiesFilter {
   createdBy
   markedBy
   labelledBy
+  status_id
 }
 input CitiesFiltering {
   key: CitiesFilter!
@@ -3847,6 +4099,8 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input CityAddInput {
   stix_id: String
@@ -3878,6 +4132,7 @@ enum CountriesOrdering {
   modified
   created_at
   updated_at
+  status_id
 }
 enum CountriesFilter {
   created
@@ -3886,6 +4141,7 @@ enum CountriesFilter {
   createdBy
   markedBy
   labelledBy
+  status_id
 }
 input CountriesFiltering {
   key: CountriesFilter!
@@ -3969,6 +4225,8 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input CountryAddInput {
   stix_id: String
@@ -4000,6 +4258,7 @@ enum RegionsOrdering {
   modified
   created_at
   updated_at
+  status_id
 }
 enum RegionsFilter {
   created
@@ -4008,6 +4267,7 @@ enum RegionsFilter {
   createdBy
   markedBy
   labelledBy
+  status_id
 }
 input RegionsFiltering {
   key: RegionsFilter!
@@ -4094,6 +4354,8 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input RegionAddInput {
   stix_id: String
@@ -4129,6 +4391,7 @@ enum MalwaresOrdering {
   updated_at
   objectMarking
   objectLabel
+  status_id
 }
 enum MalwaresFilter {
   name
@@ -4144,6 +4407,7 @@ enum MalwaresFilter {
   createdBy
   markedBy
   labelledBy
+  status_id
 }
 input MalwaresFiltering {
   key: MalwaresFilter!
@@ -4230,6 +4494,8 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input MalwareAddInput {
   stix_id: String
@@ -4265,6 +4531,7 @@ enum ThreatActorsOrdering {
   modified
   created_at
   updated_at
+  status_id
 }
 enum ThreatActorsFilter {
   name
@@ -4276,6 +4543,7 @@ enum ThreatActorsFilter {
   createdBy
   markedBy
   labelledBy
+  status_id
 }
 input ThreatActorsFiltering {
   key: ThreatActorsFilter!
@@ -4365,6 +4633,8 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input ThreatActorAddInput {
   stix_id: String
@@ -4401,6 +4671,7 @@ enum ToolsOrdering {
   modified
   created_at
   updated_at
+  status_id
 }
 enum ToolsFilter {
   name
@@ -4411,6 +4682,7 @@ enum ToolsFilter {
   createdBy
   markedBy
   labelledBy
+  status_id
 }
 input ToolsFiltering {
   key: ToolsFilter!
@@ -4492,6 +4764,8 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input ToolAddInput {
   stix_id: String
@@ -4525,6 +4799,7 @@ enum VulnerabilitiesOrdering {
   modified
   created_at
   updated_at
+  status_id
 }
 enum VulnerabilitiesFilter {
   name
@@ -4537,6 +4812,7 @@ enum VulnerabilitiesFilter {
   createdBy
   markedBy
   labelledBy
+  status_id
 }
 input VulnerabilitiesFiltering {
   key: VulnerabilitiesFilter!
@@ -4620,6 +4896,8 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input VulnerabilityAddInput {
   stix_id: String
@@ -4654,6 +4932,7 @@ enum IncidentsOrdering {
   modified
   created_at
   updated_at
+  status_id
 }
 enum IncidentsFilter {
   name
@@ -4664,6 +4943,7 @@ enum IncidentsFilter {
   createdBy
   markedBy
   labelledBy
+  status_id
 }
 input IncidentsFiltering {
   key: IncidentsFilter!
@@ -4745,6 +5025,8 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 input IncidentAddInput {
   stix_id: String
@@ -7441,6 +7723,7 @@ union StixObjectOrStixRelationship =
   | Individual
   | Organization
   | Sector
+  | System
   | Indicator
   | Infrastructure
   | IntrusionSet # Location
@@ -7615,6 +7898,7 @@ enum StixCoreRelationshipsOrdering {
   toValidFrom
   toValidUntil
   toPatternType
+  status_id
 }
 enum StixCoreRelationshipsFilter {
   created
@@ -7628,6 +7912,7 @@ enum StixCoreRelationshipsFilter {
   toCreatedAt
   toPatternType
   toMainObservableType
+  status_id
 }
 input StixCoreRelationshipsFiltering {
   key: StixCoreRelationshipsFilter!
@@ -7705,6 +7990,8 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   creator: User
   toStix: String
   editContext: [EditUserContext]
+  status: Status
+  workflowEnabled: Boolean
 }
 input StixCoreRelationshipAddInput {
   stix_id: String
@@ -7747,6 +8034,7 @@ enum StixSightingRelationshipsOrdering {
   toPatternType
   toCreatedAt
   attribute_count
+  status_id
 }
 enum StixSightingRelationshipsFilter {
   x_opencti_negative
@@ -7760,6 +8048,7 @@ enum StixSightingRelationshipsFilter {
   labelledBy
   toPatternType
   toMainObservableType
+  status_id
 }
 input StixSightingRelationshipsFiltering {
   key: StixSightingRelationshipsFilter!
@@ -7812,6 +8101,8 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   creator: User
   toStix: String
   editContext: [EditUserContext]
+  status: Status
+  workflowEnabled: Boolean
 }
 input StixSightingRelationshipAddInput {
   stix_id: String
@@ -7988,12 +8279,13 @@ type Query {
     endDate: DateTime!
     interval: String!
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  subType(id: String!): SubType @auth(for: [KNOWLEDGE])
   subTypes(
     first: Int
     after: ID
     orderBy: SubTypesOrdering
     orderMode: OrderingMode
-    type: String!
+    type: String
     includeParents: Boolean
     search: String
   ): SubTypeConnection @auth(for: [KNOWLEDGE])
@@ -8083,6 +8375,23 @@ type Query {
     orderMode: OrderingMode
     search: String
   ): UserSubscriptionConnection @auth(for: [KNOWLEDGE])
+  statusTemplate(id: String!): StatusTemplate @auth
+  statusTemplates(
+    first: Int
+    after: ID
+    orderBy: StatusTemplateOrdering
+    orderMode: OrderingMode
+  ): StatusTemplateConnection @auth
+  status(id: String!): Status @auth
+  statuses(
+    first: Int
+    after: ID
+    orderBy: StatusOrdering
+    orderMode: OrderingMode
+    filters: [StatusesFiltering]
+    filterMode: FilterMode
+    search: String
+  ): StatusConnection @auth
   task(id: String!): Task @auth(for: [KNOWLEDGE])
   tasks(
     first: Int
@@ -8424,6 +8733,17 @@ type Query {
     search: String
     toStix: Boolean
   ): SectorConnection @auth(for: [KNOWLEDGE])
+  system(id: String): System @auth(for: [KNOWLEDGE])
+  systems(
+    first: Int
+    after: ID
+    orderBy: SystemsOrdering
+    orderMode: OrderingMode
+    filters: [SystemsFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): SystemConnection @auth(for: [KNOWLEDGE])
   indicator(id: String!): Indicator @auth(for: [KNOWLEDGE])
   indicators(
     first: Int
@@ -8891,6 +9211,11 @@ type SettingsEditMutations {
   contextPatch(input: EditContext): Settings
   contextClean: Settings
 }
+type SubTypeEditMutations {
+  statusAdd(input: StatusAddInput): SubType
+  statusFieldPatch(statusId: String!, input: [EditInput]!): SubType
+  statusDelete(statusId: String!): SubType
+}
 type GroupEditMutations {
   delete: ID
   fieldPatch(input: [EditInput]!): Group
@@ -9110,6 +9435,14 @@ type SectorEditMutations {
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: String!, relationship_type: String!): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
 }
+type SystemEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: [EditInput]!, commitMessage: String): System @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): System @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: System @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): System @auth(for: [KNOWLEDGE_KNUPDATE])
+}
 type IndicatorEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9287,6 +9620,7 @@ type Mutation {
   ######## INTERNAL OBJECT ENTITIES
   token(input: UserLoginInput): String
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: [SETTINGS])
+  subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS])
   groupAdd(input: GroupAddInput): Group @auth(for: [SETTINGS_SETACCESSES])
   groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
   userAdd(input: UserAddInput): User @auth(for: [SETTINGS_SETACCESSES])
@@ -9375,6 +9709,8 @@ type Mutation {
   organizationEdit(id: ID!): OrganizationEditMutations
   sectorAdd(input: SectorAddInput): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
   sectorEdit(id: ID!): SectorEditMutations
+  systemAdd(input: SystemAddInput): System @auth(for: [KNOWLEDGE_KNUPDATE])
+  systemEdit(id: ID!): SystemEditMutations
   indicatorAdd(input: IndicatorAddInput): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   indicatorEdit(id: ID!): IndicatorEditMutations
   infrastructureAdd(input: InfrastructureAddInput): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])

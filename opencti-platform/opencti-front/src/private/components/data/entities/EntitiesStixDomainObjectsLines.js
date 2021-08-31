@@ -153,6 +153,11 @@ export const entitiesStixDomainObjectsLinesSearchQuery = graphql`
             description
             x_opencti_aliases
           }
+          ... on System {
+            name
+            description
+            x_opencti_aliases
+          }
           ... on Indicator {
             name
             description

@@ -17,6 +17,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
+import { defaultValue } from '../../../../utils/Graph';
 
 const styles = (theme) => ({
   container: {
@@ -162,7 +163,7 @@ class StixCoreRelationshipCreationFromEntityLinesContainer extends Component {
                           primary={
                             stixDomainObject.x_mitre_id
                               ? `[${stixDomainObject.x_mitre_id}] ${stixDomainObject.name}`
-                              : stixDomainObject.name
+                              : defaultValue(stixDomainObject)
                           }
                           secondary={truncate(
                             stixDomainObject.description,
@@ -268,6 +269,10 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                   name
                   description
                 }
+                ... on System {
+                  name
+                  description
+                }
                 ... on Indicator {
                   name
                   description
@@ -315,6 +320,142 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                 ... on Incident {
                   name
                   description
+                }
+                ... on ObservedData {
+                  objects(first: 1) {
+                    edges {
+                      node {
+                        ... on StixCoreObject {
+                          id
+                          entity_type
+                          parent_types
+                          created_at
+                          createdBy {
+                            ... on Identity {
+                              id
+                              name
+                              entity_type
+                            }
+                          }
+                          objectMarking {
+                            edges {
+                              node {
+                                id
+                                definition
+                              }
+                            }
+                          }
+                        }
+                        ... on AttackPattern {
+                          name
+                          description
+                          x_mitre_id
+                        }
+                        ... on Campaign {
+                          name
+                          description
+                          first_seen
+                          last_seen
+                        }
+                        ... on Note {
+                          attribute_abstract
+                        }
+                        ... on ObservedData {
+                          first_observed
+                          last_observed
+                        }
+                        ... on Opinion {
+                          opinion
+                        }
+                        ... on Report {
+                          name
+                          description
+                          published
+                        }
+                        ... on CourseOfAction {
+                          name
+                          description
+                        }
+                        ... on Individual {
+                          name
+                          description
+                        }
+                        ... on Organization {
+                          name
+                          description
+                        }
+                        ... on Sector {
+                          name
+                          description
+                        }
+                        ... on System {
+                          name
+                          description
+                        }
+                        ... on Indicator {
+                          name
+                          description
+                          valid_from
+                        }
+                        ... on Infrastructure {
+                          name
+                          description
+                        }
+                        ... on IntrusionSet {
+                          name
+                          description
+                          first_seen
+                          last_seen
+                        }
+                        ... on Position {
+                          name
+                          description
+                        }
+                        ... on City {
+                          name
+                          description
+                        }
+                        ... on Country {
+                          name
+                          description
+                        }
+                        ... on Region {
+                          name
+                          description
+                        }
+                        ... on Malware {
+                          name
+                          description
+                          first_seen
+                          last_seen
+                        }
+                        ... on ThreatActor {
+                          name
+                          description
+                          first_seen
+                          last_seen
+                        }
+                        ... on Tool {
+                          name
+                          description
+                        }
+                        ... on Vulnerability {
+                          name
+                          description
+                        }
+                        ... on Incident {
+                          name
+                          description
+                          first_seen
+                          last_seen
+                        }
+                        ... on StixCyberObservable {
+                          observable_value
+                          x_opencti_description
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }

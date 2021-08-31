@@ -7,25 +7,26 @@ import { logApp } from '../config/conf';
 
 // region declarations
 export const RULES_DECLARATION = [];
-export const RULES_ATTRIBUTES_MERGE = {
+export const RULES_ATTRIBUTES_BEHAVIOR = {
+  OPERATIONS: { MIN: 'MIN', MAX: 'MAX', AVG: 'AVG', SUM: 'SUM', AGG: 'AGG' },
   _attributes: {
     start_time: 'MIN',
     first_seen: 'MIN',
     stop_time: 'MAX',
     last_seen: 'MAX',
     confidence: 'AVG',
+    objectMarking: 'AGG',
   },
-  OPERATIONS: { MIN: 'MIN', MAX: 'MAX', AVG: 'AVG', SUM: 'SUM' },
-  register(rule, name, operation) {
-    const meta = { rule, name, operation };
+  register(rule, attribute, operation) {
+    const meta = { rule, attribute, operation };
     if (isEmptyField(this.OPERATIONS[operation])) {
       throw UnsupportedError('Try to register an unsupported operation', meta);
     }
-    const declaredOperation = this._attributes[name];
+    const declaredOperation = this._attributes[attribute];
     if (isNotEmptyField(declaredOperation) && declaredOperation !== operation) {
       logApp.warn('Overriding attribute rule operation', meta);
     }
-    this._attributes[name] = operation;
+    this._attributes[attribute] = operation;
   },
   getOperation(name) {
     return this._attributes[name];

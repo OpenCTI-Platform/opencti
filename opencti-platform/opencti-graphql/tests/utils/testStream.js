@@ -49,6 +49,7 @@ export const checkInstanceDiff = async (loaded, rebuilt, idLoader = internalLoad
     const attributeKey = attributes[attrIndex];
     if (
       attributeKey === 'x_opencti_id' ||
+      attributeKey === 'status_id' || // TODO Add a specific check
       attributeKey === 'created_at' ||
       attributeKey === 'updated_at' ||
       attributeKey === 'revoked' ||

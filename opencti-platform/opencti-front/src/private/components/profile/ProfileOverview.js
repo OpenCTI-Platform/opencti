@@ -465,6 +465,9 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
               ... on Sector {
                 name
               }
+              ... on System {
+                name
+              }
               ... on Indicator {
                 name
                 valid_from

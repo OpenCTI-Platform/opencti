@@ -64,7 +64,6 @@ import {
 } from '../schema/identifier';
 import {
   buildDeleteEvent,
-  buildUpdateEvent,
   lockResource,
   notify,
   redisAddDeletions,
@@ -81,11 +80,11 @@ import {
   convertTypeToStixType,
   mergeDeepRightAll,
   STIX_SPEC_VERSION,
-  updateInputsToPatch,
 } from './stix';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
@@ -103,6 +102,7 @@ import {
   INPUT_OBJECTS,
   INTERNAL_IDS_ALIASES,
   INTERNAL_PREFIX,
+  refsExtractor,
   REL_INDEX_PREFIX,
   RULE_PREFIX,
   schemaTypes,
@@ -123,7 +123,12 @@ import {
   STIX_ATTRIBUTE_TO_META_FIELD,
   STIX_META_RELATION_TO_OPENCTI_INPUT,
 } from '../schema/stixMetaRelationship';
-import { internalObjectsFieldsToBeUpdated, isDatedInternalObject, isInternalObject } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_STATUS,
+  internalObjectsFieldsToBeUpdated,
+  isDatedInternalObject,
+  isInternalObject,
+} from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
@@ -154,7 +159,7 @@ import {
   stixDomainObjectFieldsToBeUpdated,
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { isStixCyberObservable, stixCyberObservableFieldsToBeUpdated } from '../schema/stixCyberObservable';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import {
@@ -173,7 +178,7 @@ import {
 import { checkObservableSyntax } from '../utils/syntax';
 import { deleteAllFiles } from './minio';
 import { filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
-import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_MERGE } from '../rules/rules';
+import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -195,7 +200,31 @@ export const batchLoader = (loader) => {
     },
   };
 };
-export const querySubTypes = async ({ type }) => {
+export const querySubType = async (subTypeId) => {
+  const attributes = schemaTypes.getAttributes(subTypeId);
+  if (attributes.length > 0) {
+    return {
+      id: subTypeId,
+      label: subTypeId,
+    };
+  }
+  return null;
+};
+export const queryDefaultSubTypes = async () => {
+  const sortByLabel = R.sortBy(R.toLower);
+  const types = schemaTypes.get(ABSTRACT_STIX_DOMAIN_OBJECT);
+  const finalResult = R.pipe(
+    sortByLabel,
+    R.map((n) => ({ node: { id: n, label: n } })),
+    R.append({ node: { id: ABSTRACT_STIX_CORE_RELATIONSHIP, label: ABSTRACT_STIX_CORE_RELATIONSHIP } }),
+    R.append({ node: { id: STIX_SIGHTING_RELATIONSHIP, label: STIX_SIGHTING_RELATIONSHIP } })
+  )(types);
+  return buildPagination(0, null, finalResult, finalResult.length);
+};
+export const querySubTypes = async ({ type = null }) => {
+  if (type === null) {
+    return queryDefaultSubTypes();
+  }
   const sortByLabel = R.sortBy(R.toLower);
   const types = schemaTypes.get(type);
   const finalResult = R.pipe(
@@ -1501,6 +1530,7 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
 };
 // noinspection ExceptionCaughtLocallyJS
 export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
+  const { locks = [] } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   // Pre check
   const elementsByKey = R.groupBy((e) => e.key, updates);
@@ -1517,7 +1547,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
   if (!instance) {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
-  const participantIds = getInstanceIds(instance);
+  const participantIds = getInstanceIds(instance).filter((e) => !locks.includes(e));
   // 01. Check if updating alias lead to entity conflict
   const keys = R.map((t) => t.key, attributes);
   if (isStixObjectAliased(instance.entity_type)) {
@@ -1944,61 +1974,58 @@ const buildRelationTimeFilter = (input) => {
 
 const createRuleDataPatch = (instance) => {
   // 01 - Compute the attributes
-  const ruleInput = {};
-  const attributes = RULES_ATTRIBUTES_MERGE.supportedAttributes();
-  const instanceAttributes = schemaTypes.getAttributes(instance.entity_type || instance.relationship_type);
+  const weight = Object.keys(instance)
+    .filter((key) => key.startsWith(RULE_PREFIX))
+    .map((key) => instance[key])
+    .flat().length;
+  const patch = { i_inference_weight: weight };
+  const attributes = RULES_ATTRIBUTES_BEHAVIOR.supportedAttributes();
   for (let index = 0; index < attributes.length; index += 1) {
     const attribute = attributes[index];
-    if (instanceAttributes.includes(attribute)) {
-      const values = getAllRulesField(instance, attribute);
-      if (values.length > 0) {
-        const operation = RULES_ATTRIBUTES_MERGE.getOperation(attribute);
-        if (operation === RULES_ATTRIBUTES_MERGE.OPERATIONS.AVG) {
-          if (!isNumericAttribute(attribute)) {
-            throw UnsupportedError('Can apply avg on non numeric attribute');
-          }
-          ruleInput[attribute] = computeAverage(values);
+    const values = getAllRulesField(instance, attribute);
+    if (values.length > 0) {
+      const operation = RULES_ATTRIBUTES_BEHAVIOR.getOperation(attribute);
+      if (operation === RULES_ATTRIBUTES_BEHAVIOR.OPERATIONS.AVG) {
+        if (!isNumericAttribute(attribute)) {
+          throw UnsupportedError('Can apply avg on non numeric attribute');
         }
-        if (operation === RULES_ATTRIBUTES_MERGE.OPERATIONS.SUM) {
-          if (!isNumericAttribute(attribute)) {
-            throw UnsupportedError('Can apply sum on non numeric attribute');
-          }
-          ruleInput[attribute] = R.sum(values);
+        patch[attribute] = computeAverage(values);
+      }
+      if (operation === RULES_ATTRIBUTES_BEHAVIOR.OPERATIONS.SUM) {
+        if (!isNumericAttribute(attribute)) {
+          throw UnsupportedError('Can apply sum on non numeric attribute');
         }
-        if (operation === RULES_ATTRIBUTES_MERGE.OPERATIONS.MIN) {
-          if (isNumericAttribute(attribute)) {
-            ruleInput[attribute] = R.min(values);
-          } else if (isDateAttribute(attribute)) {
-            const timeValues = convertRulesTimeValues(values);
-            ruleInput[attribute] = moment.min(timeValues).utc().toISOString();
-          } else {
-            throw UnsupportedError('Can apply min on non numeric or date attribute');
-          }
+        patch[attribute] = R.sum(values);
+      }
+      if (operation === RULES_ATTRIBUTES_BEHAVIOR.OPERATIONS.MIN) {
+        if (isNumericAttribute(attribute)) {
+          patch[attribute] = R.min(values);
+        } else if (isDateAttribute(attribute)) {
+          const timeValues = convertRulesTimeValues(values);
+          patch[attribute] = moment.min(timeValues).utc().toISOString();
+        } else {
+          throw UnsupportedError('Can apply min on non numeric or date attribute');
         }
-        if (operation === RULES_ATTRIBUTES_MERGE.OPERATIONS.MAX) {
-          if (isNumericAttribute(attribute)) {
-            ruleInput[attribute] = R.max(values);
-          } else if (isDateAttribute(attribute)) {
-            const timeValues = convertRulesTimeValues(values);
-            ruleInput[attribute] = moment.max(timeValues).utc().toISOString();
-          } else {
-            throw UnsupportedError('Can apply max on non numeric or date attribute');
-          }
+      }
+      if (operation === RULES_ATTRIBUTES_BEHAVIOR.OPERATIONS.MAX) {
+        if (isNumericAttribute(attribute)) {
+          patch[attribute] = R.max(values);
+        } else if (isDateAttribute(attribute)) {
+          const timeValues = convertRulesTimeValues(values);
+          patch[attribute] = moment.max(timeValues).utc().toISOString();
+        } else {
+          throw UnsupportedError('Can apply max on non numeric or date attribute');
         }
+      }
+      if (operation === RULES_ATTRIBUTES_BEHAVIOR.OPERATIONS.AGG) {
+        patch[attribute] = R.uniq(values);
       }
     }
   }
-  // 02 - Compute the markings
-  const allRulesMarkingIds = getAllRulesField(instance, INPUT_MARKINGS);
-  return { ruleInput, ruleMarkings: allRulesMarkingIds };
+  return patch;
 };
-const upsertRuleRaw = async (instance, input, opts = {}) => {
+const upsertRule = async (instance, input, opts = {}) => {
   const { fromRule, ruleOverride = false } = opts;
-  const impactedInputs = []; // Inputs impacted by updated inputs + updated inputs
-  const rawRelations = [];
-  const patchInputs = [];
-  // Upserting a rule is adding the new rule explanation to the list
-  // and recompute the inside fields
   // 01 - Update the rule
   const updatedRule = input[fromRule];
   if (!ruleOverride) {
@@ -2006,42 +2033,11 @@ const upsertRuleRaw = async (instance, input, opts = {}) => {
     const instanceRuleToKeep = (instance[fromRule] ?? []).filter((i) => !keepRuleHashes.includes(i.hash));
     updatedRule.push(...instanceRuleToKeep);
   }
-  const patched = patchAttributeRaw(instance, { [fromRule]: updatedRule });
-  impactedInputs.push(...patched.impactedInputs);
-  const { updatedInstance: ruleInstance } = patched;
-  // 02 - Compute the attributes
-  // -------- confidence
-  const { ruleInput, ruleMarkings } = createRuleDataPatch(ruleInstance);
-  const patchedAttributes = patchAttributeRaw(ruleInstance, ruleInput);
-  impactedInputs.push(...patchedAttributes.impactedInputs);
-  patchInputs.push(...patchedAttributes.updatedInputs);
-  // 03 - Compute the inner relations
-  // ------- markings
-  const instanceMarkings = ruleInstance.object_marking_refs || [];
-  const isSameMarkings =
-    ruleMarkings.length === instanceMarkings.length && ruleMarkings.every((i) => instanceMarkings.includes(i));
-  if (!isSameMarkings) {
-    // 01. First delete all the current markings of the instance
-    const buildInstanceRelTo = (to) => buildInnerRelation(ruleInstance, to, RELATION_OBJECT_MARKING);
-    // eslint-disable-next-line prettier/prettier
-    const currentMarkingRels = await listAllRelations(RULE_MANAGER_USER, RELATION_OBJECT_MARKING, {
-      fromId: instance.internal_id,
-    });
-    await elDeleteElements(SYSTEM_USER, currentMarkingRels, { stixLoadById });
-    patchInputs.push({ key: 'objectMarking', value: currentMarkingRels, operation: UPDATE_OPERATION_REMOVE });
-    // 02. Create the new relations
-    const markings = await internalFindByIds(RULE_MANAGER_USER, ruleMarkings);
-    const newRelations = markings.map((to) => R.head(buildInstanceRelTo(to)).relation);
-    rawRelations.push(...newRelations);
-    patchInputs.push({ key: 'objectMarking', value: markings, operation: UPDATE_OPERATION_ADD });
-  }
-  if (impactedInputs.length > 0) {
-    const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
-    const indexInput = partialInstanceWithInputs(instance, impactedInputs);
-    return { type: TRX_UPDATE, element: updatedInstance, relations: rawRelations, patchInputs, indexInput };
-  }
-  // Return all elements requirement for stream and indexation
-  return { type: TRX_UPDATE, element: instance, relations: rawRelations, patchInputs };
+  const rulePatch = { [fromRule]: updatedRule };
+  const ruleInstance = R.mergeRight(instance, rulePatch);
+  const innerPatch = createRuleDataPatch(ruleInstance);
+  const patch = { ...rulePatch, ...innerPatch };
+  return patchAttribute(RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
 };
 
 const upsertElementRaw = async (user, instance, type, input) => {
@@ -2146,7 +2142,10 @@ const upsertElementRaw = async (user, instance, type, input) => {
   return { type: TRX_UPDATE, element: instance, relations: rawRelations, patchInputs };
 };
 
-const checkRelationConsistency = (relationshipType, fromType, toType) => {
+const checkRelationConsistency = (relationshipType, from, to) => {
+  // 01 - check type consistency
+  const fromType = from.entity_type;
+  const toType = to.entity_type;
   // Check if StixCoreRelationship is allowed
   if (isStixCoreRelationship(relationshipType)) {
     if (!checkStixCoreRelationshipMapping(fromType, toType, relationshipType)) {
@@ -2163,6 +2162,11 @@ const checkRelationConsistency = (relationshipType, fromType, toType) => {
       );
     }
   }
+  // 02 - check cyclic reference consistency
+  const toRefs = refsExtractor(to);
+  if (toRefs.includes(from.internal_id)) {
+    throw FunctionalError(`You cant create a cyclic relation between ${from.standard_id} and ${to.standard_id}`);
+  }
 };
 const buildRelationData = async (user, input, opts = {}) => {
   const { fromRule } = opts;
@@ -2170,55 +2174,9 @@ const buildRelationData = async (user, input, opts = {}) => {
   // 01. Generate the ID
   const internalId = generateInternalId();
   const standardId = generateStandardId(relationshipType, input);
-  // 02. Check existing relationship
-  const existingRelationships = [];
-  if (fromRule) {
-    // In case inferred rule, try to find the relation with basic filters
-    const listingArgs = {
-      fromId: from.internal_id,
-      toId: to.internal_id,
-      connectionFormat: false,
-      indices: [READ_INDEX_INFERRED_RELATIONSHIPS],
-    };
-    const inferredRelationships = await listRelations(SYSTEM_USER, relationshipType, listingArgs);
-    existingRelationships.push(...inferredRelationships);
-  } else {
-    const timeFilters = buildRelationTimeFilter(input);
-    const listingArgs = { fromId: from.internal_id, toId: to.internal_id, connectionFormat: false, ...timeFilters };
-    const manualRelationships = await listRelations(SYSTEM_USER, relationshipType, listingArgs);
-    existingRelationships.push(...manualRelationships);
-  }
-  let existingRelationship = null;
-  if (existingRelationships.length > 0) {
-    // We need to filter what we found with the user rights
-    const filteredRelations = filterElementsAccordingToUser(user, existingRelationships);
-    // If nothing accessible for this user, throw ForbiddenAccess
-    if (filteredRelations.length === 0) {
-      throw UnsupportedError('Restricted relation already exists');
-    }
-    // Meta single relation check
-    if (isStixSingleMetaRelationship(relationshipType)) {
-      // If relation already exist, we fail
-      throw UnsupportedError('Relation cant be created (single cardinality)', {
-        relationshipType,
-        fromId: from.internal_id,
-      });
-    }
-    // TODO Handling merging relation when updating to prevent multiple relations finding
-    existingRelationship = R.head(filteredRelations);
-  }
-  // 03. Prepare the relation to be created
+  // 02. Prepare the relation to be created
   const today = now();
   const data = {};
-  // Check existing
-  if (existingRelationship) {
-    // If upsert come from a rule, do a specific upsert.
-    if (fromRule) {
-      return upsertRuleRaw(existingRelationship, input, opts);
-    }
-    // If user try to create an existing inferred relationship but she's already exists
-    return upsertElementRaw(user, existingRelationship, relationshipType, input);
-  }
   // Default attributes
   // basic-relationship
   const inferred = isNotEmptyField(fromRule);
@@ -2247,6 +2205,25 @@ const buildRelationData = async (user, input, opts = {}) => {
     data.lang = R.isNil(input.lang) ? 'en' : input.lang;
     data.created = R.isNil(input.created) ? today : input.created;
     data.modified = R.isNil(input.modified) ? today : input.modified;
+    // Get statuses
+    let type = null;
+    if (isStixCoreRelationship(relationshipType)) {
+      type = 'stix-core-relationship';
+    } else if (isStixSightingRelationship(relationshipType)) {
+      type = 'stix-sighting-relationship';
+    }
+    if (type) {
+      const statuses = await listEntities(user, [ENTITY_TYPE_STATUS], {
+        first: 1,
+        orderBy: 'order',
+        orderMode: 'asc',
+        filters: [{ key: 'type', values: [type] }],
+        connectionFormat: false,
+      });
+      if (statuses.length > 0) {
+        data.status_id = R.head(statuses).id;
+      }
+    }
   }
   // stix-core-relationship
   if (isStixCoreRelationship(relationshipType)) {
@@ -2340,7 +2317,7 @@ const buildRelationData = async (user, input, opts = {}) => {
 
 export const createRelationRaw = async (user, input, opts = {}) => {
   let lock;
-  const { publishStreamEvent = true, locks = [] } = opts;
+  const { publishStreamEvent = true, fromRule, locks = [] } = opts;
   const { fromId, toId, relationship_type: relationshipType } = input;
   // Pre check before inputs resolution
   if (fromId === toId) {
@@ -2363,7 +2340,7 @@ export const createRelationRaw = async (user, input, opts = {}) => {
     throw UnsupportedError(`Relation cant be created with the same source and target`, errorData);
   }
   // Check consistency
-  checkRelationConsistency(relationshipType, from.entity_type, to.entity_type);
+  checkRelationConsistency(relationshipType, from, to);
   // Build lock ids
   const inputIds = getInputIds(relationshipType, resolvedInput);
   if (isImpactedTypeAndSide(relationshipType, ROLE_FROM)) inputIds.push(from.internal_id);
@@ -2372,8 +2349,56 @@ export const createRelationRaw = async (user, input, opts = {}) => {
   try {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
-    // - TRANSACTION PART
-    const dataRel = await buildRelationData(user, resolvedInput, opts);
+    // region check existing relationship
+    const existingRelationships = [];
+    if (fromRule) {
+      // In case inferred rule, try to find the relation with basic filters
+      const listingArgs = {
+        fromId: from.internal_id,
+        toId: to.internal_id,
+        connectionFormat: false,
+        indices: [READ_INDEX_INFERRED_RELATIONSHIPS],
+      };
+      const inferredRelationships = await listRelations(SYSTEM_USER, relationshipType, listingArgs);
+      existingRelationships.push(...inferredRelationships);
+    } else {
+      const timeFilters = buildRelationTimeFilter(resolvedInput);
+      const listingArgs = { fromId: from.internal_id, toId: to.internal_id, connectionFormat: false, ...timeFilters };
+      const manualRelationships = await listRelations(SYSTEM_USER, relationshipType, listingArgs);
+      existingRelationships.push(...manualRelationships);
+    }
+    let existingRelationship = null;
+    if (existingRelationships.length > 0) {
+      // We need to filter what we found with the user rights
+      const filteredRelations = filterElementsAccordingToUser(user, existingRelationships);
+      // If nothing accessible for this user, throw ForbiddenAccess
+      if (filteredRelations.length === 0) {
+        throw UnsupportedError('Restricted relation already exists');
+      }
+      // Meta single relation check
+      if (isStixSingleMetaRelationship(relationshipType)) {
+        // If relation already exist, we fail
+        throw UnsupportedError('Relation cant be created (single cardinality)', {
+          relationshipType,
+          fromId: from.internal_id,
+        });
+      }
+      // TODO Handling merging relation when updating to prevent multiple relations finding
+      existingRelationship = R.head(filteredRelations);
+    }
+    // endregion
+    let dataRel;
+    if (existingRelationship) {
+      // If upsert come from a rule, do a specific upsert.
+      if (fromRule) {
+        return upsertRule(existingRelationship, input, { ...opts, locks: participantIds });
+      }
+      // If not upsert the rule
+      dataRel = await upsertElementRaw(user, existingRelationship, relationshipType, resolvedInput);
+    } else {
+      // Just build a standard relationship
+      dataRel = await buildRelationData(user, resolvedInput, opts);
+    }
     // Index the created element
     await indexCreatedElement(dataRel);
     // Push the input in the stream
@@ -2414,8 +2439,8 @@ export const createInferredRelation = async (input, ruleContent) => {
   }
   // Build the instance
   const instance = { fromId, toId, relationship_type, [ruleContent.field]: [ruleContent.content] };
-  const { ruleInput, ruleMarkings } = createRuleDataPatch(instance);
-  const inputRelation = { ...instance, ...ruleInput, objectMarking: ruleMarkings };
+  const patch = createRuleDataPatch(instance);
+  const inputRelation = { ...instance, ...patch };
   const data = await createRelationRaw(RULE_MANAGER_USER, inputRelation, opts);
   return data.event;
 };
@@ -2546,6 +2571,17 @@ const createEntityRaw = async (user, participantIds, input, type) => {
       R.assoc('created', R.isNil(input.created) ? today : input.created),
       R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
     )(data);
+    // Get statuses
+    const statuses = await listEntities(user, [ENTITY_TYPE_STATUS], {
+      first: 1,
+      orderBy: 'order',
+      orderMode: 'asc',
+      filters: [{ key: 'type', values: [type] }],
+      connectionFormat: false,
+    });
+    if (statuses.length > 0) {
+      data = R.assoc('status_id', R.head(statuses).id, data);
+    }
   }
   // -- Aliased entities
   if (isStixObjectAliased(type)) {
@@ -2622,7 +2658,7 @@ export const createEntity = async (user, input, type) => {
 // endregion
 
 // region mutation deletion
-const deleteElement = async (user, element, opts = {}) => {
+export const deleteElement = async (user, element, opts = {}) => {
   let lock;
   const { publishStreamEvent = true } = opts;
   checkInferenceRight(user, element);
@@ -2706,10 +2742,7 @@ export const deleteInferredRuleElement = async (rule, instance, dependencyId) =>
       } else {
         // If not we need to clean the rule and keep the element
         const input = { [completeRuleName]: null };
-        const data = await upsertRuleRaw(instance, input, { fromRule, ruleOverride: true });
-        await indexCreatedElement(data);
-        const patch = updateInputsToPatch(data.patchInputs);
-        const event = buildUpdateEvent(RULE_MANAGER_USER, data.element, patch);
+        const { event } = await upsertRule(instance, input, { fromRule, ruleOverride: true });
         if (event) {
           derivedEvents.push(event);
         }
@@ -2717,10 +2750,7 @@ export const deleteInferredRuleElement = async (rule, instance, dependencyId) =>
     } else {
       // Rule still have other explanation, update the rule
       const input = { [completeRuleName]: rebuildRuleContent };
-      const data = await upsertRuleRaw(instance, input, { fromRule, ruleOverride: true });
-      await indexCreatedElement(data);
-      const patch = updateInputsToPatch(data.patchInputs);
-      const event = buildUpdateEvent(RULE_MANAGER_USER, data.element, patch);
+      const { event } = await upsertRule(instance, input, { fromRule, ruleOverride: true });
       if (event) {
         derivedEvents.push(event);
       }

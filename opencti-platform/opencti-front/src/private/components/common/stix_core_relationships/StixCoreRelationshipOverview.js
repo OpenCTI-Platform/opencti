@@ -31,6 +31,7 @@ import StixCoreRelationshipInference from './StixCoreRelationshipInference';
 import StixCoreRelationshipExternalReferences from '../../analysis/external_references/StixCoreRelationshipExternalReferences';
 import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHistory';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import { defaultValue } from '../../../../utils/Graph';
 
 const styles = (theme) => ({
   container: {
@@ -202,11 +203,9 @@ class StixCoreRelationshipContainer extends Component {
             <div className={classes.content}>
               <span className={classes.name}>
                 {truncate(
-                  from.name
-                    || from.observable_value
-                    || from.attribute_abstract
-                    || from.content
-                    || t(`relationship_${from.entity_type}`),
+                  defaultValue(from) !== 'Unknown'
+                    ? defaultValue(from)
+                    : t(`relationship_${from.entity_type}`),
                   50,
                 )}
               </span>
@@ -261,11 +260,9 @@ class StixCoreRelationshipContainer extends Component {
             <div className={classes.content}>
               <span className={classes.name}>
                 {truncate(
-                  to.name
-                    || to.observable_value
-                    || to.attribute_abstract
-                    || to.content
-                    || t(`relationship_${to.entity_type}`),
+                  defaultValue(to) !== 'Unknown'
+                    ? defaultValue(to)
+                    : t(`relationship_${to.entity_type}`),
                   50,
                 )}
               </span>
@@ -525,6 +522,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             ... on Sector {
               name
             }
+            ... on System {
+              name
+            }
             ... on Indicator {
               name
             }
@@ -600,6 +600,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on Sector {
                   name
                 }
+                ... on System {
+                  name
+                }
                 ... on Indicator {
                   name
                 }
@@ -639,6 +642,142 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on StixCyberObservable {
                   observable_value
                 }
+                ... on ObservedData {
+                  objects(first: 1) {
+                    edges {
+                      node {
+                        ... on StixCoreObject {
+                          id
+                          entity_type
+                          parent_types
+                          created_at
+                          createdBy {
+                            ... on Identity {
+                              id
+                              name
+                              entity_type
+                            }
+                          }
+                          objectMarking {
+                            edges {
+                              node {
+                                id
+                                definition
+                              }
+                            }
+                          }
+                        }
+                        ... on AttackPattern {
+                          name
+                          description
+                          x_mitre_id
+                        }
+                        ... on Campaign {
+                          name
+                          description
+                          first_seen
+                          last_seen
+                        }
+                        ... on Note {
+                          attribute_abstract
+                        }
+                        ... on ObservedData {
+                          first_observed
+                          last_observed
+                        }
+                        ... on Opinion {
+                          opinion
+                        }
+                        ... on Report {
+                          name
+                          description
+                          published
+                        }
+                        ... on CourseOfAction {
+                          name
+                          description
+                        }
+                        ... on Individual {
+                          name
+                          description
+                        }
+                        ... on Organization {
+                          name
+                          description
+                        }
+                        ... on Sector {
+                          name
+                          description
+                        }
+                        ... on System {
+                          name
+                          description
+                        }
+                        ... on Indicator {
+                          name
+                          description
+                          valid_from
+                        }
+                        ... on Infrastructure {
+                          name
+                          description
+                        }
+                        ... on IntrusionSet {
+                          name
+                          description
+                          first_seen
+                          last_seen
+                        }
+                        ... on Position {
+                          name
+                          description
+                        }
+                        ... on City {
+                          name
+                          description
+                        }
+                        ... on Country {
+                          name
+                          description
+                        }
+                        ... on Region {
+                          name
+                          description
+                        }
+                        ... on Malware {
+                          name
+                          description
+                          first_seen
+                          last_seen
+                        }
+                        ... on ThreatActor {
+                          name
+                          description
+                          first_seen
+                          last_seen
+                        }
+                        ... on Tool {
+                          name
+                          description
+                        }
+                        ... on Vulnerability {
+                          name
+                          description
+                        }
+                        ... on Incident {
+                          name
+                          description
+                          first_seen
+                          last_seen
+                        }
+                        ... on StixCyberObservable {
+                          observable_value
+                          x_opencti_description
+                        }
+                      }
+                    }
+                  }
+                }
                 ... on StixCoreRelationship {
                   id
                   entity_type
@@ -674,6 +813,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on Sector {
+                      name
+                    }
+                    ... on System {
                       name
                     }
                     ... on Indicator {
@@ -746,6 +888,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Sector {
                       name
                     }
+                    ... on System {
+                      name
+                    }
                     ... on Indicator {
                       name
                     }
@@ -781,6 +926,142 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     }
                     ... on Incident {
                       name
+                    }
+                    ... on ObservedData {
+                      objects(first: 1) {
+                        edges {
+                          node {
+                            ... on StixCoreObject {
+                              id
+                              entity_type
+                              parent_types
+                              created_at
+                              createdBy {
+                                ... on Identity {
+                                  id
+                                  name
+                                  entity_type
+                                }
+                              }
+                              objectMarking {
+                                edges {
+                                  node {
+                                    id
+                                    definition
+                                  }
+                                }
+                              }
+                            }
+                            ... on AttackPattern {
+                              name
+                              description
+                              x_mitre_id
+                            }
+                            ... on Campaign {
+                              name
+                              description
+                              first_seen
+                              last_seen
+                            }
+                            ... on Note {
+                              attribute_abstract
+                            }
+                            ... on ObservedData {
+                              first_observed
+                              last_observed
+                            }
+                            ... on Opinion {
+                              opinion
+                            }
+                            ... on Report {
+                              name
+                              description
+                              published
+                            }
+                            ... on CourseOfAction {
+                              name
+                              description
+                            }
+                            ... on Individual {
+                              name
+                              description
+                            }
+                            ... on Organization {
+                              name
+                              description
+                            }
+                            ... on Sector {
+                              name
+                              description
+                            }
+                            ... on System {
+                              name
+                              description
+                            }
+                            ... on Indicator {
+                              name
+                              description
+                              valid_from
+                            }
+                            ... on Infrastructure {
+                              name
+                              description
+                            }
+                            ... on IntrusionSet {
+                              name
+                              description
+                              first_seen
+                              last_seen
+                            }
+                            ... on Position {
+                              name
+                              description
+                            }
+                            ... on City {
+                              name
+                              description
+                            }
+                            ... on Country {
+                              name
+                              description
+                            }
+                            ... on Region {
+                              name
+                              description
+                            }
+                            ... on Malware {
+                              name
+                              description
+                              first_seen
+                              last_seen
+                            }
+                            ... on ThreatActor {
+                              name
+                              description
+                              first_seen
+                              last_seen
+                            }
+                            ... on Tool {
+                              name
+                              description
+                            }
+                            ... on Vulnerability {
+                              name
+                              description
+                            }
+                            ... on Incident {
+                              name
+                              description
+                              first_seen
+                              last_seen
+                            }
+                            ... on StixCyberObservable {
+                              observable_value
+                              x_opencti_description
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -821,6 +1102,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on Sector {
                   name
                 }
+                ... on System {
+                  name
+                }
                 ... on Indicator {
                   name
                 }
@@ -859,6 +1143,142 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 }
                 ... on StixCyberObservable {
                   observable_value
+                }
+                ... on ObservedData {
+                  objects(first: 1) {
+                    edges {
+                      node {
+                        ... on StixCoreObject {
+                          id
+                          entity_type
+                          parent_types
+                          created_at
+                          createdBy {
+                            ... on Identity {
+                              id
+                              name
+                              entity_type
+                            }
+                          }
+                          objectMarking {
+                            edges {
+                              node {
+                                id
+                                definition
+                              }
+                            }
+                          }
+                        }
+                        ... on AttackPattern {
+                          name
+                          description
+                          x_mitre_id
+                        }
+                        ... on Campaign {
+                          name
+                          description
+                          first_seen
+                          last_seen
+                        }
+                        ... on Note {
+                          attribute_abstract
+                        }
+                        ... on ObservedData {
+                          first_observed
+                          last_observed
+                        }
+                        ... on Opinion {
+                          opinion
+                        }
+                        ... on Report {
+                          name
+                          description
+                          published
+                        }
+                        ... on CourseOfAction {
+                          name
+                          description
+                        }
+                        ... on Individual {
+                          name
+                          description
+                        }
+                        ... on Organization {
+                          name
+                          description
+                        }
+                        ... on Sector {
+                          name
+                          description
+                        }
+                        ... on System {
+                          name
+                          description
+                        }
+                        ... on Indicator {
+                          name
+                          description
+                          valid_from
+                        }
+                        ... on Infrastructure {
+                          name
+                          description
+                        }
+                        ... on IntrusionSet {
+                          name
+                          description
+                          first_seen
+                          last_seen
+                        }
+                        ... on Position {
+                          name
+                          description
+                        }
+                        ... on City {
+                          name
+                          description
+                        }
+                        ... on Country {
+                          name
+                          description
+                        }
+                        ... on Region {
+                          name
+                          description
+                        }
+                        ... on Malware {
+                          name
+                          description
+                          first_seen
+                          last_seen
+                        }
+                        ... on ThreatActor {
+                          name
+                          description
+                          first_seen
+                          last_seen
+                        }
+                        ... on Tool {
+                          name
+                          description
+                        }
+                        ... on Vulnerability {
+                          name
+                          description
+                        }
+                        ... on Incident {
+                          name
+                          description
+                          first_seen
+                          last_seen
+                        }
+                        ... on StixCyberObservable {
+                          observable_value
+                          x_opencti_description
+                        }
+                      }
+                    }
+                  }
                 }
                 ... on StixCoreRelationship {
                   id
@@ -899,6 +1319,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Sector {
                       name
                     }
+                    ... on System {
+                      name
+                    }
                     ... on Indicator {
                       name
                     }
@@ -937,6 +1360,142 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     }
                     ... on StixCyberObservable {
                       observable_value
+                    }
+                    ... on ObservedData {
+                      objects(first: 1) {
+                        edges {
+                          node {
+                            ... on StixCoreObject {
+                              id
+                              entity_type
+                              parent_types
+                              created_at
+                              createdBy {
+                                ... on Identity {
+                                  id
+                                  name
+                                  entity_type
+                                }
+                              }
+                              objectMarking {
+                                edges {
+                                  node {
+                                    id
+                                    definition
+                                  }
+                                }
+                              }
+                            }
+                            ... on AttackPattern {
+                              name
+                              description
+                              x_mitre_id
+                            }
+                            ... on Campaign {
+                              name
+                              description
+                              first_seen
+                              last_seen
+                            }
+                            ... on Note {
+                              attribute_abstract
+                            }
+                            ... on ObservedData {
+                              first_observed
+                              last_observed
+                            }
+                            ... on Opinion {
+                              opinion
+                            }
+                            ... on Report {
+                              name
+                              description
+                              published
+                            }
+                            ... on CourseOfAction {
+                              name
+                              description
+                            }
+                            ... on Individual {
+                              name
+                              description
+                            }
+                            ... on Organization {
+                              name
+                              description
+                            }
+                            ... on Sector {
+                              name
+                              description
+                            }
+                            ... on System {
+                              name
+                              description
+                            }
+                            ... on Indicator {
+                              name
+                              description
+                              valid_from
+                            }
+                            ... on Infrastructure {
+                              name
+                              description
+                            }
+                            ... on IntrusionSet {
+                              name
+                              description
+                              first_seen
+                              last_seen
+                            }
+                            ... on Position {
+                              name
+                              description
+                            }
+                            ... on City {
+                              name
+                              description
+                            }
+                            ... on Country {
+                              name
+                              description
+                            }
+                            ... on Region {
+                              name
+                              description
+                            }
+                            ... on Malware {
+                              name
+                              description
+                              first_seen
+                              last_seen
+                            }
+                            ... on ThreatActor {
+                              name
+                              description
+                              first_seen
+                              last_seen
+                            }
+                            ... on Tool {
+                              name
+                              description
+                            }
+                            ... on Vulnerability {
+                              name
+                              description
+                            }
+                            ... on Incident {
+                              name
+                              description
+                              first_seen
+                              last_seen
+                            }
+                            ... on StixCyberObservable {
+                              observable_value
+                              x_opencti_description
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                   to {
@@ -974,6 +1533,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Sector {
                       name
                     }
+                    ... on System {
+                      name
+                    }
                     ... on Indicator {
                       name
                     }
@@ -1012,6 +1574,142 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     }
                     ... on StixCyberObservable {
                       observable_value
+                    }
+                    ... on ObservedData {
+                      objects(first: 1) {
+                        edges {
+                          node {
+                            ... on StixCoreObject {
+                              id
+                              entity_type
+                              parent_types
+                              created_at
+                              createdBy {
+                                ... on Identity {
+                                  id
+                                  name
+                                  entity_type
+                                }
+                              }
+                              objectMarking {
+                                edges {
+                                  node {
+                                    id
+                                    definition
+                                  }
+                                }
+                              }
+                            }
+                            ... on AttackPattern {
+                              name
+                              description
+                              x_mitre_id
+                            }
+                            ... on Campaign {
+                              name
+                              description
+                              first_seen
+                              last_seen
+                            }
+                            ... on Note {
+                              attribute_abstract
+                            }
+                            ... on ObservedData {
+                              first_observed
+                              last_observed
+                            }
+                            ... on Opinion {
+                              opinion
+                            }
+                            ... on Report {
+                              name
+                              description
+                              published
+                            }
+                            ... on CourseOfAction {
+                              name
+                              description
+                            }
+                            ... on Individual {
+                              name
+                              description
+                            }
+                            ... on Organization {
+                              name
+                              description
+                            }
+                            ... on Sector {
+                              name
+                              description
+                            }
+                            ... on System {
+                              name
+                              description
+                            }
+                            ... on Indicator {
+                              name
+                              description
+                              valid_from
+                            }
+                            ... on Infrastructure {
+                              name
+                              description
+                            }
+                            ... on IntrusionSet {
+                              name
+                              description
+                              first_seen
+                              last_seen
+                            }
+                            ... on Position {
+                              name
+                              description
+                            }
+                            ... on City {
+                              name
+                              description
+                            }
+                            ... on Country {
+                              name
+                              description
+                            }
+                            ... on Region {
+                              name
+                              description
+                            }
+                            ... on Malware {
+                              name
+                              description
+                              first_seen
+                              last_seen
+                            }
+                            ... on ThreatActor {
+                              name
+                              description
+                              first_seen
+                              last_seen
+                            }
+                            ... on Tool {
+                              name
+                              description
+                            }
+                            ... on Vulnerability {
+                              name
+                              description
+                            }
+                            ... on Incident {
+                              name
+                              description
+                              first_seen
+                              last_seen
+                            }
+                            ... on StixCyberObservable {
+                              observable_value
+                              x_opencti_description
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -1070,6 +1768,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on Sector {
             name
           }
+          ... on System {
+            name
+          }
           ... on Indicator {
             name
           }
@@ -1109,6 +1810,142 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on StixCyberObservable {
             observable_value
           }
+          ... on ObservedData {
+            objects(first: 1) {
+              edges {
+                node {
+                  ... on StixCoreObject {
+                    id
+                    entity_type
+                    parent_types
+                    created_at
+                    createdBy {
+                      ... on Identity {
+                        id
+                        name
+                        entity_type
+                      }
+                    }
+                    objectMarking {
+                      edges {
+                        node {
+                          id
+                          definition
+                        }
+                      }
+                    }
+                  }
+                  ... on AttackPattern {
+                    name
+                    description
+                    x_mitre_id
+                  }
+                  ... on Campaign {
+                    name
+                    description
+                    first_seen
+                    last_seen
+                  }
+                  ... on Note {
+                    attribute_abstract
+                  }
+                  ... on ObservedData {
+                    first_observed
+                    last_observed
+                  }
+                  ... on Opinion {
+                    opinion
+                  }
+                  ... on Report {
+                    name
+                    description
+                    published
+                  }
+                  ... on CourseOfAction {
+                    name
+                    description
+                  }
+                  ... on Individual {
+                    name
+                    description
+                  }
+                  ... on Organization {
+                    name
+                    description
+                  }
+                  ... on Sector {
+                    name
+                    description
+                  }
+                  ... on System {
+                    name
+                    description
+                  }
+                  ... on Indicator {
+                    name
+                    description
+                    valid_from
+                  }
+                  ... on Infrastructure {
+                    name
+                    description
+                  }
+                  ... on IntrusionSet {
+                    name
+                    description
+                    first_seen
+                    last_seen
+                  }
+                  ... on Position {
+                    name
+                    description
+                  }
+                  ... on City {
+                    name
+                    description
+                  }
+                  ... on Country {
+                    name
+                    description
+                  }
+                  ... on Region {
+                    name
+                    description
+                  }
+                  ... on Malware {
+                    name
+                    description
+                    first_seen
+                    last_seen
+                  }
+                  ... on ThreatActor {
+                    name
+                    description
+                    first_seen
+                    last_seen
+                  }
+                  ... on Tool {
+                    name
+                    description
+                  }
+                  ... on Vulnerability {
+                    name
+                    description
+                  }
+                  ... on Incident {
+                    name
+                    description
+                    first_seen
+                    last_seen
+                  }
+                  ... on StixCyberObservable {
+                    observable_value
+                    x_opencti_description
+                  }
+                }
+              }
+            }
+          }
           ... on StixCoreRelationship {
             id
             entity_type
@@ -1144,6 +1981,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on Sector {
+                name
+              }
+              ... on System {
                 name
               }
               ... on Indicator {
@@ -1214,6 +2054,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on Sector {
+                name
+              }
+              ... on System {
                 name
               }
               ... on Indicator {
@@ -1290,6 +2133,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on Sector {
             name
           }
+          ... on System {
+            name
+          }
           ... on Indicator {
             name
           }
@@ -1329,6 +2175,142 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on StixCyberObservable {
             observable_value
           }
+          ... on ObservedData {
+            objects(first: 1) {
+              edges {
+                node {
+                  ... on StixCoreObject {
+                    id
+                    entity_type
+                    parent_types
+                    created_at
+                    createdBy {
+                      ... on Identity {
+                        id
+                        name
+                        entity_type
+                      }
+                    }
+                    objectMarking {
+                      edges {
+                        node {
+                          id
+                          definition
+                        }
+                      }
+                    }
+                  }
+                  ... on AttackPattern {
+                    name
+                    description
+                    x_mitre_id
+                  }
+                  ... on Campaign {
+                    name
+                    description
+                    first_seen
+                    last_seen
+                  }
+                  ... on Note {
+                    attribute_abstract
+                  }
+                  ... on ObservedData {
+                    first_observed
+                    last_observed
+                  }
+                  ... on Opinion {
+                    opinion
+                  }
+                  ... on Report {
+                    name
+                    description
+                    published
+                  }
+                  ... on CourseOfAction {
+                    name
+                    description
+                  }
+                  ... on Individual {
+                    name
+                    description
+                  }
+                  ... on Organization {
+                    name
+                    description
+                  }
+                  ... on Sector {
+                    name
+                    description
+                  }
+                  ... on System {
+                    name
+                    description
+                  }
+                  ... on Indicator {
+                    name
+                    description
+                    valid_from
+                  }
+                  ... on Infrastructure {
+                    name
+                    description
+                  }
+                  ... on IntrusionSet {
+                    name
+                    description
+                    first_seen
+                    last_seen
+                  }
+                  ... on Position {
+                    name
+                    description
+                  }
+                  ... on City {
+                    name
+                    description
+                  }
+                  ... on Country {
+                    name
+                    description
+                  }
+                  ... on Region {
+                    name
+                    description
+                  }
+                  ... on Malware {
+                    name
+                    description
+                    first_seen
+                    last_seen
+                  }
+                  ... on ThreatActor {
+                    name
+                    description
+                    first_seen
+                    last_seen
+                  }
+                  ... on Tool {
+                    name
+                    description
+                  }
+                  ... on Vulnerability {
+                    name
+                    description
+                  }
+                  ... on Incident {
+                    name
+                    description
+                    first_seen
+                    last_seen
+                  }
+                  ... on StixCyberObservable {
+                    observable_value
+                    x_opencti_description
+                  }
+                }
+              }
+            }
+          }
           ... on StixCoreRelationship {
             id
             entity_type
@@ -1360,6 +2342,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on Sector {
+                name
+              }
+              ... on System {
                 name
               }
               ... on Indicator {
@@ -1429,6 +2414,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on Sector {
+                name
+              }
+              ... on System {
                 name
               }
               ... on Indicator {

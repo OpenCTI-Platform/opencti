@@ -14,6 +14,7 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import ItemStatus from '../../../../components/ItemStatus';
 
 const styles = (theme) => ({
   item: {
@@ -94,6 +95,16 @@ class IncidentLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.status.width }}
+              >
+                <ItemStatus
+                  status={node.status}
+                  variant="inList"
+                  disabled={!node.workflowEnabled}
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.objectMarking.width }}
               >
                 <ItemMarkings
@@ -149,6 +160,15 @@ const IncidentLineFragment = createFragmentContainer(IncidentLineComponent, {
           }
         }
       }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
     }
   `,
 });
@@ -210,6 +230,17 @@ class IncidentLineDummyComponent extends Component {
                   animation="wave"
                   variant="rect"
                   width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.status.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
                   height="100%"
                 />
               </div>

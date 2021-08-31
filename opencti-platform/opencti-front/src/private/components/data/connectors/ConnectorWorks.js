@@ -22,7 +22,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Slide from '@material-ui/core/Slide';
 import { interval } from 'rxjs';
 import { Delete } from 'mdi-material-ui';
-import ItemStatus from '../../../../components/ItemStatus';
+import TaskStatus from '../../../../components/TaskStatus';
 import inject18n from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
@@ -202,7 +202,7 @@ class ConnectorWorksComponent extends Component {
                       <Typography variant="h3" gutterBottom={true}>
                         {t('Status')}
                       </Typography>
-                      <ItemStatus status={work.status} label={t(work.status)} />
+                      <TaskStatus status={work.status} label={t(work.status)} />
                     </Grid>
                     <Grid item={true} xs={6}>
                       <Typography

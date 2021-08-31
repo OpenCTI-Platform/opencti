@@ -15,6 +15,7 @@ import CourseOfAction from '../resources/images/entities/course-of-action_dark.s
 import Individual from '../resources/images/entities/individual_dark.svg';
 import Organization from '../resources/images/entities/organization_dark.svg';
 import Sector from '../resources/images/entities/sector_dark.svg';
+import System from '../resources/images/entities/system_dark.svg';
 import Indicator from '../resources/images/entities/indicator_dark.svg';
 import Infrastructure from '../resources/images/entities/infrastructure_dark.svg';
 import IntrusionSet from '../resources/images/entities/intrusion-set_dark.svg';
@@ -28,7 +29,7 @@ import Tool from '../resources/images/entities/tool_dark.svg';
 import Vulnerability from '../resources/images/entities/vulnerability_dark.svg';
 import Incident from '../resources/images/entities/incident_dark.svg';
 import StixCyberObservable from '../resources/images/entities/stix-cyber-observable_dark.svg';
-import relationship from '../resources/images/entities/relationship.svg';
+import relationship from '../resources/images/entities/relationship_dark.svg';
 import { itemColor } from './Colors';
 import themeDark from '../components/ThemeDark';
 import {
@@ -64,6 +65,7 @@ export const graphImages = {
   Individual: genImage(Individual),
   Organization: genImage(Organization),
   Sector: genImage(Sector),
+  System: genImage(System),
   Indicator: genImage(Indicator),
   Infrastructure: genImage(Infrastructure),
   'Intrusion-Set': genImage(IntrusionSet),
@@ -117,6 +119,7 @@ export const graphLevel = {
   Individual: 1,
   Organization: 1,
   Sector: 1,
+  System: 1,
   Indicator: 1,
   Infrastructure: 1,
   'Intrusion-Set': 1,
@@ -173,6 +176,7 @@ export const graphRawImages = {
   Individual,
   Organization,
   Sector,
+  System,
   Indicator,
   Infrastructure,
   'Intrusion-Set': IntrusionSet,
@@ -266,6 +270,7 @@ export const defaultValue = (n, tooltip = false) => {
       || n.definition
       || n.source_name
       || n.phase_name
+      || defaultValue(R.head(R.pathOr([], ['objects', 'edges'], n))?.node)
       || 'Unknown'
     }`;
   }
@@ -280,6 +285,7 @@ export const defaultValue = (n, tooltip = false) => {
     || n.definition
     || n.source_name
     || n.phase_name
+    || defaultValue(R.head(R.pathOr([], ['objects', 'edges'], n))?.node)
     || 'Unknown'
   }`;
 };

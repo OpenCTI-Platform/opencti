@@ -13,6 +13,7 @@ import {
   join,
   assoc,
   flatten,
+  uniqBy,
 } from 'ramda';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -95,6 +96,7 @@ class RegionsLinesComponent extends Component {
                 map((n) => n.node),
                 filter(filterByKeyword),
                 sortByNameCaseInsensitive,
+                uniqBy(prop('id')),
               )(region);
               return (
                   <RegionLine

@@ -29,6 +29,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import MarkDownField from '../../../../components/MarkDownField';
+import StatusField from '../../common/form/StatusField';
 
 const styles = () => ({
   createButton: {
@@ -105,7 +106,7 @@ const reportValidation = (t) => Yup.object().shape({
   report_types: Yup.array().required(t('This field is required')),
   description: Yup.string(),
   confidence: Yup.number(),
-  x_opencti_report_status: Yup.number(),
+  status_id: Yup.object(),
 });
 
 class ReportEditionOverviewComponent extends Component {
@@ -122,12 +123,19 @@ class ReportEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
+    let finalValue = value;
+    if (name === 'status_id') {
+      finalValue = value.value;
+    }
     reportValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: reportMutationFieldPatch,
-          variables: { id: this.props.report.id, input: { key: name, value } },
+          variables: {
+            id: this.props.report.id,
+            input: { key: name, value: finalValue },
+          },
         });
       })
       .catch(() => false);
@@ -198,10 +206,21 @@ class ReportEditionOverviewComponent extends Component {
         value: n.node.id,
       })),
     )(report);
+    const status = pathOr(null, ['status', 'template', 'name'], report) === null
+      ? ''
+      : {
+        label: t(
+          `status_${pathOr(null, ['status', 'template', 'name'], report)}`,
+        ),
+        color: pathOr(null, ['status', 'template', 'color'], report),
+        value: pathOr(null, ['status', 'id'], report),
+        order: pathOr(null, ['status', 'order'], report),
+      };
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('objectMarking', objectMarking),
       assoc('published', dateFormat(report.published)),
+      assoc('status_id', status),
       pick([
         'name',
         'published',
@@ -210,7 +229,7 @@ class ReportEditionOverviewComponent extends Component {
         'createdBy',
         'objectMarking',
         'confidence',
-        'x_opencti_report_status',
+        'status_id',
       ]),
     )(report);
     return (
@@ -269,6 +288,16 @@ class ReportEditionOverviewComponent extends Component {
                             </MenuItem>
                           ))}
                         </Field>
+                        <ConfidenceField
+                          name="confidence"
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          onChange={this.handleSubmitField.bind(this)}
+                          label={t('Confidence')}
+                          fullWidth={true}
+                          containerstyle={{ width: '100%', marginTop: 20 }}
+                          editContext={context}
+                          variant="edit"
+                        />
                         <Field
                           component={DatePickerField}
                           name="published"
@@ -298,44 +327,22 @@ class ReportEditionOverviewComponent extends Component {
                           onFocus={this.handleChangeFocus.bind(this)}
                           onSubmit={this.handleSubmitField.bind(this)}
                         />
-                        <Field
-                          component={SelectField}
-                          name="x_opencti_report_status"
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onChange={this.handleSubmitField.bind(this)}
-                          label={t('Processing status')}
-                          fullWidth={true}
-                          containerstyle={{ width: '100%', marginTop: 20 }}
-                          helpertext={
-                            <SubscriptionFocus
-                              context={context}
-                              fieldName="x_opencti_report_status"
-                            />
-                          }
-                        >
-                          <MenuItem key="0" value="0">
-                            {t('report_status_0')}
-                          </MenuItem>
-                          <MenuItem key="1" value="1">
-                            {t('report_status_1')}
-                          </MenuItem>
-                          <MenuItem key="2" value="2">
-                            {t('report_status_2')}
-                          </MenuItem>
-                          <MenuItem key="3" value="3">
-                            {t('report_status_3')}
-                          </MenuItem>
-                        </Field>
-                        <ConfidenceField
-                          name="confidence"
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onChange={this.handleSubmitField.bind(this)}
-                          label={t('Confidence')}
-                          fullWidth={true}
-                          containerstyle={{ width: '100%', marginTop: 20 }}
-                          editContext={context}
-                          variant="edit"
-                        />
+                        {report.workflowEnabled && (
+                          <StatusField
+                            name="status_id"
+                            type="Report"
+                            onFocus={this.handleChangeFocus.bind(this)}
+                            onChange={this.handleSubmitField.bind(this)}
+                            setFieldValue={setFieldValue}
+                            style={{ marginTop: 20 }}
+                            helpertext={
+                              <SubscriptionFocus
+                                context={context}
+                                fieldName="status_id"
+                              />
+                            }
+                          />
+                        )}
                         <CreatedByField
                           name="createdBy"
                           style={{ marginTop: 20, width: '100%' }}
@@ -392,7 +399,6 @@ const ReportEditionOverview = createFragmentContainer(
         report_types
         published
         confidence
-        x_opencti_report_status
         createdBy {
           ... on Identity {
             id
@@ -409,6 +415,15 @@ const ReportEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

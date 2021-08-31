@@ -1,4 +1,4 @@
-import { assoc, propOr, pipe, dissoc } from 'ramda';
+import { assoc, pipe, dissoc } from 'ramda';
 import {
   createEntity,
   distributionEntities,
@@ -139,10 +139,7 @@ export const addReport = async (user, report) => {
       })
     );
   }
-  const finalReport = pipe(
-    assoc('created', report.published),
-    assoc('x_opencti_report_status', propOr(STATUS_STATUS_NEW, 'x_opencti_report_status', report))
-  )(report);
+  const finalReport = assoc('created', report.published, report);
   const created = await createEntity(user, finalReport, ENTITY_TYPE_CONTAINER_REPORT);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

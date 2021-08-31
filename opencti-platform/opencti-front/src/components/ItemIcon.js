@@ -18,6 +18,7 @@ import {
   WifiTetheringOutlined,
   Visibility,
   PlaceOutlined,
+  StorageOutlined,
 } from '@material-ui/icons';
 import {
   Biohazard,
@@ -94,6 +95,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       );
     case 'Sector':
       return <DomainOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'System':
+      return <StorageOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Indicator':
       return <ShieldSearch style={style} fontSize={fontSize} role="img" />;
     case 'Infrastructure':

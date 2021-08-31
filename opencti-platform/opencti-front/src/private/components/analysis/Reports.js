@@ -181,14 +181,13 @@ class Reports extends Component {
         width: '10%',
         isSortable: true,
       },
-      x_opencti_report_status: {
+      status: {
         label: 'Status',
         width: '10%',
         isSortable: true,
       },
       objectMarking: {
         label: 'Marking',
-        width: '15%',
         isSortable: false,
       },
     };
@@ -217,7 +216,7 @@ class Reports extends Component {
           availableFilterKeys={[
             'report_types',
             'confidence_gt',
-            'x_opencti_report_status',
+            'status_id',
             'labelledBy',
             'createdBy',
             'markedBy',

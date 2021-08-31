@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
+import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -13,6 +14,14 @@ import MarkingDefinitionsLines, {
   markingDefinitionsLinesQuery,
 } from './marking_definitions/MarkingDefinitionsLines';
 import MarkingDefinitionCreation from './marking_definitions/MarkingDefinitionCreation';
+import AccessesMenu from './AccessesMenu';
+
+const styles = () => ({
+  container: {
+    margin: 0,
+    padding: '0 200px 0 0',
+  },
+});
 
 class MarkingDefinitions extends Component {
   constructor(props) {
@@ -104,6 +113,7 @@ class MarkingDefinitions extends Component {
   }
 
   render() {
+    const { classes } = this.props;
     const {
       view, sortBy, orderAsc, searchTerm,
     } = this.state;
@@ -113,7 +123,8 @@ class MarkingDefinitions extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div>
+      <div className={classes.container}>
+        <AccessesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <MarkingDefinitionCreation paginationOptions={paginationOptions} />
       </div>
@@ -123,8 +134,13 @@ class MarkingDefinitions extends Component {
 
 MarkingDefinitions.propTypes = {
   t: PropTypes.func,
+  classes: PropTypes.object,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter)(MarkingDefinitions);
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(MarkingDefinitions);

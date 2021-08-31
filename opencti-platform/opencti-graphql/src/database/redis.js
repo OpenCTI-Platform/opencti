@@ -12,7 +12,6 @@ import {
   generateUpdateMessage,
   isEmptyField,
   isInferredIndex,
-  isSyncTesting,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
 } from './utils';
@@ -460,7 +459,7 @@ export const storeMergeEvent = async (user, initialInstance, mergedInstance, sou
   try {
     const event = buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities, impacts);
     // Push the event in the stream only if instance is in "real index"
-    if (!isInferredIndex(mergedInstance._index) && !isSyncTesting(user)) {
+    if (!isInferredIndex(mergedInstance._index)) {
       await pushToStream(clientBase, event);
     }
   } catch (e) {
@@ -491,7 +490,7 @@ export const storeUpdateEvent = async (user, instance, patchInputs, opts = {}) =
       const eventData = mustBeRepublished ? instance : getInstanceIdentifiers(instance);
       const event = buildUpdateEvent(user, eventData, patch, opts);
       // Push the event in the stream only if instance is in "real index"
-      if (!isInferredIndex(instance._index) && !isSyncTesting(user)) {
+      if (!isInferredIndex(instance._index)) {
         await pushToStream(clientBase, event);
       }
       return event;
@@ -546,7 +545,7 @@ export const storeCreateEvent = async (user, instance, input, loaders) => {
     try {
       const event = await buildCreateEvent(user, instance, input, loaders);
       // Push the event in the stream only if instance is in "real index"
-      if (!isInferredIndex(instance._index) && !isSyncTesting(user)) {
+      if (!isInferredIndex(instance._index)) {
         await pushToStream(clientBase, event);
       }
       return event;
@@ -596,7 +595,7 @@ export const storeDeleteEvent = async (user, instance, dependencyDeletions, load
     if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
       const event = await buildDeleteEvent(user, instance, dependencyDeletions, loaders);
       // Push the event in the stream only if instance is in "real index"
-      if (!isInferredIndex(instance._index) && !isSyncTesting(user)) {
+      if (!isInferredIndex(instance._index)) {
         await pushToStream(clientBase, event);
       }
       return event;
@@ -636,12 +635,12 @@ const processStreamResult = async (results, callback) => {
   return lastElement.eventId;
 };
 
-let processingLoopPromise;
 const WAIT_TIME = 1000;
 const MAX_RANGE_MESSAGES = 500;
 export const createStreamProcessor = (user, provider, callback, maxRange = MAX_RANGE_MESSAGES) => {
   let client;
   let startEventId;
+  let processingLoopPromise;
   let streamListening = true;
   const processInfo = async () => {
     return fetchStreamInfo();

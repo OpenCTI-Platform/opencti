@@ -1,5 +1,5 @@
 import { withFilter } from 'graphql-subscriptions';
-import { assoc } from 'ramda';
+import * as R from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import {
   findAll,
@@ -23,6 +23,7 @@ import {
   stixDomainObjectsExportAsk,
   stixDomainObjectsTimeSeriesByAuthor,
 } from '../domain/stixDomainObject';
+import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/minio';
@@ -60,6 +61,11 @@ const stixDomainObjectResolvers = {
       filesListing(user, first, `import/${entity.entity_type}/${entity.id}/`),
     exportFiles: (entity, { first }, { user }) =>
       filesListing(user, first, `export/${entity.entity_type}/${entity.id}/`),
+    status: (entity, _, { user }) => (entity.status_id ? findStatusById(user, entity.status_id) : null),
+    workflowEnabled: async (entity, _, { user }) => {
+      const statusesEdges = await getTypeStatuses(user, entity.entity_type);
+      return statusesEdges.edges.length > 0;
+    },
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, { user }) => ({
@@ -72,7 +78,7 @@ const stixDomainObjectResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType }) =>
         stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
       importPush: ({ file }) => stixDomainObjectImportPush(user, id, file),
-      exportAsk: (args) => stixDomainObjectExportAsk(user, assoc('stixDomainObjectId', id, args)),
+      exportAsk: (args) => stixDomainObjectExportAsk(user, R.assoc('stixDomainObjectId', id, args)),
       exportPush: ({ file }) => stixDomainObjectExportPush(user, id, file),
     }),
     stixDomainObjectsDelete: (_, { id }, { user }) => stixDomainObjectsDelete(user, id),
