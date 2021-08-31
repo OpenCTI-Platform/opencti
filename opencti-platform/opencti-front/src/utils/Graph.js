@@ -270,6 +270,7 @@ export const defaultValue = (n, tooltip = false) => {
       || n.definition
       || n.source_name
       || n.phase_name
+      || defaultValue(R.head(R.pathOr([], ['objects', 'edges'], n))?.node)
       || 'Unknown'
     }`;
   }
@@ -284,6 +285,7 @@ export const defaultValue = (n, tooltip = false) => {
     || n.definition
     || n.source_name
     || n.phase_name
+    || defaultValue(R.head(R.pathOr([], ['objects', 'edges'], n))?.node)
     || 'Unknown'
   }`;
 };

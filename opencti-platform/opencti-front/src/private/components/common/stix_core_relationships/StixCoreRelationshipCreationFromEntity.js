@@ -51,6 +51,7 @@ import ObjectMarkingField from '../form/ObjectMarkingField';
 import ConfidenceField from '../form/ConfidenceField';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import ExternalReferencesField from '../form/ExternalReferencesField';
+import { defaultValue } from '../../../../utils/Graph';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -700,15 +701,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                       {isRelationReversed && isMultiple ? (
                         <em>{t('Multiple entities selected')}</em>
                       ) : (
-                        truncate(
-                          R.includes(
-                            'Stix-Cyber-Observable',
-                            fromEntity.parent_types,
-                          )
-                            ? fromEntity.observable_value
-                            : fromEntity.name,
-                          20,
-                        )
+                        truncate(defaultValue(fromEntity), 20)
                       )}
                     </span>
                   </div>
@@ -759,15 +752,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                       {!isRelationReversed && isMultiple ? (
                         <em>{t('Multiple entities selected')}</em>
                       ) : (
-                        truncate(
-                          R.includes(
-                            'Stix-Cyber-Observable',
-                            toEntity.parent_types,
-                          )
-                            ? toEntity.observable_value
-                            : toEntity.name,
-                          20,
-                        )
+                        truncate(defaultValue(toEntity), 20)
                       )}
                     </span>
                   </div>

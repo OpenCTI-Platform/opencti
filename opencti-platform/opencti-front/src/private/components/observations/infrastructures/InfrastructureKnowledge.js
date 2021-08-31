@@ -43,6 +43,7 @@ class InfrastructureKnowledgeComponent extends Component {
             'tools',
             'vulnerabilities',
             'observables',
+            'observed_data',
             'sightings',
           ]}
         />
@@ -117,6 +118,20 @@ class InfrastructureKnowledgeComponent extends Component {
               stixCoreObjectLink={link}
               noRightBar={true}
               isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/observed_data"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={infrastructure.id}
+              targetStixDomainObjectTypes={['Observed-Data']}
+              relationshipTypes={['consists-of']}
+              entityLink={link}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
