@@ -20,8 +20,7 @@ steps:
     SMTP__PASSWORD: frhJ2mSPTfaEutpbug
   commands:
   - apk add build-base git libffi-dev
-  - cp -a opencti-platform /tmp/test-platform
-  - cd /tmp/test-platform/opencti-graphql  
+  - cd opencti-platform/opencti-graphql
   - yarn install
   - yarn build
   - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
@@ -32,7 +31,7 @@ steps:
   settings:
     token: e5c6fb05-76f7-4985-86cf-ff843d5d103e
     paths:
-      - /tmp/test-platform/opencti-graphql/coverage
+      - opencti-platform/opencti-graphql/coverage
 
 - name: frontend-tests
   image: nikolaik/python-nodejs:python3.9-nodejs15-alpine
