@@ -132,8 +132,6 @@ const entityStixCoreRelationshipsListDistributionQuery = graphql`
   }
 `;
 
-const tickFormatter = (title) => truncate(title.replace(/\[(.*?)\]/gi, ''), 100);
-
 class EntityStixCoreRelationshipsList extends Component {
   renderContent() {
     const {
@@ -145,7 +143,6 @@ class EntityStixCoreRelationshipsList extends Component {
       isTo,
       startDate,
       endDate,
-      theme,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
       fromId: stixCoreObjectId,
