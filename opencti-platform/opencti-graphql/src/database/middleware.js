@@ -123,7 +123,12 @@ import {
   STIX_ATTRIBUTE_TO_META_FIELD,
   STIX_META_RELATION_TO_OPENCTI_INPUT,
 } from '../schema/stixMetaRelationship';
-import { internalObjectsFieldsToBeUpdated, isDatedInternalObject, isInternalObject } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_STATUS,
+  internalObjectsFieldsToBeUpdated,
+  isDatedInternalObject,
+  isInternalObject,
+} from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
@@ -791,7 +796,10 @@ const inputResolveRefs = async (user, input, type) => {
     }
   }
   // eslint-disable-next-line prettier/prettier
-  const resolvedElements = await internalFindByIds(user, fetchingIds.map((i) => i.id));
+  const resolvedElements = await internalFindByIds(
+    user,
+    fetchingIds.map((i) => i.id)
+  );
   const resolvedElementWithConfGroup = resolvedElements.map((d) => {
     const elementIds = getInstanceIds(d);
     const matchingConfigs = R.filter((a) => elementIds.includes(a.id), fetchingIds);
@@ -2544,6 +2552,16 @@ const createEntityRaw = async (user, participantIds, input, type) => {
       R.assoc('created', R.isNil(input.created) ? today : input.created),
       R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
     )(data);
+    const statuses = await listEntities(user, [ENTITY_TYPE_STATUS], {
+      first: 1,
+      orderBy: 'order',
+      orderMode: 'asc',
+      filters: [{ key: 'type', values: [type] }],
+      connectionFormat: false,
+    });
+    if (statuses.length > 0) {
+      data = R.assoc('status_id', R.head(statuses).id, data);
+    }
   }
   // -- Aliased entities
   if (isStixObjectAliased(type)) {

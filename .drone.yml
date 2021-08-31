@@ -20,7 +20,8 @@ steps:
     SMTP__PASSWORD: frhJ2mSPTfaEutpbug
   commands:
   - apk add build-base git libffi-dev
-  - cd opencti-platform/opencti-graphql
+  - cp -a opencti-platform /tmp/test-platform
+  - cd /tmp/test-platform/opencti-graphql  
   - yarn install
   - yarn build
   - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
@@ -115,7 +116,8 @@ services:
     SMTP__PASSWORD: frhJ2mSPTfaEutpbug
   commands:
     - apk add build-base git libffi-dev
-    - cd opencti-platform/opencti-graphql
+    - cp -a opencti-platform /tmp/raw-start-platform
+    - cd /tmp/raw-start-platform/opencti-graphql
     - yarn install
     - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
     - yarn start
@@ -138,7 +140,8 @@ services:
     SMTP__PASSWORD: frhJ2mSPTfaEutpbug
   commands:
     - apk add build-base git libffi-dev
-    - cd opencti-platform/opencti-graphql
+    - cp -a opencti-platform /tmp/live-start-platform
+    - cd /tmp/live-start-platform/opencti-graphql
     - yarn install
     - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
     - yarn start
@@ -161,7 +164,8 @@ services:
     SMTP__PASSWORD: frhJ2mSPTfaEutpbug
   commands:
     - apk add build-base git libffi-dev
-    - cd opencti-platform/opencti-graphql
+    - cp -a opencti-platform /tmp/live-end-platform
+    - cd /tmp/live-end-platform/opencti-graphql
     - yarn install
     - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
     - yarn start
