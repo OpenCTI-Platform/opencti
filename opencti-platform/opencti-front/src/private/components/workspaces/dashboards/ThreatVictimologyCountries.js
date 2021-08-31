@@ -8,6 +8,8 @@ import StixDomainObjectVictimologyMap from '../../common/stix_domain_objects/Sti
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import EntityStixCoreRelationshipsAreaChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsAreaChart';
 import EntityStixCoreRelationshipsVerticalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsVerticalBars';
+import EntityStixCoreRelationshipsList
+  from '../../common/stix_core_relationships/EntityStixCoreRelationshipsList';
 
 const styles = () => ({
   container: {
@@ -77,6 +79,19 @@ class ThreatVictimologyAll extends Component {
             stixCoreObjectId={widget.entity.id}
             toTypes={['Country']}
             relationshipType="targets"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
+      case 'list':
+        return (
+          <EntityStixCoreRelationshipsList
+            title={`${t('Victimology (countries)')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            toTypes={['Country']}
+            relationshipType="targets"
+            field="internal_id"
             startDate={startDate}
             endDate={endDate}
             variant="inLine"

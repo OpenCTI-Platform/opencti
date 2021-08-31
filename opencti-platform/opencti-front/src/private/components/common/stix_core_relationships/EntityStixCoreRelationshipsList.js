@@ -2,24 +2,20 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, map, assoc } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import {
-  BarChart,
-  XAxis,
-  YAxis,
-  Cell,
-  CartesianGrid,
-  Bar,
-  ResponsiveContainer,
-  Tooltip,
-} from 'recharts';
-import { withTheme, withStyles } from '@material-ui/core/styles';
+import { withStyles, withTheme } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
-import { itemColor } from '../../../../utils/Colors';
+import TableContainer from '@material-ui/core/TableContainer';
+import Table from '@material-ui/core/Table';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import TableCell from '@material-ui/core/TableCell';
+import TableBody from '@material-ui/core/TableBody';
 import { truncate } from '../../../../utils/String';
+import inject18n from '../../../../components/i18n';
+import { QueryRenderer } from '../../../../relay/environment';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = () => ({
   paper: {
@@ -30,34 +26,33 @@ const styles = () => ({
   },
 });
 
-const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
-  query StixCoreRelationshipsHorizontalBarsDistributionQuery(
+const entityStixCoreRelationshipsListDistributionQuery = graphql`
+  query EntityStixCoreRelationshipsListDistributionQuery(
+    $fromId: String
     $relationship_type: String!
     $toTypes: [String]
+    $isTo: Boolean
     $field: String!
     $operation: StatsOperation!
+    $limit: Int
     $startDate: DateTime
     $endDate: DateTime
-    $dateAttribute: String
-    $limit: Int
   ) {
     stixCoreRelationshipsDistribution(
+      fromId: $fromId
       relationship_type: $relationship_type
       toTypes: $toTypes
+      isTo: $isTo
       field: $field
       operation: $operation
+      limit: $limit
       startDate: $startDate
       endDate: $endDate
-      dateAttribute: $dateAttribute
-      limit: $limit
     ) {
       label
       value
       entity {
         ... on BasicObject {
-          entity_type
-        }
-        ... on BasicRelationship {
           entity_type
         }
         ... on AttackPattern {
@@ -139,7 +134,7 @@ const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
 
 const tickFormatter = (title) => truncate(title.replace(/\[(.*?)\]/gi, ''), 100);
 
-class StixCoreRelationshipsHorizontalBars extends Component {
+class EntityStixCoreRelationshipsList extends Component {
   renderContent() {
     const {
       t,
@@ -147,26 +142,26 @@ class StixCoreRelationshipsHorizontalBars extends Component {
       relationshipType,
       toTypes,
       field,
+      isTo,
       startDate,
       endDate,
-      dateAttribute,
       theme,
     } = this.props;
-    const stixDomainObjectsDistributionVariables = {
+    const stixCoreRelationshipsDistributionVariables = {
       fromId: stixCoreObjectId,
       relationship_type: relationshipType,
       toTypes,
       field: field || 'entity_type',
       operation: 'count',
+      limit: 10,
+      isTo: isTo || false,
       startDate,
       endDate,
-      dateAttribute,
-      limit: 8,
     };
     return (
       <QueryRenderer
-        query={stixCoreRelationshipsHorizontalBarsDistributionQuery}
-        variables={stixDomainObjectsDistributionVariables}
+        query={entityStixCoreRelationshipsListDistributionQuery}
+        variables={stixCoreRelationshipsDistributionVariables}
         render={({ props }) => {
           if (
             props
@@ -182,63 +177,31 @@ class StixCoreRelationshipsHorizontalBars extends Component {
               props.stixCoreRelationshipsDistribution,
             );
             return (
-              <ResponsiveContainer height="100%" width="100%">
-                <BarChart
-                  layout="vertical"
-                  data={data}
-                  margin={{
-                    top: 20,
-                    right: 20,
-                    bottom: 20,
-                    left: 20,
-                  }}
-                >
-                  <XAxis
-                    type="number"
-                    dataKey="value"
-                    stroke={theme.palette.text.primary}
-                    allowDecimals={false}
-                  />
-                  <YAxis
-                    stroke={theme.palette.text.primary}
-                    dataKey="label"
-                    type="category"
-                    angle={-30}
-                    textAnchor="end"
-                    tickFormatter={tickFormatter}
-                  />
-                  <CartesianGrid
-                    strokeDasharray="2 2"
-                    stroke={theme.palette.action.grid}
-                  />
-                  <Tooltip
-                    cursor={{
-                      fill: 'rgba(0, 0, 0, 0.2)',
-                      stroke: 'rgba(0, 0, 0, 0.2)',
-                      strokeWidth: 2,
-                    }}
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      fontSize: 12,
-                      borderRadius: 10,
-                    }}
-                  />
-                  <Bar
-                    fill={theme.palette.primary.main}
-                    dataKey="value"
-                    barSize={15}
-                  >
-                    {props.stixCoreRelationshipsDistribution.map(
-                      (entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={itemColor(entry.entity.entity_type)}
-                        />
-                      ),
-                    )}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <TableContainer component={Paper}>
+                <Table size="small" style={{ width: '100%' }}>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell style={{ width: 50 }} align="center">
+                        {' '}
+                        #{' '}
+                      </TableCell>
+                      <TableCell>{t('Entity')}</TableCell>
+                      <TableCell align="right">{t('Number')}</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {data.map((row) => (
+                      <TableRow key={row.label}>
+                        <TableCell align="center" style={{ width: 50 }}>
+                          <ItemIcon type={row.entity.entity_type} />
+                        </TableCell>
+                        <TableCell align="left">{row.entity.name}</TableCell>
+                        <TableCell align="right">{row.value}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
             );
           }
           if (props) {
@@ -276,12 +239,12 @@ class StixCoreRelationshipsHorizontalBars extends Component {
 
   render() {
     const {
-      t, classes, title, variant, height,
+      t, classes, title, variant,
     } = this.props;
     return (
-      <div style={{ height: height || '100%' }}>
+      <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {title || t('StixCoreRelationships distribution')}
+          {title || t('StixDomainObjects distribution')}
         </Typography>
         {variant !== 'inLine' ? (
           <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -295,7 +258,8 @@ class StixCoreRelationshipsHorizontalBars extends Component {
   }
 }
 
-StixCoreRelationshipsHorizontalBars.propTypes = {
+EntityStixCoreRelationshipsList.propTypes = {
+  stixCoreObjectId: PropTypes.string,
   relationshipType: PropTypes.string,
   toTypes: PropTypes.array,
   title: PropTypes.string,
@@ -303,15 +267,14 @@ StixCoreRelationshipsHorizontalBars.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  height: PropTypes.number,
-  startDate: PropTypes.object,
-  endDate: PropTypes.object,
-  dateAttribute: PropTypes.string,
+  isTo: PropTypes.bool,
   variant: PropTypes.string,
+  startDate: PropTypes.string,
+  endDate: PropTypes.string,
 };
 
 export default compose(
   inject18n,
   withTheme,
   withStyles(styles),
-)(StixCoreRelationshipsHorizontalBars);
+)(EntityStixCoreRelationshipsList);

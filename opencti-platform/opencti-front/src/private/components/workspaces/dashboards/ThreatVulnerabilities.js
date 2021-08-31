@@ -7,6 +7,7 @@ import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_re
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import EntityStixCoreRelationshipsAreaChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsAreaChart';
 import EntityStixCoreRelationshipsVerticalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsVerticalBars';
+import EntityStixCoreRelationshipsList from '../../common/stix_core_relationships/EntityStixCoreRelationshipsList';
 
 const styles = () => ({
   container: {
@@ -65,6 +66,19 @@ class ThreatVulnerabilities extends Component {
             stixCoreObjectId={widget.entity.id}
             toTypes={['Vulnerability']}
             relationshipType="targets"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
+      case 'list':
+        return (
+          <EntityStixCoreRelationshipsList
+            title={`${t('Vulnerabilities')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            toTypes={['Vulnerability']}
+            relationshipType="targets"
+            field="internal_id"
             startDate={startDate}
             endDate={endDate}
             variant="inLine"

@@ -29,6 +29,7 @@ import {
   ChartDonut,
   AlignHorizontalLeft,
   DatabaseOutline,
+  ViewListOutline,
 } from 'mdi-material-ui';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -80,18 +81,19 @@ const AREA = { key: 'area', name: 'Area' };
 const TIMELINE = { key: 'timeline', name: 'Timeline' };
 const VERTICAL_BAR = { key: 'vertical-bar', name: 'Vertical Bar' };
 const MAP = { key: 'map', name: 'Map' };
+const LIST = { key: 'list', name: 'List' };
 
 const visualizationTypesMapping = {
-  all: [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE],
-  sectors: [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE],
-  countries: [MAP, HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE],
-  'intrusion-sets': [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE],
-  malwares: [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE],
-  vulnerabilities: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, TIMELINE],
-  campaigns: [AREA, TIMELINE, VERTICAL_BAR],
-  incidents: [AREA, TIMELINE, VERTICAL_BAR],
-  indicators: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA],
-  reports: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA],
+  all: [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE, LIST],
+  sectors: [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE, LIST],
+  countries: [MAP, HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE, LIST],
+  'intrusion-sets': [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE, LIST],
+  malwares: [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE, LIST],
+  vulnerabilities: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, TIMELINE, LIST],
+  campaigns: [AREA, TIMELINE, VERTICAL_BAR, LIST],
+  incidents: [AREA, TIMELINE, VERTICAL_BAR, LIST],
+  indicators: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA, LIST],
+  reports: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA, LIST],
 };
 
 class WidgetCreation extends Component {
@@ -183,6 +185,8 @@ class WidgetCreation extends Component {
         return <ChartAreasplineVariant fontSize="large" color="primary" />;
       case 'timeline':
         return <ChartTimeline fontSize="large" color="primary" />;
+      case 'list':
+        return <ViewListOutline fontSize="large" color="primary" />;
       default:
         return 'Go away';
     }

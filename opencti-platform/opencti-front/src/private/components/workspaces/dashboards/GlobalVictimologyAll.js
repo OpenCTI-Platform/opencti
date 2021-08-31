@@ -7,6 +7,7 @@ import StixCoreRelationshipsHorizontalBars from '../../common/stix_core_relation
 import StixCoreRelationshipsDonut from '../../common/stix_core_relationships/StixCoreRelationshipsDonut';
 import StixCoreRelationshipsVerticalBars from '../../common/stix_core_relationships/StixCoreRelationshipsVerticalBars';
 import StixCoreRelationshipsAreaChart from '../../common/stix_core_relationships/StixCoreRelationshipsAreaChart';
+import StixCoreRelationshipsList from '../../common/stix_core_relationships/StixCoreRelationshipsList';
 
 const styles = () => ({
   container: {
@@ -61,6 +62,18 @@ class GlobalVictimologyAll extends Component {
             title={`${t('Victimology')} - ${t('Global')}`}
             toTypes={['Sector', 'Country']}
             relationshipType="targets"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
+      case 'list':
+        return (
+          <StixCoreRelationshipsList
+            title={`${t('Victimology')} - ${t('Global')}`}
+            toTypes={['Sector', 'Country']}
+            relationshipType="targets"
+            field="internal_id"
             startDate={startDate}
             endDate={endDate}
             variant="inLine"
