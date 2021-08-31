@@ -2205,6 +2205,25 @@ const buildRelationData = async (user, input, opts = {}) => {
     data.lang = R.isNil(input.lang) ? 'en' : input.lang;
     data.created = R.isNil(input.created) ? today : input.created;
     data.modified = R.isNil(input.modified) ? today : input.modified;
+    // Get statuses
+    let type = null;
+    if (isStixCoreRelationship(relationshipType)) {
+      type = 'stix-core-relationship';
+    } else if (isStixSightingRelationship(relationshipType)) {
+      type = 'stix-sighting-relationship';
+    }
+    if (type) {
+      const statuses = await listEntities(user, [ENTITY_TYPE_STATUS], {
+        first: 1,
+        orderBy: 'order',
+        orderMode: 'asc',
+        filters: [{ key: 'type', values: [type] }],
+        connectionFormat: false,
+      });
+      if (statuses.length > 0) {
+        data.status_id = R.head(statuses).id;
+      }
+    }
   }
   // stix-core-relationship
   if (isStixCoreRelationship(relationshipType)) {
@@ -2552,6 +2571,7 @@ const createEntityRaw = async (user, participantIds, input, type) => {
       R.assoc('created', R.isNil(input.created) ? today : input.created),
       R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
     )(data);
+    // Get statuses
     const statuses = await listEntities(user, [ENTITY_TYPE_STATUS], {
       first: 1,
       orderBy: 'order',
