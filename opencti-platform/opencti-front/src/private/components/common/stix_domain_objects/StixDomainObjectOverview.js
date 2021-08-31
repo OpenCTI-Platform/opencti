@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr, propOr } from 'ramda';
+import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -40,7 +40,8 @@ class StixDomainObjectOverview extends Component {
     const {
       t, fldt, classes, stixDomainObject, withoutMarking, withPattern,
     } = this.props;
-    const stixIds = stixDomainObject.x_opencti_stix_ids || [];
+    const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
+    const stixIds = R.filter((n) => n !== stixDomainObject.standard_id, otherStixIds);
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -121,7 +122,7 @@ class StixDomainObjectOverview extends Component {
                     {t('Marking')}
                   </Typography>
                   <ItemMarkings
-                    markingDefinitions={pathOr(
+                    markingDefinitions={R.pathOr(
                       [],
                       ['objectMarking', 'edges'],
                       stixDomainObject,
@@ -138,7 +139,7 @@ class StixDomainObjectOverview extends Component {
                 {t('Author')}
               </Typography>
               <ItemAuthor
-                createdBy={propOr(null, 'createdBy', stixDomainObject)}
+                createdBy={R.propOr(null, 'createdBy', stixDomainObject)}
               />
               <Typography
                 variant="h3"
@@ -236,4 +237,7 @@ StixDomainObjectOverview.propTypes = {
   withoutMarking: PropTypes.bool,
 };
 
-export default compose(inject18n, withStyles(styles))(StixDomainObjectOverview);
+export default R.compose(
+  inject18n,
+  withStyles(styles),
+)(StixDomainObjectOverview);
