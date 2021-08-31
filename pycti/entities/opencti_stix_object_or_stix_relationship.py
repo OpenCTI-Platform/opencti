@@ -173,6 +173,12 @@ class StixObjectOrStixRelationship:
                 contact_information
                 x_opencti_aliases
             }
+            ... on System {
+                name
+                description
+                contact_information
+                x_opencti_aliases
+            }
             ... on Indicator {
                 pattern_type
                 pattern_version

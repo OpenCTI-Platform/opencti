@@ -343,6 +343,8 @@ class Identity:
                     type = "Individual"
                 elif stix_object["identity_class"] == "class":
                     type = "Sector"
+                elif stix_object["identity_class"] == "system":
+                    type = "System"
             return self.create(
                 type=type,
                 stix_id=stix_object["id"],

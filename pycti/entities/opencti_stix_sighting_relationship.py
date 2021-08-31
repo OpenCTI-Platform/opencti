@@ -128,6 +128,9 @@ class StixSightingRelationship:
                 ... on Sector {
                     name
                 }
+                 ... on System {
+                    name
+                }
                 ... on Indicator {
                     name
                 }
@@ -207,6 +210,9 @@ class StixSightingRelationship:
                     name
                 }
                 ... on Sector {
+                    name
+                }
+                ... on System {
                     name
                 }
                 ... on Indicator {
