@@ -17,7 +17,6 @@ import { ENTITY_TYPE_WORK} from '../schema/internalObject';
 import { DatabaseError } from '../config/errors';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
-import { loadById } from '../database/middleware';
 
 export const workToExportFile = (work) => {
   return {
