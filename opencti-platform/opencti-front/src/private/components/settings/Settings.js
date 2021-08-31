@@ -179,6 +179,7 @@ class Settings extends Component {
         'platform_theme_light_primary',
         'platform_theme_light_secondary',
       ].includes(name)
+      && value.length > 0
     ) {
       if (!finalValue.startsWith('#')) {
         finalValue = `#${finalValue}`;
