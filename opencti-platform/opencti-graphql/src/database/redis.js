@@ -635,12 +635,12 @@ const processStreamResult = async (results, callback) => {
   return lastElement.eventId;
 };
 
-let processingLoopPromise;
 const WAIT_TIME = 1000;
 const MAX_RANGE_MESSAGES = 500;
 export const createStreamProcessor = (user, provider, callback, maxRange = MAX_RANGE_MESSAGES) => {
   let client;
   let startEventId;
+  let processingLoopPromise;
   let streamListening = true;
   const processInfo = async () => {
     return fetchStreamInfo();
