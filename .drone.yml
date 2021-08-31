@@ -32,7 +32,7 @@ steps:
   settings:
     token: e5c6fb05-76f7-4985-86cf-ff843d5d103e
     paths:
-      - opencti-platform/opencti-graphql/coverage
+      - /tmp/test-platform/opencti-graphql/coverage
 
 - name: frontend-tests
   image: nikolaik/python-nodejs:python3.9-nodejs15-alpine
