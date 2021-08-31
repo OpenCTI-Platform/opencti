@@ -720,7 +720,7 @@ class InvestigationGraphComponent extends Component {
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
       modeFixed: R.propOr(false, 'modeFixed', params),
-      modeTree: R.propOr(false, 'modeTree', params),
+      modeTree: R.propOr('', 'modeTree', params),
       displayTimeRange: R.propOr(false, 'displayTimeRange', params),
       selectedTimeRangeInterval: timeRangeInterval,
       stixCoreObjectsTypes,
@@ -744,6 +744,9 @@ class InvestigationGraphComponent extends Component {
     if (this.initialized) return;
     if (this.graph && this.graph.current) {
       this.graph.current.d3Force('link').distance(50);
+      if (this.state.modeTree) {
+        this.graph.current.d3Force('charge').strength(-1000);
+      }
       if (this.zoom && this.zoom.k && !this.state.mode3D) {
         this.graph.current.zoom(this.zoom.k, 400);
       } else {
@@ -824,16 +827,30 @@ class InvestigationGraphComponent extends Component {
     if (modeTree === 'horizontal') {
       this.setState(
         {
-          modeTree: this.state.modeTree === 'horizontal' ? null : 'horizontal',
+          modeTree: this.state.modeTree === 'horizontal' ? '' : 'horizontal',
         },
-        () => this.saveParameters(),
+        () => {
+          if (this.state.modeTree === 'horizontal') {
+            this.graph.current.d3Force('charge').strength(-1000);
+          } else {
+            this.graph.current.d3Force('charge').strength(-30);
+          }
+          this.saveParameters();
+        },
       );
     } else if (modeTree === 'vertical') {
       this.setState(
         {
-          modeTree: this.state.modeTree === 'vertical' ? null : 'vertical',
+          modeTree: this.state.modeTree === 'vertical' ? '' : 'vertical',
         },
-        () => this.saveParameters(),
+        () => {
+          if (this.state.modeTree === 'vertical') {
+            this.graph.current.d3Force('charge').strength(-1000);
+          } else {
+            this.graph.current.d3Force('charge').strength(-30);
+          }
+          this.saveParameters();
+        },
       );
     }
   }

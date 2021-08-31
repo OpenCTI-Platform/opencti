@@ -96,9 +96,6 @@ export const buildViewParamsFromUrlAndStorage = (
   if (finalParams.mode3D) {
     finalParams.mode3D = finalParams.mode3D.toString() === 'true';
   }
-  if (finalParams.modeTree) {
-    finalParams.modeTree = finalParams.modeTree.toString() === 'true';
-  }
   if (finalParams.modeFixed) {
     finalParams.modeFixed = finalParams.modeFixed.toString() === 'true';
   }
