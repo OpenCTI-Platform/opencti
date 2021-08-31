@@ -1,21 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, pathOr, take, propOr,
-} from 'ramda';
+import { compose, pathOr, take } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
+import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
+import { OpenInNewOutlined } from '@material-ui/icons';
+import { withStyles, withTheme } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
 import Typography from '@material-ui/core/Typography';
-import { AccountCircleOutlined, LinkOff } from '@material-ui/icons';
-import { ClockOutline } from 'mdi-material-ui';
-import { Link } from 'react-router-dom';
-import CardActionArea from '@material-ui/core/CardActionArea';
-import Divider from '@material-ui/core/Divider';
-import IconButton from '@material-ui/core/IconButton';
 import { ConnectionHandler } from 'relay-runtime';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -23,18 +18,25 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import Slide from '@material-ui/core/Slide';
+import IconButton from '@material-ui/core/IconButton';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import { commitMutation } from '../../../../relay/environment';
 import { noteMutationRelationDelete } from './AddNotesLines';
 import { truncate } from '../../../../utils/String';
+import NotePopover from './NotePopover';
+import { resolveLink } from '../../../../utils/Entity';
 
 const styles = (theme) => ({
   card: {
     width: '100%',
     height: '100%',
+    marginBottom: 30,
     borderRadius: 6,
+    backgroundColor: 'transparent',
+    padding: 0,
+    position: 'relative',
   },
   avatar: {
     backgroundColor: theme.palette.primary.main,
@@ -59,6 +61,12 @@ const styles = (theme) => ({
     height: 45,
     paddingTop: 7,
   },
+  external: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    color: theme.palette.text.secondary,
+  },
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -71,38 +79,36 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
     super(props);
     this.state = {
       displayDialog: false,
-      removeNote: null,
+      noteIdToRemove: null,
       removing: false,
     };
   }
 
-  handleOpenDialog(externalReferenceEdge, event) {
-    event.preventDefault();
-    const openedState = {
+  handleOpenDialog(noteId) {
+    this.setState({
       displayDialog: true,
-      removeNote: externalReferenceEdge,
-    };
-    this.setState(openedState);
+      noteIdToRemove: noteId,
+    });
   }
 
   handleCloseDialog() {
-    const closedState = {
+    this.setState({
       displayDialog: false,
-      removeNote: null,
-    };
-    this.setState(closedState);
+      removing: false,
+      noteIdToRemove: null,
+    });
   }
 
   handleRemoval() {
     this.setState({ removing: true });
-    this.removeNote(this.state.removeNote);
+    this.removeNote(this.state.noteIdToRemove);
   }
 
-  removeNote(note) {
+  removeNote(noteId) {
     commitMutation({
       mutation: noteMutationRelationDelete,
       variables: {
-        id: note.id,
+        id: noteId,
         toId: this.props.stixCoreObjectOrStixCoreRelationshipId,
         relationship_type: 'object',
       },
@@ -114,7 +120,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
           entity,
           'Pagination_notes',
         );
-        ConnectionHandler.deleteNode(conn, note.id);
+        ConnectionHandler.deleteNode(conn, noteId);
       },
       onCompleted: () => {
         this.setState({ removing: false });
@@ -125,91 +131,102 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
 
   render() {
     const {
-      nsdt, classes, node, t,
+      nsdt, classes, node, t, theme,
     } = this.props;
+    let authorName = null;
+    let authorLink = null;
+    if (node.createdBy) {
+      authorName = node.createdBy.name;
+      authorLink = `${resolveLink(node.createdBy.entity_type)}/${
+        node.createdBy.id
+      }`;
+    }
     return (
       <Card classes={{ root: classes.card }} raised={false} variant="outlined">
-        <CardActionArea
-          classes={{ root: classes.area }}
-          component={Link}
-          to={`/dashboard/analysis/notes/${node.id}`}
-        >
-          <CardContent style={{ paddingBottom: 10, position: 'relative' }}>
-            <div style={{ width: '100%', height: 80, paddingTop: 5 }}>
-              <div style={{ float: 'left', width: '50%' }}>
-                <AccountCircleOutlined
-                  fontSize="small"
-                  style={{ float: 'left', marginRight: 5 }}
-                />
-                <Typography variant="body2" style={{ paddingTop: 2 }}>
-                  {propOr('-', 'name', node.createdBy)}
-                </Typography>
+        <CardHeader
+          style={{
+            padding: '10px 10px 0 15px',
+            borderBottom: `1px solid ${theme.palette.divider}`,
+          }}
+          action={
+            <NotePopover
+              id={node.id}
+              handleOpenRemove={this.handleOpenDialog.bind(this)}
+            />
+          }
+          title={
+            <div>
+              <div
+                style={{
+                  float: 'left',
+                  fontDecoration: 'none',
+                  textTransform: 'none',
+                }}
+              >
+                <strong>
+                  {authorLink ? (
+                    <Link to={authorLink}>{authorName}</Link>
+                  ) : (
+                    t('Uknown')
+                  )}
+                </strong>{' '}
+                <span style={{ color: theme.palette.text.secondary }}>
+                  {t('added a note')} on {nsdt(node.created)}
+                </span>
               </div>
-              <div style={{ float: 'right', marginTop: -15 }}>
-                <IconButton
-                  aria-label="Remove"
-                  onClick={this.handleOpenDialog.bind(this, node)}
-                >
-                  <LinkOff />
-                </IconButton>
-              </div>
-              <div className="clearfix" />
-              <div style={{ float: 'left', width: '50%' }}>
-                <ClockOutline
-                  fontSize="small"
-                  style={{ float: 'left', marginRight: 5 }}
-                />
-                <Typography variant="body2" style={{ paddingTop: 2 }}>
-                  {nsdt(node.created)}
-                </Typography>
-              </div>
-              <div style={{ float: 'right' }}>
+              <div
+                style={{
+                  float: 'left',
+                  marginLeft: 20,
+                  fontDecoration: 'none',
+                  textTransform: 'none',
+                }}
+              >
                 {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
                   (markingDefinition) => (
                     <ItemMarking
                       key={markingDefinition.node.id}
                       label={markingDefinition.node.definition}
                       color={markingDefinition.node.x_opencti_color}
+                      variant="inList"
                     />
                   ),
                 )}
               </div>
-              <div className="clearfix" />
+              <div
+                style={{
+                  float: 'right',
+                  fontDecoration: 'none',
+                  textTransform: 'none',
+                }}
+              >
+                <StixCoreObjectLabels
+                  variant="inList"
+                  labels={node.objectLabel}
+                />
+              </div>
             </div>
-            <Divider variant="fullWidth" />
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t('Abstract')}
-            </Typography>
-            <Typography
-              variant="body2"
-              noWrap={true}
-              style={{ margin: '10px 0 10px 0', fontWeight: 500 }}
-            >
-              <Markdown className="markdown">
-                {node.attribute_abstract}
-              </Markdown>
-            </Typography>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t('Content')}
-            </Typography>
-            <Typography variant="body2" style={{ marginBottom: 20 }}>
-              <Markdown className="markdown">
-                {truncate(node.content, 200)}
-              </Markdown>
-            </Typography>
-            <div className={classes.objectLabel}>
-              <StixCoreObjectLabels labels={node.objectLabel} />
-            </div>
-          </CardContent>
-        </CardActionArea>
+          }
+        />
+        <CardContent>
+          <Typography
+            variant="body2"
+            noWrap={true}
+            style={{ margin: '0 0 10px 0', fontWeight: 500 }}
+          >
+            <Markdown className="markdown">{node.attribute_abstract}</Markdown>
+          </Typography>
+          <Markdown className="markdown">
+            {truncate(node.content, 200)}
+          </Markdown>
+          <IconButton
+            component={Link}
+            to={`/dashboard/analysis/notes/${node.id}`}
+            classes={{ root: classes.external }}
+          >
+            <OpenInNewOutlined fontSize="small" />
+          </IconButton>
+        </CardContent>
         <Dialog
           open={this.state.displayDialog}
           keepMounted={true}
@@ -292,5 +309,6 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard = createFragmentContainer(
 
 export default compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(StixCoreObjectOrStixCoreRelationshipNoteCard);

@@ -23,6 +23,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import DatePickerField from '../../../../components/DatePickerField';
+import TextField from '../../../../components/TextField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -233,11 +234,11 @@ class NoteEditionOverviewComponent extends Component {
                 }
               />
               <Field
-                component={MarkDownField}
+                component={TextField}
                 name="attribute_abstract"
                 label={t('Abstract')}
-                style={{ marginTop: 20 }}
                 fullWidth={true}
+                style={{ marginTop: 20 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 helperText={

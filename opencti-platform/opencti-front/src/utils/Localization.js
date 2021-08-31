@@ -578,6 +578,7 @@ const i18n = {
       'Add an entity to this container': 'Ajouter une entité à ce conteneur',
       'Edit the selected item': "Editer l'élément sélectionné",
       'Remove selected items': 'Supprimer les éléments sélectionnés',
+      'Remove from this entity': 'Retirer de cette entité',
       'All observables': 'Tous les observables',
       'Autonomous system': 'Système autonome',
       'Domain names': 'Noms de domaine',
