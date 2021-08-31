@@ -525,6 +525,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             ... on Sector {
               name
             }
+            ... on System {
+              name
+            }
             ... on Indicator {
               name
             }
@@ -598,6 +601,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   name
                 }
                 ... on Sector {
+                  name
+                }
+                ... on System {
                   name
                 }
                 ... on Indicator {
@@ -676,6 +682,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Sector {
                       name
                     }
+                    ... on System {
+                      name
+                    }
                     ... on Indicator {
                       name
                     }
@@ -744,6 +753,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on Sector {
+                      name
+                    }
+                    ... on System {
                       name
                     }
                     ... on Indicator {
@@ -821,6 +833,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on Sector {
                   name
                 }
+                ... on System {
+                  name
+                }
                 ... on Indicator {
                   name
                 }
@@ -899,6 +914,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Sector {
                       name
                     }
+                    ... on System {
+                      name
+                    }
                     ... on Indicator {
                       name
                     }
@@ -972,6 +990,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on Sector {
+                      name
+                    }
+                    ... on System {
                       name
                     }
                     ... on Indicator {
@@ -1070,6 +1091,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on Sector {
             name
           }
+          ... on System {
+            name
+          }
           ... on Indicator {
             name
           }
@@ -1146,6 +1170,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               ... on Sector {
                 name
               }
+              ... on System {
+                name
+              }
               ... on Indicator {
                 name
               }
@@ -1214,6 +1241,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on Sector {
+                name
+              }
+              ... on System {
                 name
               }
               ... on Indicator {
@@ -1290,6 +1320,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on Sector {
             name
           }
+          ... on System {
+            name
+          }
           ... on Indicator {
             name
           }
@@ -1362,6 +1395,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               ... on Sector {
                 name
               }
+              ... on System {
+                name
+              }
               ... on Indicator {
                 name
               }
@@ -1429,6 +1465,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on Sector {
+                name
+              }
+              ... on System {
                 name
               }
               ... on Indicator {

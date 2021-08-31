@@ -308,6 +308,9 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                 ... on Sector {
                   name
                 }
+                ... on System {
+                  name
+                }
                 ... on Indicator {
                   name
                 }

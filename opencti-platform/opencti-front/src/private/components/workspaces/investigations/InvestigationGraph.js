@@ -100,6 +100,9 @@ const investigationGraphStixCoreObjectQuery = graphql`
       ... on Sector {
         name
       }
+      ... on System {
+        name
+      }
       ... on Indicator {
         name
         valid_from
@@ -350,6 +353,9 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on Sector {
               name
             }
+            ... on System {
+              name
+            }
             ... on Indicator {
               name
               valid_from
@@ -539,6 +545,9 @@ const investigationGraphStixRelationshipsQuery = graphql`
               name
             }
             ... on Sector {
+              name
+            }
+            ... on System {
               name
             }
             ... on Indicator {
@@ -1646,6 +1655,9 @@ const InvestigationGraph = createFragmentContainer(
                 name
               }
               ... on Sector {
+                name
+              }
+              ... on System {
                 name
               }
               ... on Indicator {

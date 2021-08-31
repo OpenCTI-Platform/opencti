@@ -79,6 +79,10 @@ const entityStixCoreRelationshipsDonutStixCoreRelationshipDistributionQuery = gr
           name
           description
         }
+        ... on System {
+          name
+          description
+        }
         ... on Indicator {
           name
           description

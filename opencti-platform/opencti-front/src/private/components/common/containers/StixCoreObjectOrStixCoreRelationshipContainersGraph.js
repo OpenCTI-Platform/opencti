@@ -693,6 +693,9 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContain
                 ... on Sector {
                   name
                 }
+                ... on System {
+                  name
+                }
                 ... on Indicator {
                   name
                   valid_from

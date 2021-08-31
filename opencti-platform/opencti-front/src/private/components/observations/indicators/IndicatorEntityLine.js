@@ -217,6 +217,10 @@ const IndicatorEntityLineFragment = createFragmentContainer(
             name
             description
           }
+          ... on System {
+            name
+            description
+          }
           ... on Indicator {
             name
             description
@@ -288,6 +292,9 @@ const IndicatorEntityLineFragment = createFragmentContainer(
               ... on Sector {
                 name
               }
+              ... on System {
+                name
+              }
               ... on Indicator {
                 name
               }
@@ -345,6 +352,9 @@ const IndicatorEntityLineFragment = createFragmentContainer(
                 name
               }
               ... on Sector {
+                name
+              }
+              ... on System {
                 name
               }
               ... on Indicator {

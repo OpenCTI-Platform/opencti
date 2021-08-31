@@ -3174,6 +3174,138 @@ input SectorAddInput {
   update: Boolean
 }
 
+################ Systems
+enum SystemsOrdering {
+  name
+  confidence
+  firstname
+  lastname
+  created
+  modified
+  status_id
+}
+enum SystemsFilter {
+  name
+  aliases
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  markedBy
+  labelledBy
+  status_id
+}
+input SystemsFiltering {
+  key: SystemsFilter!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+type SystemConnection {
+  pageInfo: PageInfo!
+  edges: [SystemEdge]
+}
+type SystemEdge {
+  cursor: String!
+  node: System!
+}
+type System implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): StixCoreRelationshipConnection
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  # Identity
+  identity_class: String!
+  name: String!
+  description: String
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  # System
+  x_opencti_firstname: String
+  x_opencti_lastname: String
+  organizations: OrganizationConnection
+  # Technical
+  creator: User
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+}
+input SystemAddInput {
+  stix_id: String
+  x_opencti_stix_ids: [String]
+  name: String! @constraint(minLength: 2)
+  description: String!
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  x_opencti_firstname: String
+  x_opencti_lastname: String
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+  update: Boolean
+}
+
 ############## Indicators
 enum IndicatorsOrdering {
   pattern_type
@@ -7591,6 +7723,7 @@ union StixObjectOrStixRelationship =
   | Individual
   | Organization
   | Sector
+  | System
   | Indicator
   | Infrastructure
   | IntrusionSet # Location
@@ -8599,6 +8732,17 @@ type Query {
     search: String
     toStix: Boolean
   ): SectorConnection @auth(for: [KNOWLEDGE])
+  system(id: String): System @auth(for: [KNOWLEDGE])
+  systems(
+    first: Int
+    after: ID
+    orderBy: SystemsOrdering
+    orderMode: OrderingMode
+    filters: [SystemsFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): SystemConnection @auth(for: [KNOWLEDGE])
   indicator(id: String!): Indicator @auth(for: [KNOWLEDGE])
   indicators(
     first: Int
@@ -9290,6 +9434,14 @@ type SectorEditMutations {
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: String!, relationship_type: String!): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
 }
+type SystemEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: [EditInput]!, commitMessage: String): System @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): System @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: System @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): System @auth(for: [KNOWLEDGE_KNUPDATE])
+}
 type IndicatorEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9556,6 +9708,8 @@ type Mutation {
   organizationEdit(id: ID!): OrganizationEditMutations
   sectorAdd(input: SectorAddInput): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
   sectorEdit(id: ID!): SectorEditMutations
+  systemAdd(input: SystemAddInput): System @auth(for: [KNOWLEDGE_KNUPDATE])
+  systemEdit(id: ID!): SystemEditMutations
   indicatorAdd(input: IndicatorAddInput): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   indicatorEdit(id: ID!): IndicatorEditMutations
   infrastructureAdd(input: InfrastructureAddInput): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])

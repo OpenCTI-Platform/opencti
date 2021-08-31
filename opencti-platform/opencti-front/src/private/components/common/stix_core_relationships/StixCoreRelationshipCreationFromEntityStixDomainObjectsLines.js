@@ -268,6 +268,10 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                   name
                   description
                 }
+                ... on System {
+                  name
+                  description
+                }
                 ... on Indicator {
                   name
                   description

@@ -205,6 +205,10 @@ const stixCyberObservableRelationshipCreationFromEntityQuery = graphql`
         name
         description
       }
+      ... on System {
+        name
+        description
+      }
       ... on Indicator {
         name
         description

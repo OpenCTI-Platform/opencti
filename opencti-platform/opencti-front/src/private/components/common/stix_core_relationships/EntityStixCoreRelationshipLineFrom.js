@@ -125,10 +125,7 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
                 + R.head(node.x_opencti_inferences).rule.name
               }
             >
-              <AutoFix
-                fontSize="small"
-                style={{ marginLeft: -30 }}
-              />
+              <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
             </Tooltip>
           ) : (
             <StixCoreRelationshipPopover
@@ -238,6 +235,10 @@ const EntityStixCoreRelationshipLineFromFragment = createFragmentContainer(
             description
           }
           ... on Sector {
+            name
+            description
+          }
+          ... on System {
             name
             description
           }

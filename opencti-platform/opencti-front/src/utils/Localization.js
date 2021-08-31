@@ -73,6 +73,8 @@ const i18n = {
         'Souhaitez-vous supprimer cette ville ?',
       'Do you want to delete this sector?':
         'Souhaitez-vous supprimer ce secteur ?',
+      'Do you want to delete this system?':
+        'Souhaitez-vous supprimer ce système ?',
       'Do you want to delete this organization?':
         'Souhaitez-vous supprimer cette organisation ?',
       'Do you want to delete this individual?':
@@ -214,6 +216,7 @@ const i18n = {
       Merge: 'Fusionner',
       Cancel: 'Annuler',
       Import: 'Importer',
+      'sighted in/at': 'détecté dans/en',
       'auto:': 'auto :',
       'Import data': 'Importer des données',
       'Import successfully asked': "L'import a été demandé",
@@ -245,6 +248,7 @@ const i18n = {
       'No available options': 'Aucune option disponible',
       'No description of this usage': 'Aucune description de cet usage',
       'No description of this targeting': 'Aucune description de ce ciblage',
+      'No history about this relationship.': 'Aucun historique à propos de cette relation',
       'Create a workspace': 'Créer un espace de travail',
       'Update a workspace': 'Modifier un espace de travail',
       'Add a widget': 'Ajouter un widget',
@@ -313,6 +317,8 @@ const i18n = {
       'Update a country': 'Modifier un pays',
       'Create a sector': 'Créer un secteur',
       'Update a sector': 'Modifier un secteur',
+      'Create a system': 'Créer un système',
+      'Update a system': 'Modifier un système',
       'Create a city': 'Créer une ville',
       'Update a city': 'Modifier une ville',
       'Create an organization': 'Créer une organisation',
@@ -454,6 +460,8 @@ const i18n = {
       'Threat actors': 'Acteurs',
       'Threat actor': 'Acteur',
       Sectors: 'Secteurs',
+      Systems: 'Systèmes',
+      System: 'Système',
       'Intrusion sets': 'Modes opératoires',
       'Intrusion set': 'Mode opératoire',
       Attribution: 'Attribution',
@@ -1048,6 +1056,7 @@ const i18n = {
       entity_Individual: 'Individu',
       entity_Organization: 'Organisation',
       entity_Sector: 'Secteur',
+      entity_System: 'Système',
       entity_Indicator: 'Indicateur',
       entity_Infrastructure: 'Infrastructure',
       'entity_Intrusion-Set': 'Mode opératoire',
@@ -1283,6 +1292,7 @@ const i18n = {
       entity_Individual: 'Individual',
       entity_Organization: 'Organization',
       entity_Sector: 'Sector',
+      entity_System: 'System',
       entity_Indicator: 'Indicator',
       entity_Infrastructure: 'Infrastructure',
       'entity_Intrusion-Set': 'Intrusion Set',

@@ -228,6 +228,9 @@ const stixCoreRelationshipCreationFromRelationQuery = graphql`
         ... on Sector {
           name
         }
+        ... on System {
+          name
+        }
         ... on Indicator {
           name
         }
@@ -293,6 +296,9 @@ const stixCoreRelationshipCreationFromRelationQuery = graphql`
           name
         }
         ... on Sector {
+          name
+        }
+        ... on System {
           name
         }
         ... on Indicator {

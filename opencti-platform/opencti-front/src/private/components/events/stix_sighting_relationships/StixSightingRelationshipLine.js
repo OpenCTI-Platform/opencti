@@ -242,6 +242,10 @@ const StixSightingRelationshipLineFragment = createFragmentContainer(
             name
             description
           }
+          ... on System {
+            name
+            description
+          }
           ... on Indicator {
             name
             description

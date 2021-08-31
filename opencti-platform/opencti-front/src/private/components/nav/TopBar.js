@@ -46,6 +46,7 @@ import TopMenuAttackPattern from './TopMenuAttackPattern';
 import TopMenuVulnerability from './TopMenuVulnerability';
 import TopMenuEntities from './TopMenuEntities';
 import TopMenuSector from './TopMenuSector';
+import TopMenuSystem from './TopMenuSystem';
 import TopMenuOrganization from './TopMenuOrganization';
 import TopMenuIndividual from './TopMenuIndividual';
 import TopMenuRegion from './TopMenuRegion';
@@ -158,11 +159,7 @@ const TopBar = ({
       <Toolbar>
         <div className={classes.logoContainer}>
           <Link to="/dashboard">
-            <img
-              src={theme.logo}
-              alt="logo"
-              className={classes.logo}
-            />
+            <img src={theme.logo} alt="logo" className={classes.logo} />
           </Link>
         </div>
         <div className={classes.menuContainer}>
@@ -252,6 +249,9 @@ const TopBar = ({
           )}
           {location.pathname.includes('/dashboard/entities/sectors/') && (
             <TopMenuSector />
+          )}
+          {location.pathname.includes('/dashboard/entities/systems/') && (
+            <TopMenuSystem />
           )}
           {location.pathname.includes('/dashboard/entities/organizations/') && (
             <TopMenuOrganization />

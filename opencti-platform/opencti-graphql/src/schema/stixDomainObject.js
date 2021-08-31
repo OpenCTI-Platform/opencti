@@ -29,6 +29,7 @@ export const ENTITY_TYPE_COURSE_OF_ACTION = 'Course-Of-Action';
 export const ENTITY_TYPE_IDENTITY_INDIVIDUAL = 'Individual';
 export const ENTITY_TYPE_IDENTITY_ORGANIZATION = 'Organization';
 export const ENTITY_TYPE_IDENTITY_SECTOR = 'Sector';
+export const ENTITY_TYPE_IDENTITY_SYSTEM = 'System';
 export const ENTITY_TYPE_INDICATOR = 'Indicator';
 export const ENTITY_TYPE_INFRASTRUCTURE = 'Infrastructure';
 export const ENTITY_TYPE_INTRUSION_SET = 'Intrusion-Set';
@@ -56,6 +57,7 @@ const STIX_DOMAIN_OBJECT_IDENTITIES = [
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_IDENTITY_SECTOR,
+  ENTITY_TYPE_IDENTITY_SYSTEM,
 ];
 schemaTypes.register(ENTITY_TYPE_IDENTITY, STIX_DOMAIN_OBJECT_IDENTITIES);
 export const isStixDomainObjectIdentity = (type) =>
@@ -82,6 +84,7 @@ const STIX_DOMAIN_OBJECTS = [
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_IDENTITY_SECTOR,
+  ENTITY_TYPE_IDENTITY_SYSTEM,
   ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
@@ -164,9 +167,10 @@ export const stixDomainObjectFieldsToBeUpdated = {
     'x_opencti_log_sources',
     'confidence',
   ],
-  [ENTITY_TYPE_IDENTITY_INDIVIDUAL]: ['name', 'revoked', 'description', 'confidence'],
-  [ENTITY_TYPE_IDENTITY_ORGANIZATION]: ['name', 'revoked', 'description', 'confidence'],
-  [ENTITY_TYPE_IDENTITY_SECTOR]: ['name', 'revoked', 'description', 'confidence'],
+  [ENTITY_TYPE_IDENTITY_INDIVIDUAL]: ['name', 'revoked', 'description', 'contact_information', 'confidence'],
+  [ENTITY_TYPE_IDENTITY_ORGANIZATION]: ['name', 'revoked', 'description', 'contact_information', 'confidence'],
+  [ENTITY_TYPE_IDENTITY_SECTOR]: ['name', 'revoked', 'description', 'contact_information', 'confidence'],
+  [ENTITY_TYPE_IDENTITY_SYSTEM]: ['name', 'revoked', 'description', 'contact_information', 'confidence'],
   [ENTITY_TYPE_INDICATOR]: [
     'name',
     'revoked',
@@ -460,6 +464,32 @@ export const stixDomainObjectsAttributes = {
     'status_id',
   ],
   [ENTITY_TYPE_IDENTITY_SECTOR]: [
+    'internal_id',
+    'standard_id',
+    'entity_type',
+    'x_opencti_stix_ids',
+    'spec_version',
+    'created_at',
+    'i_created_at_day',
+    'i_created_at_month',
+    'i_created_at_year',
+    'updated_at',
+    'revoked',
+    'confidence',
+    'lang',
+    'created',
+    'modified',
+    'name',
+    'description',
+    'contact_information',
+    'identity_class',
+    'roles',
+    'x_opencti_aliases',
+    'i_aliases_ids',
+    'x_opencti_graph_data',
+    'status_id',
+  ],
+  [ENTITY_TYPE_IDENTITY_SYSTEM]: [
     'internal_id',
     'standard_id',
     'entity_type',

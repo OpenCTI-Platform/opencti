@@ -13,6 +13,8 @@ import Positions from './Positions';
 import RootPosition from './positions/Root';
 import Organizations from './Organizations';
 import RootOrganization from './organizations/Root';
+import Systems from './Systems';
+import RootSystem from './systems/Root';
 import Individuals from './Individuals';
 import RootIndividual from './individuals/Root';
 
@@ -74,6 +76,15 @@ class Root extends Component {
         <BoundaryRoute
           path="/dashboard/entities/organizations/:organizationId"
           render={(routeProps) => <RootOrganization {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/entities/systems"
+          component={Systems}
+        />
+        <BoundaryRoute
+          path="/dashboard/entities/systems/:systemId"
+          render={(routeProps) => <RootSystem {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact

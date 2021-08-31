@@ -225,6 +225,10 @@ const EntityStixSightingRelationshipLineFragment = createFragmentContainer(
             name
             description
           }
+          ... on System {
+            name
+            description
+          }
           ... on Indicator {
             name
             description
@@ -294,6 +298,10 @@ const EntityStixSightingRelationshipLineFragment = createFragmentContainer(
             description
           }
           ... on Sector {
+            name
+            description
+          }
+          ... on System {
             name
             description
           }

@@ -1007,11 +1007,7 @@ class ReportKnowledgeGraphComponent extends Component {
             // linkDirectionalParticleSpeed={() => 0.004}
             linkCanvasObjectMode={() => 'after'}
             linkCanvasObject={(link, ctx) => (displayLabels
-              ? linkPaint(
-                link,
-                ctx,
-                theme.palette.text.primary,
-              )
+              ? linkPaint(link, ctx, theme.palette.text.primary)
               : null)
             }
             linkColor={(link) => (this.selectedLinks.has(link)
@@ -1161,6 +1157,9 @@ const ReportKnowledgeGraph = createFragmentContainer(
                 name
               }
               ... on Sector {
+                name
+              }
+              ... on System {
                 name
               }
               ... on Indicator {

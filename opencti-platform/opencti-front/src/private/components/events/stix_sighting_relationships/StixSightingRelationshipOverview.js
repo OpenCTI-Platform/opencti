@@ -539,6 +539,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
             ... on Sector {
               name
             }
+            ... on System {
+              name
+            }
             ... on Indicator {
               name
             }
@@ -612,6 +615,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                   name
                 }
                 ... on Sector {
+                  name
+                }
+                ... on System {
                   name
                 }
                 ... on Indicator {
@@ -691,6 +697,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on Sector {
                       name
                     }
+                    ... on System {
+                      name
+                    }
                     ... on Indicator {
                       name
                     }
@@ -760,6 +769,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on Sector {
+                      name
+                    }
+                    ... on System {
                       name
                     }
                     ... on Indicator {
@@ -837,6 +849,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 ... on Sector {
                   name
                 }
+                ... on System {
+                  name
+                }
                 ... on Indicator {
                   name
                 }
@@ -916,6 +931,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on Sector {
                       name
                     }
+                    ... on System {
+                      name
+                    }
                     ... on Indicator {
                       name
                     }
@@ -990,6 +1008,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on Sector {
+                      name
+                    }
+                    ... on System {
                       name
                     }
                     ... on Indicator {
@@ -1088,6 +1109,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
           ... on Sector {
             name
           }
+          ... on System {
+            name
+          }
           ... on Indicator {
             name
           }
@@ -1164,6 +1188,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
               ... on Sector {
                 name
               }
+              ... on System {
+                name
+              }
               ... on Indicator {
                 name
               }
@@ -1232,6 +1259,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on Sector {
+                name
+              }
+              ... on System {
                 name
               }
               ... on Indicator {
@@ -1308,6 +1338,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
           ... on Sector {
             name
           }
+          ... on System {
+            name
+          }
           ... on Indicator {
             name
           }
@@ -1379,6 +1412,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
               ... on Sector {
                 name
               }
+              ... on System {
+                name
+              }
               ... on Indicator {
                 name
               }
@@ -1446,6 +1482,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on Sector {
+                name
+              }
+              ... on System {
                 name
               }
               ... on Indicator {

@@ -215,6 +215,7 @@ class IdentityCreation extends Component {
                       {t('Organization')}
                     </MenuItem>
                     <MenuItem value="Individual">{t('Individual')}</MenuItem>
+                    <MenuItem value="System">{t('System')}</MenuItem>
                   </Field>
                   <div className={classes.buttons}>
                     <Button

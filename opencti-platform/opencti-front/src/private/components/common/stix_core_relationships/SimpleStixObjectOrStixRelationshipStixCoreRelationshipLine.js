@@ -244,6 +244,10 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               name
               description
             }
+            ... on System {
+              name
+              description
+            }
             ... on Indicator {
               name
               description
@@ -418,6 +422,10 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               description
             }
             ... on Sector {
+              name
+              description
+            }
+            ... on System {
               name
               description
             }
