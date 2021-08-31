@@ -2,9 +2,9 @@ import moment from 'moment';
 import * as R from 'ramda';
 import {
   el,
+  elLoadById,
   elDeleteInstanceIds,
   elIndex,
-  elLoadById,
   elPaginate,
   elUpdate,
   ES_IGNORE_THROTTLED,
@@ -13,10 +13,11 @@ import { generateWorkId } from '../schema/identifier';
 import { READ_INDEX_HISTORY, isNotEmptyField, INDEX_HISTORY } from '../database/utils';
 import { redisCreateWork, redisDeleteWork, redisGetWork, redisUpdateWorkFigures } from '../database/redis';
 import { logApp } from '../config/conf';
-import { ENTITY_TYPE_WORK } from '../schema/internalObject';
+import { ENTITY_TYPE_WORK} from '../schema/internalObject';
 import { DatabaseError } from '../config/errors';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
+import { loadById } from '../database/middleware';
 
 export const workToExportFile = (work) => {
   return {
@@ -31,6 +32,15 @@ export const workToExportFile = (work) => {
       errors: work.errors,
     },
   };
+};
+
+const loadWorkById = async (user, workId) => {
+  const action = await elLoadById(user, workId, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
+  return R.assoc('id', workId, action);
+};
+
+export const findById = (user, workId) => {
+  return loadWorkById(user, workId);
 };
 
 export const findAll = (user, args = {}) => {
@@ -73,11 +83,6 @@ export const loadExportWorksAsProgressFiles = async (user, sourceId) => {
   const works = await worksForSource(user, sourceId, { type: CONNECTOR_INTERNAL_EXPORT_FILE, first: 10 });
   const filterSuccessCompleted = R.filter((w) => w.status !== 'complete' || w.errors.length > 0, works);
   return R.map((item) => workToExportFile(item), filterSuccessCompleted);
-};
-
-const loadWorkById = async (user, workId) => {
-  const action = await elLoadById(user, workId, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
-  return R.assoc('id', workId, action);
 };
 
 export const deleteWorkRaw = async (work) => {
