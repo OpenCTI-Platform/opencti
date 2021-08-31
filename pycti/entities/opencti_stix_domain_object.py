@@ -222,6 +222,11 @@ class StixDomainObject:
                 x_opencti_aliases
                 contact_information
             }
+            ... on System {
+                name
+                description
+                x_opencti_aliases
+            }
             ... on Indicator {
                 pattern_type
                 pattern_version

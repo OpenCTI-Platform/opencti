@@ -130,6 +130,9 @@ class StixCoreRelationship:
                 ... on Sector {
                     name
                 }
+                ... on System {
+                    name
+                }
                 ... on Indicator {
                     name
                 }
@@ -209,6 +212,9 @@ class StixCoreRelationship:
                     name
                 }
                 ... on Sector {
+                    name
+                }
+                ... on System {
                     name
                 }
                 ... on Indicator {
