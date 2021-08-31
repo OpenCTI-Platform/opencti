@@ -248,7 +248,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
       modeFixed: R.propOr(false, 'modeFixed', params),
-      modeTree: R.propOr(false, 'todeTree', params),
+      modeTree: R.propOr('', 'modeTree', params),
       selectedTimeRangeInterval: timeRangeInterval,
       stixCoreObjectsTypes,
       markedBy,
@@ -276,6 +276,9 @@ class ReportKnowledgeCorrelationComponent extends Component {
     if (this.initialized) return;
     if (this.graph && this.graph.current) {
       this.graph.current.d3Force('link').distance(50);
+      if (this.state.modeTree !== '') {
+        this.graph.current.d3Force('charge').strength(-5000);
+      }
       if (this.zoom && this.zoom.k && !this.state.mode3D) {
         this.graph.current.zoom(this.zoom.k, 400);
       } else {
@@ -345,8 +348,36 @@ class ReportKnowledgeCorrelationComponent extends Component {
     this.setState({ mode3D: !this.state.mode3D }, () => this.saveParameters());
   }
 
-  handleToggleTreeMode() {
-    this.setState({ modeTree: !this.state.modeTree }, () => this.saveParameters());
+  handleToggleTreeMode(modeTree) {
+    if (modeTree === 'horizontal') {
+      this.setState(
+        {
+          modeTree: this.state.modeTree === 'horizontal' ? '' : 'horizontal',
+        },
+        () => {
+          if (this.state.modeTree === 'horizontal') {
+            this.graph.current.d3Force('charge').strength(-5000);
+          } else {
+            this.graph.current.d3Force('charge').strength(-30);
+          }
+          this.saveParameters();
+        },
+      );
+    } else if (modeTree === 'vertical') {
+      this.setState(
+        {
+          modeTree: this.state.modeTree === 'vertical' ? '' : 'vertical',
+        },
+        () => {
+          if (this.state.modeTree === 'vertical') {
+            this.graph.current.d3Force('charge').strength(-5000);
+          } else {
+            this.graph.current.d3Force('charge').strength(-30);
+          }
+          this.saveParameters();
+        },
+      );
+    }
   }
 
   handleToggleFixedMode() {
@@ -814,7 +845,14 @@ class ReportKnowledgeCorrelationComponent extends Component {
             onLinkClick={this.handleLinkClick.bind(this)}
             onBackgroundClick={this.handleBackgroundClick.bind(this)}
             cooldownTicks={modeFixed ? 0 : 'Infinity'}
-            dagMode={modeTree ? 'td' : undefined}
+            dagMode={
+              // eslint-disable-next-line no-nested-ternary
+              modeTree === 'horizontal'
+                ? 'lr'
+                : modeTree === 'vertical'
+                  ? 'td'
+                  : undefined
+            }
           />
         ) : (
           <ForceGraph2D
@@ -886,7 +924,14 @@ class ReportKnowledgeCorrelationComponent extends Component {
             onLinkClick={this.handleLinkClick.bind(this)}
             onBackgroundClick={this.handleBackgroundClick.bind(this)}
             cooldownTicks={modeFixed ? 0 : 'Infinity'}
-            dagMode={modeTree ? 'td' : undefined}
+            dagMode={
+              // eslint-disable-next-line no-nested-ternary
+              modeTree === 'horizontal'
+                ? 'lr'
+                : modeTree === 'vertical'
+                  ? 'td'
+                  : undefined
+            }
           />
         )}
       </div>

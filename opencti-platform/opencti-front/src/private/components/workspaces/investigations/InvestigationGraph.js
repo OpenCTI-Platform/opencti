@@ -744,7 +744,7 @@ class InvestigationGraphComponent extends Component {
     if (this.initialized) return;
     if (this.graph && this.graph.current) {
       this.graph.current.d3Force('link').distance(50);
-      if (this.state.modeTree) {
+      if (this.state.modeTree !== '') {
         this.graph.current.d3Force('charge').strength(-1000);
       }
       if (this.zoom && this.zoom.k && !this.state.mode3D) {

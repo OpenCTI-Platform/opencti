@@ -59,7 +59,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
       modeFixed: R.propOr(false, 'modeFixed', params),
-      modeTree: R.propOr(null, 'modeTree', params),
+      modeTree: R.propOr('', 'modeTree', params),
       selectedTimeRangeInterval: timeRangeInterval,
       stixCoreObjectsTypes,
       markedBy,
@@ -80,6 +80,9 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     if (this.initialized) return;
     if (this.graph && this.graph.current) {
       this.graph.current.d3Force('link').distance(50);
+      if (this.state.modeTree !== '') {
+        this.graph.current.d3Force('charge').strength(-1000);
+      }
       if (this.zoom && this.zoom.k && !this.state.mode3D) {
         this.graph.current.zoom(this.zoom.k, 400);
       } else {
@@ -157,14 +160,28 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
         {
           modeTree: this.state.modeTree === 'horizontal' ? null : 'horizontal',
         },
-        () => this.saveParameters(),
+        () => {
+          if (this.state.modeTree === 'horizontal') {
+            this.graph.current.d3Force('charge').strength(-1000);
+          } else {
+            this.graph.current.d3Force('charge').strength(-30);
+          }
+          this.saveParameters();
+        },
       );
     } else if (modeTree === 'vertical') {
       this.setState(
         {
           modeTree: this.state.modeTree === 'vertical' ? null : 'vertical',
         },
-        () => this.saveParameters(),
+        () => {
+          if (this.state.modeTree === 'vertical') {
+            this.graph.current.d3Force('charge').strength(-1000);
+          } else {
+            this.graph.current.d3Force('charge').strength(-30);
+          }
+          this.saveParameters();
+        },
       );
     }
   }
