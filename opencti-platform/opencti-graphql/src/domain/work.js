@@ -13,7 +13,7 @@ import { generateWorkId } from '../schema/identifier';
 import { READ_INDEX_HISTORY, isNotEmptyField, INDEX_HISTORY } from '../database/utils';
 import { redisCreateWork, redisDeleteWork, redisGetWork, redisUpdateWorkFigures } from '../database/redis';
 import { logApp } from '../config/conf';
-import { ENTITY_TYPE_WORK} from '../schema/internalObject';
+import { ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { DatabaseError } from '../config/errors';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
