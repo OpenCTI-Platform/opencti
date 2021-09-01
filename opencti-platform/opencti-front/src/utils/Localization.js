@@ -354,6 +354,7 @@ const i18n = {
       'Update a role': 'Modifier un rôle',
       'Create a note': 'Créer une note',
       'Update a note': 'Modifier une note',
+      'Write a note': 'Ecrire une note',
       'Create a TAXII collection': 'Créer une collection TAXII',
       'Update a TAXII collection': 'Modifier une collection TAXII',
       'Create a live stream': 'Créer un stream live',

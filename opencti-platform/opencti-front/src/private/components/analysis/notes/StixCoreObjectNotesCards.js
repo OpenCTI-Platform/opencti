@@ -174,7 +174,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
           expanded={open}
           onChange={this.handleToggleWrite.bind(this)}
         >
-          <AccordionSummary expandIcon={<ExpandMoreOutlined />} style={{ }}>
+          <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
             <Typography className={classes.heading}>
               <RateReviewOutlined />
               &nbsp;&nbsp;&nbsp;&nbsp;
