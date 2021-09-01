@@ -20,6 +20,7 @@ import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
 import Checkbox from '@material-ui/core/Checkbox';
+import Alert from '@material-ui/lab/Alert';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
@@ -98,6 +99,9 @@ const styles = (theme) => ({
     backgroundColor: theme.palette.background.chip,
     marginRight: 10,
   },
+  info: {
+    paddingTop: 10,
+  },
 });
 
 class ListLines extends Component {
@@ -170,6 +174,7 @@ class ListLines extends Component {
       noHeaders,
       iconExtension,
       searchVariant,
+      message,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -294,6 +299,18 @@ class ListLines extends Component {
           </div>
         </div>
         <div className="clearfix" />
+        {message && (
+          <div style={{ width: '100%' }}>
+            <Alert
+              severity="info"
+              variant="outlined"
+              style={{ padding: '0px 10px 0px 10px' }}
+              classes={{ message: classes.info }}
+            >
+              {message}
+            </Alert>
+          </div>
+        )}
         <List
           classes={{
             root: bottomNav
@@ -427,6 +444,7 @@ ListLines.propTypes = {
   noHeaders: PropTypes.bool,
   iconExtension: PropTypes.bool,
   searchVariant: PropTypes.string,
+  message: PropTypes.string,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);
