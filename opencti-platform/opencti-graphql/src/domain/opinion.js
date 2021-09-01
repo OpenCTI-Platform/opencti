@@ -1,4 +1,5 @@
 import { assoc, dissoc, pipe } from 'ramda';
+import * as R from 'ramda';
 import {
   createEntity,
   distributionEntities,
@@ -15,6 +16,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/gene
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
+import { addIndividual, findAll as findIndividuals } from './individual';
 
 export const findById = (user, opinionId) => {
   return loadById(user, opinionId, ENTITY_TYPE_CONTAINER_OPINION);
@@ -103,7 +105,19 @@ export const opinionsDistributionByEntity = async (user, args) => {
 
 // region mutations
 export const addOpinion = async (user, opinion) => {
-  const created = await createEntity(user, opinion, ENTITY_TYPE_CONTAINER_OPINION);
+  const opinionToCreate = opinion;
+  // For note, auto assign current user as author
+  if (!opinion.createdBy) {
+    const args = { filters: [{ key: 'contact_information', values: [user.user_email] }], connectionFormat: false };
+    const individuals = await findIndividuals(user, args);
+    if (individuals.length > 0) {
+      opinionToCreate.createdBy = R.head(individuals).id;
+    } else {
+      const individual = await addIndividual(user, { name: user.name, contact_information: user.user_email });
+      opinionToCreate.createdBy = individual.id;
+    }
+  }
+  const created = await createEntity(user, opinionToCreate, ENTITY_TYPE_CONTAINER_OPINION);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 // endregion

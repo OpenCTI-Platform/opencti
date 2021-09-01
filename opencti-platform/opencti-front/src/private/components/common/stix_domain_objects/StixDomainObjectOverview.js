@@ -16,6 +16,7 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import StixCoreObjectOpinionsRadar from '../../analysis/opinions/StixCoreObjectOpinionsRadar';
 
 const styles = (theme) => ({
   paper: {
@@ -41,7 +42,10 @@ class StixDomainObjectOverview extends Component {
       t, fldt, classes, stixDomainObject, withoutMarking, withPattern,
     } = this.props;
     const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
-    const stixIds = R.filter((n) => n !== stixDomainObject.standard_id, otherStixIds);
+    const stixIds = R.filter(
+      (n) => n !== stixDomainObject.standard_id,
+      otherStixIds,
+    );
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -70,24 +74,11 @@ class StixDomainObjectOverview extends Component {
               <pre style={{ margin: 0 }}>{stixDomainObject.standard_id}</pre>
             </Grid>
             <Grid item={true} xs={12}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Other STIX IDs')}
-              </Typography>
-              <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
-                <Tooltip title={t('Other known STIX IDs for this entity.')}>
-                  <InformationOutline fontSize="small" color="primary" />
-                </Tooltip>
+              <div style={{ height: 200 }}>
+                <StixCoreObjectOpinionsRadar
+                  stixCoreObjectId={stixDomainObject.id}
+                />
               </div>
-              <div className="clearfix" />
-              <pre style={{ margin: 0 }}>
-                {stixIds.length > 0
-                  ? stixIds.map((stixId) => `${stixId}\n`)
-                  : '-'}
-              </pre>
             </Grid>
             <Grid item={true} xs={6}>
               {withPattern && (

@@ -115,7 +115,7 @@ export const addNote = async (user, note) => {
       noteToCreate.createdBy = individual.id;
     }
   }
-  const created = await createEntity(user, note, ENTITY_TYPE_CONTAINER_NOTE);
+  const created = await createEntity(user, noteToCreate, ENTITY_TYPE_CONTAINER_NOTE);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 // endregion
