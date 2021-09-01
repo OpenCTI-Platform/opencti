@@ -955,6 +955,7 @@ const i18n = {
       'Last ingested analysis (creation date in the platform)':
         'Dernières analyses ajoutées (date de création dans la plateforme)',
       'Distribution of entities': 'Distribution des entités',
+      'Distribution of opinions': 'Distribution des opinions',
       'Observables distribution': 'Distribution des observables',
       'Distribution of relations (including inferred)':
         'Répartition des relations (inférences incluses)',

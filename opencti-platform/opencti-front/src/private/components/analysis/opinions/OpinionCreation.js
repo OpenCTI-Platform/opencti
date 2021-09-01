@@ -79,7 +79,7 @@ const styles = (theme) => ({
   },
 });
 
-const opinionCreationMutation = graphql`
+export const opinionCreationMutation = graphql`
   mutation OpinionCreationMutation($input: OpinionAddInput!) {
     opinionAdd(input: $input) {
       ...OpinionLine_node
@@ -312,7 +312,7 @@ class OpinionCreation extends Component {
               values,
             }) => (
               <Form>
-                <DialogTitle>{t('Create a opinions')}</DialogTitle>
+                <DialogTitle>{t('Create an opinion')}</DialogTitle>
                 <DialogContent>
                   <Field
                     component={SelectField}

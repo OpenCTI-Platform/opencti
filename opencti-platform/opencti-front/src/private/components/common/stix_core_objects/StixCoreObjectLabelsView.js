@@ -116,7 +116,9 @@ const stixCoreObjectMutationRelationDelete = graphql`
 `;
 
 const StixCoreObjectLabelsView = (props) => {
-  const { classes, labels, t } = props;
+  const {
+    classes, labels, t, marginTop,
+  } = props;
   const { me } = useContext(UserContext);
   const isLabelManager = granted(me, [SETTINGS_SETLABELS]);
   const [openAdd, setOpenAdd] = useState(false);
@@ -191,7 +193,7 @@ const StixCoreObjectLabelsView = (props) => {
     sortWith([ascend(prop('value'))]),
   )(labels.edges);
   return (
-    <div>
+    <div style={{ marginTop: marginTop || 0 }}>
       <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
         {t('Labels')}
       </Typography>

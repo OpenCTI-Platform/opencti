@@ -24,6 +24,28 @@ export const findById = (user, opinionId) => {
 export const findAll = async (user, args) => {
   return listEntities(user, [ENTITY_TYPE_CONTAINER_OPINION], args);
 };
+export const findMyOpinion = async (user, entityId) => {
+  // Resolve the individual
+  const individualsArgs = {
+    filters: [{ key: 'contact_information', values: [user.user_email] }],
+    connectionFormat: false,
+  };
+  const individuals = await findIndividuals(user, individualsArgs);
+  if (individuals.length === 0) {
+    return null;
+  }
+  const keyObject = buildRefRelationKey(RELATION_OBJECT);
+  const keyCreatedBy = buildRefRelationKey(RELATION_CREATED_BY);
+  const opinionsArgs = {
+    filters: [
+      { key: keyObject, values: [entityId] },
+      { key: keyCreatedBy, values: [R.head(individuals).id] },
+    ],
+    connectionFormat: false,
+  };
+  const opinions = await findAll(user, opinionsArgs);
+  return opinions.length > 0 ? R.head(opinions) : null;
+};
 
 // Entities tab
 

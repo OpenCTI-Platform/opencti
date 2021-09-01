@@ -7,7 +7,6 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
-import Button from '@material-ui/core/Button';
 import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemConfidence from '../../../../components/ItemConfidence';
@@ -16,7 +15,7 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import StixCoreObjectOpinionsRadar from '../../analysis/opinions/StixCoreObjectOpinionsRadar';
+import StixCoreObjectOpinions from '../../analysis/opinions/StixCoreObjectOpinions';
 
 const styles = (theme) => ({
   paper: {
@@ -74,11 +73,24 @@ class StixDomainObjectOverview extends Component {
               <pre style={{ margin: 0 }}>{stixDomainObject.standard_id}</pre>
             </Grid>
             <Grid item={true} xs={12}>
-              <div style={{ height: 200 }}>
-                <StixCoreObjectOpinionsRadar
-                  stixCoreObjectId={stixDomainObject.id}
-                />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Other STIX IDs')}
+              </Typography>
+              <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
+                <Tooltip title={t('Other known STIX IDs for this entity.')}>
+                  <InformationOutline fontSize="small" color="primary" />
+                </Tooltip>
               </div>
+              <div className="clearfix" />
+              <pre style={{ margin: 0 }}>
+                {stixIds.length > 0
+                  ? stixIds.map((stixId) => `${stixId}\n`)
+                  : '-'}
+              </pre>
             </Grid>
             <Grid item={true} xs={6}>
               {withPattern && (
@@ -89,26 +101,12 @@ class StixDomainObjectOverview extends Component {
                   <ItemPatternType label={stixDomainObject.pattern_type} />
                 </div>
               )}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: withPattern ? 20 : 0 }}
-              >
-                {t('STIX version')}
-              </Typography>
-              <Button
-                variant="outlined"
-                size="small"
-                style={{ cursor: 'default' }}
-              >
-                {stixDomainObject.spec_version}
-              </Button>
               {!withoutMarking && stixDomainObject.objectMarking && (
                 <div>
                   <Typography
                     variant="h3"
                     gutterBottom={true}
-                    style={{ marginTop: 20 }}
+                    style={{ marginTop: withPattern ? 20 : 0 }}
                   >
                     {t('Marking')}
                   </Typography>
@@ -125,12 +123,24 @@ class StixDomainObjectOverview extends Component {
               <Typography
                 variant="h3"
                 gutterBottom={true}
-                style={{ marginTop: 20 }}
+                style={{
+                  marginTop:
+                    withPattern
+                    || (!withoutMarking && stixDomainObject.objectMarking)
+                      ? 20
+                      : 0,
+                }}
               >
                 {t('Author')}
               </Typography>
               <ItemAuthor
                 createdBy={R.propOr(null, 'createdBy', stixDomainObject)}
+              />
+              <StixCoreObjectOpinions
+                stixCoreObjectId={stixDomainObject.id}
+                variant="inEntity"
+                height={160}
+                marginTop={20}
               />
               <Typography
                 variant="h3"
@@ -148,29 +158,20 @@ class StixDomainObjectOverview extends Component {
                 {t('Modification date')}
               </Typography>
               {fldt(stixDomainObject.modified)}
-              {!stixDomainObject.objectMarking ? (
-                <div>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Revoked')}
-                  </Typography>
-                  <ItemBoolean
-                    status={stixDomainObject.revoked}
-                    label={stixDomainObject.revoked ? t('Yes') : t('No')}
-                    reverse={true}
-                  />
-                </div>
-              ) : (
-                ''
-              )}
             </Grid>
             <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Revoked')}
+              </Typography>
+              <ItemBoolean
+                status={stixDomainObject.revoked}
+                label={stixDomainObject.revoked ? t('Yes') : t('No')}
+                reverse={true}
+              />
               <StixCoreObjectLabelsView
                 labels={stixDomainObject.objectLabel}
                 id={stixDomainObject.id}
+                marginTop={20}
               />
               <Typography
                 variant="h3"
@@ -196,22 +197,6 @@ class StixDomainObjectOverview extends Component {
                 {t('Creator')}
               </Typography>
               <ItemCreator creator={stixDomainObject.creator} />
-              {stixDomainObject.objectMarking && (
-                <div>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Revoked')}
-                  </Typography>
-                  <ItemBoolean
-                    status={stixDomainObject.revoked}
-                    label={stixDomainObject.revoked ? t('Yes') : t('No')}
-                    reverse={true}
-                  />
-                </div>
-              )}
             </Grid>
           </Grid>
         </Paper>

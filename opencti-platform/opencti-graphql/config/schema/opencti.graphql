@@ -8640,6 +8640,7 @@ type Query {
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinionContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
     @auth(for: [KNOWLEDGE])
+  myOpinion(id: String!): Opinion @auth(for: [KNOWLEDGE])
   report(id: String): Report @auth(for: [KNOWLEDGE])
   reports(
     first: Int
