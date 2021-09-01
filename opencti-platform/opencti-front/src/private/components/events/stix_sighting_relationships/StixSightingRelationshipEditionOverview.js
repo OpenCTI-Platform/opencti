@@ -309,6 +309,7 @@ const StixSightingRelationshipEditionContainer = ({
       'x_opencti_negative',
       'createdBy',
       'objectMarking',
+      'status_id',
     ]),
   )(stixSightingRelationship);
   const link = stixDomainObject

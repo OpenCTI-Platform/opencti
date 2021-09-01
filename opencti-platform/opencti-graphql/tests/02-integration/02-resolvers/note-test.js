@@ -127,6 +127,7 @@ describe('Note resolver standard behavior', () => {
           'campaign--92d46985-17a6-4610-8be8-cc70c82ed214',
           'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02',
         ],
+        createdBy: 'identity--7b82b010-b1c0-4dae-981f-7756374a17df',
       },
     };
     const note = await queryAsAdmin({

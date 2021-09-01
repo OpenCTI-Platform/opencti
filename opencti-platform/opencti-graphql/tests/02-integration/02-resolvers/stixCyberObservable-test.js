@@ -211,6 +211,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
         attribute_abstract: 'Note description',
         content: 'Test content',
         objects: [stixCyberObservableInternalId],
+        createdBy: 'identity--7b82b010-b1c0-4dae-981f-7756374a17df',
       },
     };
     const note = await queryAsAdmin({
