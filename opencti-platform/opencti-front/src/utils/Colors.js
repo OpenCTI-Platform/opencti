@@ -68,6 +68,11 @@ export const itemColor = (type, dark) => {
         return '#0d47a1';
       }
       return '#2196f3';
+    case 'System':
+      if (dark) {
+        return '#64dd17';
+      }
+      return '#76ff03';
     case 'Indicator':
       if (dark) {
         return '#ff6f00';

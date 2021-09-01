@@ -29,8 +29,6 @@ import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from './rabbitmq';
 import conf from '../config/conf';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
-export const SYNC_USER_EMAIL = 'sync@opencti.io';
-export const SYNC_USER_TOKEN = '579240ac-498d-4492-85f9-59b158efcba9';
 
 // Operations definition
 export const UPDATE_OPERATION_ADD = 'add';
@@ -366,5 +364,3 @@ export const computeAverage = (numbers) => {
   const sum = numbers.reduce((a, b) => a + b, 0);
   return Math.round(sum / numbers.length || 0);
 };
-
-export const isSyncTesting = (user) => user.api_token === SYNC_USER_TOKEN;

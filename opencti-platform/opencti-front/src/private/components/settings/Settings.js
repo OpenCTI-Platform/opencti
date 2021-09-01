@@ -171,12 +171,27 @@ class Settings extends Component {
   }
 
   handleSubmitField(id, name, value) {
+    let finalValue = value;
+    if (
+      [
+        'platform_theme_dark_primary',
+        'platform_theme_dark_secondary',
+        'platform_theme_light_primary',
+        'platform_theme_light_secondary',
+      ].includes(name)
+      && finalValue.length > 0
+    ) {
+      if (!finalValue.startsWith('#')) {
+        finalValue = `#${finalValue}`;
+      }
+      finalValue = finalValue.substring(0, 7);
+    }
     settingsValidation(this.props.t)
-      .validateAt(name, { [name]: value })
+      .validateAt(name, { [name]: finalValue })
       .then(() => {
         commitMutation({
           mutation: settingsMutationFieldPatch,
-          variables: { id, input: { key: name, value } },
+          variables: { id, input: { key: name, value: finalValue } },
         });
       })
       .catch(() => false);
@@ -366,7 +381,9 @@ class Settings extends Component {
                                     this,
                                     id,
                                   )}
-                                  helpertext={t('Commit message when updating data from the UI.')}
+                                  helpertext={t(
+                                    'Commit message when updating data from the UI.',
+                                  )}
                                 />
                               </Form>
                             </div>

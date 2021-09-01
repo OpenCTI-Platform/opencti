@@ -23,6 +23,8 @@ import { BYPASS, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
 import { smtpIsAlive } from './database/smtp';
 import { generateStandardId } from './schema/identifier';
 import { ENTITY_TYPE_MARKING_DEFINITION } from './schema/stixMetaObject';
+import { createStatus, createStatusTemplate } from './domain/status';
+import { ENTITY_TYPE_CONTAINER_REPORT } from './schema/stixDomainObject';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -210,6 +212,69 @@ const createMarkingDefinitions = async () => {
   });
 };
 
+const createDefaultStatusTemplates = async () => {
+  const statusNew = await createStatusTemplate(SYSTEM_USER, {
+    name: 'NEW',
+    color: '#ff9800',
+  });
+  const statusInProgress = await createStatusTemplate(SYSTEM_USER, {
+    name: 'IN_PROGRESS',
+    color: '#5c7bf5',
+  });
+  await createStatusTemplate(SYSTEM_USER, {
+    name: 'PENDING',
+    color: '#5c7bf5',
+  });
+  await createStatusTemplate(SYSTEM_USER, {
+    name: 'TO_BE_QUALIFIED',
+    color: '#5c7bf5',
+  });
+  const statusAnalyzed = await createStatusTemplate(SYSTEM_USER, {
+    name: 'ANALYZED',
+    color: '#4caf50',
+  });
+  const statusClosed = await createStatusTemplate(SYSTEM_USER, {
+    name: 'CLOSED',
+    color: '#607d8b',
+  });
+  await createStatus(
+    SYSTEM_USER,
+    ENTITY_TYPE_CONTAINER_REPORT,
+    {
+      template_id: statusNew.id,
+      order: 1,
+    },
+    true
+  );
+  await createStatus(
+    SYSTEM_USER,
+    ENTITY_TYPE_CONTAINER_REPORT,
+    {
+      template_id: statusInProgress.id,
+      order: 2,
+    },
+    true
+  );
+  await createStatus(
+    SYSTEM_USER,
+    ENTITY_TYPE_CONTAINER_REPORT,
+    {
+      template_id: statusAnalyzed.id,
+      order: 3,
+    },
+    true
+  );
+  await createStatus(
+    SYSTEM_USER,
+    ENTITY_TYPE_CONTAINER_REPORT,
+    {
+      template_id: statusClosed.id,
+      order: 4,
+    },
+    true
+  );
+};
+
 export const createCapabilities = async (capabilities, parentName = '') => {
   for (let i = 0; i < capabilities.length; i += 1) {
     const capability = capabilities[i];
@@ -249,6 +314,7 @@ const initializeDefaultValues = async (withMarkings = true) => {
     platform_theme: 'dark',
     platform_language: 'auto',
   });
+  await createDefaultStatusTemplates();
   await createAttributesTypes();
   await createBasicRolesAndCapabilities();
   if (withMarkings) {

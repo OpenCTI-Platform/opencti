@@ -159,6 +159,9 @@ const userSubscriptionMutation = graphql`
         ... on Sector {
           name
         }
+        ... on System {
+          name
+        }
         ... on Indicator {
           name
           valid_from

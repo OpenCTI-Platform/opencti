@@ -5,10 +5,13 @@ import createSchema from '../../src/graphql/schema';
 import conf from '../../src/config/conf';
 import { BYPASS, ROLE_ADMINISTRATOR } from '../../src/utils/access';
 
+export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
+export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_uri');
+export const SYNC_LIVE_END_REMOTE_URI = conf.get('app:sync_live_end_remote_uri');
+
 export const PYTHON_PATH = './src/python';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
 export const API_TOKEN = conf.get('app:admin:token');
-export const SYNC_REMOTE_URI = conf.get('app:sync_remote_uri');
 export const API_EMAIL = conf.get('app:admin:email');
 export const API_PASSWORD = conf.get('app:admin:password');
 export const ONE_MINUTE = 60 * 1000;

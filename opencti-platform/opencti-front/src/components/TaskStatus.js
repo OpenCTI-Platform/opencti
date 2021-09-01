@@ -11,7 +11,7 @@ const styles = () => ({
     marginRight: 7,
     textTransform: 'uppercase',
     borderRadius: '0',
-    width: 90,
+    width: 130,
   },
   chipInList: {
     fontSize: 12,
@@ -20,7 +20,7 @@ const styles = () => ({
     float: 'left',
     textTransform: 'uppercase',
     borderRadius: '0',
-    width: 90,
+    width: 130,
   },
 });
 
@@ -47,14 +47,14 @@ const inlineStyles = {
   },
 };
 
-class ReportStatus extends Component {
+class TaskStatus extends Component {
   render() {
     const {
       classes, label, status, variant,
     } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     switch (status) {
-      case 0:
+      case 'progress':
         return (
           <Chip
             classes={{ root: style }}
@@ -62,7 +62,7 @@ class ReportStatus extends Component {
             label={label}
           />
         );
-      case 1:
+      case 'wait':
         return (
           <Chip
             classes={{ root: style }}
@@ -70,19 +70,11 @@ class ReportStatus extends Component {
             label={label}
           />
         );
-      case 2:
+      case 'complete':
         return (
           <Chip
             classes={{ root: style }}
             style={inlineStyles.green}
-            label={label}
-          />
-        );
-      case 3:
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.grey}
             label={label}
           />
         );
@@ -98,11 +90,11 @@ class ReportStatus extends Component {
   }
 }
 
-ReportStatus.propTypes = {
+TaskStatus.propTypes = {
   classes: PropTypes.object.isRequired,
-  status: PropTypes.number,
+  status: PropTypes.string,
   label: PropTypes.string,
   variant: PropTypes.string,
 };
 
-export default withStyles(styles)(ReportStatus);
+export default withStyles(styles)(TaskStatus);

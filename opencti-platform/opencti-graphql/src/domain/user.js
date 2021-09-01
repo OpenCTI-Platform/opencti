@@ -515,6 +515,7 @@ const buildSessionUser = (user) => {
     session_creation: now(),
     internal_id: user.internal_id,
     user_email: user.user_email,
+    name: user.name,
     capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
     allowed_marking: user.allowed_marking.map((m) => ({
       id: m.id,

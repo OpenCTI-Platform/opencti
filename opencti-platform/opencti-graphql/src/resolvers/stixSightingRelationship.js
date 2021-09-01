@@ -28,6 +28,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { creator } from '../domain/log';
 import { buildRefRelationKey } from '../schema/general';
 import { elBatchIds } from '../database/elasticSearch';
+import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -69,6 +70,11 @@ const stixSightingRelationshipResolvers = {
     notes: (rel, _, { user }) => notesLoader.load(rel.id, user),
     opinions: (rel, _, { user }) => opinionsLoader.load(rel.id, user),
     editContext: (rel) => fetchEditContext(rel.id),
+    status: (entity, _, { user }) => (entity.status_id ? findStatusById(user, entity.status_id) : null),
+    workflowEnabled: async (entity, _, { user }) => {
+      const statusesEdges = await getTypeStatuses(user, entity.entity_type);
+      return statusesEdges.edges.length > 0;
+    },
   },
   Mutation: {
     stixSightingRelationshipEdit: (_, { id }, { user }) => ({

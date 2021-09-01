@@ -100,7 +100,8 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
                         <Tooltip
                           title={
                             t('Inferred knowledge based on the rule ')
-                            + R.head(stixCoreRelationship.x_opencti_inferences).rule.name
+                            + R.head(stixCoreRelationship.x_opencti_inferences)
+                              .rule.name
                           }
                         >
                           <AutoFix
@@ -223,6 +224,9 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
                       name
                     }
                     ... on Sector {
+                      name
+                    }
+                    ... on System {
                       name
                     }
                     ... on Indicator {

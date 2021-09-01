@@ -30,7 +30,7 @@ const styles = (theme) => ({
     padding: 0,
   },
   createButton: {
-    float: 'left',
+    float: 'right',
     marginTop: -15,
   },
   title: {

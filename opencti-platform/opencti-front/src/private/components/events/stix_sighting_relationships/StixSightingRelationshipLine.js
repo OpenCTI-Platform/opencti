@@ -18,6 +18,7 @@ import ItemConfidence from '../../../../components/ItemConfidence';
 import StixSightingRelationshipPopover from './StixSightingRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
+import ItemStatus from '../../../../components/ItemStatus';
 
 const styles = (theme) => ({
   item: {
@@ -143,6 +144,16 @@ class StixSightingRelationshipLineComponent extends Component {
               >
                 <ItemConfidence confidence={node.confidence} variant="inList" />
               </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.status.width }}
+              >
+                <ItemStatus
+                  status={node.status}
+                  variant="inList"
+                  disabled={!node.workflowEnabled}
+                />
+              </div>
             </div>
           }
         />
@@ -180,6 +191,15 @@ const StixSightingRelationshipLineFragment = createFragmentContainer(
         first_seen
         last_seen
         description
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
         from {
           ... on StixDomainObject {
             id
@@ -219,6 +239,10 @@ const StixSightingRelationshipLineFragment = createFragmentContainer(
             description
           }
           ... on Sector {
+            name
+            description
+          }
+          ... on System {
             name
             description
           }
@@ -377,7 +401,18 @@ class StixSightingRelationshipLineDummyComponent extends Component {
                 <Skeleton
                   animation="wave"
                   variant="rect"
-                  width={100}
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.status.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={80}
                   height="100%"
                 />
               </div>

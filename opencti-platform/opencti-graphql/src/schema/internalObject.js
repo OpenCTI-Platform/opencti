@@ -18,6 +18,8 @@ export const ENTITY_TYPE_TASK = 'Task';
 export const ENTITY_TYPE_TAXII_COLLECTION = 'TaxiiCollection';
 export const ENTITY_TYPE_STREAM_COLLECTION = 'StreamCollection';
 export const ENTITY_TYPE_USER_SUBSCRIPTION = 'UserSubscription';
+export const ENTITY_TYPE_STATUS_TEMPLATE = 'StatusTemplate';
+export const ENTITY_TYPE_STATUS = 'Status';
 const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_GROUP,
@@ -32,6 +34,8 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_TAXII_COLLECTION,
   ENTITY_TYPE_STREAM_COLLECTION,
   ENTITY_TYPE_USER_SUBSCRIPTION,
+  ENTITY_TYPE_STATUS_TEMPLATE,
+  ENTITY_TYPE_STATUS,
   ENTITY_TYPE_TASK,
   ENTITY_TYPE_MIGRATION_STATUS,
   ENTITY_TYPE_MIGRATION_REFERENCE,
@@ -191,6 +195,8 @@ export const internalObjectsAttributes = {
     'filters',
     'last_run',
   ],
+  [ENTITY_TYPE_STATUS_TEMPLATE]: ['internal_id', 'standard_id', 'name', 'color'],
+  [ENTITY_TYPE_STATUS]: ['internal_id', 'standard_id', 'template_id', 'type', 'order'],
   [ENTITY_TYPE_TASK]: [
     'standard_id',
     'task_position',

@@ -23,11 +23,14 @@ import Slide from '@material-ui/core/Slide';
 import { interval } from 'rxjs';
 import { Delete } from 'mdi-material-ui';
 import Chip from '@material-ui/core/Chip';
-import ItemStatus from '../../../../components/ItemStatus';
+import TaskStatus from '../../../../components/TaskStatus';
 import inject18n from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -217,57 +220,64 @@ class TasksListComponent extends Component {
                         {t('Targeted entities')} ({n(task.task_expected_number)}
                         )
                       </Typography>
-                      {filters ? (
-                        R.map((currentFilter) => {
-                          const label = `${truncate(
-                            t(`filter_${currentFilter[0]}`),
-                            20,
-                          )}`;
-                          const values = (
-                            <span>
-                              {R.map(
-                                (o) => (
-                                  <span key={o.value}>
-                                    {o.value && o.value.length > 0
-                                      ? truncate(o.value, 15)
-                                      : t('No label')}{' '}
-                                    {R.last(currentFilter[1]).value
-                                      !== o.value && <code>OR</code>}{' '}
-                                  </span>
-                                ),
-                                currentFilter[1],
-                              )}
-                            </span>
-                          );
-                          return (
-                            <span key={currentFilter[0]}>
-                              <Chip
-                                classes={{ root: classes.filter }}
-                                label={
-                                  <div>
-                                    <strong>{label}</strong>: {values}
-                                  </div>
-                                }
-                              />
-                              {R.last(R.toPairs(filters))[0]
-                                !== currentFilter[0] && (
+                      {task.type !== 'RULE'
+                        && (filters ? (
+                          R.map((currentFilter) => {
+                            const label = `${truncate(
+                              t(`filter_${currentFilter[0]}`),
+                              20,
+                            )}`;
+                            const values = (
+                              <span>
+                                {R.map(
+                                  (o) => (
+                                    <span key={o.value}>
+                                      {o.value && o.value.length > 0
+                                        ? truncate(o.value, 15)
+                                        : t('No label')}{' '}
+                                      {R.last(currentFilter[1]).value
+                                        !== o.value && <code>OR</code>}{' '}
+                                    </span>
+                                  ),
+                                  currentFilter[1],
+                                )}
+                              </span>
+                            );
+                            return (
+                              <span key={currentFilter[0]}>
                                 <Chip
-                                  classes={{ root: classes.operator }}
-                                  label={t('AND')}
+                                  classes={{ root: classes.filter }}
+                                  label={
+                                    <div>
+                                      <strong>{label}</strong>: {values}
+                                    </div>
+                                  }
                                 />
-                              )}
-                            </span>
-                          );
-                        }, R.toPairs(filters))
-                      ) : (
+                                {R.last(R.toPairs(filters))[0]
+                                  !== currentFilter[0] && (
+                                  <Chip
+                                    classes={{ root: classes.operator }}
+                                    label={t('AND')}
+                                  />
+                                )}
+                              </span>
+                            );
+                          }, R.toPairs(filters))
+                        ) : (
+                          <Chip
+                            classes={{ root: classes.filter }}
+                            label={
+                              <div>
+                                <strong>{t('List of entities')}</strong>:{' '}
+                                {listIds}
+                              </div>
+                            }
+                          />
+                        ))}
+                      {task.type === 'RULE' && (
                         <Chip
                           classes={{ root: classes.filter }}
-                          label={
-                            <div>
-                              <strong>{t('List of entities')}</strong>:{' '}
-                              {listIds}
-                            </div>
-                          }
+                          label={<div>{t('All rule targets')}</div>}
                         />
                       )}
                     </Grid>
@@ -275,6 +285,12 @@ class TasksListComponent extends Component {
                       <Typography variant="h3" gutterBottom={true}>
                         {t('Actions')}
                       </Typography>
+                      {task.type === 'RULE' && (
+                        <Chip
+                          classes={{ root: classes.operator }}
+                          label={<div>{t('APPLY RULE')}</div>}
+                        />
+                      )}
                       {task.actions
                         && R.map(
                           (action) => (
@@ -340,7 +356,7 @@ class TasksListComponent extends Component {
                       <Typography variant="h3" gutterBottom={true}>
                         {t('Status')}
                       </Typography>
-                      <ItemStatus status={status} label={t(status)} />
+                      <TaskStatus status={status} label={t(status)} />
                     </Grid>
                     <Grid item={true} xs={12}>
                       <Typography variant="h3" gutterBottom={true}>
@@ -374,15 +390,17 @@ class TasksListComponent extends Component {
                 >
                   {task.errors.length} {t('errors')}
                 </Button>
-                <Button
-                  style={{ position: 'absolute', right: 10, bottom: 10 }}
-                  variant="outlined"
-                  onClick={this.handleDeleteTask.bind(this, task.id)}
-                  size="small"
-                >
-                  <Delete fontSize="small" />
-                  &nbsp;&nbsp;{t('Delete')}
-                </Button>
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <Button
+                    style={{ position: 'absolute', right: 10, bottom: 10 }}
+                    variant="outlined"
+                    onClick={this.handleDeleteTask.bind(this, task.id)}
+                    size="small"
+                  >
+                    <Delete fontSize="small" />
+                    &nbsp;&nbsp;{t('Delete')}
+                  </Button>
+                </Security>
               </Grid>
             </Paper>
           );

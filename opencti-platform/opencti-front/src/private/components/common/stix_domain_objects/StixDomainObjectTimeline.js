@@ -149,6 +149,9 @@ const StixDomainObjectTimeline = createRefetchContainer(
                 ... on Sector {
                   name
                 }
+                ... on System {
+                  name
+                }
                 ... on Indicator {
                   name
                 }
@@ -253,6 +256,9 @@ const StixDomainObjectTimeline = createRefetchContainer(
                   name
                 }
                 ... on Sector {
+                  name
+                }
+                ... on System {
                   name
                 }
                 ... on Indicator {

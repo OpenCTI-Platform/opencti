@@ -176,7 +176,10 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('External references')}
         </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security
+          needs={[KNOWLEDGE_KNUPDATE]}
+          placeholder={<div style={{ height: 28 }} />}
+        >
           <AddExternalReferences
             stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
             stixCoreObjectOrStixCoreRelationshipReferences={

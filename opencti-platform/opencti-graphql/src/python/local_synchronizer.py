@@ -7,7 +7,7 @@ from pycti import OpenCTIConnectorHelper, OpenCTIApiClient
 
 
 class TestLocalSynchronizer:
-    def __init__(self, source_url, source_token, target_url, target_token, consuming_count, live_stream_id=None):
+    def __init__(self, source_url, source_token, target_url, target_token, consuming_count, start_timestamp, live_stream_id=None):
         self.source_url = source_url
         self.source_token = source_token
         self.target_url = target_url
@@ -15,7 +15,7 @@ class TestLocalSynchronizer:
         self.live_stream_id = live_stream_id
         self.count_number = 0
         self.consuming_count = consuming_count
-        self.start_timestamp = "0" if self.live_stream_id is None else None
+        self.start_timestamp = start_timestamp
         self.stream = None
         # Source
         config = {
@@ -76,7 +76,7 @@ class TestLocalSynchronizer:
 
     def sync(self):
         # Reset the connector state if exists
-        self.opencti_source_helper.set_state({"connectorLastEventId": "-"})
+        self.opencti_source_helper.set_state({"connectorLastEventId": self.start_timestamp})
         # Start to listen the stream from start specified parameter
         self.stream = self.opencti_source_helper.listen_stream(
             self._process_message, self.source_url, self.source_token, False, self.start_timestamp
@@ -91,10 +91,11 @@ if __name__ == "__main__":
         target_url = sys.argv[3]
         target_token = sys.argv[4]
         consuming_count = int(sys.argv[5])
-        live_stream_id = sys.argv[6] if len(sys.argv) > 6 else None
+        start_timestamp = sys.argv[6]
+        live_stream_id = sys.argv[7] if len(sys.argv) > 7 else None
 
         testLocalSynchronizer = TestLocalSynchronizer(
-            source_url, source_token, target_url, target_token, consuming_count, live_stream_id
+            source_url, source_token, target_url, target_token, consuming_count, start_timestamp, live_stream_id
         )
         testLocalSynchronizer.sync()
         os._exit(0)

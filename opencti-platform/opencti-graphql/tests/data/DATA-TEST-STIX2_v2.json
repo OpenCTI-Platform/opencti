@@ -516,8 +516,6 @@
       "target_ref": "location--bc9f5d2c-7209-4b24-903e-587c7cf00ab1",
       "created": "2020-03-01T14:07:14.316Z",
       "modified": "2020-03-01T14:07:14.316Z",
-      "start_time": "1900-01-01T00:00:00.000Z",
-      "stop_time": "1900-01-01T00:00:00.000Z",
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
       "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
     },

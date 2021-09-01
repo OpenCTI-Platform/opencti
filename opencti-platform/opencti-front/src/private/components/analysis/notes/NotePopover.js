@@ -94,7 +94,11 @@ class NotePopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/analysis/notes');
+        if (this.props.handleOpenRemove) {
+          this.handleCloseDelete();
+        } else {
+          this.props.history.push('/dashboard/analysis/notes');
+        }
       },
     });
   }
@@ -108,8 +112,15 @@ class NotePopover extends Component {
     this.setState({ displayEdit: false });
   }
 
+  handleOpenRemove(id) {
+    this.props.handleOpenRemove(id);
+    this.handleClose();
+  }
+
   render() {
-    const { classes, t, id } = this.props;
+    const {
+      classes, t, id, handleOpenRemove,
+    } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -128,6 +139,11 @@ class NotePopover extends Component {
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
+          {handleOpenRemove && (
+            <MenuItem onClick={this.handleOpenRemove.bind(this, id)}>
+              {t('Remove from this entity')}
+            </MenuItem>
+          )}
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <MenuItem onClick={this.handleOpenDelete.bind(this)}>
               {t('Delete')}
@@ -192,6 +208,7 @@ NotePopover.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  handleOpenRemove: PropTypes.func,
 };
 
 export default compose(inject18n, withRouter, withStyles(styles))(NotePopover);

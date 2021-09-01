@@ -1,4 +1,3 @@
-import { assoc, dissoc, propOr } from 'ramda';
 import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
@@ -43,7 +42,7 @@ import {
 } from '../schema/stixMetaObject';
 
 export const findAll = async (user, args) =>
-  listRelations(user, propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
+  listRelations(user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
 
 export const findById = (user, stixCoreRelationshipId) => {
   return loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
@@ -59,13 +58,13 @@ export const stixCoreRelationshipsNumber = (user, args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_RELATIONSHIP);
   }
-  const finalArgs = assoc('types', types, args);
+  const finalArgs = R.assoc('types', types, args);
   return {
     count: elCount(user, [READ_INDEX_STIX_CORE_RELATIONSHIPS, INDEX_INFERRED_RELATIONSHIPS], finalArgs),
     total: elCount(
       user,
       [READ_INDEX_STIX_CORE_RELATIONSHIPS, INDEX_INFERRED_RELATIONSHIPS],
-      dissoc('endDate', finalArgs)
+      R.dissoc('endDate', finalArgs)
     ),
   };
 };
@@ -114,7 +113,7 @@ export const batchKillChainPhases = (user, stixCoreRelationshipIds) => {
 };
 
 export const stixRelations = (user, stixCoreObjectId, args) => {
-  const finalArgs = assoc('fromId', stixCoreObjectId, args);
+  const finalArgs = R.assoc('fromId', stixCoreObjectId, args);
   return findAll(user, finalArgs);
 };
 
@@ -156,7 +155,7 @@ export const stixCoreRelationshipAddRelation = async (user, stixCoreRelationship
   if (!isStixMetaRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
   }
-  const finalInput = assoc('fromId', stixCoreRelationshipId, input);
+  const finalInput = R.assoc('fromId', stixCoreRelationshipId, input);
   return createRelation(user, finalInput).then((relationData) => {
     notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, relationData, user);
     return relationData;

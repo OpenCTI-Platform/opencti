@@ -155,7 +155,6 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
           ... on Report {
             name
             published
-            x_opencti_report_status
           }
           createdBy {
             ... on Identity {
