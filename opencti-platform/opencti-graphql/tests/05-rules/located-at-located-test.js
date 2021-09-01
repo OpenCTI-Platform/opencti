@@ -1,21 +1,13 @@
 import { shutdownModules, startModules } from '../../src/modules';
 import { FIVE_MINUTES, FIVE_SECS, sleep } from '../utils/testQuery';
-import {
-  createRelation,
-  deleteElement,
-  internalLoadById,
-  listEntities,
-  listRelations,
-} from '../../src/database/middleware';
+import { createRelation, deleteElement, internalLoadById } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
-import { ENTITY_TYPE_TASK } from '../../src/schema/internalObject';
-import { READ_INDEX_INFERRED_RELATIONSHIPS } from '../../src/database/utils';
 import { RELATION_LOCATED_AT } from '../../src/schema/stixCoreRelationship';
-import { setRuleActivation } from '../../src/manager/ruleManager';
-import { LocatedAtLocatedRule } from '../../src/rules/located-at-located/LocatedAtLocatedRule';
+import LocatedAtLocatedRule from '../../src/rules/located-at-located/LocatedAtLocatedRule';
 import { addCity } from '../../src/domain/city';
 import { RULE_PREFIX } from '../../src/schema/general';
 import { FROM_START_STR, UNTIL_END_STR } from '../../src/utils/format';
+import { activateRule, disableRule, getInferences, inferenceLookup } from './rule-utils';
 
 const RULE = RULE_PREFIX + LocatedAtLocatedRule.id;
 const FRANCE = 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d';
@@ -27,43 +19,6 @@ const TLP_WHITE_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
 const TLP_TEST_ID = 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27';
 
 describe('Located at located rule', () => {
-  const inferenceLookup = async (inferences, fromStandardId, toStandardId, type) => {
-    for (let index = 0; index < inferences.length; index += 1) {
-      const inference = inferences[index];
-      const from = await internalLoadById(SYSTEM_USER, inference.fromId);
-      const to = await internalLoadById(SYSTEM_USER, inference.toId);
-      const sameFrom = from.standard_id === fromStandardId;
-      const sameTo = to.standard_id === toStandardId;
-      const sameType = inference.relationship_type === type;
-      if (sameFrom && sameTo && sameType) {
-        return inference;
-      }
-    }
-    return null;
-  };
-  const getInferences = (type) => {
-    const relArgs = { indices: [READ_INDEX_INFERRED_RELATIONSHIPS], connectionFormat: false };
-    return listRelations(SYSTEM_USER, type, relArgs);
-  };
-  const changeRule = async (ruleId, active) => {
-    // Change the status
-    await setRuleActivation(SYSTEM_USER, ruleId, active);
-    // Wait for rule to finish activation
-    let ruleActivated = false;
-    while (ruleActivated !== true) {
-      const tasks = await listEntities(SYSTEM_USER, [ENTITY_TYPE_TASK], { connectionFormat: false });
-      const allDone = tasks.filter((t) => !t.completed).length === 0;
-      tasks.forEach((t) => {
-        expect(t.errors.length).toBe(0);
-      });
-      ruleActivated = allDone;
-      // Wait for eventual inferences of inferences to be created
-      await sleep(5000);
-    }
-  };
-  const activateRule = async (ruleId) => changeRule(ruleId, true);
-  const disableRule = (ruleId) => changeRule(ruleId, false);
-
   // eslint-disable-next-line prettier/prettier
   it('Should rule successfully activated', async () => {
       await startModules();

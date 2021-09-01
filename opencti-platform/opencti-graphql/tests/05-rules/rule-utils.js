@@ -1,0 +1,46 @@
+import { internalLoadById, listEntities, listRelations } from '../../src/database/middleware';
+import { SYSTEM_USER } from '../../src/utils/access';
+import { READ_INDEX_INFERRED_RELATIONSHIPS } from '../../src/database/utils';
+import { setRuleActivation } from '../../src/manager/ruleManager';
+import { ENTITY_TYPE_TASK } from '../../src/schema/internalObject';
+import { sleep } from '../utils/testQuery';
+
+export const inferenceLookup = async (inferences, fromStandardId, toStandardId, type) => {
+  for (let index = 0; index < inferences.length; index += 1) {
+    const inference = inferences[index];
+    const from = await internalLoadById(SYSTEM_USER, inference.fromId);
+    const to = await internalLoadById(SYSTEM_USER, inference.toId);
+    const sameFrom = from.standard_id === fromStandardId;
+    const sameTo = to.standard_id === toStandardId;
+    const sameType = inference.relationship_type === type;
+    if (sameFrom && sameTo && sameType) {
+      return inference;
+    }
+  }
+  return null;
+};
+
+export const getInferences = (type) => {
+  const relArgs = { indices: [READ_INDEX_INFERRED_RELATIONSHIPS], connectionFormat: false };
+  return listRelations(SYSTEM_USER, type, relArgs);
+};
+
+export const changeRule = async (ruleId, active) => {
+  // Change the status
+  await setRuleActivation(SYSTEM_USER, ruleId, active);
+  // Wait for rule to finish activation
+  let ruleActivated = false;
+  while (ruleActivated !== true) {
+    const tasks = await listEntities(SYSTEM_USER, [ENTITY_TYPE_TASK], { connectionFormat: false });
+    const allDone = tasks.filter((t) => !t.completed).length === 0;
+    tasks.forEach((t) => {
+      expect(t.errors.length).toBe(0);
+    });
+    ruleActivated = allDone;
+    // Wait for eventual inferences of inferences to be created
+    await sleep(5000);
+  }
+};
+
+export const activateRule = async (ruleId) => changeRule(ruleId, true);
+export const disableRule = (ruleId) => changeRule(ruleId, false);
