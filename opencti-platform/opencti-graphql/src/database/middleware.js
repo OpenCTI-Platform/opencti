@@ -1925,11 +1925,7 @@ const getAllRulesField = (instance, field) => {
     .flat()
     .filter((val) => isNotEmptyField(val));
 };
-const convertRulesTimeValues = (timeValues) => {
-  return timeValues //
-    .filter((val) => val !== FROM_START_STR && val !== UNTIL_END_STR)
-    .map((d) => moment(d));
-};
+const convertRulesTimeValues = (timeValues) => timeValues.map((d) => moment(d));
 const handleRelationTimeUpdate = (input, instance, startField, stopField) => {
   const patch = {};
   // If not coming from a rule, compute extended time.
@@ -2229,8 +2225,8 @@ const buildRelationData = async (user, input, opts = {}) => {
   if (isStixCoreRelationship(relationshipType)) {
     data.relationship_type = relationshipType;
     data.description = input.description ? input.description : '';
-    data.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
-    data.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
+    data.start_time = isEmptyField(input.start_time) ? new Date(FROM_START) : input.start_time;
+    data.stop_time = isEmptyField(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     /* istanbul ignore if */
     if (data.start_time > data.stop_time) {
       throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
