@@ -27,6 +27,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { dayStartDate } from '../../../../utils/Time';
 import DatePickerField from '../../../../components/DatePickerField';
+import TextField from '../../../../components/TextField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -79,9 +80,10 @@ const styles = (theme) => ({
   },
 });
 
-const noteCreationMutation = graphql`
+export const noteCreationMutation = graphql`
   mutation NoteCreationMutation($input: NoteAddInput!) {
     noteAdd(input: $input) {
+        id
       ...NoteLine_node
     }
   }
@@ -224,7 +226,7 @@ class NoteCreation extends Component {
                     style={{ marginTop: 20 }}
                   />
                   <Field
-                    component={MarkDownField}
+                    component={TextField}
                     name="attribute_abstract"
                     label={t('Abstract')}
                     fullWidth={true}
@@ -336,7 +338,7 @@ class NoteCreation extends Component {
                     fullWidth={true}
                   />
                   <Field
-                    component={MarkDownField}
+                    component={TextField}
                     name="attribute_abstract"
                     label={t('Abstract')}
                     fullWidth={true}

@@ -6,12 +6,12 @@ import {
   ENABLED_EXPIRED_MANAGER,
   ENABLED_RULE_ENGINE,
   ENABLED_TASK_SCHEDULER,
+  ENABLED_SUBSCRIPTION_MANAGER,
   PLATFORM_VERSION,
 } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { elVersion } from '../database/elasticSearch';
 import { getRabbitMQVersion } from '../database/rabbitmq';
-import { getMinIOVersion } from '../database/minio';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 
@@ -25,6 +25,7 @@ export const getModules = () => {
   modules.push({ id: 'EXPIRATION_SCHEDULER', enable: ENABLED_EXPIRED_MANAGER });
   modules.push({ id: 'TASK_MANAGER', enable: ENABLED_TASK_SCHEDULER });
   modules.push({ id: 'RULE_ENGINE', enable: ENABLED_RULE_ENGINE });
+  modules.push({ id: 'SUBSCRIPTION_MANAGER', enable: ENABLED_SUBSCRIPTION_MANAGER });
   return modules;
 };
 
@@ -35,7 +36,6 @@ export const getApplicationInfo = () => ({
     { name: 'Elasticsearch', version: elVersion() },
     { name: 'RabbitMQ', version: getRabbitMQVersion() },
     { name: 'Redis', version: getRedisVersion() },
-    { name: 'MinIO', version: getMinIOVersion() },
   ],
   debugStats: {}, // Lazy loaded
 });

@@ -11,7 +11,7 @@ import def from './ObserveSightingDefinition';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
 import { RELATION_OBJECT } from '../../schema/stixMetaRelationship';
 import { isEmptyField } from '../../database/utils';
-import { createRuleContent, RULE_MANAGER_USER, RULES_ATTRIBUTES_MERGE, RULES_DECLARATION } from '../rules';
+import { createRuleContent, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR, RULES_DECLARATION } from '../rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
@@ -208,6 +208,6 @@ const ruleObserveSightingBuilder = () => {
 const RuleObserveSighting = ruleObserveSightingBuilder();
 
 // Add the merging attribute rule
-RULES_ATTRIBUTES_MERGE.register(def.id, 'attribute_count', RULES_ATTRIBUTES_MERGE.OPERATIONS.SUM);
+RULES_ATTRIBUTES_BEHAVIOR.register(def.id, 'attribute_count', RULES_ATTRIBUTES_BEHAVIOR.OPERATIONS.SUM);
 // Declare the rule
 RULES_DECLARATION.push(RuleObserveSighting);

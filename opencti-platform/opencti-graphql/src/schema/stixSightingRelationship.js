@@ -33,6 +33,7 @@ export const stixSightingRelationshipsAttributes = {
     'i_last_seen_year',
     'attribute_count',
     'x_opencti_negative',
+    'status_id',
   ],
 };
 R.forEachObjIndexed((value, key) => schemaTypes.registerAttributes(key, value), stixSightingRelationshipsAttributes);

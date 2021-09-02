@@ -16,6 +16,7 @@ import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   item: {
@@ -138,11 +139,13 @@ class IndicatorEntityLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <StixCoreRelationshipPopover
-            stixCoreRelationshipId={node.id}
-            paginationOptions={paginationOptions}
-            disabled={restricted}
-          />
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCoreRelationshipPopover
+              stixCoreRelationshipId={node.id}
+              paginationOptions={paginationOptions}
+              disabled={restricted}
+            />
+          </Security>
         </ListItemSecondaryAction>
       </ListItem>
     );
@@ -211,6 +214,10 @@ const IndicatorEntityLineFragment = createFragmentContainer(
             description
           }
           ... on Sector {
+            name
+            description
+          }
+          ... on System {
             name
             description
           }
@@ -285,6 +292,9 @@ const IndicatorEntityLineFragment = createFragmentContainer(
               ... on Sector {
                 name
               }
+              ... on System {
+                name
+              }
               ... on Indicator {
                 name
               }
@@ -342,6 +352,9 @@ const IndicatorEntityLineFragment = createFragmentContainer(
                 name
               }
               ... on Sector {
+                name
+              }
+              ... on System {
                 name
               }
               ... on Indicator {

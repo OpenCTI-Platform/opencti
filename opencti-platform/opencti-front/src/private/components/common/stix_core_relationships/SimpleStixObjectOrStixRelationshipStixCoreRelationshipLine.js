@@ -17,6 +17,7 @@ import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   item: {
@@ -129,11 +130,13 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
               <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
             </Tooltip>
           ) : (
-            <StixCoreRelationshipPopover
-              stixCoreRelationshipId={node.id}
-              paginationOptions={paginationOptions}
-              connectionKey={connectionKey}
-            />
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <StixCoreRelationshipPopover
+                stixCoreRelationshipId={node.id}
+                paginationOptions={paginationOptions}
+                connectionKey={connectionKey}
+              />
+            </Security>
           )}
         </ListItemSecondaryAction>
       </ListItem>
@@ -238,6 +241,10 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               description
             }
             ... on Sector {
+              name
+              description
+            }
+            ... on System {
               name
               description
             }
@@ -415,6 +422,10 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               description
             }
             ... on Sector {
+              name
+              description
+            }
+            ... on System {
               name
               description
             }

@@ -10,6 +10,7 @@ import {
   DomainOutlined,
   MapOutlined,
   PlaceOutlined,
+  StorageOutlined,
 } from '@material-ui/icons';
 import { CityVariantOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
@@ -126,6 +127,25 @@ class TopMenuTechniques extends Component {
         >
           <AccountBalanceOutlined className={classes.icon} fontSize="small" />
           {t('Organizations')}
+        </Button>
+        <Button
+          component={Link}
+          to="/dashboard/entities/systems"
+          variant={
+            location.pathname === '/dashboard/entities/systems'
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/entities/systems'
+              ? 'secondary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          <StorageOutlined className={classes.icon} fontSize="small" />
+          {t('Systems')}
         </Button>
         <Button
           component={Link}

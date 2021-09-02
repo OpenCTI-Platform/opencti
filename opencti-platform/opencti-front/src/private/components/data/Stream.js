@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
+import { withTheme } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -45,6 +46,7 @@ class Stream extends Component {
   }
 
   renderLines(paginationOptions) {
+    const { t, theme } = this.props;
     const { sortBy, orderAsc, searchTerm } = this.state;
     const dataColumns = {
       name: {
@@ -72,6 +74,18 @@ class Stream extends Component {
         displayImport={false}
         secondaryAction={true}
         keyword={searchTerm}
+        message={
+          <span>
+            {t('A default live stream without any filter is available on')}{' '}
+            <a
+              href="/stream/live"
+              style={{ color: theme.palette.secondary.main }}
+            >
+              <i>/stream/live</i>
+            </a>
+            .
+          </span>
+        }
       >
         <QueryRenderer
           query={StreamLinesQuery}
@@ -113,4 +127,4 @@ Stream.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter)(Stream);
+export default compose(inject18n, withTheme, withRouter)(Stream);

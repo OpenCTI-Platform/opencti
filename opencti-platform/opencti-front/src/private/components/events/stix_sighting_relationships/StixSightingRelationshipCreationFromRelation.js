@@ -215,6 +215,9 @@ const stixSightingRelationshipCreationFromRelationQuery = graphql`
         ... on Sector {
           name
         }
+        ... on System {
+          name
+        }
         ... on Indicator {
           name
         }
@@ -280,6 +283,9 @@ const stixSightingRelationshipCreationFromRelationQuery = graphql`
           name
         }
         ... on Sector {
+          name
+        }
+        ... on System {
           name
         }
         ... on Indicator {

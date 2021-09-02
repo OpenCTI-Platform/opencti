@@ -71,6 +71,12 @@ class GroupLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.auto_new_marking.width }}
+              >
+                {node.auto_new_marking ? <Check /> : '-'}
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
                 {fd(node.created_at)}
@@ -110,6 +116,7 @@ const GroupLineFragment = createFragmentContainer(GroupLineComponent, {
       id
       name
       default_assignation
+      auto_new_marking
       created_at
       updated_at
     }
@@ -146,6 +153,17 @@ class GroupLineDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.default_assignation.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={80}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.auto_new_marking.width }}
               >
                 <Skeleton
                   animation="wave"

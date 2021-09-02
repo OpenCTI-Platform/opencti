@@ -17,6 +17,7 @@ import StixCyberObservableRelationCreationFromEntity from '../../common/stix_cyb
 import ItemIcon from '../../../../components/ItemIcon';
 import StixCyberObservableRelationPopover from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   paper: {
@@ -90,12 +91,17 @@ class StixCyberObservableLinksComponent extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Linked observables')}
         </Typography>
-        <StixCyberObservableRelationCreationFromEntity
-          paginationOptions={paginationOptions}
-          entityId={stixCyberObservableId}
-          variant="inLine"
-          entityType={stixCyberObservableType}
-        />
+        <Security
+          needs={[KNOWLEDGE_KNUPDATE]}
+          placeholder={<div style={{ height: 29 }} />}
+        >
+          <StixCyberObservableRelationCreationFromEntity
+            paginationOptions={paginationOptions}
+            entityId={stixCyberObservableId}
+            variant="inLine"
+            entityType={stixCyberObservableType}
+          />
+        </Security>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <List style={{ marginTop: -10 }}>

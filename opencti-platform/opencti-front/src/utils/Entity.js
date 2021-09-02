@@ -20,6 +20,8 @@ export const resolveLink = (type) => {
       return '/dashboard/entities/organizations';
     case 'Sector':
       return '/dashboard/entities/sectors';
+    case 'System':
+      return '/dashboard/entities/systems';
     case 'Indicator':
       return '/dashboard/observations/indicators';
     case 'Infrastructure':

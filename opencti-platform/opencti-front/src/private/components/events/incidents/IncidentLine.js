@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, pathOr } from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -13,6 +13,8 @@ import { Fire } from 'mdi-material-ui';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import ItemMarkings from '../../../../components/ItemMarkings';
+import ItemStatus from '../../../../components/ItemStatus';
 
 const styles = (theme) => ({
   item: {
@@ -91,6 +93,30 @@ class IncidentLineComponent extends Component {
               >
                 {fd(node.modified)}
               </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.status.width }}
+              >
+                <ItemStatus
+                  status={node.status}
+                  variant="inList"
+                  disabled={!node.workflowEnabled}
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectMarking.width }}
+              >
+                <ItemMarkings
+                  markingDefinitions={pathOr(
+                    [],
+                    ['objectMarking', 'edges'],
+                    node,
+                  )}
+                  limit={1}
+                  variant="inList"
+                />
+              </div>
             </div>
           }
         />
@@ -134,6 +160,15 @@ const IncidentLineFragment = createFragmentContainer(IncidentLineComponent, {
           }
         }
       }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
     }
   `,
 });
@@ -190,6 +225,28 @@ class IncidentLineDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.modified.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.status.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectMarking.width }}
               >
                 <Skeleton
                   animation="wave"

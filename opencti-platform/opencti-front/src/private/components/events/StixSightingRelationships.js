@@ -104,18 +104,18 @@ class StixSightingRelationships extends Component {
     } = this.state;
     const dataColumns = {
       x_opencti_negative: {
-        label: 'Status',
+        label: 'Eval',
         width: '10%',
         isSortable: true,
       },
       attribute_count: {
         label: 'Count',
-        width: '10%',
+        width: '5%',
         isSortable: true,
       },
       name: {
         label: 'Name',
-        width: '25%',
+        width: '22%',
         isSortable: false,
       },
       entity_type: {
@@ -125,16 +125,21 @@ class StixSightingRelationships extends Component {
       },
       first_seen: {
         label: 'First obs.',
-        width: '15%',
+        width: '12%',
         isSortable: true,
       },
       last_seen: {
         label: 'Last obs.',
-        width: '15%',
+        width: '12%',
         isSortable: true,
       },
       confidence: {
-        label: 'Confidence level',
+        width: '10%',
+        label: 'Confidence',
+        isSortable: true,
+      },
+      status: {
+        label: 'Status',
         isSortable: true,
       },
     };
@@ -154,9 +159,11 @@ class StixSightingRelationships extends Component {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        secondaryAction={true}
         availableFilterKeys={[
           'labelledBy',
           'markedBy',
+          'status_id',
           'created_start_date',
           'created_end_date',
           'createdBy',

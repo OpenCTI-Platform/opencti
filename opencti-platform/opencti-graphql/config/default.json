@@ -47,7 +47,7 @@
     }
   },
   "rule_engine": {
-    "enabled": false,
+    "enabled": true,
     "lock_key": "rule_engine_lock",
     "status_writing_delay": 2000
   },
@@ -60,6 +60,11 @@
     "enabled": true,
     "lock_key": "expired_manager_lock",
     "interval": 300000
+  },
+  "subscription_scheduler": {
+    "enabled": true,
+    "lock_key": "subscription_manager_lock",
+    "interval": 10000
   },
   "redis": {
     "namespace": "",
@@ -96,6 +101,15 @@
     "management_ssl": false,
     "username": "guest",
     "password": "guest"
+  },
+  "smtp": {
+    "hostname": "localhost",
+    "use_ssl": false,
+    "rejectUnauthorized": false,
+    "port": 25,
+    "username": "",
+    "password": "",
+    "from_email": "notifications@opencti.io"
   },
   "providers": {
     "local": {

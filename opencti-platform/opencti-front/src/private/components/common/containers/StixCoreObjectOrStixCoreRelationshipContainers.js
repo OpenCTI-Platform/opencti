@@ -8,6 +8,8 @@ import IconButton from '@material-ui/core/IconButton';
 import { GraphOutline } from 'mdi-material-ui';
 import { TableChartOutlined } from '@material-ui/icons';
 import * as R from 'ramda';
+import { last, map, toPairs } from 'ramda';
+import Chip from '@material-ui/core/Chip';
 import { QueryRenderer } from '../../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -24,7 +26,9 @@ import StixCoreObjectOrStixCoreRelationshipContainersGraph, {
 } from './StixCoreObjectOrStixCoreRelationshipContainersGraph';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
-import { isUniqFilter } from '../lists/Filters';
+import Filters, { isUniqFilter } from '../lists/Filters';
+import SearchInput from '../../../../components/SearchInput';
+import { truncate } from '../../../../utils/String';
 
 const VIEW_AS_KNOWLEDGE = 'knowledge';
 
@@ -43,6 +47,21 @@ const styles = (theme) => ({
     overflow: 'hidden',
   },
   button: {
+    marginRight: 10,
+  },
+  parameters: {
+    marginTop: -10,
+  },
+  filters: {
+    float: 'left',
+    margin: '2px 0 0 10px',
+  },
+  filter: {
+    marginRight: 10,
+  },
+  operator: {
+    fontFamily: 'Consolas, monaco, monospace',
+    backgroundColor: theme.palette.background.chip,
     marginRight: 10,
   },
 });
@@ -235,6 +254,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
           'created_start_date',
           'created_end_date',
           'container_type',
+          'report_types',
         ]}
       >
         <QueryRenderer
@@ -255,61 +275,137 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
     );
   }
 
-  renderGraph() {
-    const { stixDomainObjectOrStixCoreRelationship } = this.props;
+  renderGraph(paginationOptions) {
+    const { stixDomainObjectOrStixCoreRelationship, classes, t } = this.props;
+    const { searchTerm, filters } = this.state;
+    const availableFilterKeys = [
+      'labelledBy',
+      'createdBy',
+      'markedBy',
+      'created_start_date',
+      'created_end_date',
+      'container_type',
+      'report_types',
+    ];
     return (
-      <QueryRenderer
-        query={stixCoreObjectOrStixCoreRelationshipContainersGraphQuery}
-        variables={{
-          id: stixDomainObjectOrStixCoreRelationship.id,
-          types: [
-            'Threat-Actor',
-            'Intrusion-Set',
-            'Campaign',
-            'Incident',
-            'Malware',
-            'Tool',
-            'Vulnerability',
-            'Attack-Pattern',
-            'Sector',
-            'Organization',
-            'Individual',
-            'Region',
-            'Country',
-            'City',
-            'uses',
-            'targets',
-            'attributed-to',
-            'located-at',
-            'part-of',
-            'belongs-to',
-          ],
-        }}
-        render={({ props }) => {
-          if (props) {
-            return (
-              <StixCoreObjectOrStixCoreRelationshipContainersGraph
-                params={this.params}
-                saveViewParameters={this.saveViewParameters.bind(this)}
-                stixDomainObjectOrStixCoreRelationship={
-                  stixDomainObjectOrStixCoreRelationship
-                }
-                data={props}
-                handleChangeView={this.handleChangeView.bind(this)}
+      <div>
+        <div className={classes.parameters}>
+          {typeof handleSearch === 'function' && (
+            <div style={{ float: 'left', marginRight: 20 }}>
+              <SearchInput
+                variant="small"
+                onSubmit={this.handleSearch.bind(this)}
+                keyword={searchTerm}
               />
-            );
-          }
-          return (
-            <div>
-              <StixCoreObjectOrStixCoreRelationshipContainersGraphBar
-                disabled={true}
-                handleChangeView={this.handleChangeView.bind(this)}
-              />
-              <Loader />
             </div>
-          );
-        }}
-      />
+          )}
+          <Filters
+            availableFilterKeys={availableFilterKeys}
+            handleAddFilter={this.handleAddFilter.bind(this)}
+            currentFilters={filters}
+          />
+          <div className={classes.filters}>
+            {map((currentFilter) => {
+              const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
+              const values = (
+                <span>
+                  {map(
+                    (n) => (
+                      <span key={n.value}>
+                        {n.value && n.value.length > 0
+                          ? truncate(n.value, 15)
+                          : t('No label')}{' '}
+                        {last(currentFilter[1]).value !== n.value && (
+                          <code>OR</code>
+                        )}
+                      </span>
+                    ),
+                    currentFilter[1],
+                  )}
+                </span>
+              );
+              return (
+                <span>
+                  <Chip
+                    key={currentFilter[0]}
+                    classes={{ root: classes.filter }}
+                    label={
+                      <div>
+                        <strong>{label}</strong>: {values}
+                      </div>
+                    }
+                    onDelete={this.handleRemoveFilter.bind(
+                      this,
+                      currentFilter[0],
+                    )}
+                  />
+                  {last(toPairs(filters))[0] !== currentFilter[0] && (
+                    <Chip
+                      classes={{ root: classes.operator }}
+                      label={t('AND')}
+                    />
+                  )}
+                </span>
+              );
+            }, toPairs(filters))}
+          </div>
+          <div className="clearfix" />
+        </div>
+        <QueryRenderer
+          query={stixCoreObjectOrStixCoreRelationshipContainersGraphQuery}
+          variables={{
+            id: stixDomainObjectOrStixCoreRelationship.id,
+            types: [
+              'Threat-Actor',
+              'Intrusion-Set',
+              'Campaign',
+              'Incident',
+              'Malware',
+              'Tool',
+              'Vulnerability',
+              'Attack-Pattern',
+              'Sector',
+              'Organization',
+              'Individual',
+              'Region',
+              'Country',
+              'City',
+              'uses',
+              'targets',
+              'attributed-to',
+              'located-at',
+              'part-of',
+              'belongs-to',
+            ],
+            filters: paginationOptions.filters,
+            search: searchTerm,
+          }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <StixCoreObjectOrStixCoreRelationshipContainersGraph
+                  params={this.params}
+                  saveViewParameters={this.saveViewParameters.bind(this)}
+                  stixDomainObjectOrStixCoreRelationship={
+                    stixDomainObjectOrStixCoreRelationship
+                  }
+                  data={props}
+                  handleChangeView={this.handleChangeView.bind(this)}
+                />
+              );
+            }
+            return (
+              <div>
+                <StixCoreObjectOrStixCoreRelationshipContainersGraphBar
+                  disabled={true}
+                  handleChangeView={this.handleChangeView.bind(this)}
+                />
+                <Loader />
+              </div>
+            );
+          }}
+        />
+      </div>
     );
   }
 
@@ -409,7 +505,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
           </Drawer>
         )}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        {view === 'graph' ? this.renderGraph() : ''}
+        {view === 'graph' ? this.renderGraph(paginationOptions) : ''}
       </div>
     );
   }

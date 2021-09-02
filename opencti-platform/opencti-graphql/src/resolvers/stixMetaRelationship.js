@@ -1,11 +1,13 @@
 import { distributionRelations, batchLoader } from '../database/middleware';
-import stixMetaRelationshipsNumber from '../domain/stixMetaRelationship';
+import  { findAll, findById, stixMetaRelationshipsNumber } from '../domain/stixMetaRelationship';
 import { elBatchIds } from '../database/elasticSearch';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 
 const stixMetaRelationshipResolvers = {
   Query: {
+    stixMetaRelationship: (_, { id }, { user }) => findById(user, id),
+    stixMetaRelationships: (_, args, { user }) => findAll(user, args),
     stixMetaRelationshipsDistribution: (_, args, { user }) => distributionRelations(user, args),
     stixMetaRelationshipsNumber: (_, args, { user }) => stixMetaRelationshipsNumber(user, args),
   },

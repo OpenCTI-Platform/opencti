@@ -11,6 +11,7 @@ import Rules from './Rules';
 import KillChainPhases from './KillChainPhases';
 import Attributes from './Attributes';
 import Labels from './Labels';
+import Workflow from './Workflow';
 import { BoundaryRoute } from '../Error';
 
 const Root = () => (
@@ -47,8 +48,13 @@ const Root = () => (
     />
     <BoundaryRoute
       exact
-      path="/dashboard/settings/marking"
+      path="/dashboard/settings/accesses/marking"
       component={MarkingDefinitions}
+    />
+    <BoundaryRoute
+      exact
+      path="/dashboard/settings/workflow"
+      component={Workflow}
     />
     <BoundaryRoute exact path="/dashboard/settings/rules" component={Rules} />
     <BoundaryRoute

@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import {
   compose, pathOr, pipe, map, union,
 } from 'ramda';
+import { debounce } from 'rxjs/operators';
+import { Subject, timer } from 'rxjs';
 import { Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import { fetchQuery } from '../../../../relay/environment';
@@ -11,6 +13,8 @@ import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../identities/IdentityCreation';
 import ItemIcon from '../../../../components/ItemIcon';
+
+const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
 
 const styles = (theme) => ({
   icon: {
@@ -34,7 +38,7 @@ class CreatedByField extends Component {
     const { defaultCreatedBy } = props;
     this.state = {
       identityCreation: false,
-      identityInput: '',
+      keyword: '',
       identities: defaultCreatedBy
         ? [
           {
@@ -47,6 +51,23 @@ class CreatedByField extends Component {
     };
   }
 
+  componentDidMount() {
+    this.subscription = SEARCH$.subscribe({
+      next: () => this.searchIdentities(),
+    });
+  }
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
+  }
+
+  handleSearch(event) {
+    if (event && event.target && event.target.value) {
+      this.setState({ keyword: event.target.value });
+      SEARCH$.next({ action: 'Search' });
+    }
+  }
+
   handleOpenIdentityCreation() {
     this.setState({ identityCreation: true });
   }
@@ -55,14 +76,10 @@ class CreatedByField extends Component {
     this.setState({ identityCreation: false });
   }
 
-  searchIdentities(event) {
-    this.setState({
-      identityInput:
-        event && event.target.value !== 0 ? event.target.value : '',
-    });
+  searchIdentities() {
     fetchQuery(identityCreationIdentitiesSearchQuery, {
       types: ['Individual', 'Organization'],
-      search: event && event.target.value !== 0 ? event.target.value : '',
+      search: this.state.keyword,
       first: 10,
     })
       .toPromise()
@@ -96,7 +113,7 @@ class CreatedByField extends Component {
           }}
           noOptionsText={t('No available options')}
           options={this.state.identities}
-          onInputChange={this.searchIdentities.bind(this)}
+          onInputChange={this.handleSearch.bind(this)}
           openCreate={this.handleOpenIdentityCreation.bind(this)}
           onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
           renderOption={(option) => (
@@ -112,7 +129,7 @@ class CreatedByField extends Component {
         <IdentityCreation
           contextual={true}
           onlyAuthors={true}
-          inputValue={this.state.identityInput}
+          inputValue={this.state.keyword}
           open={this.state.identityCreation}
           handleClose={this.handleCloseIdentityCreation.bind(this)}
           creationCallback={(data) => {

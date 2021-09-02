@@ -15,7 +15,7 @@ import {
   isStixObjectAliased,
 } from './stixDomainObject';
 import * as M from './stixMetaObject';
-import { ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from './stixMetaObject';
+import { isStixMetaObject } from './stixMetaObject';
 import * as C from './stixCyberObservable';
 import { isStixCyberObservable } from './stixCyberObservable';
 import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID } from './general';
@@ -144,6 +144,9 @@ const stixEntityContribution = {
     [I.ENTITY_TYPE_TAXII_COLLECTION]: [], // ALL
     [I.ENTITY_TYPE_TASK]: [], // ALL
     [I.ENTITY_TYPE_STREAM_COLLECTION]: [], // ALL
+    [I.ENTITY_TYPE_USER_SUBSCRIPTION]: [], // ALL
+    [I.ENTITY_TYPE_STATUS_TEMPLATE]: [{ src: NAME_FIELD }], // ALL
+    [I.ENTITY_TYPE_STATUS]: [{ src: 'template_id' }, { src: 'type' }], // ALL
     // Stix Domain
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_CAMPAIGN]: [{ src: NAME_FIELD }],
@@ -155,6 +158,7 @@ const stixEntityContribution = {
     [D.ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [{ src: NAME_FIELD }, { src: 'identity_class' }],
     [D.ENTITY_TYPE_IDENTITY_ORGANIZATION]: [{ src: NAME_FIELD }, { src: 'identity_class' }],
     [D.ENTITY_TYPE_IDENTITY_SECTOR]: [{ src: NAME_FIELD }, { src: 'identity_class' }],
+    [D.ENTITY_TYPE_IDENTITY_SYSTEM]: [{ src: NAME_FIELD }, { src: 'identity_class' }],
     [D.ENTITY_TYPE_INDICATOR]: [{ src: 'pattern' }],
     [D.ENTITY_TYPE_INFRASTRUCTURE]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_INTRUSION_SET]: [{ src: NAME_FIELD }],
@@ -385,15 +389,13 @@ export const getInstanceIdentifiers = (instance) => {
   if (instance.relationship_type) {
     base.relationship_type = instance.relationship_type;
     if (!instance.from) {
-      throw FunctionalError(`Inconsistent relation to update (from)`, { id: instance.id, from: instance.fromId });
+      throw FunctionalError(`Inconsistent from to identify`, { id: instance.id, from: instance.fromId });
     }
-    base.source_ref = instance.from.standard_id;
-    base.x_opencti_source_ref = instance.fromId;
+    base.from = instance.from;
     if (!instance.to) {
-      throw FunctionalError(`Inconsistent relation to update (to)`, { id: instance.id, to: instance.toId });
+      throw FunctionalError(`Inconsistent to to identify`, { id: instance.id, to: instance.toId });
     }
-    base.target_ref = instance.to.standard_id;
-    base.x_opencti_target_ref = instance.toId;
+    base.to = instance.to;
   }
   return base;
 };

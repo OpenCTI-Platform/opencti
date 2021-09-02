@@ -65,6 +65,7 @@ const groupValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
   default_assignation: Yup.bool(),
+  auto_new_marking: Yup.bool(),
 });
 
 class GroupEditionOverviewComponent extends Component {
@@ -95,7 +96,7 @@ class GroupEditionOverviewComponent extends Component {
   render() {
     const { t, group, context } = this.props;
     const initialValues = pick(
-      ['name', 'description', 'default_assignation'],
+      ['name', 'description', 'default_assignation', 'auto_new_marking'],
       group,
     );
     return (
@@ -150,6 +151,22 @@ class GroupEditionOverviewComponent extends Component {
                   />
                 }
               />
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="auto_new_marking"
+                label={t(
+                  'Automatically authorize this group to new marking definition',
+                )}
+                containerstyle={{ marginTop: 20 }}
+                onChange={this.handleSubmitField.bind(this)}
+                helperText={
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="auto_new_marking"
+                  />
+                }
+              />
             </Form>
           )}
         </Formik>
@@ -175,6 +192,7 @@ const GroupEditionOverview = createFragmentContainer(
         name
         description
         default_assignation
+        auto_new_marking
       }
     `,
   },

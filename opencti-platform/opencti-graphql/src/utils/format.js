@@ -30,5 +30,13 @@ export const escape = (chars) => {
 export const buildPeriodFromDates = (a, b) => moment.range(a, b);
 export const computeRangeIntersection = (a, b) => {
   const range = a.intersect(b);
-  return { start: range?.start.toISOString(), end: range?.end.toISOString() };
+  if (range) {
+    return { start: range.start.toISOString(), end: range.end.toISOString() };
+  }
+  // No range intersection, get min/max to build the range
+  const minStart = moment.min([a.start, b.start]);
+  const maxStop = moment.max([b.end, b.end]);
+  return { start: minStart.toISOString(), end: maxStop.toISOString() };
 };
+export const minutesAgo = (minutes) => moment().utc().subtract(minutes, 'minutes');
+export const hoursAgo = (hours) => moment().utc().subtract(hours, 'hours');

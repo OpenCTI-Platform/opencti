@@ -76,11 +76,16 @@ class Groups extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '45%',
+        width: '35%',
         isSortable: true,
       },
       default_assignation: {
         label: 'Default membership',
+        width: '15%',
+        isSortable: true,
+      },
+      auto_new_marking: {
+        label: 'Auto new marking',
         width: '15%',
         isSortable: true,
       },

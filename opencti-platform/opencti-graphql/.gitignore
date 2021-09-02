@@ -13,6 +13,7 @@ config/production.json
 config/reference.json
 config/test.json
 config/local.json
+config/sync.json
 coverage
 test-results
 logs

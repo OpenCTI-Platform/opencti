@@ -58,6 +58,23 @@ export const downloadFile = (id) => {
   }
 };
 
+export const getFileContent = (id) => {
+  return new Promise((resolve, reject) => {
+    let str = '';
+    minioClient.getObject(bucketName, id, (err, stream) => {
+      stream.on('data', (data) => {
+        str += data.toString('utf-8');
+      });
+      stream.on('end', () => {
+        resolve(str);
+      });
+      stream.on('error', (error) => {
+        reject(error);
+      });
+    });
+  });
+};
+
 export const loadFile = async (user, filename) => {
   try {
     const stat = await minioClient.statObject(bucketName, filename);

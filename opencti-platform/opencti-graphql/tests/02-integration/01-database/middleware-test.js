@@ -95,7 +95,7 @@ describe('Attribute updater', () => {
     const campaign = await elLoadById(ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const campaignId = campaign.internal_id;
     const input = { observable_value: 'test' };
-    const { element: update } = patchAttribute(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input);
+    const { element: update } = await patchAttribute(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input);
     expect(update).rejects.toThrow();
   });
   it('should update dont do anything if already the same', async () => {

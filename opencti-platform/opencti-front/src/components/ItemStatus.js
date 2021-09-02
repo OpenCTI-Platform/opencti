@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
+import { compose } from 'ramda';
+import inject18n from './i18n';
+import { hexToRGB } from '../utils/Colors';
 
 const styles = () => ({
   chip: {
@@ -11,7 +14,7 @@ const styles = () => ({
     marginRight: 7,
     textTransform: 'uppercase',
     borderRadius: '0',
-    width: 130,
+    width: 100,
   },
   chipInList: {
     fontSize: 12,
@@ -20,81 +23,46 @@ const styles = () => ({
     float: 'left',
     textTransform: 'uppercase',
     borderRadius: '0',
-    width: 130,
+    width: 80,
   },
 });
-
-const inlineStyles = {
-  white: {
-    backgroundColor: '#ffffff',
-    color: '#2b2b2b',
-  },
-  green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
-  },
-  blue: {
-    backgroundColor: 'rgba(92, 123, 245, 0.08)',
-    color: '#5c7bf5',
-  },
-  grey: {
-    backgroundColor: 'rgba(96, 125, 139, 0.08)',
-    color: '#607d8b',
-  },
-  orange: {
-    backgroundColor: 'rgba(255, 152, 0, 0.08)',
-    color: '#ff9800',
-  },
-};
 
 class ItemStatus extends Component {
   render() {
     const {
-      classes, label, status, variant,
+      classes, t, status, variant, disabled,
     } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
-    switch (status) {
-      case 'progress':
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.orange}
-            label={label}
-          />
-        );
-      case 'wait':
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.blue}
-            label={label}
-          />
-        );
-      case 'complete':
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.green}
-            label={label}
-          />
-        );
-      default:
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.blue}
-            label={label}
-          />
-        );
+    if (status) {
+      return (
+        <Chip
+          classes={{ root: style }}
+          variant="outlined"
+          label={t(`status_${status.template.name}`)}
+          style={{
+            color: status.template.color,
+            borderColor: status.template.color,
+            backgroundColor: hexToRGB(status.template.color),
+          }}
+        />
+      );
     }
+    return (
+      <Chip
+        classes={{ root: style }}
+        variant="outlined"
+        label={disabled ? t('Disabled') : t('Unknown')}
+      />
+    );
   }
 }
 
 ItemStatus.propTypes = {
   classes: PropTypes.object.isRequired,
-  status: PropTypes.string,
-  label: PropTypes.string,
+  status: PropTypes.object,
   variant: PropTypes.string,
+  t: PropTypes.func,
+  disabled: PropTypes.bool,
 };
 
-export default withStyles(styles)(ItemStatus);
+export default compose(inject18n, withStyles(styles))(ItemStatus);

@@ -14,6 +14,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixCoreObjectStixCyberObservables from '../stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
 const styles = () => ({
   container: {
@@ -42,6 +43,7 @@ class InfrastructureKnowledgeComponent extends Component {
             'tools',
             'vulnerabilities',
             'observables',
+            'observed_data',
             'sightings',
           ]}
         />
@@ -50,6 +52,17 @@ class InfrastructureKnowledgeComponent extends Component {
           path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/relations/:relationId"
           render={(routeProps) => (
             <StixCoreRelationship
+              entityId={infrastructure.id}
+              paddingRight={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/sightings/:sightingId"
+          render={(routeProps) => (
+            <StixSightingRelationship
               entityId={infrastructure.id}
               paddingRight={true}
               {...routeProps}
@@ -105,6 +118,20 @@ class InfrastructureKnowledgeComponent extends Component {
               stixCoreObjectLink={link}
               noRightBar={true}
               isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/observed_data"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={infrastructure.id}
+              targetStixDomainObjectTypes={['Observed-Data']}
+              relationshipTypes={['consists-of']}
+              entityLink={link}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}

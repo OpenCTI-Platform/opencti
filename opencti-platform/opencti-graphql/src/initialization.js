@@ -2,7 +2,7 @@
 import { ApolloError } from 'apollo-errors';
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
-import { logApp, PLATFORM_VERSION } from './config/conf';
+import { booleanConf, logApp, PLATFORM_VERSION } from './config/conf';
 import { elCreateIndexes, elIndexExists, elIsAlive } from './database/elasticSearch';
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
@@ -20,6 +20,11 @@ import { createEntity, loadEntity, patchAttribute } from './database/middleware'
 import { INDEX_INTERNAL_OBJECTS } from './database/utils';
 import { ConfigurationError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
 import { BYPASS, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
+import { smtpIsAlive } from './database/smtp';
+import { generateStandardId } from './schema/identifier';
+import { ENTITY_TYPE_MARKING_DEFINITION } from './schema/stixMetaObject';
+import { createStatus, createStatusTemplate } from './domain/status';
+import { ENTITY_TYPE_CONTAINER_REPORT } from './schema/stixDomainObject';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -118,6 +123,11 @@ export const checkSystemDependencies = async () => {
   // Check if redis is here
   await redisIsAlive();
   logApp.info(`[CHECK] Redis is alive`);
+  if (booleanConf('subscription_scheduler:enabled', true)) {
+    // Check if SMTP is here
+    await smtpIsAlive();
+    logApp.info(`[CHECK] SMTP is alive`);
+  }
   // Check if Python is available
   await checkPythonStix2();
   logApp.info(`[CHECK] Python3 is available`);
@@ -168,38 +178,101 @@ const createAttributesTypes = async () => {
 
 const createMarkingDefinitions = async () => {
   // Create marking defs
+  const WHITE = { definition_type: 'TLP', definition: 'TLP:WHITE' };
   await addMarkingDefinition(SYSTEM_USER, {
     standard_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
-    stix_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
-    definition_type: 'TLP',
-    definition: 'TLP:WHITE',
+    stix_id: generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, WHITE),
+    ...WHITE,
     x_opencti_color: '#ffffff',
     x_opencti_order: 1,
   });
+  const GREEN = { definition_type: 'TLP', definition: 'TLP:GREEN' };
   await addMarkingDefinition(SYSTEM_USER, {
     standard_id: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
-    stix_id: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
-    definition_type: 'TLP',
-    definition: 'TLP:GREEN',
+    stix_id: generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, GREEN),
+    ...GREEN,
     x_opencti_color: '#2e7d32',
     x_opencti_order: 2,
   });
+  const AMBER = { definition_type: 'TLP', definition: 'TLP:AMBER' };
   await addMarkingDefinition(SYSTEM_USER, {
     standard_id: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
-    stix_id: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
-    definition_type: 'TLP',
-    definition: 'TLP:AMBER',
+    stix_id: generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, AMBER),
+    ...AMBER,
     x_opencti_color: '#d84315',
     x_opencti_order: 3,
   });
+  const RED = { definition_type: 'TLP', definition: 'TLP:RED' };
   await addMarkingDefinition(SYSTEM_USER, {
     standard_id: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
-    stix_id: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
-    definition_type: 'TLP',
-    definition: 'TLP:RED',
+    stix_id: generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, RED),
+    ...RED,
     x_opencti_color: '#c62828',
     x_opencti_order: 4,
   });
+};
+
+const createDefaultStatusTemplates = async () => {
+  const statusNew = await createStatusTemplate(SYSTEM_USER, {
+    name: 'NEW',
+    color: '#ff9800',
+  });
+  const statusInProgress = await createStatusTemplate(SYSTEM_USER, {
+    name: 'IN_PROGRESS',
+    color: '#5c7bf5',
+  });
+  await createStatusTemplate(SYSTEM_USER, {
+    name: 'PENDING',
+    color: '#5c7bf5',
+  });
+  await createStatusTemplate(SYSTEM_USER, {
+    name: 'TO_BE_QUALIFIED',
+    color: '#5c7bf5',
+  });
+  const statusAnalyzed = await createStatusTemplate(SYSTEM_USER, {
+    name: 'ANALYZED',
+    color: '#4caf50',
+  });
+  const statusClosed = await createStatusTemplate(SYSTEM_USER, {
+    name: 'CLOSED',
+    color: '#607d8b',
+  });
+  await createStatus(
+    SYSTEM_USER,
+    ENTITY_TYPE_CONTAINER_REPORT,
+    {
+      template_id: statusNew.id,
+      order: 1,
+    },
+    true
+  );
+  await createStatus(
+    SYSTEM_USER,
+    ENTITY_TYPE_CONTAINER_REPORT,
+    {
+      template_id: statusInProgress.id,
+      order: 2,
+    },
+    true
+  );
+  await createStatus(
+    SYSTEM_USER,
+    ENTITY_TYPE_CONTAINER_REPORT,
+    {
+      template_id: statusAnalyzed.id,
+      order: 3,
+    },
+    true
+  );
+  await createStatus(
+    SYSTEM_USER,
+    ENTITY_TYPE_CONTAINER_REPORT,
+    {
+      template_id: statusClosed.id,
+      order: 4,
+    },
+    true
+  );
 };
 
 export const createCapabilities = async (capabilities, parentName = '') => {
@@ -256,6 +329,7 @@ const initializeDefaultValues = async (withMarkings = true) => {
     platform_theme: 'dark',
     platform_language: 'auto',
   });
+  await createDefaultStatusTemplates();
   await createAttributesTypes();
   await createBasicRolesAndCapabilities();
   if (withMarkings) {

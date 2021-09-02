@@ -13,6 +13,7 @@ import SectorPopover from './SectorPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
 const styles = () => ({
   container: {
@@ -37,6 +38,17 @@ class SectorKnowledgeComponent extends Component {
             path="/dashboard/entities/sectors/:sectorId/knowledge/relations/:relationId"
             render={(routeProps) => (
               <StixCoreRelationship
+                entityId={sector.id}
+                paddingRight={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/entities/sectors/:sectorId/knowledge/sightings/:sightingId"
+            render={(routeProps) => (
+              <StixSightingRelationship
                 entityId={sector.id}
                 paddingRight={true}
                 {...routeProps}

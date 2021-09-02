@@ -18,6 +18,7 @@ import ItemConfidence from '../../../../components/ItemConfidence';
 import StixSightingRelationshipPopover from './StixSightingRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
+import ItemStatus from '../../../../components/ItemStatus';
 
 const styles = (theme) => ({
   item: {
@@ -68,13 +69,15 @@ class StixSightingRelationshipLineComponent extends Component {
     const {
       fsd, t, fd, classes, dataColumns, node, paginationOptions,
     } = this.props;
+    const entityLink = `${resolveLink(node.from.entity_type)}/${node.from.id}`;
+    const link = `${entityLink}/knowledge/sightings/${node.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         button={true}
         component={Link}
-        to={`${resolveLink(node.from.entity_type)}/${node.from.id}`}
+        to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon type={node.from.entity_type} />
@@ -141,6 +144,16 @@ class StixSightingRelationshipLineComponent extends Component {
               >
                 <ItemConfidence confidence={node.confidence} variant="inList" />
               </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.status.width }}
+              >
+                <ItemStatus
+                  status={node.status}
+                  variant="inList"
+                  disabled={!node.workflowEnabled}
+                />
+              </div>
             </div>
           }
         />
@@ -178,6 +191,15 @@ const StixSightingRelationshipLineFragment = createFragmentContainer(
         first_seen
         last_seen
         description
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
         from {
           ... on StixDomainObject {
             id
@@ -217,6 +239,10 @@ const StixSightingRelationshipLineFragment = createFragmentContainer(
             description
           }
           ... on Sector {
+            name
+            description
+          }
+          ... on System {
             name
             description
           }
@@ -375,7 +401,18 @@ class StixSightingRelationshipLineDummyComponent extends Component {
                 <Skeleton
                   animation="wave"
                   variant="rect"
-                  width={100}
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.status.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={80}
                   height="100%"
                 />
               </div>

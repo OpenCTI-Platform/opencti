@@ -23,12 +23,12 @@ import {
 } from '../domain/stixCoreRelationship';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { distributionRelations, timeSeriesRelations, batchLoader } from '../database/middleware';
-import { convertDataToStix } from '../database/stix';
+import { distributionRelations, timeSeriesRelations, batchLoader, convertDataToRawStix } from '../database/middleware';
 import { creator } from '../domain/log';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { elBatchIds } from '../database/elasticSearch';
+import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const createdByLoader = batchLoader(batchCreatedBy);
@@ -56,7 +56,7 @@ const stixCoreRelationshipResolvers = {
   StixCoreRelationship: {
     from: (rel, _, { user }) => loadByIdLoader.load(rel.fromId, user),
     to: (rel, _, { user }) => loadByIdLoader.load(rel.toId, user),
-    toStix: (rel) => JSON.stringify(convertDataToStix(rel)),
+    toStix: (rel, _, { user }) => convertDataToRawStix(user, rel.id),
     creator: (rel, _, { user }) => creator(user, rel.id),
     createdBy: (rel, _, { user }) => createdByLoader.load(rel.id, user),
     objectMarking: (rel, _, { user }) => markingDefinitionsLoader.load(rel.id, user),
@@ -67,6 +67,11 @@ const stixCoreRelationshipResolvers = {
     notes: (rel, _, { user }) => notesLoader.load(rel.id, user),
     opinions: (rel, _, { user }) => opinionsLoader.load(rel.id, user),
     editContext: (rel) => fetchEditContext(rel.id),
+    status: (entity, _, { user }) => (entity.status_id ? findStatusById(user, entity.status_id) : null),
+    workflowEnabled: async (entity, _, { user }) => {
+      const statusesEdges = await getTypeStatuses(user, entity.entity_type);
+      return statusesEdges.edges.length > 0;
+    },
   },
   Mutation: {
     stixCoreRelationshipEdit: (_, { id }, { user }) => ({

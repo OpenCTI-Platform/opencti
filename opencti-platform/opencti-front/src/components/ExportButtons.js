@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
+import { CSVLink } from 'react-csv';
 import IconButton from '@material-ui/core/IconButton';
 import { ImageOutlined } from '@material-ui/icons';
-import { FilePdfOutline } from 'mdi-material-ui';
+import { FilePdfOutline, FileDelimitedOutline } from 'mdi-material-ui';
 import { withTheme, withStyles } from '@material-ui/core/styles';
 import * as R from 'ramda';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Dialog from '@material-ui/core/Dialog';
+import Tooltip from '@material-ui/core/Tooltip';
 import themeLight from './ThemeLight';
 import themeDark from './ThemeDark';
 import { commitLocalUpdate } from '../relay/environment';
@@ -132,17 +134,19 @@ class ExportButtons extends Component {
   render() {
     const { anchorElImage, anchorElPdf, exporting } = this.state;
     const {
-      classes, t, domElementId, name,
+      classes, t, domElementId, name, csvData,
     } = this.props;
     return (
       <div className={classes.exportButtons}>
-        <IconButton
-          onClick={this.handleOpenImage.bind(this)}
-          aria-haspopup="true"
-          color="primary"
-        >
-          <ImageOutlined />
-        </IconButton>
+        <Tooltip title={t('Export to image')}>
+          <IconButton
+            onClick={this.handleOpenImage.bind(this)}
+            aria-haspopup="true"
+            color="primary"
+          >
+            <ImageOutlined />
+          </IconButton>
+        </Tooltip>
         <Menu
           anchorEl={anchorElImage}
           open={Boolean(anchorElImage)}
@@ -194,13 +198,15 @@ class ExportButtons extends Component {
             {t('Light (without background)')}
           </MenuItem>
         </Menu>
-        <IconButton
-          onClick={this.handleOpenPdf.bind(this)}
-          aria-haspopup="true"
-          color="primary"
-        >
-          <FilePdfOutline />
-        </IconButton>
+        <Tooltip title={t('Export to PDF')}>
+          <IconButton
+            onClick={this.handleOpenPdf.bind(this)}
+            aria-haspopup="true"
+            color="primary"
+          >
+            <FilePdfOutline />
+          </IconButton>
+        </Tooltip>
         <Menu
           anchorEl={anchorElPdf}
           open={Boolean(anchorElPdf)}
@@ -230,6 +236,15 @@ class ExportButtons extends Component {
             {t('Light')}
           </MenuItem>
         </Menu>
+        {csvData && (
+          <Tooltip title={t('Export to CSV')}>
+            <CSVLink data={csvData}>
+              <IconButton aria-haspopup="true" color="primary">
+                <FileDelimitedOutline />
+              </IconButton>
+            </CSVLink>
+          </Tooltip>
+        )}
         <Dialog
           open={exporting}
           keepMounted={true}

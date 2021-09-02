@@ -8,9 +8,10 @@ import {
   pink,
   deepOrange,
   yellow,
+  teal,
+  deepPurple,
   indigo,
   red,
-  teal,
 } from '@material-ui/core/colors';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -20,10 +21,17 @@ import {
   AddOutlined,
   EditOutlined,
   HelpOutlined,
+  LinkOutlined,
+  LinkOffOutlined,
   DeleteOutlined,
 } from '@material-ui/icons';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip/Tooltip';
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
@@ -76,106 +84,165 @@ const styles = (theme) => ({
 });
 
 class UserHistoryLineComponent extends Component {
-  // eslint-disable-next-line class-methods-use-this
-  renderIcon(eventType, eventMesage) {
-    if (eventType === 'create') {
-      return (
-        <Avatar
-          style={{
-            marginTop: 5,
-            backgroundColor: pink[500],
-            color: '#ffffff',
-          }}
-        >
-          <AddOutlined />
-        </Avatar>
-      );
-    }
-    if (eventType === 'merge') {
-      return (
-        <Avatar
-          style={{
-            marginTop: 5,
-            backgroundColor: teal[500],
-            color: '#ffffff',
-          }}
-        >
-          <Merge />
-        </Avatar>
-      );
-    }
-    if (eventType === 'update' && eventMesage.includes('replaces the')) {
-      return (
-        <Avatar
-          style={{
-            marginTop: 5,
-            backgroundColor: green[500],
-            color: '#ffffff',
-          }}
-        >
-          <EditOutlined />
-        </Avatar>
-      );
-    }
-    if (eventType === 'update' && eventMesage.includes('changes the')) {
-      return (
-        <Avatar
-          style={{
-            marginTop: 5,
-            backgroundColor: green[500],
-            color: '#ffffff',
-          }}
-        >
-          <EditOutlined />
-        </Avatar>
-      );
-    }
-    if (eventType === 'update' && eventMesage.includes('adds the')) {
-      return (
-        <Avatar
-          style={{
-            marginTop: 5,
-            backgroundColor: indigo[500],
-            color: '#ffffff',
-          }}
-        >
-          <LinkVariantPlus />
-        </Avatar>
-      );
-    }
-    if (eventType === 'update' && eventMesage.includes('removes the')) {
-      return (
-        <Avatar
-          style={{
-            marginTop: 5,
-            backgroundColor: deepOrange[500],
-            color: '#ffffff',
-          }}
-        >
-          <LinkVariantRemove />
-        </Avatar>
-      );
-    }
-    if (eventType === 'delete') {
-      return (
-        <Avatar
-          style={{
-            marginTop: 5,
-            backgroundColor: red[500],
-            color: '#ffffff',
-          }}
-        >
-          <DeleteOutlined />
-        </Avatar>
-      );
+  constructor(props) {
+    super(props);
+    this.state = { open: false };
+  }
+
+  handleOpen() {
+    this.setState({ open: true });
+  }
+
+  handleClose() {
+    this.setState({ open: false });
+  }
+
+  renderIcon(eventType, isRelation, eventMesage, commit) {
+    if (isRelation) {
+      if (eventType === 'create') {
+        return (
+          <Avatar
+            style={{
+              marginTop: 5,
+              backgroundColor: pink[500],
+              color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
+            }}
+            onClick={() => commit && this.handleOpen()}
+          >
+            <LinkOutlined />
+          </Avatar>
+        );
+      }
+      if (eventType === 'delete') {
+        return (
+          <Avatar
+            style={{
+              marginTop: 5,
+              backgroundColor: deepPurple[500],
+              color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
+            }}
+            onClick={() => commit && this.handleOpen()}
+          >
+            <LinkOffOutlined />
+          </Avatar>
+        );
+      }
+    } else {
+      if (eventType === 'create') {
+        return (
+          <Avatar
+            style={{
+              marginTop: 5,
+              backgroundColor: pink[500],
+              color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
+            }}
+            onClick={() => commit && this.handleOpen()}
+          >
+            <AddOutlined />
+          </Avatar>
+        );
+      }
+      if (eventType === 'merge') {
+        return (
+          <Avatar
+            style={{
+              marginTop: 5,
+              backgroundColor: teal[500],
+              color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
+            }}
+            onClick={() => commit && this.handleOpen()}
+          >
+            <Merge />
+          </Avatar>
+        );
+      }
+      if (eventType === 'update' && eventMesage.includes('replaces')) {
+        return (
+          <Avatar
+            style={{
+              marginTop: 5,
+              backgroundColor: green[500],
+              color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
+            }}
+            onClick={() => commit && this.handleOpen()}
+          >
+            <EditOutlined />
+          </Avatar>
+        );
+      }
+      if (eventType === 'update' && eventMesage.includes('changes')) {
+        return (
+          <Avatar
+            style={{
+              marginTop: 5,
+              backgroundColor: green[500],
+              color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
+            }}
+            onClick={() => commit && this.handleOpen()}
+          >
+            <EditOutlined />
+          </Avatar>
+        );
+      }
+      if (eventType === 'update' && eventMesage.includes('adds')) {
+        return (
+          <Avatar
+            style={{
+              marginTop: 5,
+              backgroundColor: indigo[500],
+              color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
+            }}
+            onClick={() => commit && this.handleOpen()}
+          >
+            <LinkVariantPlus />
+          </Avatar>
+        );
+      }
+      if (eventType === 'update' && eventMesage.includes('removes')) {
+        return (
+          <Avatar
+            style={{
+              marginTop: 5,
+              backgroundColor: deepOrange[500],
+              color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
+            }}
+            onClick={() => commit && this.handleOpen()}
+          >
+            <LinkVariantRemove />
+          </Avatar>
+        );
+      }
+      if (eventType === 'delete') {
+        return (
+          <Avatar
+            style={{
+              marginTop: 5,
+              backgroundColor: red[500],
+              color: '#ffffff',
+            }}
+          >
+            <DeleteOutlined />
+          </Avatar>
+        );
+      }
     }
     return (
       <Avatar
         style={{
           marginTop: 5,
-          backgroundColor: yellow[500],
+          backgroundColor: yellow[800],
           color: '#ffffff',
+          cursor: commit ? 'pointer' : 'auto',
         }}
+        onClick={() => commit && this.handleOpen()}
       >
         <HelpOutlined />
       </Avatar>
@@ -183,11 +250,13 @@ class UserHistoryLineComponent extends Component {
   }
 
   render() {
-    const { nsdt, classes, node } = this.props;
+    const {
+      nsdt, classes, node, t,
+    } = this.props;
     return (
       <div className={classes.container}>
         <div className={classes.avatar}>
-          {this.renderIcon(node.event_type, node.context_data?.message)}
+          {this.renderIcon(node.event_type, false, node.context_data?.message)}
         </div>
         <div className={classes.content}>
           <Paper classes={{ root: classes.paper }}>
@@ -209,6 +278,21 @@ class UserHistoryLineComponent extends Component {
           </Paper>
         </div>
         <div className={classes.line} />
+        <Dialog
+          open={this.state.open}
+          onClose={this.handleClose.bind(this)}
+          fullWidth={true}
+        >
+          <DialogTitle>{t('Commit message')}</DialogTitle>
+          <DialogContent>
+            <Markdown className="markdown">{node.context_data.commit}</Markdown>
+          </DialogContent>
+          <DialogActions>
+            <Button color="primary" onClick={this.handleClose.bind(this)}>
+              {t('Close')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
@@ -232,6 +316,7 @@ const UserHistoryLine = createFragmentContainer(UserHistoryLineComponent, {
       }
       context_data {
         message
+        commit
       }
     }
   `,

@@ -10,6 +10,7 @@ import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import ItemStatus from '../../../../components/ItemStatus';
 
 const styles = () => ({
   paper: {
@@ -38,6 +39,17 @@ class IncidentDetailsComponent extends Component {
                 {t('Description')}
               </Typography>
               <ExpandableMarkdown source={incident.description} limit={400} />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Processing status')}
+              </Typography>
+              <ItemStatus
+                status={incident.status}
+                disabled={!incident.workflowEnabled}
+              />
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -92,6 +104,15 @@ const IncidentDetails = createFragmentContainer(IncidentDetailsComponent, {
       last_seen
       objective
       description
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
     }
   `,
 });

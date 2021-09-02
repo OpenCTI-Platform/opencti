@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr, propOr } from 'ramda';
+import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
-import Button from '@material-ui/core/Button';
 import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemConfidence from '../../../../components/ItemConfidence';
@@ -16,6 +15,7 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import StixCoreObjectOpinions from '../../analysis/opinions/StixCoreObjectOpinions';
 
 const styles = (theme) => ({
   paper: {
@@ -40,7 +40,11 @@ class StixDomainObjectOverview extends Component {
     const {
       t, fldt, classes, stixDomainObject, withoutMarking, withPattern,
     } = this.props;
-    const stixIds = stixDomainObject.x_opencti_stix_ids || [];
+    const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
+    const stixIds = R.filter(
+      (n) => n !== stixDomainObject.standard_id,
+      otherStixIds,
+    );
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -97,31 +101,17 @@ class StixDomainObjectOverview extends Component {
                   <ItemPatternType label={stixDomainObject.pattern_type} />
                 </div>
               )}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: withPattern ? 20 : 0 }}
-              >
-                {t('STIX version')}
-              </Typography>
-              <Button
-                variant="outlined"
-                size="small"
-                style={{ cursor: 'default' }}
-              >
-                {stixDomainObject.spec_version}
-              </Button>
               {!withoutMarking && stixDomainObject.objectMarking && (
                 <div>
                   <Typography
                     variant="h3"
                     gutterBottom={true}
-                    style={{ marginTop: 20 }}
+                    style={{ marginTop: withPattern ? 20 : 0 }}
                   >
                     {t('Marking')}
                   </Typography>
                   <ItemMarkings
-                    markingDefinitions={pathOr(
+                    markingDefinitions={R.pathOr(
                       [],
                       ['objectMarking', 'edges'],
                       stixDomainObject,
@@ -133,12 +123,24 @@ class StixDomainObjectOverview extends Component {
               <Typography
                 variant="h3"
                 gutterBottom={true}
-                style={{ marginTop: 20 }}
+                style={{
+                  marginTop:
+                    withPattern
+                    || (!withoutMarking && stixDomainObject.objectMarking)
+                      ? 20
+                      : 0,
+                }}
               >
                 {t('Author')}
               </Typography>
               <ItemAuthor
-                createdBy={propOr(null, 'createdBy', stixDomainObject)}
+                createdBy={R.propOr(null, 'createdBy', stixDomainObject)}
+              />
+              <StixCoreObjectOpinions
+                stixCoreObjectId={stixDomainObject.id}
+                variant="inEntity"
+                height={160}
+                marginTop={20}
               />
               <Typography
                 variant="h3"
@@ -156,29 +158,20 @@ class StixDomainObjectOverview extends Component {
                 {t('Modification date')}
               </Typography>
               {fldt(stixDomainObject.modified)}
-              {!stixDomainObject.objectMarking ? (
-                <div>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Revoked')}
-                  </Typography>
-                  <ItemBoolean
-                    status={stixDomainObject.revoked}
-                    label={stixDomainObject.revoked ? t('Yes') : t('No')}
-                    reverse={true}
-                  />
-                </div>
-              ) : (
-                ''
-              )}
             </Grid>
             <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Revoked')}
+              </Typography>
+              <ItemBoolean
+                status={stixDomainObject.revoked}
+                label={stixDomainObject.revoked ? t('Yes') : t('No')}
+                reverse={true}
+              />
               <StixCoreObjectLabelsView
                 labels={stixDomainObject.objectLabel}
                 id={stixDomainObject.id}
+                marginTop={20}
               />
               <Typography
                 variant="h3"
@@ -204,22 +197,6 @@ class StixDomainObjectOverview extends Component {
                 {t('Creator')}
               </Typography>
               <ItemCreator creator={stixDomainObject.creator} />
-              {stixDomainObject.objectMarking && (
-                <div>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Revoked')}
-                  </Typography>
-                  <ItemBoolean
-                    status={stixDomainObject.revoked}
-                    label={stixDomainObject.revoked ? t('Yes') : t('No')}
-                    reverse={true}
-                  />
-                </div>
-              )}
             </Grid>
           </Grid>
         </Paper>
@@ -236,4 +213,7 @@ StixDomainObjectOverview.propTypes = {
   withoutMarking: PropTypes.bool,
 };
 
-export default compose(inject18n, withStyles(styles))(StixDomainObjectOverview);
+export default R.compose(
+  inject18n,
+  withStyles(styles),
+)(StixDomainObjectOverview);

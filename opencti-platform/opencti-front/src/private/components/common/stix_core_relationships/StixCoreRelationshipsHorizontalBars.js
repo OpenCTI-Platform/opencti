@@ -84,6 +84,10 @@ const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
           name
           description
         }
+        ... on System {
+          name
+          description
+        }
         ... on Indicator {
           name
           description
@@ -189,8 +193,8 @@ class StixCoreRelationshipsHorizontalBars extends Component {
                   margin={{
                     top: 20,
                     right: 20,
-                    bottom: 0,
-                    left: 0,
+                    bottom: 20,
+                    left: 20,
                   }}
                 >
                   <XAxis

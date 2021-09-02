@@ -202,6 +202,9 @@ const ContainerStixObjectOrStixRelationshipLineFragment = createFragmentContaine
         ... on Sector {
           name
         }
+        ... on System {
+          name
+        }
         ... on Indicator {
           name
         }

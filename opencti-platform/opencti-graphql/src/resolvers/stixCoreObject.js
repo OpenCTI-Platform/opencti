@@ -17,9 +17,7 @@ import {
 } from '../domain/stixCoreObject';
 import { creator } from '../domain/log';
 import { fetchEditContext } from '../database/redis';
-import { convertDataToStix } from '../database/stix';
-import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
-import { batchLoader, stixElementLoader } from '../database/middleware';
+import { batchLoader, convertDataToRawStix } from '../database/middleware';
 import { worksForSource } from '../domain/work';
 import { connectorsForEnrichment } from '../domain/enrichment';
 
@@ -34,9 +32,7 @@ const reportsLoader = batchLoader(batchReports);
 const stixCoreObjectResolvers = {
   Query: {
     stixCoreObject: (_, { id }, { user }) => findById(user, id),
-    stixCoreObjectRaw: (_, { id }, { user }) => {
-      return stixElementLoader(user, id, ABSTRACT_STIX_CORE_OBJECT).then((data) => JSON.stringify(data));
-    },
+    stixCoreObjectRaw: (_, { id }, { user }) => convertDataToRawStix(user, id),
     stixCoreObjects: (_, args, { user }) => findAll(user, args),
   },
   StixCoreObject: {
@@ -48,7 +44,7 @@ const stixCoreObjectResolvers = {
       /* istanbul ignore next */
       return 'Unknown';
     },
-    toStix: (stixCoreObject) => JSON.stringify(convertDataToStix(stixCoreObject)),
+    toStix: (stixCoreObject, _, { user }) => convertDataToRawStix(user, stixCoreObject.id),
     creator: (stixCoreObject, _, { user }) => creator(user, stixCoreObject.id),
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
     stixCoreRelationships: (stixCoreObject, args, { user }) => stixCoreRelationships(user, stixCoreObject.id, args),

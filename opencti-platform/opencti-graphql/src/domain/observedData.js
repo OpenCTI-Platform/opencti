@@ -18,7 +18,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/gene
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { FunctionalError } from '../config/errors';
-import { now, prepareDate, utcDate } from '../utils/format';
+import { now, utcDate } from '../utils/format';
 import { isStixId } from '../schema/schemaUtils';
 
 export const findById = (user, observedDataId) => {

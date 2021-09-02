@@ -9,29 +9,23 @@ import {
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
-import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
-import IncidentsCards, {
-  incidentsCardsQuery,
-} from './incidents/IncidentsCards';
-import IncidentsLines, {
-  incidentsLinesQuery,
-} from './incidents/IncidentsLines';
-import IncidentCreation from './incidents/IncidentCreation';
+import SystemsLines, { systemsLinesQuery } from './systems/SystemsLines';
+import SystemCreation from './systems/SystemCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 
-class Indidents extends Component {
+class Systems extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-incidents',
+      'view-systems',
     );
     this.state = {
-      sortBy: R.propOr('created', 'sortBy', params),
-      orderAsc: R.propOr(false, 'orderAsc', params),
+      sortBy: R.propOr('name', 'sortBy', params),
+      orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('lines', 'view', params),
       filters: R.propOr({}, 'filters', params),
@@ -44,13 +38,9 @@ class Indidents extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-incidents',
+      'view-systems',
       this.state,
     );
-  }
-
-  handleChangeView(mode) {
-    this.setState({ view: mode }, () => this.saveView());
   }
 
   handleSearch(value) {
@@ -104,68 +94,6 @@ class Indidents extends Component {
     this.setState({ numberOfElements });
   }
 
-  renderCards(paginationOptions) {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = this.state;
-    const dataColumns = {
-      name: {
-        label: 'Name',
-      },
-      created: {
-        label: 'Creation date',
-      },
-      modified: {
-        label: 'Modification date',
-      },
-    };
-    return (
-      <ListCards
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        handleChangeView={this.handleChangeView.bind(this)}
-        handleAddFilter={this.handleAddFilter.bind(this)}
-        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        handleToggleExports={this.handleToggleExports.bind(this)}
-        openExports={openExports}
-        exportEntityType="Incident"
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'labelledBy',
-          'markedBy',
-          'created_start_date',
-          'created_end_date',
-          'createdBy',
-        ]}
-      >
-        <QueryRenderer
-          query={incidentsCardsQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <IncidentsCards
-              data={props}
-              paginationOptions={paginationOptions}
-              initialLoading={props === null}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          )}
-        />
-      </ListCards>
-    );
-  }
-
   renderLines(paginationOptions) {
     const {
       sortBy,
@@ -204,12 +132,11 @@ class Indidents extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
-        handleChangeView={this.handleChangeView.bind(this)}
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
-        exportEntityType="Incident"
+        exportEntityType="User"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -223,10 +150,10 @@ class Indidents extends Component {
         ]}
       >
         <QueryRenderer
-          query={incidentsLinesQuery}
+          query={systemsLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <IncidentsLines
+            <SystemsLines
               data={props}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
@@ -253,19 +180,19 @@ class Indidents extends Component {
     };
     return (
       <div>
-        {view === 'cards' ? this.renderCards(paginationOptions) : ''}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IncidentCreation paginationOptions={paginationOptions} />
+          <SystemCreation paginationOptions={paginationOptions} />
         </Security>
       </div>
     );
   }
 }
 
-Indidents.propTypes = {
+Systems.propTypes = {
+  t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default R.compose(inject18n, withRouter)(Indidents);
+export default R.compose(inject18n, withRouter)(Systems);

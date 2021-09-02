@@ -7,8 +7,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert } from '@material-ui/icons';
-import { DatabaseExportOutline } from 'mdi-material-ui';
+import { MoreVert, CastConnectedOutlined } from '@material-ui/icons';
 import {
   compose, last, map, toPairs,
 } from 'ramda';
@@ -82,7 +81,7 @@ class StreamLineLineComponent extends Component {
         href={`/stream/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <DatabaseExportOutline />
+          <CastConnectedOutlined />
         </ListItemIcon>
         <ListItemText
           primary={

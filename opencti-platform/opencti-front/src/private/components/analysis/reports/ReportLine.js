@@ -15,7 +15,7 @@ import { compose, pathOr } from 'ramda';
 import Checkbox from '@material-ui/core/Checkbox';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
-import ItemStatus from '../../../../components/ReportStatus';
+import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
 
@@ -52,7 +52,6 @@ const styles = (theme) => ({
 class ReportLineComponent extends Component {
   render() {
     const {
-      t,
       fd,
       classes,
       node,
@@ -117,18 +116,12 @@ class ReportLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.x_opencti_report_status.width }}
+                style={{ width: dataColumns.status.width }}
               >
                 <ItemStatus
-                  status={node.x_opencti_report_status}
-                  label={t(
-                    `report_status_${
-                      node.x_opencti_report_status
-                        ? node.x_opencti_report_status
-                        : 0
-                    }`,
-                  )}
+                  status={node.status}
                   variant="inList"
+                  disabled={!node.workflowEnabled}
                 />
               </div>
               <div
@@ -176,7 +169,6 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
       name
       description
       published
-      x_opencti_report_status
       createdBy {
         ... on Identity {
           id
@@ -202,6 +194,15 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
           }
         }
       }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
     }
   `,
 });
@@ -274,7 +275,7 @@ class ReportLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.x_opencti_report_status.width }}
+                style={{ width: dataColumns.status.width }}
               >
                 <Skeleton
                   animation="wave"

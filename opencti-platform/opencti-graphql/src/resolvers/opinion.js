@@ -2,6 +2,7 @@ import {
   addOpinion,
   findAll,
   findById,
+  findMyOpinion,
   opinionsDistributionByEntity,
   opinionsNumber,
   opinionsNumberByEntity,
@@ -30,6 +31,7 @@ const opinionResolvers = {
   Query: {
     opinion: (_, { id }, { user }) => findById(user, id),
     opinions: (_, args, { user }) => findAll(user, args),
+    myOpinion: (_, { id }, { user }) => findMyOpinion(user, id),
     opinionsTimeSeries: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
         return opinionsTimeSeriesByEntity(user, args);

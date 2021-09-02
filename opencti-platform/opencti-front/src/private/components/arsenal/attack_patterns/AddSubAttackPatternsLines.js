@@ -131,7 +131,11 @@ class AddSubAttackPatternsLinesContainer extends Component {
                 )}
               </ListItemIcon>
               <ListItemText
-                primary={`${attackPattern.x_mitre_id} - ${attackPattern.name}`}
+                primary={`${
+                  attackPattern.x_mitre_id
+                    ? `${attackPattern.x_mitre_id} - `
+                    : ''
+                }${attackPattern.name}`}
                 secondary={truncate(attackPattern.description, 120)}
               />
             </ListItem>

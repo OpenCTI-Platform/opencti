@@ -176,7 +176,10 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('External references')}
         </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security
+          needs={[KNOWLEDGE_KNUPDATE]}
+          placeholder={<div style={{ height: 28 }} />}
+        >
           <AddExternalReferences
             stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
             stixCoreObjectOrStixCoreRelationshipReferences={
@@ -208,9 +211,8 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                   }
                   if (externalReference.url) {
                     return (
-                      <div>
+                      <div key={externalReference.id}>
                         <ListItem
-                          key={externalReference.id}
                           dense={true}
                           divider={true}
                           button={true}
@@ -232,15 +234,17 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                             <ExternalReferenceEnrichment
                               externalReferenceId={externalReference.id}
                             />
-                            <IconButton
-                              aria-label="Remove"
-                              onClick={this.handleOpenDialog.bind(
-                                this,
-                                externalReferenceEdge,
-                              )}
-                            >
-                              <LinkOff />
-                            </IconButton>
+                            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                              <IconButton
+                                aria-label="Remove"
+                                onClick={this.handleOpenDialog.bind(
+                                  this,
+                                  externalReferenceEdge,
+                                )}
+                              >
+                                <LinkOff />
+                              </IconButton>
+                            </Security>
                           </ListItemSecondaryAction>
                         </ListItem>
                         {externalReference.importFiles.edges.length > 0 && (
@@ -276,15 +280,17 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                         secondary={truncate(externalReference.description, 120)}
                       />
                       <ListItemSecondaryAction>
-                        <IconButton
-                          aria-label="Remove"
-                          onClick={this.handleOpenDialog.bind(
-                            this,
-                            externalReferenceEdge,
-                          )}
-                        >
-                          <LinkOff />
-                        </IconButton>
+                        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                          <IconButton
+                            aria-label="Remove"
+                            onClick={this.handleOpenDialog.bind(
+                              this,
+                              externalReferenceEdge,
+                            )}
+                          >
+                            <LinkOff />
+                          </IconButton>
+                        </Security>
                       </ListItemSecondaryAction>
                     </ListItem>
                   );

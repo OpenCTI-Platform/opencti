@@ -1,4 +1,5 @@
 import { assoc, dissoc, pipe } from 'ramda';
+import * as R from 'ramda';
 import {
   createEntity,
   distributionEntities,
@@ -15,12 +16,35 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/gene
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
+import { addIndividual, findAll as findIndividuals } from './individual';
 
 export const findById = (user, opinionId) => {
   return loadById(user, opinionId, ENTITY_TYPE_CONTAINER_OPINION);
 };
 export const findAll = async (user, args) => {
   return listEntities(user, [ENTITY_TYPE_CONTAINER_OPINION], args);
+};
+export const findMyOpinion = async (user, entityId) => {
+  // Resolve the individual
+  const individualsArgs = {
+    filters: [{ key: 'contact_information', values: [user.user_email] }],
+    connectionFormat: false,
+  };
+  const individuals = await findIndividuals(user, individualsArgs);
+  if (individuals.length === 0) {
+    return null;
+  }
+  const keyObject = buildRefRelationKey(RELATION_OBJECT);
+  const keyCreatedBy = buildRefRelationKey(RELATION_CREATED_BY);
+  const opinionsArgs = {
+    filters: [
+      { key: keyObject, values: [entityId] },
+      { key: keyCreatedBy, values: [R.head(individuals).id] },
+    ],
+    connectionFormat: false,
+  };
+  const opinions = await findAll(user, opinionsArgs);
+  return opinions.length > 0 ? R.head(opinions) : null;
 };
 
 // Entities tab
@@ -103,7 +127,19 @@ export const opinionsDistributionByEntity = async (user, args) => {
 
 // region mutations
 export const addOpinion = async (user, opinion) => {
-  const created = await createEntity(user, opinion, ENTITY_TYPE_CONTAINER_OPINION);
+  const opinionToCreate = opinion;
+  // For note, auto assign current user as author
+  if (!opinion.createdBy) {
+    const args = { filters: [{ key: 'contact_information', values: [user.user_email] }], connectionFormat: false };
+    const individuals = await findIndividuals(user, args);
+    if (individuals.length > 0) {
+      opinionToCreate.createdBy = R.head(individuals).id;
+    } else {
+      const individual = await addIndividual(user, { name: user.name, contact_information: user.user_email });
+      opinionToCreate.createdBy = individual.id;
+    }
+  }
+  const created = await createEntity(user, opinionToCreate, ENTITY_TYPE_CONTAINER_OPINION);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 // endregion

@@ -25,6 +25,7 @@ import Paper from '@material-ui/core/Paper';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   paper: {
@@ -164,24 +165,29 @@ class StixCyberObservableIndicatorsComponent extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Indicators composed with this observable')}
         </Typography>
-        <IconButton
-          color="secondary"
-          aria-label="Label"
-          onClick={this.handleOpen.bind(this)}
-          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+        <Security
+          needs={[KNOWLEDGE_KNUPDATE]}
+          placeholder={<div style={{ height: 29 }} />}
         >
-          <Add fontSize="small" />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
-        >
-          <MenuItem onClick={this.handleOpenPromoteStix.bind(this)}>
-            {t('[Promote] Create a STIX indicator')}
-          </MenuItem>
-        </Menu>
+          <IconButton
+            color="secondary"
+            aria-label="Label"
+            onClick={this.handleOpen.bind(this)}
+            style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+          >
+            <Add fontSize="small" />
+          </IconButton>
+          <Menu
+            anchorEl={this.state.anchorEl}
+            open={Boolean(this.state.anchorEl)}
+            onClose={this.handleClose.bind(this)}
+            style={{ marginTop: 50 }}
+          >
+            <MenuItem onClick={this.handleOpenPromoteStix.bind(this)}>
+              {t('[Promote] Create a STIX indicator')}
+            </MenuItem>
+          </Menu>
+        </Security>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <List style={{ marginTop: -10 }}>

@@ -77,8 +77,8 @@ const styles = (theme) => ({
 });
 
 class StixCoreRelationshipHistoryLineComponent extends Component {
-  // eslint-disable-next-line class-methods-use-this
-  renderIcon(eventType, isRelation, eventMesage) {
+// eslint-disable-next-line class-methods-use-this
+  renderIcon(eventType, isRelation, eventMesage, commit) {
     if (isRelation) {
       if (eventType === 'create') {
         return (
@@ -87,7 +87,9 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
               marginTop: 5,
               backgroundColor: pink[500],
               color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
             }}
+            onClick={() => commit && this.handleOpen()}
           >
             <LinkOutlined />
           </Avatar>
@@ -100,7 +102,9 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
               marginTop: 5,
               backgroundColor: deepPurple[500],
               color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
             }}
+            onClick={() => commit && this.handleOpen()}
           >
             <LinkOffOutlined />
           </Avatar>
@@ -114,7 +118,9 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
               marginTop: 5,
               backgroundColor: pink[500],
               color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
             }}
+            onClick={() => commit && this.handleOpen()}
           >
             <AddOutlined />
           </Avatar>
@@ -127,59 +133,69 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
               marginTop: 5,
               backgroundColor: teal[500],
               color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
             }}
+            onClick={() => commit && this.handleOpen()}
           >
             <Merge />
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('replaces the')) {
+      if (eventType === 'update' && eventMesage.includes('replaces')) {
         return (
           <Avatar
             style={{
               marginTop: 5,
               backgroundColor: green[500],
               color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
             }}
+            onClick={() => commit && this.handleOpen()}
           >
             <EditOutlined />
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('changes the')) {
+      if (eventType === 'update' && eventMesage.includes('changes')) {
         return (
           <Avatar
             style={{
               marginTop: 5,
               backgroundColor: green[500],
               color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
             }}
+            onClick={() => commit && this.handleOpen()}
           >
             <EditOutlined />
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('adds the')) {
+      if (eventType === 'update' && eventMesage.includes('adds')) {
         return (
           <Avatar
             style={{
               marginTop: 5,
               backgroundColor: indigo[500],
               color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
             }}
+            onClick={() => commit && this.handleOpen()}
           >
             <LinkVariantPlus />
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('removes the')) {
+      if (eventType === 'update' && eventMesage.includes('removes')) {
         return (
           <Avatar
             style={{
               marginTop: 5,
               backgroundColor: deepOrange[500],
               color: '#ffffff',
+              cursor: commit ? 'pointer' : 'auto',
             }}
+            onClick={() => commit && this.handleOpen()}
           >
             <LinkVariantRemove />
           </Avatar>
@@ -192,7 +208,9 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
           marginTop: 5,
           backgroundColor: yellow[800],
           color: '#ffffff',
+          cursor: commit ? 'pointer' : 'auto',
         }}
+        onClick={() => commit && this.handleOpen()}
       >
         <HelpOutlined />
       </Avatar>

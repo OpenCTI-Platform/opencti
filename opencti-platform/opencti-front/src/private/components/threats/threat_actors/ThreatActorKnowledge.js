@@ -15,6 +15,7 @@ import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/St
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
 const styles = () => ({
   container: {
@@ -38,6 +39,17 @@ class ThreatActorKnowledgeComponent extends Component {
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/relations/:relationId"
           render={(routeProps) => (
             <StixCoreRelationship
+              entityId={threatActor.id}
+              paddingRight={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/sightings/:sightingId"
+          render={(routeProps) => (
+            <StixSightingRelationship
               entityId={threatActor.id}
               paddingRight={true}
               {...routeProps}

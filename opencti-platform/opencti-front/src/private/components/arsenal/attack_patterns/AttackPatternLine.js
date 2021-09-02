@@ -79,7 +79,9 @@ class AttackPatternLineComponent extends Component {
                   className={classes.name}
                   style={{ fontSize: isSubAttackPattern ? 11 : 13 }}
                 >
-                  <strong>{node.x_mitre_id}</strong> - {node.name}
+                  {node.x_mitre_id ? <strong>{node.x_mitre_id}</strong> : ''}
+                  {node.x_mitre_id ? ' - ' : ''}
+                  {node.name}
                 </div>
                 <div
                   className={classes.description}

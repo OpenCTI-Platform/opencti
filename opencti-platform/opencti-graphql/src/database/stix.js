@@ -10,6 +10,7 @@ import {
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_IDENTITY_SECTOR,
+  ENTITY_TYPE_IDENTITY_SYSTEM,
   ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
@@ -32,16 +33,12 @@ import {
   ENTITY_URL,
   isStixCyberObservable,
 } from '../schema/stixCyberObservable';
-import {
-  isStixInternalMetaRelationship,
-  isStixMetaRelationship,
-  RELATION_CREATED_BY,
-} from '../schema/stixMetaRelationship';
-import { isStixObject } from '../schema/stixCoreObject';
+import { isStixInternalMetaRelationship, RELATION_CREATED_BY } from '../schema/stixMetaRelationship';
 import {
   isStixCoreRelationship,
   RELATION_ATTRIBUTED_TO,
   RELATION_BASED_ON,
+  RELATION_BELONGS_TO,
   RELATION_COMMUNICATES_WITH,
   RELATION_COMPROMISES,
   RELATION_CONSISTS_OF,
@@ -63,7 +60,7 @@ import {
   RELATION_USES,
 } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { isStixCyberObservableRelationship, RELATION_LINKED } from '../schema/stixCyberObservableRelationship';
+import { RELATION_LINKED } from '../schema/stixCyberObservableRelationship';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   INPUT_CREATED_BY,
@@ -134,42 +131,54 @@ export const stixDataConverter = (data, args = {}) => {
   const { patchGeneration = false, clearEmptyValues = false } = args;
   let finalData = data;
   const isSighting = data.type === 'sighting';
-  const relationSourceFieldName = isSighting ? 'sighting_of_ref' : 'source_ref';
   // region Relationships
   if (isDefinedValue(finalData.fromId)) {
-    finalData = R.pipe(
-      R.dissoc('fromId'),
-      R.dissoc('fromRole'),
-      R.dissoc('fromType'),
-      R.assoc(`x_opencti_${relationSourceFieldName}`, data.fromId)
-    )(finalData);
+    finalData = R.pipe(R.dissoc('fromId'), R.dissoc('fromRole'), R.dissoc('fromType'))(finalData);
+    if (isSighting) {
+      finalData = R.assoc('x_opencti_sighting_of_ref', data.fromId, finalData);
+    } else {
+      finalData = R.assoc('x_opencti_source_ref', data.fromId, finalData);
+    }
   }
   if (isDefinedValue(finalData.from)) {
-    finalData = R.pipe(
-      R.dissoc('from'),
-      R.assoc(relationSourceFieldName, data.from.standard_id),
-      R.assoc(`x_opencti_${relationSourceFieldName}`, data.from.internal_id)
-    )(finalData);
+    finalData = R.pipe(R.dissoc('from'))(finalData);
+    if (isSighting) {
+      finalData = R.pipe(
+        R.dissoc('source_ref'),
+        R.assoc('sighting_of_ref', data.from.standard_id),
+        R.assoc(`x_opencti_sighting_of_ref`, data.from.internal_id),
+        R.assoc(`x_opencti_sighting_of_type`, data.from.entity_type)
+      )(finalData);
+    } else {
+      finalData = R.pipe(
+        R.assoc('source_ref', data.from.standard_id),
+        R.assoc(`x_opencti_source_ref`, data.from.internal_id),
+        R.assoc(`x_opencti_source_type`, data.from.entity_type)
+      )(finalData);
+    }
   }
   if (isDefinedValue(finalData.toId)) {
     finalData = R.pipe(R.dissoc('toId'), R.dissoc('toRole'), R.dissoc('toType'))(finalData);
     if (isSighting) {
-      finalData = R.assoc('where_sighted_refs', [data.toId], finalData);
+      finalData = R.assoc('x_opencti_where_sighted_refs', [data.toId], finalData);
     } else {
       finalData = R.assoc('x_opencti_target_ref', data.toId, finalData);
     }
   }
   if (isDefinedValue(finalData.to)) {
-    finalData = R.pipe(R.dissoc('to'), R.assoc('target_ref', data.to.standard_id))(finalData);
+    finalData = R.pipe(R.dissoc('to'))(finalData);
     if (isSighting) {
       finalData = R.pipe(
+        R.dissoc('target_ref'),
         R.assoc('where_sighted_refs', [data.to.standard_id]),
-        R.assoc(`x_opencti_where_sighted_refs`, [data.to.internal_id])
+        R.assoc(`x_opencti_where_sighted_refs`, [data.to.internal_id]),
+        R.assoc(`x_opencti_where_sighted_types`, [data.to.entity_type])
       )(finalData);
     } else {
       finalData = R.pipe(
         R.assoc('target_ref', data.to.standard_id),
-        R.assoc(`x_opencti_target_ref`, data.to.internal_id)
+        R.assoc(`x_opencti_target_ref`, data.to.internal_id),
+        R.assoc(`x_opencti_target_type`, data.to.entity_type)
       )(finalData);
     }
   }
@@ -310,6 +319,7 @@ export const buildStixData = (data, args = {}) => {
     R.assoc('id', data.standard_id),
     R.assoc('x_opencti_id', data.internal_id),
     R.assoc('type', convertTypeToStixType(type)),
+    R.assoc('x_opencti_type', type),
     R.dissoc('_index'),
     R.dissoc('standard_id'),
     R.dissoc('internal_id'),
@@ -390,34 +400,6 @@ export const convertStixCyberObservableRelationshipToStix = (data) => {
   return finalData;
 };
 
-export const convertDataToStix = (data, args = {}) => {
-  if (!data) {
-    /* istanbul ignore next */
-    throw FunctionalError('No data provided to STIX converter');
-  }
-  const entityType = data.entity_type;
-  let finalData;
-  if (isStixObject(entityType)) {
-    finalData = buildStixData(data, args);
-  }
-  if (isStixCoreRelationship(entityType)) {
-    finalData = buildStixData(data, args);
-  }
-  if (isStixSightingRelationship(entityType)) {
-    finalData = buildStixData(data, args);
-  }
-  if (isStixMetaRelationship(entityType)) {
-    finalData = convertStixMetaRelationshipToStix(data);
-  }
-  if (isStixCyberObservableRelationship(entityType)) {
-    finalData = convertStixCyberObservableRelationshipToStix(data);
-  }
-  if (!finalData) {
-    throw FunctionalError(`The converter is not able to convert this type of entity: ${entityType}`);
-  }
-  return finalData;
-};
-
 export const onlyStableStixIds = (ids = []) => R.filter((n) => uuidVersion(R.split('--', n)[1]) !== 1, ids);
 
 export const cleanStixIds = (ids, maxStixIds = MAX_TRANSIENT_STIX_IDS) => {
@@ -464,6 +446,7 @@ export const stixCoreRelationshipsMapping = {
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_IDENTITY_SECTOR}`]: [RELATION_TARGETS],
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [RELATION_TARGETS],
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_IDENTITY_INDIVIDUAL}`]: [RELATION_TARGETS],
+  [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_IDENTITY_SYSTEM}`]: [RELATION_TARGETS],
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_VULNERABILITY}`]: [RELATION_TARGETS],
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [RELATION_USES],
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_MALWARE}`]: [RELATION_USES],
@@ -473,6 +456,8 @@ export const stixCoreRelationshipsMapping = {
   [`${ENTITY_TYPE_COURSE_OF_ACTION}_${ENTITY_TYPE_MALWARE}`]: [RELATION_MITIGATES],
   [`${ENTITY_TYPE_COURSE_OF_ACTION}_${ENTITY_TYPE_TOOL}`]: [RELATION_MITIGATES],
   [`${ENTITY_TYPE_COURSE_OF_ACTION}_${ENTITY_TYPE_VULNERABILITY}`]: [RELATION_MITIGATES],
+  [`${ENTITY_TYPE_IDENTITY_SYSTEM}_${ENTITY_TYPE_LOCATION_REGION}`]: [RELATION_LOCATED_AT],
+  [`${ENTITY_TYPE_IDENTITY_SYSTEM}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [RELATION_BELONGS_TO],
   [`${ENTITY_TYPE_IDENTITY_SECTOR}_${ENTITY_TYPE_LOCATION_REGION}`]: [RELATION_LOCATED_AT],
   [`${ENTITY_TYPE_IDENTITY_SECTOR}_${ENTITY_TYPE_LOCATION_COUNTRY}`]: [RELATION_LOCATED_AT],
   [`${ENTITY_TYPE_IDENTITY_SECTOR}_${ENTITY_TYPE_LOCATION_CITY}`]: [RELATION_LOCATED_AT],
@@ -530,6 +515,7 @@ export const stixCoreRelationshipsMapping = {
   'Intrusion-Set_Sector': ['targets'],
   'Intrusion-Set_Organization': ['targets'],
   'Intrusion-Set_Individual': ['targets'],
+  'Intrusion-Set_System': ['targets'],
   'Intrusion-Set_Vulnerability': ['targets'],
   'Intrusion-Set_Attack-Pattern': ['uses'],
   'Intrusion-Set_Malware': ['uses'],
@@ -553,6 +539,7 @@ export const stixCoreRelationshipsMapping = {
   Malware_Sector: ['targets'],
   Malware_Organization: ['targets'],
   Malware_Individual: ['targets'],
+  Malware_System: ['targets'],
   'Malware_Attack-Pattern': ['uses'],
   'Threat-Actor_Organization': ['attributed-to', 'impersonates', 'targets'],
   'Threat-Actor_Individual': ['attributed-to', 'impersonates', 'targets'],
@@ -588,6 +575,7 @@ export const stixCoreRelationshipsMapping = {
   Incident_Sector: ['targets'],
   Incident_Organization: ['targets'],
   Incident_Individual: ['targets'],
+  Incident_System: ['targets'],
   Incident_Vulnerability: ['targets'],
   'Incident_Attack-Pattern': ['uses'],
   Incident_Malware: ['uses'],
@@ -597,6 +585,10 @@ export const stixCoreRelationshipsMapping = {
   City_Country: ['located-at'],
   City_Region: ['located-at'],
   Position_City: ['located-at'],
+  'Domain-Name_IPv4-Addr': ['communicates-with'],
+  'Domain-Name_IPv6-Addr': ['communicates-with'],
+  'IPv4-Addr_Autonomous-System': ['belongs-to'],
+  'IPv6-Addr_Autonomous-System': ['belongs-to'],
   'IPv4-Addr_Region': ['located-at'],
   'IPv4-Addr_Country': ['located-at'],
   'IPv4-Addr_City': ['located-at'],
@@ -614,8 +606,6 @@ export const stixCoreRelationshipsMapping = {
   'Url_IPv4-Addr': ['communicates-with'],
   'Url_IPv6-Addr': ['communicates-with'],
   'Url_Domain-Name': ['communicates-with'],
-  'Domain-Name_IPv4-Addr': ['communicates-with'],
-  'Domain-Name_IPv6-Addr': ['communicates-with'],
   'Domain-Name_Domain-Name': ['communicates-with'],
   'X-OpenCTI-Hostname_IPv4-Addr': ['communicates-with'],
   'X-OpenCTI-Hostname_IPv6-Addr': ['communicates-with'],

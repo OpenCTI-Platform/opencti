@@ -9,7 +9,7 @@ import Chip from '@material-ui/core/Chip';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import ItemStatus from '../../../../components/ReportStatus';
+import ItemStatus from '../../../../components/ItemStatus';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
@@ -67,14 +67,8 @@ class ReportDetailsComponent extends Component {
                 {t('Processing status')}
               </Typography>
               <ItemStatus
-                label={t(
-                  `${
-                    report.x_opencti_report_status
-                      ? `report_status_${report.x_opencti_report_status}`
-                      : 'report_status_0'
-                  }`,
-                )}
-                status={report.x_opencti_report_status}
+                status={report.status}
+                disabled={!report.workflowEnabled}
               />
             </Grid>
           </Grid>
@@ -105,7 +99,15 @@ const ReportDetails = createFragmentContainer(ReportDetailsComponent, {
       id
       report_types
       description
-      x_opencti_report_status
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
     }
   `,
 });

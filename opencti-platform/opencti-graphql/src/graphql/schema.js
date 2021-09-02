@@ -26,6 +26,7 @@ import individualResolvers from '../resolvers/individual';
 import userResolvers from '../resolvers/user';
 import organizationResolvers from '../resolvers/organization';
 import sectorResolvers from '../resolvers/sector';
+import systemResolvers from '../resolvers/system';
 import locationResolvers from '../resolvers/location';
 import cityResolvers from '../resolvers/city';
 import countryResolvers from '../resolvers/country';
@@ -59,6 +60,8 @@ import organizationOrIndividualResolvers from '../resolvers/organizationOrIndivi
 import taxiiResolvers from '../resolvers/taxii';
 import taskResolvers from '../resolvers/task';
 import streamResolvers from '../resolvers/stream';
+import userSubscriptionResolvers from '../resolvers/userSubscription';
+import statusResolvers from '../resolvers/status';
 import ruleResolvers from '../resolvers/rule';
 import stixResolvers from '../resolvers/stix';
 
@@ -72,6 +75,8 @@ const createSchema = () => {
     globalResolvers,
     taxiiResolvers,
     streamResolvers,
+    userSubscriptionResolvers,
+    statusResolvers,
     logResolvers,
     rabbitmqMetricsResolvers,
     elasticSearchMetricsResolvers,
@@ -112,6 +117,8 @@ const createSchema = () => {
     individualResolvers,
     organizationResolvers,
     sectorResolvers,
+    systemResolvers,
+    // Others
     indicatorResolvers,
     infrastructureResolvers,
     intrusionSetResolvers,
@@ -122,6 +129,7 @@ const createSchema = () => {
     countryResolvers,
     regionResolvers,
     positionResolvers,
+    // Others
     malwareResolvers,
     threatActorResolvers,
     toolResolvers,

@@ -11,3 +11,4 @@ const AttributionUseRule = buildRelationWithRelationRule(def, {
 });
 
 RULES_DECLARATION.push(AttributionUseRule);
+export default AttributionUseRule;

@@ -11,3 +11,4 @@ const LocatedAtLocatedRule = buildRelationToRelationRule(def, {
 });
 
 RULES_DECLARATION.push(LocatedAtLocatedRule);
+export default LocatedAtLocatedRule;

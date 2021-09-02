@@ -143,6 +143,10 @@ const stixDomainObjectCreationMutation = graphql`
         name
         description
       }
+      ... on System {
+        name
+        description
+      }
       ... on Indicator {
         name
         description
@@ -324,6 +328,10 @@ class StixDomainObjectCreation extends Component {
           ) && <MenuItem value="Sector">{t('Sector')}</MenuItem>)}
         {targetStixDomainObjectTypes === undefined
           || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'System', 'Identity'].indexOf(r) >= 0,
+          ) && <MenuItem value="Sector">{t('System')}</MenuItem>)}
+        {targetStixDomainObjectTypes === undefined
+          || (targetStixDomainObjectTypes.some(
             (r) => ['Stix-Domain-Object', 'Individual', 'Identity'].indexOf(r) >= 0,
           ) && <MenuItem value="Individual">{t('Individual')}</MenuItem>)}
         {targetStixDomainObjectTypes === undefined
@@ -365,6 +373,14 @@ class StixDomainObjectCreation extends Component {
             (r) => ['Stix-Domain-Object', 'Attack-Pattern'].indexOf(r) >= 0,
           ) && (
             <MenuItem value="Attack-Pattern">{t('Attack pattern')}</MenuItem>
+          ))}
+        {targetStixDomainObjectTypes === undefined
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Course-Of-Action'].indexOf(r) >= 0,
+          ) && (
+            <MenuItem value="Course-Of-Action">
+              {t('Course of action')}
+            </MenuItem>
           ))}
         {targetStixDomainObjectTypes === undefined
           || (targetStixDomainObjectTypes.some(

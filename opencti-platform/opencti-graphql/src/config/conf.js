@@ -73,6 +73,10 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: 'STREAM_COLLECTION_EDIT_TOPIC',
     ADDED_TOPIC: 'STREAM_COLLECTION_ADDED_TOPIC',
   },
+  [O.ENTITY_TYPE_USER_SUBSCRIPTION]: {
+    EDIT_TOPIC: 'USER_SUBSCRIPTION_EDIT_TOPIC',
+    ADDED_TOPIC: 'USER_SUBSCRIPTION_ADDED_TOPIC',
+  },
   [M.ENTITY_TYPE_MARKING_DEFINITION]: {
     EDIT_TOPIC: 'MARKING_DEFINITION_EDIT_TOPIC',
     ADDED_TOPIC: 'MARKING_DEFINITION_ADDED_TOPIC',
@@ -278,6 +282,7 @@ export const ENABLED_API = booleanConf('app:enabled', true);
 export const ENABLED_EXPIRED_MANAGER = booleanConf('expiration_scheduler:enabled', false);
 export const ENABLED_TASK_SCHEDULER = booleanConf('task_scheduler:enabled', false);
 export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
+export const ENABLED_SUBSCRIPTION_MANAGER = booleanConf('subscription_scheduler:enabled', false);
 export const ENABLED_CACHING = booleanConf('redis:use_as_cache', false);
 
 export default nconf;

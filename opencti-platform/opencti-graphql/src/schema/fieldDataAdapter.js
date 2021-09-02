@@ -49,6 +49,8 @@ const multipleAttributes = [
   'protocols',
   'x_opencti_log_sources',
   'x_opencti_stix_ids',
+  'options',
+  'entities_ids',
   // meta
   INPUT_OBJECTS,
   INPUT_MARKINGS,
@@ -103,6 +105,7 @@ export const dateAttributes = [
   'received_time',
   'processed_time',
   'completed_time',
+  'last_run',
 ];
 export const numericAttributes = [
   'attribute_order',
@@ -110,12 +113,12 @@ export const numericAttributes = [
   'confidence',
   'number_observed',
   'x_opencti_order',
-  'x_opencti_report_status',
   'import_expected_number',
   'import_processed_number',
   'x_opencti_score',
   'size',
   'attribute_count',
+  'order',
 ];
 export const booleanAttributes = [
   'completed',
@@ -136,6 +139,7 @@ export const booleanAttributes = [
   'is_disabled',
   'is_self_signed',
   'platform_enable_references',
+  'auto_new_marking',
 ];
 export const numericOrBooleanAttributes = [...numericAttributes, ...booleanAttributes];
 export const dictAttributes = { hashes: { key: 'algorithm', value: 'hash' } };

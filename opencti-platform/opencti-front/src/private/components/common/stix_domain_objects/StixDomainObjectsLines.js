@@ -314,6 +314,10 @@ export const stixDomainObjectsLinesSearchQuery = graphql`
             name
             description
           }
+          ... on System {
+            name
+            description
+          }
           ... on Indicator {
             name
             description
@@ -445,6 +449,10 @@ const StixDomainObjectsLines = createPaginationContainer(
                 description
               }
               ... on Sector {
+                name
+                description
+              }
+              ... on System {
                 name
                 description
               }

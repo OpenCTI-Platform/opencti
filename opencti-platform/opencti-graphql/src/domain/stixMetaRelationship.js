@@ -1,10 +1,18 @@
-import { assoc, dissoc } from 'ramda';
+import { assoc, dissoc, propOr } from 'ramda';
 import { elCount } from '../database/elasticSearch';
 import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { READ_INDEX_STIX_META_RELATIONSHIPS } from '../database/utils';
+import { listRelations, loadById } from '../database/middleware';
 
-const stixMetaRelationshipsNumber = (user, args) => {
+export const findAll = async (user, args) =>
+  listRelations(user, propOr(ABSTRACT_STIX_META_RELATIONSHIP, 'relationship_type', args), args);
+
+export const findById = (user, stixRelationshipId) => {
+  return loadById(user, stixRelationshipId, ABSTRACT_STIX_META_RELATIONSHIP);
+};
+
+export const stixMetaRelationshipsNumber = (user, args) => {
   const types = [];
   if (args.type) {
     if (isStixMetaRelationship(args.type)) {
@@ -20,5 +28,3 @@ const stixMetaRelationshipsNumber = (user, args) => {
     total: elCount(user, READ_INDEX_STIX_META_RELATIONSHIPS, dissoc('endDate', finalArgs)),
   };
 };
-
-export default stixMetaRelationshipsNumber;

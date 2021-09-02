@@ -17,7 +17,17 @@ export const saveViewParameters = (
   params,
   noRedirect = false,
 ) => {
-  const storageParams = pipe(dissoc('graphData'))(params);
+  const storageParams = pipe(
+    dissoc('graphData'),
+    dissoc('initialContent'),
+    dissoc('currentContent'),
+    dissoc('currentHtmlContent'),
+    dissoc('currentBase64Content'),
+    dissoc('totalPdfPageNumber'),
+    dissoc('currentPdfPageNumber'),
+    dissoc('mentions'),
+    dissoc('mentionKeyword'),
+  )(params);
   localStorage.setItem(localStorageKey, JSON.stringify(storageParams));
   let urlParams = pipe(
     dissoc('graphData'),
@@ -32,9 +42,24 @@ export const saveViewParameters = (
     dissoc('numberOfSelectedLinks'),
     dissoc('lastSeenStart'),
     dissoc('lastSeenStop'),
+    dissoc('initialContent'),
+    dissoc('currentContent'),
+    dissoc('currentHtmlContent'),
+    dissoc('currentBase64Content'),
+    dissoc('totalPdfPageNumber'),
+    dissoc('currentPdfPageNumber'),
+    dissoc('mentions'),
+    dissoc('mentionKeyword'),
   )(params);
   if (params.filters) {
     urlParams = assoc('filters', JSON.stringify(params.filters), urlParams);
+  }
+  if (params.currentFile) {
+    urlParams = assoc(
+      'currentFile',
+      JSON.stringify(params.currentFile),
+      urlParams,
+    );
   }
   if (params.zoom) {
     urlParams = assoc('zoom', JSON.stringify(params.zoom), urlParams);
@@ -71,11 +96,14 @@ export const buildViewParamsFromUrlAndStorage = (
   if (finalParams.mode3D) {
     finalParams.mode3D = finalParams.mode3D.toString() === 'true';
   }
-  if (finalParams.modeTree) {
-    finalParams.modeTree = finalParams.modeTree.toString() === 'true';
-  }
   if (finalParams.modeFixed) {
     finalParams.modeFixed = finalParams.modeFixed.toString() === 'true';
+  }
+  if (finalParams.currentTab) {
+    finalParams.currentTab = parseInt(finalParams.currentTab, 10);
+  }
+  if (finalParams.pdfViewerZoom) {
+    finalParams.pdfViewerZoom = parseFloat(finalParams.pdfViewerZoom);
   }
   if (finalParams.currentModeOnlyActive) {
     finalParams.currentModeOnlyActive = finalParams.currentModeOnlyActive.toString() === 'true';
@@ -107,6 +135,11 @@ export const buildViewParamsFromUrlAndStorage = (
   if (typeof finalParams.filters === 'string') {
     finalParams.filters = finalParams.filters
       ? JSON.parse(finalParams.filters)
+      : {};
+  }
+  if (typeof finalParams.currentFile === 'string') {
+    finalParams.currentFile = finalParams.currentFile
+      ? JSON.parse(finalParams.currentFile)
       : {};
   }
   if (typeof finalParams.zoom === 'string') {
