@@ -354,6 +354,7 @@ const i18n = {
       'Update a role': 'Modifier un rôle',
       'Create a note': 'Créer une note',
       'Update a note': 'Modifier une note',
+      'Write a note': 'Ecrire une note',
       'Create a TAXII collection': 'Créer une collection TAXII',
       'Update a TAXII collection': 'Modifier une collection TAXII',
       'Create a live stream': 'Créer un stream live',
@@ -954,6 +955,7 @@ const i18n = {
       'Last ingested analysis (creation date in the platform)':
         'Dernières analyses ajoutées (date de création dans la plateforme)',
       'Distribution of entities': 'Distribution des entités',
+      'Distribution of opinions': 'Distribution des opinions',
       'Observables distribution': 'Distribution des observables',
       'Distribution of relations (including inferred)':
         'Répartition des relations (inférences incluses)',

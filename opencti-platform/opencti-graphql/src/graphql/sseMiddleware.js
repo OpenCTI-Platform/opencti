@@ -521,13 +521,16 @@ const createSeeMiddleware = () => {
     const version = STREAM_EVENT_VERSION;
     let startFrom = req.query.from || req.headers['last-event-id'];
     const compactDepth = parseInt(req.headers['live-depth-compact'] || conf.get('redis:live_depth_compact'), 10);
-    const collection = await findById(req.session.user, id);
-    if (!collection) {
-      res.status(500);
-      res.json({ error: 'This live stream doesnt exists' });
-      return;
+    let streamFilters = {};
+    if (id !== 'live') {
+      const collection = await findById(req.session.user, id);
+      if (!collection) {
+        res.status(500);
+        res.json({ error: 'This live stream doesnt exists' });
+        return;
+      }
+      streamFilters = JSON.parse(collection.filters);
     }
-    const streamFilters = JSON.parse(collection.filters);
     // If no marking part of filtering are accessible for the user, return
     // Its better to prevent connection instead of having no events accessible
     if (streamFilters.markedBy) {

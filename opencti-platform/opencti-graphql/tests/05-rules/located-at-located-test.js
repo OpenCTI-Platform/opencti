@@ -1,78 +1,40 @@
 import { shutdownModules, startModules } from '../../src/modules';
-import { FIVE_MINUTES, sleep } from '../utils/testQuery';
-import {
-  createRelation,
-  deleteElement,
-  internalLoadById,
-  listEntities,
-  listRelations,
-} from '../../src/database/middleware';
+import { FIVE_MINUTES, FIVE_SECS, sleep } from '../utils/testQuery';
+import { createRelation, deleteElement, internalLoadById } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
-import { ENTITY_TYPE_TASK } from '../../src/schema/internalObject';
-import { READ_INDEX_INFERRED_RELATIONSHIPS } from '../../src/database/utils';
 import { RELATION_LOCATED_AT } from '../../src/schema/stixCoreRelationship';
-import { setRuleActivation } from '../../src/manager/ruleManager';
-import { LocatedAtLocatedRule } from '../../src/rules/located-at-located/LocatedAtLocatedRule';
+import LocatedAtLocatedRule from '../../src/rules/located-at-located/LocatedAtLocatedRule';
 import { addCity } from '../../src/domain/city';
+import { RULE_PREFIX } from '../../src/schema/general';
+import { FROM_START_STR, UNTIL_END_STR } from '../../src/utils/format';
+import { activateRule, disableRule, getInferences, inferenceLookup } from './rule-utils';
 
+const RULE = RULE_PREFIX + LocatedAtLocatedRule.id;
 const FRANCE = 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d';
 const HIETZING = 'location--ce920c5b-03ea-576d-ac1d-701d9d7a1bed';
+const PARIS = 'location--521ef7f0-6bfa-58f9-adca-f5e1737524d5';
 const WESTERN_EUROPE = 'location--a25f43bf-3e2d-55fe-ba09-c63a210f169d';
 const EUROPE = 'location--2e9ef300-a1ab-5c9f-9297-dde66b71cae2';
-const TLP_WHITE = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
+const TLP_WHITE_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
+const TLP_TEST_ID = 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27';
 
 describe('Located at located rule', () => {
-  const inferenceLookup = async (inferences, fromStandardId, toStandardId, type) => {
-    for (let index = 0; index < inferences.length; index += 1) {
-      const inference = inferences[index];
-      const from = await internalLoadById(SYSTEM_USER, inference.fromId);
-      const to = await internalLoadById(SYSTEM_USER, inference.toId);
-      const sameFrom = from.standard_id === fromStandardId;
-      const sameTo = to.standard_id === toStandardId;
-      const sameType = inference.relationship_type === type;
-      if (sameFrom && sameTo && sameType) {
-        return inference;
-      }
-    }
-    return null;
-  };
-  const getInferences = (type) => {
-    const relArgs = { indices: [READ_INDEX_INFERRED_RELATIONSHIPS], connectionFormat: false };
-    return listRelations(SYSTEM_USER, type, relArgs);
-  };
-  const changeRule = async (ruleId, active) => {
-    // Change the status
-    await setRuleActivation(SYSTEM_USER, ruleId, active);
-    // Wait for rule to finish activation
-    let ruleActivated = false;
-    while (ruleActivated !== true) {
-      const tasks = await listEntities(SYSTEM_USER, [ENTITY_TYPE_TASK], { connectionFormat: false });
-      const allDone = tasks.filter((t) => !t.completed).length === 0;
-      tasks.forEach((t) => {
-        expect(t.errors.length).toBe(0);
-      });
-      ruleActivated = allDone;
-      // Wait for eventual inferences of inferences to be created
-      await sleep(5000);
-    }
-  };
-  const activateRule = async (ruleId) => changeRule(ruleId, true);
-  const disableRule = (ruleId) => changeRule(ruleId, false);
-
   // eslint-disable-next-line prettier/prettier
   it('Should rule successfully activated', async () => {
       await startModules();
+      const TLP_WHITE_INSTANCE = await internalLoadById(SYSTEM_USER, TLP_WHITE_ID);
+      const TLP_TEST_INSTANCE = await internalLoadById(SYSTEM_USER, TLP_TEST_ID);
       // Check that no inferences exists
       const beforeActivationRelations = await getInferences(RELATION_LOCATED_AT);
       expect(beforeActivationRelations.length).toBe(0);
       // ---- base
-      // HIETZING > located-in > FRANCE
-      // FRANCE > located-in > WESTERN EUROPE
-      // WESTERN EUROPE > located-in > EUROPE
+      // HIETZING > located-in > FRANCE (Start: 2020-02-29T23:00:00.000Z, Stop: 2020-02-29T23:00:00.000Z, Confidence: 30)
+      // FRANCE > located-in > WESTERN EUROPE (Start: none, Stop: none, Confidence: 0)
+      // WESTERN EUROPE > located-in > EUROPE  (Start: none, Stop: none, Confidence: 0)
       // ---- inferences that will be created
-      // HIETZING > located-in > WESTERN EUROPE
-      // HIETZING > located-in > EUROPE (2 explanations)
-      // FRANCE > located-in > EUROPE
+      // HIETZING > located-in > WESTERN EUROPE (Start: 2020-02-29T23:00:00.000Z, Stop: 2020-02-29T23:00:00.000Z, Confidence: 15)
+      // HIETZING > located-in > EUROPE (2 explanations) (Start: 2020-02-29T23:00:00.000Z, Stop: 2020-02-29T23:00:00.000Z)
+      // FRANCE > located-in > EUROPE  (Start: none, Stop: none)
       // Activate rules
       await activateRule(LocatedAtLocatedRule.id);
       // Check database state
@@ -80,15 +42,27 @@ describe('Located at located rule', () => {
       expect(afterActivationRelations.length).toBe(3);
       // eslint-disable-next-line prettier/prettier
       const hietzingToWesternEurope = await inferenceLookup(afterActivationRelations, HIETZING, WESTERN_EUROPE, RELATION_LOCATED_AT);
-      expect(hietzingToWesternEurope.length).not.toBeNull();
+      expect(hietzingToWesternEurope).not.toBeNull();
+      expect(hietzingToWesternEurope.confidence).toBe(15); // AVG 2 relations (30 + 0) = 15
+      expect(hietzingToWesternEurope.start_time).toBe('2020-02-29T23:00:00.000Z');
+      expect(hietzingToWesternEurope.stop_time).toBe('2020-02-29T23:00:00.000Z');
       const hietzingToEurope = await inferenceLookup(afterActivationRelations, HIETZING, EUROPE, RELATION_LOCATED_AT);
-      expect(hietzingToEurope.length).not.toBeNull();
-      expect(hietzingToEurope.i_rule_location_location.length).toBe(2);
+      expect(hietzingToEurope).not.toBeNull();
+      // For confidence we have 2 explanations
+      // HIETZING > located-in > WESTERN EUROPE [Confidence: 15] > located-in > EUROPE [Confidence: 0] = 8
+      // HIETZING > located-in > FRANCE [Confidence: 30] > located-in > EUROPE  [Confidence: 0] = 15
+      expect(hietzingToEurope.confidence).toBe(12); // AVG 2 relations (15 + 8) = 12
+      expect(hietzingToEurope.start_time).toBe('2020-02-29T23:00:00.000Z');
+      expect(hietzingToEurope.stop_time).toBe('2020-02-29T23:00:00.000Z');
+      expect(hietzingToEurope[RULE].length).toBe(2);
       const franceToEurope = await inferenceLookup(afterActivationRelations, FRANCE, EUROPE, RELATION_LOCATED_AT);
-      expect(franceToEurope.length).not.toBeNull();
+      expect(franceToEurope).not.toBeNull();
+      expect(franceToEurope.confidence).toBe(0);
+      expect(franceToEurope.start_time).toBe(FROM_START_STR);
+      expect(franceToEurope.stop_time).toBe(UNTIL_END_STR);
       // Create new element to trigger a live event
       // ---- base
-      // PARIS > located-in > FRANCE
+      // PARIS > located-in > FRANCE (Start: 2020-01-20T20:30:00.000Z, Stop: 2020-02-29T10:00:00.000Z)
       // ---- inferences that will be created
       // PARIS > located-in > WESTERN EUROPE
       // PARIS > located-in > EUROPE (2 explanations)
@@ -96,18 +70,38 @@ describe('Located at located rule', () => {
       const parisLocatedToFrance = await createRelation(SYSTEM_USER, {
         fromId: paris.id,
         toId: FRANCE,
+        start_time: '2020-01-20T20:30:00.000Z',
+        stop_time: '2020-02-29T10:00:00.000Z',
+        confidence: 100,
         relationship_type: RELATION_LOCATED_AT,
-        objectMarking: [TLP_WHITE],
+        objectMarking: [TLP_WHITE_ID],
       });
-      await sleep(2000); // let some time to rule manager to create the elements
+      await sleep(FIVE_SECS); // let some time to rule manager to create the elements
       // Check the inferences
       const afterLiveRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterLiveRelations.length).toBe(5);
-      // Inferences must have the markings of the initial one
-
+      // Inferences must have been created by the markings combination
+      // eslint-disable-next-line prettier/prettier
+      const parisToWesternEurope = await inferenceLookup(afterLiveRelations, PARIS, WESTERN_EUROPE, RELATION_LOCATED_AT);
+      expect(parisToWesternEurope).not.toBeNull();
+      expect(parisToWesternEurope.confidence).toBe(50); // AVG 2 relations (100 + 0) = 50
+      expect(parisToWesternEurope.start_time).toBe('2020-01-20T20:30:00.000Z');
+      expect(parisToWesternEurope.stop_time).toBe('2020-02-29T10:00:00.000Z');
+      const parisToWesternEuropeMarkings = parisToWesternEurope.object_marking_refs;
+      expect(parisToWesternEuropeMarkings.length).toBe(2); // TLP:TEST + TLP:WHITE
+      expect(parisToWesternEuropeMarkings.includes(TLP_WHITE_INSTANCE.internal_id)).toBeTruthy();
+      expect(parisToWesternEuropeMarkings.includes(TLP_TEST_INSTANCE.internal_id)).toBeTruthy();
+      const parisToEurope = await inferenceLookup(afterLiveRelations, PARIS, EUROPE, RELATION_LOCATED_AT);
+      expect(parisToEurope).not.toBeNull();
+      expect(parisToEurope.confidence).toBe(38);
+      expect(parisToEurope[RULE].length).toBe(2);
+      const parisToEuropeMarkings = parisToEurope.object_marking_refs;
+      expect(parisToEuropeMarkings.length).toBe(2); // TLP:TEST + TLP:WHITE
+      expect(parisToEuropeMarkings.includes(TLP_WHITE_INSTANCE.internal_id)).toBeTruthy();
+      expect(parisToEuropeMarkings.includes(TLP_TEST_INSTANCE.internal_id)).toBeTruthy();
       // Remove the relation must remove the inferences
       await deleteElement(SYSTEM_USER, parisLocatedToFrance);
-      await sleep(2000); // let some time to rule manager to delete the elements
+      await sleep(FIVE_SECS); // let some time to rule manager to delete the elements
       const afterRelDeletionRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterRelDeletionRelations.length).toBe(3);
       // Recreate the relation
@@ -116,12 +110,12 @@ describe('Located at located rule', () => {
         toId: FRANCE,
         relationship_type: RELATION_LOCATED_AT,
       });
-      await sleep(2000); // let some time to rule manager to create the elements
+      await sleep(FIVE_SECS); // let some time to rule manager to create the elements
       const afterRecreationRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterRecreationRelations.length).toBe(5);
       // Remove the city
       await deleteElement(SYSTEM_USER, paris);
-      await sleep(2000); // let some time to rule manager to delete the elements
+      await sleep(FIVE_SECS); // let some time to rule manager to delete the elements
       const afterParisDeletionRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterParisDeletionRelations.length).toBe(3);
       // Disable the rule

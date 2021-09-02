@@ -729,7 +729,7 @@ export const redisUpdateWorkFigures = async (workId) => {
     await updateObjectRaw(tx, workId, { import_last_processed: timestamp });
     await tx.hgetall(workId);
   });
-  const updatedMetrics = R.fromPairs(R.splitEvery(2, R.last(fetched)));
+  const updatedMetrics = R.last(fetched);
   const { import_processed_number: pn, import_expected_number: en } = updatedMetrics;
   return { isComplete: parseInt(pn, 10) === parseInt(en, 10), total: pn, expected: en };
 };

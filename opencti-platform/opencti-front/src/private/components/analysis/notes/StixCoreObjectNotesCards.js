@@ -26,7 +26,6 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { commitMutation } from '../../../../relay/environment';
 import { noteCreationMutation } from './NoteCreation';
 import TextField from '../../../../components/TextField';
-import { noteLinesMutationRelationAdd } from './AddNotesLines';
 
 const styles = (theme) => ({
   paper: {
@@ -90,42 +89,24 @@ class StixCoreObjectNotesCardsContainer extends Component {
       ['stixCoreObject', 'objectMarking', 'edges'],
       data,
     ).map((n) => n.node.id);
-    const adaptedValues = R.pipe(R.assoc('objectMarking', defaultMarking))(
-      values,
-    );
+    const adaptedValues = R.pipe(
+      R.assoc('objectMarking', defaultMarking),
+      R.assoc('objects', [stixCoreObjectId]),
+    )(values);
     commitMutation({
       mutation: noteCreationMutation,
       variables: {
         input: adaptedValues,
       },
       setSubmitting,
-      onCompleted: (response) => {
-        const input = {
-          toId: stixCoreObjectId,
-          relationship_type: 'object',
-        };
-        commitMutation({
-          mutation: noteLinesMutationRelationAdd,
-          variables: {
-            id: response.noteAdd.id,
-            input,
-          },
-          updater: (store) => {
-            const payload = store
-              .getRootField('noteEdit')
-              .getLinkedRecord('relationAdd', { input });
-            const relationId = payload.getValue('id');
-            const node = payload.getLinkedRecord('from');
-            const relation = store.get(relationId);
-            payload.setLinkedRecord(node, 'node');
-            payload.setLinkedRecord(relation, 'relation');
-            sharedUpdater(store, stixCoreObjectId, payload);
-          },
-          onCompleted: () => {
-            setSubmitting(false);
-            resetForm();
-          },
-        });
+      updater: (store) => {
+        const payload = store.getRootField('noteAdd');
+        const newEdge = payload.setLinkedRecord(payload, 'node');
+        sharedUpdater(store, stixCoreObjectId, newEdge);
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
       },
     });
   }
@@ -174,7 +155,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
           expanded={open}
           onChange={this.handleToggleWrite.bind(this)}
         >
-          <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
+          <AccordionSummary expandIcon={<ExpandMoreOutlined />} style={{}}>
             <Typography className={classes.heading}>
               <RateReviewOutlined />
               &nbsp;&nbsp;&nbsp;&nbsp;

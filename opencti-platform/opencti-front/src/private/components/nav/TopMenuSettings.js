@@ -7,7 +7,6 @@ import Button from '@material-ui/core/Button';
 import inject18n from '../../../components/i18n';
 import Security, {
   SETTINGS_SETACCESSES,
-  SETTINGS_SETMARKINGS,
   SETTINGS_SETLABELS,
 } from '../../../utils/Security';
 
@@ -69,26 +68,24 @@ class TopMenuSettings extends Component {
             {t('Accesses')}
           </Button>
         </Security>
-        <Security needs={[SETTINGS_SETMARKINGS]}>
-          <Button
-            component={Link}
-            to="/dashboard/settings/workflow"
-            variant={
-              location.pathname.includes('/dashboard/settings/workflow')
-                ? 'contained'
-                : 'text'
-            }
-            size="small"
-            color={
-              location.pathname === '/dashboard/settings/workflow'
-                ? 'secondary'
-                : 'inherit'
-            }
-            classes={{ root: classes.button }}
-          >
-            {t('Workflows')}
-          </Button>
-        </Security>
+        <Button
+          component={Link}
+          to="/dashboard/settings/workflow"
+          variant={
+            location.pathname.includes('/dashboard/settings/workflow')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/settings/workflow'
+              ? 'secondary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Workflows')}
+        </Button>
         <Button
           component={Link}
           to="/dashboard/settings/rules"

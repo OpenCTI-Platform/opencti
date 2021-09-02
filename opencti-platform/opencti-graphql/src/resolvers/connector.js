@@ -17,6 +17,7 @@ import {
   updateReceivedTime,
   worksForConnector,
   findAll,
+  findById,
 } from '../domain/work';
 import { findById as findUserById } from '../domain/user';
 import { redisGetWork, redisUpdateActionExpectation } from '../database/redis';
@@ -29,6 +30,7 @@ const connectorResolvers = {
     connectorsForExport: (_, __, { user }) => connectorsForExport(user),
     connectorsForImport: (_, __, { user }) => connectorsForImport(user),
     works: (_, args, { user }) => findAll(user, args),
+    work: (_, { id }, { user }) => findById(user, id),
   },
   Connector: {
     connector_user: (connector, _, { user }) => findUserById(user, connector.connector_user_id),

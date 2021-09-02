@@ -4,11 +4,11 @@ import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 import def from './LocatedAtLocatedDefinition';
 import { RULES_DECLARATION } from '../rules';
 
-// eslint-disable-next-line import/prefer-default-export
-export const LocatedAtLocatedRule = buildRelationToRelationRule(def, {
+const LocatedAtLocatedRule = buildRelationToRelationRule(def, {
   leftType: RELATION_LOCATED_AT,
   rightType: RELATION_LOCATED_AT,
   creationType: RELATION_LOCATED_AT,
 });
 
 RULES_DECLARATION.push(LocatedAtLocatedRule);
+export default LocatedAtLocatedRule;

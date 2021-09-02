@@ -1368,7 +1368,6 @@ enum StixCoreObjectsOrdering {
   created_at
   updated_at
   published
-  object_status
   valid_from
   valid_to
   indicator_pattern
@@ -1462,7 +1461,6 @@ enum StixDomainObjectsOrdering {
   created_at
   updated_at
   published
-  object_status
   valid_from
   valid_until
   indicator_pattern
@@ -8320,6 +8318,7 @@ type Query {
   connectors: [Connector] @auth(for: [MODULES])
   connectorsForExport: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForImport: [Connector] @auth(for: [KNOWLEDGE])
+  work(id: ID!): Work @auth(for: [MODULES])
   works(
     first: Int
     after: ID
@@ -8640,6 +8639,7 @@ type Query {
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinionContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
     @auth(for: [KNOWLEDGE])
+  myOpinion(id: String!): Opinion @auth(for: [KNOWLEDGE])
   report(id: String): Report @auth(for: [KNOWLEDGE])
   reports(
     first: Int

@@ -34,7 +34,6 @@ const styles = (theme) => ({
     height: '100%',
     marginBottom: 30,
     borderRadius: 6,
-    backgroundColor: 'transparent',
     padding: 0,
     position: 'relative',
   },
@@ -142,7 +141,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
       }`;
     }
     return (
-      <Card classes={{ root: classes.card }} raised={false} variant="outlined">
+      <Card classes={{ root: classes.card }} raised={false}>
         <CardHeader
           style={{
             padding: '10px 10px 0 15px',
