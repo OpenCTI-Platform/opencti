@@ -1,2 +1,2 @@
 // Default timeout
-jest.setTimeout(30000);
+jest.setTimeout(700000);

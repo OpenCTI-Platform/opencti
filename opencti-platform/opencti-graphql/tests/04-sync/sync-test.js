@@ -3,7 +3,7 @@ import {
   API_TOKEN,
   API_URI,
   executeExternalQuery,
-  TEN_MINUTES,
+  FIFTEEN_MINUTES,
   PYTHON_PATH,
   SYNC_LIVE_END_REMOTE_URI,
   SYNC_LIVE_START_REMOTE_URI,
@@ -107,7 +107,7 @@ describe('Database provision', () => {
       // Post check
       await checkPostSyncContent(SYNC_RAW_START_REMOTE_URI, objectMap, relMap, initStixReport);
     },
-    TEN_MINUTES
+    FIFTEEN_MINUTES
   );
 
   const cases = [
@@ -136,6 +136,6 @@ describe('Database provision', () => {
       // Post check
       await checkPostSyncContent(remoteUri, objectMap, relMap, initStixReport);
     },
-    TEN_MINUTES
+    FIFTEEN_MINUTES
   );
 });

@@ -17,7 +17,7 @@ export const API_PASSWORD = conf.get('app:admin:password');
 export const ONE_MINUTE = 60 * 1000;
 export const FIVE_SECS = 5 * 1000;
 export const FIVE_MINUTES = 5 * ONE_MINUTE;
-export const TEN_MINUTES = 2 * FIVE_MINUTES;
+export const FIFTEEN_MINUTES = 3 * FIVE_MINUTES;
 
 export const generateBasicAuth = () => {
   const buff = Buffer.from(`${API_EMAIL}:${API_PASSWORD}`, 'utf-8');
