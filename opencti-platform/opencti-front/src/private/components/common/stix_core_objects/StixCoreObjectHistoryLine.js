@@ -96,7 +96,6 @@ class StixCoreObjectHistoryLineComponent extends Component {
     this.setState({ open: false });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   renderIcon(eventType, isRelation, eventMesage, commit) {
     if (isRelation) {
       if (eventType === 'create') {
