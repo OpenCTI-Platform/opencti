@@ -211,7 +211,8 @@ class PingAlive(threading.Thread):
                 result = self.api.connector.ping(self.connector_id, initial_state)
                 remote_state = (
                     json.loads(result["connector_state"])
-                    if len(result["connector_state"]) > 0
+                    if result["connector_state"] is not None
+                    and len(result["connector_state"]) > 0
                     else None
                 )
                 if initial_state != remote_state:
