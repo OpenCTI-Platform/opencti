@@ -13908,10 +13908,10 @@ react-compound-slider@^3.3.1:
     d3-array "^2.8.0"
     warning "^4.0.3"
 
-react-cookie@4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/react-cookie/-/react-cookie-4.1.0.tgz#4f9152169ae29cc2dde4f3c015e6f790e653f68c"
-  integrity sha512-CUq222HHxGPt/XOcQjV/1/5shClAxHlp0pLSbsRfCk/DHgLgREW3TxD0SaZOxaPR4QmTHIEq189zF52c8Vb0lA==
+react-cookie@4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/react-cookie/-/react-cookie-4.1.1.tgz#832e134ad720e0de3e03deaceaab179c4061a19d"
+  integrity sha512-ffn7Y7G4bXiFbnE+dKhHhbP+b8I34mH9jqnm8Llhj89zF4nPxPutxHT1suUqMeCEhLDBI7InYwf1tpaSoK5w8A==
   dependencies:
     "@types/hoist-non-react-statics" "^3.0.1"
     hoist-non-react-statics "^3.0.0"
