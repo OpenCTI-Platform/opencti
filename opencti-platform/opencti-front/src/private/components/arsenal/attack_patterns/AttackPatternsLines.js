@@ -8,7 +8,6 @@ import {
   pathOr,
   sortBy,
   toLower,
-  prop,
   filter,
   join,
   assoc,
@@ -30,7 +29,7 @@ class AttackPatternsLinesComponent extends Component {
   render() {
     const { data, keyword, classes } = this.props;
     const sortByXMitreIdCaseInsensitive = sortBy(
-      compose(toLower, prop('x_mitre_id')),
+      compose(toLower, propOr('', 'x_mitre_id')),
     );
     const filterSubattackPattern = (n) => n.isSubAttackPattern === false;
     const filterByKeyword = (n) => keyword === ''

@@ -1368,7 +1368,6 @@ enum StixCoreObjectsOrdering {
   created_at
   updated_at
   published
-  object_status
   valid_from
   valid_to
   indicator_pattern
@@ -1462,7 +1461,6 @@ enum StixDomainObjectsOrdering {
   created_at
   updated_at
   published
-  object_status
   valid_from
   valid_until
   indicator_pattern

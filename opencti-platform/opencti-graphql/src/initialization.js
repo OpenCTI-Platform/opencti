@@ -303,7 +303,7 @@ export const createBasicRolesAndCapabilities = async () => {
     capabilities: [BYPASS],
   });
   await addRole(SYSTEM_USER, {
-    name: 'Connectors',
+    name: 'Connector',
     description: 'Connector role that has the recommended capabilities',
     capabilities: [
       'KNOWLEDGE_KNUPDATE_KNDELETE',
