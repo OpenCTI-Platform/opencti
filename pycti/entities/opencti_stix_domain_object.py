@@ -1219,7 +1219,6 @@ class StixDomainObject:
                                     description
                                     report_class
                                     published
-                                    object_status
                                     source_confidence_level
                                     graph_data
                                     created

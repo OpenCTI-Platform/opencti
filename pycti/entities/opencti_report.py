@@ -98,7 +98,6 @@ class Report:
             description
             report_types
             published
-            x_opencti_graph_data
             objects {
                 edges {
                     node {
