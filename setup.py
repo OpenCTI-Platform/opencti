@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # coding: utf-8
 import os
+import pathlib
 import sys
 
 from setuptools import setup
@@ -8,8 +9,12 @@ from setuptools.command.install import install
 
 VERSION = "5.0.0"
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+HERE = pathlib.Path(__file__).parent
+README = (HERE / "README.md").read_text()
+
+# Get requirements from files
+requirements = (HERE / "requirements.txt").read_text().split("\n")
+requirements_test = (HERE / "test-requirements.txt").read_text().split("\n")
 
 
 class VerifyVersionCommand(install):
@@ -29,7 +34,7 @@ setup(
     version=VERSION,
     python_requires=">=3.7",
     description="Python API client for OpenCTI.",
-    long_description=long_description,
+    long_description=README,
     long_description_content_type="text/markdown",
     author="OpenCTI",
     author_email="contact@opencti.io",
@@ -51,21 +56,10 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     include_package_data=True,
-    install_requires=[
-        "requests==2.25.1",
-        "PyYAML==5.4.1",
-        "python-dateutil==2.8.1",
-        "datefinder==0.7.1",
-        "stix2==2.1.0",
-        "pytz==2021.1",
-        "pika==1.2.0",
-        "sseclient==0.0.27",
-        "python-magic==0.4.22;sys.platform=='linux' or sys.platform=='darwin'",
-        "python-magic-bin==0.4.14;sys.platform=='win32'",
-    ],
+    install_requires=requirements,
     cmdclass={"verify": VerifyVersionCommand},
     extras_require={
-        "dev": ["black", "wheel", "pytest", "pytest-cov", "pre-commit"],
+        "dev": requirements_test + requirements,
         "doc": ["autoapi", "sphinx_rtd_theme", "sphinx-autodoc-typehints"],
     },  # Optional
 )
