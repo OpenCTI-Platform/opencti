@@ -20,6 +20,7 @@ import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { upload } from '../database/minio';
 import { uploadJobImport } from './file';
+import { askEnrich } from './enrichment';
 
 export const findById = (user, externalReferenceId) => {
   return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
@@ -29,8 +30,27 @@ export const findAll = (user, args) => {
   return listEntities(user, [ENTITY_TYPE_EXTERNAL_REFERENCE], args);
 };
 
+export const externalReferenceAskEnrichment = async (user, externalReferenceId, connectorId) => {
+  const connector = await loadById(user, connectorId, ENTITY_TYPE_CONNECTOR);
+  const work = await createWork(user, connector, 'Manual enrichment', externalReferenceId);
+  const message = {
+    internal: {
+      work_id: work.id, // Related action for history
+      applicant_id: user.id, // User asking for the import
+    },
+    event: {
+      entity_id: externalReferenceId,
+    },
+  };
+  await pushToConnector(connector, message);
+  return work;
+};
+
 export const addExternalReference = async (user, externalReference) => {
   const created = await createEntity(user, externalReference, ENTITY_TYPE_EXTERNAL_REFERENCE);
+  if (!created.i_upserted) {
+    await askEnrich(user, created.id, ENTITY_TYPE_EXTERNAL_REFERENCE);
+  }
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].ADDED_TOPIC, created, user);
 };
 
@@ -91,22 +111,6 @@ export const externalReferenceEditContext = async (user, externalReferenceId, in
   return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) =>
     notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user)
   );
-};
-
-export const externalReferenceAskEnrichment = async (user, externalReferenceId, connectorId) => {
-  const connector = await loadById(user, connectorId, ENTITY_TYPE_CONNECTOR);
-  const work = await createWork(user, connector, 'Manual enrichment', externalReferenceId);
-  const message = {
-    internal: {
-      work_id: work.id, // Related action for history
-      applicant_id: user.id, // User asking for the import
-    },
-    event: {
-      entity_id: externalReferenceId,
-    },
-  };
-  await pushToConnector(connector, message);
-  return work;
 };
 
 export const externalReferenceImportPush = async (user, entityId, file) => {

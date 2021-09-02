@@ -44,6 +44,42 @@ const externalReferenceLinesMutationRelationAdd = graphql`
             url
             hash
             external_id
+            jobs(first: 100) {
+              id
+              timestamp
+              connector {
+                id
+                name
+              }
+              messages {
+                timestamp
+                message
+              }
+              errors {
+                timestamp
+                message
+              }
+              status
+            }
+            connectors(onlyAlive: false) {
+              id
+              connector_type
+              name
+              active
+              updated_at
+            }
+            importFiles(first: 1000) {
+              edges {
+                node {
+                  id
+                  lastModified
+                  ...FileLine_file
+                  metaData {
+                    mimetype
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -250,6 +286,13 @@ const AddExternalReferencesLines = createPaginationContainer(
               description
               url
               external_id
+              connectors(onlyAlive: false) {
+                id
+                connector_type
+                name
+                active
+                updated_at
+              }
               importFiles(first: 1000) {
                 edges {
                   node {
