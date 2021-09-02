@@ -21,7 +21,7 @@ RUN yarn run webpack --mode production
 FROM base AS app
 
 RUN set -ex; \
-    apk add --no-cache tini~=0.19 gcc~=10.3 musl-dev~=1.2 python3~=3.9 python3-dev~=3.9; \
+    apk add --no-cache git tini~=0.19 gcc~=10.3 musl-dev~=1.2 python3~=3.9 python3-dev~=3.9; \
     python3 -m ensurepip; \
     rm -rv /usr/lib/python*/ensurepip; \
     pip3 install --no-cache-dir --upgrade pip setuptools wheel; \
