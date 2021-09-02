@@ -1,14 +1,9 @@
-requests==2.25.1
-PyYAML==5.4.1
-setuptools==56.0.0
-python-dateutil==2.8.1
-datefinder==0.7.1
-stix2==2.1.0
-pytz==2021.1
-pika==1.2.0
-sseclient==0.0.27
-black==20.8b1
-python-magic==0.4.22; sys_platform == 'linux' or sys_platform == 'darwin'
-python-magic-bin==0.4.14; sys_platform == 'win32'
-pytest_randomly==3.8.0
-pytest-cases==3.6.3
+requests~=2.26
+PyYAML~=5.4
+setuptools~=56.0
+datefinder~=0.7
+stix2~=2.1
+pika~=1.2
+sseclient~=0.0.27
+python-magic~=0.4; sys_platform == 'linux' or sys_platform == 'darwin'
+python-magic-bin~=0.4; sys_platform == 'win32'
