@@ -603,7 +603,7 @@ class StixDomainObject:
         else:
             self.opencti.log(
                 "error",
-                "[opencti_stix_domain_object] Missing parameters: id and key and value",
+                "[opencti_stix_domain_object] Missing parameters: id and input",
             )
             return None
 
