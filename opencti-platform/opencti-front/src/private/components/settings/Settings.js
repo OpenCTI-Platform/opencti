@@ -185,6 +185,9 @@ class Settings extends Component {
         finalValue = `#${finalValue}`;
       }
       finalValue = finalValue.substring(0, 7);
+      if (finalValue.length < 7) {
+        finalValue = '#000000';
+      }
     }
     settingsValidation(this.props.t)
       .validateAt(name, { [name]: finalValue })

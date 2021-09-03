@@ -233,24 +233,6 @@ const createApp = async (apolloServer) => {
     })(req, res, next);
   });
 
-  // post fallback
-  app.post('/', (req, res, next) => {
-    passport.initialize({});
-    const provider = 'saml';
-    const { referer } = req.session;
-    passport.authenticate(provider, {}, async (err, user) => {
-      if (err || !user) {
-        logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
-        setCookieError(res, err?.message);
-        return res.redirect(referer);
-      }
-      // noinspection UnnecessaryLocalVariableJS
-      await authenticateUser(req, user, provider);
-      req.session.referer = null;
-      return res.redirect(referer);
-    })(req, res, next);
-  });
-
   // Other routes - Render index.html
   app.get('*', (req, res) => {
     const data = readFileSync(`${__dirname}/../../public/index.html`, 'utf8');
