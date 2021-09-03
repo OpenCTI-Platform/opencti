@@ -16,5 +16,5 @@ intrusion_set = opencti_api_client.intrusion_set.read(
 
 # Update the description
 opencti_api_client.stix_domain_object.update_field(
-    id=intrusion_set["id"], key="description", value="This is APT28!"
+    id=intrusion_set["id"], input={"key": "description", "value": "This is APT28!"}
 )
