@@ -9,7 +9,8 @@ assignees: ''
 
 ## Prerequisites
 
-- [ ] I did search through old GitHub issues and nothing comparable was found
+- [ ] I read the OpenCTI documentation and didn't find anything relevant to my problem
+- [ ] I went through old GitHub issues and couldn't find anything relevant
 
 ## Use case
 
