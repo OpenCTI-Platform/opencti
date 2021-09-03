@@ -1060,10 +1060,10 @@
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.3.tgz#90420f9f9c6d3987f176a19a7d8e764271a2f55d"
   integrity sha512-Fxt+AfXgjMoin2maPIYzFZnQjAXjAL0PHscM5pRTtatFqB+vZxAM9tLp2Optnuw3QOQC40jTNeGYFOMvyf7v9g==
 
-"@elastic/elasticsearch@7.13.0":
-  version "7.13.0"
-  resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-7.13.0.tgz#6dcf511dfa91187e22c81e54f41f4bd0fd96b4d6"
-  integrity sha512-WgwLWo2p9P2tdqzBGX9fHeG8p5IOTXprXNTECQG2mJ7z9n93N5AFBJpEw4d35tWWeCWi9jI13A2wzQZH7XZ/xw==
+"@elastic/elasticsearch@7.14.0":
+  version "7.14.0"
+  resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-7.14.0.tgz#250d939c2dee41f92282ca8916b0eb11bca61094"
+  integrity sha512-BlxqykcNtdBxo0mF7UQ1OsUxoVOOnEaeF70u2N4jpePih9paCOOotTWfFSDrtEw0TWv1CZlzCGD3TD5+8ASx8A==
   dependencies:
     debug "^4.3.1"
     hpagent "^0.1.1"
