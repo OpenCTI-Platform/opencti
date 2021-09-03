@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import StixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
-import StixCoreRelationshipsDonut from '../../common/stix_core_relationships/StixCoreRelationshipsDonut';
-import StixCoreRelationshipsAreaChart from '../../common/stix_core_relationships/StixCoreRelationshipsAreaChart';
-import StixCoreRelationshipsVerticalBars from '../../common/stix_core_relationships/StixCoreRelationshipsVerticalBars';
-import StixCoreRelationshipsList from '../../common/stix_core_relationships/StixCoreRelationshipsList';
+import IndicatorsHorizontalBars from '../../observations/indicators/IndicatorsHorizontalBars';
+import IndicatorsDonut from '../../observations/indicators/IndicatorsDonut';
+import IndicatorsVerticalBars from '../../observations/indicators/IndicatorsVerticalBars';
+import IndicatorsAreaChart from '../../observations/indicators/IndicatorsAreaChart';
+import IndicatorsList from '../../observations/indicators/IndicatorsList';
 
 const styles = () => ({
   container: {
@@ -15,19 +15,17 @@ const styles = () => ({
   },
 });
 
-class GlobalActivityVulnerabilities extends Component {
+class GlobalActivityIndicators extends Component {
   render() {
     const {
-      t, widget, startDate, endDate,
+      t, widget, startDate, endDate, field,
     } = this.props;
     switch (widget.visualizationType) {
       case 'horizontal-bar':
         return (
-          <StixCoreRelationshipsHorizontalBars
-            title={`${t('Activity')} - ${t('Vulnerabilities')}`}
-            relationshipType="stix-core-relationship"
-            toTypes={['Vulnerability']}
-            field="internal_id"
+          <IndicatorsHorizontalBars
+            title={`${t('Activity')} - ${t('Indicators')} (${field})`}
+            field={field || 'pattern_type'}
             startDate={startDate}
             endDate={endDate}
             dateAttribute="created_at"
@@ -36,11 +34,9 @@ class GlobalActivityVulnerabilities extends Component {
         );
       case 'donut':
         return (
-          <StixCoreRelationshipsDonut
-            title={`${t('Activity')} - ${t('Vulnerability')}`}
-            relationshipType="stix-core-relationship"
-            toTypes={['Vulnerability']}
-            field="internal_id"
+          <IndicatorsDonut
+            title={`${t('Activity')} - ${t('Indicators')} (${field})`}
+            field={field || 'pattern_type'}
             startDate={startDate}
             endDate={endDate}
             dateAttribute="created_at"
@@ -49,10 +45,8 @@ class GlobalActivityVulnerabilities extends Component {
         );
       case 'area':
         return (
-          <StixCoreRelationshipsAreaChart
-            title={`${t('Activity')} - ${t('Intrusion Sets')}`}
-            relationshipType="stix-core-relationship"
-            toTypes={['Vulnerability']}
+          <IndicatorsAreaChart
+            title={`${t('Activity')} - ${t('Indicators')} (${field})`}
             startDate={startDate}
             endDate={endDate}
             dateAttribute="created_at"
@@ -61,10 +55,8 @@ class GlobalActivityVulnerabilities extends Component {
         );
       case 'vertical-bar':
         return (
-          <StixCoreRelationshipsVerticalBars
-            title={`${t('Activity')} - ${t('Vulnerabilities')}`}
-            relationshipType="stix-core-relationship"
-            toTypes={['Vulnerability']}
+          <IndicatorsVerticalBars
+            title={`${t('Activity')} - ${t('Indicators')} (${field})`}
             startDate={startDate}
             endDate={endDate}
             dateAttribute="created_at"
@@ -73,10 +65,9 @@ class GlobalActivityVulnerabilities extends Component {
         );
       case 'list':
         return (
-          <StixCoreRelationshipsList
-            title={`${t('Activity')} - ${t('Vulnerabilities')}`}
-            relationshipType="stix-core-relationship"
-            toTypes={['Vulnerability']}
+          <IndicatorsList
+            title={`${t('Activity')} - ${t('Indicators')} (${field})`}
+            field={field || 'pattern_type'}
             startDate={startDate}
             endDate={endDate}
             dateAttribute="created_at"
@@ -101,15 +92,16 @@ class GlobalActivityVulnerabilities extends Component {
   }
 }
 
-GlobalActivityVulnerabilities.propTypes = {
+GlobalActivityIndicators.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   widget: PropTypes.object,
   classes: PropTypes.object,
+  field: PropTypes.string,
   t: PropTypes.func,
 };
 
 export default R.compose(
   inject18n,
   withStyles(styles),
-)(GlobalActivityVulnerabilities);
+)(GlobalActivityIndicators);

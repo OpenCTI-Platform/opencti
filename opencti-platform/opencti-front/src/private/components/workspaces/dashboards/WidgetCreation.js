@@ -93,6 +93,8 @@ const visualizationTypesMapping = {
   campaigns: [AREA, TIMELINE, VERTICAL_BAR, LIST],
   incidents: [AREA, TIMELINE, VERTICAL_BAR, LIST],
   indicators: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA, LIST],
+  indicators_lifecycle: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA, LIST],
+  indicators_detection: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA, LIST],
   reports: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA, LIST],
 };
 
@@ -399,6 +401,68 @@ class WidgetCreation extends Component {
                 <br />
                 <Typography variant="body1">
                   {t('Number of reports')}
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+        <Grid item={true} xs="4">
+          <Card elevation={3} className={classes.card2}>
+            <CardActionArea
+              onClick={this.handleSelectDataType.bind(this, 'indicators')}
+              style={{ height: '100%' }}
+            >
+              <CardContent>
+                <Typography gutterBottom variant="h1" style={{ fontSize: 16 }}>
+                  {t('Activity - Indicators')}
+                </Typography>
+                <br />
+                <Typography variant="body1">
+                  {t('Number of indicators')}
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+        <Grid item={true} xs="4">
+          <Card elevation={3} className={classes.card2}>
+            <CardActionArea
+              onClick={this.handleSelectDataType.bind(
+                this,
+                'indicators_lifecycle',
+              )}
+              style={{ height: '100%' }}
+            >
+              <CardContent>
+                <Typography gutterBottom variant="h1" style={{ fontSize: 16 }}>
+                  {t('Activity - Indicators lifecycle')}
+                </Typography>
+                <br />
+                <Typography variant="body1">
+                  {t('Number of revoked indicators')}
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+        <Grid item={true} xs="4">
+          <Card elevation={3} className={classes.card2}>
+            <CardActionArea
+              onClick={this.handleSelectDataType.bind(
+                this,
+                'indicators_detection',
+              )}
+              style={{ height: '100%' }}
+            >
+              <CardContent>
+                <Typography gutterBottom variant="h1" style={{ fontSize: 16 }}>
+                  {t('Activity - Indicators detection')}
+                </Typography>
+                <br />
+                <Typography variant="body1">
+                  {t(
+                    'Number of indicators with detection',
+                  )}
                 </Typography>
               </CardContent>
             </CardActionArea>

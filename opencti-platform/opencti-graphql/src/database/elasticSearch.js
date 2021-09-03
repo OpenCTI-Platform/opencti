@@ -41,6 +41,7 @@ import {
   RULE_PREFIX,
 } from '../schema/general';
 import {
+  booleanAttributes,
   dateAttributes,
   isBooleanAttribute,
   isMultipleAttribute,
@@ -195,7 +196,8 @@ export const elIndexExists = async (indexName) => {
 };
 const elCreateIndexTemplate = async () => {
   // eslint-disable-next-line prettier/prettier
-  await el.cluster.putComponentTemplate({
+  await el.cluster
+    .putComponentTemplate({
       name: 'opencti-core-settings',
       create: false,
       body: {
@@ -222,7 +224,8 @@ const elCreateIndexTemplate = async () => {
       throw DatabaseError('Error creating opencti component', { error: e });
     });
   // eslint-disable-next-line prettier/prettier
-  await el.indices.putIndexTemplate({
+  await el.indices
+    .putIndexTemplate({
       name: 'opencti-index-template',
       create: false,
       body: {
@@ -563,7 +566,12 @@ export const elAggregationCount = (user, type, aggregationField, start, end, fil
     });
   }
   const histoFilters = R.map((f) => {
-    const key = f.isRelation ? buildRefRelationSearchKey(f.type || '*') : `${f.type}.keyword`;
+    let key = `${f.type}.keyword`;
+    if (f.isRelation) {
+      key = buildRefRelationSearchKey(f.type || '*');
+    } else if (booleanAttributes.includes(f.type)) {
+      key = f.type;
+    }
     return {
       multi_match: {
         fields: [key],
@@ -593,7 +601,7 @@ export const elAggregationCount = (user, type, aggregationField, start, end, fil
       aggs: {
         genres: {
           terms: {
-            field: `${aggregationField}.keyword`,
+            field: booleanAttributes.includes(aggregationField) ? aggregationField : `${aggregationField}.keyword`,
             size: MAX_AGGREGATION_SIZE,
           },
         },
@@ -605,7 +613,15 @@ export const elAggregationCount = (user, type, aggregationField, start, end, fil
     .search(query)
     .then((data) => {
       const { buckets } = data.body.aggregations.genres;
-      return R.map((b) => ({ label: isIdFields ? b.key : pascalize(b.key), value: b.doc_count }), buckets);
+      return R.map((b) => {
+        let label = b.key;
+        if (typeof label === 'number') {
+          label = b.key_as_string;
+        } else if (!isIdFields) {
+          label = pascalize(b.key);
+        }
+        return { label, value: b.doc_count };
+      }, buckets);
     })
     .catch((err) => {
       throw DatabaseError('Aggregation fail', { error: err, query });

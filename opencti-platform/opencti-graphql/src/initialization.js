@@ -315,6 +315,7 @@ export const createBasicRolesAndCapabilities = async () => {
       'MODULES_MODMANAGE',
       'STREAMAPI',
       'SETTINGS_SETMARKINGS',
+      'SETTINGS_SETLABELS',
     ],
   });
 };
