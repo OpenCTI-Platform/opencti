@@ -17,7 +17,7 @@ import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, logApp, logAudit } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
-import { downloadFile, getFileContent, loadFile } from "../database/minio";
+import { downloadFile, getFileContent, loadFile } from '../database/minio';
 import { checkSystemDependencies } from '../initialization';
 import { getSettings } from '../domain/settings';
 import createSeeMiddleware from '../graphql/sseMiddleware';
@@ -218,24 +218,37 @@ const createApp = async (apolloServer) => {
   // -- Passport callback
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
   app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), (req, res, next) => {
-    try {
-      const { provider } = req.params;
-      const { referer } = req.session;
-      passport.authenticate(provider, {}, async (err, user) => {
-        if (err || !user) {
-          logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
-          setCookieError(res, err?.message);
-          return res.redirect(referer);
-        }
-        // noinspection UnnecessaryLocalVariableJS
-        await authenticateUser(req, user, provider);
-        req.session.referer = null;
+    const { provider } = req.params;
+    const { referer } = req.session;
+    passport.authenticate(provider, {}, async (err, user) => {
+      if (err || !user) {
+        logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
+        setCookieError(res, err?.message);
         return res.redirect(referer);
-      })(req, res, next);
-    } catch (e) {
-      setCookieError(res, e?.message);
-      next(e);
-    }
+      }
+      // noinspection UnnecessaryLocalVariableJS
+      await authenticateUser(req, user, provider);
+      req.session.referer = null;
+      return res.redirect(referer);
+    })(req, res, next);
+  });
+
+  // post fallback
+  app.post('/', (req, res, next) => {
+    passport.initialize({});
+    const provider = 'saml';
+    const { referer } = req.session;
+    passport.authenticate(provider, {}, async (err, user) => {
+      if (err || !user) {
+        logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
+        setCookieError(res, err?.message);
+        return res.redirect(referer);
+      }
+      // noinspection UnnecessaryLocalVariableJS
+      await authenticateUser(req, user, provider);
+      req.session.referer = null;
+      return res.redirect(referer);
+    })(req, res, next);
   });
 
   // Other routes - Render index.html
