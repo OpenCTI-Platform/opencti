@@ -9,7 +9,7 @@ const smtpOptions = {
   port: conf.get('smtp:port'),
   secure: USE_SSL,
   tls: {
-    rejectUnauthorized: conf.get('smtp:rejectUnauthorized'),
+    rejectUnauthorized: conf.get('smtp:reject_unauthorized'),
   },
 };
 

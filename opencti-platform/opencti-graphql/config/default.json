@@ -105,7 +105,7 @@
   "smtp": {
     "hostname": "localhost",
     "use_ssl": false,
-    "rejectUnauthorized": false,
+    "reject_unauthorized": false,
     "port": 25,
     "username": "",
     "password": "",
