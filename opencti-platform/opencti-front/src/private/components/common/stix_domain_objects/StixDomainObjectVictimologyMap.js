@@ -21,7 +21,7 @@ const stixDomainObjectVictimologyMapQuery = graphql`
   query StixDomainObjectVictimologyMapQuery(
     $fromId: String
     $toTypes: [String]
-    $relationship_type: String
+    $relationship_type: [String]
     $first: Int
     $startDate: DateTime
     $endDate: DateTime

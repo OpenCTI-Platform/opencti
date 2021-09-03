@@ -102,6 +102,7 @@ export const schemaTypes = {
 };
 
 export const refsExtractor = (data) => {
+  // TODO Add STIX Cyber Observable relationships
   return [
     ...(data.object_marking_refs || []),
     ...(data.object_refs || []),

@@ -17,6 +17,7 @@ import { isStixCoreRelationship } from './stixCoreRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isStixMetaObject } from './stixMetaObject';
 import { isStixDomainObject } from './stixDomainObject';
+import { STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS } from './stixCyberObservableRelationship';
 
 const multipleAttributes = [
   IDS_STIX,
@@ -57,6 +58,8 @@ const multipleAttributes = [
   INPUT_LABELS,
   INPUT_EXTERNAL_REFS,
   INPUT_KILLCHAIN,
+  // stix cyber observable
+  ...STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
 ];
 export const statsDateAttributes = [
   'created_at',

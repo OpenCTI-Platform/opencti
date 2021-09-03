@@ -23,15 +23,14 @@ import { DatabaseError, FunctionalError, UnsupportedError } from '../config/erro
 import { now } from '../utils/format';
 import RedisStore from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
-import {
-  isStixMetaRelationship,
-  RELATION_CREATED_BY,
-  RELATION_OBJECT_MARKING,
-  STIX_META_RELATION_TO_OPENCTI_INPUT,
-} from '../schema/stixMetaRelationship';
-import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
+import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { getInstanceIdentifiers, getInstanceIds } from '../schema/identifier';
 import { BASE_TYPE_RELATION } from '../schema/general';
+import {
+  isSingleStixEmbeddedRelationship,
+  isStixEmbeddedRelationship,
+  STIX_EMBEDDED_RELATION_TO_OPENCTI_INPUT,
+} from '../schema/stixEmbeddedRelationship';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path) => readFileSync(path));
@@ -317,7 +316,10 @@ export const cacheGet = async (id) => {
     const result = {};
     if (ids.length > 0) {
       // eslint-disable-next-line prettier/prettier
-      const keyValues = await clientCache.cacheGet(ids.length, ids.map((i) => `cache:${i}`));
+      const keyValues = await clientCache.cacheGet(
+        ids.length,
+        ids.map((i) => `cache:${i}`)
+      );
       for (let index = 0; index < ids.length; index += 1) {
         const val = keyValues[index];
         result[ids[index]] = val ? JSON.parse(val) : val;
@@ -505,7 +507,7 @@ export const buildCreateEvent = async (user, instance, input, loaders, opts = {}
   const { withoutMessage = false } = opts;
   const { stixLoadById, connectionLoaders } = loaders;
   // If internal relation, publish an update instead of a creation
-  if (isStixCyberObservableRelationship(instance.entity_type) || isStixMetaRelationship(instance.entity_type)) {
+  if (isStixEmbeddedRelationship(instance.entity_type)) {
     const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
     let publishedInstance;
     if (mustRepublished) {
@@ -516,8 +518,8 @@ export const buildCreateEvent = async (user, instance, input, loaders, opts = {}
     } else {
       publishedInstance = getInstanceIdentifiers(instance.from);
     }
-    const key = STIX_META_RELATION_TO_OPENCTI_INPUT[instance.entity_type];
-    if (instance.entity_type === RELATION_CREATED_BY) {
+    const key = STIX_EMBEDDED_RELATION_TO_OPENCTI_INPUT[instance.entity_type];
+    if (isSingleStixEmbeddedRelationship(instance.entity_type)) {
       // eslint-disable-next-line prettier/prettier
       const inputVal = { key, value: [instance.to], previous: null };
       const patch = updateInputsToPatch([inputVal]);
@@ -560,7 +562,7 @@ export const buildDeleteEvent = async (user, instance, dependencyDeletions, load
   const { withoutMessage = false } = opts;
   const { stixLoadById, connectionLoaders } = loaders;
   // If internal relation, publish an update instead of a creation
-  if (isStixCyberObservableRelationship(instance.entity_type) || isStixMetaRelationship(instance.entity_type)) {
+  if (isStixEmbeddedRelationship(instance.entity_type)) {
     const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
     let publishedInstance;
     if (mustRepublished) {
@@ -571,8 +573,9 @@ export const buildDeleteEvent = async (user, instance, dependencyDeletions, load
     } else {
       publishedInstance = getInstanceIdentifiers(instance.from);
     }
-    const key = STIX_META_RELATION_TO_OPENCTI_INPUT[instance.entity_type];
-    if (instance.entity_type === RELATION_CREATED_BY) {
+
+    const key = STIX_EMBEDDED_RELATION_TO_OPENCTI_INPUT[instance.entity_type];
+    if (isSingleStixEmbeddedRelationship(instance.entity_type)) {
       const inputVal = { key, value: null, previous: [instance.to] };
       const patch = updateInputsToPatch([inputVal]);
       return buildUpdateEvent(user, publishedInstance, patch, opts);

@@ -222,7 +222,7 @@ const investigationGraphStixCoreRelationshipQuery = graphql`
 const investigationGraphStixRelationshipsQuery = graphql`
   query InvestigationGraphStixRelationshipsQuery(
     $elementId: String!
-    $relationship_type: String
+    $relationship_type: [String]
     $elementWithTargetTypes: [String]
     $count: Int
   ) {

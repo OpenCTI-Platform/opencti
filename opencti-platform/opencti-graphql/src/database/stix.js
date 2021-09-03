@@ -33,7 +33,7 @@ import {
   ENTITY_URL,
   isStixCyberObservable,
 } from '../schema/stixCyberObservable';
-import { isStixInternalMetaRelationship, RELATION_CREATED_BY } from '../schema/stixMetaRelationship';
+import { isStixInternalMetaRelationship } from '../schema/stixMetaRelationship';
 import {
   isStixCoreRelationship,
   RELATION_ATTRIBUTED_TO,
@@ -60,7 +60,11 @@ import {
   RELATION_USES,
 } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { RELATION_LINKED } from '../schema/stixCyberObservableRelationship';
+import {
+  RELATION_LINKED,
+  STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE,
+  STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
+} from '../schema/stixCyberObservableRelationship';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   INPUT_CREATED_BY,
@@ -76,6 +80,11 @@ import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_REPLACE } from './utils
 import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isMultipleAttribute } from '../schema/fieldDataAdapter';
+import {
+  isSingleStixEmbeddedRelationship,
+  isSingleStixEmbeddedRelationshipInput,
+} from '../schema/stixEmbeddedRelationship';
+import { observableValue } from "../utils/format";
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -272,6 +281,49 @@ export const stixDataConverter = (data, args = {}) => {
     finalData = R.dissoc(INPUT_EXTERNAL_REFS, finalData);
   }
   // endregion
+  // region cyber observable relationship
+  // eslint-disable-next-line no-restricted-syntax
+  for (const stixCyberObservableRelationshipInput of STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS) {
+    if (isDefinedValue(finalData[stixCyberObservableRelationshipInput])) {
+      const stixKey = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[stixCyberObservableRelationshipInput];
+      if (isSingleStixEmbeddedRelationshipInput(stixCyberObservableRelationshipInput)) {
+        const stixCyberObservable = Array.isArray(finalData[stixCyberObservableRelationshipInput])
+          ? R.head(finalData[stixCyberObservableRelationshipInput])
+          : finalData[stixCyberObservableRelationshipInput];
+        const stixCyberObservableRef = patchGeneration
+          ? [
+              {
+                value: stixCyberObservable.standard_id,
+                reference: observableValue(stixCyberObservable),
+                x_opencti_internal_id: stixCyberObservable.internal_id,
+              },
+            ]
+          : stixCyberObservable.standard_id;
+        finalData = R.pipe(
+          R.dissoc(stixCyberObservableRelationshipInput),
+          R.assoc(stixKey, stixCyberObservableRef)
+        )(finalData);
+      } else {
+        const stixCyberObservable = Array.isArray(finalData[stixCyberObservableRelationshipInput])
+          ? finalData[stixCyberObservableRelationshipInput]
+          : [finalData[stixCyberObservableRelationshipInput]];
+        const stixCyberObservables = R.map(
+          (m) =>
+            patchGeneration
+              ? { value: m.standard_id, reference: observableValue(m), x_opencti_internal_id: m.internal_id }
+              : m.standard_id,
+          stixCyberObservable
+        );
+        finalData = R.pipe(
+          R.dissoc(stixCyberObservableRelationshipInput),
+          R.assoc(stixKey, stixCyberObservables)
+        )(finalData);
+      }
+    } else {
+      finalData = R.dissoc(stixCyberObservableRelationshipInput, finalData);
+    }
+  }
+  // endregion
   // region StixID V1 are transient and so not in data output
   if (isDefinedValue(finalData.x_opencti_stix_ids)) {
     finalData.x_opencti_stix_ids = finalData.x_opencti_stix_ids.filter((stixId) => {
@@ -385,8 +437,8 @@ export const convertStixMetaRelationshipToStix = (data) => {
     finalData = R.assoc(entityType.replace('-', '_'), [buildStixData(data.to)], finalData);
   } else {
     finalData = R.assoc(
-      `${entityType.replace('-', '_')}_ref${entityType !== RELATION_CREATED_BY ? 's' : ''}`,
-      entityType !== RELATION_CREATED_BY ? [data.to.standard_id] : data.to.standard_id,
+      `${entityType.replace('-', '_')}_ref${!isSingleStixEmbeddedRelationship(entityType) ? 's' : ''}`,
+      !isSingleStixEmbeddedRelationship(entityType) ? [data.to.standard_id] : data.to.standard_id,
       finalData
     );
   }

@@ -166,7 +166,7 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
         fragment StixCoreRelationshipStixCoreRelationshipsLines_data on Query
         @argumentDefinitions(
           fromId: { type: "String" }
-          relationship_type: { type: "String" }
+          relationship_type: { type:"[String]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
           orderBy: {

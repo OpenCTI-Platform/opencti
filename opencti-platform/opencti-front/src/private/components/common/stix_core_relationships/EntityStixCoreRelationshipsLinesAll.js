@@ -75,8 +75,7 @@ export const entityStixCoreRelationshipsLinesAllQuery = graphql`
   query EntityStixCoreRelationshipsLinesAllPaginationQuery(
     $elementId: String
     $elementWithTargetTypes: [String]
-    $relationship_type: String
-    $relationshipTypes: [String]
+    $relationship_type: [String]
     $search: String
     $count: Int!
     $cursor: ID
@@ -88,7 +87,6 @@ export const entityStixCoreRelationshipsLinesAllQuery = graphql`
         elementId: $elementId
         elementWithTargetTypes: $elementWithTargetTypes
         relationship_type: $relationship_type
-        relationshipTypes: $relationshipTypes
         search: $search
         count: $count
         cursor: $cursor
@@ -106,8 +104,7 @@ export default createPaginationContainer(
       @argumentDefinitions(
         elementId: { type: "String" }
         elementWithTargetTypes: { type: "[String]" }
-        relationship_type: { type: "String" }
-        relationshipTypes: { type: "[String]" }
+        relationship_type: { type: "[String]" }
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
@@ -121,7 +118,6 @@ export default createPaginationContainer(
           elementId: $elementId
           elementWithTargetTypes: $elementWithTargetTypes
           relationship_type: $relationship_type
-          relationshipTypes: $relationshipTypes
           search: $search
           first: $count
           after: $cursor
@@ -158,7 +154,6 @@ export default createPaginationContainer(
         elementId: fragmentVariables.elementId,
         elementWithTargetTypes: fragmentVariables.elementWithTargetTypes,
         relationship_type: fragmentVariables.relationship_type,
-        relationshipTypes: fragmentVariables.relationshipTypes,
         search: fragmentVariables.search,
         count,
         cursor,

@@ -422,7 +422,7 @@ class EntityStixCoreRelationships extends Component {
       && relationshipTypes.length > 0
       && selectedRelationshipType === 'All'
     ) {
-      paginationOptions = pipe(assoc('relationshipTypes', relationshipTypes))(
+      paginationOptions = pipe(assoc('relationship_type', relationshipTypes))(
         paginationOptions,
       );
     }

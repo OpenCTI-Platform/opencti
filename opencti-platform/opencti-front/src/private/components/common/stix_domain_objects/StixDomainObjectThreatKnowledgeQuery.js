@@ -6,7 +6,7 @@ export const stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery = graphql
     $fromId: String
     $fromRole: String
     $toTypes: [String]
-    $relationship_type: String
+    $relationship_type: [String]
     $first: Int
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode

@@ -61,7 +61,8 @@ const STIX_INTERNAL_META_RELATIONSHIPS = [
 ];
 export const STIX_META_RELATIONSHIPS = [...STIX_EXTERNAL_META_RELATIONSHIPS, ...STIX_INTERNAL_META_RELATIONSHIPS];
 schemaTypes.register(ABSTRACT_STIX_META_RELATIONSHIP, STIX_META_RELATIONSHIPS);
-export const isStixSingleMetaRelationship = (type) => R.includes(type, [RELATION_CREATED_BY]);
+export const isSingleStixMetaRelationship = (type) => R.includes(type, [RELATION_CREATED_BY]);
+export const isSingleStixMetaRelationshipInput = (input) => R.includes(input, [INPUT_CREATED_BY]);
 
 export const isStixMetaRelationship = (type) =>
   R.includes(type, STIX_META_RELATIONSHIPS) ||

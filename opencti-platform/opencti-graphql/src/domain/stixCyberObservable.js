@@ -1,58 +1,41 @@
-import * as R from 'ramda';
-import { createHash } from 'crypto';
-import { assoc, dissoc, map, pipe, filter } from 'ramda';
-import { delEditContext, notify, setEditContext } from '../database/redis';
+import * as R from "ramda";
+import { assoc, dissoc, filter, map, pipe } from "ramda";
+import { createHash } from "crypto";
+import { delEditContext, notify, setEditContext } from "../database/redis";
 import {
+  batchListThroughGetFrom,
   createEntity,
   createRelation,
   createRelations,
   deleteElementById,
   deleteRelationsByFromAndTo,
   distributionEntities,
+  fullLoadById,
   listEntities,
+  listThroughGetFrom,
   loadById,
   timeSeriesEntities,
-  updateAttribute,
-  batchListThroughGetFrom,
-  listThroughGetFrom,
-  fullLoadById,
-} from '../database/middleware';
-import { BUS_TOPICS, logApp } from '../config/conf';
-import { elCount } from '../database/elasticSearch';
-import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
-import { workToExportFile } from './work';
-import { addIndicator } from './indicator';
-import { askEnrich } from './enrichment';
-import { FunctionalError } from '../config/errors';
-import { createStixPattern } from '../python/pythonBridge';
-import { checkObservableSyntax } from '../utils/syntax';
-import { upload } from '../database/minio';
-import {
-  ENTITY_AUTONOMOUS_SYSTEM,
-  ENTITY_DIRECTORY,
-  ENTITY_EMAIL_MESSAGE,
-  ENTITY_HASHED_OBSERVABLE_ARTIFACT,
-  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
-  ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
-  ENTITY_MUTEX,
-  ENTITY_NETWORK_TRAFFIC,
-  ENTITY_PROCESS,
-  ENTITY_SOFTWARE,
-  ENTITY_USER_ACCOUNT,
-  ENTITY_WINDOWS_REGISTRY_KEY,
-  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
-  isStixCyberObservable,
-  isStixCyberObservableHashedObservable,
-  stixCyberObservableOptions,
-} from '../schema/stixCyberObservable';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
-import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
-import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
-import { apiAttributeToComplexFormat } from '../schema/fieldDataAdapter';
-import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
-import { escape } from '../utils/format';
-import { uploadJobImport } from './file';
+  updateAttribute
+} from "../database/middleware";
+import { BUS_TOPICS, logApp } from "../config/conf";
+import { elCount } from "../database/elasticSearch";
+import { READ_INDEX_STIX_CYBER_OBSERVABLES } from "../database/utils";
+import { workToExportFile } from "./work";
+import { addIndicator } from "./indicator";
+import { askEnrich } from "./enrichment";
+import { FunctionalError } from "../config/errors";
+import { createStixPattern } from "../python/pythonBridge";
+import { checkObservableSyntax } from "../utils/syntax";
+import { upload } from "../database/minio";
+import { isStixCyberObservable, isStixCyberObservableHashedObservable, stixCyberObservableOptions } from "../schema/stixCyberObservable";
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from "../schema/general";
+import { isStixMetaRelationship, RELATION_OBJECT } from "../schema/stixMetaRelationship";
+import { RELATION_BASED_ON } from "../schema/stixCoreRelationship";
+import { ENTITY_TYPE_INDICATOR } from "../schema/stixDomainObject";
+import { apiAttributeToComplexFormat } from "../schema/fieldDataAdapter";
+import { askEntityExport, askListExport, exportTransformFilters } from "./stixCoreObject";
+import { escape, observableValue } from "../utils/format";
+import { uploadJobImport } from "./file";
 
 export const findById = (user, stixCyberObservableId) => {
   return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -90,52 +73,6 @@ export const stixCyberObservablesTimeSeries = (user, args) => {
 // region mutations
 export const batchIndicators = (user, stixCyberObservableIds) => {
   return batchListThroughGetFrom(user, stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
-};
-
-const hashes = ['SHA-256', 'SHA-1', 'MD5'];
-export const hashValue = (stixCyberObservable) => {
-  if (stixCyberObservable.hashes) {
-    for (let index = 0; index < hashes.length; index += 1) {
-      const algo = hashes[index];
-      if (stixCyberObservable.hashes[algo]) {
-        return stixCyberObservable.hashes[algo];
-      }
-    }
-  }
-  return null;
-};
-
-export const observableValue = (stixCyberObservable) => {
-  switch (stixCyberObservable.entity_type) {
-    case ENTITY_AUTONOMOUS_SYSTEM:
-      return stixCyberObservable.name || stixCyberObservable.number || 'Unknown';
-    case ENTITY_DIRECTORY:
-      return stixCyberObservable.path || 'Unknown';
-    case ENTITY_EMAIL_MESSAGE:
-      return stixCyberObservable.body || stixCyberObservable.subject;
-    case ENTITY_HASHED_OBSERVABLE_ARTIFACT:
-      return hashValue(stixCyberObservable) || stixCyberObservable.payload_bin || 'Unknown';
-    case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
-      return hashValue(stixCyberObservable) || stixCyberObservable.name || 'Unknown';
-    case ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE:
-      return hashValue(stixCyberObservable) || stixCyberObservable.subject || stixCyberObservable.issuer || 'Unknown';
-    case ENTITY_MUTEX:
-      return stixCyberObservable.name || 'Unknown';
-    case ENTITY_NETWORK_TRAFFIC:
-      return stixCyberObservable.dst_port || 'Unknown';
-    case ENTITY_PROCESS:
-      return stixCyberObservable.pid || stixCyberObservable.command_line || 'Unknown';
-    case ENTITY_SOFTWARE:
-      return stixCyberObservable.name || 'Unknown';
-    case ENTITY_USER_ACCOUNT:
-      return stixCyberObservable.account_login || stixCyberObservable.user_id || 'Unknown';
-    case ENTITY_WINDOWS_REGISTRY_KEY:
-      return stixCyberObservable.attribute_key || 'Unknown';
-    case ENTITY_WINDOWS_REGISTRY_VALUE_TYPE:
-      return stixCyberObservable.name || stixCyberObservable.data || 'Unknown';
-    default:
-      return stixCyberObservable.value || 'Unknown';
-  }
 };
 
 const createIndicatorFromObservable = async (user, input, observable) => {

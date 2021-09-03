@@ -8951,8 +8951,7 @@ type Query {
     toId: String
     toRole: String
     toTypes: [String]
-    relationship_type: String
-    relationshipTypes: [String]
+    relationship_type: [String]
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -8996,8 +8995,7 @@ type Query {
     toId: String
     toRole: String
     toTypes: [String]
-    relationship_type: String
-    relationshipTypes: [String]
+    relationship_type: [String]
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -9031,8 +9029,7 @@ type Query {
     toId: String
     toRole: String
     toTypes: [String]
-    relationship_type: String
-    relationshipTypes: [String]
+    relationship_type: [String]
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime

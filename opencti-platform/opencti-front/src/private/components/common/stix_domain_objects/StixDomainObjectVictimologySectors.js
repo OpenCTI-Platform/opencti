@@ -561,7 +561,7 @@ export const stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery = grap
   query StixDomainObjectVictimologySectorsStixCoreRelationshipsQuery(
     $fromId: String
     $toTypes: [String]
-    $relationship_type: String
+    $relationship_type: [String]
     $first: Int
   ) {
     ...StixDomainObjectVictimologySectors_data

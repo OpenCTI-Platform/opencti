@@ -118,7 +118,7 @@ export default createPaginationContainer(
         toId: { type: "String" }
         fromTypes: { type: "[String]" }
         toTypes: { type: "[String]" }
-        relationship_type: { type: "String" }
+        relationship_type: { type: "[String]" }
         startTimeStart: { type: "DateTime" }
         startTimeStop: { type: "DateTime" }
         stopTimeStart: { type: "DateTime" }

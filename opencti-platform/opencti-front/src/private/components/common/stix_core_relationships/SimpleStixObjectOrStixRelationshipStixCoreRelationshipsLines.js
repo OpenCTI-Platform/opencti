@@ -102,7 +102,7 @@ SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesContainer.propTypes 
 export const simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery = graphql`
   query SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery(
     $elementId: String!
-    $relationship_type: String
+    $relationship_type: [String]
     $startTimeStart: DateTime
     $startTimeStop: DateTime
     $stopTimeStart: DateTime
@@ -137,7 +137,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = createPagin
         fragment SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data on Query
         @argumentDefinitions(
           elementId: { type: "String!" }
-          relationship_type: { type: "String" }
+          relationship_type: { type: "[String]" }
           startTimeStart: { type: "DateTime" }
           startTimeStop: { type: "DateTime" }
           stopTimeStart: { type: "DateTime" }
