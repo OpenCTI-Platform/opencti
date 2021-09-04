@@ -717,7 +717,9 @@ class InvestigationGraphBar extends Component {
                       component={Link}
                       target="_blank"
                       to={viewLink}
-                      disabled={!viewEnabled}
+                      disabled={
+                        (viewLink && viewLink.includes('null')) || !viewEnabled
+                      }
                     >
                       <InfoOutlined />
                     </IconButton>

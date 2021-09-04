@@ -32,7 +32,7 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { complexAttributeToApiFormat } from '../schema/fieldDataAdapter';
 import { stixCyberObservableOptions } from '../schema/stixCyberObservable';
 import { batchLoader, convertDataToRawStix } from '../database/middleware';
-import { observableValue } from "../utils/format";
+import { observableValue } from '../utils/format';
 
 const indicatorsLoader = batchLoader(batchIndicators);
 
