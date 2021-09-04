@@ -69,9 +69,9 @@ export const saveViewParameters = (
     window.history.replaceState(
       null,
       '',
-      `{${APP_BASE_PATH ? `${APP_BASE_PATH}/` : ''}${
-        location.pathname
-      }?${new URLSearchParams(urlParams).toString()}`,
+      `{${
+        APP_BASE_PATH && APP_BASE_PATH.length > 0 ? `${APP_BASE_PATH}/` : ''
+      }${location.pathname}?${new URLSearchParams(urlParams).toString()}`,
     );
   }
   return params;

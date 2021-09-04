@@ -287,7 +287,7 @@ class UserHistoryLineComponent extends Component {
           <DialogTitle>{t('Commit message')}</DialogTitle>
           <DialogContent>
             <Markdown remarkPlugins={[remarkGfm]} className="markdown">
-              {node.context_data.commit}
+              {node.context_data?.commit}
             </Markdown>
           </DialogContent>
           <DialogActions>
