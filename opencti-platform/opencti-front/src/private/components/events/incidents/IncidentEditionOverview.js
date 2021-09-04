@@ -172,7 +172,7 @@ class IncidentEditionOverviewComponent extends Component {
           mutation: incidentMutationFieldPatch,
           variables: {
             id: this.props.incident.id,
-            input: { key: name, value: finalValue },
+            input: { key: name, value: finalValue || '' },
           },
         });
       })
@@ -185,7 +185,7 @@ class IncidentEditionOverviewComponent extends Component {
         mutation: incidentMutationFieldPatch,
         variables: {
           id: this.props.incident.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

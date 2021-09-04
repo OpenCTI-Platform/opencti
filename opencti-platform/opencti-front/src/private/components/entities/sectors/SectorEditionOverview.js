@@ -141,7 +141,7 @@ class SectorEditionOverviewComponent extends Component {
         mutation: sectorMutationFieldPatch,
         variables: {
           id: this.props.sector.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

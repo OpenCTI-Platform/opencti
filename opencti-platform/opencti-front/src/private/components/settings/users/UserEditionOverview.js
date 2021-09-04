@@ -137,7 +137,7 @@ class UserEditionOverviewComponent extends Component {
           mutation: userMutationFieldPatch,
           variables: {
             id: this.props.user.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })

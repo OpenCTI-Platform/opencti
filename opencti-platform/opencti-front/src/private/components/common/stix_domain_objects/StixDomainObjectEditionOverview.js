@@ -165,7 +165,7 @@ class StixDomainObjectEditionContainer extends Component {
         mutation: stixDomainObjectMutationFieldPatch,
         variables: {
           id: this.props.stixDomainObject.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

@@ -118,7 +118,7 @@ const UserSubscriptionEditionContainer = (props) => {
           mutation: userSubscriptionMutationFieldPatch,
           variables: {
             id: props.userSubscription.id,
-            input: { key: name, value: finalValue },
+            input: { key: name, value: finalValue || '' },
           },
         });
       })

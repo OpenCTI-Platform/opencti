@@ -189,7 +189,7 @@ class Settings extends Component {
       .then(() => {
         commitMutation({
           mutation: settingsMutationFieldPatch,
-          variables: { id, input: { key: name, value: finalValue } },
+          variables: { id, input: { key: name, value: finalValue || '' } },
         });
       })
       .catch(() => false);

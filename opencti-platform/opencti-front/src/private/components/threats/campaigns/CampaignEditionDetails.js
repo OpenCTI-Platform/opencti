@@ -130,7 +130,7 @@ class CampaignEditionDetailsComponent extends Component {
             mutation: campaignMutationFieldPatch,
             variables: {
               id: this.props.campaign.id,
-              input: { key: name, value },
+              input: { key: name, value: value || '' },
             },
           });
         })

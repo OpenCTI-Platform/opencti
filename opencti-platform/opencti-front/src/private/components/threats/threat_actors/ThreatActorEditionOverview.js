@@ -160,7 +160,7 @@ class ThreatActorEditionOverviewComponent extends Component {
             mutation: threatActorMutationFieldPatch,
             variables: {
               id: this.props.threatActor.id,
-              input: { key: name, value },
+              input: { key: name, value: value || '' },
             },
           });
         })
@@ -174,7 +174,7 @@ class ThreatActorEditionOverviewComponent extends Component {
         mutation: threatActorMutationFieldPatch,
         variables: {
           id: this.props.threatActor.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

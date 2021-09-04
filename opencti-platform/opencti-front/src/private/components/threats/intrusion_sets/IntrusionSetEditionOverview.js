@@ -157,7 +157,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
             mutation: intrusionSetMutationFieldPatch,
             variables: {
               id: this.props.intrusionSet.id,
-              input: { key: name, value },
+              input: { key: name, value: value || '' },
             },
           });
         })
@@ -171,7 +171,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
         mutation: intrusionSetMutationFieldPatch,
         variables: {
           id: this.props.intrusionSet.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

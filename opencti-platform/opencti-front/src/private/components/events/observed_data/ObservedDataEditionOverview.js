@@ -132,7 +132,7 @@ class ObservedDataEditionOverviewComponent extends Component {
           mutation: observedDataMutationFieldPatch,
           variables: {
             id: this.props.observedData.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })
@@ -145,7 +145,7 @@ class ObservedDataEditionOverviewComponent extends Component {
         mutation: observedDataMutationFieldPatch,
         variables: {
           id: this.props.observedData.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

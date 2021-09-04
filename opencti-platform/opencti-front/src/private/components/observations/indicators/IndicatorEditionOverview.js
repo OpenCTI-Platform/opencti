@@ -150,7 +150,7 @@ class IndicatorEditionOverviewComponent extends Component {
           mutation: indicatorMutationFieldPatch,
           variables: {
             id: this.props.indicator.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })
@@ -201,7 +201,7 @@ class IndicatorEditionOverviewComponent extends Component {
         mutation: indicatorMutationRelationDelete,
         variables: {
           id: this.props.indicator.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

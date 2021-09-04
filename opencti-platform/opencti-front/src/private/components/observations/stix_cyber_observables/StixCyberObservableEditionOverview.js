@@ -171,7 +171,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
         mutation: stixCyberObservableMutationFieldPatch,
         variables: {
           id: this.props.stixCyberObservable.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

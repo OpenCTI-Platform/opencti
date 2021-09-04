@@ -93,7 +93,7 @@ const StreamCollectionEditionContainer = (props) => {
           mutation: streamCollectionMutationFieldPatch,
           variables: {
             id: props.streamCollection.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })

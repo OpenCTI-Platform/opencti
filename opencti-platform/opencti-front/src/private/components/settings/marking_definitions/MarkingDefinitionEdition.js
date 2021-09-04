@@ -130,7 +130,7 @@ class MarkingDefinitionEditionContainer extends Component {
           mutation: markingDefinitionMutationFieldPatch,
           variables: {
             id: this.props.markingDefinition.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })

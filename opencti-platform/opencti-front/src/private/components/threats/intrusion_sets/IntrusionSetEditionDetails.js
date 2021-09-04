@@ -122,7 +122,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
             mutation: intrusionSetMutationFieldPatch,
             variables: {
               id: this.props.intrusionSet.id,
-              input: { key: name, value: finalValue },
+              input: { key: name, value: finalValue || '' },
             },
           });
         })

@@ -127,7 +127,7 @@ class ExternalReferenceEditionContainer extends Component {
           mutation: externalReferenceMutationFieldPatch,
           variables: {
             id: this.props.externalReference.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })

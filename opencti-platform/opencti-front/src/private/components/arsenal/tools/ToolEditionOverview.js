@@ -141,7 +141,7 @@ class ToolEditionOverviewComponent extends Component {
         mutation: toolMutationFieldPatch,
         variables: {
           id: this.props.tool.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

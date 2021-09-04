@@ -119,7 +119,7 @@ class LabelEditionContainer extends Component {
           mutation: labelMutationFieldPatch,
           variables: {
             id: this.props.label.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })

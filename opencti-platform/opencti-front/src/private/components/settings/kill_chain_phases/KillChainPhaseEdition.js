@@ -126,7 +126,7 @@ class KillChainPhaseEditionContainer extends Component {
           mutation: killChainPhaseMutationFieldPatch,
           variables: {
             id: this.props.killChainPhase.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })

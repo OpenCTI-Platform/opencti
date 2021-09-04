@@ -92,7 +92,7 @@ class StatusEditionContainer extends Component {
           variables: {
             id: this.props.subTypeId,
             statusId: this.props.status.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })

@@ -145,7 +145,7 @@ class StixCyberObservableRelationshipEditionContainer extends Component {
           mutation: stixCyberObservableRelationshipMutationFieldPatch,
           variables: {
             id: this.props.stixCyberObservableRelationship.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })

@@ -95,7 +95,7 @@ class AttackPatternEditionDetailsComponent extends Component {
           mutation: attackPatternMutationFieldPatch,
           variables: {
             id: this.props.attackPattern.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })

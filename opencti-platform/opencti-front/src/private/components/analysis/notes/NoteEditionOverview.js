@@ -142,7 +142,7 @@ class NoteEditionOverviewComponent extends Component {
       mutation: noteMutationFieldPatch,
       variables: {
         id: this.props.note.id,
-        input: { key: 'createdBy', value: value.value },
+        input: { key: 'createdBy', value: value.value || '' },
       },
     });
   }

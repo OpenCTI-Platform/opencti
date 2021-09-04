@@ -133,7 +133,7 @@ class PositionEditionOverviewComponent extends Component {
           mutation: positionMutationFieldPatch,
           variables: {
             id: this.props.position.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })
@@ -146,7 +146,7 @@ class PositionEditionOverviewComponent extends Component {
         mutation: positionMutationFieldPatch,
         variables: {
           id: this.props.position.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
