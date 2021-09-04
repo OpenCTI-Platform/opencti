@@ -38,7 +38,7 @@ export const infrastructureEditionQuery = graphql`
       ...InfrastructureEditionContainer_infrastructure
     }
     settings {
-      platform_enable_references
+      platform_enable_reference
     }
   }
 `;
@@ -90,7 +90,9 @@ class InfrastructureEdition extends Component {
                 return (
                   <InfrastructureEditionContainer
                     infrastructure={props.infrastructure}
-                    enableReferences={props.settings.platform_enable_references}
+                    enableReferences={props.settings.platform_enable_reference?.includes(
+                      'Infrastructure',
+                    )}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

@@ -52,6 +52,7 @@ const multipleAttributes = [
   'x_opencti_stix_ids',
   'options',
   'entities_ids',
+  'platform_enable_reference',
   // meta
   INPUT_OBJECTS,
   INPUT_MARKINGS,

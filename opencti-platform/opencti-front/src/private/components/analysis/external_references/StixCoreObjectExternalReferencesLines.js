@@ -12,18 +12,13 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import Avatar from '@material-ui/core/Avatar';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
-import {
-  LinkOff,
-  ExpandMoreOutlined,
-  ExpandLessOutlined,
-} from '@material-ui/icons';
+import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
 import { interval } from 'rxjs';
 import inject18n from '../../../../components/i18n';
@@ -31,10 +26,16 @@ import { truncate } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
 import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNENRICHMENT,
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../../utils/Security';
 import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
 import FileLine from '../../common/files/FileLine';
 import { FIVE_SECONDS } from '../../../../utils/Time';
+import FileUploader from '../../common/files/FileUploader';
+import ExternalReferencePopover from './ExternalReferencePopover';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -231,19 +232,27 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                             secondary={truncate(externalReferenceSecondary, 90)}
                           />
                           <ListItemSecondaryAction>
-                            <ExternalReferenceEnrichment
-                              externalReferenceId={externalReference.id}
-                            />
+                            <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                              <FileUploader
+                                entityId={externalReference.id}
+                                onUploadSuccess={() => this.props.relay.refetchConnection(200)
+                                }
+                                color="inherit"
+                              />
+                            </Security>
+                            <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                              <ExternalReferenceEnrichment
+                                externalReferenceId={externalReference.id}
+                              />
+                            </Security>
                             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                              <IconButton
-                                aria-label="Remove"
-                                onClick={this.handleOpenDialog.bind(
+                              <ExternalReferencePopover
+                                externalReferenceId={externalReference.id}
+                                handleRemove={this.handleOpenDialog.bind(
                                   this,
                                   externalReferenceEdge,
                                 )}
-                              >
-                                <LinkOff />
-                              </IconButton>
+                              />
                             </Security>
                           </ListItemSecondaryAction>
                         </ListItem>
@@ -264,35 +273,54 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                     );
                   }
                   return (
-                    <ListItem
-                      key={externalReference.id}
-                      dense={true}
-                      divider={true}
-                      button={false}
-                    >
-                      <ListItemIcon>
-                        <Avatar classes={{ root: classes.avatar }}>
-                          {externalReference.source_name.substring(0, 1)}
-                        </Avatar>
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={`${externalReference.source_name} ${externalReferenceId}`}
-                        secondary={truncate(externalReference.description, 120)}
-                      />
-                      <ListItemSecondaryAction>
-                        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                          <IconButton
-                            aria-label="Remove"
-                            onClick={this.handleOpenDialog.bind(
-                              this,
-                              externalReferenceEdge,
-                            )}
-                          >
-                            <LinkOff />
-                          </IconButton>
-                        </Security>
-                      </ListItemSecondaryAction>
-                    </ListItem>
+                    <div key={externalReference.id}>
+                      <ListItem dense={true} divider={true} button={false}>
+                        <ListItemIcon>
+                          <Avatar classes={{ root: classes.avatar }}>
+                            {externalReference.source_name.substring(0, 1)}
+                          </Avatar>
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={`${externalReference.source_name} ${externalReferenceId}`}
+                          secondary={truncate(
+                            externalReference.description,
+                            120,
+                          )}
+                        />
+                        <ListItemSecondaryAction>
+                          <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                            <FileUploader
+                              entityId={externalReference.id}
+                              onUploadSuccess={() => this.props.relay.refetchConnection(200)
+                              }
+                              color="inherit"
+                            />
+                          </Security>
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <ExternalReferencePopover
+                              externalReferenceId={externalReference.id}
+                              handleRemove={this.handleOpenDialog.bind(
+                                this,
+                                externalReferenceEdge,
+                              )}
+                            />
+                          </Security>
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                      {externalReference.importFiles.edges.length > 0 && (
+                        <List>
+                          {externalReference.importFiles.edges.map((file) => (
+                            <FileLine
+                              key={file.node.id}
+                              dense={true}
+                              disableImport={true}
+                              file={file.node}
+                              nested={true}
+                            />
+                          ))}
+                        </List>
+                      )}
+                    </div>
                   );
                 },
               )}

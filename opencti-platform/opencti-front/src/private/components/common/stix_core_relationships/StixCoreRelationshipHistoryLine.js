@@ -33,7 +33,6 @@ const styles = (theme) => ({
     marginBottom: 20,
   },
   line: {
-    backgroundColor: theme.palette.background.paperLight,
     content: ' ',
     display: 'block',
     position: 'absolute',
@@ -61,7 +60,7 @@ const styles = (theme) => ({
   paper: {
     width: '100%',
     height: '100%',
-    backgroundColor: theme.palette.background.paperLight,
+    backgroundColor: theme.palette.background.line,
     padding: '17px 15px 15px 15px',
   },
   description: {

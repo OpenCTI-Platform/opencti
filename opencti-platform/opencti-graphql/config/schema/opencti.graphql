@@ -791,7 +791,7 @@ type Settings implements InternalObject & BasicObject {
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
   platform_login_message: String
-  platform_enable_references: Boolean
+  platform_enable_reference: [String]
   created_at: DateTime!
   updated_at: DateTime!
   # Technical

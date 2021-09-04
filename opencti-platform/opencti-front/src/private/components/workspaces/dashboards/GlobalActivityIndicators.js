@@ -24,7 +24,9 @@ class GlobalActivityIndicators extends Component {
       case 'horizontal-bar':
         return (
           <IndicatorsHorizontalBars
-            title={`${t('Activity')} - ${t('Indicators')} (${field})`}
+            title={`${t('Activity')} - ${t('Indicators')} (${
+              field || 'pattern_type'
+            })`}
             field={field || 'pattern_type'}
             startDate={startDate}
             endDate={endDate}
@@ -35,7 +37,9 @@ class GlobalActivityIndicators extends Component {
       case 'donut':
         return (
           <IndicatorsDonut
-            title={`${t('Activity')} - ${t('Indicators')} (${field})`}
+            title={`${t('Activity')} - ${t('Indicators')} (${
+              field || 'pattern_type'
+            })`}
             field={field || 'pattern_type'}
             startDate={startDate}
             endDate={endDate}
@@ -46,7 +50,9 @@ class GlobalActivityIndicators extends Component {
       case 'area':
         return (
           <IndicatorsAreaChart
-            title={`${t('Activity')} - ${t('Indicators')} (${field})`}
+            title={`${t('Activity')} - ${t('Indicators')} (${
+              field || 'pattern_type'
+            })`}
             startDate={startDate}
             endDate={endDate}
             dateAttribute="created_at"
@@ -56,7 +62,9 @@ class GlobalActivityIndicators extends Component {
       case 'vertical-bar':
         return (
           <IndicatorsVerticalBars
-            title={`${t('Activity')} - ${t('Indicators')} (${field})`}
+            title={`${t('Activity')} - ${t('Indicators')} (${
+              field || 'pattern_type'
+            })`}
             startDate={startDate}
             endDate={endDate}
             dateAttribute="created_at"
@@ -66,7 +74,9 @@ class GlobalActivityIndicators extends Component {
       case 'list':
         return (
           <IndicatorsList
-            title={`${t('Activity')} - ${t('Indicators')} (${field})`}
+            title={`${t('Activity')} - ${t('Indicators')} (${
+              field || 'pattern_type'
+            })`}
             field={field || 'pattern_type'}
             startDate={startDate}
             endDate={endDate}

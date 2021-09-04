@@ -69,7 +69,7 @@ class CommitMessage extends Component {
               onClick={this.handleSubmit.bind(this)}
               disabled={disabled}
             >
-              {t('Update')}
+              {t('Validate')}
             </Button>
           </DialogActions>
         </Dialog>

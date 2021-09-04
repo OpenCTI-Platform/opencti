@@ -580,6 +580,7 @@ const i18n = {
       'Edit the selected item': "Editer l'élément sélectionné",
       'Remove selected items': 'Supprimer les éléments sélectionnés',
       'Remove from this entity': 'Retirer de cette entité',
+      'Remove from this object': 'Retirer de cet objet',
       'All observables': 'Tous les observables',
       'Autonomous system': 'Système autonome',
       'Domain names': 'Noms de domaine',
@@ -757,6 +758,7 @@ const i18n = {
       'Updated the': 'Mis à jour le',
       'Update entities': 'Modifier des entités',
       Creator: 'Créateur',
+      Validate: 'Valider',
       Marking: 'Marquage',
       'Kill chain phases': 'Phases de kill chain',
       'Kill chain phase': 'Phase de kill chain',
@@ -1027,6 +1029,7 @@ const i18n = {
       Platforms: "Systèmes d'exploitation",
       Platform: "Système d'exploitation",
       'Commit message': 'Message de justification',
+      'Commit messages': 'Messages de justificaiton',
       'Required permissions': 'Permissions requises',
       'Enable commit messages': 'Activer les messages de justification',
       'Commit message when updating data from the UI.':

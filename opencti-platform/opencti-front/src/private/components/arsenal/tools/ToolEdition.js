@@ -38,7 +38,7 @@ export const toolEditionQuery = graphql`
       ...ToolEditionContainer_tool
     }
     settings {
-      platform_enable_references
+      platform_enable_reference
     }
   }
 `;
@@ -90,7 +90,9 @@ class ToolEdition extends Component {
                 return (
                   <ToolEditionContainer
                     tool={props.tool}
-                    enableReferences={props.settings.platform_enable_references}
+                    enableReferences={props.settings.platform_enable_reference?.includes(
+                      'Tool',
+                    )}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

@@ -122,9 +122,11 @@ class ExternalReferencePopover extends Component {
   }
 
   render() {
-    const { classes, t, externalReferenceId } = this.props;
+    const {
+      classes, t, externalReferenceId, handleRemove,
+    } = this.props;
     return (
-      <div className={classes.container}>
+      <span className={classes.container}>
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
@@ -141,6 +143,16 @@ class ExternalReferencePopover extends Component {
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
           </MenuItem>
+          {handleRemove && (
+            <MenuItem
+              onClick={() => {
+                handleRemove();
+                this.handleClose();
+              }}
+            >
+              {t('Remove from this object')}
+            </MenuItem>
+          )}
           <MenuItem onClick={this.handleOpenDelete.bind(this)}>
             {t('Delete')}
           </MenuItem>
@@ -195,7 +207,7 @@ class ExternalReferencePopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </span>
     );
   }
 }
@@ -205,6 +217,7 @@ ExternalReferencePopover.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  handleRemove: PropTypes.func,
 };
 
 export default compose(inject18n, withStyles(styles))(ExternalReferencePopover);

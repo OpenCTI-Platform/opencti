@@ -38,7 +38,7 @@ export const sectorEditionQuery = graphql`
       ...SectorEditionContainer_sector
     }
     settings {
-      platform_enable_references
+      platform_enable_reference
     }
   }
 `;
@@ -90,7 +90,9 @@ class SectorEdition extends Component {
                 return (
                   <SectorEditionContainer
                     sector={props.sector}
-                    enableReferences={props.settings.platform_enable_references}
+                    enableReferences={props.settings.platform_enable_reference?.includes(
+                      'Sector',
+                    )}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );
