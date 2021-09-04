@@ -15,7 +15,7 @@ import { RELATION_BASED_ON } from '../../src/schema/stixCoreRelationship';
 
 const RULE = RULE_PREFIX + RuleObserveSighting.id;
 const TLP_WHITE_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
-const OBSERVED_DATA = 'observed-data--e5821ff3-5d31-546c-a9f8-c7b685a8fbd1'; // observed-data A
+const OBSERVED_DATA = 'observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be'; // observed-data A
 const OBSERVED_FILE = 'file--702e320e-43b6-552a-b7e7-d045bf9c887d'; // observable B
 const ANSSI = 'identity--18fe5225-fee1-5627-ad3e-20c14435b024'; // Organization X
 const CBRICKSDOC = 'indicator--c5c0c0f9-dfa1-5b7d-a12a-ea95072d3e45'; // indicator C
