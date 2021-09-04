@@ -381,64 +381,67 @@ export const computeMergeDifferential = (initialInstance, mergedInstance) => {
       return obj.x_opencti_internal_id;
     },
   });
-  const diff = diffGenerator.diff(convertInit, convertMerged);
   const patch = {};
-  const entries = Object.entries(diff);
-  for (let index = 0; index < entries.length; index += 1) {
-    const [field, diffDelta] = entries[index];
-    // https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
-    if (Array.isArray(diffDelta)) {
-      let current;
-      let previous;
-      // Value added
-      if (diffDelta.length === DIFF_ADDED) {
-        const value = R.head(diffDelta);
-        current = value;
-        previous = Array.isArray(value) ? [] : '';
-      }
-      // Value changed
-      if (diffDelta.length === DIFF_CHANGE) {
-        current = R.last(diffDelta);
-        previous = R.head(diffDelta);
-      }
-      // Value removed
-      if (diffDelta.length === DIFF_REMOVE) {
-        const value = R.head(diffDelta);
-        previous = value;
-        current = Array.isArray(value) ? [] : '';
-      }
-      // Setup the patch
-      if (patch.replace) {
-        patch.replace[field] = { current, previous };
+  const diff = diffGenerator.diff(convertInit, convertMerged);
+  if (diff) {
+    // Result of the merge could be the exact same instance
+    const entries = Object.entries(diff);
+    for (let index = 0; index < entries.length; index += 1) {
+      const [field, diffDelta] = entries[index];
+      // https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
+      if (Array.isArray(diffDelta)) {
+        let current;
+        let previous;
+        // Value added
+        if (diffDelta.length === DIFF_ADDED) {
+          const value = R.head(diffDelta);
+          current = value;
+          previous = Array.isArray(value) ? [] : '';
+        }
+        // Value changed
+        if (diffDelta.length === DIFF_CHANGE) {
+          current = R.last(diffDelta);
+          previous = R.head(diffDelta);
+        }
+        // Value removed
+        if (diffDelta.length === DIFF_REMOVE) {
+          const value = R.head(diffDelta);
+          previous = value;
+          current = Array.isArray(value) ? [] : '';
+        }
+        // Setup the patch
+        if (patch.replace) {
+          patch.replace[field] = { current, previous };
+        } else {
+          patch.replace = { [field]: { current, previous } };
+        }
+      } else if (diffDelta[DIFF_TYPE] === DIFF_TYPE_ARRAY) {
+        // Is an array changes
+        const delta = R.dissoc(DIFF_TYPE, diffDelta);
+        const deltaObjEntries = Object.entries(delta);
+        for (let indexDelta = 0; indexDelta < deltaObjEntries.length; indexDelta += 1) {
+          const [, diffData] = deltaObjEntries[indexDelta];
+          if (diffData.length === DIFF_ADDED) {
+            if (patch.add) {
+              patch.add[field] = diffData;
+            } else {
+              patch.add = { [field]: diffData };
+            }
+          }
+          if (diffData.length === DIFF_REMOVE) {
+            const removedValue = R.head(diffData);
+            const removeVal = Array.isArray(removedValue) ? removedValue : [removedValue];
+            if (patch.remove) {
+              patch.remove[field] = removeVal;
+            } else {
+              patch.remove = { [field]: removeVal };
+            }
+          }
+        }
       } else {
-        patch.replace = { [field]: { current, previous } };
+        // Is a internal complex object, like extensions
+        // TODO @JRI
       }
-    } else if (diffDelta[DIFF_TYPE] === DIFF_TYPE_ARRAY) {
-      // Is an array changes
-      const delta = R.dissoc(DIFF_TYPE, diffDelta);
-      const deltaObjEntries = Object.entries(delta);
-      for (let indexDelta = 0; indexDelta < deltaObjEntries.length; indexDelta += 1) {
-        const [, diffData] = deltaObjEntries[indexDelta];
-        if (diffData.length === DIFF_ADDED) {
-          if (patch.add) {
-            patch.add[field] = diffData;
-          } else {
-            patch.add = { [field]: diffData };
-          }
-        }
-        if (diffData.length === DIFF_REMOVE) {
-          const removedValue = R.head(diffData);
-          const removeVal = Array.isArray(removedValue) ? removedValue : [removedValue];
-          if (patch.remove) {
-            patch.remove[field] = removeVal;
-          } else {
-            patch.remove = { [field]: removeVal };
-          }
-        }
-      }
-    } else {
-      // Is a internal complex object, like extensions
-      // TODO @JRI
     }
   }
   return patch;
