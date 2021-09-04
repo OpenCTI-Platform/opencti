@@ -54,6 +54,11 @@ describe('Observed sighting rule', () => {
       const cbrickToAnssi = await inferenceLookup(afterLiveRelations, CBRICKSDOC, ANSSI, STIX_SIGHTING_RELATIONSHIP);
       expect(cbrickToAnssi).not.toBeNull();
       expect(cbrickToAnssi[RULE].length).toBe(1);
+      expect(cbrickToAnssi.first_seen).toBe('2020-02-25T09:02:29.040Z');
+      expect(cbrickToAnssi.last_seen).toBe('2020-02-25T09:02:29.040Z');
+      expect(cbrickToAnssi.attribute_count).toBe(1);
+      expect(cbrickToAnssi.confidence).toBe(15);
+      expect((cbrickToAnssi.object_marking_refs || []).length).toBe(0);
       // TODO add more attributes testing
       // ---- 02. Test rescan behavior
       // TODO
