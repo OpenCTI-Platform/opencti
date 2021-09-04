@@ -69,6 +69,7 @@ const styles = (theme) => ({
     padding: 20,
     borderRadius: 6,
     display: 'relative',
+    overflow: 'hidden',
   },
 });
 

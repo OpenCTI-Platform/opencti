@@ -141,7 +141,7 @@ StixCoreRelationshipStixCoreRelationshipsLinesContainer.propTypes = {
 export const stixCoreRelationshipStixCoreRelationshipsLinesQuery = graphql`
   query StixCoreRelationshipStixCoreRelationshipsLinesQuery(
     $fromId: String
-    $relationship_type: String
+    $relationship_type: [String]
     $count: Int!
     $cursor: ID
     $orderBy: StixCoreRelationshipsOrdering

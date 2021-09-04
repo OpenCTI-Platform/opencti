@@ -77,6 +77,7 @@ class GlobalActivityVulnerabilities extends Component {
             title={`${t('Activity')} - ${t('Vulnerabilities')}`}
             relationshipType="stix-core-relationship"
             toTypes={['Vulnerability']}
+            field="internal_id"
             startDate={startDate}
             endDate={endDate}
             dateAttribute="created_at"
