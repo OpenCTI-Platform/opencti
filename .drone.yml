@@ -87,7 +87,7 @@ services:
   image: docker.elastic.co/elasticsearch/elasticsearch:7.14.1
   environment:
     discovery.type: single-node
-    ES_JAVA_OPTS: -Xms750m -Xmx750m
+    ES_JAVA_OPTS: -Xms2g -Xmx2g
 - name: minio
   image: minio/minio:RELEASE.2021-08-25T00-41-18Z
   environment:
