@@ -113,9 +113,9 @@ class ObservedDataCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const adaptedValues = evolve(
       {
-        first_observed: parse(values.first_observed).format(),
-        last_observed: parse(values.last_observed).format(),
-        number_observed: parseInt(values.number_observed, 10),
+        first_observed: () => parse(values.first_observed).format(),
+        last_observed: () => parse(values.last_observed).format(),
+        number_observed: () => parseInt(values.number_observed, 10),
         createdBy: path(['value']),
         objectMarking: pluck('value'),
         objectLabel: pluck('value'),

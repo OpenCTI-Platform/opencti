@@ -605,6 +605,14 @@ export const elAggregationCount = (user, type, aggregationField, start, end, fil
             field: booleanAttributes.includes(aggregationField) ? aggregationField : `${aggregationField}.keyword`,
             size: MAX_AGGREGATION_SIZE,
           },
+          aggs: {
+            weight: {
+              sum: {
+                field: 'i_inference_weight',
+                missing: 1,
+              },
+            },
+          },
         },
       },
     },
@@ -621,7 +629,7 @@ export const elAggregationCount = (user, type, aggregationField, start, end, fil
         } else if (!isIdFields) {
           label = pascalize(b.key);
         }
-        return { label, value: b.doc_count };
+        return { label, value: b.weight.value };
       }, buckets);
     })
     .catch((err) => {
@@ -972,6 +980,19 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
                     size: MAX_AGGREGATION_SIZE,
                     field: field === 'internal_id' ? `connections.internal_id.keyword` : `connections.types.keyword`,
                   },
+                  aggs: {
+                    parent: {
+                      reverse_nested: {},
+                      aggs: {
+                        weight: {
+                          sum: {
+                            field: 'i_inference_weight',
+                            missing: 1,
+                          },
+                        },
+                      },
+                    },
+                  },
                 },
               },
             },
@@ -987,7 +1008,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
       if (field === 'internal_id') {
         const { buckets } = data.body.aggregations.connections.filtered.genres;
         const filteredBuckets = R.filter((b) => b.key !== fromId, buckets);
-        return R.map((b) => ({ label: b.key, value: b.doc_count }), filteredBuckets);
+        return R.map((b) => ({ label: b.key, value: b.parent.weight.value }), filteredBuckets);
       }
       let fromType = null;
       if (fromId) {
@@ -1007,7 +1028,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
       )(data.body.hits.hits);
       const { buckets } = data.body.aggregations.connections.filtered.genres;
       const filteredBuckets = R.filter((b) => R.includes(b.key, types), buckets);
-      return R.map((b) => ({ label: pascalize(b.key), value: b.doc_count }), filteredBuckets);
+      return R.map((b) => ({ label: pascalize(b.key), value: b.parent.weight.value }), filteredBuckets);
     })
     .catch((e) => {
       throw DatabaseError('Fail processing AggregationRelationsCount', { error: e });
@@ -1124,6 +1145,14 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
             format: dateFormat,
             keyed: true,
           },
+          aggs: {
+            weight: {
+              sum: {
+                field: 'i_inference_weight',
+                missing: 1,
+              },
+            },
+          },
         },
       },
     },
@@ -1132,7 +1161,7 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
   return el.search(query).then((data) => {
     const { buckets } = data.body.aggregations.count_over_time;
     const dataToPairs = R.toPairs(buckets);
-    return R.map((b) => ({ date: R.head(b), value: R.last(b).doc_count }), dataToPairs);
+    return R.map((b) => ({ date: R.head(b), value: R.last(b).weight.value }), dataToPairs);
   });
 };
 

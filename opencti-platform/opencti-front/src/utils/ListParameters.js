@@ -66,13 +66,10 @@ export const saveViewParameters = (
     urlParams = assoc('zoom', JSON.stringify(params.zoom), urlParams);
   }
   if (!noRedirect) {
-    window.history.replaceState(
-      null,
-      '',
-      `{${
-        APP_BASE_PATH && APP_BASE_PATH.length > 0 ? `${APP_BASE_PATH}/` : ''
-      }${location.pathname}?${new URLSearchParams(urlParams).toString()}`,
-    );
+    const newUrl = `${
+      APP_BASE_PATH && APP_BASE_PATH.length > 0 ? `${APP_BASE_PATH}/` : ''
+    }${location.pathname}?${new URLSearchParams(urlParams).toString()}`;
+    window.history.replaceState(null, '', newUrl);
   }
   return params;
 };
