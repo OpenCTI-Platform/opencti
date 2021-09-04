@@ -199,7 +199,7 @@ const elCreateIndexTemplate = async () => {
   // eslint-disable-next-line prettier/prettier
   await el.cluster
     .putComponentTemplate({
-      name: 'opencti-core-settings',
+      name: `${ES_INDEX_PREFIX}-core-settings`,
       create: false,
       body: {
         template: {
@@ -227,7 +227,7 @@ const elCreateIndexTemplate = async () => {
   // eslint-disable-next-line prettier/prettier
   await el.indices
     .putIndexTemplate({
-      name: 'opencti-index-template',
+      name: `${ES_INDEX_PREFIX}-index-template`,
       create: false,
       body: {
         index_patterns: [`${ES_INDEX_PREFIX}*`],
