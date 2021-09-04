@@ -145,6 +145,7 @@ import { isStixCoreRelationship, RELATION_REVOKED_BY } from '../schema/stixCoreR
 import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
+  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
@@ -2089,6 +2090,18 @@ const upsertElementRaw = async (user, instance, type, input) => {
       patchInputs.push(...patched.updatedInputs);
     }
   }
+  // Upsert observed data
+  if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
+    const timePatch = handleRelationTimeUpdate(input, instance, 'first_observed', 'last_observed');
+    // Upsert the count only if a time patch is applied.
+    if (isNotEmptyField(timePatch)) {
+      const basePatch = { number_observed: instance.number_observed + input.number_observed };
+      const patch = { ...basePatch, ...timePatch };
+      const patched = patchAttributeRaw(instance, patch);
+      impactedInputs.push(...patched.impactedInputs);
+      patchInputs.push(...patched.updatedInputs);
+    }
+  }
   if (isStixCoreRelationship(type)) {
     const basePatch = {};
     if (input.confidence && forceUpdate) {
@@ -2135,6 +2148,7 @@ const upsertElementRaw = async (user, instance, type, input) => {
       patchInputs.push({ key: INPUT_MARKINGS, value: markingToCreate, operation: UPDATE_OPERATION_ADD });
     }
   }
+  // Build result
   if (impactedInputs.length > 0) {
     const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
     const indexInput = partialInstanceWithInputs(instance, impactedInputs);

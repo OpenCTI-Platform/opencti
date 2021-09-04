@@ -111,44 +111,7 @@ export const addObservedData = async (user, observedData) => {
   if (observedData.objects.length === 0) {
     throw FunctionalError('Observed data must contain at least 1 object');
   }
-  const objects = [];
-  // eslint-disable-next-line no-restricted-syntax
-  for (const containedObject of observedData.objects) {
-    objects.push(isStixId(containedObject) ? (await internalLoadById(user, containedObject)).id : containedObject);
-  }
-  const args = {
-    connectionFormat: false,
-    filters: [{ key: buildRefRelationKey(RELATION_OBJECT), values: objects }],
-  };
-  const observedDataFound = await findAll(user, args);
-  if (observedDataFound.length > 0) {
-    const existingObservedData = observedDataFound[0];
-    // By default, we don't touch the last_observed
-    let lastObserved = utcDate(existingObservedData.last_observed);
-    if (R.isNil(observedData.last_observed)) {
-      // If the input don't contain any last_observed, then last_observed is now()
-      lastObserved = now();
-    } else if (observedData.last_observed > lastObserved) {
-      // If the provided last_observed is after, then we update with the given date
-      lastObserved = utcDate(observedData.last_observed).toISOString();
-    } else {
-      lastObserved = lastObserved.toISOString();
-    }
-    let numberObserved;
-    if (R.isNil(observedData.number_observed)) {
-      numberObserved = existingObservedData.number_observed + 1;
-    } else {
-      numberObserved = existingObservedData.number_observed + observedData.number_observed;
-    }
-    const patch = {
-      number_observed: numberObserved,
-      last_observed: lastObserved,
-    };
-    await patchAttribute(user, existingObservedData.id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, patch);
-    return loadById(user, existingObservedData.id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
-  }
-  const entity = { internal_id: uuidv4(), ...observedData };
-  const observedDataResult = await createEntity(user, entity, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
+  const observedDataResult = await createEntity(user, observedData, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, observedDataResult, user);
 };
 // endregion
