@@ -7,6 +7,7 @@ import Paper from '@material-ui/core/Paper';
 import ForceGraph2D from 'react-force-graph-2d';
 import Markdown from 'react-markdown';
 import { withRouter } from 'react-router-dom';
+import remarkGfm from 'remark-gfm';
 import inject18n from '../../../../components/i18n';
 import {
   buildGraphData,
@@ -91,7 +92,9 @@ class StixCoreRelationshipInference extends Component {
         <Typography variant="h3" gutterBottom={true}>
           {t(inference.rule.name)}
         </Typography>
-        <Markdown className="markdown">{inference.rule.description}</Markdown>
+        <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+          {inference.rule.description}
+        </Markdown>
         <ForceGraph2D
           ref={this.graph}
           width={width}

@@ -31,6 +31,7 @@ import Collapse from '@material-ui/core/Collapse';
 import { Launch } from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 import { createRefetchContainer } from 'react-relay';
+import remarkGfm from 'remark-gfm';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
@@ -197,7 +198,10 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               secondary={
                                 stixDomainObject.description
                                 && stixDomainObject.description.length > 0 ? (
-                                  <Markdown className="markdown">
+                                  <Markdown
+                                    remarkPlugins={[remarkGfm]}
+                                    className="markdown"
+                                  >
                                     {stixDomainObject.description}
                                   </Markdown>
                                   ) : (

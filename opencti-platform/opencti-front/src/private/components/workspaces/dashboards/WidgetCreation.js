@@ -37,6 +37,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Markdown from 'react-markdown';
 import Skeleton from '@material-ui/lab/Skeleton';
+import remarkGfm from 'remark-gfm';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixDomainObjectsLinesSearchQuery } from '../../common/stix_domain_objects/StixDomainObjectsLines';
 import inject18n from '../../../../components/i18n';
@@ -224,7 +225,10 @@ class WidgetCreation extends Component {
                     <ListItemText
                       primary={stixDomainObjectEdge.node.name}
                       secondary={
-                        <Markdown className="markdown">
+                        <Markdown
+                          remarkPlugins={[remarkGfm]}
+                          className="markdown"
+                        >
                           {truncate(stixDomainObjectEdge.node.description, 200)}
                         </Markdown>
                       }
@@ -460,9 +464,7 @@ class WidgetCreation extends Component {
                 </Typography>
                 <br />
                 <Typography variant="body1">
-                  {t(
-                    'Number of indicators with detection',
-                  )}
+                  {t('Number of indicators with detection')}
                 </Typography>
               </CardContent>
             </CardActionArea>

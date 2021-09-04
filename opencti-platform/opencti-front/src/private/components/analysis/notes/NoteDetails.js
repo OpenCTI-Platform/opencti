@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import inject18n from '../../../../components/i18n';
 
 const styles = () => ({
@@ -31,7 +32,9 @@ class NoteDetailsComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Abstract')}
           </Typography>
-          <Markdown className="markdown">{note.attribute_abstract}</Markdown>
+          <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+            {note.attribute_abstract}
+          </Markdown>
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -39,7 +42,9 @@ class NoteDetailsComponent extends Component {
           >
             {t('Content')}
           </Typography>
-          <Markdown className="markdown">{note.content}</Markdown>
+          <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+            {note.content}
+          </Markdown>
         </Paper>
       </div>
     );
