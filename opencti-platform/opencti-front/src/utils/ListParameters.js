@@ -9,6 +9,7 @@ import {
   last,
   assoc,
 } from 'ramda';
+import { APP_BASE_PATH } from '../relay/environment';
 
 export const saveViewParameters = (
   history,
@@ -68,7 +69,9 @@ export const saveViewParameters = (
     window.history.replaceState(
       null,
       '',
-      `${location.pathname}?${new URLSearchParams(urlParams).toString()}`,
+      `{${APP_BASE_PATH ? `${APP_BASE_PATH}/` : ''}${
+        location.pathname
+      }?${new URLSearchParams(urlParams).toString()}`,
     );
   }
   return params;
