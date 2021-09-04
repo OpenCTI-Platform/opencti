@@ -53,7 +53,7 @@ const buildRelationWithRelationRule = (ruleDefinition, relationTypes) => {
     return events;
   };
   // Contract
-  const clean = async (element, dependencyId) => deleteInferredRuleElement(id, element, dependencyId);
+  const clean = async (element, deletedDependencies) => deleteInferredRuleElement(id, element, deletedDependencies);
   const insert = async (element) => applyUpsert(element);
   const update = async (element) => applyUpsert(element);
   return { ...ruleDefinition, insert, update, clean };

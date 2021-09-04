@@ -23,7 +23,7 @@ import { MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/sseMiddleware';
 import { buildStixData } from '../database/stix';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { now } from '../utils/format';
-import { extractFieldsOfPatch } from '../utils/patch';
+import { extractFieldsOfPatch, rebuildInstanceBeforePatch } from '../utils/patch';
 
 let activatedRules = [];
 const RULE_ENGINE_ID = 'rule_engine_settings';
@@ -106,6 +106,17 @@ const ruleMergeHandler = async (event) => {
   return events;
 };
 
+const isAttributesImpactDependencies = (rules, instance) => {
+  const rulesAttributes = rules
+    .map((r) => r.scopes ?? [])
+    .flat()
+    .map((s) => s.attributes)
+    .flat()
+    .filter((a) => a.dependency === true)
+    .map((a) => a.name);
+  const patchedAttributes = Object.entries(instance).map(([k]) => k);
+  return patchedAttributes.some((f) => rulesAttributes.includes(f));
+};
 const isMatchRuleFilters = (rule, element, matchUpdateFields = false) => {
   // Handle types filtering
   const scopeFilters = rule.scopes ?? [];
@@ -143,7 +154,7 @@ const isMatchRuleFilters = (rule, element, matchUpdateFields = false) => {
     if (isValidFilter) {
       if (matchUpdateFields) {
         const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
-        return attributes.some((f) => patchedFields.includes(f));
+        return attributes.map((a) => a.name).some((f) => patchedFields.includes(f));
       }
       return true;
     }
@@ -170,6 +181,16 @@ export const rulesApplyDerivedEvents = async (eventId, derivedEvents, forRules =
   await rulesApplyHandler(events, forRules);
 };
 
+const applyCleanupOnDependencyIds = async (eventId, deletionIds) => {
+  const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: deletionIds, operator: 'wildcard' }];
+  // eslint-disable-next-line no-use-before-define,prettier/prettier
+  const callback = (elements) => {
+    // eslint-disable-next-line no-use-before-define
+    return rulesCleanHandler(eventId, elements, RULES_DECLARATION, deletionIds);
+  };
+  await elList(RULE_MANAGER_USER, READ_DATA_INDICES, { filters, callback });
+};
+
 export const rulesApplyHandler = async (events, forRules = []) => {
   if (isEmptyField(events) || events.length === 0) return;
   const rules = forRules.length > 0 ? forRules : activatedRules;
@@ -187,16 +208,19 @@ export const rulesApplyHandler = async (events, forRules = []) => {
       if (type === EVENT_TYPE_DELETE) {
         const contextDeletions = data.x_opencti_context.deletions.map((d) => d.x_opencti_id);
         const deletionIds = [data.x_opencti_id, ...contextDeletions];
-        for (let deleteIndex = 0; deleteIndex < deletionIds.length; deleteIndex += 1) {
-          const deletionId = deletionIds[deleteIndex];
-          const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: [deletionId], operator: 'wildcard' }];
-          // eslint-disable-next-line no-use-before-define,prettier/prettier
-          const opts = { filters, callback: (elements) => rulesCleanHandler(eventId, elements, RULES_DECLARATION, deletionId) };
-          await elList(RULE_MANAGER_USER, READ_DATA_INDICES, opts);
-        }
+        await applyCleanupOnDependencyIds(eventId, deletionIds);
       }
       // In case of update apply the event on every rules
       if (type === EVENT_TYPE_UPDATE) {
+        // We need to clean elements that could be part of rule dependencies
+        // Only interesting if rule depends of this patched attributes
+        const previously = rebuildInstanceBeforePatch({}, element.x_opencti_patch);
+        const isDependent = isAttributesImpactDependencies(rules, previously);
+        if (isDependent) {
+          const deletionIds = Object.entries(previously).map(([k, v]) => `${data.x_opencti_id}_${k}:${v}`);
+          await applyCleanupOnDependencyIds(eventId, deletionIds);
+        }
+        // Dispatch update
         for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
           const rule = rules[ruleIndex];
           const isImpactedElement = isMatchRuleFilters(rule, element, true);
@@ -226,7 +250,7 @@ export const rulesApplyHandler = async (events, forRules = []) => {
   }
 };
 
-export const rulesCleanHandler = async (eventId, instances, rules, dependencyId) => {
+export const rulesCleanHandler = async (eventId, instances, rules, deletedDependencies = []) => {
   for (let i = 0; i < instances.length; i += 1) {
     const instance = instances[i];
     for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
@@ -236,7 +260,7 @@ export const rulesCleanHandler = async (eventId, instances, rules, dependencyId)
         const processingElement = await internalLoadById(RULE_MANAGER_USER, instance.internal_id);
         // In case of inference of inference, element can be recursively cleanup by the deletion system
         if (processingElement) {
-          const derivedEvents = await rule.clean(processingElement, dependencyId);
+          const derivedEvents = await rule.clean(processingElement, deletedDependencies);
           await rulesApplyDerivedEvents(eventId, derivedEvents);
         }
       }

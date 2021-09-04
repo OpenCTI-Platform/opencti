@@ -61,7 +61,7 @@ const ruleRelatedObservableBuilder = () => {
     return events;
   };
   // Contract
-  const clean = async (element, dependencyId) => deleteInferredRuleElement(def.id, element, dependencyId);
+  const clean = async (element, deletedDependencies) => deleteInferredRuleElement(def.id, element, deletedDependencies);
   const insert = async (element) => applyUpsert(element);
   const update = async (element) => applyUpsert(element);
   return { ...def, insert, update, clean };

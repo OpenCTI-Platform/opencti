@@ -55,6 +55,7 @@ import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { getInstanceIds, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
 import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
+import { isSingleStixEmbeddedRelationship } from '../schema/stixEmbeddedRelationship';
 
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
@@ -684,7 +685,8 @@ const elDataConverter = (esHit) => {
       const [relType] = rel.split('.');
       const stixType = EXTERNAL_META_TO_STIX_ATTRIBUTE[relType];
       if (stixType) {
-        data[stixType] = stixType.endsWith('_refs') ? val : R.head(val);
+        const isSingle = isSingleStixEmbeddedRelationship(relType);
+        data[stixType] = isSingle ? R.head(val) : val;
       }
     } else {
       data[key] = val;

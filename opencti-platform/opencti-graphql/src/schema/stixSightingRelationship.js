@@ -33,6 +33,8 @@ export const stixSightingRelationshipsAttributes = {
     'i_last_seen_year',
     'attribute_count',
     'x_opencti_negative',
+    'i_inference_rule',
+    'i_inference_weight',
     'status_id',
   ],
 };

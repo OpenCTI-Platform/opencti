@@ -240,6 +240,7 @@ test('Should compute events differential', () => {
 });
 
 const instance = {
+  _index: 'opencti_stix_domain_objects-000001',
   standard_id: 'threat-actor--214c643d-8ad5-5911-a08e-7aa9111ff8b6',
   personal_motivations: ['coercion'],
   threat_actor_types: ['crime-syndicate', "criminal'"],
@@ -263,7 +264,7 @@ const instance = {
   id: 'b397cb7e-1884-4809-ab12-3434931201b7',
   lang: 'en',
   x_opencti_stix_ids: [],
-  _index: 'opencti_stix_domain_objects-000001',
+  object_marking_refs: ['5b14d970-2153-4304-9af3-06d574fa778b', '6bf6c4e3-20f0-4497-bb08-bd2cf59b1e84'],
   objectMarking: [
     {
       standard_id: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
@@ -310,28 +311,7 @@ const instance = {
       _index: 'opencti_stix_meta_objects-000001',
     },
   ],
-  objectLabel: [
-    {
-      standard_id: 'label--e1248458-93dc-5e37-b9e6-ba4192eafe4c',
-      i_created_at_day: '2021-04-12',
-      color: '#c25555',
-      internal_id: '884506e4-ad4a-49cd-88bc-d40b7069f496',
-      spec_version: '2.1',
-      parent_types: ['Basic-Object', 'Stix-Object', 'Stix-Meta-Object'],
-      created: '2021-04-12T19:51:13.677Z',
-      i_created_at_month: '2021-04',
-      created_at: '2021-04-12T19:51:13.677Z',
-      i_created_at_year: '2021',
-      entity_type: 'Label',
-      base_type: 'ENTITY',
-      updated_at: '2021-04-12T19:51:13.677Z',
-      modified: '2021-04-12T19:51:13.677Z',
-      id: '884506e4-ad4a-49cd-88bc-d40b7069f496',
-      x_opencti_stix_ids: [],
-      value: 'label',
-      _index: 'opencti_stix_meta_objects-000001',
-    },
-  ],
+  created_by_ref: 'b2e2a15f-b1a5-4017-bfeb-3238ce4fbe86',
   createdBy: [
     {
       standard_id: 'identity--73adbcdc-176e-5b23-8a8e-8fc1368bad96',
@@ -359,6 +339,29 @@ const instance = {
       _index: 'opencti_stix_domain_objects-000001',
     },
   ],
+  labels: ['884506e4-ad4a-49cd-88bc-d40b7069f496'],
+  objectLabel: [
+    {
+      standard_id: 'label--e1248458-93dc-5e37-b9e6-ba4192eafe4c',
+      i_created_at_day: '2021-04-12',
+      color: '#c25555',
+      internal_id: '884506e4-ad4a-49cd-88bc-d40b7069f496',
+      spec_version: '2.1',
+      parent_types: ['Basic-Object', 'Stix-Object', 'Stix-Meta-Object'],
+      created: '2021-04-12T19:51:13.677Z',
+      i_created_at_month: '2021-04',
+      created_at: '2021-04-12T19:51:13.677Z',
+      i_created_at_year: '2021',
+      entity_type: 'Label',
+      base_type: 'ENTITY',
+      updated_at: '2021-04-12T19:51:13.677Z',
+      modified: '2021-04-12T19:51:13.677Z',
+      id: '884506e4-ad4a-49cd-88bc-d40b7069f496',
+      x_opencti_stix_ids: [],
+      value: 'label',
+      _index: 'opencti_stix_meta_objects-000001',
+    },
+  ],
 };
 const patch = {
   replace: {
@@ -377,8 +380,7 @@ const patch = {
   },
 };
 test('Should rebuild instance', () => {
-  const data = buildStixData(instance, { patchGeneration: true });
-  const rebuildInstance = rebuildInstanceBeforePatch(data, patch);
+  const rebuildInstance = rebuildInstanceBeforePatch(instance, patch);
   expect(rebuildInstance.confidence).toEqual(75);
   expect(rebuildInstance.object_marking_refs.length).toEqual(1);
 });
@@ -411,10 +413,9 @@ const filters = {
 };
 
 test('Should instance filtered', () => {
-  const basicInstance = buildStixData(instance, { patchGeneration: true });
-  const initialInstance = rebuildInstanceBeforePatch(basicInstance, patch);
+  const initialInstance = rebuildInstanceBeforePatch(instance, patch);
   const isInitialInterest = isInstanceMatchFilters(initialInstance, filters);
-  const isUpdatedInterest = isInstanceMatchFilters(basicInstance, filters);
+  const isUpdatedInterest = isInstanceMatchFilters(instance, filters);
   expect(isInitialInterest).toBeFalsy();
   expect(isUpdatedInterest).toBeTruthy();
 });

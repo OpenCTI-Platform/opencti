@@ -22,21 +22,30 @@ const scopes = [
   {
     // eslint-disable-next-line prettier/prettier
     filters: { types: [RELATION_OBJECT], fromTypes: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE] },
-    attributes: ['first_seen', 'last_seen'],
+    attributes: [],
   },
   {
     // eslint-disable-next-line prettier/prettier
     filters: { types: [RELATION_BASED_ON], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE] },
-    attributes: ['first_seen', 'last_seen'],
+    attributes: [],
   },
   {
     filters: { types: [ENTITY_TYPE_INDICATOR] },
-    attributes: ['revoked', 'x_opencti_detection'],
+    attributes: [
+      { name: 'revoked', dependency: true },
+      { name: 'x_opencti_detection', dependency: true },
+    ],
   },
   {
     filters: { types: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA] },
-    // eslint-disable-next-line prettier/prettier
-    attributes: ['created_by_ref', 'first_observed', 'last_observed', 'number_observed', 'confidence', 'object_marking_refs'],
+    attributes: [
+      { name: 'created_by_ref', dependency: true },
+      { name: 'first_observed' },
+      { name: 'last_observed' },
+      { name: 'number_observed' },
+      { name: 'confidence' },
+      { name: 'object_marking_refs' },
+    ],
   },
 ];
 

@@ -3,8 +3,8 @@
 import * as R from 'ramda';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../database/utils';
 
-export const rebuildInstanceBeforePatch = (stixWithInternalRefs, patch) => {
-  const rebuild = R.clone(stixWithInternalRefs);
+export const rebuildInstanceBeforePatch = (instance, patch) => {
+  const rebuild = R.clone(instance);
   const patchEntries = Object.entries(patch);
   for (let index = 0; index < patchEntries.length; index += 1) {
     const [type, actionPatch] = patchEntries[index];
@@ -13,16 +13,21 @@ export const rebuildInstanceBeforePatch = (stixWithInternalRefs, patch) => {
       const [key, changes] = elementEntries[elemIndex];
       if (type === UPDATE_OPERATION_REPLACE) {
         const { previous } = changes;
-        rebuild[key] = previous;
+        if (Array.isArray(previous)) {
+          rebuild[key] = previous.map((c) => (typeof c === 'object' ? c.x_opencti_internal_id : c));
+        } else {
+          rebuild[key] = typeof previous === 'object' ? previous?.x_opencti_internal_id : previous;
+        }
       }
       if (type === UPDATE_OPERATION_ADD) {
-        const ids = changes.map((c) => c.x_opencti_internal_id);
-        rebuild[key] = (rebuild[key] || []).filter((e) => !ids.includes(e.x_opencti_internal_id));
+        const ids = changes.map((c) => (typeof c === 'object' ? [c.value, c.x_opencti_internal_id] : [c])).flat();
+        const elements = (instance[key] || []).filter((e) => !ids.includes(e));
+        rebuild[key] = key.endsWith('_ref') ? null : elements;
       }
       if (type === UPDATE_OPERATION_REMOVE) {
         const ops = rebuild[key] || [];
-        ops.push(...changes);
-        rebuild[key] = ops;
+        ops.push(...changes.map((c) => (typeof c === 'object' ? c.x_opencti_internal_id : c)));
+        rebuild[key] = key.endsWith('_ref') ? R.head(ops) : ops;
       }
     }
   }
@@ -37,8 +42,12 @@ export const rebuildInstanceWithPatch = (instance, patch) => {
     for (let elemIndex = 0; elemIndex < elementEntries.length; elemIndex += 1) {
       const [key, changes] = elementEntries[elemIndex];
       if (type === UPDATE_OPERATION_REPLACE) {
-        const { value } = changes;
-        rebuild[key] = value;
+        const { current } = changes;
+        if (Array.isArray(current)) {
+          rebuild[key] = current.map((c) => (typeof c === 'object' ? c.value : c));
+        } else {
+          rebuild[key] = typeof current === 'object' ? current.value : current;
+        }
       }
       if (type === UPDATE_OPERATION_ADD) {
         const ops = rebuild[key] || [];

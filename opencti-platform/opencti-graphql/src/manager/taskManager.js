@@ -222,7 +222,7 @@ const executeRuleApply = async (user, taskId, context, element) => {
 
 const executeRuleClean = async (context, taskId, element) => {
   const { rule } = context;
-  await rulesCleanHandler(`task--${taskId}`, [element], [rule], null);
+  await rulesCleanHandler(`task--${taskId}`, [element], [rule]);
 };
 
 const executeProcessing = async (user, taskId, processingElements) => {

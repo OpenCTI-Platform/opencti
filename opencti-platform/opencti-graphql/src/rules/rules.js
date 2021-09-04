@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { BYPASS, ROLE_ADMINISTRATOR } from '../utils/access';
 import { UnsupportedError } from '../config/errors';
 import { shortHash, isInternalId } from '../schema/schemaUtils';
@@ -53,10 +54,10 @@ export const RULE_MANAGER_USER = {
 export const isRuleUser = (user) => user.id === RULE_MANAGER_USER_UUID;
 
 export const createRuleContent = (ruleId, dependencies, explanation, data = {}) => {
-  if (dependencies.filter((d) => !isInternalId(d)).length > 0) {
+  if (dependencies.filter((d) => !isInternalId(R.head(d.split('_')))).length > 0) {
     throw UnsupportedError('Rule definition dependencies must have internal ids only');
   }
-  if (explanation.filter((d) => !isInternalId(d)).length > 0) {
+  if (explanation.filter((d) => !isInternalId(R.head(d.split('_')))).length > 0) {
     throw UnsupportedError('Rule definition explanation must have internal ids only');
   }
   const hash = shortHash(explanation);
