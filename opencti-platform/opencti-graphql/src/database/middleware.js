@@ -1644,14 +1644,14 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
       // We dont care about the operation here, the only thing we can do is replace
       if (isSingleStixEmbeddedRelationshipInput(key)) {
         const relType = OPENCTI_ATTRIBUTE_TO_EMBEDDED_REL[key];
-        const currentValue = R.head(updatedInstance.createdBy || []);
-        const { value: createdRefIds } = meta[metaIndex];
-        const targetCreated = R.head(createdRefIds);
+        const currentValue = R.head(updatedInstance[key] || []);
+        const { value: refIds } = meta[metaIndex];
+        const targetCreated = R.head(refIds);
         // If asking for a real change
         if (currentValue?.standard_id !== targetCreated && currentValue?.id !== targetCreated) {
           // Delete the current relation
           if (currentValue?.standard_id) {
-            const currentRels = await listAllRelations(user, relType, { fromId: id });
+            const currentRels = await listAllRelations(user, relType, { fromId: instance.id });
             // eslint-disable-next-line no-use-before-define
             await deleteElements(user, currentRels, streamOpts);
           }
@@ -2710,7 +2710,7 @@ export const deleteElementById = async (user, elementId, type, opts = {}) => {
   }
   return deleteElement(user, element, opts);
 };
-export const deleteInferredRuleElement = async (rule, instance, dependencyId) => {
+export const deleteInferredRuleElement = async (rule, instance, deletedDependencies) => {
   const fromRule = RULE_PREFIX + rule;
   const rules = Object.keys(instance).filter((k) => k.startsWith(RULE_PREFIX));
   const completeRuleName = RULE_PREFIX + rule;
@@ -2726,8 +2726,8 @@ export const deleteInferredRuleElement = async (rule, instance, dependencyId) =>
   for (let index = 0; index < elementsRule.length; index += 1) {
     const ruleContent = elementsRule[index];
     const { dependencies } = ruleContent;
-    // If no dependency setup, this is task cleanup
-    if (isNotEmptyField(dependencyId) && !dependencies.includes(dependencyId)) {
+    // Keep the element only if not include any deleted dependencies
+    if (deletedDependencies.length > 0 && !deletedDependencies.some((d) => dependencies.includes(d))) {
       rebuildRuleContent.push(ruleContent);
     }
   }
