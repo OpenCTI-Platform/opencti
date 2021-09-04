@@ -114,6 +114,7 @@ services:
     SMTP__USERNAME: jennyfer.mraz@ethereal.email
     SMTP__PASSWORD: frhJ2mSPTfaEutpbug
   commands:
+    - sleep 30
     - apk add build-base git libffi-dev
     - cp -a opencti-platform /tmp/raw-start-platform
     - cd /tmp/raw-start-platform/opencti-graphql
@@ -138,6 +139,7 @@ services:
     SMTP__USERNAME: jennyfer.mraz@ethereal.email
     SMTP__PASSWORD: frhJ2mSPTfaEutpbug
   commands:
+    - sleep 60
     - apk add build-base git libffi-dev
     - cp -a opencti-platform /tmp/live-start-platform
     - cd /tmp/live-start-platform/opencti-graphql
@@ -162,6 +164,7 @@ services:
     SMTP__USERNAME: jennyfer.mraz@ethereal.email
     SMTP__PASSWORD: frhJ2mSPTfaEutpbug
   commands:
+    - sleep 90
     - apk add build-base git libffi-dev
     - cp -a opencti-platform /tmp/live-end-platform
     - cd /tmp/live-end-platform/opencti-graphql
