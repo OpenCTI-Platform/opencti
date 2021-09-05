@@ -95,9 +95,17 @@ const createApp = async (apolloServer) => {
   app.use(`${basePath}/static`, express.static(path.join(__dirname, '../../public/static')));
 
   app.use(appSessionHandler.session);
-  // app.use(refreshSessionMiddleware);
-  apolloServer.applyMiddleware({ app, cors: true, onHealthCheck, path: `${basePath}/graphql` });
-  app.use(bodyParser.json({ limit: '100mb' }));
+  const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
+  app.use(bodyParser.json({ limit: requestSizeLimit }));
+  apolloServer.applyMiddleware({
+    app,
+    cors: true,
+    bodyParserConfig: {
+      limit: requestSizeLimit,
+    },
+    onHealthCheck,
+    path: `${basePath}/graphql`,
+  });
 
   const seeMiddleware = createSeeMiddleware();
   seeMiddleware.applyMiddleware({ app });
