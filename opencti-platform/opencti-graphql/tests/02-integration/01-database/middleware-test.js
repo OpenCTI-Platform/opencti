@@ -784,6 +784,7 @@ describe('Upsert and merge entities', () => {
     const malware = {
       name: 'MALWARE_TEST',
       description: 'MALWARE_TEST DESCRIPTION',
+      stix_id: 'malware--907bb632-e3c2-52fa-b484-cf166a7d377e',
       objectMarking: [whiteMarking, mitreMarking],
     };
     const createdMalware = await createEntity(ADMIN_USER, malware, ENTITY_TYPE_MALWARE);
