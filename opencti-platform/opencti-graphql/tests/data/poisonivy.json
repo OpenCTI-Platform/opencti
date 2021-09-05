@@ -624,7 +624,8 @@
         "malicious-activity",
         "attribution"
       ],
-      "valid_from": "2015-05-15T09:12:16.432678Z"
+      "valid_from": "2015-05-15T09:12:16.432678Z",
+      "valid_until": "2299-05-15T09:12:16.432678Z"
     },
     {
       "type": "indicator",

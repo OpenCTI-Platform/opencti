@@ -2,14 +2,14 @@
 // 'is `based-on` **observable B**, and `revoked` = **false** and `x_opencti_detection` = **false**' +
 // 'then **indicator C** is `sighted` in **organization X**.';
 
-import { FIVE_MINUTES, FIVE_SECS, sleep } from '../utils/testQuery';
+import { FIVE_MINUTES, sleep, FIVE_SECS } from '../utils/testQuery';
 import RuleObserveSighting from '../../src/rules/observed-sighting/ObserveSightingRule';
 import { RULE_PREFIX } from '../../src/schema/general';
 import { shutdownModules, startModules } from '../../src/modules';
 import { activateRule, disableRule, getInferences, inferenceLookup } from './rule-utils';
 import { createRelation, deleteElement, patchAttribute } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
-import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INDICATOR } from '../../src/schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../src/schema/stixSightingRelationship';
 import { RELATION_BASED_ON } from '../../src/schema/stixCoreRelationship';
 
@@ -18,6 +18,7 @@ const TLP_WHITE_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
 const OBSERVED_DATA = 'observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be'; // observed-data A
 const OBSERVED_FILE = 'file--702e320e-43b6-552a-b7e7-d045bf9c887d'; // observable B
 const ANSSI = 'identity--18fe5225-fee1-5627-ad3e-20c14435b024'; // Organization X
+const MITRE = 'identity--f11b0831-e7e6-5214-9431-ccf054e53e94'; // Organization X
 const CBRICKSDOC = 'indicator--c5c0c0f9-dfa1-5b7d-a12a-ea95072d3e45'; // indicator C
 
 describe('Observed sighting rule', () => {
@@ -50,8 +51,7 @@ describe('Observed sighting rule', () => {
         relationship_type: RELATION_BASED_ON,
         objectMarking: [TLP_WHITE_ID],
       });
-      // TODO ASK JULIEN
-      /* const afterLiveRelations = await assertInferencesSize(1);
+      const afterLiveRelations = await assertInferencesSize(1);
       const cbrickToAnssi = await inferenceLookup(afterLiveRelations, CBRICKSDOC, ANSSI, STIX_SIGHTING_RELATIONSHIP);
       expect(cbrickToAnssi).not.toBeNull();
       expect(cbrickToAnssi[RULE].length).toBe(1);
@@ -59,11 +59,32 @@ describe('Observed sighting rule', () => {
       expect(cbrickToAnssi.last_seen).toBe('2020-02-25T09:02:29.040Z');
       expect(cbrickToAnssi.attribute_count).toBe(1);
       expect(cbrickToAnssi.confidence).toBe(15);
+      expect(cbrickToAnssi.i_inference_weight).toBeUndefined();
       expect((cbrickToAnssi.object_marking_refs || []).length).toBe(0);
-      // TODO add more attributes testing
+      // Change the organization
+      await patchAttribute(SYSTEM_USER, OBSERVED_DATA, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, { createdBy: MITRE });
+      const afterOrgaRelations = await assertInferencesSize(1);
+      const cbrickToMitre = await inferenceLookup(afterOrgaRelations, CBRICKSDOC, MITRE, STIX_SIGHTING_RELATIONSHIP);
+      expect(cbrickToMitre).not.toBeNull();
+      // Invalidate the rule with x_opencti_detection = true
+      await patchAttribute(SYSTEM_USER, CBRICKSDOC, ENTITY_TYPE_INDICATOR, { x_opencti_detection: true });
+      await assertInferencesSize(0);
+      await patchAttribute(SYSTEM_USER, CBRICKSDOC, ENTITY_TYPE_INDICATOR, { x_opencti_detection: false });
+      await assertInferencesSize(1);
       // ---- 02. Test rescan behavior
-      // TODO
-      */
+      // Disable the rule
+      await disableRule(RuleObserveSighting.id);
+      await activateRule(RuleObserveSighting.id);
+      const afterRescan = await assertInferencesSize(1);
+      const cbrickToMitreRescan = await inferenceLookup(afterRescan, CBRICKSDOC, MITRE, STIX_SIGHTING_RELATIONSHIP);
+      expect(cbrickToMitreRescan).not.toBeNull();
+      expect(cbrickToMitreRescan[RULE].length).toBe(1);
+      expect(cbrickToMitreRescan.first_seen).toBe('2020-02-25T09:02:29.040Z');
+      expect(cbrickToMitreRescan.last_seen).toBe('2020-02-25T09:02:29.040Z');
+      expect(cbrickToMitreRescan.attribute_count).toBe(1);
+      expect(cbrickToMitreRescan.confidence).toBe(15);
+      expect(cbrickToMitreRescan.i_inference_weight).toBeUndefined();
+      expect((cbrickToMitreRescan.object_marking_refs || []).length).toBe(0);
       // Cleanup
       await deleteElement(SYSTEM_USER, cbrickToFile);
       await assertInferencesSize(0);

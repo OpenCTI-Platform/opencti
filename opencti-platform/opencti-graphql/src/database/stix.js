@@ -84,7 +84,7 @@ import {
   isSingleStixEmbeddedRelationship,
   isSingleStixEmbeddedRelationshipInput,
 } from '../schema/stixEmbeddedRelationship';
-import { observableValue } from "../utils/format";
+import { observableValue } from '../utils/format';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -144,9 +144,15 @@ export const stixDataConverter = (data, args = {}) => {
   if (isDefinedValue(finalData.fromId)) {
     finalData = R.pipe(R.dissoc('fromId'), R.dissoc('fromRole'), R.dissoc('fromType'))(finalData);
     if (isSighting) {
-      finalData = R.assoc('x_opencti_sighting_of_ref', data.fromId, finalData);
+      finalData = R.pipe(
+        R.assoc(`x_opencti_sighting_of_ref`, data.fromId),
+        R.assoc(`x_opencti_sighting_of_type`, data.fromType)
+      )(finalData);
     } else {
-      finalData = R.assoc('x_opencti_source_ref', data.fromId, finalData);
+      finalData = R.pipe(
+        R.assoc(`x_opencti_source_ref`, data.fromId),
+        R.assoc(`x_opencti_source_type`, data.fromType)
+      )(finalData);
     }
   }
   if (isDefinedValue(finalData.from)) {
@@ -169,9 +175,15 @@ export const stixDataConverter = (data, args = {}) => {
   if (isDefinedValue(finalData.toId)) {
     finalData = R.pipe(R.dissoc('toId'), R.dissoc('toRole'), R.dissoc('toType'))(finalData);
     if (isSighting) {
-      finalData = R.assoc('x_opencti_where_sighted_refs', [data.toId], finalData);
+      finalData = R.pipe(
+        R.assoc(`x_opencti_where_sighted_refs`, [data.toId]),
+        R.assoc(`x_opencti_where_sighted_types`, [data.toType])
+      )(finalData);
     } else {
-      finalData = R.assoc('x_opencti_target_ref', data.toId, finalData);
+      finalData = R.pipe(
+        R.assoc(`x_opencti_target_ref`, data.toId),
+        R.assoc(`x_opencti_target_type`, data.toType)
+      )(finalData);
     }
   }
   if (isDefinedValue(finalData.to)) {

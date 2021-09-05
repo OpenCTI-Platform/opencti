@@ -34,7 +34,7 @@ import { now } from '../utils/format';
 import {
   INDEX_INTERNAL_OBJECTS,
   READ_DATA_INDICES,
-  READ_STIX_INDICES,
+  READ_DATA_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
 } from '../database/utils';
@@ -44,6 +44,7 @@ import { ABSTRACT_BASIC_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
 import { rulesCleanHandler, rulesApplyDerivedEvents } from './ruleManager';
 import { getRule } from '../domain/rule';
+import { RULE_MANAGER_USER } from '../rules/rules';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -67,7 +68,7 @@ const findTaskToExecute = async () => {
   }
   return R.head(tasks);
 };
-const computeRuleTaskElements = async (user, task) => {
+const computeRuleTaskElements = async (task) => {
   const { task_position, rule, enable } = task;
   const processingElements = [];
   const ruleDefinition = await getRule(rule);
@@ -80,7 +81,7 @@ const computeRuleTaskElements = async (user, task) => {
       after: task_position,
       ...buildFilters(scan),
     };
-    const data = await elPaginate(user, READ_STIX_INDICES, options);
+    const data = await elPaginate(RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, options);
     const elements = data.edges;
     // Apply the actions for each element
     for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
@@ -100,7 +101,7 @@ const computeRuleTaskElements = async (user, task) => {
       after: task_position,
       filters,
     };
-    const data = await elPaginate(SYSTEM_USER, READ_DATA_INDICES, options);
+    const data = await elPaginate(RULE_MANAGER_USER, READ_DATA_INDICES, options);
     const elements = data.edges;
     // Apply the actions for each element
     for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
@@ -296,7 +297,7 @@ const taskHandler = async () => {
       processingElements = await computeListTaskElements(user, task);
     }
     if (isRuleTask) {
-      processingElements = await computeRuleTaskElements(user, task);
+      processingElements = await computeRuleTaskElements(task);
     }
     // Process the elements (empty = end of execution)
     if (processingElements.length > 0) {
