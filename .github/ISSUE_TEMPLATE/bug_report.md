@@ -7,12 +7,6 @@ assignees: ''
 
 ---
 
-## Prerequisites
-
-- [ ] I read the OpenCTI documentation and didn't find anything relevant to my problem
-- [ ] I went through old GitHub issues and couldn't find anything relevant
-- [ ] I googled the issue and didn't find anything relevant
-
 ## Description
 
 <!-- Please provide a clear and concise description of the bug. -->
