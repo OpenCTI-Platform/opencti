@@ -1507,11 +1507,11 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
       let aliasesId;
       if (input.operation === UPDATE_OPERATION_ADD) {
         // Operation add, adjust aliases id with [name, current IDs and input IDs]
-        aliasesId = generateAliasesId([instance.name, ...instance[input.key], ...input.value], instance);
+        aliasesId = generateAliasesId([instance.name, ...(instance[input.key] || []), ...input.value], instance);
       } else if (input.operation === UPDATE_OPERATION_REMOVE) {
         // Operation remove, adjust aliases id with [name, current IDs not included in the input IDs]
         aliasesId = generateAliasesId(
-          [instance.name, ...R.filter((n) => !input.value.includes(n), instance[input.key])],
+          [instance.name, ...R.filter((n) => !input.value.includes(n), instance[input.key] || [])],
           instance
         );
       } else {
