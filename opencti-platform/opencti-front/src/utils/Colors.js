@@ -2,6 +2,10 @@
 export const stringToColour = (str) => {
   if (!str) {
     return '#5d4037';
+  } if (str === 'true') {
+    return '#2e7d32';
+  } if (str === 'false') {
+    return '#bf360c';
   }
   let hash = 0;
   for (let i = 0; i < str.length; i += 1) {

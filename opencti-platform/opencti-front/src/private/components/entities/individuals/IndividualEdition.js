@@ -38,7 +38,7 @@ export const individualEditionQuery = graphql`
       ...IndividualEditionContainer_individual
     }
     settings {
-      platform_enable_references
+      platform_enable_reference
     }
   }
 `;
@@ -90,7 +90,9 @@ class IndividualEdition extends Component {
                 return (
                   <IndividualEditionContainer
                     individual={props.individual}
-                    enableReferences={props.settings.platform_enable_references}
+                    enableReferences={props.settings.platform_enable_reference?.includes(
+                      'Individual',
+                    )}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

@@ -55,6 +55,7 @@ describe('Located at located rule', () => {
       expect(hietzingToEurope.start_time).toBe('2020-02-29T23:00:00.000Z');
       expect(hietzingToEurope.stop_time).toBe('2020-02-29T23:00:00.000Z');
       expect(hietzingToEurope[RULE].length).toBe(2);
+      expect(hietzingToEurope.i_inference_weight).toBe(2);
       const franceToEurope = await inferenceLookup(afterActivationRelations, FRANCE, EUROPE, RELATION_LOCATED_AT);
       expect(franceToEurope).not.toBeNull();
       expect(franceToEurope.confidence).toBe(0);

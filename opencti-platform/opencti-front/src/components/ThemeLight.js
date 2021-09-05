@@ -20,6 +20,7 @@ export default (logo = null, primary = null, secondary = null) => ({
       navLight: '#ffffff',
       default: '#f5f5f5',
       chip: 'rgba(80, 123, 200, 0.6)',
+      line: 'rgba(80, 123, 200, 0.05)',
     },
     action: { disabled: '#ababab', grid: '#dbdbdb', expansion: '#fafafa' },
   },

@@ -75,7 +75,7 @@ class SectorLineComponent extends Component {
               <div>
                 <div className={classes.name}>{node.name}</div>
                 <div className={classes.description}>
-                  {node.description.length > 0
+                  {node.description?.length > 0
                     ? node.description
                     : t('This sector does not have any description.')}
                 </div>

@@ -94,7 +94,7 @@ class IncidentEditionDetailsComponent extends Component {
           mutation: IncidentMutationFieldPatch,
           variables: {
             id: this.props.incident.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })

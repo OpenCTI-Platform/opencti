@@ -120,7 +120,7 @@ class ReportCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const adaptedValues = evolve(
       {
-        published: parse(values.published).format(),
+        published: () => parse(values.published).format(),
         createdBy: path(['value']),
         objectMarking: pluck('value'),
         objectLabel: pluck('value'),

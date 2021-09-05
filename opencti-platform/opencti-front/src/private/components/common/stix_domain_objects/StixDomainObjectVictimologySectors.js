@@ -34,6 +34,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Collapse from '@material-ui/core/Collapse';
 import { Domain, ExpandLess, ExpandMore } from '@material-ui/icons';
 import { createRefetchContainer } from 'react-relay';
+import remarkGfm from 'remark-gfm';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
@@ -342,7 +343,10 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                 // eslint-disable-next-line no-nested-ternary
                                 stixCoreRelationship.description
                                 && stixCoreRelationship.description.length > 0 ? (
-                                  <Markdown className="markdown">
+                                  <Markdown
+                                    remarkPlugins={[remarkGfm]}
+                                    className="markdown"
+                                  >
                                     {stixCoreRelationship.description}
                                   </Markdown>
                                   ) : (
@@ -463,7 +467,10 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                             stixCoreRelationship.description
                                             && stixCoreRelationship.description
                                               .length > 0 ? (
-                                              <Markdown className="markdown">
+                                              <Markdown
+                                                remarkPlugins={[remarkGfm]}
+                                                className="markdown"
+                                              >
                                                 {
                                                   stixCoreRelationship.description
                                                 }
@@ -561,7 +568,7 @@ export const stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery = grap
   query StixDomainObjectVictimologySectorsStixCoreRelationshipsQuery(
     $fromId: String
     $toTypes: [String]
-    $relationship_type: String
+    $relationship_type: [String]
     $first: Int
   ) {
     ...StixDomainObjectVictimologySectors_data

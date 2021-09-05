@@ -24,7 +24,6 @@ import SelectField from '../../../components/SelectField';
 import Loader from '../../../components/Loader';
 import MarkDownField from '../../../components/MarkDownField';
 import ColorPickerField from '../../../components/ColorPickerField';
-import SwitchField from '../../../components/SwitchField';
 
 const styles = (theme) => ({
   container: {
@@ -74,7 +73,7 @@ const settingsQuery = graphql`
       platform_theme_light_primary
       platform_theme_light_secondary
       platform_theme_light_logo
-      platform_enable_references
+      platform_enable_reference
       platform_providers {
         name
         strategy
@@ -108,7 +107,6 @@ const settingsMutationFieldPatch = graphql`
         platform_theme_light_logo
         platform_language
         platform_login_message
-        platform_enable_references
       }
     }
   }
@@ -141,9 +139,7 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_email: Yup.string()
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
-  platform_url: Yup.string()
-    .required(t('This field is required'))
-    .url(t('The value must be an URL')),
+  platform_url: Yup.string().url(t('The value must be an URL')).nullable(),
   platform_theme: Yup.string(),
   platform_theme_dark_primary: Yup.string(),
   platform_theme_dark_secondary: Yup.string(),
@@ -153,7 +149,6 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_theme_light_logo: Yup.string(),
   platform_language: Yup.string(),
   platform_login_message: Yup.string(),
-  platform_enable_references: Yup.bool(),
 });
 
 class Settings extends Component {
@@ -185,13 +180,16 @@ class Settings extends Component {
         finalValue = `#${finalValue}`;
       }
       finalValue = finalValue.substring(0, 7);
+      if (finalValue.length < 7) {
+        finalValue = '#000000';
+      }
     }
     settingsValidation(this.props.t)
       .validateAt(name, { [name]: finalValue })
       .then(() => {
         commitMutation({
           mutation: settingsMutationFieldPatch,
-          variables: { id, input: { key: name, value: finalValue } },
+          variables: { id, input: { key: name, value: finalValue || '' } },
         });
       })
       .catch(() => false);
@@ -223,7 +221,6 @@ class Settings extends Component {
                   'platform_theme_light_logo',
                   'platform_map_tile_server_dark',
                   'platform_map_tile_server_light',
-                  'platform_enable_references',
                 ],
                 settings,
               );
@@ -367,24 +364,6 @@ class Settings extends Component {
                                   <MenuItem value="en">English</MenuItem>
                                   <MenuItem value="fr">Français</MenuItem>
                                 </Field>
-                                <Field
-                                  component={SwitchField}
-                                  type="checkbox"
-                                  name="platform_enable_references"
-                                  label={t('Enable commit messages')}
-                                  fullWidth={true}
-                                  containerstyle={{
-                                    marginTop: 20,
-                                    width: '100%',
-                                  }}
-                                  onChange={this.handleSubmitField.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  helpertext={t(
-                                    'Commit message when updating data from the UI.',
-                                  )}
-                                />
                               </Form>
                             </div>
                           )}

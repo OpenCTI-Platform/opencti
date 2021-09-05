@@ -89,7 +89,7 @@ StixCyberObservableEntitiesLines.propTypes = {
 export const stixCyberObservableEntitiesLinesQuery = graphql`
   query StixCyberObservableEntitiesLinesPaginationQuery(
     $elementId: String
-    $relationship_type: String
+    $relationship_type: [String]
     $toTypes: [String]
     $startTimeStart: DateTime
     $startTimeStop: DateTime
@@ -128,7 +128,7 @@ export default createPaginationContainer(
       fragment StixCyberObservableEntitiesLines_data on Query
       @argumentDefinitions(
         elementId: { type: "String" }
-        relationship_type: { type: "String" }
+        relationship_type: { type: "[String]" }
         toTypes: { type: "[String]" }
         startTimeStart: { type: "DateTime" }
         startTimeStop: { type: "DateTime" }

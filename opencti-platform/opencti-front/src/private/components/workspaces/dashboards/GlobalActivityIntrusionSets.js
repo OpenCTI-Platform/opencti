@@ -8,6 +8,7 @@ import StixCoreRelationshipsDonut from '../../common/stix_core_relationships/Sti
 import StixCoreRelationshipsAreaChart from '../../common/stix_core_relationships/StixCoreRelationshipsAreaChart';
 import StixCoreRelationshipsVerticalBars from '../../common/stix_core_relationships/StixCoreRelationshipsVerticalBars';
 import StixCoreRelationshipsList from '../../common/stix_core_relationships/StixCoreRelationshipsList';
+import StixDomainObjectsTimeline from '../../common/stix_domain_objects/StixDomainObjectsTimeline';
 
 const styles = () => ({
   container: {
@@ -81,6 +82,14 @@ class GlobalActivityIntrusionSets extends Component {
             startDate={startDate}
             endDate={endDate}
             dateAttribute="created_at"
+            variant="inLine"
+          />
+        );
+      case 'timeline':
+        return (
+          <StixDomainObjectsTimeline
+            title={`${t('Activity')} - ${t('Intrusion Sets')}`}
+            types={['Intrusion-Set']}
             variant="inLine"
           />
         );

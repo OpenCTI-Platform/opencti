@@ -9,6 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import Chip from '@material-ui/core/Chip';
 import Markdown from 'react-markdown';
 import Grid from '@material-ui/core/Grid';
+import remarkGfm from 'remark-gfm';
 import inject18n from '../../../../components/i18n';
 import ItemReliability from '../../../../components/ItemReliability';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -89,7 +90,7 @@ class OrganizationDetailsComponent extends Component {
               >
                 {t('Contact information')}
               </Typography>
-              <Markdown className="markdown">
+              <Markdown remarkPlugins={[remarkGfm]} className="markdown">
                 {organization.contact_information}
               </Markdown>
             </Grid>

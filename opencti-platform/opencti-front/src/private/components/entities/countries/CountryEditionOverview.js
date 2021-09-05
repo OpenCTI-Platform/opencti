@@ -140,7 +140,7 @@ class CountryEditionOverviewComponent extends Component {
         mutation: countryMutationFieldPatch,
         variables: {
           id: this.props.country.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

@@ -140,7 +140,7 @@ class RegionEditionOverviewComponent extends Component {
         mutation: regionMutationFieldPatch,
         variables: {
           id: this.props.region.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

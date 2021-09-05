@@ -140,7 +140,7 @@ class OrganizationEditionOverviewComponent extends Component {
           mutation: organizationMutationFieldPatch,
           variables: {
             id: this.props.organization.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })
@@ -153,7 +153,7 @@ class OrganizationEditionOverviewComponent extends Component {
         mutation: organizationMutationFieldPatch,
         variables: {
           id: this.props.organization.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

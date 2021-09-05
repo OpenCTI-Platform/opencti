@@ -8,17 +8,21 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import Switch from '@material-ui/core/Switch';
 import { ArrowRightAltOutlined } from '@material-ui/icons';
 import { interval } from 'rxjs';
 import Slide from '@material-ui/core/Slide';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { createRefetchContainer } from 'react-relay';
 import Chip from '@material-ui/core/Chip';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import inject18n from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import SubTypePopover from './SubTypePopover';
 import { hexToRGB } from '../../../../utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
+import { commitMutation } from '../../../../relay/environment';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -28,6 +32,9 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
+  root: {
+    marginBottom: 50,
+  },
   item: {
     paddingLeft: 10,
     cursor: 'default',
@@ -59,15 +66,33 @@ const styles = (theme) => ({
   },
   statuses: {
     float: 'left',
+    width: '50%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+  },
+  reference: {
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingLeft: 20,
   },
   goIcon: {
     position: 'absolute',
     right: -10,
   },
 });
+
+const workflowLinesFieldPatch = graphql`
+  mutation WorkflowLinesFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+    settingsEdit(id: $id) {
+      fieldPatch(input: $input) {
+        platform_enable_reference
+      }
+    }
+  }
+`;
 
 class WorkflowLinesComponent extends Component {
   componentDidMount() {
@@ -78,6 +103,27 @@ class WorkflowLinesComponent extends Component {
 
   componentWillUnmount() {
     this.subscription.unsubscribe();
+  }
+
+  handleSubmitReference(type, event) {
+    const { id, platform_enable_reference: currentReference } = this.props.data.settings;
+    const { checked } = event.target;
+    let reference;
+    if (checked) {
+      reference = R.uniq([...currentReference, type]);
+    } else {
+      reference = R.uniq(R.filter((n) => n !== type, currentReference));
+    }
+    commitMutation({
+      mutation: workflowLinesFieldPatch,
+      variables: {
+        id,
+        input: {
+          key: 'platform_enable_reference',
+          value: reference,
+        },
+      },
+    });
   }
 
   render() {
@@ -133,7 +179,9 @@ class WorkflowLinesComponent extends Component {
                                 style={{
                                   color: status.template.color,
                                   borderColor: status.template.color,
-                                  backgroundColor: hexToRGB(status.template.color),
+                                  backgroundColor: hexToRGB(
+                                    status.template.color,
+                                  ),
                                 }}
                               />
                               {R.last(statuses).id !== status.id && (
@@ -150,6 +198,25 @@ class WorkflowLinesComponent extends Component {
                             label={t('Disabled')}
                           />
                         )}
+                      </div>
+                      <div className={classes.reference}>
+                        <FormGroup>
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={data.settings.platform_enable_reference?.includes(
+                                  subType.id,
+                                )}
+                                size="small"
+                                onChange={this.handleSubmitReference.bind(
+                                  this,
+                                  subType.id,
+                                )}
+                              />
+                            }
+                            label={t('Commit messages')}
+                          />
+                        </FormGroup>
                       </div>
                     </div>
                   }
@@ -177,7 +244,7 @@ WorkflowLinesComponent.propTypes = {
 
 export const workflowLinesQuery = graphql`
   query WorkflowLinesQuery {
-    ...WorkflowLines_subTypes
+    ...WorkflowLines_data
   }
 `;
 
@@ -185,7 +252,11 @@ const WorkflowLines = createRefetchContainer(
   WorkflowLinesComponent,
   {
     data: graphql`
-      fragment WorkflowLines_subTypes on Query {
+      fragment WorkflowLines_data on Query {
+        settings {
+          id
+          platform_enable_reference
+        }
         subTypes {
           edges {
             node {

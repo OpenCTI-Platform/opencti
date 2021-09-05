@@ -791,7 +791,7 @@ type Settings implements InternalObject & BasicObject {
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
   platform_login_message: String
-  platform_enable_references: Boolean
+  platform_enable_reference: [String]
   created_at: DateTime!
   updated_at: DateTime!
   # Technical
@@ -802,6 +802,7 @@ type Settings implements InternalObject & BasicObject {
 enum GroupsOrdering {
   name
   default_assignation
+  auto_new_marking
   created_at
   updated_at
 }
@@ -2749,7 +2750,7 @@ input IdentityAddInput {
   x_opencti_stix_ids: [String]
   type: IdentityType!
   name: String!
-  description: String
+  description: String!
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
@@ -8951,8 +8952,7 @@ type Query {
     toId: String
     toRole: String
     toTypes: [String]
-    relationship_type: String
-    relationshipTypes: [String]
+    relationship_type: [String]
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -8996,8 +8996,7 @@ type Query {
     toId: String
     toRole: String
     toTypes: [String]
-    relationship_type: String
-    relationshipTypes: [String]
+    relationship_type: [String]
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -9031,8 +9030,7 @@ type Query {
     toId: String
     toRole: String
     toTypes: [String]
-    relationship_type: String
-    relationshipTypes: [String]
+    relationship_type: [String]
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime

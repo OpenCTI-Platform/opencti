@@ -30,7 +30,7 @@ RUN yarn relay && yarn generate
 FROM base AS app
 
 RUN set -ex; \
-    apk add --no-cache tini~=0.19 gcc~=10.3 musl-dev~=1.2 python3~=3.9 python3-dev~=3.9; \
+    apk add --no-cache git tini gcc musl-dev python3 python3-dev postfix postfix-pcre; \
     python3 -m ensurepip; \
     rm -rv /usr/lib/python*/ensurepip; \
     pip3 install --no-cache-dir --upgrade pip setuptools wheel; \
@@ -38,6 +38,8 @@ RUN set -ex; \
 WORKDIR /opt/opencti
 COPY opencti-graphql/src/python/requirements.txt ./src/python/requirements.txt
 RUN pip3 install --no-cache-dir --requirement ./src/python/requirements.txt
+RUN pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
+RUN apk del git python3-dev gcc musl-dev
 COPY --from=graphql-deps-builder /opt/opencti-build/opencti-graphql/node_modules ./node_modules
 COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/build ./build
 COPY --from=front-builder /opt/opencti-build/opencti-front/build ./public

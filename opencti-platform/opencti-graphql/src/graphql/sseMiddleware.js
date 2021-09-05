@@ -252,13 +252,14 @@ export const isInstanceMatchFilters = (instance, filters) => {
     // Markings filtering
     if (type === MARKING_FILTER) {
       // event must have one of this marking
-      const markingIds = (instance.object_marking_refs || []).map((l) => l.x_opencti_internal_id);
-      const found = values.map((v) => v.id).some((r) => markingIds.includes(r));
-      if (!found) return false;
+      const found = values.map((v) => v.id).some((r) => (instance.object_marking_refs || []).includes(r));
+      if (!found) {
+        return false;
+      }
     }
     // Entity type filtering
     if (type === TYPE_FILTER) {
-      const instanceType = generateInternalType(instance);
+      const instanceType = instance.entity_type;
       const instanceAllTypes = [instanceType, ...getParentTypes(instanceType)];
       let found = false;
       if (values.length === 0) {
@@ -271,25 +272,31 @@ export const isInstanceMatchFilters = (instance, filters) => {
           }
         }
       }
-      if (!found) return false;
+      if (!found) {
+        return false;
+      }
     }
     // Creator filtering
     if (type === CREATOR_FILTER) {
-      const creatorIds = (instance.created_by_ref || []).map((l) => l.x_opencti_internal_id);
-      const found = values.map((v) => v.id).some((r) => creatorIds.includes(r));
-      if (!found) return false;
+      const found = values.map((v) => v.id).includes(instance.created_by_ref);
+      if (!found) {
+        return false;
+      }
     }
     // Labels filtering
     if (type === LABEL_FILTER) {
-      const labelsIds = (instance.labels || []).map((l) => l.x_opencti_internal_id);
-      const found = values.map((v) => v.id).some((r) => labelsIds.includes(r));
-      if (!found) return false;
+      const found = values.map((v) => v.id).some((r) => (instance.labels || []).includes(r));
+      if (!found) {
+        return false;
+      }
     }
     // Boolean filtering
     if (type === REVOKED_FILTER || type === DETECTION_FILTER) {
       const { id } = R.head(values);
       const found = (id === 'true') === instance[type];
-      if (!found) return false;
+      if (!found) {
+        return false;
+      }
     }
     // Numeric filtering
     if (type === SCORE_FILTER || type === CONFIDENCE_FILTER) {
@@ -312,13 +319,17 @@ export const isInstanceMatchFilters = (instance, filters) => {
         default:
           found = instance[type] === numeric;
       }
-      if (!found) return false;
+      if (!found) {
+        return false;
+      }
     }
     // String filtering
     if (type === PATTERN_FILTER) {
       const { id } = R.head(values);
       const found = id === instance[type];
-      if (!found) return false;
+      if (!found) {
+        return false;
+      }
     }
   }
   return true;
@@ -560,8 +571,7 @@ const createSeeMiddleware = () => {
             const currentInstance = await stixLoadById(req.session.user, diffId);
             // Could be null because of user markings restriction
             if (currentInstance) {
-              const createdInstance = buildStixData(currentInstance, { patchGeneration: true });
-              const isMatchFilters = isInstanceMatchFilters(createdInstance, streamFilters);
+              const isMatchFilters = isInstanceMatchFilters(currentInstance, streamFilters);
               if (isMatchFilters) {
                 const data = buildStixData(currentInstance, { clearEmptyValues: true });
                 const message = generateCreateMessage(currentInstance);
@@ -580,10 +590,9 @@ const createSeeMiddleware = () => {
             const currentInstance = await stixLoadById(req.session.user, diffId);
             // Could be null because of markings restriction
             if (currentInstance) {
-              const current = buildStixData(currentInstance, { patchGeneration: true });
-              const beforePatch = rebuildInstanceBeforePatch(current, patch);
+              const beforePatch = rebuildInstanceBeforePatch(currentInstance, patch);
               const isBeforePatchVisible = isInstanceMatchFilters(beforePatch, streamFilters);
-              const isCurrentVisible = isInstanceMatchFilters(current, streamFilters);
+              const isCurrentVisible = isInstanceMatchFilters(currentInstance, streamFilters);
               const data = buildStixData(currentInstance);
               const markings = data.object_marking_refs || [];
               data.x_opencti_patch = patch;

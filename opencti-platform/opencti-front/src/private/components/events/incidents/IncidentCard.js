@@ -13,6 +13,7 @@ import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
 import { Fire } from 'mdi-material-ui';
 import Skeleton from '@material-ui/lab/Skeleton';
+import remarkGfm from 'remark-gfm';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
@@ -107,6 +108,7 @@ class IncidentCardComponent extends Component {
           <CardContent className={classes.content}>
             <div className={classes.description}>
               <Markdown
+                remarkPlugins={[remarkGfm]}
                 disallowedTypes={['link', 'linkReference']}
                 unwrapDisallowed={true}
               >

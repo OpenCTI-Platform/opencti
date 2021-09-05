@@ -134,7 +134,7 @@ class AttackPatternEditionOverviewComponent extends Component {
           mutation: attackPatternMutationFieldPatch,
           variables: {
             id: this.props.attackPattern.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })
@@ -147,7 +147,7 @@ class AttackPatternEditionOverviewComponent extends Component {
         mutation: attackPatternMutationFieldPatch,
         variables: {
           id: this.props.attackPattern.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

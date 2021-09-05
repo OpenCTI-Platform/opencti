@@ -300,7 +300,7 @@ const extractEntityMainValue = (entityData) => {
 export const generateMergeMessage = (instance, sources) => {
   const name = extractEntityMainValue(instance);
   const sourcesNames = sources.map((source) => extractEntityMainValue(source)).join(', ');
-  return `$merges ${instance.entity_type} \`${sourcesNames}\` in \`${name}\``;
+  return `merges ${instance.entity_type} \`${sourcesNames}\` in \`${name}\``;
 };
 const generateCreateDeleteMessage = (type, instance) => {
   const name = extractEntityMainValue(instance);

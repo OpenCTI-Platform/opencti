@@ -23,15 +23,14 @@ import { DatabaseError, FunctionalError, UnsupportedError } from '../config/erro
 import { now } from '../utils/format';
 import RedisStore from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
-import {
-  isStixMetaRelationship,
-  RELATION_CREATED_BY,
-  RELATION_OBJECT_MARKING,
-  STIX_META_RELATION_TO_OPENCTI_INPUT,
-} from '../schema/stixMetaRelationship';
-import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
+import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { getInstanceIdentifiers, getInstanceIds } from '../schema/identifier';
 import { BASE_TYPE_RELATION } from '../schema/general';
+import {
+  isSingleStixEmbeddedRelationship,
+  isStixEmbeddedRelationship,
+  STIX_EMBEDDED_RELATION_TO_OPENCTI_INPUT,
+} from '../schema/stixEmbeddedRelationship';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path) => readFileSync(path));
@@ -317,7 +316,10 @@ export const cacheGet = async (id) => {
     const result = {};
     if (ids.length > 0) {
       // eslint-disable-next-line prettier/prettier
-      const keyValues = await clientCache.cacheGet(ids.length, ids.map((i) => `cache:${i}`));
+      const keyValues = await clientCache.cacheGet(
+        ids.length,
+        ids.map((i) => `cache:${i}`)
+      );
       for (let index = 0; index < ids.length; index += 1) {
         const val = keyValues[index];
         result[ids[index]] = val ? JSON.parse(val) : val;
@@ -379,64 +381,67 @@ export const computeMergeDifferential = (initialInstance, mergedInstance) => {
       return obj.x_opencti_internal_id;
     },
   });
-  const diff = diffGenerator.diff(convertInit, convertMerged);
   const patch = {};
-  const entries = Object.entries(diff);
-  for (let index = 0; index < entries.length; index += 1) {
-    const [field, diffDelta] = entries[index];
-    // https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
-    if (Array.isArray(diffDelta)) {
-      let current;
-      let previous;
-      // Value added
-      if (diffDelta.length === DIFF_ADDED) {
-        const value = R.head(diffDelta);
-        current = value;
-        previous = Array.isArray(value) ? [] : '';
-      }
-      // Value changed
-      if (diffDelta.length === DIFF_CHANGE) {
-        current = R.last(diffDelta);
-        previous = R.head(diffDelta);
-      }
-      // Value removed
-      if (diffDelta.length === DIFF_REMOVE) {
-        const value = R.head(diffDelta);
-        previous = value;
-        current = Array.isArray(value) ? [] : '';
-      }
-      // Setup the patch
-      if (patch.replace) {
-        patch.replace[field] = { current, previous };
+  const diff = diffGenerator.diff(convertInit, convertMerged);
+  if (diff) {
+    // Result of the merge could be the exact same instance
+    const entries = Object.entries(diff);
+    for (let index = 0; index < entries.length; index += 1) {
+      const [field, diffDelta] = entries[index];
+      // https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
+      if (Array.isArray(diffDelta)) {
+        let current;
+        let previous;
+        // Value added
+        if (diffDelta.length === DIFF_ADDED) {
+          const value = R.head(diffDelta);
+          current = value;
+          previous = Array.isArray(value) ? [] : '';
+        }
+        // Value changed
+        if (diffDelta.length === DIFF_CHANGE) {
+          current = R.last(diffDelta);
+          previous = R.head(diffDelta);
+        }
+        // Value removed
+        if (diffDelta.length === DIFF_REMOVE) {
+          const value = R.head(diffDelta);
+          previous = value;
+          current = Array.isArray(value) ? [] : '';
+        }
+        // Setup the patch
+        if (patch.replace) {
+          patch.replace[field] = { current, previous };
+        } else {
+          patch.replace = { [field]: { current, previous } };
+        }
+      } else if (diffDelta[DIFF_TYPE] === DIFF_TYPE_ARRAY) {
+        // Is an array changes
+        const delta = R.dissoc(DIFF_TYPE, diffDelta);
+        const deltaObjEntries = Object.entries(delta);
+        for (let indexDelta = 0; indexDelta < deltaObjEntries.length; indexDelta += 1) {
+          const [, diffData] = deltaObjEntries[indexDelta];
+          if (diffData.length === DIFF_ADDED) {
+            if (patch.add) {
+              patch.add[field] = diffData;
+            } else {
+              patch.add = { [field]: diffData };
+            }
+          }
+          if (diffData.length === DIFF_REMOVE) {
+            const removedValue = R.head(diffData);
+            const removeVal = Array.isArray(removedValue) ? removedValue : [removedValue];
+            if (patch.remove) {
+              patch.remove[field] = removeVal;
+            } else {
+              patch.remove = { [field]: removeVal };
+            }
+          }
+        }
       } else {
-        patch.replace = { [field]: { current, previous } };
+        // Is a internal complex object, like extensions
+        // TODO @JRI
       }
-    } else if (diffDelta[DIFF_TYPE] === DIFF_TYPE_ARRAY) {
-      // Is an array changes
-      const delta = R.dissoc(DIFF_TYPE, diffDelta);
-      const deltaObjEntries = Object.entries(delta);
-      for (let indexDelta = 0; indexDelta < deltaObjEntries.length; indexDelta += 1) {
-        const [, diffData] = deltaObjEntries[indexDelta];
-        if (diffData.length === DIFF_ADDED) {
-          if (patch.add) {
-            patch.add[field] = diffData;
-          } else {
-            patch.add = { [field]: diffData };
-          }
-        }
-        if (diffData.length === DIFF_REMOVE) {
-          const removedValue = R.head(diffData);
-          const removeVal = Array.isArray(removedValue) ? removedValue : [removedValue];
-          if (patch.remove) {
-            patch.remove[field] = removeVal;
-          } else {
-            patch.remove = { [field]: removeVal };
-          }
-        }
-      }
-    } else {
-      // Is a internal complex object, like extensions
-      // TODO @JRI
     }
   }
   return patch;
@@ -505,7 +510,7 @@ export const buildCreateEvent = async (user, instance, input, loaders, opts = {}
   const { withoutMessage = false } = opts;
   const { stixLoadById, connectionLoaders } = loaders;
   // If internal relation, publish an update instead of a creation
-  if (isStixCyberObservableRelationship(instance.entity_type) || isStixMetaRelationship(instance.entity_type)) {
+  if (isStixEmbeddedRelationship(instance.entity_type)) {
     const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
     let publishedInstance;
     if (mustRepublished) {
@@ -516,8 +521,8 @@ export const buildCreateEvent = async (user, instance, input, loaders, opts = {}
     } else {
       publishedInstance = getInstanceIdentifiers(instance.from);
     }
-    const key = STIX_META_RELATION_TO_OPENCTI_INPUT[instance.entity_type];
-    if (instance.entity_type === RELATION_CREATED_BY) {
+    const key = STIX_EMBEDDED_RELATION_TO_OPENCTI_INPUT[instance.entity_type];
+    if (isSingleStixEmbeddedRelationship(instance.entity_type)) {
       // eslint-disable-next-line prettier/prettier
       const inputVal = { key, value: [instance.to], previous: null };
       const patch = updateInputsToPatch([inputVal]);
@@ -560,7 +565,7 @@ export const buildDeleteEvent = async (user, instance, dependencyDeletions, load
   const { withoutMessage = false } = opts;
   const { stixLoadById, connectionLoaders } = loaders;
   // If internal relation, publish an update instead of a creation
-  if (isStixCyberObservableRelationship(instance.entity_type) || isStixMetaRelationship(instance.entity_type)) {
+  if (isStixEmbeddedRelationship(instance.entity_type)) {
     const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
     let publishedInstance;
     if (mustRepublished) {
@@ -571,8 +576,9 @@ export const buildDeleteEvent = async (user, instance, dependencyDeletions, load
     } else {
       publishedInstance = getInstanceIdentifiers(instance.from);
     }
-    const key = STIX_META_RELATION_TO_OPENCTI_INPUT[instance.entity_type];
-    if (instance.entity_type === RELATION_CREATED_BY) {
+
+    const key = STIX_EMBEDDED_RELATION_TO_OPENCTI_INPUT[instance.entity_type];
+    if (isSingleStixEmbeddedRelationship(instance.entity_type)) {
       const inputVal = { key, value: null, previous: [instance.to] };
       const patch = updateInputsToPatch([inputVal]);
       return buildUpdateEvent(user, publishedInstance, patch, opts);

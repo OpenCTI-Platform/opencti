@@ -151,7 +151,7 @@ const stixEntityContribution = {
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_CAMPAIGN]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_CONTAINER_NOTE]: [{ src: CONTENT_FIELD }],
-    [D.ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [{ src: 'internal_id' }],
+    [D.ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [{ src: 'objects' }],
     [D.ENTITY_TYPE_CONTAINER_OPINION]: [{ src: OPINION_FIELD }],
     [D.ENTITY_TYPE_CONTAINER_REPORT]: [{ src: NAME_FIELD }, { src: 'published' }],
     [D.ENTITY_TYPE_COURSE_OF_ACTION]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
@@ -195,6 +195,9 @@ const stixEntityContribution = {
     },
     last_observed(data) {
       return data instanceof Date ? data.toISOString() : data;
+    },
+    objects(data) {
+      return data.map((o) => o.standard_id).sort();
     },
   },
 };

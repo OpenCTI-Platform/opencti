@@ -27,7 +27,9 @@ const FileUploaderEntityMutation = graphql`
 `;
 
 const FileUploader = (props) => {
-  const { entityId, onUploadSuccess, t } = props;
+  const {
+    entityId, onUploadSuccess, t, color,
+  } = props;
   const uploadRef = useRef(null);
   const [upload, setUpload] = useState(null);
   const handleOpenUpload = () => uploadRef.current.click();
@@ -70,7 +72,11 @@ const FileUploader = (props) => {
           aria-label={`Uploading ${upload}`}
         >
           <IconButton disabled={true}>
-            <CircularProgress size={24} thickness={2} />
+            <CircularProgress
+              size={24}
+              thickness={2}
+              color={color || 'primary'}
+            />
           </IconButton>
         </Tooltip>
       ) : (
@@ -78,7 +84,7 @@ const FileUploader = (props) => {
           <IconButton
             onClick={handleOpenUpload}
             aria-haspopup="true"
-            color="primary"
+            color={color || 'primary'}
           >
             <CloudUploadOutlined />
           </IconButton>
@@ -91,6 +97,7 @@ const FileUploader = (props) => {
 FileUploader.propTypes = {
   entityId: PropTypes.string,
   onUploadSuccess: PropTypes.func.isRequired,
+  color: PropTypes.string,
 };
 
 export default inject18n(FileUploader);

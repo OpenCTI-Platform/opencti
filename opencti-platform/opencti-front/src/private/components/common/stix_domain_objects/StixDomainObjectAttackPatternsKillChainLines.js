@@ -13,6 +13,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Collapse from '@material-ui/core/Collapse';
 import { Launch, LockPattern, ProgressWrench } from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
+import remarkGfm from 'remark-gfm';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
@@ -198,7 +199,10 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                                 secondary={
                                   attackPattern.description
                                   && attackPattern.description.length > 0 ? (
-                                    <Markdown className="markdown">
+                                    <Markdown
+                                      remarkPlugins={[remarkGfm]}
+                                      className="markdown"
+                                    >
                                       {attackPattern.description}
                                     </Markdown>
                                     ) : (
@@ -287,7 +291,10 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                                               courseOfAction.description
                                               && courseOfAction.description
                                                 .length > 0 ? (
-                                                <Markdown className="markdown">
+                                                <Markdown
+                                                  remarkPlugins={[remarkGfm]}
+                                                  className="markdown"
+                                                >
                                                   {courseOfAction.description}
                                                 </Markdown>
                                                 ) : (

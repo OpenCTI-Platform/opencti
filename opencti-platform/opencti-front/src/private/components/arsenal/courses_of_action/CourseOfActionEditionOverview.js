@@ -140,7 +140,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
           mutation: courseOfActionMutationFieldPatch,
           variables: {
             id: this.props.courseOfAction.id,
-            input: { key: name, value: finalValue },
+            input: { key: name, value: finalValue || '' },
           },
         });
       })
@@ -153,7 +153,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
         mutation: courseOfActionMutationFieldPatch,
         variables: {
           id: this.props.courseOfAction.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

@@ -147,7 +147,7 @@ class ReportEditionOverviewComponent extends Component {
         mutation: reportMutationFieldPatch,
         variables: {
           id: this.props.report.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

@@ -12,25 +12,32 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import Avatar from '@material-ui/core/Avatar';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
-import {
-  LinkOff,
-  ExpandMoreOutlined,
-  ExpandLessOutlined,
-} from '@material-ui/icons';
+import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
+import { interval } from 'rxjs';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
 import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNENRICHMENT,
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../../utils/Security';
+import FileLine from '../../common/files/FileLine';
+import FileUploader from '../../common/files/FileUploader';
+import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
+import { FIVE_SECONDS } from '../../../../utils/Time';
+import ExternalReferencePopover from './ExternalReferencePopover';
+
+const interval$ = interval(FIVE_SECONDS);
 
 const styles = (theme) => ({
   paper: {
@@ -85,6 +92,16 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
       removing: false,
       expanded: false,
     };
+  }
+
+  componentDidMount() {
+    this.subscription = interval$.subscribe(() => {
+      this.props.relay.refetchConnection(200);
+    });
+  }
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
   }
 
   handleToggleExpand() {
@@ -192,16 +209,69 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                   }
                   if (externalReference.url) {
                     return (
-                      <ListItem
-                        key={externalReference.id}
-                        dense={true}
-                        divider={true}
-                        button={true}
-                        onClick={this.handleOpenExternalLink.bind(
-                          this,
-                          externalReference.url,
+                      <div key={externalReference.id}>
+                        <ListItem
+                          dense={true}
+                          divider={true}
+                          button={true}
+                          onClick={this.handleOpenExternalLink.bind(
+                            this,
+                            externalReference.url,
+                          )}
+                        >
+                          <ListItemIcon>
+                            <Avatar classes={{ root: classes.avatar }}>
+                              {externalReference.source_name.substring(0, 1)}
+                            </Avatar>
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={`${externalReference.source_name} ${externalReferenceId}`}
+                            secondary={truncate(externalReferenceSecondary, 90)}
+                          />
+                          <ListItemSecondaryAction>
+                            <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                              <FileUploader
+                                entityId={externalReference.id}
+                                onUploadSuccess={() => this.props.relay.refetchConnection(200)
+                                }
+                                color="inherit"
+                              />
+                            </Security>
+                            <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                              <ExternalReferenceEnrichment
+                                externalReferenceId={externalReference.id}
+                              />
+                            </Security>
+                            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                              <ExternalReferencePopover
+                                externalReferenceId={externalReference.id}
+                                handleRemove={this.handleOpenDialog.bind(
+                                  this,
+                                  externalReferenceEdge,
+                                )}
+                              />
+                            </Security>
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                        {externalReference.importFiles.edges.length > 0 && (
+                          <List>
+                            {externalReference.importFiles.edges.map((file) => (
+                              <FileLine
+                                key={file.node.id}
+                                dense={true}
+                                disableImport={true}
+                                file={file.node}
+                                nested={true}
+                              />
+                            ))}
+                          </List>
                         )}
-                      >
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={externalReference.id}>
+                      <ListItem dense={true} divider={true} button={false}>
                         <ListItemIcon>
                           <Avatar classes={{ root: classes.avatar }}>
                             {externalReference.source_name.substring(0, 1)}
@@ -209,50 +279,45 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                         </ListItemIcon>
                         <ListItemText
                           primary={`${externalReference.source_name} ${externalReferenceId}`}
-                          secondary={truncate(externalReferenceSecondary, 90)}
+                          secondary={truncate(
+                            externalReference.description,
+                            120,
+                          )}
                         />
                         <ListItemSecondaryAction>
-                          <IconButton
-                            aria-label="Remove"
-                            onClick={this.handleOpenDialog.bind(
-                              this,
-                              externalReferenceEdge,
-                            )}
-                          >
-                            <LinkOff />
-                          </IconButton>
+                          <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                            <FileUploader
+                              entityId={externalReference.id}
+                              onUploadSuccess={() => this.props.relay.refetchConnection(200)
+                              }
+                              color="inherit"
+                            />
+                          </Security>
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <ExternalReferencePopover
+                              externalReferenceId={externalReference.id}
+                              handleRemove={this.handleOpenDialog.bind(
+                                this,
+                                externalReferenceEdge,
+                              )}
+                            />
+                          </Security>
                         </ListItemSecondaryAction>
                       </ListItem>
-                    );
-                  }
-                  return (
-                    <ListItem
-                      key={externalReference.id}
-                      dense={true}
-                      divider={true}
-                      button={false}
-                    >
-                      <ListItemIcon>
-                        <Avatar classes={{ root: classes.avatar }}>
-                          {externalReference.source_name.substring(0, 1)}
-                        </Avatar>
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={`${externalReference.source_name} ${externalReferenceId}`}
-                        secondary={truncate(externalReference.description, 120)}
-                      />
-                      <ListItemSecondaryAction>
-                        <IconButton
-                          aria-label="Remove"
-                          onClick={this.handleOpenDialog.bind(
-                            this,
-                            externalReferenceEdge,
-                          )}
-                        >
-                          <LinkOff />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
+                      {externalReference.importFiles.edges.length > 0 && (
+                        <List>
+                          {externalReference.importFiles.edges.map((file) => (
+                            <FileLine
+                              key={file.node.id}
+                              dense={true}
+                              disableImport={true}
+                              file={file.node}
+                              nested={true}
+                            />
+                          ))}
+                        </List>
+                      )}
+                    </div>
                   );
                 },
               )}
@@ -404,6 +469,18 @@ const StixCoreRelationshipExternalReferencesLines = createPaginationContainer(
                   name
                   active
                   updated_at
+                }
+                importFiles(first: 1000) {
+                  edges {
+                    node {
+                      id
+                      lastModified
+                      ...FileLine_file
+                      metaData {
+                        mimetype
+                      }
+                    }
+                  }
                 }
               }
             }

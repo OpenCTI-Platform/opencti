@@ -30,7 +30,7 @@ const stixCoreRelationshipEditionQuery = graphql`
       ...StixCoreRelationshipEditionOverview_stixCoreRelationship
     }
     settings {
-      platform_enable_references
+      platform_enable_reference
     }
   }
 `;
@@ -70,7 +70,9 @@ class StixCoreRelationshipEdition extends Component {
                   <StixCoreRelationshipEditionOverview
                     stixDomainObject={stixDomainObject}
                     stixCoreRelationship={props.stixCoreRelationship}
-                    enableReferences={props.settings.platform_enable_references}
+                    enableReferences={props.settings.platform_enable_reference?.includes(
+                      'stix-core-relationship',
+                    )}
                     handleClose={handleClose.bind(this)}
                     handleDelete={
                       typeof handleDelete === 'function'

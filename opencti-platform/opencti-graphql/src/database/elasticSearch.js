@@ -41,6 +41,7 @@ import {
   RULE_PREFIX,
 } from '../schema/general';
 import {
+  booleanAttributes,
   dateAttributes,
   isBooleanAttribute,
   isMultipleAttribute,
@@ -54,6 +55,7 @@ import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { getInstanceIds, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
 import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
+import { isSingleStixEmbeddedRelationship } from '../schema/stixEmbeddedRelationship';
 
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
@@ -195,8 +197,9 @@ export const elIndexExists = async (indexName) => {
 };
 const elCreateIndexTemplate = async () => {
   // eslint-disable-next-line prettier/prettier
-  await el.cluster.putComponentTemplate({
-      name: 'opencti-core-settings',
+  await el.cluster
+    .putComponentTemplate({
+      name: `${ES_INDEX_PREFIX}-core-settings`,
       create: false,
       body: {
         template: {
@@ -222,8 +225,9 @@ const elCreateIndexTemplate = async () => {
       throw DatabaseError('Error creating opencti component', { error: e });
     });
   // eslint-disable-next-line prettier/prettier
-  await el.indices.putIndexTemplate({
-      name: 'opencti-index-template',
+  await el.indices
+    .putIndexTemplate({
+      name: `${ES_INDEX_PREFIX}-index-template`,
       create: false,
       body: {
         index_patterns: [`${ES_INDEX_PREFIX}*`],
@@ -364,7 +368,7 @@ const elCreateIndexTemplate = async () => {
             },
           },
         },
-        composed_of: ['opencti-core-settings'],
+        composed_of: [`${ES_INDEX_PREFIX}-core-settings`],
         version: 3,
         _meta: {
           description: 'To generate opencti expected index mappings',
@@ -563,7 +567,12 @@ export const elAggregationCount = (user, type, aggregationField, start, end, fil
     });
   }
   const histoFilters = R.map((f) => {
-    const key = f.isRelation ? buildRefRelationSearchKey(f.type || '*') : `${f.type}.keyword`;
+    let key = `${f.type}.keyword`;
+    if (f.isRelation) {
+      key = buildRefRelationSearchKey(f.type || '*');
+    } else if (booleanAttributes.includes(f.type)) {
+      key = f.type;
+    }
     return {
       multi_match: {
         fields: [key],
@@ -593,8 +602,16 @@ export const elAggregationCount = (user, type, aggregationField, start, end, fil
       aggs: {
         genres: {
           terms: {
-            field: `${aggregationField}.keyword`,
+            field: booleanAttributes.includes(aggregationField) ? aggregationField : `${aggregationField}.keyword`,
             size: MAX_AGGREGATION_SIZE,
+          },
+          aggs: {
+            weight: {
+              sum: {
+                field: 'i_inference_weight',
+                missing: 1,
+              },
+            },
           },
         },
       },
@@ -605,7 +622,15 @@ export const elAggregationCount = (user, type, aggregationField, start, end, fil
     .search(query)
     .then((data) => {
       const { buckets } = data.body.aggregations.genres;
-      return R.map((b) => ({ label: isIdFields ? b.key : pascalize(b.key), value: b.doc_count }), buckets);
+      return R.map((b) => {
+        let label = b.key;
+        if (typeof label === 'number') {
+          label = b.key_as_string;
+        } else if (!isIdFields) {
+          label = pascalize(b.key);
+        }
+        return { label, value: b.weight.value };
+      }, buckets);
     })
     .catch((err) => {
       throw DatabaseError('Aggregation fail', { error: err, query });
@@ -668,7 +693,8 @@ const elDataConverter = (esHit) => {
       const [relType] = rel.split('.');
       const stixType = EXTERNAL_META_TO_STIX_ATTRIBUTE[relType];
       if (stixType) {
-        data[stixType] = stixType.endsWith('_refs') ? val : R.head(val);
+        const isSingle = isSingleStixEmbeddedRelationship(relType);
+        data[stixType] = isSingle ? R.head(val) : val;
       }
     } else {
       data[key] = val;
@@ -954,6 +980,19 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
                     size: MAX_AGGREGATION_SIZE,
                     field: field === 'internal_id' ? `connections.internal_id.keyword` : `connections.types.keyword`,
                   },
+                  aggs: {
+                    parent: {
+                      reverse_nested: {},
+                      aggs: {
+                        weight: {
+                          sum: {
+                            field: 'i_inference_weight',
+                            missing: 1,
+                          },
+                        },
+                      },
+                    },
+                  },
                 },
               },
             },
@@ -969,7 +1008,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
       if (field === 'internal_id') {
         const { buckets } = data.body.aggregations.connections.filtered.genres;
         const filteredBuckets = R.filter((b) => b.key !== fromId, buckets);
-        return R.map((b) => ({ label: b.key, value: b.doc_count }), filteredBuckets);
+        return R.map((b) => ({ label: b.key, value: b.parent.weight.value }), filteredBuckets);
       }
       let fromType = null;
       if (fromId) {
@@ -989,7 +1028,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
       )(data.body.hits.hits);
       const { buckets } = data.body.aggregations.connections.filtered.genres;
       const filteredBuckets = R.filter((b) => R.includes(b.key, types), buckets);
-      return R.map((b) => ({ label: pascalize(b.key), value: b.doc_count }), filteredBuckets);
+      return R.map((b) => ({ label: pascalize(b.key), value: b.parent.weight.value }), filteredBuckets);
     })
     .catch((e) => {
       throw DatabaseError('Fail processing AggregationRelationsCount', { error: e });
@@ -1106,6 +1145,14 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
             format: dateFormat,
             keyed: true,
           },
+          aggs: {
+            weight: {
+              sum: {
+                field: 'i_inference_weight',
+                missing: 1,
+              },
+            },
+          },
         },
       },
     },
@@ -1114,7 +1161,7 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
   return el.search(query).then((data) => {
     const { buckets } = data.body.aggregations.count_over_time;
     const dataToPairs = R.toPairs(buckets);
-    return R.map((b) => ({ date: R.head(b), value: R.last(b).doc_count }), dataToPairs);
+    return R.map((b) => ({ date: R.head(b), value: R.last(b).weight.value }), dataToPairs);
   });
 };
 

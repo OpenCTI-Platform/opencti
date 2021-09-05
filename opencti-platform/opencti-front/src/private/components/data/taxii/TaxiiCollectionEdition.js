@@ -93,7 +93,7 @@ const TaxiiCollectionEditionContainer = (props) => {
           mutation: taxiiCollectionMutationFieldPatch,
           variables: {
             id: props.taxiiCollection.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })

@@ -84,13 +84,13 @@ import {
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
   buildRefRelationKey,
-  ENTITY_TYPE_IDENTITY,
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
@@ -110,18 +110,12 @@ import {
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import {
-  EXTERNAL_META_TO_STIX_ATTRIBUTE,
-  isStixMetaRelationship,
-  isStixSingleMetaRelationship,
-  OPENCTI_ATTRIBUTE_TO_META_REL,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-  STIX_ATTRIBUTE_TO_META_FIELD,
-  STIX_META_RELATION_TO_OPENCTI_INPUT,
 } from '../schema/stixMetaRelationship';
 import {
   ENTITY_TYPE_STATUS,
@@ -151,6 +145,7 @@ import { isStixCoreRelationship, RELATION_REVOKED_BY } from '../schema/stixCoreR
 import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
+  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
@@ -176,9 +171,19 @@ import {
   yearFormat,
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
+// eslint-disable-next-line import/no-cycle
 import { deleteAllFiles } from './minio';
 import { filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
 import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
+import {
+  EXTERNAL_EMBEDDED_TO_STIX_ATTRIBUTE,
+  isSingleStixEmbeddedRelationship,
+  isSingleStixEmbeddedRelationshipInput,
+  isStixEmbeddedRelationship,
+  OPENCTI_ATTRIBUTE_TO_EMBEDDED_REL,
+  STIX_ATTRIBUTE_TO_EMBEDDED_FIELD,
+  STIX_EMBEDDED_RELATION_TO_OPENCTI_INPUT,
+} from '../schema/stixEmbeddedRelationship';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -414,7 +419,10 @@ export const buildFilters = (args = {}) => {
   builtFilters.filters = customFilters;
   return builtFilters;
 };
-const buildRelationsFilter = (relationshipType, args) => {
+const buildRelationsFilter = (relationshipTypes, args) => {
+  const relationsToGet = Array.isArray(relationshipTypes)
+    ? relationshipTypes
+    : [relationshipTypes || 'stix-core-relationship'];
   const { relationFilter = false } = args;
   const {
     filters = [],
@@ -426,7 +434,6 @@ const buildRelationsFilter = (relationshipType, args) => {
     fromTypes = [],
     toTypes = [],
     elementWithTargetTypes = [],
-    relationshipTypes = [],
   } = args;
   const {
     startTimeStart,
@@ -442,7 +449,6 @@ const buildRelationsFilter = (relationshipType, args) => {
     confidences = [],
   } = args;
   // Handle relation type(s)
-  const relationToGet = relationshipType || 'stix-core-relationship';
   // 0 - Check if we can support the query by Elastic
   const finalFilters = filters;
   if (relationFilter) {
@@ -511,10 +517,7 @@ const buildRelationsFilter = (relationshipType, args) => {
   if (startDate) finalFilters.push({ key: 'created_at', values: [startDate], operator: 'gt' });
   if (endDate) finalFilters.push({ key: 'created_at', values: [endDate], operator: 'lt' });
   if (confidences && confidences.length > 0) finalFilters.push({ key: 'confidence', values: confidences });
-  return R.pipe(
-    R.assoc('types', relationshipTypes && relationshipTypes.length > 0 ? relationshipTypes : [relationToGet]),
-    R.assoc('filters', finalFilters)
-  )(args);
+  return R.pipe(R.assoc('types', relationsToGet), R.assoc('filters', finalFilters))(args);
 };
 export const listThings = async (user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
@@ -590,14 +593,14 @@ const transformRawRelationsToAttributes = (data) => {
   return R.mergeAll(Object.entries(R.groupBy((a) => a.i_relation.entity_type, data)).map(([k, v]) => ({ [k]: v })));
 };
 const loadElementDependencies = async (user, element, args = {}) => {
-  const { dependencyType = ABSTRACT_STIX_RELATIONSHIP } = args;
+  const { dependencyTypes = [ABSTRACT_STIX_RELATIONSHIP] } = args;
   const { onlyMarking = true, fullResolve = false } = args;
   const elementId = element.internal_id;
-  const relType = onlyMarking ? RELATION_OBJECT_MARKING : dependencyType;
+  const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : dependencyTypes;
   // Resolve all relations
   // noinspection ES6MissingAwait
-  const toRelationsPromise = fullResolve ? listAllRelations(user, relType, { toId: elementId }) : [];
-  const fromRelationsPromise = listAllRelations(user, relType, { fromId: elementId });
+  const toRelationsPromise = fullResolve ? listAllRelations(user, relTypes, { toId: elementId }) : [];
+  const fromRelationsPromise = listAllRelations(user, relTypes, { fromId: elementId });
   const [fromRelations, toRelations] = await Promise.all([fromRelationsPromise, toRelationsPromise]);
   const data = {};
   // Parallel resolutions
@@ -608,8 +611,8 @@ const loadElementDependencies = async (user, element, args = {}) => {
   const [toResolved, fromResolved] = await Promise.all([toResolvedPromise, fromResolvedPromise]);
   if (fromRelations.length > 0) {
     // Build the flatten view inside the data for stix meta
-    const metaRels = fromRelations.filter((r) => isStixMetaRelationship(r.entity_type));
-    const grouped = R.groupBy((a) => STIX_META_RELATION_TO_OPENCTI_INPUT[a.entity_type], metaRels);
+    const metaRels = fromRelations.filter((r) => isStixEmbeddedRelationship(r.entity_type));
+    const grouped = R.groupBy((a) => STIX_EMBEDDED_RELATION_TO_OPENCTI_INPUT[a.entity_type], metaRels);
     const entries = Object.entries(grouped);
     for (let index = 0; index < entries.length; index += 1) {
       const [key, values] = entries[index];
@@ -660,7 +663,7 @@ export const fullLoadById = async (user, id, type = null) => {
 // Get element with every elements connected element -> rel -> to
 export const stixLoadById = async (user, id, type = null) => {
   return loadByIdWithDependencies(user, id, type, {
-    dependencyType: ABSTRACT_STIX_META_RELATIONSHIP,
+    dependencyTypes: [ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP],
     onlyMarking: false,
     fullResolve: false,
   });
@@ -675,7 +678,7 @@ export const convertDataToRawStix = async (user, id, args = {}) => {
 };
 export const stixLoadByQuery = async (user, query) => {
   return loadByQueryWithDependencies(user, query, {
-    dependencyType: ABSTRACT_STIX_META_RELATIONSHIP,
+    dependencyTypes: [ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP],
     onlyMarking: false,
     fullResolve: false,
   });
@@ -989,7 +992,7 @@ const targetedRelations = (entities, direction) => {
       const info = directedRelations ? Object.entries(directedRelations) : [];
       for (let index = 0; index < info.length; index += 1) {
         const [key, values] = info[index];
-        if (key !== RELATION_CREATED_BY) {
+        if (!isSingleStixEmbeddedRelationship(key)) {
           // Except created by ref (mono valued)
           relations.push(
             ...R.map((val) => {
@@ -1455,6 +1458,7 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
   // Update all needed attributes
   for (let index = 0; index < preparedElements.length; index += 1) {
     const input = preparedElements[index];
+    const { operation = UPDATE_OPERATION_REPLACE } = input;
     const ins = innerUpdateAttribute(instance, input, options);
     if (ins.length > 0) {
       // Updated inputs must not be internals
@@ -1501,8 +1505,12 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
     const aliasesAttrs = [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI];
     const isAliasesImpacted = aliasesAttrs.includes(input.key) && !R.isEmpty(ins.length);
     if (isTypeHasAliasIDs(instanceType) && isAliasesImpacted) {
-      const aliasesId = generateAliasesId([instance.name, ...input.value], instance);
-      const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
+      const inputAliases = [...input.value];
+      if (operation === UPDATE_OPERATION_REPLACE) {
+        inputAliases.push(instance.name);
+      }
+      const aliasesId = generateAliasesId(inputAliases, instance);
+      const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId, operation };
       const aliasIns = innerUpdateAttribute(instance, aliasInput, options);
       if (aliasIns.length > 0) {
         impactedInputs.push(...aliasIns);
@@ -1539,7 +1547,10 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     throw UnsupportedError('We cant update the same attribute multiple times in the same operation');
   }
   // Split attributes and meta
-  const metaKeys = [...Object.values(EXTERNAL_META_TO_STIX_ATTRIBUTE), ...Object.values(STIX_ATTRIBUTE_TO_META_FIELD)];
+  const metaKeys = [
+    ...Object.values(EXTERNAL_EMBEDDED_TO_STIX_ATTRIBUTE),
+    ...Object.values(STIX_ATTRIBUTE_TO_EMBEDDED_FIELD),
+  ];
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
   // Load the element to update
@@ -1634,38 +1645,39 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     const streamOpts = { publishStreamEvent: false, locks: participantIds };
     for (let metaIndex = 0; metaIndex < meta.length; metaIndex += 1) {
       const { key: metaKey } = meta[metaIndex];
-      const key = STIX_ATTRIBUTE_TO_META_FIELD[metaKey] || metaKey;
+      const key = STIX_ATTRIBUTE_TO_EMBEDDED_FIELD[metaKey] || metaKey;
       // ref and _refs are expecting direct identifier in the value
       // We dont care about the operation here, the only thing we can do is replace
-      if (key === INPUT_CREATED_BY) {
-        const currentCreated = R.head(updatedInstance.createdBy || []);
-        const { value: createdRefIds } = meta[metaIndex];
-        const targetCreated = R.head(createdRefIds);
+      if (isSingleStixEmbeddedRelationshipInput(key)) {
+        const relType = OPENCTI_ATTRIBUTE_TO_EMBEDDED_REL[key];
+        const currentValue = R.head(updatedInstance[key] || []);
+        const { value: refIds } = meta[metaIndex];
+        const targetCreated = R.head(refIds);
         // If asking for a real change
-        if (currentCreated?.standard_id !== targetCreated && currentCreated?.id !== targetCreated) {
+        if (currentValue?.standard_id !== targetCreated && currentValue?.id !== targetCreated) {
           // Delete the current relation
-          if (currentCreated?.standard_id) {
-            const currentRels = await listAllRelations(user, RELATION_CREATED_BY, { fromId: id });
+          if (currentValue?.standard_id) {
+            const currentRels = await listAllRelations(user, relType, { fromId: instance.id });
             // eslint-disable-next-line no-use-before-define
             await deleteElements(user, currentRels, streamOpts);
           }
           // Create the new one
           if (isNotEmptyField(targetCreated)) {
-            const inputRel = { fromId: id, toId: targetCreated, relationship_type: RELATION_CREATED_BY };
+            const inputRel = { fromId: id, toId: targetCreated, relationship_type: relType };
             // eslint-disable-next-line no-use-before-define
             await createRelationRaw(user, inputRel, streamOpts);
-            const creator = await loadById(user, targetCreated, ENTITY_TYPE_IDENTITY);
-            const previous = currentCreated ? [currentCreated] : currentCreated;
-            updatedInputs.push({ key, value: [creator], previous });
-            updatedInstance[INPUT_CREATED_BY] = creator;
-          } else if (currentCreated) {
+            const element = await internalLoadById(user, targetCreated);
+            const previous = currentValue ? [currentValue] : currentValue;
+            updatedInputs.push({ key, value: [element], previous });
+            updatedInstance[key] = element;
+          } else if (currentValue) {
             // Just replace by nothing
-            updatedInputs.push({ key, value: null, previous: [currentCreated] });
-            updatedInstance[INPUT_CREATED_BY] = null;
+            updatedInputs.push({ key, value: null, previous: [currentValue] });
+            updatedInstance[key] = null;
           }
         }
       } else {
-        const relType = OPENCTI_ATTRIBUTE_TO_META_REL[key];
+        const relType = OPENCTI_ATTRIBUTE_TO_EMBEDDED_REL[key];
         const { value: refs, operation = UPDATE_OPERATION_REPLACE } = meta[metaIndex];
         if (operation === UPDATE_OPERATION_REPLACE) {
           // Delete all relations
@@ -2064,7 +2076,7 @@ const upsertElementRaw = async (user, instance, type, input) => {
     const { name } = input;
     const key = resolveAliasesField(type);
     const aliases = [...(input[ATTRIBUTE_ALIASES] || []), ...(input[ATTRIBUTE_ALIASES_OPENCTI] || [])];
-    if (normalizeName(instance.name) !== normalizeName(name)) aliases.push(name);
+    if (normalizeName(instance.name) !== normalizeName(name)) aliases.push(instance.name);
     const patch = { [key]: aliases };
     const operations = { [key]: UPDATE_OPERATION_ADD };
     const patched = patchAttributeRaw(instance, patch, { operations });
@@ -2077,6 +2089,18 @@ const upsertElementRaw = async (user, instance, type, input) => {
     // Upsert the count only if a time patch is applied.
     if (isNotEmptyField(timePatch)) {
       const basePatch = { attribute_count: instance.attribute_count + input.attribute_count };
+      const patch = { ...basePatch, ...timePatch };
+      const patched = patchAttributeRaw(instance, patch);
+      impactedInputs.push(...patched.impactedInputs);
+      patchInputs.push(...patched.updatedInputs);
+    }
+  }
+  // Upsert observed data
+  if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
+    const timePatch = handleRelationTimeUpdate(input, instance, 'first_observed', 'last_observed');
+    // Upsert the count only if a time patch is applied.
+    if (isNotEmptyField(timePatch)) {
+      const basePatch = { number_observed: instance.number_observed + input.number_observed };
       const patch = { ...basePatch, ...timePatch };
       const patched = patchAttributeRaw(instance, patch);
       impactedInputs.push(...patched.impactedInputs);
@@ -2129,6 +2153,7 @@ const upsertElementRaw = async (user, instance, type, input) => {
       patchInputs.push({ key: INPUT_MARKINGS, value: markingToCreate, operation: UPDATE_OPERATION_ADD });
     }
   }
+  // Build result
   if (impactedInputs.length > 0) {
     const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
     const indexInput = partialInstanceWithInputs(instance, impactedInputs);
@@ -2372,7 +2397,7 @@ export const createRelationRaw = async (user, input, opts = {}) => {
         throw UnsupportedError('Restricted relation already exists');
       }
       // Meta single relation check
-      if (isStixSingleMetaRelationship(relationshipType)) {
+      if (isSingleStixEmbeddedRelationship(relationshipType)) {
         // If relation already exist, we fail
         throw UnsupportedError('Relation cant be created (single cardinality)', {
           relationshipType,
@@ -2704,7 +2729,7 @@ export const deleteElementById = async (user, elementId, type, opts = {}) => {
   }
   return deleteElement(user, element, opts);
 };
-export const deleteInferredRuleElement = async (rule, instance, dependencyId) => {
+export const deleteInferredRuleElement = async (rule, instance, deletedDependencies) => {
   const fromRule = RULE_PREFIX + rule;
   const rules = Object.keys(instance).filter((k) => k.startsWith(RULE_PREFIX));
   const completeRuleName = RULE_PREFIX + rule;
@@ -2720,8 +2745,8 @@ export const deleteInferredRuleElement = async (rule, instance, dependencyId) =>
   for (let index = 0; index < elementsRule.length; index += 1) {
     const ruleContent = elementsRule[index];
     const { dependencies } = ruleContent;
-    // If no dependency setup, this is task cleanup
-    if (isNotEmptyField(dependencyId) && !dependencies.includes(dependencyId)) {
+    // Keep the element only if not include any deleted dependencies
+    if (deletedDependencies.length > 0 && !deletedDependencies.some((d) => dependencies.includes(d))) {
       rebuildRuleContent.push(ruleContent);
     }
   }

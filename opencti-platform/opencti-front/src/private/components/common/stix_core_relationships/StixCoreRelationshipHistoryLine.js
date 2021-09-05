@@ -25,6 +25,7 @@ import {
 } from '@material-ui/icons';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip/Tooltip';
+import remarkGfm from 'remark-gfm';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
@@ -32,7 +33,6 @@ const styles = (theme) => ({
     marginBottom: 20,
   },
   line: {
-    backgroundColor: theme.palette.background.paperLight,
     content: ' ',
     display: 'block',
     position: 'absolute',
@@ -60,7 +60,7 @@ const styles = (theme) => ({
   paper: {
     width: '100%',
     height: '100%',
-    backgroundColor: theme.palette.background.paperLight,
+    backgroundColor: theme.palette.background.line,
     padding: '17px 15px 15px 15px',
   },
   description: {
@@ -77,7 +77,7 @@ const styles = (theme) => ({
 });
 
 class StixCoreRelationshipHistoryLineComponent extends Component {
-// eslint-disable-next-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this
   renderIcon(eventType, isRelation, eventMesage, commit) {
     if (isRelation) {
       if (eventType === 'create') {
@@ -236,13 +236,13 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
             <Tooltip
               classes={{ tooltip: classes.tooltip }}
               title={
-                <Markdown className="markdown">
+                <Markdown remarkPlugins={[remarkGfm]} className="markdown">
                   {`\`${node.user.name}\` ${node.context_data.message}`}
                 </Markdown>
               }
             >
               <div className={classes.description}>
-                <Markdown className="markdown">
+                <Markdown remarkPlugins={[remarkGfm]} className="markdown">
                   {`\`${node.user.name}\` ${node.context_data.message}`}
                 </Markdown>
               </div>

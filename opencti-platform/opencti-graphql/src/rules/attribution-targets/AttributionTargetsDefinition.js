@@ -11,7 +11,12 @@ const scan = { types: [RELATION_ATTRIBUTED_TO] };
 
 // For live
 const filters = { types: [RELATION_TARGETS, RELATION_ATTRIBUTED_TO] };
-const attributes = ['start_time', 'stop_time', 'confidence', 'object_marking_refs'];
+const attributes = [
+  { name: 'start_time' },
+  { name: 'stop_time' },
+  { name: 'confidence' },
+  { name: 'object_marking_refs' },
+];
 const scopes = [{ filters, attributes }];
 
 const definition = { id, name, description, scan, scopes };

@@ -149,7 +149,7 @@ class ThreatActorEditionDetailsComponent extends Component {
             mutation: threatActorMutationFieldPatch,
             variables: {
               id: this.props.threatActor.id,
-              input: { key: name, value: finalValue },
+              input: { key: name, value: finalValue || '' },
             },
           });
         })

@@ -16,6 +16,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { ExpandMore, CheckCircle } from '@material-ui/icons';
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { commitMutation } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -263,7 +264,10 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
                             )}`
                           }`}
                           secondary={
-                            <Markdown className="markdown">
+                            <Markdown
+                              remarkPlugins={[remarkGfm]}
+                              className="markdown"
+                            >
                               {truncate(
                                 stixCoreObject.description
                                   || fd(stixCoreObject.created_at),

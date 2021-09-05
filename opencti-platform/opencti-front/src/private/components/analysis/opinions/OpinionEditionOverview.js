@@ -138,7 +138,7 @@ class OpinionEditionOverviewComponent extends Component {
       mutation: opinionMutationFieldPatch,
       variables: {
         id: this.props.opinion.id,
-        input: { key: 'createdBy', value: value.value },
+        input: { key: 'createdBy', value: value.value || '' },
       },
     });
   }

@@ -38,7 +38,7 @@ export const cityEditionQuery = graphql`
       ...CityEditionContainer_city
     }
     settings {
-      platform_enable_references
+      platform_enable_reference
     }
   }
 `;
@@ -90,7 +90,9 @@ class CityEdition extends Component {
                 return (
                   <CityEditionContainer
                     city={props.city}
-                    enableReferences={props.settings.platform_enable_references}
+                    enableReferences={props.settings.platform_enable_reference?.includes(
+                      'City',
+                    )}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

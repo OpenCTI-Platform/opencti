@@ -15,22 +15,15 @@ const streamConverter = (stream) => {
   });
 };
 
+const exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
+const exportFileId = (malware) => `export/Malware/${malware.id}/${exportFileName}`;
+const importFileId = `import/global/${exportFileName}`;
+
 describe('Minio file listing', () => {
-  let malwareId;
-  let exportFileName;
-  let exportFileId;
-  let importFileId;
-  let importOpts;
-  it('should resolve the malware', async () => {
-    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    malwareId = malware.internal_id;
-    exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
-    exportFileId = `export/Malware/${malwareId}/${exportFileName}`;
-    importFileId = `import/global/${exportFileName}`;
-    importOpts = [API_URI, API_TOKEN, malwareId, exportFileName];
-  });
   it('should file upload succeed', async () => {
     await startModules();
+    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const importOpts = [API_URI, API_TOKEN, malware.id, exportFileName];
     // local exporter create an export and also upload the file as an import
     const execution = await execPython3(PYTHON_PATH, 'local_exporter.py', importOpts);
     expect(execution).not.toBeNull();
@@ -38,12 +31,12 @@ describe('Minio file listing', () => {
     await shutdownModules();
   });
   it('should file listing', async () => {
-    const entity = { id: malwareId };
-    let list = await filesListing(ADMIN_USER, 25, `export/Malware/${entity.id}/`);
+    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    let list = await filesListing(ADMIN_USER, 25, `export/Malware/${malware.id}/`);
     expect(list).not.toBeNull();
     expect(list.edges.length).toEqual(1);
     let file = head(list.edges).node;
-    expect(file.id).toEqual(exportFileId);
+    expect(file.id).toEqual(exportFileId(malware));
     expect(file.name).toEqual(exportFileName);
     expect(file.size).toEqual(10565);
     expect(file.metaData).not.toBeNull();
@@ -59,7 +52,8 @@ describe('Minio file listing', () => {
     expect(file.name).toEqual(exportFileName);
   });
   it('should file download', async () => {
-    const fileStream = await downloadFile(exportFileId);
+    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const fileStream = await downloadFile(exportFileId(malware));
     expect(fileStream).not.toBeNull();
     const data = await streamConverter(fileStream);
     expect(data).not.toBeNull();
@@ -70,14 +64,16 @@ describe('Minio file listing', () => {
     expect(user.name).toEqual('Paradise Ransomware');
   });
   it('should load file', async () => {
-    const file = await loadFile(ADMIN_USER, exportFileId);
+    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const file = await loadFile(ADMIN_USER, exportFileId(malware));
     expect(file).not.toBeNull();
-    expect(file.id).toEqual(exportFileId);
+    expect(file.id).toEqual(exportFileId(malware));
     expect(file.name).toEqual(exportFileName);
     expect(file.size).toEqual(10565);
   });
   it('should delete file', async () => {
-    let deleted = await deleteFile(ADMIN_USER, exportFileId);
+    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    let deleted = await deleteFile(ADMIN_USER, exportFileId(malware));
     expect(deleted).toBeTruthy();
     deleted = await deleteFile(ADMIN_USER, importFileId);
     expect(deleted).toBeTruthy();

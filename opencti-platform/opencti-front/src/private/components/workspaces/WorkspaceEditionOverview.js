@@ -94,7 +94,7 @@ class WorkspaceEditionOverviewComponent extends Component {
           mutation: workspaceMutationFieldPatch,
           variables: {
             id: this.props.workspace.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })

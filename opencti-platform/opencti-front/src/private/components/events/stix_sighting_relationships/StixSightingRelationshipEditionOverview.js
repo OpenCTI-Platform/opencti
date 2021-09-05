@@ -229,7 +229,7 @@ const StixSightingRelationshipEditionContainer = ({
       mutation: stixSightingRelationshipMutationFieldPatch,
       variables: {
         id: stixSightingRelationship.id,
-        input: { key: 'createdBy', value: value.value },
+        input: { key: 'createdBy', value: value.value || '' },
       },
     });
   };
@@ -256,7 +256,7 @@ const StixSightingRelationshipEditionContainer = ({
           mutation: stixSightingRelationshipMutationFieldPatch,
           variables: {
             id: stixSightingRelationship.id,
-            input: { key: name, value: finalValue },
+            input: { key: name, value: finalValue || '' },
           },
         });
       })

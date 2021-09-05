@@ -87,7 +87,7 @@ services:
   image: docker.elastic.co/elasticsearch/elasticsearch:7.14.1
   environment:
     discovery.type: single-node
-    ES_JAVA_OPTS: -Xms750m -Xmx750m
+    ES_JAVA_OPTS: -Xms2g -Xmx2g
 - name: minio
   image: minio/minio:RELEASE.2021-08-25T00-41-18Z
   environment:
@@ -114,10 +114,12 @@ services:
     SMTP__USERNAME: jennyfer.mraz@ethereal.email
     SMTP__PASSWORD: frhJ2mSPTfaEutpbug
   commands:
+    - sleep 30
     - apk add build-base git libffi-dev
     - cp -a opencti-platform /tmp/raw-start-platform
     - cd /tmp/raw-start-platform/opencti-graphql
     - yarn install
+    - yarn install:python
     - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
     - yarn start
 - name: opencti-live-start
@@ -138,10 +140,12 @@ services:
     SMTP__USERNAME: jennyfer.mraz@ethereal.email
     SMTP__PASSWORD: frhJ2mSPTfaEutpbug
   commands:
+    - sleep 60
     - apk add build-base git libffi-dev
     - cp -a opencti-platform /tmp/live-start-platform
     - cd /tmp/live-start-platform/opencti-graphql
     - yarn install
+    - yarn install:python
     - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
     - yarn start
 - name: opencti-live-end
@@ -162,9 +166,11 @@ services:
     SMTP__USERNAME: jennyfer.mraz@ethereal.email
     SMTP__PASSWORD: frhJ2mSPTfaEutpbug
   commands:
+    - sleep 90
     - apk add build-base git libffi-dev
     - cp -a opencti-platform /tmp/live-end-platform
     - cd /tmp/live-end-platform/opencti-graphql
     - yarn install
+    - yarn install:python
     - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
     - yarn start

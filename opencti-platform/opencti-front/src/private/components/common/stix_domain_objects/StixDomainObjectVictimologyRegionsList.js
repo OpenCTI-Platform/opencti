@@ -35,6 +35,7 @@ import {
   LocalPlayOutlined,
   Flag,
 } from '@material-ui/icons';
+import remarkGfm from 'remark-gfm';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
@@ -348,7 +349,10 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                             // eslint-disable-next-line no-nested-ternary
                             stixCoreRelationship.description
                             && stixCoreRelationship.description.length > 0 ? (
-                              <Markdown className="markdown">
+                              <Markdown
+                                remarkPlugins={[remarkGfm]}
+                                className="markdown"
+                              >
                                 {stixCoreRelationship.description}
                               </Markdown>
                               ) : (
@@ -462,7 +466,10 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                       stixCoreRelationship.description
                                       && stixCoreRelationship.description.length
                                         > 0 ? (
-                                        <Markdown className="markdown">
+                                        <Markdown
+                                          remarkPlugins={[remarkGfm]}
+                                          className="markdown"
+                                        >
                                           {stixCoreRelationship.description}
                                         </Markdown>
                                         ) : stixCoreRelationship.inferred ? (
@@ -557,7 +564,10 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                               stixCoreRelationship.description
                                               && stixCoreRelationship.description
                                                 .length > 0 ? (
-                                                <Markdown className="markdown">
+                                                <Markdown
+                                                  remarkPlugins={[remarkGfm]}
+                                                  className="markdown"
+                                                >
                                                   {
                                                     stixCoreRelationship.description
                                                   }

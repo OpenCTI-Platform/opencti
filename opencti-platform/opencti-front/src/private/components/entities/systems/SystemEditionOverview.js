@@ -131,7 +131,7 @@ class SystemEditionOverviewComponent extends Component {
           mutation: systemMutationFieldPatch,
           variables: {
             id: this.props.system.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })
@@ -144,7 +144,7 @@ class SystemEditionOverviewComponent extends Component {
         mutation: systemMutationFieldPatch,
         variables: {
           id: this.props.system.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

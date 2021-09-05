@@ -155,7 +155,7 @@ export const stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery =
   query StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery(
     $fromId: String
     $toTypes: [String]
-    $relationship_type: String
+    $relationship_type: [String]
     $first: Int
   ) {
     ...StixDomainObjectAttackPatternsKillChain_data

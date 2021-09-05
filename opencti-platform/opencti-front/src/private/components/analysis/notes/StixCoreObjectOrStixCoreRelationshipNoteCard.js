@@ -19,6 +19,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import Slide from '@material-ui/core/Slide';
 import IconButton from '@material-ui/core/IconButton';
+import remarkGfm from 'remark-gfm';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -213,9 +214,11 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
             noWrap={true}
             style={{ margin: '0 0 10px 0', fontWeight: 500 }}
           >
-            <Markdown className="markdown">{node.attribute_abstract}</Markdown>
+            <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+              {node.attribute_abstract}
+            </Markdown>
           </Typography>
-          <Markdown className="markdown">
+          <Markdown remarkPlugins={[remarkGfm]} className="markdown">
             {truncate(node.content, 200)}
           </Markdown>
           <IconButton

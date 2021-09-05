@@ -1,17 +1,11 @@
 import React from 'react';
 import ReactMde from 'react-mde';
 import { useField } from 'formik';
-import * as Showdown from 'showdown';
+import Markdown from 'react-markdown';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
+import remarkGfm from 'remark-gfm';
 import inject18n from './i18n';
-
-const converter = new Showdown.Converter({
-  tables: true,
-  simplifiedAutoLink: true,
-  strikethrough: true,
-  tasklists: true,
-});
 
 const MarkDownField = (props) => {
   const {
@@ -35,11 +29,10 @@ const MarkDownField = (props) => {
   };
   const internalOnBlur = (event) => {
     const { nodeName } = event.relatedTarget || {};
-    const { value } = event.target;
     if (nodeName === 'INPUT' || nodeName === undefined) {
       setTouched(true);
       if (typeof onSubmit === 'function') {
-        onSubmit(name, value || '');
+        onSubmit(name, field.value || '');
       }
     }
   };
@@ -58,7 +51,9 @@ const MarkDownField = (props) => {
         onChange={(value) => setFieldValue(name, value)}
         selectedTab={selectedTab}
         onTabChange={setSelectedTab}
-        generateMarkdownPreview={(markdown) => Promise.resolve(converter.makeHtml(markdown))
+        generateMarkdownPreview={(markdown) => Promise.resolve(
+            <Markdown remarkPlugins={[remarkGfm]}>{markdown}</Markdown>,
+        )
         }
         l18n={{
           write: t('Write'),

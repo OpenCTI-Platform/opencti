@@ -134,7 +134,7 @@ class IndividualEditionOverviewComponent extends Component {
           mutation: individualMutationFieldPatch,
           variables: {
             id: this.props.individual.id,
-            input: { key: name, value },
+            input: { key: name, value: value || '' },
           },
         });
       })
@@ -147,7 +147,7 @@ class IndividualEditionOverviewComponent extends Component {
         mutation: individualMutationFieldPatch,
         variables: {
           id: this.props.individual.id,
-          input: { key: 'createdBy', value: value.value },
+          input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }

@@ -169,14 +169,17 @@ class StixCoreRelationshipsList extends Component {
             && props.stixCoreRelationshipsDistribution
             && props.stixCoreRelationshipsDistribution.length > 0
           ) {
-            const data = map(
-              (n) => assoc(
-                'label',
-                `[${t(`entity_${n.entity.entity_type}`)}] ${n.entity.name}`,
-                n,
-              ),
-              props.stixCoreRelationshipsDistribution,
-            );
+            let data = props.stixCoreRelationshipsDistribution;
+            if (field === 'internal_id') {
+              data = map(
+                (n) => assoc(
+                  'label',
+                  `[${t(`entity_${n.entity.entity_type}`)}] ${n.entity.name}`,
+                  n,
+                ),
+                props.stixCoreRelationshipsDistribution,
+              );
+            }
             return (
               <TableContainer component={Paper}>
                 <Table size="small" style={{ width: '100%' }}>
@@ -194,9 +197,19 @@ class StixCoreRelationshipsList extends Component {
                     {data.map((row) => (
                       <TableRow key={row.label}>
                         <TableCell align="center" style={{ width: 50 }}>
-                          <ItemIcon type={row.entity.entity_type} />
+                          <ItemIcon
+                            type={
+                              field === 'internal_id'
+                                ? row.entity.entity_type
+                                : 'Stix-Cyber-Observable'
+                            }
+                          />
                         </TableCell>
-                        <TableCell align="left">{row.entity.name}</TableCell>
+                        <TableCell align="left">
+                          {field === 'internal_id'
+                            ? row.entity.name
+                            : row.label}
+                        </TableCell>
                         <TableCell align="right">{row.value}</TableCell>
                       </TableRow>
                     ))}

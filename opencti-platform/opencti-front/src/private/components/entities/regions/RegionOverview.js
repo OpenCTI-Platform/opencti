@@ -7,6 +7,7 @@ import Markdown from 'react-markdown';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import remarkGfm from 'remark-gfm';
 import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
 
@@ -58,7 +59,9 @@ class RegionOverviewComponent extends Component {
           >
             {t('Description')}
           </Typography>
-          <Markdown className="markdown">{region.description}</Markdown>
+          <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+            {region.description}
+          </Markdown>
         </Paper>
       </div>
     );

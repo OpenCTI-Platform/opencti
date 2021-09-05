@@ -45,6 +45,7 @@ import GlobalVictimologyCountries from './GlobalVictimologyCountries';
 import GlobalActivityIntrusionSets from './GlobalActivityIntrusionSets';
 import GlobalActivityMalwares from './GlobalActivityMalwares';
 import GlobalActivityReports from './GlobalActivityReports';
+import GlobalActivityIndicators from './GlobalActivityIndicators';
 import GlobalActivityVulnerabilities from './GlobalActivityVulnerabilities';
 import ThreatVulnerabilities from './ThreatVulnerabilities';
 
@@ -68,6 +69,7 @@ const styles = (theme) => ({
     padding: 20,
     borderRadius: 6,
     display: 'relative',
+    overflow: 'hidden',
   },
 });
 
@@ -252,6 +254,32 @@ class DashboardComponent extends Component {
             startDate={startDate}
             endDate={endDate}
             widget={widget}
+          />
+        );
+      case 'indicators':
+        return (
+          <GlobalActivityIndicators
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+          />
+        );
+      case 'indicators_lifecycle':
+        return (
+          <GlobalActivityIndicators
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+            field="revoked"
+          />
+        );
+      case 'indicators_detection':
+        return (
+          <GlobalActivityIndicators
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+            field="x_opencti_detection"
           />
         );
       default:
