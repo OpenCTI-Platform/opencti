@@ -7,7 +7,7 @@ from pycti import OpenCTIApiClient, OpenCTIApiConnector
 def api_client():
     return OpenCTIApiClient(
         "https://demo.opencti.io",
-        "1db04f50-a5cb-4ec3-be29-2fcca533f234",
+        "0b980359-6684-4471-987b-72eedfc8df40",
         ssl_verify=True,
     )
 
