@@ -427,7 +427,7 @@ workflows:
                 - master
       - deploy_club:
           requires:
-            - build_platform
+            - deploy_reference
           filters:
             branches:
               only:

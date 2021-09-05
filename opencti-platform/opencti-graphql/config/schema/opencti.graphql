@@ -802,6 +802,7 @@ type Settings implements InternalObject & BasicObject {
 enum GroupsOrdering {
   name
   default_assignation
+  auto_new_marking
   created_at
   updated_at
 }
