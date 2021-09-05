@@ -119,6 +119,7 @@ services:
     - cp -a opencti-platform /tmp/raw-start-platform
     - cd /tmp/raw-start-platform/opencti-graphql
     - yarn install
+    - yarn install:python
     - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
     - yarn start
 - name: opencti-live-start
@@ -144,6 +145,7 @@ services:
     - cp -a opencti-platform /tmp/live-start-platform
     - cd /tmp/live-start-platform/opencti-graphql
     - yarn install
+    - yarn install:python
     - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
     - yarn start
 - name: opencti-live-end
@@ -169,5 +171,6 @@ services:
     - cp -a opencti-platform /tmp/live-end-platform
     - cd /tmp/live-end-platform/opencti-graphql
     - yarn install
+    - yarn install:python
     - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
     - yarn start
