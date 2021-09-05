@@ -160,7 +160,7 @@ type AckDetails {
   rate: Float
 }
 type MessagesStats {
-  ack: Int
+  ack: String
   ack_details: AckDetails
 }
 type QueueArguments {
@@ -169,22 +169,22 @@ type QueueArguments {
 type QueueMetrics {
   name: String!
   arguments: QueueArguments
-  messages: Int
-  messages_ready: Int
-  messages_unacknowledged: Int
-  consumers: Int
+  messages: String
+  messages_ready: String
+  messages_unacknowledged: String
+  consumers: String
   idle_since: DateTime
   message_stats: MessagesStats
 }
 type QueueTotals {
-  messages: Int
-  messages_ready: Int
-  messages_unacknowledged: Int
+  messages: String
+  messages_ready: String
+  messages_unacknowledged: String
 }
 type ObjectTotals {
-  channels: Int
-  consumers: Int
-  queues: Int
+  channels: String
+  consumers: String
+  queues: String
 }
 type OverviewMetrics {
   node: String
@@ -193,23 +193,23 @@ type OverviewMetrics {
   message_stats: MessagesStats
 }
 type RabbitMQMetrics {
-  consumers: Int
+  consumers: String
   queues: [QueueMetrics]
   overview: OverviewMetrics
 }
 type SearchMetrics {
-  query_total: Int
-  fetch_total: Int
+  query_total: String
+  fetch_total: String
 }
 type IndexingMetrics {
-  index_total: Int
-  delete_total: Int
+  index_total: String
+  delete_total: String
 }
 type GetMetrics {
-  total: Int
+  total: String
 }
 type DocsMetrics {
-  count: Int
+  count: String
 }
 type ElasticSearchMetrics {
   docs: DocsMetrics
