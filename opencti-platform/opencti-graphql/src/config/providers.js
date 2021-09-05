@@ -248,9 +248,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           // region roles mapping
           const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
           const computeRolesMapping = () => {
-            const rolesPath = mappedConfig.roles_management?.roles_path || [];
+            const token = mappedConfig.roles_management?.token_reference || 'access_token';
+            const rolesPath = mappedConfig.roles_management?.roles_path || ['roles'];
             const rolesMapping = mappedConfig.roles_management?.roles_mapping || [];
-            const decodedUser = jwtDecode(tokenset.access_token);
+            const decodedUser = jwtDecode(tokenset[token]);
             const availableRoles = R.flatten(rolesPath.map((path) => R.path(path.split('.'), decodedUser) || []));
             const rolesMapper = genConfigMapper(rolesMapping);
             return availableRoles.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
@@ -259,9 +260,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           // endregion
           // region groups mapping
           const computeGroupsMapping = () => {
-            const groupsPath = mappedConfig.groups_management?.groups_path || [];
+            const token = mappedConfig.groups_management?.token_reference || 'access_token';
+            const groupsPath = mappedConfig.groups_management?.groups_path || ['groups'];
             const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
-            const decodedUser = jwtDecode(tokenset.access_token);
+            const decodedUser = jwtDecode(tokenset[token]);
             const availableGroups = R.flatten(groupsPath.map((path) => R.path(path.split('.'), decodedUser) || []));
             const groupsMapper = genConfigMapper(groupsMapping);
             return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
