@@ -39,7 +39,7 @@ describe('Raw streams tests', () => {
       expect(events.length).toBe(610);
       // 01 - CHECK CREATE EVENTS
       const createEvents = events.filter((e) => e.type === EVENT_TYPE_CREATE);
-      expect(createEvents.length).toBe(289);
+      expect(createEvents.length).toBe(290);
       // Check some events count
       const createEventsByTypes = R.groupBy((e) => e.data.data.type, createEvents);
       expect(createEventsByTypes['marking-definition'].length).toBe(7);
