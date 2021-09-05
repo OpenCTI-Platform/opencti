@@ -7,11 +7,6 @@ assignees: ''
 
 ---
 
-## Prerequisites
-
-- [ ] I read the OpenCTI documentation and didn't find anything relevant to my problem
-- [ ] I went through old GitHub issues and couldn't find anything relevant
-
 ## Use case
 
 <!-- Please describe the use case for which you need a solution -->
@@ -22,7 +17,7 @@ assignees: ''
 
 ## Proposed Solution
 
-<-- Please describe the solution you would like OpenCTI to provide, to solve the problem above. -->
+<!-- Please describe the solution you would like OpenCTI to provide, to solve the problem above. -->
 
 ## Additional Information
 
