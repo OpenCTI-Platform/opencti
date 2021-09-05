@@ -1,13 +1,10 @@
 import { assoc, dissoc, pipe } from 'ramda';
-import * as R from 'ramda';
-import { v4 as uuidv4 } from 'uuid';
 import {
   createEntity,
   distributionEntities,
   internalLoadById,
   listEntities,
   loadById,
-  patchAttribute,
   timeSeriesEntities,
 } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
@@ -18,7 +15,6 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/gene
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { FunctionalError } from '../config/errors';
-import { now, utcDate } from '../utils/format';
 import { isStixId } from '../schema/schemaUtils';
 
 export const findById = (user, observedDataId) => {

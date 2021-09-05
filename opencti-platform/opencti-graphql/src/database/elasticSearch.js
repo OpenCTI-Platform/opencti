@@ -368,7 +368,7 @@ const elCreateIndexTemplate = async () => {
             },
           },
         },
-        composed_of: ['opencti-core-settings'],
+        composed_of: [`${ES_INDEX_PREFIX}-core-settings`],
         version: 3,
         _meta: {
           description: 'To generate opencti expected index mappings',
