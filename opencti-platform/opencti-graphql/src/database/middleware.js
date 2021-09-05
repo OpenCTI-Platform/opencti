@@ -1506,13 +1506,16 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
     if (isTypeHasAliasIDs(instanceType) && isAliasesImpacted) {
       let aliasesId;
       if (input.operation === UPDATE_OPERATION_ADD) {
-        aliasesId = generateAliasesId([...instance[INTERNAL_IDS_ALIASES], ...input.value], instance);
+        // Operation add, adjust aliases id with [name, current IDs and input IDs]
+        aliasesId = generateAliasesId([instance.name, ...instance[input.key], ...input.value], instance);
       } else if (input.operation === UPDATE_OPERATION_REMOVE) {
+        // Operation remove, adjust aliases id with [name, current IDs not included in the input IDs]
         aliasesId = generateAliasesId(
-          R.filter((n) => !input.value.includes(n), instance[INTERNAL_IDS_ALIASES]),
+          [instance.name, ...R.filter((n) => !input.value.includes(n), instance[input.key])],
           instance
         );
       } else {
+        // Operation replace, adjust aliases id with [name, input IDs]
         aliasesId = generateAliasesId([instance.name, ...input.value], instance);
       }
       const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
