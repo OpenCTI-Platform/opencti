@@ -1458,6 +1458,7 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
   // Update all needed attributes
   for (let index = 0; index < preparedElements.length; index += 1) {
     const input = preparedElements[index];
+    const { operation = UPDATE_OPERATION_REPLACE } = input;
     const ins = innerUpdateAttribute(instance, input, options);
     if (ins.length > 0) {
       // Updated inputs must not be internals
@@ -1504,21 +1505,12 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
     const aliasesAttrs = [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI];
     const isAliasesImpacted = aliasesAttrs.includes(input.key) && !R.isEmpty(ins.length);
     if (isTypeHasAliasIDs(instanceType) && isAliasesImpacted) {
-      let aliasesId;
-      if (input.operation === UPDATE_OPERATION_ADD) {
-        // Operation add, adjust aliases id with [name, current IDs and input IDs]
-        aliasesId = generateAliasesId([instance.name, ...(instance[input.key] || []), ...input.value], instance);
-      } else if (input.operation === UPDATE_OPERATION_REMOVE) {
-        // Operation remove, adjust aliases id with [name, current IDs not included in the input IDs]
-        aliasesId = generateAliasesId(
-          [instance.name, ...R.filter((n) => !input.value.includes(n), instance[input.key] || [])],
-          instance
-        );
-      } else {
-        // Operation replace, adjust aliases id with [name, input IDs]
-        aliasesId = generateAliasesId([instance.name, ...input.value], instance);
+      const inputAliases = [...input.value];
+      if (operation === UPDATE_OPERATION_REPLACE) {
+        inputAliases.push(instance.name);
       }
-      const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
+      const aliasesId = generateAliasesId(inputAliases, instance);
+      const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId, operation };
       const aliasIns = innerUpdateAttribute(instance, aliasInput, options);
       if (aliasIns.length > 0) {
         impactedInputs.push(...aliasIns);
@@ -2084,7 +2076,7 @@ const upsertElementRaw = async (user, instance, type, input) => {
     const { name } = input;
     const key = resolveAliasesField(type);
     const aliases = [...(input[ATTRIBUTE_ALIASES] || []), ...(input[ATTRIBUTE_ALIASES_OPENCTI] || [])];
-    if (normalizeName(instance.name) !== normalizeName(name)) aliases.push(name);
+    if (normalizeName(instance.name) !== normalizeName(name)) aliases.push(instance.name);
     const patch = { [key]: aliases };
     const operations = { [key]: UPDATE_OPERATION_ADD };
     const patched = patchAttributeRaw(instance, patch, { operations });
