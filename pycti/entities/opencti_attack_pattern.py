@@ -336,7 +336,7 @@ class AttackPattern:
             x_mitre_id = None
             if "x_mitre_id" in stix_object:
                 x_mitre_id = stix_object["x_mitre_id"]
-            if "external_references" in stix_object:
+            elif "external_references" in stix_object:
                 for external_reference in stix_object["external_references"]:
                     if (
                         external_reference["source_name"] == "mitre-attack"
@@ -344,7 +344,11 @@ class AttackPattern:
                         or external_reference["source_name"] == "mitre-mobile-attack"
                         or external_reference["source_name"] == "amitt-attack"
                     ):
-                        x_mitre_id = external_reference["external_id"]
+                        x_mitre_id = (
+                            external_reference["external_id"]
+                            if "external_id" in external_reference
+                            else None
+                        )
 
             # TODO: Compatibility with OpenCTI 3.X to be REMOVED
             if "x_opencti_order" not in stix_object:
