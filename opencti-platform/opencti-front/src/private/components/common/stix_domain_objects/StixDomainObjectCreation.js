@@ -238,7 +238,7 @@ class StixDomainObjectCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     let finalValues = pipe(
-      assoc('createdBy', values.createdBy.value),
+      assoc('createdBy', values.createdBy?.value),
       assoc('objectMarking', pluck('value', values.objectMarking)),
       assoc('objectLabel', pluck('value', values.objectLabel)),
     )(values);
@@ -329,7 +329,7 @@ class StixDomainObjectCreation extends Component {
         {targetStixDomainObjectTypes === undefined
           || (targetStixDomainObjectTypes.some(
             (r) => ['Stix-Domain-Object', 'System', 'Identity'].indexOf(r) >= 0,
-          ) && <MenuItem value="Sector">{t('System')}</MenuItem>)}
+          ) && <MenuItem value="System">{t('System')}</MenuItem>)}
         {targetStixDomainObjectTypes === undefined
           || (targetStixDomainObjectTypes.some(
             (r) => ['Stix-Domain-Object', 'Individual', 'Identity'].indexOf(r) >= 0,

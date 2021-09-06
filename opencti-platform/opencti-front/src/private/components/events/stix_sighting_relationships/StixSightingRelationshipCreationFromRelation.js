@@ -401,7 +401,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
       assoc('toId', toEntityId),
       assoc('first_seen', parse(values.first_seen).format()),
       assoc('last_seen', parse(values.last_seen).format()),
-      assoc('createdBy', values.createdBy.value),
+      assoc('createdBy', values.createdBy?.value),
       assoc('objectMarking', pluck('value', values.objectMarking)),
     )(values);
     commitMutation({

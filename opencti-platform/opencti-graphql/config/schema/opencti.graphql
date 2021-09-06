@@ -2677,6 +2677,7 @@ enum IdentityType {
   Sector
   Organization
   Individual
+  System
 }
 interface Identity {
   id: ID! # internal_id

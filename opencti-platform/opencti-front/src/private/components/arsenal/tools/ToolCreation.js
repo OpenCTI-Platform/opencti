@@ -110,7 +110,7 @@ class ToolCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
-      assoc('createdBy', values.createdBy.value),
+      assoc('createdBy', values.createdBy?.value),
       assoc('objectMarking', pluck('value', values.objectMarking)),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
       assoc('objectLabel', pluck('value', values.objectLabel)),

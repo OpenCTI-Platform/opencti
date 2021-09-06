@@ -431,7 +431,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
           ? parse(values.stop_time).format()
           : null,
       ),
-      assoc('createdBy', values.createdBy.value),
+      assoc('createdBy', values.createdBy?.value),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
       assoc('objectMarking', pluck('value', values.objectMarking)),
     )(values);

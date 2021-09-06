@@ -388,7 +388,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
           'stop_time',
           values.stop_time ? parse(values.stop_time).format() : null,
         ),
-        R.assoc('createdBy', values.createdBy.value),
+        R.assoc('createdBy', values.createdBy?.value),
         R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
         R.assoc(
           'externalReferences',
