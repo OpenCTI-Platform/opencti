@@ -1,9 +1,9 @@
-requests~=2.26
+requests~=2.26.0
 PyYAML~=5.4
-setuptools~=56.0
+setuptools~=58.0.0
 datefinder~=0.7
-stix2~=2.1
+stix2~=3.0.0
 pika~=1.2
 sseclient~=0.0.27
-python-magic~=0.4; sys_platform == 'linux' or sys_platform == 'darwin'
-python-magic-bin~=0.4; sys_platform == 'win32'
+python-magic~=0.4.24; sys_platform == 'linux' or sys_platform == 'darwin'
+python-magic-bin~=0.4.14; sys_platform == 'win32'
