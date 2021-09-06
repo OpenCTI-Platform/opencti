@@ -77,7 +77,7 @@ export const stixCoreObjectStixCyberObservablesLinesQuery = graphql`
     $toId: String
     $fromTypes: [String]
     $toTypes: [String]
-    $relationship_type: String
+    $relationship_type: [String]
     $startTimeStart: DateTime
     $startTimeStop: DateTime
     $stopTimeStart: DateTime
