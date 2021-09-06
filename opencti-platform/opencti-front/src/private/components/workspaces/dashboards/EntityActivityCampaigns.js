@@ -78,4 +78,7 @@ EntityActivityCampaigns.propTypes = {
   t: PropTypes.func,
 };
 
-export default R.compose(inject18n, withStyles(styles))(EntityActivityCampaigns);
+export default R.compose(
+  inject18n,
+  withStyles(styles),
+)(EntityActivityCampaigns);

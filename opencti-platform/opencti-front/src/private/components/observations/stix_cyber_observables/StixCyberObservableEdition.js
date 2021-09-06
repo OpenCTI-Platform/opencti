@@ -39,7 +39,7 @@ export const stixCyberObservableEditionQuery = graphql`
       ...StixCyberObservable_stixCyberObservable
     }
     settings {
-        platform_enable_reference
+      platform_enable_reference
     }
   }
 `;

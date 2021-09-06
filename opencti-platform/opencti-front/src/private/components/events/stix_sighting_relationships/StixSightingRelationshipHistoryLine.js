@@ -26,6 +26,7 @@ import {
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip/Tooltip';
 import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
@@ -236,13 +237,21 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
             <Tooltip
               classes={{ tooltip: classes.tooltip }}
               title={
-                <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+                <Markdown
+                  remarkPlugins={[remarkGfm, remarkParse]}
+                  parserOptions={{ commonmark: true }}
+                  className="markdown"
+                >
                   {`\`${node.user.name}\` ${node.context_data.message}`}
                 </Markdown>
               }
             >
               <div className={classes.description}>
-                <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+                <Markdown
+                  remarkPlugins={[remarkGfm, remarkParse]}
+                  parserOptions={{ commonmark: true }}
+                  className="markdown"
+                >
                   {`\`${node.user.name}\` ${node.context_data.message}`}
                 </Markdown>
               </div>

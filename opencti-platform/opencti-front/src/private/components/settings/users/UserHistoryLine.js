@@ -33,6 +33,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
@@ -265,13 +266,21 @@ class UserHistoryLineComponent extends Component {
             <Tooltip
               classes={{ tooltip: classes.tooltip }}
               title={
-                <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+                <Markdown
+                  remarkPlugins={[remarkGfm, remarkParse]}
+                  parserOptions={{ commonmark: true }}
+                  className="markdown"
+                >
                   {`\`${node.user.name}\` ${node.context_data?.message}`}
                 </Markdown>
               }
             >
               <div className={classes.description}>
-                <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+                <Markdown
+                  remarkPlugins={[remarkGfm, remarkParse]}
+                  parserOptions={{ commonmark: true }}
+                  className="markdown"
+                >
                   {`\`${node.user.name}\` ${node.context_data?.message}`}
                 </Markdown>
               </div>
@@ -286,7 +295,11 @@ class UserHistoryLineComponent extends Component {
         >
           <DialogTitle>{t('Commit message')}</DialogTitle>
           <DialogContent>
-            <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+            <Markdown
+              remarkPlugins={[remarkGfm, remarkParse]}
+              parserOptions={{ commonmark: true }}
+              className="markdown"
+            >
               {node.context_data?.commit}
             </Markdown>
           </DialogContent>

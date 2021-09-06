@@ -35,6 +35,7 @@ import Collapse from '@material-ui/core/Collapse';
 import { Domain, ExpandLess, ExpandMore } from '@material-ui/icons';
 import { createRefetchContainer } from 'react-relay';
 import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
@@ -344,7 +345,8 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                 stixCoreRelationship.description
                                 && stixCoreRelationship.description.length > 0 ? (
                                   <Markdown
-                                    remarkPlugins={[remarkGfm]}
+                                    remarkPlugins={[remarkGfm, remarkParse]}
+                                    parserOptions={{ commonmark: true }}
                                     className="markdown"
                                   >
                                     {stixCoreRelationship.description}
@@ -468,7 +470,13 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                             && stixCoreRelationship.description
                                               .length > 0 ? (
                                               <Markdown
-                                                remarkPlugins={[remarkGfm]}
+                                                remarkPlugins={[
+                                                  remarkGfm,
+                                                  remarkParse,
+                                                ]}
+                                                parserOptions={{
+                                                  commonmark: true,
+                                                }}
                                                 className="markdown"
                                               >
                                                 {

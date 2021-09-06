@@ -39,7 +39,10 @@ const styles = () => ({
 });
 
 const userMutationFieldPatch = graphql`
-  mutation UserEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+  mutation UserEditionOverviewFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput]!
+  ) {
     userEdit(id: $id) {
       fieldPatch(input: $input) {
         ...UserEditionOverview_user

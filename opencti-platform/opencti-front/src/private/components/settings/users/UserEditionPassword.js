@@ -22,7 +22,10 @@ const styles = (theme) => ({
 });
 
 const userMutationFieldPatch = graphql`
-  mutation UserEditionPasswordFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+  mutation UserEditionPasswordFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput]!
+  ) {
     userEdit(id: $id) {
       fieldPatch(input: $input) {
         ...UserEditionPassword_user

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import { ExpandMore, ExpandLess } from '@material-ui/icons';
 import IconButton from '@material-ui/core/IconButton';
 import { compose } from 'ramda';
@@ -62,10 +63,12 @@ const ExpandableMarkdown = (props) => {
           </IconButton>
         </div>
       )}
-      <div style={{ marginTop: -5 }}>
+      <div style={{ marginTop: 10 }}>
         <Markdown
-          remarkPlugins={[remarkGfm]}
+          remarkPlugins={[remarkGfm, remarkParse]}
+          parserOptions={{ commonmark: true }}
           components={MarkDownComponents(theme)}
+          className="markdown"
           {...props}
         >
           {expand ? source : truncate(source, limit)}

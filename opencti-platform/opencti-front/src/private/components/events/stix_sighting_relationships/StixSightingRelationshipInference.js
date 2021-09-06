@@ -8,6 +8,7 @@ import ForceGraph2D from 'react-force-graph-2d';
 import Markdown from 'react-markdown';
 import { withRouter } from 'react-router-dom';
 import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import {
   buildGraphData,
@@ -97,7 +98,11 @@ class StixSightingRelationshipInference extends Component {
         <Typography variant="h3" gutterBottom={true}>
           {t(inference.rule.name)}
         </Typography>
-        <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+        <Markdown
+          remarkPlugins={[remarkGfm, remarkParse]}
+          parserOptions={{ commonmark: true }}
+          className="markdown"
+        >
           {inference.rule.description}
         </Markdown>
         <ForceGraph2D

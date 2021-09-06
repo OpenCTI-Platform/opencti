@@ -9,6 +9,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
@@ -46,7 +47,11 @@ class CampaignDetailsComponent extends Component {
               >
                 {t('Objective')}
               </Typography>
-              <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+              <Markdown
+                remarkPlugins={[remarkGfm, remarkParse]}
+                parserOptions={{ commonmark: true }}
+                className="markdown"
+              >
                 {campaign.objective}
               </Markdown>
             </Grid>

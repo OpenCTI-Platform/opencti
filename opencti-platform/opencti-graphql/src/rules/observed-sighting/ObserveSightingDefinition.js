@@ -21,12 +21,20 @@ const scan = {
 const scopes = [
   {
     // eslint-disable-next-line prettier/prettier
-    filters: { types: [RELATION_OBJECT], fromTypes: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE] },
+    filters: {
+      types: [RELATION_OBJECT],
+      fromTypes: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA],
+      toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE],
+    },
     attributes: [],
   },
   {
     // eslint-disable-next-line prettier/prettier
-    filters: { types: [RELATION_BASED_ON], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE] },
+    filters: {
+      types: [RELATION_BASED_ON],
+      fromTypes: [ENTITY_TYPE_INDICATOR],
+      toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE],
+    },
     attributes: [],
   },
   {

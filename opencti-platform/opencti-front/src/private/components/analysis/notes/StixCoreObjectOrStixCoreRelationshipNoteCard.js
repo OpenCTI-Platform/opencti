@@ -20,12 +20,12 @@ import Button from '@material-ui/core/Button';
 import Slide from '@material-ui/core/Slide';
 import IconButton from '@material-ui/core/IconButton';
 import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import { commitMutation } from '../../../../relay/environment';
 import { noteMutationRelationDelete } from './AddNotesLines';
-import { truncate } from '../../../../utils/String';
 import NotePopover from './NotePopover';
 import { resolveLink } from '../../../../utils/Entity';
 
@@ -214,12 +214,20 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
             noWrap={true}
             style={{ margin: '0 0 10px 0', fontWeight: 500 }}
           >
-            <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+            <Markdown
+              remarkPlugins={[remarkGfm, remarkParse]}
+              parserOptions={{ commonmark: true }}
+              className="markdown"
+            >
               {node.attribute_abstract}
             </Markdown>
           </Typography>
-          <Markdown remarkPlugins={[remarkGfm]} className="markdown">
-            {truncate(node.content, 200)}
+          <Markdown
+            remarkPlugins={[remarkGfm, remarkParse]}
+            parserOptions={{ commonmark: true }}
+            className="markdown"
+          >
+            {node.content}
           </Markdown>
           <IconButton
             component={Link}

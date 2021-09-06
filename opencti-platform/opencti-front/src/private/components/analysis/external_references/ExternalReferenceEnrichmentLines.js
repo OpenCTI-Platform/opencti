@@ -47,7 +47,10 @@ const externalReferenceEnrichmentLinesDeleteMutation = graphql`
 `;
 
 const externalReferenceEnrichmentLinesAskEnrich = graphql`
-  mutation ExternalReferenceEnrichmentLinesMutation($id: ID!, $connectorId: ID!) {
+  mutation ExternalReferenceEnrichmentLinesMutation(
+    $id: ID!
+    $connectorId: ID!
+  ) {
     externalReferenceEdit(id: $id) {
       askEnrichment(connectorId: $connectorId) {
         id
@@ -94,7 +97,8 @@ const ExternalReferenceEnrichment = (props) => {
     externalReference, connectorsForImport, relay, classes, t, nsdt,
   } = props;
   const { id } = externalReference;
-  const file = externalReference.importFiles && externalReference.importFiles.edges.length > 0
+  const file = externalReference.importFiles
+    && externalReference.importFiles.edges.length > 0
     ? externalReference.importFiles.edges[0].node
     : null;
   const askJob = (connectorId) => {

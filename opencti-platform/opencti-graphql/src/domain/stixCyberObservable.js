@@ -1,7 +1,7 @@
-import * as R from "ramda";
-import { assoc, dissoc, filter, map, pipe } from "ramda";
-import { createHash } from "crypto";
-import { delEditContext, notify, setEditContext } from "../database/redis";
+import * as R from 'ramda';
+import { assoc, dissoc, filter, map, pipe } from 'ramda';
+import { createHash } from 'crypto';
+import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   batchListThroughGetFrom,
   createEntity,
@@ -15,27 +15,31 @@ import {
   listThroughGetFrom,
   loadById,
   timeSeriesEntities,
-  updateAttribute
-} from "../database/middleware";
-import { BUS_TOPICS, logApp } from "../config/conf";
-import { elCount } from "../database/elasticSearch";
-import { READ_INDEX_STIX_CYBER_OBSERVABLES } from "../database/utils";
-import { workToExportFile } from "./work";
-import { addIndicator } from "./indicator";
-import { askEnrich } from "./enrichment";
-import { FunctionalError } from "../config/errors";
-import { createStixPattern } from "../python/pythonBridge";
-import { checkObservableSyntax } from "../utils/syntax";
-import { upload } from "../database/minio";
-import { isStixCyberObservable, isStixCyberObservableHashedObservable, stixCyberObservableOptions } from "../schema/stixCyberObservable";
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from "../schema/general";
-import { isStixMetaRelationship, RELATION_OBJECT } from "../schema/stixMetaRelationship";
-import { RELATION_BASED_ON } from "../schema/stixCoreRelationship";
-import { ENTITY_TYPE_INDICATOR } from "../schema/stixDomainObject";
-import { apiAttributeToComplexFormat } from "../schema/fieldDataAdapter";
-import { askEntityExport, askListExport, exportTransformFilters } from "./stixCoreObject";
-import { escape, observableValue } from "../utils/format";
-import { uploadJobImport } from "./file";
+  updateAttribute,
+} from '../database/middleware';
+import { BUS_TOPICS, logApp } from '../config/conf';
+import { elCount } from '../database/elasticSearch';
+import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
+import { workToExportFile } from './work';
+import { addIndicator } from './indicator';
+import { askEnrich } from './enrichment';
+import { FunctionalError } from '../config/errors';
+import { createStixPattern } from '../python/pythonBridge';
+import { checkObservableSyntax } from '../utils/syntax';
+import { upload } from '../database/minio';
+import {
+  isStixCyberObservable,
+  isStixCyberObservableHashedObservable,
+  stixCyberObservableOptions,
+} from '../schema/stixCyberObservable';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
+import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
+import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
+import { apiAttributeToComplexFormat } from '../schema/fieldDataAdapter';
+import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
+import { escape, observableValue } from '../utils/format';
+import { uploadJobImport } from './file';
 
 export const findById = (user, stixCyberObservableId) => {
   return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);

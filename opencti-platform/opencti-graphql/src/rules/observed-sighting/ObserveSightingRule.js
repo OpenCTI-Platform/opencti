@@ -59,7 +59,14 @@ const ruleObserveSightingBuilder = () => {
           if (organizationId) {
             const explanation = [observedDataId, objectId, observableId, baseOnId, indicatorId];
             // eslint-disable-next-line prettier/prettier
-            const dependencies = generateDependencies(observedDataId, objectId, observableId, organizationId, baseOnId, indicatorId);
+            const dependencies = generateDependencies(
+              observedDataId,
+              objectId,
+              observableId,
+              organizationId,
+              baseOnId,
+              indicatorId
+            );
             // Create the sighting between the indicator and the organization
             const input = { fromId: indicatorId, toId: organizationId, relationship_type: STIX_SIGHTING_RELATIONSHIP };
             const ruleContent = createRuleContent(id, dependencies, explanation, {
@@ -102,7 +109,14 @@ const ruleObserveSightingBuilder = () => {
           if (revoked === false && x_opencti_detection === false) {
             const explanation = [observedDataId, objectId, observableId, baseOnId, indicatorId];
             // eslint-disable-next-line prettier/prettier
-            const dependencies = generateDependencies(observedDataId, objectId, observableId, organizationId, baseOnId, indicatorId);
+            const dependencies = generateDependencies(
+              observedDataId,
+              objectId,
+              observableId,
+              organizationId,
+              baseOnId,
+              indicatorId
+            );
             // Create the sighting between the indicator and the organization
             const input = { fromId: indicatorId, toId: organizationId, relationship_type: STIX_SIGHTING_RELATIONSHIP };
             const ruleContent = createRuleContent(id, dependencies, explanation, {

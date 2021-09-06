@@ -83,7 +83,7 @@ const styles = (theme) => ({
 export const noteCreationMutation = graphql`
   mutation NoteCreationMutation($input: NoteAddInput!) {
     noteAdd(input: $input) {
-        id
+      id
       ...NoteLine_node
     }
   }

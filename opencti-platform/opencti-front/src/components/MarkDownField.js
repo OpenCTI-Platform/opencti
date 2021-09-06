@@ -5,6 +5,7 @@ import Markdown from 'react-markdown';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import inject18n from './i18n';
 
 const MarkDownField = (props) => {
@@ -52,7 +53,12 @@ const MarkDownField = (props) => {
         selectedTab={selectedTab}
         onTabChange={setSelectedTab}
         generateMarkdownPreview={(markdown) => Promise.resolve(
-            <Markdown remarkPlugins={[remarkGfm]}>{markdown}</Markdown>,
+            <Markdown
+              remarkPlugins={[remarkGfm, remarkParse]}
+              parserOptions={{ commonmark: true }}
+            >
+              {markdown}
+            </Markdown>,
         )
         }
         l18n={{

@@ -48,7 +48,10 @@ const styles = (theme) => ({
 });
 
 const roleMutationFieldPatch = graphql`
-  mutation RoleEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+  mutation RoleEditionOverviewFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput]!
+  ) {
     roleEdit(id: $id) {
       fieldPatch(input: $input) {
         ...RoleEditionOverview_role

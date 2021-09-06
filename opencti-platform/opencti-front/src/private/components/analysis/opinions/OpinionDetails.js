@@ -8,6 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 
 const styles = () => ({
@@ -32,7 +33,11 @@ class OpinionDetailsComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Opinion')}
           </Typography>
-          <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+          <Markdown
+            remarkPlugins={[remarkGfm, remarkParse]}
+            parserOptions={{ commonmark: true }}
+            className="markdown"
+          >
             {opinion.opinion}
           </Markdown>
           <Typography
@@ -42,7 +47,11 @@ class OpinionDetailsComponent extends Component {
           >
             {t('Explanation')}
           </Typography>
-          <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+          <Markdown
+            remarkPlugins={[remarkGfm, remarkParse]}
+            parserOptions={{ commonmark: true }}
+            className="markdown"
+          >
             {opinion.explanation}
           </Markdown>
         </Paper>

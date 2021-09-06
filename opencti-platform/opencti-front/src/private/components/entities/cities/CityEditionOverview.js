@@ -49,7 +49,10 @@ const styles = (theme) => ({
 });
 
 const cityMutationFieldPatch = graphql`
-  mutation CityEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+  mutation CityEditionOverviewFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput]!
+  ) {
     cityEdit(id: $id) {
       fieldPatch(input: $input) {
         ...CityEditionOverview_city

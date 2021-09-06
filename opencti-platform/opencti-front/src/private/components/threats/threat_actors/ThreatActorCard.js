@@ -15,6 +15,7 @@ import Avatar from '@material-ui/core/Avatar';
 import { StarBorderOutlined } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
 import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import {
@@ -121,7 +122,8 @@ class ThreatActorCardComponent extends Component {
           <CardContent className={classes.content}>
             <div className={classes.description}>
               <Markdown
-                remarkPlugins={[remarkGfm]}
+                remarkPlugins={[remarkGfm, remarkParse]}
+                parserOptions={{ commonmark: true }}
                 disallowedTypes={['link', 'linkReference']}
                 unwrapDisallowed={true}
               >

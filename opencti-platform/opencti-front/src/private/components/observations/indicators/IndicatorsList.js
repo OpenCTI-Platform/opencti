@@ -92,7 +92,7 @@ class IndicatorsList extends Component {
                     {data.map((row) => (
                       <TableRow key={row.label}>
                         <TableCell align="center" style={{ width: 50 }}>
-                          <ItemIcon type='Indicator' />
+                          <ItemIcon type="Indicator" />
                         </TableCell>
                         <TableCell align="left">{row.label}</TableCell>
                         <TableCell align="right">{row.value}</TableCell>

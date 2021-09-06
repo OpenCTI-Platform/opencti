@@ -248,7 +248,8 @@ const i18n = {
       'No available options': 'Aucune option disponible',
       'No description of this usage': 'Aucune description de cet usage',
       'No description of this targeting': 'Aucune description de ce ciblage',
-      'No history about this relationship.': 'Aucun historique à propos de cette relation',
+      'No history about this relationship.':
+        'Aucun historique à propos de cette relation',
       'Create a workspace': 'Créer un espace de travail',
       'Update a workspace': 'Modifier un espace de travail',
       'Add a widget': 'Ajouter un widget',

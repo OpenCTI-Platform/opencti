@@ -8,8 +8,7 @@ import StixDomainObjectVictimologyMap from '../../common/stix_domain_objects/Sti
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import EntityStixCoreRelationshipsAreaChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsAreaChart';
 import EntityStixCoreRelationshipsVerticalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsVerticalBars';
-import EntityStixCoreRelationshipsList
-  from '../../common/stix_core_relationships/EntityStixCoreRelationshipsList';
+import EntityStixCoreRelationshipsList from '../../common/stix_core_relationships/EntityStixCoreRelationshipsList';
 
 const styles = () => ({
   container: {

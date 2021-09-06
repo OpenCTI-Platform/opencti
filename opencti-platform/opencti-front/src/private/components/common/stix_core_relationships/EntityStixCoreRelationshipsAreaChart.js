@@ -118,7 +118,10 @@ class EntityStixCoreRelationshipsAreaChart extends Component {
                     left: -10,
                   }}
                 >
-                  <CartesianGrid strokeDasharray="2 2" stroke={theme.palette.action.grid} />
+                  <CartesianGrid
+                    strokeDasharray="2 2"
+                    stroke={theme.palette.action.grid}
+                  />
                   <XAxis
                     dataKey="date"
                     stroke={theme.palette.text.primary}

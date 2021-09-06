@@ -8,6 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemMarking from '../../../../components/ItemMarking';
@@ -81,7 +82,11 @@ class SystemOverviewComponent extends Component {
           >
             {t('Description')}
           </Typography>
-          <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+          <Markdown
+            remarkPlugins={[remarkGfm, remarkParse]}
+            parserOptions={{ commonmark: true }}
+            className="markdown"
+          >
             {system.description}
           </Markdown>
         </Paper>

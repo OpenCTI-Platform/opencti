@@ -38,6 +38,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Markdown from 'react-markdown';
 import Skeleton from '@material-ui/lab/Skeleton';
 import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixDomainObjectsLinesSearchQuery } from '../../common/stix_domain_objects/StixDomainObjectsLines';
 import inject18n from '../../../../components/i18n';
@@ -226,7 +227,8 @@ class WidgetCreation extends Component {
                       primary={stixDomainObjectEdge.node.name}
                       secondary={
                         <Markdown
-                          remarkPlugins={[remarkGfm]}
+                          remarkPlugins={[remarkGfm, remarkParse]}
+                          parserOptions={{ commonmark: true }}
                           className="markdown"
                         >
                           {truncate(stixDomainObjectEdge.node.description, 200)}

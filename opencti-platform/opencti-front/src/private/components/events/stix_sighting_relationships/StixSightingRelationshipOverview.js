@@ -12,6 +12,7 @@ import Typography from '@material-ui/core/Typography';
 import Fab from '@material-ui/core/Fab';
 import { ArrowRightAlt, Edit } from '@material-ui/icons';
 import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
@@ -384,7 +385,8 @@ class StixSightingRelationshipContainer extends Component {
                         {t('Description')}
                       </Typography>
                       <Markdown
-                        remarkPlugins={[remarkGfm]}
+                        remarkPlugins={[remarkGfm, remarkParse]}
+                        parserOptions={{ commonmark: true }}
                         className="markdown"
                       >
                         {stixSightingRelationship.description}

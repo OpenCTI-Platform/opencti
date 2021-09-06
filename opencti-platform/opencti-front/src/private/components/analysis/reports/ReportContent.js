@@ -4,11 +4,7 @@ import * as R from 'ramda';
 import Axios from 'axios';
 import pdfMake from 'pdfmake';
 import Editor from 'rich-markdown-editor';
-import {
-  pdfjs,
-  Document,
-  Page,
-} from 'react-pdf/dist/esm/entry.webpack';
+import { pdfjs, Document, Page } from 'react-pdf/dist/esm/entry.webpack';
 import { light, dark } from 'rich-markdown-editor/dist/theme';
 import SunEditor from 'suneditor-react';
 import htmlToPdfmake from 'html-to-pdfmake';

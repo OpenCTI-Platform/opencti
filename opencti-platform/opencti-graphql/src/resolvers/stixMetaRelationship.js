@@ -1,5 +1,5 @@
 import { distributionRelations, batchLoader } from '../database/middleware';
-import  { findAll, findById, stixMetaRelationshipsNumber } from '../domain/stixMetaRelationship';
+import { findAll, findById, stixMetaRelationshipsNumber } from '../domain/stixMetaRelationship';
 import { elBatchIds } from '../database/elasticSearch';
 
 const loadByIdLoader = batchLoader(elBatchIds);

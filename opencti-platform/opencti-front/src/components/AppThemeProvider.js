@@ -53,11 +53,19 @@ const AppThemeProvider = (props) => {
     props,
   );
   let muiTheme = createTheme(
-    themeDark(platformThemeDarkLogo, platformThemeDarkPrimary, platformThemeDarkSecondary),
+    themeDark(
+      platformThemeDarkLogo,
+      platformThemeDarkPrimary,
+      platformThemeDarkSecondary,
+    ),
   );
   if (theme === 'light') {
     muiTheme = createTheme(
-      themeLight(platformThemeLightLogo, platformThemeLightPrimary, platformThemeLightSecondary),
+      themeLight(
+        platformThemeLightLogo,
+        platformThemeLightPrimary,
+        platformThemeLightSecondary,
+      ),
     );
   }
   return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;

@@ -108,7 +108,10 @@ export const resolveLink = (type) => {
   }
 };
 
-export const header = (url, entitiesNames = []) => `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+export const header = (
+  url,
+  entitiesNames = []
+) => `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
     <head>
         <meta content="en-us" http-equiv="Content-Language">
@@ -153,7 +156,11 @@ export const header = (url, entitiesNames = []) => `<!DOCTYPE HTML PUBLIC "-//W3
                                       </td>
                                       <td bgcolor="#ffffff" style="width: 300px; padding:20px 20px 15px 20px; background: #ffffff; background-color:#ffffff; text-align:center;" valign="middle">
                                           This email is automatically generated.
-                                          ${entitiesNames && entitiesNames.length > 0 ? `<br><i>Scope:</i> ${entitiesNames}` : ''}                                         
+                                          ${
+                                            entitiesNames && entitiesNames.length > 0
+                                              ? `<br><i>Scope:</i> ${entitiesNames}`
+                                              : ''
+                                          }                                         
                                       </td>
                                   </tr>
                               </table>
