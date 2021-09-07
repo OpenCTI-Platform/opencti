@@ -1,11 +1,8 @@
-import time
-
 import pika.exceptions
 import pytest
 from pytest_cases import parametrize_with_cases, fixture
-
 from pycti import OpenCTIConnector
-from tests.modules.connectors import (
+from tests.cases.connectors import (
     ExternalImportConnector,
     SimpleConnectorTest,
     InternalEnrichmentConnector,
@@ -16,16 +13,13 @@ from tests.modules.connectors import (
 )
 from tests.utils import (
     get_connector_id,
-    get_connector_works,
-    wait_connector_finish,
     get_new_work_id,
-    delete_work,
 )
 
 
 @fixture
 @parametrize_with_cases("connector", cases=SimpleConnectorTest)
-def simple_connector(connector, api_connector):
+def simple_connector(connector, api_connector, api_work):
     connector = OpenCTIConnector(**connector)
     api_connector.register(connector)
     yield connector
@@ -38,7 +32,7 @@ def simple_connector(connector, api_connector):
 
 
 @pytest.mark.connectors
-def test_register_simple_connector(simple_connector, api_connector):
+def test_register_simple_connector(simple_connector, api_connector, api_work):
     my_connector_id = simple_connector.to_input()["input"]["id"]
 
     test_connector = ""
@@ -66,21 +60,21 @@ def test_register_simple_connector(simple_connector, api_connector):
 
 @fixture
 @parametrize_with_cases("data", cases=ExternalImportConnectorTest)
-def external_import_connector_data(data, api_client, api_connector):
+def external_import_connector_data(data, api_client, api_connector, api_work):
     connector = ExternalImportConnector(data["config"], api_client, data["data"])
     connector.run()
     yield data["data"]
     connector.stop()
 
     # Cleanup finished works
-    works = get_connector_works(api_client, connector.helper.connector_id)
+    works = api_work.get_connector_works(connector.helper.connector_id)
     for work in works:
-        delete_work(api_client, work["id"])
+        api_work.delete_work(work["id"])
 
 
 @pytest.mark.connectors
 def test_external_import_connector(
-    external_import_connector_data, api_client, api_connector
+    external_import_connector_data, api_client, api_connector, api_work
 ):
     connector_name = "TestExternalImport"
     connector_id = get_connector_id(connector_name, api_connector)
@@ -89,9 +83,9 @@ def test_external_import_connector(
     # Wait until new work is registered
     work_id = get_new_work_id(api_client, connector_id)
     # Wait for opencti to finish processing task
-    wait_connector_finish(api_client, connector_id, work_id)
+    api_work.wait_for_work_to_finish(work_id)
 
-    status_msg = get_connector_works(api_client, connector_id, work_id)[0]
+    status_msg = api_work.get_work(work_id)
     assert (
         status_msg["tracking"]["import_expected_number"] == 2
     ), f"Unexpected number of 'import_expected_number'. Expected 2, Actual {status_msg['tracking']['import_expected_number']}"
@@ -117,7 +111,7 @@ def test_external_import_connector(
 
 @fixture
 @parametrize_with_cases("data", cases=InternalEnrichmentConnectorTest)
-def internal_enrichment_connector_data(data, api_client, api_connector):
+def internal_enrichment_connector_data(data, api_client, api_connector, api_work):
     enrichment_connector = InternalEnrichmentConnector(
         data["config"], api_client, data["data"]
     )
@@ -135,14 +129,14 @@ def internal_enrichment_connector_data(data, api_client, api_connector):
     enrichment_connector.stop()
 
     # Cleanup finished works
-    works = get_connector_works(api_client, enrichment_connector.helper.connector_id)
+    works = api_work.get_connector_works(enrichment_connector.helper.connector_id)
     for work in works:
-        delete_work(api_client, work["id"])
+        api_work.delete_work(work["id"])
 
 
 @pytest.mark.connectors
 def test_internal_enrichment_connector(
-    internal_enrichment_connector_data, api_connector, api_client
+    internal_enrichment_connector_data, api_connector, api_work, api_client
 ):
     # Rename variable
     observable_id = internal_enrichment_connector_data
@@ -155,12 +149,12 @@ def test_internal_enrichment_connector(
     connector_id = get_connector_id(connector_name, api_connector)
     assert connector_id != "", f"{connector_name} could not be found!"
 
-    api_client.stix_cyber_observable.ask_for_enrichment(
+    work_id = api_client.stix_cyber_observable.ask_for_enrichment(
         id=observable_id, connector_id=connector_id
     )
 
     # Wait for enrichment to finish
-    time.sleep(3)
+    api_work.wait_for_work_to_finish(work_id)
 
     observable = api_client.stix_cyber_observable.read(id=observable_id)
     assert (
@@ -170,7 +164,7 @@ def test_internal_enrichment_connector(
 
 @fixture
 @parametrize_with_cases("data", cases=InternalImportConnectorTest)
-def internal_import_connector_data(data, api_client, api_connector):
+def internal_import_connector_data(data, api_client, api_connector, api_work):
     import_connector = InternalImportConnector(
         data["config"], api_client, data["observable"]
     )
@@ -184,14 +178,14 @@ def internal_import_connector_data(data, api_client, api_connector):
     import_connector.stop()
 
     # Cleanup finished works
-    works = get_connector_works(api_client, import_connector.helper.connector_id)
+    works = api_work.get_connector_works(import_connector.helper.connector_id)
     for work in works:
-        delete_work(api_client, work["id"])
+        api_work.delete_work(work["id"])
 
 
 @pytest.mark.connectors
 def test_internal_import_connector(
-    internal_import_connector_data, api_connector, api_client
+    internal_import_connector_data, api_connector, api_work, api_client
 ):
     # Rename variable
     report_id, data = internal_import_connector_data
@@ -210,9 +204,9 @@ def test_internal_import_connector(
     # Wait until new work is registered
     work_id = get_new_work_id(api_client, connector_id)
     # Wait for opencti to finish processing task
-    wait_connector_finish(api_client, connector_id, work_id)
+    api_work.wait_for_work_to_finish(work_id)
 
-    status_msg = get_connector_works(api_client, connector_id, work_id)[0]
+    status_msg = api_work.get_work(work_id)
     assert (
         status_msg["tracking"]["import_expected_number"] == 2
     ), f"Unexpected number of 'import_expected_number'. Expected 2, Actual {status_msg['tracking']['import_expected_number']}"

@@ -1,4 +1,6 @@
 import logging
+import time
+from typing import Dict, List
 
 
 class OpenCTIApiWork:
@@ -72,3 +74,138 @@ class OpenCTIApiWork:
             query, {"connectorId": connector_id, "friendlyName": friendly_name}
         )
         return work["data"]["workAdd"]["id"]
+
+    def delete_work(self, work_id: str):
+        query = """
+        mutation ConnectorWorksMutation($workId: ID!) {
+            workEdit(id: $workId) {
+                delete
+            }
+        }"""
+        work = self.api.query(
+            query,
+            {"workId": work_id},
+        )
+        return work["data"]
+
+    def wait_for_work_to_finish(self, work_id: str):
+        status = ""
+        cnt = 0
+        while status != "complete":
+            state = self.get_work(work_id=work_id)
+            if len(state) > 0:
+                status = state["status"]
+
+                if state["errors"]:
+                    self.api.log(
+                        "error", f"Unexpected connector error {state['errors']}"
+                    )
+                    return ""
+
+            time.sleep(1)
+            cnt += 1
+
+    def get_work(self, work_id: str) -> Dict:
+        query = """
+        query WorkQuery($id: ID!) {
+            work(id: $id) {
+                id
+                name
+                user {
+                    name
+                }
+                timestamp
+                status
+                event_source_id
+                received_time
+                processed_time
+                completed_time
+                tracking {
+                    import_expected_number
+                    import_processed_number
+                }
+                messages {
+                    timestamp
+                    message
+                    sequence
+                    source
+                }
+                errors {
+                    timestamp
+                    message
+                    sequence
+                    source
+                }
+            }
+        }
+        """
+        result = self.api.query(
+            query,
+            {"id": work_id},
+        )
+        return result["data"]["work"]
+
+    def get_connector_works(self, connector_id: str) -> List[Dict]:
+        query = """
+        query ConnectorWorksQuery(
+            $count: Int
+            $orderBy: WorksOrdering
+            $orderMode: OrderingMode
+            $filters: [WorksFiltering]
+        ) {
+            works(
+                first: $count
+                orderBy: $orderBy
+                orderMode: $orderMode
+                filters: $filters
+            ) {
+                edges {
+                    node {
+                        id
+                        name
+                        user {
+                            name
+                        }
+                        timestamp
+                        status
+                        event_source_id
+                        received_time
+                        processed_time
+                        completed_time
+                        tracking {
+                            import_expected_number
+                            import_processed_number
+                        }
+                        messages {
+                            timestamp
+                            message
+                            sequence
+                            source
+                        }
+                        errors {
+                            timestamp
+                            message
+                            sequence
+                            source
+                        }
+                    }
+                }
+            }
+        }
+        """
+        result = self.api.query(
+            query,
+            {
+                "count": 50,
+                "filters": [
+                    {"key": "connector_id", "values": [connector_id]},
+                ],
+            },
+        )
+        result = result["data"]["works"]["edges"]
+        return_value = []
+        for node in result:
+            node = node["node"]
+            return_value.append(node)
+
+        return sorted(return_value, key=lambda i: i["timestamp"])

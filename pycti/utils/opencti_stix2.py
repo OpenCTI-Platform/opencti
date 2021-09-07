@@ -15,6 +15,7 @@ from pycti.entities.opencti_identity import Identity
 from pycti.utils.constants import IdentityTypes, LocationTypes, StixCyberObservableTypes
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from pycti.utils.opencti_stix2_update import OpenCTIStix2Update
+from pycti.utils.opencti_stix2_utils import OBSERVABLES_VALUE_INT
 
 datefinder.ValueError = ValueError, OverflowError
 utc = pytz.UTC
@@ -665,10 +666,13 @@ class OpenCTIStix2:
             "reports": reports,
         }
         if stix_object["type"] == "x-opencti-simple-observable":
+            print(stix_object)
             stix_observable_result = self.opencti.stix_cyber_observable.create(
                 simple_observable_id=stix_object["id"],
                 simple_observable_key=stix_object["key"],
-                simple_observable_value=stix_object["value"],
+                simple_observable_value=stix_object["value"]
+                if stix_object["key"] not in OBSERVABLES_VALUE_INT
+                else int(stix_object["value"]),
                 simple_observable_description=stix_object["description"]
                 if "description" in stix_object
                 else None,
