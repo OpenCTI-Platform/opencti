@@ -105,9 +105,9 @@ class ExternalImportConnector:
         )
 
         message = "Connector successfully run, storing last_run as " + str(now_time)
-        self.helper.log_info(message)
-        time.sleep(10)
         self.helper.api.work.to_processed(work_id, message)
+
+        return "Foo"
 
     def stop(self):
         self.helper.stop()
@@ -151,17 +151,45 @@ class InternalEnrichmentConnector:
         self.helper = OpenCTIConnectorHelper(config)
 
     def _process_message(self, data: Dict) -> str:
+
         # set score to 100
         entity_id = data["entity_id"]
         observable = self.helper.api.stix_cyber_observable.read(id=entity_id)
-        observable_id = observable["standard_id"]
 
-        # self.helper.api.stix_cyber_observable.create(
-        #     id=observable_id, x_opencti_score=100, update=True
-        # )
         self.helper.api.stix_cyber_observable.update_field(
-            id=observable_id, key="x_opencti_score", value=100
+            id=observable["standard_id"],
+            input={"key": "x_opencti_score", "value": ["100"]},
         )
+
+        # now = datetime.utcfromtimestamp(time.time())
+        # now_time = now.strftime("%Y-%m-%d %H:%M:%S")
+        # friendly_name = f"{self.helper.connect_name} run @ {now_time}"
+        # work_id = self.helper.api.work.initiate_work(
+        #     self.helper.connect_id, friendly_name
+        # )
+        #
+        # # set score to 100
+        # entity_id = data["entity_id"]
+        # observable = self.helper.api.stix_cyber_observable.read(id=entity_id)
+        #
+        # stix_observable = SimpleObservable(
+        #     id=OpenCTIStix2Utils.generate_random_stix_id("x-opencti-simple-observable"),
+        #     key="IPv4-Addr.value",
+        #     value=observable['value'],
+        #     x_opencti_score=100
+        # )
+        # bundle_objects = [stix_observable]
+        # # create stix bundle
+        # bundle = Bundle(objects=bundle_objects).serialize()
+        # # send data
+        # self.helper.send_stix2_bundle(
+        #     bundle=bundle,
+        #     update=True,
+        # )
+        #
+        # message = "Connector successfully run, storing last_run as " + str(now_time)
+        # self.helper.api.work.to_processed(work_id, message)
+
         return "Finished"
 
     def stop(self):

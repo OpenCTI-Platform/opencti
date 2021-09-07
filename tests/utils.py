@@ -1,10 +1,9 @@
 import datetime
 import time
-from typing import List, Dict
+from typing import Dict, List
 
 from dateutil.parser import parse
-
-from pycti import OpenCTIApiConnector, OpenCTIApiClient
+from pycti import OpenCTIApiConnector, OpenCTIApiClient, OpenCTIApiWork
 
 
 def get_incident_start_date():
@@ -39,82 +38,9 @@ def get_connector_id(connector_name: str, api_connector: OpenCTIApiConnector) ->
     return connector_id
 
 
-def get_connector_works(
-    api_client: OpenCTIApiClient, connector_id: str, work_id: str = ""
-) -> List[Dict]:
-    query = """
-    query ConnectorWorksQuery(
-          $count: Int
-          $orderBy: WorksOrdering
-          $orderMode: OrderingMode
-          $filters: [WorksFiltering]
-        ) {
-          works(
-            first: $count
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-          ) {
-            edges {
-              node {
-                id
-                name
-                user {
-                  name
-                }
-                timestamp
-                status
-                event_source_id
-                received_time
-                processed_time
-                completed_time
-                tracking {
-                  import_expected_number
-                  import_processed_number
-                }
-                messages {
-                  timestamp
-                  message
-                  sequence
-                  source
-                }
-                errors {
-                  timestamp
-                  message
-                  sequence
-                  source
-                }
-              }
-            }
-          }
-        }
-        """
-    result = api_client.query(
-        query,
-        {
-            "count": 50,
-            "filters": [
-                {"key": "connector_id", "values": [connector_id]},
-                # {"key": "status", "values": ["wait", "progress", "complete"]},
-                # {"key": "event_source_id", "values": [event_source_id]},
-                # {"key": "timestamp", "values": [start_time]}
-            ],
-        },
-    )
-    result = result["data"]["works"]["edges"]
-    return_value = []
-    for node in result:
-        node = node["node"]
-        if work_id != "":
-            if node["id"] == work_id:
-                return_value.append(node)
-        else:
-            return_value.append(node)
-    return sorted(return_value, key=lambda i: i["timestamp"])
-
-
 def get_new_work_id(api_client: OpenCTIApiClient, connector_id: str) -> str:
-    new_works = get_connector_works(api_client, connector_id)
+    worker = OpenCTIApiWork(api_client)
+    new_works = worker.get_connector_works(connector_id)
     cnt = 0
     while len(new_works) == 0:
         time.sleep(1)
@@ -131,37 +57,42 @@ def get_new_work_id(api_client: OpenCTIApiClient, connector_id: str) -> str:
     return new_works[0]["id"]
 
 
-def wait_connector_finish(
-    api_client: OpenCTIApiClient, connector_id: str, work_id: str
-):
-    status = ""
-    cnt = 0
-    while status != "complete":
-        states = get_connector_works(api_client, connector_id, work_id)
-        if len(states) > 0:
+def compare_values(original_data: Dict, retrieved_data: Dict, exception_keys: List):
+    for key, value in original_data.items():
+        # Attributes which aren't present in the final Stix objects
+        if key in exception_keys:
+            continue
+
+        assert key in retrieved_data, f"Key {key} is not in retrieved_data"
+
+        compare_data = retrieved_data.get(key, None)
+        if isinstance(value, str):
             assert (
-                len(states) == 1
-            ), f"Received more than 1 state for work_id. Got: {len(states)}"
+                value == compare_data
+            ), f"Key '{key}': '{value}' does't match value '{retrieved_data[key]}' ({retrieved_data}"
+        elif key == "objects" and isinstance(value, list):
+            assert isinstance(compare_data, list), f"Key '{key}': is not a list"
+            original_ids = set()
+            for elem in value:
+                if isinstance(elem, dict):
+                    original_ids.add(elem.get("id", None))
+                elif isinstance(elem, str):
+                    original_ids.add(elem)
+
+            retrieved_ids = set()
+            for elem in compare_data:
+                if isinstance(elem, dict):
+                    retrieved_ids.add(elem.get("id", None))
+                elif isinstance(elem, str):
+                    original_ids.add(elem)
+
             assert (
-                states[0]["errors"] == []
-            ), f"Unexpected connector error {states[0]['errors']}"
-            status = states[0]["status"]
-
-        time.sleep(1)
-        # wait 120 seconds for connector to finish
-        cnt += 1
-        if cnt > 160:
-            assert cnt != cnt, "Connector wasn't able to finish. Elapsed time 160s"
-
-
-def delete_work(api_client: OpenCTIApiClient, work_id: str):
-    query = """
-    mutation ConnectorWorksMutation($workId: ID!) {
-        workEdit(id: $workId) {
-            delete
-        }
-    }"""
-    api_client.query(
-        query,
-        {"workId": work_id},
-    )
+                original_ids == retrieved_ids
+            ), f"Key '{key}': '{value}' does't match value '{compare_data}'"
+        elif isinstance(value, dict):
+            assert len(value) == len(
+                compare_data
+            ), f"Dict '{value}' does not have the same length as '{compare_data}'"
+            assert (
+                value == compare_data
+            ), f"Dict '{value}' does not have the same content as'{compare_data}'"

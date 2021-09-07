@@ -36,6 +36,12 @@ PATTERN_MAPPING = {
     "X-OpenCTI-Hostname": ["value"],
 }
 
+OBSERVABLES_VALUE_INT = [
+    "Autonomous-System.number",
+    "Network-Traffic.dst_port",
+    "Process.pid",
+]
+
 
 class OpenCTIStix2Utils:
     @staticmethod
