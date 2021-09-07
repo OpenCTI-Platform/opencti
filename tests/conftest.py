@@ -1,6 +1,12 @@
 import pytest
 from pytest_cases import fixture
-from pycti import OpenCTIApiClient, OpenCTIApiConnector, OpenCTIApiWork, OpenCTIStix2, OpenCTIStix2Splitter
+from pycti import (
+    OpenCTIApiClient,
+    OpenCTIApiConnector,
+    OpenCTIApiWork,
+    OpenCTIStix2,
+    OpenCTIStix2Splitter,
+)
 
 
 @fixture(scope="session")
@@ -30,6 +36,7 @@ def api_stix(api_client):
 @fixture(scope="session")
 def opencti_splitter():
     return OpenCTIStix2Splitter()
+
 
 def pytest_addoption(parser):
     parser.addoption(
