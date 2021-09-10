@@ -10,9 +10,9 @@ import {
   patchAttribute,
   stixLoadById,
 } from '../database/middleware';
-import { INDEX_INTERNAL_OBJECTS, isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/rabbitmq';
-import { elList, elUpdate } from '../database/elasticSearch';
+import { elList } from '../database/elasticSearch';
 import { ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE, ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
@@ -22,13 +22,12 @@ import { RULE_MANAGER_USER, RULES_DECLARATION } from '../rules/rules';
 import { MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/sseMiddleware';
 import { buildStixData } from '../database/stix';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
-import { now } from '../utils/format';
 import { extractFieldsOfPatch, rebuildInstanceBeforePatch } from '../utils/patch';
 
 let activatedRules = [];
 const RULE_ENGINE_ID = 'rule_engine_settings';
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
-const STATUS_WRITE_RANGE = conf.get('rule_engine:status_writing_delay') || 1000;
+const STATUS_WRITE_RANGE = conf.get('rule_engine:status_writing_delay') || 100;
 
 export const getManagerInfo = async (user) => {
   const ruleStatus = await internalLoadById(user, RULE_ENGINE_ID);
@@ -165,14 +164,7 @@ const isMatchRuleFilters = (rule, element, matchUpdateFields = false) => {
 
 const handleRuleError = async (event, error) => {
   const { type } = event;
-  const params = { now: now(), source: JSON.stringify(event), error: error.stack };
   logApp.error(`Error applying ${type} event rule`, { event, error });
-  const initIfNotExist = `if (ctx._source.errors == null) ctx._source.errors = [];`;
-  const addError = `ctx._source.errors.add(["timestamp": params.now, "source": params.source, "error": params.error]); `;
-  const source = `${initIfNotExist} ${addError}`;
-  await elUpdate(INDEX_INTERNAL_OBJECTS, RULE_ENGINE_ID, {
-    script: { source, lang: 'painless', params },
-  });
 };
 
 export const rulesApplyDerivedEvents = async (eventId, derivedEvents, forRules = []) => {
@@ -197,6 +189,7 @@ export const rulesApplyHandler = async (events, forRules = []) => {
   for (let index = 0; index < events.length; index += 1) {
     const event = events[index];
     const { eventId, type, data, markings } = event;
+    logApp.info('Processing event', { eventId });
     try {
       const element = { ...data, object_marking_refs: markings };
       // In case of merge convert the events to basic events and restart the process

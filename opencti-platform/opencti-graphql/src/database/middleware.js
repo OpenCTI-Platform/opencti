@@ -2454,6 +2454,7 @@ export const createInferredRelation = async (input, ruleContent) => {
   const opts = { fromRule: ruleContent.field };
   // eslint-disable-next-line camelcase
   const { fromId, toId, relationship_type } = input;
+  logApp.info('Create inferred relation', { fromId, toId, relationshipType: relationship_type });
   // In some cases, we can try to create with the same from and to, ignore
   if (fromId === toId) {
     return undefined;
