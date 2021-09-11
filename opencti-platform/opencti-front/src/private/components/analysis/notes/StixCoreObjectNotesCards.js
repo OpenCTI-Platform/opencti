@@ -26,6 +26,9 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { commitMutation } from '../../../../relay/environment';
 import { noteCreationMutation } from './NoteCreation';
 import TextField from '../../../../components/TextField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   paper: {
@@ -90,8 +93,13 @@ class StixCoreObjectNotesCardsContainer extends Component {
       data,
     ).map((n) => n.node.id);
     const adaptedValues = R.pipe(
-      R.assoc('objectMarking', defaultMarking),
+      R.assoc('objectMarking', [
+        ...defaultMarking,
+        ...R.pluck('value', values.objectMarking),
+      ]),
       R.assoc('objects', [stixCoreObjectId]),
+      R.assoc('createdBy', R.pathOr(null, ['createdBy', 'value'], values)),
+      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
     )(values);
     commitMutation({
       mutation: noteCreationMutation,
@@ -167,12 +175,21 @@ class StixCoreObjectNotesCardsContainer extends Component {
               initialValues={{
                 attribute_abstract: '',
                 content: '',
+                createdBy: '',
+                objectMarking: [],
+                objectLabel: [],
               }}
               validationSchema={noteValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
             >
-              {({ submitForm, handleReset, isSubmitting }) => (
+              {({
+                submitForm,
+                handleReset,
+                setFieldValue,
+                values,
+                isSubmitting,
+              }) => (
                 <Form style={{ width: '100%' }}>
                   <Field
                     component={TextField}
@@ -188,6 +205,21 @@ class StixCoreObjectNotesCardsContainer extends Component {
                     multiline={true}
                     rows="4"
                     style={{ marginTop: 20 }}
+                  />
+                  <CreatedByField
+                    name="createdBy"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                  />
+                  <ObjectLabelField
+                    name="objectLabel"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.objectLabel}
+                  />
+                  <ObjectMarkingField
+                    name="objectMarking"
+                    style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>
                     <Button

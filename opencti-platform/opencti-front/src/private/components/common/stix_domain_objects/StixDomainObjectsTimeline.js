@@ -26,7 +26,6 @@ const styles = (theme) => ({
   container: {
     width: '100%',
     height: '100%',
-    overflow: 'hidden',
   },
   paper: {
     padding: 15,
@@ -162,7 +161,7 @@ class StixDomainObjectsTimeline extends Component {
           ) {
             const stixDomainObjectsEdges = props.stixDomainObjects.edges;
             return (
-              <div id="container" className={classes.ccontainer}>
+              <div id="container" className={classes.container}>
                 <Timeline align="alternate">
                   {stixDomainObjectsEdges.map((stixDomainObjectEdge) => {
                     const stixDomainObject = stixDomainObjectEdge.node;
