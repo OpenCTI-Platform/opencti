@@ -146,7 +146,7 @@ class StixSightingRelationshipLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.status.width }}
+                style={{ width: dataColumns.status_id.width }}
               >
                 <ItemStatus
                   status={node.status}
@@ -407,7 +407,7 @@ class StixSightingRelationshipLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.status.width }}
+                style={{ width: dataColumns.status_id.width }}
               >
                 <Skeleton
                   animation="wave"

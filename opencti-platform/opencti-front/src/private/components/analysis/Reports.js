@@ -181,7 +181,7 @@ class Reports extends Component {
         width: '10%',
         isSortable: true,
       },
-      status: {
+      status_id: {
         label: 'Status',
         width: '10%',
         isSortable: true,

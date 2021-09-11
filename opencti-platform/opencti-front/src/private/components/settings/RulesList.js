@@ -21,9 +21,13 @@ import CardContent from '@material-ui/core/CardContent';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Markdown from 'react-markdown';
 import { AutoFix } from 'mdi-material-ui';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import Tooltip from '@material-ui/core/Tooltip/Tooltip';
 import { FIVE_SECONDS } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
+import { truncate } from '../../../utils/String';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -206,9 +210,28 @@ class RulesListComponent extends Component {
                         : t('Never enabled')
                     }
                   />
-                  <CardContent classes={{ root: classes.cardContent }}>
-                    <Markdown>{rule.description}</Markdown>
-                  </CardContent>
+                  <Tooltip
+                    classes={{ tooltip: classes.tooltip }}
+                    title={
+                      <Markdown
+                        remarkPlugins={[remarkGfm, remarkParse]}
+                        parserOptions={{ commonmark: true }}
+                        className="markdown"
+                      >
+                        {rule.description}
+                      </Markdown>
+                    }
+                  >
+                    <CardContent classes={{ root: classes.cardContent }}>
+                      <Markdown
+                        remarkPlugins={[remarkGfm, remarkParse]}
+                        parserOptions={{ commonmark: true }}
+                        className="markdown"
+                      >
+                        {truncate(rule.description, 180)}
+                      </Markdown>
+                    </CardContent>
+                  </Tooltip>
                   <CardActions classes={{ root: classes.cardActions }}>
                     {isEngineEnabled && task && (
                       <div

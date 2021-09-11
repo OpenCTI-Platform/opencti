@@ -450,6 +450,7 @@ class Filters extends Component {
                 color: n.node.template.color,
                 value: n.node.id,
                 order: n.node.order,
+                type: 'attribute',
               })),
             )(data);
             this.setState({

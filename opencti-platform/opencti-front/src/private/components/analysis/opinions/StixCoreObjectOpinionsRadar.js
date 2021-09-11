@@ -310,11 +310,11 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
       t, classes, title, variant, height, marginTop, stixCoreObjectId,
     } = this.props;
     const marks = [
-      { value: 1 },
+      { label: '-', value: 1 },
       { label: 'disagree', value: 2 },
       { label: 'neutral', value: 3 },
       { label: 'agree', value: 4 },
-      { value: 5 },
+      { label: '+', value: 5 },
     ];
     return (
       <div style={{ height: height || '100%', marginTop: marginTop || 0 }}>

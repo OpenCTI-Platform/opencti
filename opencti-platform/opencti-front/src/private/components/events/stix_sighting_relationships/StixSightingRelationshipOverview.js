@@ -13,6 +13,7 @@ import Fab from '@material-ui/core/Fab';
 import { ArrowRightAlt, Edit } from '@material-ui/icons';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import Chip from '@material-ui/core/Chip';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
@@ -111,6 +112,24 @@ const styles = (theme) => ({
     color: theme.palette.secondary.main,
     fontSize: 16,
     fontWeight: 800,
+  },
+  positive: {
+    fontSize: 12,
+    lineHeight: '12px',
+    height: 20,
+    backgroundColor: 'rgba(244, 67, 54, 0.08)',
+    color: '#f44336',
+    textTransform: 'uppercase',
+    borderRadius: '0',
+  },
+  negative: {
+    fontSize: 12,
+    lineHeight: '12px',
+    height: 20,
+    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+    color: '#4caf50',
+    textTransform: 'uppercase',
+    borderRadius: '0',
   },
 });
 
@@ -277,54 +296,75 @@ class StixSightingRelationshipContainer extends Component {
               {t('Information')}
             </Typography>
             <Paper classes={{ root: classes.paper }} elevation={2}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Marking')}
-              </Typography>
-              {stixSightingRelationship.objectMarking.edges.length > 0
-                && R.map(
-                  (markingDefinition) => (
-                    <ItemMarking
-                      key={markingDefinition.node.id}
-                      label={markingDefinition.node.definition}
-                      color={markingDefinition.node.x_opencti_color}
-                    />
-                  ),
-                  stixSightingRelationship.objectMarking.edges,
-                )}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Creation date')}
-              </Typography>
-              {nsdt(stixSightingRelationship.created_at)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Modification date')}
-              </Typography>
-              {nsdt(stixSightingRelationship.updated_at)}
-              {stixSightingRelationship.x_opencti_inferences === null && (
-                <div>
+              <Grid container={true} spacing={3}>
+                <Grid item={true} xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Marking')}
+                  </Typography>
+                  {stixSightingRelationship.objectMarking.edges.length > 0
+                    && R.map(
+                      (markingDefinition) => (
+                        <ItemMarking
+                          key={markingDefinition.node.id}
+                          label={markingDefinition.node.definition}
+                          color={markingDefinition.node.x_opencti_color}
+                        />
+                      ),
+                      stixSightingRelationship.objectMarking.edges,
+                    )}
                   <Typography
                     variant="h3"
                     gutterBottom={true}
                     style={{ marginTop: 20 }}
                   >
-                    {t('Author')}
+                    {t('Creation date')}
                   </Typography>
-                  <ItemAuthor
-                    createdBy={R.propOr(
-                      null,
-                      'createdBy',
-                      stixSightingRelationship,
-                    )}
+                  {nsdt(stixSightingRelationship.created_at)}
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Modification date')}
+                  </Typography>
+                  {nsdt(stixSightingRelationship.updated_at)}
+                </Grid>
+                <Grid item={true} xs={6}>
+                  {stixSightingRelationship.x_opencti_inferences === null && (
+                    <div>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t('Author')}
+                      </Typography>
+                      <ItemAuthor
+                        createdBy={R.propOr(
+                          null,
+                          'createdBy',
+                          stixSightingRelationship,
+                        )}
+                      />
+                    </div>
+                  )}
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Status')}
+                  </Typography>
+                  <Chip
+                    classes={{
+                      root: stixSightingRelationship.x_opencti_negative
+                        ? classes.negative
+                        : classes.positive,
+                    }}
+                    label={
+                      stixSightingRelationship.x_opencti_negative
+                        ? t('False positive')
+                        : t('Malicious')
+                    }
                   />
-                </div>
-              )}
+                </Grid>
+              </Grid>
             </Paper>
           </Grid>
           <Grid item={true} xs={6}>
@@ -494,6 +534,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
         created_at
         updated_at
         is_inferred
+        x_opencti_negative
         status {
           id
           order

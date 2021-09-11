@@ -27,7 +27,7 @@ import { extractFieldsOfPatch, rebuildInstanceBeforePatch } from '../utils/patch
 let activatedRules = [];
 const RULE_ENGINE_ID = 'rule_engine_settings';
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
-const STATUS_WRITE_RANGE = conf.get('rule_engine:status_writing_delay') || 100;
+const STATUS_WRITE_RANGE = conf.get('rule_engine:status_writing_delay') || 500;
 
 export const getManagerInfo = async (user) => {
   const ruleStatus = await internalLoadById(user, RULE_ENGINE_ID);

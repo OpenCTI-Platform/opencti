@@ -138,7 +138,7 @@ class StixSightingRelationships extends Component {
         label: 'Confidence',
         isSortable: true,
       },
-      status: {
+      status_id: {
         label: 'Status',
         isSortable: true,
       },
