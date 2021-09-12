@@ -279,8 +279,6 @@ const initSyncManager = () => {
         manager.start();
       }
     }
-    await sleep(WAIT_TIME_ACTION);
-    return true;
   };
   const processingLoop = async () => {
     let lock;
@@ -288,9 +286,8 @@ const initSyncManager = () => {
       logApp.debug('[OPENCTI] Running sync manager');
       lock = await lockResource([SYNC_MANAGER_KEY]);
       while (syncListening) {
-        if (!(await processStep())) {
-          break;
-        }
+        await processStep();
+        await sleep(WAIT_TIME_ACTION);
       }
     } catch (e) {
       // We dont care about failing to get the lock.

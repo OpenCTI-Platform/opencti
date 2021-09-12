@@ -131,7 +131,7 @@ export const testSync = async (user, sync) => {
 };
 export const registerSync = async (user, syncData) => {
   const data = { ...syncData, running: false };
-  await testSync(data);
+  await testSync(user, data);
   return createEntity(user, data, ENTITY_TYPE_SYNC);
 };
 // endregion
