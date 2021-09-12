@@ -1467,7 +1467,7 @@ export const updateAttributeRaw = (instance, inputs) => {
             return {
               operation: filteredInput.operation,
               key: filteredInput.key,
-              value: filteredInput.value.filter((n) => !previous.includes(n)),
+              value: filteredInput.value.filter((n) => !(previous || []).includes(n)),
               previous,
             };
           }
@@ -1475,7 +1475,7 @@ export const updateAttributeRaw = (instance, inputs) => {
             return {
               operation: filteredInput.operation,
               key: filteredInput.key,
-              value: previous.value.filter((n) => !filteredInput.includes(n)),
+              value: (previous || []).filter((n) => !filteredInput.value.includes(n)),
               previous,
             };
           }
