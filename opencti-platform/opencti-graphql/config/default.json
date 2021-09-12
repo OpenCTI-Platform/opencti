@@ -73,7 +73,6 @@
     "ca": [],
     "port": 6379,
     "trimming": 0,
-    "live_depth_compact": 5000,
     "use_as_cache": false
   },
   "elasticsearch": {

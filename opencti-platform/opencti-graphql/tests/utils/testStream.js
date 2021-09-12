@@ -8,9 +8,9 @@ import { isStixId } from '../../src/schema/schemaUtils';
 import { EVENT_TYPE_CREATE } from '../../src/database/rabbitmq';
 import { isStixRelationship } from '../../src/schema/stixRelationship';
 
-export const fetchStreamEvents = (uri, { from, compact } = {}) => {
+export const fetchStreamEvents = (uri, { from } = {}) => {
   const opts = {
-    headers: { authorization: generateBasicAuth(), 'last-event-id': from, 'live-depth-compact': compact },
+    headers: { authorization: generateBasicAuth(), 'last-event-id': from },
   };
   return new Promise((resolve, reject) => {
     let lastEventTime = null;
