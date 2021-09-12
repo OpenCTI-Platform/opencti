@@ -2237,13 +2237,6 @@ const checkRelationConsistency = (relationshipType, from, to) => {
       );
     }
   }
-  // 02 - check cyclic reference consistency for embedded relationships
-  if (isStixEmbeddedRelationship(relationshipType)) {
-    const toRefs = instanceMetaRefsExtractor(to);
-    if (toRefs.includes(from.internal_id)) {
-      throw FunctionalError(`You cant create a cyclic relation between ${from.standard_id} and ${to.standard_id}`);
-    }
-  }
 };
 const buildRelationData = async (user, input, opts = {}) => {
   const { fromRule } = opts;
@@ -2473,6 +2466,13 @@ export const createRelationRaw = async (user, input, opts = {}) => {
       // If not upsert the rule
       dataRel = await upsertElementRaw(user, existingRelationship, relationshipType, resolvedInput);
     } else {
+      // Check cyclic reference consistency for embedded relationships before creation
+      if (isStixEmbeddedRelationship(relationshipType)) {
+        const toRefs = instanceMetaRefsExtractor(to);
+        if (toRefs.includes(from.internal_id)) {
+          throw FunctionalError(`You cant create a cyclic relation between ${from.standard_id} and ${to.standard_id}`);
+        }
+      }
       // Just build a standard relationship
       dataRel = await buildRelationData(user, resolvedInput, opts);
     }
