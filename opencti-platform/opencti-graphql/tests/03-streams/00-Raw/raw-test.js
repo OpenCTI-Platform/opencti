@@ -86,7 +86,7 @@ describe('Raw streams tests', () => {
                 for (let i = 0; i < val.length; i += 1) {
                   const metaElement = val[i];
                   expect(metaElement.value).toBeDefined();
-                  expect(metaElement.x_opencti_internal_id).toBeDefined();
+                  expect(metaElement.x_opencti_id).toBeDefined();
                 }
               }
             });

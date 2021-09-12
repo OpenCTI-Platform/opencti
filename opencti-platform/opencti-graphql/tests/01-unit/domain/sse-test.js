@@ -135,7 +135,7 @@ const patch = {
     object_marking_refs: [
       {
         value: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
-        x_opencti_internal_id: '6bf6c4e3-20f0-4497-bb08-bd2cf59b1e84',
+        x_opencti_id: '6bf6c4e3-20f0-4497-bb08-bd2cf59b1e84',
       },
     ],
   },
