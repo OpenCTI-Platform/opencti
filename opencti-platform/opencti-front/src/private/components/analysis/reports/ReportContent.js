@@ -361,7 +361,7 @@ class ReportContentComponent extends Component {
       && this.state.currentFile.metaData.mimetype === 'text/markdown';
     const regex = /<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi;
     const htmlData = convertToHtmlPdf
-      ? (this.state.currentContent || '')
+      ? (this.state.currentHtmlContent || '')
         .replaceAll('id="undefined" ', '')
         .replaceAll(regex, '')
       : (this.state.currentContent || '')
@@ -432,9 +432,6 @@ class ReportContentComponent extends Component {
   saveFileAndChangeTab(value) {
     const { currentFile } = this.state;
     this.setState({ isLoading: true }, () => {
-      if (currentFile.metaData.mimetype === 'text/html' && value === 2) {
-        this.handleConvertPdf();
-      }
       const { currentId, isExternalReference, file } = this.prepareSaveFile();
       commitMutation({
         mutation: isExternalReference

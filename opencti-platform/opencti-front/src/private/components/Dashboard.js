@@ -583,7 +583,7 @@ class Dashboard extends Component {
             </Grid>
             <Grid item={true} xs={8}>
               <Typography variant="h4" gutterBottom={true}>
-                {t('Ingested entities')}
+                {t('Created entities')}
               </Typography>
               <Paper
                 classes={{ root: classes.paper }}
@@ -593,7 +593,7 @@ class Dashboard extends Component {
                 <QueryRenderer
                   query={dashboardStixDomainObjectsTimeSeriesQuery}
                   variables={{
-                    field: 'created_at',
+                    field: 'created',
                     operation: 'count',
                     startDate: yearsAgo(1),
                     endDate: now(),
