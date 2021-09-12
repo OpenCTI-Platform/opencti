@@ -901,8 +901,7 @@ const partialInstanceWithInputs = (instance, inputs) => {
     ...inputData,
   };
 };
-const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) => {
-  const { forceUpdate = false } = options;
+const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
   const { key, value, operation = UPDATE_OPERATION_REPLACE } = rawInput; // value can be multi valued
   const isMultiple = isMultipleAttribute(key);
   let finalVal;
@@ -943,26 +942,24 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) 
     } else {
       finalVal = value;
     }
-    if (!forceUpdate && R.equals((finalVal ?? []).sort(), currentValues.sort())) {
+    if (R.equals((finalVal ?? []).sort(), currentValues.sort())) {
       return {}; // No need to update the attribute
     }
   } else {
     finalVal = value;
     const isDate = dateAttributes.includes(key);
-    if (!forceUpdate) {
-      const evaluateValue = value ? R.head(value) : null;
-      if (isDate) {
-        if (isEmptyField(evaluateValue)) {
-          if (instance[key] === FROM_START_STR || instance[key] === UNTIL_END_STR) {
-            return {};
-          }
-        } else if (utcDate(instance[key]).isSame(utcDate(evaluateValue))) {
+    const evaluateValue = value ? R.head(value) : null;
+    if (isDate) {
+      if (isEmptyField(evaluateValue)) {
+        if (instance[key] === FROM_START_STR || instance[key] === UNTIL_END_STR) {
           return {};
         }
+      } else if (utcDate(instance[key]).isSame(utcDate(evaluateValue))) {
+        return {};
       }
-      if (R.equals(instance[key], evaluateValue) || (isEmptyField(instance[key]) && isEmptyField(evaluateValue))) {
-        return {}; // No need to update the attribute
-      }
+    }
+    if (R.equals(instance[key], evaluateValue) || (isEmptyField(instance[key]) && isEmptyField(evaluateValue))) {
+      return {}; // No need to update the attribute
     }
   }
   // endregion
@@ -1372,11 +1369,11 @@ const checkAttributeConsistency = (entityType, key) => {
     throw FunctionalError(`This attribute key ${key} is not allowed on the type ${entityType}`);
   }
 };
-const innerUpdateAttribute = (instance, rawInput, opts = {}) => {
+const innerUpdateAttribute = (instance, rawInput) => {
   const { key } = rawInput;
   // Check consistency
   checkAttributeConsistency(instance.entity_type, key);
-  const input = rebuildAndMergeInputFromExistingData(rawInput, instance, opts);
+  const input = rebuildAndMergeInputFromExistingData(rawInput, instance);
   if (R.isEmpty(input)) return [];
   const updatedInputs = [input];
   // --- 01 Get the current attribute types
@@ -1448,7 +1445,7 @@ const getPreviousInstanceValue = (key, instance) => {
   return isMultipleAttribute(key) ? data : [data];
 };
 
-export const updateAttributeRaw = (instance, inputs, options = {}) => {
+export const updateAttributeRaw = (instance, inputs) => {
   const elements = Array.isArray(inputs) ? inputs : [inputs];
   const updatedInputs = [];
   const impactedInputs = [];
@@ -1459,15 +1456,34 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
   for (let index = 0; index < preparedElements.length; index += 1) {
     const input = preparedElements[index];
     const { operation = UPDATE_OPERATION_REPLACE } = input;
-    const ins = innerUpdateAttribute(instance, input, options);
+    const ins = innerUpdateAttribute(instance, input);
     if (ins.length > 0) {
       // Updated inputs must not be internals
       const filteredIns = ins.filter((n) => n.key === input.key);
       if (filteredIns.length > 0) {
-        const updatedInputsFiltered = filteredIns.map((i) => ({
-          ...i,
-          previous: getPreviousInstanceValue(i.key, instance),
-        }));
+        const updatedInputsFiltered = filteredIns.map((filteredInput) => {
+          const previous = getPreviousInstanceValue(filteredInput.key, instance);
+          if (filteredInput.operation === UPDATE_OPERATION_ADD) {
+            return {
+              operation: filteredInput.operation,
+              key: filteredInput.key,
+              value: filteredInput.value.filter((n) => !previous.includes(n)),
+              previous,
+            };
+          }
+          if (filteredInput.operation === UPDATE_OPERATION_REMOVE) {
+            return {
+              operation: filteredInput.operation,
+              key: filteredInput.key,
+              value: previous.value.filter((n) => !filteredInput.includes(n)),
+              previous,
+            };
+          }
+          return {
+            ...filteredInput,
+            previous,
+          };
+        });
         updatedInputs.push(...updatedInputsFiltered);
       }
       impactedInputs.push(...ins);
@@ -1478,7 +1494,7 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
       const aliases = [name, ...(instance[ATTRIBUTE_ALIASES] || []), ...(instance[ATTRIBUTE_ALIASES_OPENCTI] || [])];
       const aliasesId = generateAliasesId(aliases, instance);
       const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
-      const aliasIns = innerUpdateAttribute(instance, aliasInput, options);
+      const aliasIns = innerUpdateAttribute(instance, aliasInput);
       impactedInputs.push(...aliasIns);
     }
     // If is valid_until modification, update also revoked
@@ -1487,14 +1503,14 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
       const untilDateTime = utcDate(untilDate).toDate();
       // eslint-disable-next-line prettier/prettier
       const revokedInput = { key: REVOKED, value: [untilDateTime < utcDate().toDate()] };
-      const revokedIn = innerUpdateAttribute(instance, revokedInput, options);
+      const revokedIn = innerUpdateAttribute(instance, revokedInput);
       if (revokedIn.length > 0) {
         updatedInputs.push({ ...revokedInput, previous: getPreviousInstanceValue(revokedInput.key, instance) });
         impactedInputs.push(...revokedIn);
       }
       if (instance.entity_type === ENTITY_TYPE_INDICATOR && untilDateTime <= utcDate().toDate()) {
         const detectionInput = { key: 'x_opencti_detection', value: [false] };
-        const detectionIn = innerUpdateAttribute(instance, detectionInput, options);
+        const detectionIn = innerUpdateAttribute(instance, detectionInput);
         if (detectionIn.length > 0) {
           updatedInputs.push(detectionInput);
           impactedInputs.push(...detectionIn);
@@ -1511,7 +1527,7 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
       }
       const aliasesId = generateAliasesId(inputAliases, instance);
       const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId, operation };
-      const aliasIns = innerUpdateAttribute(instance, aliasInput, options);
+      const aliasIns = innerUpdateAttribute(instance, aliasInput);
       if (aliasIns.length > 0) {
         impactedInputs.push(...aliasIns);
       }
@@ -1523,7 +1539,7 @@ export const updateAttributeRaw = (instance, inputs, options = {}) => {
     const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
     const standardId = generateStandardId(instanceType, updatedInstance);
     const standardInput = { key: ID_STANDARD, value: [standardId] };
-    const ins = innerUpdateAttribute(instance, standardInput, options);
+    const ins = innerUpdateAttribute(instance, standardInput);
     if (ins.length > 0) {
       updatedInputs.push({ key: 'id', value: [standardId], previous: [instance.standard_id] });
       impactedInputs.push(...ins);
@@ -1580,7 +1596,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
   if (isFieldContributingToStandardId(instance, keys)) {
     // In this case we need to reconstruct the data like if an update already appears
     // Based on that we will be able to generate the correct standard id
-    const mergeInput = (input) => rebuildAndMergeInputFromExistingData(input, instance, opts);
+    const mergeInput = (input) => rebuildAndMergeInputFromExistingData(input, instance);
     const remappedInputs = R.map((i) => mergeInput(i), attributes);
     const resolvedInputs = R.filter((f) => !R.isEmpty(f), remappedInputs);
     const updatedInstance = mergeInstanceWithInputs(instance, resolvedInputs);
@@ -1623,7 +1639,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
       }
     }
     // noinspection UnnecessaryLocalVariableJS
-    const data = updateAttributeRaw(instance, attributes, opts);
+    const data = updateAttributeRaw(instance, attributes);
     const { updatedInstance, impactedInputs, updatedInputs } = data;
     // Check the consistency of the observable.
     if (isStixCyberObservable(updatedInstance.entity_type)) {
@@ -1757,7 +1773,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
 };
 export const patchAttributeRaw = (instance, patch, opts = {}) => {
   const inputs = transformPatchToInput(patch, opts.operations);
-  return updateAttributeRaw(instance, inputs, opts);
+  return updateAttributeRaw(instance, inputs);
 };
 export const patchAttribute = async (user, id, type, patch, opts = {}) => {
   const inputs = transformPatchToInput(patch, opts.operations);

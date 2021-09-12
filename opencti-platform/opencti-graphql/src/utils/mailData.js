@@ -169,6 +169,7 @@ export const header = (
                       <tr>
                           <td valign="top" style="height:5px;margin:0;padding:0;line-height:0;font-size:2px;"></td>
                       </tr>
+                      </tr>
                       <tr>
                           <td valign="bottom" style="height:5px;margin:0;padding:20px 0 0 0;line-height:0;font-size:2px;"></td>
                       </tr>
@@ -280,7 +281,7 @@ export const relationshipToHtml = (url, entry) => {
                   ${defaultValue(entry.from)}
                 </td>
                 <td bgcolor="#ffffff" style="padding:0; width: 30%; text-align:center; background:#ffffff;background-color:#ffffff;" valign="top">
-                    <i>{entry.relationship_type}</i><br>
+                    <i>${entry.relationship_type}</i><br>
                     ${truncate(entry.description, 60)}
                 </td>
                 <td bgcolor="#ffffff" style="padding:0; width: 35%; text-align:center; background:#ffffff;background-color:#ffffff;" valign="top">
