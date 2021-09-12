@@ -168,7 +168,11 @@ class IndicatorsDonut extends Component {
                     {data.map((entry, index) => (
                       <Cell
                         key={index}
-                        fill={itemColor(entry.label)}
+                        fill={itemColor(
+                          entry.label,
+                          false,
+                          field === 'revoked',
+                        )}
                         stroke={theme.palette.background.paper}
                       />
                     ))}

@@ -280,11 +280,11 @@ export const relationshipToHtml = (url, entry) => {
                   ${defaultValue(entry.from)}
                 </td>
                 <td bgcolor="#ffffff" style="padding:0; width: 30%; text-align:center; background:#ffffff;background-color:#ffffff;" valign="top">
-                    <i>targets</i><br>
+                    <i>{entry.relationship_type}</i><br>
                     ${truncate(entry.description, 60)}
                 </td>
                 <td bgcolor="#ffffff" style="padding:0; width: 35%; text-align:center; background:#ffffff;background-color:#ffffff;" valign="top">
-                    <span style="color: #999999">Threat Actor</span><br>
+                    <span style="color: #999999">${entry.to.entity_type}</span><br>
                     ${defaultValue(entry.to)}
                 </td>
             </tr>

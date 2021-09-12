@@ -50,9 +50,7 @@ class GlobalActivityIndicators extends Component {
       case 'area':
         return (
           <IndicatorsAreaChart
-            title={`${t('Activity')} - ${t('Indicators')} (${
-              field || 'pattern_type'
-            })`}
+            title={`${t('Activity')} - ${t('Indicators')}`}
             startDate={startDate}
             endDate={endDate}
             dateAttribute="created_at"
@@ -62,9 +60,7 @@ class GlobalActivityIndicators extends Component {
       case 'vertical-bar':
         return (
           <IndicatorsVerticalBars
-            title={`${t('Activity')} - ${t('Indicators')} (${
-              field || 'pattern_type'
-            })`}
+            title={`${t('Activity')} - ${t('Indicators')}`}
             startDate={startDate}
             endDate={endDate}
             dateAttribute="created_at"

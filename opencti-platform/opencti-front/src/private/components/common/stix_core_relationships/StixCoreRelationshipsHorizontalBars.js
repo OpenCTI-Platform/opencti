@@ -194,7 +194,7 @@ class StixCoreRelationshipsHorizontalBars extends Component {
                     top: 20,
                     right: 20,
                     bottom: 20,
-                    left: 20,
+                    left: 12,
                   }}
                 >
                   <XAxis

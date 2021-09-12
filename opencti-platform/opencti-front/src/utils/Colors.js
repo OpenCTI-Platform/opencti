@@ -1,12 +1,18 @@
 /* eslint-disable no-bitwise */
-export const stringToColour = (str) => {
+export const stringToColour = (str, reversed = false) => {
   if (!str) {
     return '#5d4037';
   }
   if (str === 'true') {
+    if (reversed) {
+      return '#bf360c';
+    }
     return '#2e7d32';
   }
   if (str === 'false') {
+    if (reversed) {
+      return '#2e7d32';
+    }
     return '#bf360c';
   }
   let hash = 0;
@@ -22,7 +28,7 @@ export const stringToColour = (str) => {
 };
 /* eslint-enable no-bitwise */
 
-export const itemColor = (type, dark) => {
+export const itemColor = (type, dark = false, reversed = false) => {
   switch (type) {
     case 'Attack-Pattern':
       if (dark) {
@@ -187,7 +193,7 @@ export const itemColor = (type, dark) => {
       }
       return '#9e9e9e';
     default:
-      return stringToColour(type);
+      return stringToColour(type, reversed);
   }
 };
 
