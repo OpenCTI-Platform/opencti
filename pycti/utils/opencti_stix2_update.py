@@ -284,9 +284,7 @@ class OpenCTIStix2Update:
                                     str(current_val),
                                 )
                             )
-                            inputs.append(
-                                {"key": key, "value": values, "operation": "remove"}
-                            )
+                            inputs.append({"key": key, "value": values})
                         else:
                             values = (
                                 current_val["value"]
@@ -295,9 +293,7 @@ class OpenCTIStix2Update:
                                 )
                                 else str(current_val)
                             )
-                            inputs.append(
-                                {"key": key, "value": values, "operation": "remove"}
-                            )
+                            inputs.append({"key": key, "value": values})
             self.update_attribute(data["type"], data["id"], inputs)
         except Exception as e:
             print(e)
