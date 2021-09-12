@@ -420,6 +420,13 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.log_level = get_config_variable(
             "CONNECTOR_LOG_LEVEL", ["connector", "log_level"], config
         )
+        self.connect_run_and_terminate = get_config_variable(
+            "CONNECTOR_RUN_AND_TERMINATE",
+            ["connector", "run_and_terminate"],
+            config,
+            False,
+            False,
+        )
 
         # Configure logger
         numeric_level = getattr(
@@ -451,10 +458,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.config = connector_configuration["config"]
 
         # Start ping thread
-        self.ping = PingAlive(
-            self.connector.id, self.api, self.get_state, self.set_state
-        )
-        self.ping.start()
+        if not self.connect_run_and_terminate:
+            self.ping = PingAlive(
+                self.connector.id, self.api, self.get_state, self.set_state
+            )
+            self.ping.start()
 
         # self.listen_stream = None
         self.listen_queue = None
