@@ -526,6 +526,37 @@ input StatusAddInput {
   order: Int!
 }
 
+############## Sync
+type Synchronizer {
+  id: ID!
+  name: String!
+  uri: String!
+  token: String!
+  stream_id: String!
+  running: Boolean!
+  current_state: String
+  listen_deletion: Boolean!
+}
+
+type SynchronizerEdge {
+  cursor: String!
+  node: Synchronizer!
+}
+
+type SynchronizerConnection {
+  pageInfo: PageInfo!
+  edges: [SynchronizerEdge]
+}
+
+input SynchronizerAddInput {
+  name: String!
+  uri: String!
+  token: String!
+  stream_id: String!
+  listen_deletion: Boolean!
+  current_state: String
+}
+
 ############## Files
 enum WorksOrdering {
   status
@@ -6186,6 +6217,8 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 }
 input IPv4AddrAddInput {
   value: String
+  belongsTo: [String]
+  resolvesTo: [String]
 }
 type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -8405,7 +8438,7 @@ type Query {
   rule(id: String!): Rule @auth(for: [KNOWLEDGE])
   rules: [Rule] @auth(for: [KNOWLEDGE])
   ruleManagerInfo: RuleManager @auth(for: [SETTINGS])
-
+  synchronizers: SynchronizerConnection @auth(for: [SETTINGS])
   ######## STIX OBJECT ENTITIES
 
   ######## STIX META OBJECT ENTITIES
@@ -9600,6 +9633,12 @@ type Mutation {
   deleteImport(fileName: String): Boolean @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadImport(file: Upload!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   askJobImport(fileName: ID!, connectorId: String, bypassEntityId: String): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+
+  ### SYNC
+  synchronizerAdd(input: SynchronizerAddInput): Synchronizer @auth(for: [CONNECTORAPI])
+  synchronizerStart(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
+  synchronizerStop(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
+  synchronizerTest(input: SynchronizerAddInput): String @auth(for: [CONNECTORAPI])
 
   ### WORK
   workAdd(connectorId: String!, friendlyName: String): Work!

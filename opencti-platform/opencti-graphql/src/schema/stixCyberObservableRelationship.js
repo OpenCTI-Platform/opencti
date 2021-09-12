@@ -20,8 +20,8 @@ export const INPUT_SRC = 'src';
 export const INPUT_DST = 'dst';
 export const INPUT_SRC_PAYLOAD = 'srcPayload';
 export const INPUT_DST_PAYLOAD = 'dstPayload';
-export const INPUT_ENCAPSULATES = 'encapsulatess';
-export const INPUT_ENCAPSULATED_BY = 'encapsulated_by';
+export const INPUT_ENCAPSULATES = 'encapsulates';
+export const INPUT_ENCAPSULATED_BY = 'encapsulatedBy';
 export const INPUT_OPENED_CONNECTION = 'openedConnections';
 export const INPUT_CREATOR_USER = 'creatorUser';
 export const INPUT_IMAGE = 'image';
@@ -62,7 +62,7 @@ export const RELATION_VALUES = 'values';
 export const RELATION_X509_V3_EXTENSIONS = 'x509-v3-extensions';
 export const RELATION_LINKED = 'x_opencti_linked-to';
 
-export const EXTERNAL_CYBER_OBSERVABLE_TO_STIX_ATTRIBUTE = {
+export const FIELD_CYBER_RELATIONS_TO_STIX_ATTRIBUTE = {
   [RELATION_OPERATING_SYSTEM]: 'operating_system_refs',
   [RELATION_SAMPLE]: 'sample_ref',
   [RELATION_CONTAINS]: 'contains_refs',
@@ -93,9 +93,10 @@ export const EXTERNAL_CYBER_OBSERVABLE_TO_STIX_ATTRIBUTE = {
   [RELATION_X509_V3_EXTENSIONS]: 'x509_v3_extensions',
   [RELATION_LINKED]: 'x_opencti_linked_to_refs',
 };
-export const STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_REL = R.mergeAll(
-  Object.keys(EXTERNAL_CYBER_OBSERVABLE_TO_STIX_ATTRIBUTE).map((k) => ({
-    [EXTERNAL_CYBER_OBSERVABLE_TO_STIX_ATTRIBUTE[k]]: k,
+
+export const STIX_ATTRIBUTE_TO_CYBER_RELATIONS = R.mergeAll(
+  Object.keys(FIELD_CYBER_RELATIONS_TO_STIX_ATTRIBUTE).map((k) => ({
+    [FIELD_CYBER_RELATIONS_TO_STIX_ATTRIBUTE[k]]: k,
   }))
 );
 
@@ -104,7 +105,7 @@ export const STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD = {
   sample_ref: INPUT_SAMPLE,
   contains_refs: INPUT_CONTAINS,
   resolves_to_refs: INPUT_RESOLVES_TO,
-  belongs_to_ref: INPUT_BELONGS_TO,
+  belongs_to_refs: INPUT_BELONGS_TO,
   from_ref: INPUT_FROM,
   sender_ref: INPUT_SENDER,
   to_refs: INPUT_TO,
@@ -136,7 +137,7 @@ export const STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE = R.mergeAll(
   }))
 );
 
-export const STIX_CYBER_OBSERVABLE_RELATION_TO_OPENCTI_INPUT = {
+export const STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD = {
   [RELATION_OPERATING_SYSTEM]: INPUT_OPERATING_SYSTEM,
   [RELATION_SAMPLE]: INPUT_SAMPLE,
   [RELATION_CONTAINS]: INPUT_CONTAINS,
@@ -167,11 +168,6 @@ export const STIX_CYBER_OBSERVABLE_RELATION_TO_OPENCTI_INPUT = {
   [RELATION_X509_V3_EXTENSIONS]: INPUT_X509_V3_EXTENSIONS,
   [RELATION_LINKED]: INPUT_LINKED,
 };
-export const OPENCTI_ATTRIBUTE_TO_CYBER_OBSERVABLE_REL = R.mergeAll(
-  Object.keys(STIX_CYBER_OBSERVABLE_RELATION_TO_OPENCTI_INPUT).map((k) => ({
-    [STIX_CYBER_OBSERVABLE_RELATION_TO_OPENCTI_INPUT[k]]: k,
-  }))
-);
 
 export const STIX_CYBER_OBSERVABLE_RELATIONSHIPS = [
   RELATION_OPERATING_SYSTEM,

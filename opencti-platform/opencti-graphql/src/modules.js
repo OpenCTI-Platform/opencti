@@ -5,11 +5,13 @@ import conf, {
   ENABLED_RULE_ENGINE,
   ENABLED_TASK_SCHEDULER,
   logApp,
+  ENABLED_SYNC_MANAGER,
 } from './config/conf';
 import expiredManager from './manager/expiredManager';
 import subscriptionManager from './manager/subscriptionManager';
 import taskManager from './manager/taskManager';
 import ruleEngine from './manager/ruleManager';
+import syncManager from './manager/syncManager';
 import httpServer from './http/httpServer';
 
 // Http server
@@ -58,6 +60,14 @@ export const startModules = async () => {
     logApp.info(`[OPENCTI] Subscription manager not started (disabled by configuration)`);
   }
   // endregion
+  // region Sync manager
+  if (ENABLED_SYNC_MANAGER) {
+    await syncManager.start();
+    logApp.info(`[OPENCTI] Sync manager started`);
+  } else {
+    logApp.info(`[OPENCTI] Sync manager not started (disabled by configuration)`);
+  }
+  // endregion
 };
 
 export const shutdownModules = async () => {
@@ -80,5 +90,9 @@ export const shutdownModules = async () => {
   // region Subscription manager
   await subscriptionManager.shutdown();
   logApp.info(`[OPENCTI] Subscription manager stopped`);
+  // endregion
+  // region Sync manager
+  await syncManager.shutdown();
+  logApp.info(`[OPENCTI] Sync manager stopped`);
   // endregion
 };

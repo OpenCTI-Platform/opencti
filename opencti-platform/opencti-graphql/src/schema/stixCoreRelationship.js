@@ -1,6 +1,13 @@
 import * as R from 'ramda';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, schemaTypes } from './general';
 
+const SOURCE_REF = 'source_ref';
+const TARGET_REF = 'target_ref';
+export const RELATIONSHIP_CORE_REFS_TO_FIELDS = {
+  [SOURCE_REF]: 'fromId',
+  [TARGET_REF]: 'toId',
+};
+
 export const RELATION_DELIVERS = 'delivers';
 export const RELATION_TARGETS = 'targets';
 export const RELATION_USES = 'uses';

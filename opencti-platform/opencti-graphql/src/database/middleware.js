@@ -80,6 +80,8 @@ import {
   convertTypeToStixType,
   mergeDeepRightAll,
   STIX_SPEC_VERSION,
+  stixCyberObservableRelationshipsMapping,
+  stixCyberObservableTypeFields,
 } from './stix';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
@@ -102,20 +104,28 @@ import {
   INPUT_OBJECTS,
   INTERNAL_IDS_ALIASES,
   INTERNAL_PREFIX,
-  refsExtractor,
+  MULTIPLE_META_RELATIONSHIPS_INPUTS,
   REL_INDEX_PREFIX,
   RULE_PREFIX,
   schemaTypes,
+  STIX_META_RELATIONSHIPS_INPUTS,
 } from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
-import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import {
+  isStixCyberObservableRelationship,
+  MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
+  STIX_ATTRIBUTE_TO_CYBER_RELATIONS,
+  STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE,
+  STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
+} from '../schema/stixCyberObservableRelationship';
+import {
+  STIX_ATTRIBUTE_TO_META_RELATIONS,
+  META_FIELD_TO_STIX_ATTRIBUTE,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
-  RELATION_OBJECT,
-  RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
+  FIELD_TO_META_RELATION,
 } from '../schema/stixMetaRelationship';
 import {
   ENTITY_TYPE_STATUS,
@@ -176,13 +186,15 @@ import { deleteAllFiles } from './minio';
 import { filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
 import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import {
-  EXTERNAL_EMBEDDED_TO_STIX_ATTRIBUTE,
+  FIELD_ATTRIBUTE_TO_EMBEDDED_RELATION,
+  instanceMetaRefsExtractor,
   isSingleStixEmbeddedRelationship,
   isSingleStixEmbeddedRelationshipInput,
   isStixEmbeddedRelationship,
-  OPENCTI_ATTRIBUTE_TO_EMBEDDED_REL,
-  STIX_ATTRIBUTE_TO_EMBEDDED_FIELD,
-  STIX_EMBEDDED_RELATION_TO_OPENCTI_INPUT,
+  META_FIELD_ATTRIBUTES,
+  META_STIX_ATTRIBUTES,
+  STIX_ATTRIBUTE_TO_META_FIELD,
+  STIX_EMBEDDED_RELATION_TO_FIELD,
 } from '../schema/stixEmbeddedRelationship';
 
 // region global variables
@@ -612,7 +624,7 @@ const loadElementDependencies = async (user, element, args = {}) => {
   if (fromRelations.length > 0) {
     // Build the flatten view inside the data for stix meta
     const metaRels = fromRelations.filter((r) => isStixEmbeddedRelationship(r.entity_type));
-    const grouped = R.groupBy((a) => STIX_EMBEDDED_RELATION_TO_OPENCTI_INPUT[a.entity_type], metaRels);
+    const grouped = R.groupBy((a) => STIX_EMBEDDED_RELATION_TO_FIELD[a.entity_type], metaRels);
     const entries = Object.entries(grouped);
     for (let index = 0; index < entries.length; index += 1) {
       const [key, values] = entries[index];
@@ -668,13 +680,16 @@ export const stixLoadById = async (user, id, type = null) => {
     fullResolve: false,
   });
 };
-export const convertDataToRawStix = async (user, id, args = {}) => {
-  const data = await stixLoadById(user, id);
-  if (data) {
-    const stixData = buildStixData(data, args);
-    return JSON.stringify(stixData);
+export const stixDataById = async (user, id) => {
+  const instance = await stixLoadById(user, id);
+  if (instance) {
+    return buildStixData(instance, { clearEmptyValues: true });
   }
-  return data;
+  return undefined;
+};
+export const convertDataToRawStix = async (user, id) => {
+  const data = await stixDataById(user, id);
+  return data ? JSON.stringify(data) : '';
 };
 export const stixLoadByQuery = async (user, query) => {
   return loadByQueryWithDependencies(user, query, {
@@ -764,12 +779,8 @@ const TRX_UPDATE = 'update';
 const depsKeys = [
   { src: 'fromId', dst: 'from' },
   { src: 'toId', dst: 'to' },
-  { src: INPUT_CREATED_BY },
-  { src: INPUT_MARKINGS },
-  { src: INPUT_LABELS },
-  { src: INPUT_KILLCHAIN },
-  { src: INPUT_EXTERNAL_REFS },
-  { src: INPUT_OBJECTS },
+  ...STIX_META_RELATIONSHIPS_INPUTS.map((e) => ({ src: e })),
+  ...STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS.map((e) => ({ src: e })),
 ];
 const idLabel = (label) => {
   return isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: normalizeName(label) });
@@ -799,10 +810,7 @@ const inputResolveRefs = async (user, input, type) => {
     }
   }
   // eslint-disable-next-line prettier/prettier
-  const resolvedElements = await internalFindByIds(
-    user,
-    fetchingIds.map((i) => i.id)
-  );
+  const resolvedElements = await internalFindByIds(user, fetchingIds.map((i) => i.id));
   const resolvedElementWithConfGroup = resolvedElements.map((d) => {
     const elementIds = getInstanceIds(d);
     const matchingConfigs = R.filter((a) => elementIds.includes(a.id), fetchingIds);
@@ -1172,7 +1180,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
       x_opencti_patch: {
         replace: {
           [c.side]: {
-            current: { value: c.data.standard_id, x_opencti_internal_id: c.data.internal_id },
+            current: { value: c.data.standard_id, x_opencti_id: c.data.internal_id },
             previous: { value: c.toReplace },
           },
         },
@@ -1563,10 +1571,8 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     throw UnsupportedError('We cant update the same attribute multiple times in the same operation');
   }
   // Split attributes and meta
-  const metaKeys = [
-    ...Object.values(EXTERNAL_EMBEDDED_TO_STIX_ATTRIBUTE),
-    ...Object.values(STIX_ATTRIBUTE_TO_EMBEDDED_FIELD),
-  ];
+  // Supports inputs meta or stix meta
+  const metaKeys = [...META_STIX_ATTRIBUTES, ...META_FIELD_ATTRIBUTES];
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
   // Load the element to update
@@ -1661,11 +1667,11 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     const streamOpts = { publishStreamEvent: false, locks: participantIds };
     for (let metaIndex = 0; metaIndex < meta.length; metaIndex += 1) {
       const { key: metaKey } = meta[metaIndex];
-      const key = STIX_ATTRIBUTE_TO_EMBEDDED_FIELD[metaKey] || metaKey;
+      const key = STIX_ATTRIBUTE_TO_META_FIELD[metaKey] || metaKey;
       // ref and _refs are expecting direct identifier in the value
       // We dont care about the operation here, the only thing we can do is replace
       if (isSingleStixEmbeddedRelationshipInput(key)) {
-        const relType = OPENCTI_ATTRIBUTE_TO_EMBEDDED_REL[key];
+        const relType = FIELD_ATTRIBUTE_TO_EMBEDDED_RELATION[key];
         const currentValue = R.head(updatedInstance[key] || []);
         const { value: refIds } = meta[metaIndex];
         const targetCreated = R.head(refIds);
@@ -1693,7 +1699,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
           }
         }
       } else {
-        const relType = OPENCTI_ATTRIBUTE_TO_EMBEDDED_REL[key];
+        const relType = FIELD_ATTRIBUTE_TO_EMBEDDED_RELATION[key];
         const { value: refs, operation = UPDATE_OPERATION_REPLACE } = meta[metaIndex];
         if (operation === UPDATE_OPERATION_REPLACE) {
           // Delete all relations
@@ -1874,7 +1880,6 @@ const buildInnerRelation = (from, to, type) => {
   const targets = Array.isArray(to) ? to : [to];
   if (!to || R.isEmpty(targets)) return [];
   const relations = [];
-  // Relations cannot be created in parallel.
   for (let i = 0; i < targets.length; i += 1) {
     const target = targets[i];
     const input = { from, to: target, relationship_type: type };
@@ -2157,18 +2162,51 @@ const upsertElementRaw = async (user, instance, type, input) => {
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
-  // Upsert markings
-  if (input.objectMarking && input.objectMarking.length > 0) {
-    const buildInstanceRelTo = (to) => buildInnerRelation(instance, to, RELATION_OBJECT_MARKING);
-    // When upsert stable relations, we decide to only add the missing markings
-    const instanceMarkings = instance.object_marking_refs || [];
-    const markingToCreate = R.filter((m) => !instanceMarkings.includes(m.internal_id), input.objectMarking);
-    if (markingToCreate.length > 0) {
-      const newRelations = markingToCreate.map((to) => R.head(buildInstanceRelTo(to)).relation);
-      rawRelations.push(...newRelations);
-      patchInputs.push({ key: INPUT_MARKINGS, value: markingToCreate, operation: UPDATE_OPERATION_ADD });
+  // region upsert refs
+  const buildInstanceRelTo = (to, relType) => buildInnerRelation(instance, to, relType);
+  if (isStixCyberObservable(type)) {
+    const inputFields = stixCyberObservableTypeFields()[type] || [];
+    for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
+      const inputField = inputFields[fieldIndex];
+      if (input[inputField] && MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS.includes(inputField)) {
+        const stixField = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[inputField];
+        const existingInstances = instance[stixField] || [];
+        const instancesToCreate = R.filter((m) => !existingInstances.includes(m.internal_id), input[inputField]);
+        const relType = STIX_ATTRIBUTE_TO_CYBER_RELATIONS[stixField];
+        if (instancesToCreate.length > 0) {
+          const newRelations = instancesToCreate.map((to) => {
+            const authorizedRelationTypes = stixCyberObservableRelationshipsMapping[`${type}_${to.entity_type}`];
+            if (!authorizedRelationTypes.includes(relType)) {
+              throw UnsupportedError(`${relType} is not allowed for this`);
+            }
+            return R.head(buildInstanceRelTo(to, relType)).relation;
+          });
+          rawRelations.push(...newRelations);
+          patchInputs.push({ key: inputField, value: instancesToCreate, operation: UPDATE_OPERATION_ADD });
+        }
+      }
     }
   }
+  if (isStixCoreObject(type)) {
+    const inputFields = STIX_META_RELATIONSHIPS_INPUTS;
+    for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
+      const inputField = inputFields[fieldIndex];
+      if (input[inputField] && MULTIPLE_META_RELATIONSHIPS_INPUTS.includes(inputField)) {
+        const stixField = META_FIELD_TO_STIX_ATTRIBUTE[inputField];
+        const existingInstances = instance[stixField] || [];
+        const instancesToCreate = R.filter((m) => !existingInstances.includes(m.internal_id), input[inputField]);
+        const relType = STIX_ATTRIBUTE_TO_META_RELATIONS[stixField];
+        if (instancesToCreate.length > 0) {
+          const newRelations = instancesToCreate.map((to) => {
+            return R.head(buildInstanceRelTo(to, relType)).relation;
+          });
+          rawRelations.push(...newRelations);
+          patchInputs.push({ key: inputField, value: instancesToCreate, operation: UPDATE_OPERATION_ADD });
+        }
+      }
+    }
+  }
+  // endregion
   // Build result
   if (impactedInputs.length > 0) {
     const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
@@ -2199,10 +2237,12 @@ const checkRelationConsistency = (relationshipType, from, to) => {
       );
     }
   }
-  // 02 - check cyclic reference consistency
-  const toRefs = refsExtractor(to);
-  if (toRefs.includes(from.internal_id)) {
-    throw FunctionalError(`You cant create a cyclic relation between ${from.standard_id} and ${to.standard_id}`);
+  // 02 - check cyclic reference consistency for embedded relationships
+  if (isStixEmbeddedRelationship(relationshipType)) {
+    const toRefs = instanceMetaRefsExtractor(to);
+    if (toRefs.includes(from.internal_id)) {
+      throw FunctionalError(`You cant create a cyclic relation between ${from.standard_id} and ${to.standard_id}`);
+    }
   }
 };
 const buildRelationData = async (user, input, opts = {}) => {
@@ -2643,12 +2683,35 @@ const createEntityRaw = async (user, participantIds, input, type) => {
   // Create the input
   const relToCreate = [];
   if (isStixCoreObject(type)) {
-    relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
-    relToCreate.push(...buildInnerRelation(data, input.objectMarking, RELATION_OBJECT_MARKING));
-    relToCreate.push(...buildInnerRelation(data, input.objectLabel, RELATION_OBJECT_LABEL));
-    relToCreate.push(...buildInnerRelation(data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE));
-    relToCreate.push(...buildInnerRelation(data, input.externalReferences, RELATION_EXTERNAL_REFERENCE));
-    relToCreate.push(...buildInnerRelation(data, input.objects, RELATION_OBJECT));
+    const inputFields = STIX_META_RELATIONSHIPS_INPUTS;
+    for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
+      const inputField = inputFields[fieldIndex];
+      if (input[inputField]) {
+        const relType = FIELD_TO_META_RELATION[inputField];
+        relToCreate.push(...buildInnerRelation(data, input[inputField], relType));
+      }
+    }
+  }
+  if (isStixCyberObservable(type)) {
+    const inputFields = stixCyberObservableTypeFields()[type] || [];
+    for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
+      const inputField = inputFields[fieldIndex];
+      if (input[inputField]) {
+        const instancesToCreate = Array.isArray(input[inputField]) ? input[inputField] : [input[inputField]];
+        const stixField = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[inputField];
+        const relType = STIX_ATTRIBUTE_TO_CYBER_RELATIONS[stixField];
+        const newRelations = instancesToCreate
+          .map((to) => {
+            const authorizedRelationTypes = stixCyberObservableRelationshipsMapping[`${type}_${to.entity_type}`];
+            if (!authorizedRelationTypes.includes(relType)) {
+              throw UnsupportedError(`${relType} is not allowed for this`);
+            }
+            return buildInnerRelation(data, input[inputField], relType);
+          })
+          .flat();
+        relToCreate.push(...newRelations);
+      }
+    }
   }
   // Transaction succeed, complete the result to send it back
   const created = R.pipe(

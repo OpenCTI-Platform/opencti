@@ -4,10 +4,14 @@ import {
   connectors,
   connectorsForExport,
   connectorsForImport,
+  findAllSync,
   loadConnectorById,
+  patchSync,
   pingConnector,
   registerConnector,
+  registerSync,
   resetStateConnector,
+  testSync,
 } from '../domain/connector';
 import {
   createWork,
@@ -31,6 +35,7 @@ const connectorResolvers = {
     connectorsForImport: (_, __, { user }) => connectorsForImport(user),
     works: (_, args, { user }) => findAll(user, args),
     work: (_, { id }, { user }) => findById(user, id),
+    synchronizers: (_, args, { user }) => findAllSync(user, args),
   },
   Connector: {
     connector_user: (connector, _, { user }) => findUserById(user, connector.connector_user_id),
@@ -58,6 +63,11 @@ const connectorResolvers = {
       toReceived: ({ message }) => updateReceivedTime(user, id, message),
       toProcessed: ({ message, inError }) => updateProcessedTime(user, id, message, inError),
     }),
+    // Sync part
+    synchronizerAdd: (_, { input }, { user }) => registerSync(user, input),
+    synchronizerStart: (_, { id }, { user }) => patchSync(user, id, { running: true }),
+    synchronizerStop: (_, { id }, { user }) => patchSync(user, id, { running: false }),
+    synchronizerTest: (_, { input }, { user }) => testSync(user, input),
   },
 };
 

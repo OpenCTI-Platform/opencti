@@ -2,7 +2,7 @@
 import { generateAliasesId, normalizeName } from '../../../src/schema/identifier';
 import { cleanStixIds } from '../../../src/database/stix';
 import { generateInternalType } from '../../../src/schema/schemaUtils';
-import { STIX_META_RELATION_TO_OPENCTI_INPUT } from '../../../src/schema/stixMetaRelationship';
+import { STIX_META_RELATION_TO_FIELD } from '../../../src/schema/stixMetaRelationship';
 
 test('should name correctly normalize', () => {
   let normalize = normalizeName('My data %test     ');
@@ -142,10 +142,10 @@ test('should multi stix id correctly max sized', () => {
 });
 
 test('should relation to input name', () => {
-  let name = STIX_META_RELATION_TO_OPENCTI_INPUT['object-marking'];
+  let name = STIX_META_RELATION_TO_FIELD['object-marking'];
   expect(name).toEqual('objectMarking');
   // eslint-disable-next-line dot-notation
-  name = STIX_META_RELATION_TO_OPENCTI_INPUT['object'];
+  name = STIX_META_RELATION_TO_FIELD['object'];
   expect(name).toEqual('objects');
 });
 

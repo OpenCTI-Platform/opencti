@@ -19,21 +19,23 @@ export const RELATION_EXTERNAL_REFERENCE = 'external-reference'; // external_ref
 export const RELATION_KILL_CHAIN_PHASE = 'kill-chain-phase'; // kill_chain_phases
 
 // Converter
-export const STIX_CREATED_BY_REF = 'created_by_ref';
-export const EXTERNAL_META_TO_STIX_ATTRIBUTE = {
-  [RELATION_CREATED_BY]: STIX_CREATED_BY_REF,
+export const FIELD_META_STIX_RELATIONS_TO_STIX_ATTRIBUTE = {
+  [RELATION_CREATED_BY]: 'created_by_ref',
   [RELATION_OBJECT_MARKING]: 'object_marking_refs',
   [RELATION_OBJECT]: 'object_refs',
   [RELATION_EXTERNAL_REFERENCE]: 'external_references',
   [RELATION_KILL_CHAIN_PHASE]: 'kill_chain_phases',
   [RELATION_OBJECT_LABEL]: 'labels',
 };
-export const STIX_ATTRIBUTE_TO_META_REL = R.mergeAll(
-  Object.keys(EXTERNAL_META_TO_STIX_ATTRIBUTE).map((k) => ({ [EXTERNAL_META_TO_STIX_ATTRIBUTE[k]]: k }))
+
+export const STIX_ATTRIBUTE_TO_META_RELATIONS = R.mergeAll(
+  Object.keys(FIELD_META_STIX_RELATIONS_TO_STIX_ATTRIBUTE).map((k) => ({
+    [FIELD_META_STIX_RELATIONS_TO_STIX_ATTRIBUTE[k]]: k,
+  }))
 );
 
-export const STIX_ATTRIBUTE_TO_META_FIELD = {
-  [STIX_CREATED_BY_REF]: INPUT_CREATED_BY,
+export const STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD = {
+  created_by_ref: INPUT_CREATED_BY,
   object_marking_refs: INPUT_MARKINGS,
   object_refs: INPUT_OBJECTS,
   external_references: INPUT_EXTERNAL_REFS,
@@ -41,7 +43,13 @@ export const STIX_ATTRIBUTE_TO_META_FIELD = {
   labels: INPUT_LABELS,
 };
 
-export const STIX_META_RELATION_TO_OPENCTI_INPUT = {
+export const META_FIELD_TO_STIX_ATTRIBUTE = R.mergeAll(
+  Object.keys(STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD).map((k) => ({
+    [STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD[k]]: k,
+  }))
+);
+
+export const STIX_META_RELATION_TO_FIELD = {
   [RELATION_EXTERNAL_REFERENCE]: INPUT_EXTERNAL_REFS,
   [RELATION_KILL_CHAIN_PHASE]: INPUT_KILLCHAIN,
   [RELATION_CREATED_BY]: INPUT_CREATED_BY,
@@ -49,8 +57,11 @@ export const STIX_META_RELATION_TO_OPENCTI_INPUT = {
   [RELATION_OBJECT_MARKING]: INPUT_MARKINGS,
   [RELATION_OBJECT]: INPUT_OBJECTS,
 };
-export const OPENCTI_ATTRIBUTE_TO_META_REL = R.mergeAll(
-  Object.keys(STIX_META_RELATION_TO_OPENCTI_INPUT).map((k) => ({ [STIX_META_RELATION_TO_OPENCTI_INPUT[k]]: k }))
+
+export const FIELD_TO_META_RELATION = R.mergeAll(
+  Object.keys(STIX_META_RELATION_TO_FIELD).map((k) => ({
+    [STIX_META_RELATION_TO_FIELD[k]]: k,
+  }))
 );
 
 const STIX_EXTERNAL_META_RELATIONSHIPS = [RELATION_CREATED_BY, RELATION_OBJECT_MARKING, RELATION_OBJECT];
@@ -65,9 +76,7 @@ export const isSingleStixMetaRelationship = (type) => R.includes(type, [RELATION
 export const isSingleStixMetaRelationshipInput = (input) => R.includes(input, [INPUT_CREATED_BY]);
 
 export const isStixMetaRelationship = (type) =>
-  R.includes(type, STIX_META_RELATIONSHIPS) ||
-  R.includes(type, STIX_INTERNAL_META_RELATIONSHIPS) ||
-  type === ABSTRACT_STIX_META_RELATIONSHIP;
+  R.includes(type, STIX_META_RELATIONSHIPS) || type === ABSTRACT_STIX_META_RELATIONSHIP;
 export const isStixInternalMetaRelationship = (type) =>
   R.includes(type, STIX_INTERNAL_META_RELATIONSHIPS) || type === ABSTRACT_STIX_META_RELATIONSHIP;
 

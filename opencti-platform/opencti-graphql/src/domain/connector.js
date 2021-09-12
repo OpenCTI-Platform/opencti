@@ -1,12 +1,15 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+import EventSource from 'eventsource';
 import { assoc, filter, includes, map, pipe } from 'ramda';
 import { createEntity, deleteElementById, listEntities, loadById, patchAttribute } from '../database/middleware';
 import { connectorConfig, registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
-import { FunctionalError } from '../config/errors';
-import { now, sinceNowInMinutes } from '../utils/format';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
+import { FunctionalError, UnsupportedError } from '../config/errors';
+import { FROM_START_STR, now, sinceNowInMinutes } from '../utils/format';
 import { elLoadById } from '../database/elasticSearch';
 import { READ_INDEX_HISTORY } from '../database/utils';
 import { CONNECTOR_INTERNAL_EXPORT_FILE, CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
+import { SYSTEM_USER } from '../utils/access';
 
 // region utils
 const completeConnector = (connector) => {
@@ -88,6 +91,50 @@ export const resetStateConnector = async (user, id) => {
   await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch);
   return loadById(user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
+
+// region syncs
+export const patchSync = async (user, id, patch) => {
+  const patched = await patchAttribute(user, id, ENTITY_TYPE_SYNC, patch);
+  return patched.element;
+};
+export const findAllSync = async (user, opts = {}) => {
+  return listEntities(SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
+};
+export const httpBase = (baseUri) => (baseUri.endsWith('/') ? baseUri : `${baseUri}/`);
+export const createSyncHttpUri = (sync) => {
+  const { uri, stream_id: stream, current_state: state, listen_deletion: deletion } = sync;
+  return `${httpBase(uri)}stream/${stream}?from=${state ?? FROM_START_STR}&listen-delete=${deletion}`;
+};
+export const testSync = async (user, sync) => {
+  const eventSourceUri = createSyncHttpUri(sync);
+  return new Promise((resolve, reject) => {
+    try {
+      const eventSource = new EventSource(eventSourceUri, { headers: { authorization: `Bearer ${sync.token}` } });
+      eventSource.on('connected', (d) => {
+        const { connectionId } = JSON.parse(d.data);
+        if (connectionId) {
+          eventSource.close();
+          resolve('Connection success');
+        } else {
+          eventSource.close();
+          reject(UnsupportedError('Server cant generate connection id'));
+        }
+      });
+      eventSource.on('error', (e) => {
+        eventSource.close();
+        reject(UnsupportedError(`Cant connect to remote opencti, ${e.message}`));
+      });
+    } catch (e) {
+      reject(UnsupportedError('Cant connect to remote opencti, check your configuration'));
+    }
+  });
+};
+export const registerSync = async (user, syncData) => {
+  const data = { ...syncData, running: false };
+  await testSync(data);
+  return createEntity(user, data, ENTITY_TYPE_SYNC);
+};
+// endregion
 
 export const registerConnector = async (user, connectorData) => {
   // eslint-disable-next-line camelcase

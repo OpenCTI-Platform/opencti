@@ -20,10 +20,9 @@ import {
 import conf, { booleanConf, logApp } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
 import {
-  EXTERNAL_META_TO_STIX_ATTRIBUTE,
+  isStixMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_KILL_CHAIN_PHASE,
-  RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
@@ -55,7 +54,13 @@ import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { getInstanceIds, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
 import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
-import { isSingleStixEmbeddedRelationship } from '../schema/stixEmbeddedRelationship';
+import {
+  INPUTS_RELATIONS_TO_STIX_ATTRIBUTE,
+  isSingleStixEmbeddedRelationship,
+  STIX_EMBEDDED_RELATION_TO_FIELD,
+} from '../schema/stixEmbeddedRelationship';
+import { extractFieldInputDefinition } from './stix';
+import { now } from '../utils/format';
 
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
@@ -79,9 +84,10 @@ const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_OBJECT_MARKING}_${ROLE_TO}`,
   `${RELATION_OBJECT_LABEL}_${ROLE_TO}`,
   `${RELATION_KILL_CHAIN_PHASE}_${ROLE_TO}`,
+  // RELATION_OBJECT
+  // RELATION_EXTERNAL_REFERENCE
   `${RELATION_INDICATES}_${ROLE_TO}`,
 ];
-const SOURCE_EXCLUDED_FIELDS = [`${REL_INDEX_PREFIX}${RELATION_OBJECT}`];
 export const isImpactedTypeAndSide = (type, side) => {
   return !UNIMPACTED_ENTITIES_ROLE.includes(`${type}_${side}`);
 };
@@ -691,10 +697,12 @@ const elDataConverter = (esHit) => {
     } else if (key.startsWith(REL_INDEX_PREFIX)) {
       const rel = key.substr(REL_INDEX_PREFIX.length);
       const [relType] = rel.split('.');
-      const stixType = EXTERNAL_META_TO_STIX_ATTRIBUTE[relType];
-      if (stixType) {
+      const fields = extractFieldInputDefinition(data.entity_type);
+      const stixType = STIX_EMBEDDED_RELATION_TO_FIELD[relType];
+      if (stixType && fields.includes(stixType)) {
         const isSingle = isSingleStixEmbeddedRelationship(relType);
-        data[stixType] = isSingle ? R.head(val) : val;
+        const dataKey = INPUTS_RELATIONS_TO_STIX_ATTRIBUTE[relType];
+        data[dataKey] = isSingle ? R.head(val) : val;
       }
     } else {
       data[key] = val;
@@ -746,7 +754,6 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
   const query = {
     index: READ_RELATIONSHIPS_INDICES,
     size: MAX_SEARCH_SIZE,
-    _source_excludes: SOURCE_EXCLUDED_FIELDS,
     ignore_throttled: ES_IGNORE_THROTTLED,
     body: {
       query: {
@@ -846,7 +853,6 @@ export const elFindByIds = async (user, ids, opts = {}) => {
       const query = {
         index: indices,
         size: MAX_SEARCH_SIZE,
-        _source_excludes: SOURCE_EXCLUDED_FIELDS,
         ignore_throttled: ES_IGNORE_THROTTLED,
         body: {
           query: {
@@ -1349,13 +1355,17 @@ export const elPaginate = async (user, indexName, options = {}) => {
     };
     must = R.append(bool, must);
   }
-  if (orderBy !== null && orderBy.length > 0) {
-    const order = {};
-    const orderKeyword =
-      dateAttributes.includes(orderBy) || numericOrBooleanAttributes.includes(orderBy) ? orderBy : `${orderBy}.keyword`;
-    order[orderKeyword] = orderMode;
-    ordering = R.append(order, ordering);
-    must = R.append({ exists: { field: orderKeyword } }, must);
+  if (isNotEmptyField(orderBy)) {
+    const orderCriterias = Array.isArray(orderBy) ? orderBy : [orderBy];
+    // const order = {};
+    for (let index = 0; index < orderCriterias.length; index += 1) {
+      const orderCrit = orderCriterias[index];
+      const isDateOrNumber = dateAttributes.includes(orderCrit) || numericOrBooleanAttributes.includes(orderCrit);
+      const orderKeyword = isDateOrNumber ? orderCrit : `${orderCrit}.keyword`;
+      const order = { [orderKeyword]: orderMode };
+      ordering = R.append(order, ordering);
+      must = R.append({ exists: { field: orderKeyword } }, must);
+    }
   } else if (search !== null && search.length > 0) {
     ordering.push({ _score: 'desc' });
   } else {
@@ -1381,7 +1391,6 @@ export const elPaginate = async (user, indexName, options = {}) => {
   }
   const query = {
     index: indexName,
-    _source_excludes: SOURCE_EXCLUDED_FIELDS,
     ignore_throttled: ES_IGNORE_THROTTLED,
     track_total_hits: true,
     body,
@@ -1417,6 +1426,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
     );
 };
 export const elList = async (user, indexName, options = {}) => {
+  const { first = MAX_SEARCH_SIZE, infinite = false } = options;
   let hasNextPage = true;
   let continueProcess = true;
   let searchAfter = options.after;
@@ -1432,15 +1442,16 @@ export const elList = async (user, indexName, options = {}) => {
   };
   while (continueProcess && hasNextPage) {
     // Force options to prevent connection format and manage search after
-    const opts = { ...options, first: MAX_SEARCH_SIZE, after: searchAfter, connectionFormat: false };
+    const opts = { ...options, first, after: searchAfter, connectionFormat: false };
     const elements = await elPaginate(user, indexName, opts);
-    if (elements.length === 0 || elements.length < options.first) {
+    if (!infinite && (elements.length === 0 || elements.length < first)) {
       if (elements.length > 0) {
         await publish(elements);
       }
       hasNextPage = false;
-    } else {
-      searchAfter = offsetToCursor(R.last(elements).sort);
+    } else if (elements.length > 0) {
+      const { sort } = R.last(elements);
+      searchAfter = offsetToCursor(sort);
       await publish(elements);
     }
   }
@@ -1472,7 +1483,6 @@ export const elAttributeValues = async (user, field) => {
   };
   const query = {
     index: [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS],
-    _source_excludes: SOURCE_EXCLUDED_FIELDS,
     ignore_throttled: ES_IGNORE_THROTTLED,
     body,
   };
@@ -1630,9 +1640,13 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
       const updates = [];
       const fromIndex = indexCache[relation.fromId];
       if (isFromCleanup && fromIndex) {
+        let source = `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`;
+        if (isStixMetaRelationship(relation.entity_type)) {
+          source += `ctx._source['updated_at'] = params.updated_at;`;
+        }
         const script = {
-          source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
-          params: { key: relation.toId },
+          source,
+          params: { key: relation.toId, updated_at: now() },
         };
         updates.push([
           { update: { _index: fromIndex, _id: relation.fromId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
@@ -1644,7 +1658,7 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
       if (isToCleanup && toIndex) {
         const script = {
           source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
-          params: { key: relation.fromId },
+          params: { key: relation.fromId, updated_at: now() },
         };
         updates.push([
           { update: { _index: toIndex, _id: relation.toId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
@@ -1797,10 +1811,10 @@ export const elIndexElements = async (elements) => {
       cache[e.fromId] = e.from;
       cache[e.toId] = e.to;
       if (isImpactedRole(fromRole)) {
-        impacts.push({ from: e.fromId, relationshipType, to: e.to });
+        impacts.push({ from: e.fromId, relationshipType, to: e.to, side: 'from' });
       }
       if (isImpactedRole(toRole)) {
-        impacts.push({ from: e.toId, relationshipType, to: e.from });
+        impacts.push({ from: e.toId, relationshipType, to: e.from, side: 'to' });
       }
       return impacts;
     }),
@@ -1814,29 +1828,31 @@ export const elIndexElements = async (elements) => {
       const targets = impactedEntities[entityId];
       // Build document fields to update ( per relation type )
       const targetsByRelation = R.groupBy((i) => i.relationshipType, targets);
-      const targetsElements = await Promise.all(
-        R.map(async (relType) => {
-          const data = targetsByRelation[relType];
-          const resolvedData = await Promise.all(
-            R.map(async (d) => {
-              return d.to.internal_id;
-            }, data)
-          );
-          return { relation: relType, elements: resolvedData };
-        }, Object.keys(targetsByRelation))
-      );
+      const targetsElements = R.map((relType) => {
+        const data = targetsByRelation[relType];
+        const resolvedData = R.map((d) => {
+          return { id: d.to.internal_id, side: d.side };
+        }, data);
+        return { relation: relType, elements: resolvedData };
+      }, Object.keys(targetsByRelation));
       // Create params and scripted update
-      const params = {};
+      const params = { updated_at: now() };
       const sources = R.map((t) => {
         const field = buildRefRelationKey(t.relation);
-        const createIfNotExist = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
-        const addAllElements = `ctx._source['${field}'].addAll(params['${field}'])`;
-        return `${createIfNotExist} ${addAllElements}`;
+        let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
+        script += `ctx._source['${field}'].addAll(params['${field}'])`;
+        if (isStixMetaRelationship(t.relation)) {
+          const fromUpdate = R.filter((e) => e.side === 'from', t.elements).length > 0;
+          if (fromUpdate) {
+            script += `; ctx._source['updated_at'] = params.updated_at`;
+          }
+        }
+        return script;
       }, targetsElements);
       const source = sources.length > 1 ? R.join(';', sources) : `${R.head(sources)};`;
       for (let index = 0; index < targetsElements.length; index += 1) {
         const targetElement = targetsElements[index];
-        params[buildRefRelationKey(targetElement.relation)] = targetElement.elements;
+        params[buildRefRelationKey(targetElement.relation)] = targetElement.elements.map((e) => e.id);
       }
       return { ...entity, id: entityId, data: { script: { source, params } } };
     }, Object.keys(impactedEntities))

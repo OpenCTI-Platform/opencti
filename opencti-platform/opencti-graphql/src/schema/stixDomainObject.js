@@ -49,6 +49,12 @@ const STIX_DOMAIN_OBJECT_CONTAINERS = [
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
 ];
+
+const CONTAINER_OBJECTS = 'object_refs';
+export const CONTAINER_REFS_TO_FIELDS = {
+  [CONTAINER_OBJECTS]: 'objects',
+};
+
 schemaTypes.register(ENTITY_TYPE_CONTAINER, STIX_DOMAIN_OBJECT_CONTAINERS);
 export const isStixDomainObjectContainer = (type) =>
   R.includes(type, STIX_DOMAIN_OBJECT_CONTAINERS) || type === ENTITY_TYPE_CONTAINER;
@@ -152,7 +158,7 @@ export const stixDomainObjectFieldsToBeUpdated = {
   [ENTITY_TYPE_CONTAINER_NOTE]: ['content', 'confidence', 'abstract'],
   [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: ['description', 'confidence'],
   [ENTITY_TYPE_CONTAINER_OPINION]: ['opinion', 'confidence'],
-  [ENTITY_TYPE_CONTAINER_REPORT]: ['name', 'revoked', 'description', 'confidence'],
+  [ENTITY_TYPE_CONTAINER_REPORT]: ['name', 'revoked', 'description', 'confidence', 'confidence'],
   [ENTITY_TYPE_COURSE_OF_ACTION]: [
     'name',
     'revoked',

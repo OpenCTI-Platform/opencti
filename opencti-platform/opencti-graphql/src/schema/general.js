@@ -16,6 +16,15 @@ export const INPUT_LABELS = 'objectLabel'; // labels
 export const INPUT_MARKINGS = 'objectMarking'; // object_marking_refs
 export const INPUT_OBJECTS = 'objects'; // object_refs
 
+export const MULTIPLE_META_RELATIONSHIPS_INPUTS = [
+  INPUT_MARKINGS,
+  INPUT_LABELS,
+  INPUT_EXTERNAL_REFS,
+  INPUT_KILLCHAIN,
+  INPUT_OBJECTS,
+];
+export const STIX_META_RELATIONSHIPS_INPUTS = [INPUT_CREATED_BY, ...MULTIPLE_META_RELATIONSHIPS_INPUTS];
+
 // Specific prefix
 export const REL_INDEX_PREFIX = 'rel_';
 export const INTERNAL_PREFIX = 'i_';
@@ -99,18 +108,5 @@ export const schemaTypes = {
   getAttributes: function (type) {
     return this.attributes[type] || [];
   },
-};
-
-export const refsExtractor = (data) => {
-  // TODO Add STIX Cyber Observable relationships
-  return [
-    ...(data.object_marking_refs || []),
-    ...(data.object_refs || []),
-    ...(data.created_by_ref ? [data.created_by_ref] : []),
-    ...(data.sighting_of_ref ? [data.sighting_of_ref] : []),
-    ...(data.where_sighted_refs || []),
-    ...(data.source_ref ? [data.source_ref] : []),
-    ...(data.target_ref ? [data.target_ref] : []),
-  ];
 };
 // region utils

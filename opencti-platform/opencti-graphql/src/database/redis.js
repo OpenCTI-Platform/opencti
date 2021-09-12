@@ -20,7 +20,7 @@ import { isStixRelationship } from '../schema/stixRelationship';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
 import { buildStixData, updateInputsToPatch } from './stix';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
-import { now } from '../utils/format';
+import { now, utcDate } from '../utils/format';
 import RedisStore from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
 import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
@@ -29,7 +29,7 @@ import { BASE_TYPE_RELATION } from '../schema/general';
 import {
   isSingleStixEmbeddedRelationship,
   isStixEmbeddedRelationship,
-  STIX_EMBEDDED_RELATION_TO_OPENCTI_INPUT,
+  STIX_EMBEDDED_RELATION_TO_FIELD,
 } from '../schema/stixEmbeddedRelationship';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
@@ -95,7 +95,9 @@ export const createMemorySessionStore = () => {
   });
 };
 export const createRedisSessionStore = () => {
-  return new RedisStore(clientContext);
+  return new RedisStore(clientContext, {
+    ttl: conf.get('app:session_timeout'),
+  });
 };
 
 export const redisIsAlive = async () => {
@@ -378,7 +380,7 @@ export const computeMergeDifferential = (initialInstance, mergedInstance) => {
   const convertMerged = buildStixData(mergedInstance, { patchGeneration: true });
   const diffGenerator = createJsonDiff({
     objectHash: (obj) => {
-      return obj.x_opencti_internal_id;
+      return obj.x_opencti_id;
     },
   });
   const patch = {};
@@ -521,7 +523,7 @@ export const buildCreateEvent = async (user, instance, input, loaders, opts = {}
     } else {
       publishedInstance = getInstanceIdentifiers(instance.from);
     }
-    const key = STIX_EMBEDDED_RELATION_TO_OPENCTI_INPUT[instance.entity_type];
+    const key = STIX_EMBEDDED_RELATION_TO_FIELD[instance.entity_type];
     if (isSingleStixEmbeddedRelationship(instance.entity_type)) {
       // eslint-disable-next-line prettier/prettier
       const inputVal = { key, value: [instance.to], previous: null };
@@ -576,8 +578,7 @@ export const buildDeleteEvent = async (user, instance, dependencyDeletions, load
     } else {
       publishedInstance = getInstanceIdentifiers(instance.from);
     }
-
-    const key = STIX_EMBEDDED_RELATION_TO_OPENCTI_INPUT[instance.entity_type];
+    const key = STIX_EMBEDDED_RELATION_TO_FIELD[instance.entity_type];
     if (isSingleStixEmbeddedRelationship(instance.entity_type)) {
       const inputVal = { key, value: null, previous: [instance.to] };
       const patch = updateInputsToPatch([inputVal]);
@@ -612,11 +613,6 @@ export const storeDeleteEvent = async (user, instance, dependencyDeletions, load
   return null;
 };
 
-const fetchStreamInfo = async () => {
-  const res = await clientBase.call('XINFO', 'STREAM', REDIS_STREAM_NAME);
-  const [, size, , , , , , lastId, , , , , ,] = res;
-  return { lastEventId: lastId, streamSize: size };
-};
 const mapStreamToJS = ([id, data]) => {
   const count = data.length / 2;
   const result = { eventId: id };
@@ -625,6 +621,14 @@ const mapStreamToJS = ([id, data]) => {
   }
   return result;
 };
+export const fetchStreamInfo = async () => {
+  const res = await clientBase.call('XINFO', 'STREAM', REDIS_STREAM_NAME);
+  const [, size, , , , , , lastId, , , , [firstId], ,] = res;
+  const firstEventDate = utcDate(parseInt(firstId.split('-')[0], 10)).toISOString();
+  const lastEventDate = utcDate(parseInt(lastId.split('-')[0], 10)).toISOString();
+  return { lastEventId: lastId, firstEventId: firstId, firstEventDate, lastEventDate, streamSize: size };
+};
+
 const processStreamResult = async (results, callback) => {
   const streamData = R.map((r) => mapStreamToJS(r), results);
   const lastElement = R.last(streamData);

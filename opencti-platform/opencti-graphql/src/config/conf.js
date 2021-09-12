@@ -281,6 +281,7 @@ export const configureCA = (certificates) => {
 export const ENABLED_API = booleanConf('app:enabled', true);
 export const ENABLED_EXPIRED_MANAGER = booleanConf('expiration_scheduler:enabled', false);
 export const ENABLED_TASK_SCHEDULER = booleanConf('task_scheduler:enabled', false);
+export const ENABLED_SYNC_MANAGER = booleanConf('sync_manager:enabled', false);
 export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
 export const ENABLED_SUBSCRIPTION_MANAGER = booleanConf('subscription_scheduler:enabled', false);
 export const ENABLED_CACHING = booleanConf('redis:use_as_cache', false);

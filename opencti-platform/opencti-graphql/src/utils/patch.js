@@ -14,19 +14,19 @@ export const rebuildInstanceBeforePatch = (instance, patch) => {
       if (type === UPDATE_OPERATION_REPLACE) {
         const { previous } = changes;
         if (Array.isArray(previous)) {
-          rebuild[key] = previous.map((c) => (typeof c === 'object' ? c.x_opencti_internal_id : c));
+          rebuild[key] = previous.map((c) => (typeof c === 'object' ? c.x_opencti_id : c));
         } else {
-          rebuild[key] = typeof previous === 'object' ? previous?.x_opencti_internal_id : previous;
+          rebuild[key] = typeof previous === 'object' ? previous?.x_opencti_id : previous;
         }
       }
       if (type === UPDATE_OPERATION_ADD) {
-        const ids = changes.map((c) => (typeof c === 'object' ? [c.value, c.x_opencti_internal_id] : [c])).flat();
+        const ids = changes.map((c) => (typeof c === 'object' ? [c.value, c.x_opencti_id] : [c])).flat();
         const elements = (instance[key] || []).filter((e) => !ids.includes(e));
         rebuild[key] = key.endsWith('_ref') ? null : elements;
       }
       if (type === UPDATE_OPERATION_REMOVE) {
         const ops = rebuild[key] || [];
-        ops.push(...changes.map((c) => (typeof c === 'object' ? c.x_opencti_internal_id : c)));
+        ops.push(...changes.map((c) => (typeof c === 'object' ? c.x_opencti_id : c)));
         rebuild[key] = key.endsWith('_ref') ? R.head(ops) : ops;
       }
     }
@@ -55,7 +55,7 @@ export const rebuildInstanceWithPatch = (instance, patch) => {
         rebuild[key] = key.endsWith('_ref') ? R.head(ops) : ops;
       }
       if (type === UPDATE_OPERATION_REMOVE) {
-        const ids = changes.map((c) => (typeof c === 'object' ? [c.value, c.x_opencti_internal_id] : [c])).flat();
+        const ids = changes.map((c) => (typeof c === 'object' ? [c.value, c.x_opencti_id] : [c])).flat();
         const elements = (instance[key] || []).filter((e) => !ids.includes(e));
         rebuild[key] = key.endsWith('_ref') ? null : elements;
       }

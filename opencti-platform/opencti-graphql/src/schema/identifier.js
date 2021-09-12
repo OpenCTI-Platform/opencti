@@ -143,6 +143,7 @@ const stixEntityContribution = {
     [I.ENTITY_TYPE_WORKSPACE]: [], // ALL
     [I.ENTITY_TYPE_TAXII_COLLECTION]: [], // ALL
     [I.ENTITY_TYPE_TASK]: [], // ALL
+    [I.ENTITY_TYPE_SYNC]: [], // ALL
     [I.ENTITY_TYPE_STREAM_COLLECTION]: [], // ALL
     [I.ENTITY_TYPE_USER_SUBSCRIPTION]: [], // ALL
     [I.ENTITY_TYPE_STATUS_TEMPLATE]: [{ src: NAME_FIELD }], // ALL

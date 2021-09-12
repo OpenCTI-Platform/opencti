@@ -99,7 +99,7 @@ export const convertFiltersToQueryOptions = (filters, opts = {}) => {
   if (before) {
     queryFilters.push({ key: field, values: [before], operator: 'lte' });
   }
-  return { types, orderMode: 'asc', orderBy: field, filters: queryFilters };
+  return { types, orderMode: 'asc', orderBy: [field, 'internal_id'], filters: queryFilters };
 };
 
 const collectionQuery = async (user, collectionId, args) => {

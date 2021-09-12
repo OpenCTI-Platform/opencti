@@ -18,7 +18,7 @@ import {
 import { fullLoadById } from '../../../src/database/middleware';
 import { rebuildInstanceWithPatch } from '../../../src/utils/patch';
 import { buildStixData } from '../../../src/database/stix';
-import { STIX_ATTRIBUTE_TO_META_FIELD } from '../../../src/schema/stixMetaRelationship';
+import { STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD } from '../../../src/schema/stixMetaRelationship';
 
 const OPERATIONS = [UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE];
 
@@ -76,7 +76,7 @@ describe('Raw streams tests', () => {
             const elementOperations = data.x_opencti_patch[key];
             const opKeys = Object.keys(elementOperations);
             opKeys.forEach((opKey) => {
-              const metaKey = STIX_ATTRIBUTE_TO_META_FIELD[opKey];
+              const metaKey = STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD[opKey];
               const k = metaKey || opKey;
               const isMultiple = isMultipleAttribute(k);
               expect(isMultiple).toBeTruthy();

@@ -5,7 +5,6 @@ import {
   executeExternalQuery,
   FIFTEEN_MINUTES,
   PYTHON_PATH,
-  SYNC_LIVE_END_REMOTE_URI,
   SYNC_LIVE_START_REMOTE_URI,
   SYNC_RAW_START_REMOTE_URI,
 } from '../utils/testQuery';
@@ -14,8 +13,8 @@ import { execPython3 } from '../../src/python/pythonBridge';
 import { fullLoadById } from '../../src/database/middleware';
 import { buildStixData } from '../../src/database/stix';
 import { checkInstanceDiff } from '../utils/testStream';
-import { createStreamCollection, streamCollectionDelete } from '../../src/domain/stream';
 import { shutdownModules, startModules } from '../../src/modules';
+import { FROM_START_STR } from '../../src/utils/format';
 
 const STAT_QUERY = `query stats {
       about {
@@ -110,31 +109,19 @@ describe('Database provision', () => {
     FIFTEEN_MINUTES
   );
 
-  const cases = [
-    ['-', SYNC_LIVE_START_REMOTE_URI],
-    ['0', SYNC_LIVE_END_REMOTE_URI],
-  ];
   // eslint-disable-next-line prettier/prettier
-  it.each(cases)('Should live sync succeed (from = %s)', async (startTime, remoteUri) => {
+  it('Should live sync succeed', async () => {
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
-      // Create live stream
-      const stream = await createStreamCollection(ADMIN_USER, {
-        name: 'Live sync',
-        description: 'Global live stream',
-        filters: '{}',
-      });
       // Sync
-      const syncOpts = [API_URI, API_TOKEN, remoteUri, API_TOKEN, 239, startTime, stream.id];
+      const syncOpts = [API_URI, API_TOKEN, SYNC_LIVE_START_REMOTE_URI, API_TOKEN, 239, FROM_START_STR, 'live'];
       await startModules();
       const execution = await execPython3(PYTHON_PATH, 'local_synchronizer.py', syncOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
       await shutdownModules();
-      // Delete live stream
-      await streamCollectionDelete(ADMIN_USER, stream.id);
       // Post check
-      await checkPostSyncContent(remoteUri, objectMap, relMap, initStixReport);
+      await checkPostSyncContent(SYNC_LIVE_START_REMOTE_URI, objectMap, relMap, initStixReport);
     },
     FIFTEEN_MINUTES
   );
