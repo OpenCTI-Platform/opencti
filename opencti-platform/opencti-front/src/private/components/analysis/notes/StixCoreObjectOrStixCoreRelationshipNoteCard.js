@@ -131,7 +131,12 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
 
   render() {
     const {
-      nsdt, classes, node, t, theme,
+      nsdt,
+      classes,
+      node,
+      t,
+      theme,
+      stixCoreObjectOrStixCoreRelationshipId,
     } = this.props;
     let authorName = null;
     let authorLink = null;
@@ -151,6 +156,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
           action={
             <NotePopover
               id={node.id}
+              entityId={stixCoreObjectOrStixCoreRelationshipId}
               handleOpenRemove={this.handleOpenDialog.bind(this)}
             />
           }

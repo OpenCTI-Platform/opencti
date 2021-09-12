@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import { createPaginationContainer } from 'react-relay';
@@ -27,6 +26,9 @@ import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { commitMutation } from '../../../../relay/environment';
 import { noteCreationMutation } from './NoteCreation';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   paper: {
@@ -91,8 +93,13 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
       data,
     ).map((n) => n.node.id);
     const adaptedValues = R.pipe(
-      R.assoc('objectMarking', defaultMarking),
+      R.assoc('objectMarking', [
+        ...defaultMarking,
+        ...R.pluck('value', values.objectMarking),
+      ]),
       R.assoc('objects', [stixSightingRelationshipId]),
+      R.assoc('createdBy', R.pathOr(null, ['createdBy', 'value'], values)),
+      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
     )(values);
     commitMutation({
       mutation: noteCreationMutation,
@@ -121,7 +128,7 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
       t, stixSightingRelationshipId, marginTop, data, classes,
     } = this.props;
     const { open } = this.state;
-    const notes = pathOr(
+    const notes = R.pathOr(
       [],
       ['stixSightingRelationship', 'notes', 'edges'],
       data,
@@ -158,7 +165,7 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
           );
         })}
         <Accordion
-          style={{ margin: '30px 0 30px 0' }}
+          style={{ margin: `${notes.length > 0 ? '30' : '5'}px 0 30px 0` }}
           expanded={open}
           onChange={this.handleToggleWrite.bind(this)}
         >
@@ -174,12 +181,21 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
               initialValues={{
                 attribute_abstract: '',
                 content: '',
+                createdBy: '',
+                objectMarking: [],
+                objectLabel: [],
               }}
               validationSchema={noteValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
             >
-              {({ submitForm, handleReset, isSubmitting }) => (
+              {({
+                submitForm,
+                handleReset,
+                setFieldValue,
+                values,
+                isSubmitting,
+              }) => (
                 <Form style={{ width: '100%' }}>
                   <Field
                     component={TextField}
@@ -195,6 +211,21 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
                     multiline={true}
                     rows="4"
                     style={{ marginTop: 20 }}
+                  />
+                  <CreatedByField
+                    name="createdBy"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                  />
+                  <ObjectLabelField
+                    name="objectLabel"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.objectLabel}
+                  />
+                  <ObjectMarkingField
+                    name="objectMarking"
+                    style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>
                     <Button
@@ -286,7 +317,7 @@ const StixSightingRelationshipNotesCards = createPaginationContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixSightingRelationshipNotesCards);

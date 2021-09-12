@@ -159,7 +159,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
           );
         })}
         <Accordion
-          style={{ margin: '30px 0 30px 0' }}
+          style={{ margin: `${notes.length > 0 ? '30' : '5'}px 0 30px 0` }}
           expanded={open}
           onChange={this.handleToggleWrite.bind(this)}
         >

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import { createPaginationContainer } from 'react-relay';
@@ -28,6 +27,9 @@ import { noteCreationMutation } from './NoteCreation';
 import { noteLinesMutationRelationAdd } from './AddNotesLines';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   paper: {
@@ -91,9 +93,15 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
       ['stixCoreRelationship', 'objectMarking', 'edges'],
       data,
     ).map((n) => n.node.id);
-    const adaptedValues = R.pipe(R.assoc('objectMarking', defaultMarking))(
-      values,
-    );
+    const adaptedValues = R.pipe(
+      R.assoc('objectMarking', [
+        ...defaultMarking,
+        ...R.pluck('value', values.objectMarking),
+      ]),
+      R.assoc('objects', [stixCoreRelationshipId]),
+      R.assoc('createdBy', R.pathOr(null, ['createdBy', 'value'], values)),
+      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
+    )(values);
     commitMutation({
       mutation: noteCreationMutation,
       variables: {
@@ -140,7 +148,11 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
       t, stixCoreRelationshipId, marginTop, data, classes,
     } = this.props;
     const { open } = this.state;
-    const notes = pathOr([], ['stixCoreRelationship', 'notes', 'edges'], data);
+    const notes = R.pathOr(
+      [],
+      ['stixCoreRelationship', 'notes', 'edges'],
+      data,
+    );
     return (
       <div style={{ height: '100%', marginTop: marginTop || 40 }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -148,7 +160,7 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IconButton
-            color="primary"
+            color="secondary"
             onClick={this.handleToggleWrite.bind(this)}
             classes={{ root: classes.createButton }}
           >
@@ -171,7 +183,7 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
           );
         })}
         <Accordion
-          style={{ margin: '30px 0 30px 0' }}
+          style={{ margin: `${notes.length > 0 ? '30' : '5'}px 0 30px 0` }}
           expanded={open}
           onChange={this.handleToggleWrite.bind(this)}
         >
@@ -187,12 +199,21 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
               initialValues={{
                 attribute_abstract: '',
                 content: '',
+                createdBy: '',
+                objectMarking: [],
+                objectLabel: [],
               }}
               validationSchema={noteValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
             >
-              {({ submitForm, handleReset, isSubmitting }) => (
+              {({
+                submitForm,
+                handleReset,
+                setFieldValue,
+                values,
+                isSubmitting,
+              }) => (
                 <Form style={{ width: '100%' }}>
                   <Field
                     component={TextField}
@@ -208,6 +229,21 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
                     multiline={true}
                     rows="4"
                     style={{ marginTop: 20 }}
+                  />
+                  <CreatedByField
+                    name="createdBy"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                  />
+                  <ObjectLabelField
+                    name="objectLabel"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.objectLabel}
+                  />
+                  <ObjectMarkingField
+                    name="objectMarking"
+                    style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>
                     <Button
@@ -306,7 +342,7 @@ const StixCoreRelationshipNotesCards = createPaginationContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixCoreRelationshipNotesCards);

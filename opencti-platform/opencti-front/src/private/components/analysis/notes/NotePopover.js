@@ -15,6 +15,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
+import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
@@ -90,6 +91,16 @@ class NotePopover extends Component {
       mutation: NotePopoverDeletionMutation,
       variables: {
         id: this.props.id,
+      },
+      updater: (store) => {
+        if (this.props.entityId) {
+          const entity = store.get(this.props.entityId);
+          const conn = ConnectionHandler.getConnection(
+            entity,
+            'Pagination_notes',
+          );
+          ConnectionHandler.deleteNode(conn, this.props.id);
+        }
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -205,6 +216,7 @@ class NotePopover extends Component {
 
 NotePopover.propTypes = {
   id: PropTypes.string,
+  entityId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
