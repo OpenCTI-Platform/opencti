@@ -259,7 +259,7 @@ export const containerToHtml = (url, entry) => {
               )
             : ''
         }
-        <hr style="margin:15pt 0 10pt 0; color: #f6f6f6; border-top: #f6f6f6 1px solid; background: #f6f6f6">
+        <hr style="margin:15pt 0 10pt 0; color: #f6f6f6; border-top: #f6f6f6 1px solid; background: #f6f6f6"/>
   `;
 };
 

@@ -361,10 +361,10 @@ class ReportContentComponent extends Component {
       && this.state.currentFile.metaData.mimetype === 'text/markdown';
     const regex = /<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi;
     const htmlData = convertToHtmlPdf
-      ? this.state.currentHtmlContent
+      ? (this.state.currentContent || '')
         .replaceAll('id="undefined" ', '')
         .replaceAll(regex, '')
-      : this.state.currentContent
+      : (this.state.currentContent || '')
         .replaceAll('id="undefined" ', '')
         .replaceAll(regex, '');
     const ret = htmlToPdfmake(htmlData, { imagesByReference: true });
