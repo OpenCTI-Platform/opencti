@@ -297,15 +297,17 @@ const createSeeMiddleware = () => {
               }
             }
             // publish element
-            const markings = stixData.object_marking_refs || [];
-            const message = generateCreateMessage(instance);
-            channel.sendEvent(`${eventId}-${eventIndex}`, EVENT_TYPE_CREATE, {
-              data: stixData,
-              markings,
-              message,
-              version,
-            });
-            await wait(channel.delay);
+            if (!reorderedCache.has(stixData.id)) {
+              const markings = stixData.object_marking_refs || [];
+              const message = generateCreateMessage(instance);
+              channel.sendEvent(`${eventId}-${eventIndex}`, EVENT_TYPE_CREATE, {
+                data: stixData,
+                markings,
+                message,
+                version,
+              });
+              await wait(channel.delay);
+            }
             lastElementUpdate = stixData.updated_at;
           } else {
             return channel.connected();
