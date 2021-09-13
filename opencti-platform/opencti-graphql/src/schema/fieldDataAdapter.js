@@ -71,9 +71,11 @@ export const statsDateAttributes = [
   'published',
   'valid_from',
   'valid_until',
+  'first_observed',
+  'last_observed',
 ];
-export const dateForStartAttributes = ['first_seen', 'start_time', 'valid_from'];
-export const dateForEndAttributes = ['last_seen', 'stop_time', 'valid_until'];
+export const dateForStartAttributes = ['first_seen', 'start_time', 'valid_from', 'first_observed'];
+export const dateForEndAttributes = ['last_seen', 'stop_time', 'valid_until', 'last_observed'];
 export const dateForLimitsAttributes = [...dateForStartAttributes, ...dateForEndAttributes];
 export const dateAttributes = [
   'created',
@@ -103,6 +105,12 @@ export const dateAttributes = [
   'valid_until',
   'i_valid_until_day',
   'i_valid_until_month',
+  'first_observed',
+  'i_first_observed_day',
+  'i_first_observed_month',
+  'last_observed',
+  'i_last_observed_day',
+  'i_last_observed_month',
   'observable_date',
   'event_date',
   'timestamp',
