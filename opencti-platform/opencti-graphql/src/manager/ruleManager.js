@@ -8,6 +8,7 @@ import {
   internalLoadById,
   listAllRelations,
   patchAttribute,
+  stixDataById,
   stixLoadById,
 } from '../database/middleware';
 import { isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
@@ -20,7 +21,6 @@ import { createRuleTask, deleteTask, findAll } from '../domain/task';
 import { getActivatedRules, getRule } from '../domain/rule';
 import { RULE_MANAGER_USER, RULES_DECLARATION } from '../rules/rules';
 import { MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/sseMiddleware';
-import { buildStixData } from '../database/stix';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { extractFieldsOfPatch, rebuildInstanceBeforePatch } from '../utils/patch';
 
@@ -218,8 +218,7 @@ export const rulesApplyHandler = async (events, forRules = []) => {
           const rule = rules[ruleIndex];
           const isImpactedElement = isMatchRuleFilters(rule, element, true);
           if (isImpactedElement) {
-            const instance = await internalLoadById(RULE_MANAGER_USER, element.id);
-            const stixData = buildStixData(instance);
+            const stixData = await stixDataById(RULE_MANAGER_USER, element.id);
             const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
             const derivedEvents = await rule.update(stixData, patchedFields);
             await rulesApplyDerivedEvents(eventId, derivedEvents);

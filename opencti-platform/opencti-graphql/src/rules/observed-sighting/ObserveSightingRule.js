@@ -93,7 +93,8 @@ const ruleObserveSightingBuilder = () => {
     const { x_opencti_id: observedDataId, created_by_ref: organizationId } = observedData;
     const { number_observed, first_observed, last_observed } = observedData;
     const { confidence, object_marking_refs } = observedData;
-    if (organizationId) {
+    const organization = await internalLoadById(RULE_MANAGER_USER, organizationId);
+    if (organization) {
       // Get all observable of this observed-data
       const listFromArgs = { fromTypes: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], fromId: observedDataId };
       const objectsRelations = await listAllRelations(RULE_MANAGER_USER, RELATION_OBJECT, listFromArgs);
@@ -113,7 +114,7 @@ const ruleObserveSightingBuilder = () => {
               observedDataId,
               objectId,
               observableId,
-              organizationId,
+              organization.internal_id,
               baseOnId,
               indicatorId
             );
