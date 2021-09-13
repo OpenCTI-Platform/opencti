@@ -106,6 +106,9 @@ const syncManagerInstance = (syncId) => {
     eventSource.on('connected', (d) => {
       connectionId = JSON.parse(d.data).connectionId;
     });
+    eventSource.on('error', (error) => {
+      logApp.error(`[SYNC] Error in sync manager for ${syncId}: ${error.message}`);
+    });
     return sync;
   };
   const manageBackPressure = async ({ uri, token }, currentDelay) => {
@@ -210,6 +213,7 @@ const syncManagerInstance = (syncId) => {
     }
   };
   return {
+    id: syncId,
     stop: () => {
       logApp.info(`[SYNC] Stopping sync manager for ${syncId}`);
       run = false;
@@ -259,6 +263,7 @@ const initSyncManager = () => {
   const processStep = async () => {
     // Get syncs definition
     const syncs = await listEntities(SYSTEM_USER, [ENTITY_TYPE_SYNC], { connectionFormat: false });
+    // region Handle management of existing synchronizers
     for (let index = 0; index < syncs.length; index += 1) {
       // eslint-disable-next-line prettier/prettier
       const { id, running } = syncs[index];
@@ -279,6 +284,16 @@ const initSyncManager = () => {
         manager.start();
       }
     }
+    // endregion
+    // region Handle potential deletions
+    const existingSyncs = syncs.map((s) => s.id);
+    const deletedSyncs = Array.from(syncManagers.values()).filter((s) => !existingSyncs.includes(s.id));
+    for (let deleteIndex = 0; deleteIndex < deletedSyncs.length; deleteIndex += 1) {
+      const deletedSync = deletedSyncs[deleteIndex];
+      deletedSync.stop();
+      syncManagers.delete(deletedSync.id);
+    }
+    // endregion
   };
   const processingLoop = async () => {
     let lock;
