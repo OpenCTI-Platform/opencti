@@ -423,7 +423,7 @@ export const extractFieldInputDefinition = (entityType) => {
       'clientMutationId',
       'update',
     ];
-    const formattedType = `${entityType.replaceAll('-', '')}AddInput`;
+    const formattedType = `${entityType.split('-').join('')}AddInput`;
     const def = R.find((e) => e.name.value === formattedType, typeDefs.definitions);
     const schemaFields = def.fields.map((f) => f.name.value);
     return [...baseFields, ...schemaFields];
