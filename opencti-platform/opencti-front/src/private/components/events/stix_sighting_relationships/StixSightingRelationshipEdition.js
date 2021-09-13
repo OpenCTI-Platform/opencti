@@ -52,6 +52,7 @@ class StixSightingRelationshipEdition extends Component {
       open,
       handleClose,
       handleDelete,
+      inferred,
     } = this.props;
     return (
       <Drawer
@@ -79,6 +80,7 @@ class StixSightingRelationshipEdition extends Component {
                         ? handleDelete.bind(this)
                         : null
                     }
+                    inferred={inferred}
                   />
                 );
               }
@@ -102,6 +104,7 @@ StixSightingRelationshipEdition.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  inferred: PropTypes.bool,
 };
 
 export default compose(

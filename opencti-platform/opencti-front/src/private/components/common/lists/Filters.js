@@ -74,6 +74,7 @@ const directFilters = [
   'x_opencti_detection',
   'sightedBy',
   'container_type',
+  'toSightingId',
 ];
 const uniqFilters = [
   'revoked',
@@ -82,6 +83,7 @@ const uniqFilters = [
   'confidence_gt',
   'x_opencti_score_gt',
   'x_opencti_score_lte',
+  'toSightingId',
 ];
 export const isUniqFilter = (key) => uniqFilters.includes(key)
   || key.endsWith('start_date')
@@ -120,6 +122,33 @@ class Filters extends Component {
       });
     }
     switch (filterKey) {
+      case 'toSightingId':
+        fetchQuery(identityCreationIdentitiesSearchQuery, {
+          types: ['Identity'],
+          search: event && event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            const createdByEntities = R.pipe(
+              R.pathOr([], ['identities', 'edges']),
+              R.map((n) => ({
+                label: n.node.name,
+                value: n.node.id,
+                type: n.node.entity_type,
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                toSightingId: R.union(
+                  createdByEntities,
+                  this.state.entities.toSightingId,
+                ),
+              },
+            });
+          });
+        break;
       case 'createdBy':
         fetchQuery(identityCreationIdentitiesSearchQuery, {
           types: ['Organization', 'Individual'],

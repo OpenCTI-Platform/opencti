@@ -16,6 +16,7 @@ class ConfidenceField extends Component {
       onFocus,
       containerstyle,
       editContext,
+      disabled,
     } = this.props;
     if (variant === 'edit') {
       return (
@@ -26,6 +27,7 @@ class ConfidenceField extends Component {
           onChange={onChange}
           label={label}
           fullWidth={true}
+          disabled={disabled}
           containerstyle={containerstyle}
           helpertext={
             <SubscriptionFocus context={editContext} fieldName={name} />

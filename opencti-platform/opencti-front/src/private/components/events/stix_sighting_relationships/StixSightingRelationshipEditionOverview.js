@@ -175,6 +175,7 @@ const StixSightingRelationshipEditionContainer = ({
   handleDelete,
   stixSightingRelationship,
   stixDomainObject,
+  inferred,
 }) => {
   const { editContext } = stixSightingRelationship;
   useEffect(() => {
@@ -352,6 +353,7 @@ const StixSightingRelationshipEditionContainer = ({
                     fieldName="attribute_count"
                   />
                 }
+                disabled={inferred}
               />
               <ConfidenceField
                 variant="edit"
@@ -361,6 +363,7 @@ const StixSightingRelationshipEditionContainer = ({
                 onChange={handleSubmitField}
                 editContext={editContext}
                 containerstyle={{ marginTop: 20, width: '100%' }}
+                disabled={inferred}
               />
               <Field
                 component={DatePickerField}
@@ -377,6 +380,7 @@ const StixSightingRelationshipEditionContainer = ({
                     fieldName="first_seen"
                   />
                 }
+                disabled={inferred}
               />
               <Field
                 component={DatePickerField}
@@ -393,6 +397,7 @@ const StixSightingRelationshipEditionContainer = ({
                     fieldName="last_seen"
                   />
                 }
+                disabled={inferred}
               />
               <Field
                 component={MarkDownField}
@@ -410,6 +415,7 @@ const StixSightingRelationshipEditionContainer = ({
                     fieldName="description"
                   />
                 }
+                disabled={inferred}
               />
               {stixSightingRelationship.workflowEnabled && (
                 <StatusField
@@ -437,6 +443,7 @@ const StixSightingRelationshipEditionContainer = ({
                     fieldName="createdBy"
                   />
                 }
+                disabled={inferred}
                 onChange={handleChangeCreatedBy}
               />
               <ObjectMarkingField
@@ -448,6 +455,7 @@ const StixSightingRelationshipEditionContainer = ({
                     fieldname="objectMarking"
                   />
                 }
+                disabled={inferred}
                 onChange={handleChangeObjectMarking}
               />
               <Field
@@ -463,11 +471,12 @@ const StixSightingRelationshipEditionContainer = ({
                     fieldName="x_opencti_negative"
                   />
                 }
+                disabled={inferred}
               />
             </Form>
           )}
         </Formik>
-        {stixDomainObject ? (
+        {stixDomainObject && (
           <Button
             variant="contained"
             color="primary"
@@ -477,20 +486,18 @@ const StixSightingRelationshipEditionContainer = ({
           >
             {t('Details')}
           </Button>
-        ) : (
-          ''
         )}
-        {typeof handleDelete === 'function' ? (
+        {typeof handleDelete === 'function' && (
           <Button
             variant="contained"
             onClick={() => handleDelete()}
             classes={{ root: classes.button }}
+            disabled={inferred}
           >
             {t('Delete')}
           </Button>
-        ) : (
-          ''
         )}
+        <div className="clearfix" />
       </div>
     </div>
   );
@@ -504,6 +511,7 @@ StixSightingRelationshipEditionContainer.propTypes = {
   stixSightingRelationship: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  inferred: PropTypes.bool,
 };
 
 const StixSightingRelationshipEditionFragment = createFragmentContainer(

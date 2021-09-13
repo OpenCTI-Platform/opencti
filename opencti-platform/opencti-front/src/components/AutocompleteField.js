@@ -55,7 +55,7 @@ const AutocompleteField = (props) => {
             {...textfieldprops}
             name={name}
             fullWidth={true}
-            error={meta.touched && !isNil(meta.error)}
+            error={!isNil(meta.error)}
             helperText={meta.error || textfieldprops.helperText}
           />
         )}

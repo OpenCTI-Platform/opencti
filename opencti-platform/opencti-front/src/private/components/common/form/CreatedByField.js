@@ -98,7 +98,14 @@ class CreatedByField extends Component {
 
   render() {
     const {
-      t, name, style, classes, setFieldValue, onChange, helpertext,
+      t,
+      name,
+      style,
+      classes,
+      setFieldValue,
+      onChange,
+      helpertext,
+      disabled,
     } = this.props;
     return (
       <div>
@@ -106,6 +113,7 @@ class CreatedByField extends Component {
           component={AutocompleteField}
           style={style}
           name={name}
+          disabled={disabled}
           textfieldprops={{
             label: t('Author'),
             helperText: helpertext,

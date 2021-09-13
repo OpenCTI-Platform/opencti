@@ -43,9 +43,7 @@ const TextField = (props) => {
   return (
     <MuiTextField
       {...fieldToTextField(props)}
-      onChange={internalOnChange}
-      onFocus={internalOnFocus}
-      onBlur={internalOnBlur}
+      error={!isNil(meta.error)}
       helperText={
         // eslint-disable-next-line no-nested-ternary
         detectDuplicate && (isNil(meta.error) || !meta.touched) ? (
@@ -53,12 +51,15 @@ const TextField = (props) => {
             types={detectDuplicate}
             value={meta.value}
           />
-        ) : meta.touched ? (
+        ) : meta.error ? (
           meta.error
         ) : (
           props.helperText
         )
       }
+      onChange={internalOnChange}
+      onFocus={internalOnFocus}
+      onBlur={internalOnBlur}
     />
   );
 };

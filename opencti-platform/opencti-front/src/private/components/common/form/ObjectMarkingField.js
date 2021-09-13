@@ -71,7 +71,7 @@ class ObjectMarkingField extends Component {
 
   render() {
     const {
-      t, name, style, classes, onChange, helpertext,
+      t, name, style, classes, onChange, helpertext, disabled,
     } = this.props;
     return (
       <Field
@@ -79,6 +79,7 @@ class ObjectMarkingField extends Component {
         style={style}
         name={name}
         multiple={true}
+        disabled={disabled}
         textfieldprops={{
           label: t('Marking'),
           helperText: helpertext,

@@ -6,6 +6,7 @@ import InputLabel from '@material-ui/core/InputLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import { isNil } from 'ramda';
 import inject18n from './i18n';
 
 const MarkDownField = (props) => {
@@ -16,6 +17,7 @@ const MarkDownField = (props) => {
     onSubmit,
     label,
     style,
+    disabled,
     t,
   } = props;
   const [selectedTab, setSelectedTab] = React.useState('write');
@@ -40,7 +42,7 @@ const MarkDownField = (props) => {
   return (
     <div
       style={style}
-      className={meta.touched && meta.error ? 'error' : 'main'}
+      className={!isNil(meta.error) ? 'error' : 'main'}
       onBlur={internalOnBlur}
       onFocus={internalOnFocus}
     >
@@ -49,6 +51,7 @@ const MarkDownField = (props) => {
       </InputLabel>
       <ReactMde
         value={field.value}
+        readOnly={disabled}
         onChange={(value) => setFieldValue(name, value)}
         selectedTab={selectedTab}
         onTabChange={setSelectedTab}
@@ -68,7 +71,7 @@ const MarkDownField = (props) => {
           pasteDropSelect: t('Paste'),
         }}
       />
-      {meta.touched && (
+      {!isNil(meta.error) && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
       )}
     </div>

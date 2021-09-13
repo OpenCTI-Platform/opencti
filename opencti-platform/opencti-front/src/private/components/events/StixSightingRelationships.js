@@ -11,6 +11,7 @@ import StixSightingRelationshipsLines, {
 import { isUniqFilter } from '../common/lists/Filters';
 import {
   buildViewParamsFromUrlAndStorage,
+  convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
 
@@ -109,8 +110,8 @@ class StixSightingRelationships extends Component {
         isSortable: true,
       },
       attribute_count: {
-        label: 'Count',
-        width: '5%',
+        label: 'Nb.',
+        width: 80,
         isSortable: true,
       },
       name: {
@@ -172,6 +173,7 @@ class StixSightingRelationships extends Component {
           'created_start_date',
           'created_end_date',
           'createdBy',
+          'toSightingId',
         ]}
       >
         <QueryRenderer
@@ -194,13 +196,22 @@ class StixSightingRelationships extends Component {
 
   render() {
     const {
-      view, searchTerm, sortBy, orderAsc,
+      view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
+    let toSightingId = null;
+    let processedFilters = filters;
+    if (filters.toSightingId) {
+      toSightingId = R.head(filters.toSightingId).id;
+      processedFilters = R.dissoc('toSightingId', processedFilters);
+    }
+    const finalFilters = convertFilters(processedFilters);
     const paginationOptions = {
       fromRole: 'stix-sighting-relationship_from',
+      toId: toSightingId,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
+      filters: finalFilters,
     };
     return (
       <div>{view === 'lines' ? this.renderLines(paginationOptions) : ''}</div>

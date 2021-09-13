@@ -106,7 +106,10 @@ class StixSightingRelationshipLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.attribute_count.width }}
+                style={{
+                  width: dataColumns.attribute_count.width,
+                  fontWeight: 'bold',
+                }}
               >
                 {node.attribute_count}
               </div>

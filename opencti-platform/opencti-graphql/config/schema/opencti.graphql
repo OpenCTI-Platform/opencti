@@ -7946,6 +7946,8 @@ enum StixCoreRelationshipsOrdering {
   status_id
 }
 enum StixCoreRelationshipsFilter {
+  fromId
+  toId
   created
   modified
   created_at
@@ -8082,6 +8084,8 @@ enum StixSightingRelationshipsOrdering {
   status_id
 }
 enum StixSightingRelationshipsFilter {
+  fromId
+  toId
   x_opencti_negative
   attribute_count
   created

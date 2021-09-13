@@ -347,7 +347,12 @@ class StixSightingRelationshipContainer extends Component {
                   <Typography
                     variant="h3"
                     gutterBottom={true}
-                    style={{ marginTop: 20 }}
+                    style={{
+                      marginTop:
+                        stixSightingRelationship.x_opencti_inferences === null
+                          ? 20
+                          : 0,
+                    }}
                   >
                     {t('Status')}
                   </Typography>
@@ -477,28 +482,25 @@ class StixSightingRelationshipContainer extends Component {
             </div>
           )}
         </div>
-        {!stixSightingRelationship.is_inferred && (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <Fab
-              onClick={this.handleOpenEdition.bind(this)}
-              color="secondary"
-              aria-label="Edit"
-              className={
-                paddingRight
-                  ? classes.editButtonWithPadding
-                  : classes.editButton
-              }
-            >
-              <Edit />
-            </Fab>
-            <StixSightingRelationshipEdition
-              open={this.state.openEdit}
-              stixSightingRelationshipId={stixSightingRelationship.id}
-              handleClose={this.handleCloseEdition.bind(this)}
-              handleDelete={this.handleDelete.bind(this)}
-            />
-          </Security>
-        )}
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <Fab
+            onClick={this.handleOpenEdition.bind(this)}
+            color="secondary"
+            aria-label="Edit"
+            className={
+              paddingRight ? classes.editButtonWithPadding : classes.editButton
+            }
+          >
+            <Edit />
+          </Fab>
+          <StixSightingRelationshipEdition
+            open={this.state.openEdit}
+            stixSightingRelationshipId={stixSightingRelationship.id}
+            inferred={stixSightingRelationship.x_opencti_inferences !== null}
+            handleClose={this.handleCloseEdition.bind(this)}
+            handleDelete={this.handleDelete.bind(this)}
+          />
+        </Security>
       </div>
     );
   }

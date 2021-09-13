@@ -56,22 +56,26 @@ StixSightingRelationshipsLines.propTypes = {
 export const stixSightingRelationshipsLinesQuery = graphql`
   query StixSightingRelationshipsLinesPaginationQuery(
     $fromId: String
+    $toId: String
     $toTypes: [String]
     $search: String
     $count: Int!
     $cursor: ID
     $orderBy: StixSightingRelationshipsOrdering
     $orderMode: OrderingMode
+    $filters: [StixSightingRelationshipsFiltering]
   ) {
     ...StixSightingRelationshipsLines_data
       @arguments(
         fromId: $fromId
+        toId: $toId
         toTypes: $toTypes
         search: $search
         count: $count
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -83,6 +87,7 @@ export default createPaginationContainer(
       fragment StixSightingRelationshipsLines_data on Query
       @argumentDefinitions(
         fromId: { type: "String" }
+        toId: { type: "String" }
         toTypes: { type: "[String]" }
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
@@ -92,15 +97,18 @@ export default createPaginationContainer(
           defaultValue: first_seen
         }
         orderMode: { type: "OrderingMode", defaultValue: desc }
+        filters: { type: "[StixSightingRelationshipsFiltering]" }
       ) {
         stixSightingRelationships(
           fromId: $fromId
+          toId: $toId
           toTypes: $toTypes
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_stixSightingRelationships") {
           edges {
             node {
