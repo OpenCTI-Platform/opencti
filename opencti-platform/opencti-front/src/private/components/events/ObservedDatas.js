@@ -126,18 +126,18 @@ class ObservedDatas extends Component {
         isSortable: false,
       },
       number_observed: {
-        label: 'Count',
-        width: '10%',
+        label: 'Nb.',
+        width: 80,
         isSortable: true,
       },
       first_observed: {
         label: 'First obs.',
-        width: '10%',
+        width: '12%',
         isSortable: true,
       },
       last_observed: {
         label: 'Last obs.',
-        width: '10%',
+        width: '12%',
         isSortable: true,
       },
       createdBy: {

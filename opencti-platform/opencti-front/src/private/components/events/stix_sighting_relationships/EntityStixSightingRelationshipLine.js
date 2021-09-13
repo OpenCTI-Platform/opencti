@@ -65,7 +65,7 @@ const styles = (theme) => ({
 class EntityStixSightingRelationshipLineComponent extends Component {
   render() {
     const {
-      fsd, t, classes, dataColumns, node, paginationOptions, isTo,
+      nsdt, t, classes, dataColumns, node, paginationOptions, isTo,
     } = this.props;
     const entity = isTo ? node.from : node.to;
     const restricted = entity === null;
@@ -129,13 +129,13 @@ class EntityStixSightingRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.first_seen.width }}
               >
-                {fsd(node.first_seen)}
+                {nsdt(node.first_seen)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.last_seen.width }}
               >
-                {fsd(node.last_seen)}
+                {nsdt(node.last_seen)}
               </div>
               <div
                 className={classes.bodyItem}

@@ -51,7 +51,7 @@ const styles = (theme) => ({
 class ObservedDataLineComponent extends Component {
   render() {
     const {
-      t, fd, classes, node, dataColumns, onLabelClick, n,
+      t, nsdt, classes, node, dataColumns, onLabelClick, n,
     } = this.props;
     const firstEntity = node.objects.edges.length > 0 ? R.head(node.objects.edges).node : null;
     return (
@@ -84,13 +84,13 @@ class ObservedDataLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.first_observed.width }}
               >
-                {fd(node.first_observed)}
+                {nsdt(node.first_observed)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.last_observed.width }}
               >
-                {fd(node.last_observed)}
+                {nsdt(node.last_observed)}
               </div>
               <div
                 className={classes.bodyItem}
