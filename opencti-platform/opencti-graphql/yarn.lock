@@ -6487,15 +6487,10 @@ node-environment-flags@^1.0.5:
     object.getownpropertydescriptors "^2.0.3"
     semver "^5.7.0"
 
-node-fetch@2.6.0, node-fetch@2.6.1, node-fetch@^2.6.0:
+node-fetch@2.6.0, node-fetch@2.6.1, node-fetch@^2.6.0, node-fetch@^2.6.1:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.1.tgz#045bd323631f76ed2e2b55573394416b639a0052"
   integrity sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==
-
-node-fetch@^2.6.1:
-  version "2.6.2"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.2.tgz#986996818b73785e47b1965cc34eb093a1d464d0"
-  integrity sha512-aLoxToI6RfZ+0NOjmWAgn9+LEd30YCkJKFSyWacNZdEKTit/ZMcKjGkTRo8uWEsnIb/hfKecNPEbln02PdWbcA==
 
 node-forge@^0.10.0:
   version "0.10.0"
@@ -6517,7 +6512,7 @@ node-releases@^1.1.75:
   resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-1.1.75.tgz#6dd8c876b9897a1b8e5a02de26afa79bb54ebbfe"
   integrity sha512-Qe5OUajvqrqDSy6wrWFmMwfJ0jVgwiw4T3KqmbTcZ62qW0gQkheXYhcFM1+lOVcGUoRxcEcfyvFMAnDgaF1VWw==
 
-nodemailer@^6.6.3:
+nodemailer@6.6.3:
   version "6.6.3"
   resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-6.6.3.tgz#31fb53dd4d8ae16fc088a65cb9ffa8d928a69b48"
   integrity sha512-faZFufgTMrphYoDjvyVpbpJcYzwyFnbAMmQtj1lVBYAUSm3SOy2fIdd9+Mr4UxPosBa0JRw9bJoIwQn+nswiew==
@@ -7401,12 +7396,12 @@ regjsparser@^0.6.4:
   dependencies:
     jsesc "~0.5.0"
 
-remarkable-admonitions@^0.2.2:
+remarkable-admonitions@0.2.2:
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/remarkable-admonitions/-/remarkable-admonitions-0.2.2.tgz#8765f9ec66be4f4c651a4e1cfb559dd7f920819c"
   integrity sha512-CcMTEcLYmJLXX3IVMk4LyW4oFD2NQxh5FeLzn4k89TAPpyWIeVix/B/g/gDbZAUpCNY9l6heovR5NNIktf8X5A==
 
-remarkable-classy@^0.0.1:
+remarkable-classy@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/remarkable-classy/-/remarkable-classy-0.0.1.tgz#b8f7ec700dafc51c8c1359b7e614eac86b812103"
   integrity sha1-uPfscA2vxRyME1m35hTqyGuBIQM=
@@ -7748,7 +7743,7 @@ shebang-regex@^3.0.0:
   resolved "https://registry.yarnpkg.com/shebang-regex/-/shebang-regex-3.0.0.tgz#ae16f1644d873ecad843b0307b143362d4c42172"
   integrity sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==
 
-showdown@^1.9.1:
+showdown@1.9.1:
   version "1.9.1"
   resolved "https://registry.yarnpkg.com/showdown/-/showdown-1.9.1.tgz#134e148e75cd4623e09c21b0511977d79b5ad0ef"
   integrity sha512-9cGuS382HcvExtf5AHk7Cb4pAeQQ+h0eTr33V1mu+crYWV4KvWAw6el92bDrqGEk5d46Ai/fhbEUwqJ/mTCNEA==
