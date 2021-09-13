@@ -457,7 +457,7 @@ class MalwareTest(EntityTest):
     def data(self) -> Dict:
         return {
             "type": "Malware",
-            "name": "Cryptolocker",
+            "name": "CryptoLocker",
             "description": "A variant of the cryptolocker family",
             "malware_types": ["ransomware"],
             "is_family": False,
