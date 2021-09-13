@@ -1570,18 +1570,18 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
   if (multiOperationKeys.length > 1) {
     throw UnsupportedError('We cant update the same attribute multiple times in the same operation');
   }
-  for (let updateIndex = 0; updateIndex < updates.length; updateIndex += 1) {
-    const updateInput = updates[updateIndex];
-    const updateOperation = updateInput.operation ?? UPDATE_OPERATION_REPLACE;
-    if (isMultipleAttribute(updateInput.key) === false) {
-      if (updateInput.value.length > 1) {
-        throw UnsupportedError(`${updateInput.key} doesn't support multiples values`);
-      }
-      if (updateOperation !== UPDATE_OPERATION_REPLACE) {
-        throw UnsupportedError(`${updateInput.operation} is not supported on single attribute ${updateInput.key}`);
-      }
-    }
-  }
+  // for (let updateIndex = 0; updateIndex < updates.length; updateIndex += 1) {
+  //   const updateInput = updates[updateIndex];
+  //   const updateOperation = updateInput.operation ?? UPDATE_OPERATION_REPLACE;
+  //   if (isMultipleAttribute(updateInput.key) === false) {
+  //     if (updateInput.value.length > 1) {
+  //       throw UnsupportedError(`${updateInput.key} doesn't support multiples values`);
+  //     }
+  //     if (updateOperation !== UPDATE_OPERATION_REPLACE) {
+  //       throw UnsupportedError(`${updateInput.operation} is not supported on single attribute ${updateInput.key}`);
+  //     }
+  //   }
+  // }
   // Split attributes and meta
   // Supports inputs meta or stix meta
   const metaKeys = [...META_STIX_ATTRIBUTES, ...META_FIELD_ATTRIBUTES];
