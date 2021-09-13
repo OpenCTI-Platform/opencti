@@ -16,7 +16,6 @@ import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixSightingRelationshipPopover from './StixSightingRelationshipPopover';
-import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
 import ItemStatus from '../../../../components/ItemStatus';
 
@@ -73,10 +72,7 @@ class StixSightingRelationshipLineComponent extends Component {
     const entityTo = node.to;
     const restrictedFrom = entityFrom === null;
     const restrictedTo = entityTo === null;
-    const entityLink = `${resolveLink(entityFrom.entity_type)}/${
-      entityFrom.id
-    }`;
-    const link = `${entityLink}/knowledge/sightings/${node.id}`;
+    const link = `/dashboard/events/sightings/${node.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}

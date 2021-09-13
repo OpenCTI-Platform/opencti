@@ -494,6 +494,8 @@ export const buildGraphData = (objects, graphData, t) => {
       (n) => !n.parent_types.includes('basic-relationship')
         || R.includes(n.id, relationshipsIdsInNestedRelationship),
     ),
+    R.map((n) => R.assoc('number_keys', R.keys(n).length, n)),
+    R.sortWith([R.descend(R.prop('number_keys'))]),
     R.uniqBy(R.prop('id')),
     R.map((n) => ({
       id: n.id,

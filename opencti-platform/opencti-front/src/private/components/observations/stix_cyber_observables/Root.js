@@ -162,20 +162,30 @@ class RootStixCyberObservable extends Component {
                       exact
                       path="/dashboard/observations/observables/:observableId/knowledge/relations/:relationId"
                       render={(routeProps) => (
-                        <StixCoreRelationship
-                          entityId={observableId}
-                          {...routeProps}
-                        />
+                        <React.Fragment>
+                          <StixCyberObservableHeader
+                            stixCyberObservable={props.stixCyberObservable}
+                          />
+                          <StixCoreRelationship
+                            entityId={observableId}
+                            {...routeProps}
+                          />
+                        </React.Fragment>
                       )}
                     />
                     <Route
                       exact
                       path="/dashboard/observations/observables/:observableId/knowledge/sightings/:sightingId"
                       render={(routeProps) => (
-                        <StixSightingRelationship
-                          entityId={observableId}
-                          {...routeProps}
-                        />
+                        <React.Fragment>
+                          <StixCyberObservableHeader
+                            stixCyberObservable={props.stixCyberObservable}
+                          />
+                          <StixSightingRelationship
+                            entityId={observableId}
+                            {...routeProps}
+                          />
+                        </React.Fragment>
                       )}
                     />
                   </div>
