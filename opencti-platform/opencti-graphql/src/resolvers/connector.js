@@ -12,6 +12,11 @@ import {
   registerSync,
   resetStateConnector,
   testSync,
+  syncDelete,
+  syncCleanContext,
+  syncEditContext,
+  syncEditField,
+  findSyncById,
 } from '../domain/connector';
 import {
   createWork,
@@ -35,6 +40,7 @@ const connectorResolvers = {
     connectorsForImport: (_, __, { user }) => connectorsForImport(user),
     works: (_, args, { user }) => findAll(user, args),
     work: (_, { id }, { user }) => findById(user, id),
+    synchronizer: (_, { id }, { user }) => findSyncById(user, id),
     synchronizers: (_, args, { user }) => findAllSync(user, args),
   },
   Connector: {
@@ -65,6 +71,12 @@ const connectorResolvers = {
     }),
     // Sync part
     synchronizerAdd: (_, { input }, { user }) => registerSync(user, input),
+    synchronizerEdit: (_, { id }, { user }) => ({
+      delete: () => syncDelete(user, id),
+      fieldPatch: ({ input }) => syncEditField(user, id, input),
+      contextPatch: ({ input }) => syncEditContext(user, id, input),
+      contextClean: () => syncCleanContext(user, id),
+    }),
     synchronizerStart: (_, { id }, { user }) => patchSync(user, id, { running: true }),
     synchronizerStop: (_, { id }, { user }) => patchSync(user, id, { running: false }),
     synchronizerTest: (_, { input }, { user }) => testSync(user, input),

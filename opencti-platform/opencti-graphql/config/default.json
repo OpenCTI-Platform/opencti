@@ -66,6 +66,10 @@
     "lock_key": "subscription_manager_lock",
     "interval": 10000
   },
+  "sync_manager": {
+    "enabled": true,
+    "lock_key": "sync_manager_lock"
+  },
   "redis": {
     "namespace": "",
     "hostname": "localhost",

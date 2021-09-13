@@ -7,16 +7,14 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert, CastConnectedOutlined } from '@material-ui/icons';
-import {
-  compose, last, map, toPairs,
-} from 'ramda';
-import Chip from '@material-ui/core/Chip';
+import { MoreVert } from '@material-ui/icons';
+import { DatabaseImportOutline } from 'mdi-material-ui';
+import { compose } from 'ramda';
 import Slide from '@material-ui/core/Slide';
 import Skeleton from '@material-ui/lab/Skeleton';
-import { truncate } from '../../../../utils/String';
-import StreamPopover from './StreamPopover';
+import SyncPopover from './SyncPopover';
 import inject18n from '../../../../components/i18n';
+import ItemBoolean from '../../../../components/ItemBoolean';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -66,16 +64,15 @@ const styles = (theme) => ({
   },
 });
 
-class StreamLineLineComponent extends Component {
+class SyncLineLineComponent extends Component {
   render() {
     const {
-      t, classes, node, dataColumns, paginationOptions,
+      classes, node, dataColumns, paginationOptions, t, nsdt,
     } = this.props;
-    const filters = JSON.parse(node.filters);
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <CastConnectedOutlined />
+          <DatabaseImportOutline />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -88,70 +85,40 @@ class StreamLineLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.description.width }}
+                style={{ width: dataColumns.uri.width }}
               >
-                {node.description}
+                {node.uri}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.id.width }}
+                style={{ width: dataColumns.uri.width }}
               >
-                <code>{node.id}</code>
+                <code>{node.stream_id}</code>
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.filters.width }}
+                style={{ width: dataColumns.running.width }}
               >
-                {map((currentFilter) => {
-                  const label = `${truncate(
-                    t(`filter_${currentFilter[0]}`),
-                    20,
-                  )}`;
-                  const values = (
-                    <span>
-                      {map(
-                        (n) => (
-                          <span key={n.value}>
-                            {n.value && n.value.length > 0
-                              ? truncate(n.value, 15)
-                              : t('No label')}{' '}
-                            {last(currentFilter[1]).value !== n.value && (
-                              <code>OR</code>
-                            )}{' '}
-                          </span>
-                        ),
-                        currentFilter[1],
-                      )}
-                    </span>
-                  );
-                  return (
-                    <span>
-                      <Chip
-                        key={currentFilter[0]}
-                        classes={{ root: classes.filter }}
-                        label={
-                          <div>
-                            <strong>{label}</strong>: {values}
-                          </div>
-                        }
-                      />
-                      {last(toPairs(filters))[0] !== currentFilter[0] && (
-                        <Chip
-                          classes={{ root: classes.operator }}
-                          label={t('AND')}
-                        />
-                      )}
-                    </span>
-                  );
-                }, toPairs(filters))}
+                <ItemBoolean
+                  variant="inList"
+                  label={node.running ? t('Yes') : t('No')}
+                  status={node.running}
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.current_state.width }}
+              >
+                {nsdt(node.current_state)}
               </div>
             </div>
           }
         />
         <ListItemSecondaryAction>
-          <StreamPopover
-            streamCollectionId={node.id}
+          <SyncPopover
+            syncId={node.id}
             paginationOptions={paginationOptions}
+            running={node.running}
           />
         </ListItemSecondaryAction>
       </ListItem>
@@ -159,7 +126,7 @@ class StreamLineLineComponent extends Component {
   }
 }
 
-StreamLineLineComponent.propTypes = {
+SyncLineLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   paginationOptions: PropTypes.object,
@@ -168,23 +135,26 @@ StreamLineLineComponent.propTypes = {
   fd: PropTypes.func,
 };
 
-const StreamLineFragment = createFragmentContainer(StreamLineLineComponent, {
+const SyncLineFragment = createFragmentContainer(SyncLineLineComponent, {
   node: graphql`
-    fragment StreamLine_node on StreamCollection {
+    fragment SyncLine_node on Synchronizer {
       id
       name
-      description
-      filters
+      uri
+      stream_id
+      running
+      current_state
+      ssl_verify
     }
   `,
 });
 
-export const StreamLine = compose(
+export const SyncLine = compose(
   inject18n,
   withStyles(styles),
-)(StreamLineFragment);
+)(SyncLineFragment);
 
-class StreamDummyComponent extends Component {
+class SyncDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -208,7 +178,7 @@ class StreamDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.description.width }}
+                style={{ width: dataColumns.uri.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -219,7 +189,7 @@ class StreamDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.id.width }}
+                style={{ width: dataColumns.stream_id.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -230,7 +200,18 @@ class StreamDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.filters.width }}
+                style={{ width: dataColumns.running.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.current_state.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -250,12 +231,12 @@ class StreamDummyComponent extends Component {
   }
 }
 
-StreamDummyComponent.propTypes = {
+SyncDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const StreamLineDummy = compose(
+export const SyncLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(StreamDummyComponent);
+)(SyncDummyComponent);

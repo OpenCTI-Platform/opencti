@@ -60,6 +60,7 @@ const FileLineAskDeleteMutation = graphql`
 
 class FileLineComponent extends Component {
   executeRemove(mutation, variables) {
+    const { t } = this.props;
     commitMutation({
       mutation,
       variables,
@@ -74,7 +75,7 @@ class FileLineComponent extends Component {
         fileStore.setValue('progress', 'uploadStatus');
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess('File successfully removed');
+        MESSAGING$.notifySuccess(t('File successfully removed'));
       },
     });
   }

@@ -126,6 +126,12 @@ const i18n = {
         'Souhaitez-vous supprimer ces entités ?',
       'Do you want to delete this live stream?':
         'Souhaitez-vous supprimer ce stream live ?',
+      'Do you want to delete this synchronizer?':
+        'Souhaitez-vous supprimer ce synchroniseur ?',
+      'Do you want to start this synchronizer?':
+        'Souhaitez-vous démarrer ce synchroniseur ?',
+      'Do you want to stop this synchronizer?':
+        'Souhaitez-vous arrêter ce synchroniseur ?',
       'Do you want to create a STIX Indcator from this observable?':
         'Souhaitez-vous créer un indicateur STIX depuis cet observable ?',
       'Do you want to enable this rule?':
@@ -278,6 +284,8 @@ const i18n = {
       'Update an observed data': 'Modifier une donnée observée',
       'Create a subscription': 'Créer une souscription',
       'Update a subscription': 'Modifier une souscription',
+      'Create a synchronizer': 'Créer un synchroniseur',
+      'Update a synchronizer': 'Modifier un synchroniseur',
       'Export to image': 'Exporter en image',
       'Export to PDF': 'Exporter en PDF',
       'Export to CSV': 'Exporter en CSV',
@@ -293,6 +301,9 @@ const i18n = {
       'Markdown source': 'Source markdown',
       'PDF viewer': 'Visualiseur PDF',
       'Last run:': 'Dernière exécution :',
+      'Remote OpenCTI URL': 'URL de la plateforme distante',
+      'Remote OpenCTI token': 'Token de la plateforme distante',
+      'Remote OpenCTI stream ID': 'ID du stream de la plateforme distante',
       'Optional, you may want to subscribe to specific entities.':
         'Optionnel, si vous souhaitez souscrire à des entités spécifiques',
       'Every 1 hour': 'Toutes les heures',
@@ -489,6 +500,7 @@ const i18n = {
       'Connectors & workers': 'Connecteurs et workers',
       Reports: 'Rapports',
       Report: 'Report',
+      Synchronization: 'Synchronisation',
       Indicator: 'Indicateur',
       Indicators: 'Indicateurs',
       'Custom dashboards': 'Tableaux de bord personnalisés',
@@ -497,6 +509,7 @@ const i18n = {
       'Indicators composed with this observable':
         'Indicateurs composés avec cet observable',
       Overview: 'Aperçu',
+      View: 'Aperçu',
       Relationships: 'Relations',
       Entities: 'Entités',
       'entitie(s)': 'entité(s)',
@@ -672,9 +685,13 @@ const i18n = {
       'Launch an import of this file': 'Lancer un import de ce fichier',
       Launch: 'Lancer',
       'Launch a background task': 'Lancer une tâche de fond',
+      'Take deletions into account': 'Prendre en compte les suppressions',
       Initiator: 'Initiateur',
       'Targeted entities': 'Entités ciblées',
       'Background tasks': 'Tâches de fond',
+      Verify: 'Vérifier',
+      'Connection successfully verified':
+        'La connexion a été vérifiée avec succès',
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
         'Vous ciblez plus de 1000 entités avec cette tâche de fond, soyez sûrs de ce que vous faites !',
       Filters: 'Filtres',
@@ -790,6 +807,9 @@ const i18n = {
       'Last obs.': 'Dernière obs.',
       'Start time': "Début d'obs.",
       'Stop time': "Fin d'obs.",
+      Start: 'Démarrer',
+      Stop: 'Arrêter',
+      'Verify SSL certificate': 'Vérifier le certificat SSL',
       Confirmation: 'Confirmation',
       'Kill chain': 'Kill chain',
       'This feature is not available yet.':
@@ -1270,6 +1290,7 @@ const i18n = {
       EXPIRATION_SCHEDULER: "Planificateur d'expiration",
       TASK_MANAGER: 'Manager des tâches',
       RULE_ENGINE: 'Moteur de règles',
+      SYNC_MANAGER: 'Manager de synchronisation',
       SUBSCRIPTION_MANAGER: 'Manager des souscriptions',
     },
     en: {
@@ -1506,6 +1527,7 @@ const i18n = {
       EXPIRATION_SCHEDULER: 'Expiration scheduler',
       TASK_MANAGER: 'Tasks manager',
       RULE_ENGINE: 'Rules engine',
+      SYNC_MANAGER: 'Synchronization manager',
       SUBSCRIPTION_MANAGER: 'Subscriptions manager',
     },
   },

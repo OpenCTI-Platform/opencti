@@ -1,7 +1,14 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import EventSource from 'eventsource';
 import { assoc, filter, includes, map, pipe } from 'ramda';
-import { createEntity, deleteElementById, listEntities, loadById, patchAttribute } from '../database/middleware';
+import {
+  createEntity,
+  deleteElementById,
+  listEntities,
+  loadById,
+  patchAttribute,
+  updateAttribute,
+} from '../database/middleware';
 import { connectorConfig, registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -10,6 +17,8 @@ import { elLoadById } from '../database/elasticSearch';
 import { READ_INDEX_HISTORY } from '../database/utils';
 import { CONNECTOR_INTERNAL_EXPORT_FILE, CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
+import { delEditContext, notify, setEditContext } from '../database/redis';
+import { BUS_TOPICS } from '../config/conf';
 
 // region utils
 const completeConnector = (connector) => {
@@ -97,6 +106,9 @@ export const patchSync = async (user, id, patch) => {
   const patched = await patchAttribute(user, id, ENTITY_TYPE_SYNC, patch);
   return patched.element;
 };
+export const findSyncById = (user, syncId) => {
+  return loadById(user, syncId, ENTITY_TYPE_SYNC);
+};
 export const findAllSync = async (user, opts = {}) => {
   return listEntities(SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
 };
@@ -133,6 +145,26 @@ export const registerSync = async (user, syncData) => {
   const data = { ...syncData, running: false };
   await testSync(user, data);
   return createEntity(user, data, ENTITY_TYPE_SYNC);
+};
+export const syncEditField = async (user, syncId, input) => {
+  const { element } = await updateAttribute(user, syncId, ENTITY_TYPE_SYNC, input);
+  return notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, element, user);
+};
+export const syncDelete = async (user, syncId) => {
+  await deleteElementById(user, syncId, ENTITY_TYPE_SYNC);
+  return syncId;
+};
+export const syncCleanContext = async (user, syncId) => {
+  await delEditContext(user, syncId);
+  return loadById(user, syncId, ENTITY_TYPE_SYNC).then((syncToReturn) =>
+    notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, syncToReturn, user)
+  );
+};
+export const syncEditContext = async (user, syncId, input) => {
+  await setEditContext(user, syncId, input);
+  return loadById(user, syncId, ENTITY_TYPE_SYNC).then((syncToReturn) =>
+    notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, syncToReturn, user)
+  );
 };
 // endregion
 

@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
-import { withTheme } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -10,16 +9,16 @@ import {
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
-import StreamLines, { StreamLinesQuery } from './stream/StreamLines';
-import StreamCollectionCreation from './stream/StreamCollectionCreation';
+import SyncLines, { SyncLinesQuery } from './sync/SyncLines';
+import SyncCreation from './sync/SyncCreation';
 
-class Stream extends Component {
+class Sync extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'stream-view',
+      'sync-view',
     );
     this.state = {
       orderAsc: propOr(true, 'orderAsc', params),
@@ -32,7 +31,7 @@ class Stream extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'stream-view',
+      'sync-view',
       this.state,
     );
   }
@@ -46,7 +45,6 @@ class Stream extends Component {
   }
 
   renderLines(paginationOptions) {
-    const { t, theme } = this.props;
     const { sortBy, orderAsc, searchTerm } = this.state;
     const dataColumns = {
       name: {
@@ -54,19 +52,24 @@ class Stream extends Component {
         width: '15%',
         isSortable: true,
       },
-      description: {
-        label: 'Description',
+      uri: {
+        label: 'URL',
         width: '20%',
         isSortable: true,
       },
-      id: {
+      stream_id: {
         label: 'Stream ID',
         width: '20%',
         isSortable: true,
       },
-      filters: {
-        label: 'Filters',
-        width: '40%',
+      running: {
+        label: 'Running',
+        width: '20%',
+        isSortable: true,
+      },
+      current_state: {
+        label: 'Current state',
+        isSortable: true,
       },
     };
     return (
@@ -79,26 +82,15 @@ class Stream extends Component {
         displayImport={false}
         secondaryAction={true}
         keyword={searchTerm}
-        message={
-          <span>
-            {t('A default live stream without any filter is available on')}{' '}
-            <a
-              href="/stream/live"
-              style={{ color: theme.palette.secondary.main }}
-            >
-              <i>/stream/live</i>
-            </a>
-            .
-          </span>
-        }
       >
         <QueryRenderer
-          query={StreamLinesQuery}
+          query={SyncLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <StreamLines
+            <SyncLines
               data={props}
               paginationOptions={paginationOptions}
+              refetchPaginationOptions={{ count: 25, ...paginationOptions }}
               dataColumns={dataColumns}
               initialLoading={props === null}
             />
@@ -120,16 +112,16 @@ class Stream extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <StreamCollectionCreation paginationOptions={paginationOptions} />
+        <SyncCreation paginationOptions={paginationOptions} />
       </div>
     );
   }
 }
 
-Stream.propTypes = {
+Sync.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default compose(inject18n, withTheme, withRouter)(Stream);
+export default compose(inject18n, withRouter)(Sync);

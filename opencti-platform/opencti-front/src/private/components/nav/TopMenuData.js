@@ -9,6 +9,7 @@ import Security, {
   KNOWLEDGE,
   MODULES,
   TAXIIAPI_SETCOLLECTIONS,
+  SETTINGS,
 } from '../../../utils/Security';
 
 const styles = (theme) => ({
@@ -125,6 +126,26 @@ class TopMenuData extends Component {
             classes={{ root: classes.button }}
           >
             {t('TAXII collections')}
+          </Button>
+        </Security>
+        <Security needs={[SETTINGS]}>
+          <Button
+            component={Link}
+            to="/dashboard/data/sync"
+            variant={
+              location.pathname === '/dashboard/data/sync'
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname === '/dashboard/data/sync'
+                ? 'secondary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Synchronization')}
           </Button>
         </Security>
       </div>

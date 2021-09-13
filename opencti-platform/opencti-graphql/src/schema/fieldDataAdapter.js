@@ -144,6 +144,8 @@ export const booleanAttributes = [
   'is_self_signed',
   'platform_enable_references',
   'auto_new_marking',
+  'listen_deletion',
+  'ssl_verify',
 ];
 export const numericOrBooleanAttributes = [...numericAttributes, ...booleanAttributes];
 export const dictAttributes = { hashes: { key: 'algorithm', value: 'hash' } };

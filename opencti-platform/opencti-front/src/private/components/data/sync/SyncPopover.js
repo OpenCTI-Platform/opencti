@@ -17,9 +17,8 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-
 import Loader from '../../../../components/Loader';
-import StreamCollectionEdition from './StreamCollectionEdition';
+import SyncEdition from './SyncEdition';
 
 const styles = (theme) => ({
   container: {
@@ -44,26 +43,57 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const streamCollectionPopoverDeletionMutation = graphql`
-  mutation StreamPopoverDeletionMutation($id: ID!) {
-    streamCollectionEdit(id: $id) {
+const syncPopoverDeletionMutation = graphql`
+  mutation SyncPopoverDeletionMutation($id: ID!) {
+    synchronizerEdit(id: $id) {
       delete
     }
   }
 `;
 
-const streamCollectionEditionQuery = graphql`
-  query StreamPopoverEditionQuery($id: String!) {
-    streamCollection(id: $id) {
+const syncPopoverStartMutation = graphql`
+  mutation SyncPopoverStartMutation($id: ID!) {
+    synchronizerStart(id: $id) {
       id
       name
-      description
-      filters
+      uri
+      token
+      stream_id
+      listen_deletion
+      ssl_verify
     }
   }
 `;
 
-class StreamCollectionPopover extends Component {
+const syncPopoverStopMutation = graphql`
+  mutation SyncPopoverStopMutation($id: ID!) {
+    synchronizerStop(id: $id) {
+      id
+      name
+      uri
+      token
+      stream_id
+      listen_deletion
+      ssl_verify
+    }
+  }
+`;
+
+const syncEditionQuery = graphql`
+  query SyncPopoverEditionQuery($id: String!) {
+    synchronizer(id: $id) {
+      id
+      name
+      uri
+      token
+      stream_id
+      listen_deletion
+      ssl_verify
+    }
+  }
+`;
+
+class SyncPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -71,6 +101,10 @@ class StreamCollectionPopover extends Component {
       displayUpdate: false,
       displayDelete: false,
       deleting: false,
+      displayStart: false,
+      starting: false,
+      displayStop: false,
+      stopping: false,
     };
   }
 
@@ -100,20 +134,38 @@ class StreamCollectionPopover extends Component {
     this.setState({ displayDelete: false });
   }
 
+  handleOpenStart() {
+    this.setState({ displayStart: true });
+    this.handleClose();
+  }
+
+  handleCloseStart() {
+    this.setState({ displayStart: false });
+  }
+
+  handleOpenStop() {
+    this.setState({ displayStop: true });
+    this.handleClose();
+  }
+
+  handleCloseStop() {
+    this.setState({ displayStop: false });
+  }
+
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: streamCollectionPopoverDeletionMutation,
+      mutation: syncPopoverDeletionMutation,
       variables: {
-        id: this.props.streamCollectionId,
+        id: this.props.syncId,
       },
       updater: (store) => {
         const container = store.getRoot();
-        const payload = store.getRootField('streamCollectionEdit');
+        const payload = store.getRootField('synchronizerEdit');
         const userProxy = store.get(container.getDataID());
         const conn = ConnectionHandler.getConnection(
           userProxy,
-          'Pagination_streamCollections',
+          'Pagination_synchronizers',
           this.props.paginationOptions,
         );
         ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
@@ -125,8 +177,38 @@ class StreamCollectionPopover extends Component {
     });
   }
 
+  submitStart() {
+    this.setState({ starting: true });
+    commitMutation({
+      mutation: syncPopoverStartMutation,
+      variables: {
+        id: this.props.syncId,
+      },
+      onCompleted: () => {
+        this.setState({ starting: false });
+        this.handleCloseStart();
+      },
+    });
+  }
+
+  submitStop() {
+    this.setState({ stopping: true });
+    commitMutation({
+      mutation: syncPopoverStopMutation,
+      variables: {
+        id: this.props.syncId,
+      },
+      onCompleted: () => {
+        this.setState({ stopping: false });
+        this.handleCloseStop();
+      },
+    });
+  }
+
   render() {
-    const { classes, t, streamCollectionId } = this.props;
+    const {
+      classes, t, syncId, running,
+    } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -142,9 +224,16 @@ class StreamCollectionPopover extends Component {
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
-          <MenuItem component="a" href={`/stream/${streamCollectionId}`}>
-            {t('View')}
-          </MenuItem>
+          {!running && (
+            <MenuItem onClick={this.handleOpenStart.bind(this)}>
+              {t('Start')}
+            </MenuItem>
+          )}
+          {running && (
+            <MenuItem onClick={this.handleOpenStop.bind(this)}>
+              {t('Stop')}
+            </MenuItem>
+          )}
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
           </MenuItem>
@@ -159,14 +248,13 @@ class StreamCollectionPopover extends Component {
           onClose={this.handleCloseUpdate.bind(this)}
         >
           <QueryRenderer
-            query={streamCollectionEditionQuery}
-            variables={{ id: streamCollectionId }}
+            query={syncEditionQuery}
+            variables={{ id: syncId }}
             render={({ props }) => {
               if (props) {
-                // Done
                 return (
-                  <StreamCollectionEdition
-                    streamCollection={props.streamCollection}
+                  <SyncEdition
+                    synchronizer={props.synchronizer}
                     handleClose={this.handleCloseUpdate.bind(this)}
                   />
                 );
@@ -183,13 +271,12 @@ class StreamCollectionPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this live stream?')}
+              {t('Do you want to delete this synchronizer?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button
               onClick={this.handleCloseDelete.bind(this)}
-              color="primary"
               disabled={this.state.deleting}
             >
               {t('Cancel')}
@@ -203,16 +290,71 @@ class StreamCollectionPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
+        <Dialog
+          open={this.state.displayStart}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseStart.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to start this synchronizer?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseStart.bind(this)}
+              disabled={this.state.starting}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              onClick={this.submitStart.bind(this)}
+              color="primary"
+              disabled={this.state.starting}
+            >
+              {t('Start')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          open={this.state.displayStop}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseStop.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to stop this synchronizer?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseStop.bind(this)}
+              disabled={this.state.stopping}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              onClick={this.submitStop.bind(this)}
+              color="primary"
+              disabled={this.state.stopping}
+            >
+              {t('Stop')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
 }
 
-StreamCollectionPopover.propTypes = {
-  streamCollectionId: PropTypes.string,
+SyncPopover.propTypes = {
+  syncId: PropTypes.string,
+  running: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(StreamCollectionPopover);
+export default compose(inject18n, withStyles(styles))(SyncPopover);

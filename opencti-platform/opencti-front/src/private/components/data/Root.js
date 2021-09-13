@@ -7,6 +7,7 @@ import Taxii from './Taxii';
 import { BoundaryRoute } from '../Error';
 import RootConnector from './connectors/Root';
 import Stream from './Stream';
+import Sync from './Sync';
 
 const Root = () => (
   <Switch>
@@ -28,6 +29,7 @@ const Root = () => (
     />
     <BoundaryRoute exact path="/dashboard/data/taxii" component={Taxii} />
     <BoundaryRoute exact path="/dashboard/data/stream" component={Stream} />
+    <BoundaryRoute exact path="/dashboard/data/sync" component={Sync} />
   </Switch>
 );
 

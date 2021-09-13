@@ -527,6 +527,15 @@ input StatusAddInput {
 }
 
 ############## Sync
+enum SynchronizersOrdering {
+  id
+  name
+  current_state
+  running
+  uri
+  stream_id
+}
+
 type Synchronizer {
   id: ID!
   name: String!
@@ -536,6 +545,7 @@ type Synchronizer {
   running: Boolean!
   current_state: String
   listen_deletion: Boolean!
+  ssl_verify: Boolean
 }
 
 type SynchronizerEdge {
@@ -554,6 +564,7 @@ input SynchronizerAddInput {
   token: String!
   stream_id: String!
   listen_deletion: Boolean!
+  ssl_verify: Boolean
   current_state: String
 }
 
@@ -8438,7 +8449,14 @@ type Query {
   rule(id: String!): Rule @auth(for: [KNOWLEDGE])
   rules: [Rule] @auth(for: [KNOWLEDGE])
   ruleManagerInfo: RuleManager @auth(for: [SETTINGS])
-  synchronizers: SynchronizerConnection @auth(for: [SETTINGS])
+  synchronizer(id: String!): Synchronizer @auth(for: [SETTINGS])
+  synchronizers(
+    first: Int
+    after: ID
+    orderBy: SynchronizersOrdering
+    orderMode: OrderingMode
+    search: String
+  ): SynchronizerConnection @auth(for: [SETTINGS])
   ######## STIX OBJECT ENTITIES
 
   ######## STIX META OBJECT ENTITIES
@@ -9302,6 +9320,11 @@ type UserSubscriptionEditMutations {
   fieldPatch(input: [EditInput]!): UserSubscription
 }
 
+type SynchronizerEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!): Synchronizer
+}
+
 ######## STIX OBJECT
 type StixEditMutations {
   delete: ID
@@ -9636,6 +9659,7 @@ type Mutation {
 
   ### SYNC
   synchronizerAdd(input: SynchronizerAddInput): Synchronizer @auth(for: [CONNECTORAPI])
+  synchronizerEdit(id: ID!): SynchronizerEditMutations @auth(for: [CONNECTORAPI])
   synchronizerStart(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
   synchronizerStop(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
   synchronizerTest(input: SynchronizerAddInput): String @auth(for: [CONNECTORAPI])
