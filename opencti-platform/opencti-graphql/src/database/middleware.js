@@ -2,6 +2,7 @@ import moment from 'moment';
 import * as R from 'ramda';
 import DataLoader from 'dataloader';
 import { Promise } from 'bluebird';
+import { version as uuidVersion } from 'uuid';
 import {
   DatabaseError,
   FunctionalError,
@@ -78,6 +79,7 @@ import {
   checkStixCyberObservableRelationshipMapping,
   cleanStixIds,
   convertTypeToStixType,
+  isTrustedStixId,
   mergeDeepRightAll,
   STIX_SPEC_VERSION,
   stixCyberObservableRelationshipsMapping,
@@ -810,7 +812,10 @@ const inputResolveRefs = async (user, input, type) => {
     }
   }
   // eslint-disable-next-line prettier/prettier
-  const resolvedElements = await internalFindByIds(user, fetchingIds.map((i) => i.id));
+  const resolvedElements = await internalFindByIds(
+    user,
+    fetchingIds.map((i) => i.id)
+  );
   const resolvedElementWithConfGroup = resolvedElements.map((d) => {
     const elementIds = getInstanceIds(d);
     const matchingConfigs = R.filter((a) => elementIds.includes(a.id), fetchingIds);
@@ -1467,7 +1472,23 @@ export const updateAttributeRaw = (instance, inputs) => {
     const ins = innerUpdateAttribute(instance, input);
     if (ins.length > 0) {
       // Updated inputs must not be internals
-      const filteredIns = ins.filter((n) => n.key === input.key);
+      const filteredIns = ins
+        .filter((n) => n.key === input.key)
+        .filter((o) => {
+          if (input.key !== IDS_STIX) {
+            return true;
+          }
+          const previous = getPreviousInstanceValue(o.key, instance);
+          if (o.operation === UPDATE_OPERATION_ADD) {
+            const newValues = o.value.filter((p) => !(previous || []).includes(p));
+            return newValues.filter((p) => isTrustedStixId(p)).length > 0;
+          }
+          if (o.operation === UPDATE_OPERATION_REMOVE) {
+            const newValues = (previous || []).filter((p) => !o.value.includes(p));
+            return newValues.filter((p) => isTrustedStixId(p)).length > 0;
+          }
+          return o.value.filter((p) => isTrustedStixId(p)).length > 0;
+        });
       if (filteredIns.length > 0) {
         const updatedInputsFiltered = filteredIns.map((filteredInput) => {
           const previous = getPreviousInstanceValue(filteredInput.key, instance);

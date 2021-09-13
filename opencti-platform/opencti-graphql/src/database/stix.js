@@ -155,6 +155,11 @@ const isDefinedValue = (element) => {
   }
   return false;
 };
+export const isTrustedStixId = (stixId) => {
+  const segments = stixId.split('--');
+  const [, uuid] = segments;
+  return uuidVersion(uuid) !== 1;
+};
 export const stixDataConverter = (data, args = {}) => {
   const { patchGeneration = false, clearEmptyValues = false } = args;
   let finalData = data;
@@ -346,11 +351,7 @@ export const stixDataConverter = (data, args = {}) => {
   // endregion
   // region StixID V1 are transient and so not in data output
   if (isDefinedValue(finalData.x_opencti_stix_ids)) {
-    finalData.x_opencti_stix_ids = finalData.x_opencti_stix_ids.filter((stixId) => {
-      const segments = stixId.split('--');
-      const [, uuid] = segments;
-      return uuidVersion(uuid) !== 1;
-    });
+    finalData.x_opencti_stix_ids = finalData.x_opencti_stix_ids.filter((stixId) => isTrustedStixId(stixId));
   }
   // endregion
   // region Attributes filtering
@@ -429,7 +430,10 @@ export const extractFieldInputDefinition = (entityType) => {
     return [...baseFields, ...schemaFields];
   }
   // eslint-disable-next-line prettier/prettier
-  const formattedType = `${entityType.split('-').map((e) => pascalize(e)).join('')}AddInput`;
+  const formattedType = `${entityType
+    .split('-')
+    .map((e) => pascalize(e))
+    .join('')}AddInput`;
   const def = R.find((e) => e.name.value === formattedType, typeDefs.definitions);
   if (def) {
     return def.fields.map((f) => f.name.value);
