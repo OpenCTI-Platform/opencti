@@ -87,7 +87,7 @@ class AttackPatternLineComponent extends Component {
                   className={classes.description}
                   style={{ fontSize: isSubAttackPattern ? 11 : 13 }}
                 >
-                  {node.description.length > 0
+                  {node.description && node.description.length > 0
                     ? node.description
                     : t('This attack pattern does not have any description.')}
                 </div>
@@ -98,7 +98,7 @@ class AttackPatternLineComponent extends Component {
             <KeyboardArrowRightOutlined />
           </ListItemIcon>
         </ListItem>
-        {subAttackPatterns ? (
+        {subAttackPatterns && (
           <List disablePadding={true}>
             {map(
               (subAttackPattern) => (
@@ -111,8 +111,6 @@ class AttackPatternLineComponent extends Component {
               subAttackPatterns,
             )}
           </List>
-        ) : (
-          ''
         )}
       </div>
     );
