@@ -85,17 +85,23 @@ const createHeartbeatProcessor = () => {
 };
 
 const authenticate = async (req, res, next) => {
-  const auth = await authenticateUserFromRequest(req);
-  const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;
-  const isUserGranted = auth && R.find(capabilityControl, auth.capabilities || []) !== undefined;
-  if (isUserGranted) {
-    req.userId = auth.id;
-    req.capabilities = auth.capabilities;
-    req.allowed_marking = auth.allowed_marking;
-    req.expirationTime = new Date(2100, 10, 10); // auth.token.expirationTime;
-    next();
-  } else {
-    res.status(401).json({ status: 'unauthorized' });
+  try {
+    const auth = await authenticateUserFromRequest(req);
+    const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;
+    const isUserGranted = auth && R.find(capabilityControl, auth.capabilities || []) !== undefined;
+    if (isUserGranted) {
+      req.userId = auth.id;
+      req.capabilities = auth.capabilities;
+      req.allowed_marking = auth.allowed_marking;
+      req.expirationTime = utcDate().add(1, 'days').toDate();
+      next();
+    } else {
+      res.statusMessage = 'You are not authenticated, please check your credentials';
+      res.status(401).end();
+    }
+  } catch (err) {
+    res.statusMessage = `Error in stream: ${err.message}`;
+    res.status(500).end();
   }
 };
 
@@ -197,68 +203,74 @@ const createSeeMiddleware = () => {
     return { channel, client: createBroadcastClient(channel) };
   };
   const genericStreamHandler = async (req, res) => {
-    const { client } = createSseChannel(req, res);
-    const processor = createStreamProcessor(req.session.user, req.session.user.user_email, async (elements) => {
-      for (let index = 0; index < elements.length; index += 1) {
-        const { id: eventId, topic, data } = elements[index];
-        client.sendEvent(eventId, topic, data);
-      }
-    });
     try {
+      const { client } = createSseChannel(req, res);
+      const processor = createStreamProcessor(req.session.user, req.session.user.user_email, async (elements) => {
+        for (let index = 0; index < elements.length; index += 1) {
+          const { id: eventId, topic, data } = elements[index];
+          client.sendEvent(eventId, topic, data);
+        }
+      });
       await initBroadcasting(req, res, client, processor);
-      await processor.start(req.query.from || req.headers['last-event-id']);
+      const lastEventId = req.query.from || req.headers['last-event-id'];
+      await processor.start(lastEventId);
     } catch (err) {
-      res.status(500);
-      res.json({ error: 'Error accessing stream (empty stream or redis client connection problem)' });
+      res.statusMessage = `Error in stream: ${err.message}`;
+      res.status(500).end();
     }
   };
   const manageStreamConnectionHandler = async (req, res) => {
-    const { id } = req.params;
-    const client = broadcastClients[id];
-    if (client) {
-      if (client.userId !== req.session.user.id) {
-        res.status(500);
-        res.json({ error: 'You cant access this resource' });
+    try {
+      const { id } = req.params;
+      const client = broadcastClients[id];
+      if (client) {
+        if (client.userId !== req.session.user.id) {
+          res.statusMessage = 'You cant access this resource';
+          res.status(401).end();
+        } else {
+          const { delay = 10 } = req.body;
+          client.setChannelDelay(delay);
+          res.json({ message: 'ok' });
+        }
       } else {
-        const { delay = 10 } = req.body;
-        client.setChannelDelay(delay);
-        res.json({ message: 'ok' });
+        res.statusMessage = 'This is not your connection';
+        res.status(401).end();
       }
-    } else {
-      res.status(500);
-      res.json({ error: 'This is not your connection' });
+    } catch (err) {
+      res.statusMessage = `Error in connection management: ${err.message}`;
+      res.status(500).end();
     }
   };
   const filteredStreamHandler = async (req, res) => {
-    const { id } = req.params;
-    const version = STREAM_EVENT_VERSION;
-    const startFrom = req.query.from || req.headers['last-event-id'];
-    const listenDelete = req.query['listen-delete'] || req.headers['listen-delete'] === 'true';
-    let streamFilters = {};
-    if (id !== 'live') {
-      const collection = await findById(req.session.user, id);
-      if (!collection) {
-        res.status(500);
-        res.json({ error: 'This live stream doesnt exists' });
-        return;
-      }
-      streamFilters = JSON.parse(collection.filters);
-    }
-    // If no marking part of filtering are accessible for the user, return
-    // Its better to prevent connection instead of having no events accessible
-    if (streamFilters.markedBy) {
-      const userMarkings = (req.session.user.allowed_marking || []).map((m) => m.internal_id);
-      const filterMarkings = (streamFilters.markedBy || []).map((m) => m.id);
-      const isUserHaveAccess = filterMarkings.some((m) => userMarkings.includes(m));
-      if (!isUserHaveAccess) {
-        res.status(500);
-        res.json({ error: 'You need to have access to specific markings for this live stream' });
-        return;
-      }
-    }
-    // Create channel.
-    const { channel, client } = createSseChannel(req, res);
     try {
+      const { id } = req.params;
+      const version = STREAM_EVENT_VERSION;
+      const startFrom = req.query.from || req.headers['last-event-id'];
+      const listenDelete = (req.query['listen-delete'] || req.headers['listen-delete']) === 'true';
+      let streamFilters = {};
+      if (id !== 'live') {
+        const collection = await findById(req.session.user, id);
+        if (!collection) {
+          res.statusMessage = 'This live stream doesnt exists';
+          res.status(404).end();
+          return;
+        }
+        streamFilters = JSON.parse(collection.filters);
+      }
+      // If no marking part of filtering are accessible for the user, return
+      // Its better to prevent connection instead of having no events accessible
+      if (streamFilters.markedBy) {
+        const userMarkings = (req.session.user.allowed_marking || []).map((m) => m.internal_id);
+        const filterMarkings = (streamFilters.markedBy || []).map((m) => m.id);
+        const isUserHaveAccess = filterMarkings.some((m) => userMarkings.includes(m));
+        if (!isUserHaveAccess) {
+          res.statusMessage = 'You need to have access to specific markings for this live stream';
+          res.status(401).end();
+          return;
+        }
+      }
+      // Create channel.
+      const { channel, client } = createSseChannel(req, res);
       const startListening = utcDate();
       // If stream is starting after, we need to use the main database to catchup
       const reorderedCache = new Set();
@@ -348,9 +360,8 @@ const createSeeMiddleware = () => {
       await elList(req.session.user, queryIndices, queryOptions);
       reorderedCache.clear();
     } catch (e) {
-      logApp.error('[STREAM] Error accessing stream');
-      res.status(500);
-      res.json({ error: 'Error accessing stream (empty stream or redis client connection problem)' });
+      res.statusMessage = `Error in stream: ${e.message}`;
+      res.status(500).end();
     }
   };
   return {

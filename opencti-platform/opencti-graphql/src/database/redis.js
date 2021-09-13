@@ -660,19 +660,16 @@ export const createStreamProcessor = (user, provider, callback, maxRange = MAX_R
     if (!streamListening) {
       return false;
     }
-    const streamResult = await client.xread(
-      'BLOCK',
-      WAIT_TIME,
-      'COUNT',
-      maxRange,
-      'STREAMS',
-      REDIS_STREAM_NAME,
-      startEventId
-    );
-    if (streamResult && streamResult.length > 0) {
-      const [, results] = R.head(streamResult);
-      const lastElementId = await processStreamResult(results, callback);
-      startEventId = lastElementId || startEventId;
+    try {
+      const opts = ['BLOCK', WAIT_TIME, 'COUNT', maxRange, 'STREAMS', REDIS_STREAM_NAME, startEventId];
+      const streamResult = await client.xread(...opts);
+      if (streamResult && streamResult.length > 0) {
+        const [, results] = R.head(streamResult);
+        const lastElementId = await processStreamResult(results, callback);
+        startEventId = lastElementId || startEventId;
+      }
+    } catch (err) {
+      logApp.error('Error in redis stream read', { error: err });
     }
     return true;
   };

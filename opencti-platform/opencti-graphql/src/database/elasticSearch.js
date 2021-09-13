@@ -59,7 +59,6 @@ import {
   isSingleStixEmbeddedRelationship,
   STIX_EMBEDDED_RELATION_TO_FIELD,
 } from '../schema/stixEmbeddedRelationship';
-import { extractFieldInputDefinition } from './stix';
 import { now } from '../utils/format';
 
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
@@ -695,14 +694,13 @@ const elDataConverter = (esHit) => {
       }
       data[key] = val;
     } else if (key.startsWith(REL_INDEX_PREFIX)) {
+      // Rebuild rel to stix attributes
       const rel = key.substr(REL_INDEX_PREFIX.length);
       const [relType] = rel.split('.');
-      const fields = extractFieldInputDefinition(data.entity_type);
       const stixType = STIX_EMBEDDED_RELATION_TO_FIELD[relType];
-      if (stixType && fields.includes(stixType)) {
-        const isSingle = isSingleStixEmbeddedRelationship(relType);
+      if (stixType) {
         const dataKey = INPUTS_RELATIONS_TO_STIX_ATTRIBUTE[relType];
-        data[dataKey] = isSingle ? R.head(val) : val;
+        data[dataKey] = isSingleStixEmbeddedRelationship(relType) ? R.head(val) : val;
       }
     } else {
       data[key] = val;

@@ -542,6 +542,7 @@ type Synchronizer {
   uri: String!
   token: String!
   stream_id: String!
+  user: User
   running: Boolean!
   current_state: String
   listen_deletion: Boolean!
@@ -559,10 +560,11 @@ type SynchronizerConnection {
 }
 
 input SynchronizerAddInput {
-  name: String!
-  uri: String!
-  token: String!
-  stream_id: String!
+  name: String! @constraint(minLength: 2)
+  uri: String! @constraint(minLength: 2)
+  token: String! @constraint(minLength: 2)
+  stream_id: String! @constraint(minLength: 2)
+  user_id: String
   listen_deletion: Boolean!
   ssl_verify: Boolean
   current_state: String

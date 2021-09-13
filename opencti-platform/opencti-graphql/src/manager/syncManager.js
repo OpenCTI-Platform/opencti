@@ -2,7 +2,7 @@
 import EventSource from 'eventsource';
 import axios from 'axios';
 import conf, { logApp } from '../config/conf';
-import { createRelation, deleteElementById, listEntities, loadById } from '../database/middleware';
+import { createRelation, deleteElementById, internalLoadById, listEntities, loadById } from '../database/middleware';
 import { SYSTEM_USER } from '../utils/access';
 import { buildInputDataFromStix } from '../database/stix';
 import { sleep } from '../../tests/utils/testQuery';
@@ -93,10 +93,13 @@ const syncManagerInstance = (syncId) => {
   const startStreamListening = async () => {
     eventsQueue = new Queue();
     const sync = await loadById(SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
-    const { token } = sync;
+    const { token, ssl_verify: ssl = false } = sync;
     const eventSourceUri = createSyncHttpUri(sync);
     logApp.info(`[SYNC] Starting sync manager for ${syncId} (${eventSourceUri})`);
-    eventSource = new EventSource(eventSourceUri, { headers: { authorization: `Bearer ${token}` } });
+    eventSource = new EventSource(eventSourceUri, {
+      rejectUnauthorized: ssl,
+      headers: { authorization: `Bearer ${token}` },
+    });
     eventSource.on('create', (d) => {
       eventsQueue.enqueue(d);
     });
@@ -128,86 +131,86 @@ const syncManagerInstance = (syncId) => {
     }
     return currentDelay;
   };
-  const handleDeleteEvent = async (data) => {
+  const handleDeleteEvent = async (user, data) => {
     const { type } = buildInputDataFromStix(data);
     logApp.info(`[SYNC] Deleting element ${type} ${data.id}`);
-    await deleteElementById(SYSTEM_USER, data.id, type);
+    await deleteElementById(user, data.id, type);
   };
-  const handleCreateEvent = async (data) => {
+  const handleCreateEvent = async (user, data) => {
     const { type, input } = buildInputDataFromStix(data);
     // Then create the elements
     if (isStixCoreRelationship(type)) {
       logApp.info(`[SYNC] Creating relation ${input.relationship_type} ${input.fromId}/${input.toId}`);
-      await createRelation(SYSTEM_USER, input);
+      await createRelation(user, input);
     } else if (isStixSightingRelationship(type)) {
       logApp.info(`[SYNC] Creating sighting ${input.fromId}/${input.toId}`);
-      await addStixSightingRelationship(SYSTEM_USER, { ...input, relationship_type: input.type });
+      await addStixSightingRelationship(user, { ...input, relationship_type: input.type });
     } else if (isStixDomainObject(type) || isStixMetaObject(type)) {
       logApp.info(`[SYNC] Creating entity ${type} ${input.stix_id}`);
       // Stix domains
       if (type === ENTITY_TYPE_ATTACK_PATTERN) {
-        await addAttackPattern(SYSTEM_USER, input);
+        await addAttackPattern(user, input);
       } else if (type === ENTITY_TYPE_CAMPAIGN) {
-        await addCampaign(SYSTEM_USER, input);
+        await addCampaign(user, input);
       } else if (type === ENTITY_TYPE_CONTAINER_NOTE) {
-        await addNote(SYSTEM_USER, input);
+        await addNote(user, input);
       } else if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
-        await addObservedData(SYSTEM_USER, input);
+        await addObservedData(user, input);
       } else if (type === ENTITY_TYPE_CONTAINER_OPINION) {
-        await addOpinion(SYSTEM_USER, input);
+        await addOpinion(user, input);
       } else if (type === ENTITY_TYPE_CONTAINER_REPORT) {
-        await addReport(SYSTEM_USER, input);
+        await addReport(user, input);
       } else if (type === ENTITY_TYPE_COURSE_OF_ACTION) {
-        await addCourseOfAction(SYSTEM_USER, input);
+        await addCourseOfAction(user, input);
       } else if (type === ENTITY_TYPE_IDENTITY_INDIVIDUAL) {
-        await addIndividual(SYSTEM_USER, input);
+        await addIndividual(user, input);
       } else if (type === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
-        await addOrganization(SYSTEM_USER, input);
+        await addOrganization(user, input);
       } else if (type === ENTITY_TYPE_IDENTITY_SECTOR) {
-        await addSector(SYSTEM_USER, input);
+        await addSector(user, input);
       } else if (type === ENTITY_TYPE_IDENTITY_SYSTEM) {
-        await addSystem(SYSTEM_USER, input);
+        await addSystem(user, input);
       } else if (type === ENTITY_TYPE_INDICATOR) {
-        await addIndicator(SYSTEM_USER, input);
+        await addIndicator(user, input);
       } else if (type === ENTITY_TYPE_INFRASTRUCTURE) {
-        await addInfrastructure(SYSTEM_USER, input);
+        await addInfrastructure(user, input);
       } else if (type === ENTITY_TYPE_INTRUSION_SET) {
-        await addIntrusionSet(SYSTEM_USER, input);
+        await addIntrusionSet(user, input);
       } else if (type === ENTITY_TYPE_LOCATION_CITY) {
-        await addCity(SYSTEM_USER, input);
+        await addCity(user, input);
       } else if (type === ENTITY_TYPE_LOCATION_COUNTRY) {
-        await addCountry(SYSTEM_USER, input);
+        await addCountry(user, input);
       } else if (type === ENTITY_TYPE_LOCATION_REGION) {
-        await addRegion(SYSTEM_USER, input);
+        await addRegion(user, input);
       } else if (type === ENTITY_TYPE_LOCATION_POSITION) {
-        await addPosition(SYSTEM_USER, input);
+        await addPosition(user, input);
       } else if (type === ENTITY_TYPE_MALWARE) {
-        await addMalware(SYSTEM_USER, input);
+        await addMalware(user, input);
       } else if (type === ENTITY_TYPE_THREAT_ACTOR) {
-        await addThreatActor(SYSTEM_USER, input);
+        await addThreatActor(user, input);
       } else if (type === ENTITY_TYPE_TOOL) {
-        await addTool(SYSTEM_USER, input);
+        await addTool(user, input);
       } else if (type === ENTITY_TYPE_VULNERABILITY) {
-        await addVulnerability(SYSTEM_USER, input);
+        await addVulnerability(user, input);
       } else if (type === ENTITY_TYPE_INCIDENT) {
-        await addIncident(SYSTEM_USER, input);
+        await addIncident(user, input);
       }
       // Stix meta
       else if (type === ENTITY_TYPE_LABEL) {
-        await addLabel(SYSTEM_USER, input);
+        await addLabel(user, input);
       } else if (type === ENTITY_TYPE_EXTERNAL_REFERENCE) {
-        await addExternalReference(SYSTEM_USER, input);
+        await addExternalReference(user, input);
       } else if (type === ENTITY_TYPE_KILL_CHAIN_PHASE) {
-        await addKillChainPhase(SYSTEM_USER, input);
+        await addKillChainPhase(user, input);
       } else if (type === ENTITY_TYPE_MARKING_DEFINITION) {
-        await addMarkingDefinition(SYSTEM_USER, input);
+        await addMarkingDefinition(user, input);
       } else {
         // await createEntity(SYSTEM_USER, input, type);
         throw UnsupportedError(`${type} not handle by synchronizer`);
       }
     } else if (isStixCyberObservable(type)) {
       logApp.info(`[SYNC] Creating cyber observable ${type} ${input.stix_id}`);
-      await addStixCyberObservable(SYSTEM_USER, input);
+      await addStixCyberObservable(user, input);
     } else {
       throw UnsupportedError(`${type} not handle by synchronizer`);
     }
@@ -223,6 +226,7 @@ const syncManagerInstance = (syncId) => {
     start: async () => {
       run = true;
       const sync = await startStreamListening();
+      const user = sync.user_id ? await internalLoadById(SYSTEM_USER, sync.user_id) : SYSTEM_USER;
       let currentDelay = lDelay;
       let eventCount = 0;
       while (run) {
@@ -233,10 +237,10 @@ const syncManagerInstance = (syncId) => {
             const { type: eventType } = event;
             const { data } = JSON.parse(event.data);
             if (eventType === 'delete') {
-              await handleDeleteEvent(data);
+              await handleDeleteEvent(user, data);
             }
             if (eventType === 'create') {
-              await handleCreateEvent(data);
+              await handleCreateEvent(user, data);
             }
             // Update the current state
             if (eventCount > STATE_UPDATE_SIZE) {

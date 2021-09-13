@@ -213,6 +213,7 @@ export const internalObjectsAttributes = {
     'name',
     'uri',
     'ssl_verify',
+    'user_id',
     'token',
     'stream_id',
     'running',

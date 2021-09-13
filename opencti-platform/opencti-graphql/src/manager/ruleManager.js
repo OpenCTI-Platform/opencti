@@ -189,7 +189,7 @@ export const rulesApplyHandler = async (events, forRules = []) => {
   for (let index = 0; index < events.length; index += 1) {
     const event = events[index];
     const { eventId, type, data, markings } = event;
-    logApp.info('Processing event', { eventId });
+    logApp.debug('[RULE] Processing event', { eventId });
     try {
       const element = { ...data, object_marking_refs: markings };
       // In case of merge convert the events to basic events and restart the process

@@ -52,6 +52,9 @@ const connectorResolvers = {
     user: (work, _, { user }) => findUserById(user, work.user_id),
     tracking: (work) => redisGetWork(work.id),
   },
+  Synchronizer: {
+    user: (sync, _, { user }) => findUserById(user, sync.user_id),
+  },
   Mutation: {
     deleteConnector: (_, { id }, { user }) => connectorDelete(user, id),
     registerConnector: (_, { input }, { user }) => registerConnector(user, input),

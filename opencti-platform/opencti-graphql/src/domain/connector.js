@@ -119,9 +119,13 @@ export const createSyncHttpUri = (sync) => {
 };
 export const testSync = async (user, sync) => {
   const eventSourceUri = createSyncHttpUri(sync);
+  const { token, ssl_verify: ssl = false } = sync;
   return new Promise((resolve, reject) => {
     try {
-      const eventSource = new EventSource(eventSourceUri, { headers: { authorization: `Bearer ${sync.token}` } });
+      const eventSource = new EventSource(eventSourceUri, {
+        rejectUnauthorized: ssl,
+        headers: { authorization: `Bearer ${token}` },
+      });
       eventSource.on('connected', (d) => {
         const { connectionId } = JSON.parse(d.data);
         if (connectionId) {
