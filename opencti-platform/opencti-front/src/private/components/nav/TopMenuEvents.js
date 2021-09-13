@@ -47,25 +47,6 @@ class TopMenuThreats extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/events/observed_data"
-          variant={
-            location.pathname.includes('/dashboard/events/observed_data')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/dashboard/events/observed_data')
-              ? 'secondary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          <WifiTetheringOutlined className={classes.icon} fontSize="small" />
-          {t('Observed datas')}
-        </Button>
-        <Button
-          component={Link}
           to="/dashboard/events/sightings"
           variant={
             location.pathname.includes('/dashboard/events/sightings')
@@ -82,6 +63,25 @@ class TopMenuThreats extends Component {
         >
           <VisibilityOutlined className={classes.icon} fontSize="small" />
           {t('Sightings')}
+        </Button>
+        <Button
+          component={Link}
+          to="/dashboard/events/observed_data"
+          variant={
+            location.pathname.includes('/dashboard/events/observed_data')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes('/dashboard/events/observed_data')
+              ? 'secondary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          <WifiTetheringOutlined className={classes.icon} fontSize="small" />
+          {t('Observed datas')}
         </Button>
       </div>
     );

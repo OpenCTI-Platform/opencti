@@ -115,7 +115,7 @@ class StixSightingRelationships extends Component {
       },
       name: {
         label: 'Name',
-        width: '22%',
+        width: '15%',
         isSortable: false,
       },
       entity_type: {
@@ -123,14 +123,19 @@ class StixSightingRelationships extends Component {
         width: '15%',
         isSortable: false,
       },
+      entity: {
+        label: 'Entity',
+        width: '15%',
+        isSortable: false,
+      },
       first_seen: {
         label: 'First obs.',
-        width: '12%',
+        width: '10%',
         isSortable: true,
       },
       last_seen: {
         label: 'Last obs.',
-        width: '12%',
+        width: '10%',
         isSortable: true,
       },
       confidence: {

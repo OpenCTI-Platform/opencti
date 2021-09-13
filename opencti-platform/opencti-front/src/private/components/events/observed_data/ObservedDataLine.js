@@ -51,7 +51,7 @@ const styles = (theme) => ({
 class ObservedDataLineComponent extends Component {
   render() {
     const {
-      t, fd, classes, node, dataColumns, onLabelClick,
+      t, fd, classes, node, dataColumns, onLabelClick, n,
     } = this.props;
     const firstEntity = node.objects.edges.length > 0 ? R.head(node.objects.edges).node : null;
     return (
@@ -73,6 +73,12 @@ class ObservedDataLineComponent extends Component {
                 style={{ width: dataColumns.first_entity.width }}
               >
                 {firstEntity ? defaultValue(firstEntity) : t('None')}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.number_observed.width }}
+              >
+                {n(node.number_observed)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -145,6 +151,7 @@ const ObservedDataLineFragment = createFragmentContainer(
         created
         first_observed
         last_observed
+        number_observed
         createdBy {
           ... on Identity {
             id
@@ -328,6 +335,17 @@ class ObservedDataLineDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.first_entity.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.number_observed.width }}
               >
                 <Skeleton
                   animation="wave"

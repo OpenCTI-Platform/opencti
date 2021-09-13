@@ -16,6 +16,7 @@ import StixCyberObservableHeader from './StixCyberObservableHeader';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
+import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 
 const subscription = graphql`
   subscription RootStixCyberObservableSubscription($id: ID!) {
@@ -96,6 +97,23 @@ class RootStixCyberObservable extends Component {
                           {...routeProps}
                           stixCyberObservable={props.stixCyberObservable}
                         />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/observables/:observableId/containers"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixCyberObservableHeader
+                            stixCyberObservable={props.stixCyberObservable}
+                          />
+                          <StixCoreObjectOrStixCoreRelationshipContainers
+                            {...routeProps}
+                            stixDomainObjectOrStixCoreRelationship={
+                              props.stixCyberObservable
+                            }
+                          />
+                        </React.Fragment>
                       )}
                     />
                     <Route

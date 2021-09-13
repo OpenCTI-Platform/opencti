@@ -69,7 +69,13 @@ class StixSightingRelationshipLineComponent extends Component {
     const {
       fsd, t, fd, classes, dataColumns, node, paginationOptions,
     } = this.props;
-    const entityLink = `${resolveLink(node.from.entity_type)}/${node.from.id}`;
+    const entityFrom = node.from;
+    const entityTo = node.to;
+    const restrictedFrom = entityFrom === null;
+    const restrictedTo = entityTo === null;
+    const entityLink = `${resolveLink(entityFrom.entity_type)}/${
+      entityFrom.id
+    }`;
     const link = `${entityLink}/knowledge/sightings/${node.id}`;
     return (
       <ListItem
@@ -80,7 +86,7 @@ class StixSightingRelationshipLineComponent extends Component {
         to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={node.from.entity_type} />
+          <ItemIcon type={entityFrom.entity_type} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -112,19 +118,37 @@ class StixSightingRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.from.name
-                  || node.from.attribute_abstract
-                  || truncate(node.from.content, 30)
-                  || node.from.observable_value
-                  || `${fd(node.from.first_observed)} - ${fd(
-                    node.from.last_observed,
-                  )}`}
+                {!restrictedFrom
+                  ? entityFrom.name
+                    || entityFrom.attribute_abstract
+                    || truncate(entityFrom.content, 30)
+                    || entityFrom.observable_value
+                    || `${fd(entityFrom.first_observed)} - ${fd(
+                      entityFrom.last_observed,
+                    )}`
+                  : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {t(`entity_${node.from.entity_type}`)}
+                {!restrictedFrom
+                  ? t(`entity_${entityFrom.entity_type}`)
+                  : t('Restricted')}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.entity.width }}
+              >
+                {!restrictedTo
+                  ? entityTo.name
+                    || entityTo.attribute_abstract
+                    || truncate(entityTo.content, 30)
+                    || entityTo.observable_value
+                    || `${fd(entityTo.first_observed)} - ${fd(
+                      entityTo.last_observed,
+                    )}`
+                  : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}
@@ -307,6 +331,47 @@ const StixSightingRelationshipLineFragment = createFragmentContainer(
             observable_value
           }
         }
+        to {
+          ... on StixObject {
+            id
+            entity_type
+            parent_types
+            created_at
+            updated_at
+          }
+          ... on Individual {
+            name
+            description
+          }
+          ... on Organization {
+            name
+            description
+          }
+          ... on Sector {
+            name
+            description
+          }
+          ... on System {
+            name
+            description
+          }
+          ... on Position {
+            name
+            description
+          }
+          ... on City {
+            name
+            description
+          }
+          ... on Country {
+            name
+            description
+          }
+          ... on Region {
+            name
+            description
+          }
+        }
       }
     `,
   },
@@ -364,6 +429,17 @@ class StixSightingRelationshipLineDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.entity.width }}
               >
                 <Skeleton
                   animation="wave"

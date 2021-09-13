@@ -122,8 +122,13 @@ class ObservedDatas extends Component {
     const dataColumns = {
       first_entity: {
         label: 'First entity',
-        width: '30%',
+        width: '25%',
         isSortable: false,
+      },
+      number_observed: {
+        label: 'Count',
+        width: '10%',
+        isSortable: true,
       },
       first_observed: {
         label: 'First obs.',

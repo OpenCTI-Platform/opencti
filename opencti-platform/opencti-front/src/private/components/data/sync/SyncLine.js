@@ -216,7 +216,7 @@ class SyncDummyComponent extends Component {
                 <Skeleton
                   animation="wave"
                   variant="rect"
-                  width="90%"
+                  width={100}
                   height="100%"
                 />
               </div>

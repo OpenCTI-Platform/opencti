@@ -286,6 +286,7 @@ class Indicators extends Component {
             'x_opencti_score_lte',
             'createdBy',
             'x_opencti_detection',
+            'sightedBy',
           ]}
         >
           <QueryRenderer

@@ -23,6 +23,7 @@ import { buildRefRelationKey } from '../schema/general';
 import { distributionEntities, batchLoader } from '../database/middleware';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { batchKillChainPhases } from '../domain/stixCoreObject';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 
 const killChainPhasesLoader = batchLoader(batchKillChainPhases);
 const batchObservablesLoader = batchLoader(batchObservables);
@@ -56,6 +57,7 @@ const indicatorResolvers = {
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
     basedOn: buildRefRelationKey(RELATION_BASED_ON),
     indicates: buildRefRelationKey(RELATION_INDICATES),
+    sightedBy: buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP),
   },
   Indicator: {
     killChainPhases: (indicator, _, { user }) => killChainPhasesLoader.load(indicator.id, user),
