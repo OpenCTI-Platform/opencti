@@ -6,4 +6,4 @@ stix2~=2.1.0
 pika~=1.2
 sseclient~=0.0.27
 python-magic~=0.4.24; sys_platform == 'linux' or sys_platform == 'darwin'
-python-magic-bin~=0.4.24; sys_platform == 'win32'
+python-magic-bin~=0.4.14; sys_platform == 'win32'
