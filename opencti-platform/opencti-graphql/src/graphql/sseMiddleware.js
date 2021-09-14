@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
+import LRU from 'lru-cache';
 import { basePath, logApp } from '../config/conf';
 import { authenticateUserFromRequest, STREAMAPI } from '../domain/user';
 import { createStreamProcessor } from '../database/redis';
@@ -23,6 +24,7 @@ import { BYPASS, isBypassUser } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { FROM_START_STR, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
+import { BASE_TYPE_RELATION } from '../schema/general';
 
 let heartbeat;
 const STREAM_EVENT_VERSION = 3;
@@ -106,6 +108,8 @@ const authenticate = async (req, res, next) => {
 };
 
 const createSeeMiddleware = () => {
+  const MAX_CACHE_SIZE = 5000;
+  const ONE_HOUR = 1000 * 60 * 60;
   const queryIndices = [
     READ_INDEX_STIX_DOMAIN_OBJECTS, // Malware, ...
     READ_INDEX_STIX_META_OBJECTS, // Marking def, External ref ...
@@ -117,13 +121,11 @@ const createSeeMiddleware = () => {
   const wait = (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
   };
-  const resolveMissingReferences = async (req, streamFilters, startingDate, afterDate, missingRefs, publishCache) => {
-    const refsToResolve = missingRefs.filter((m) => !publishCache.has(m));
+  const resolveMissingReferences = async (req, streamFilters, start, after, missingRefs, cache) => {
+    const refsToResolve = missingRefs.filter((m) => !cache.has(m));
     const missingElements = [];
     if (refsToResolve.length > 0) {
-      const missingOptions = convertFiltersToQueryOptions(streamFilters, { field: 'updated_at', after: afterDate });
-      missingOptions.filters.push({ key: 'created_at', values: [startingDate], operator: 'gte' });
-      const idsOpts = { ids: refsToResolve, ...missingOptions, connectionFormat: false };
+      const idsOpts = { ids: refsToResolve, /* ...missingOptions, */ connectionFormat: false };
       const findMissing = await elList(req.session.user, queryIndices, idsOpts);
       const missingIds = R.uniq(findMissing.map((f) => f.standard_id));
       missingElements.push(...missingIds);
@@ -131,8 +133,7 @@ const createSeeMiddleware = () => {
       const resolvedElements = await Promise.map(missingIds, (id) => stixDataById(req.session.user, id), { concurrency: ES_MAX_CONCURRENCY });
       const parentRefs = resolvedElements.map((r) => stixRefsExtractor(r, generateStandardId)).flat();
       if (parentRefs.length > 0) {
-        // eslint-disable-next-line prettier/prettier
-        const newMissing = await resolveMissingReferences(req, streamFilters, startingDate, afterDate, parentRefs, publishCache);
+        const newMissing = await resolveMissingReferences(req, streamFilters, start, after, parentRefs, cache);
         missingElements.unshift(...newMissing);
       }
     }
@@ -241,6 +242,11 @@ const createSeeMiddleware = () => {
       res.status(500).end();
     }
   };
+  const isFullVisibleElement = (instance) => {
+    const isMissingRelation = instance.base_type === BASE_TYPE_RELATION;
+    const isFullVisibleRelation = isMissingRelation && instance.from && instance.to;
+    return isFullVisibleRelation || !isMissingRelation;
+  };
   const filteredStreamHandler = async (req, res) => {
     try {
       const { id } = req.params;
@@ -271,63 +277,61 @@ const createSeeMiddleware = () => {
       }
       // Create channel.
       const { channel, client } = createSseChannel(req, res);
-      const startListening = utcDate();
       // If stream is starting after, we need to use the main database to catchup
-      const reorderedCache = new Set();
+      const cache = new LRU({ max: MAX_CACHE_SIZE, maxAge: ONE_HOUR });
       // If empty start date, stream all results corresponding to the filters
       // We need to fetch from this start date until the stream existence
-      const catchStartDate = utcDate(isNotEmptyField(startFrom) ? startFrom : FROM_START_STR);
-      const after = catchStartDate.toISOString();
+      const after = isNotEmptyField(startFrom) ? startFrom : FROM_START_STR;
       let lastElementUpdate;
       // noinspection UnnecessaryLocalVariableJS
       const queryCallback = async (elements) => {
         for (let index = 0; index < elements.length; index += 1) {
           const { internal_id: elemId } = elements[index];
           const instance = await stixLoadById(req.session.user, elemId);
-          const stixData = buildStixData(instance, { clearEmptyValues: true });
-          // if (!reorderedCache.has(stixData.id)) {
-          const eventId = utcDate(stixData.updated_at).toDate().getTime();
-          // Looking for elements published after
-          const refs = stixRefsExtractor(stixData, generateStandardId);
-          // eslint-disable-next-line prettier/prettier
-          const missingElements = await resolveMissingReferences(req, streamFilters, after, stixData.updated_at, refs, reorderedCache);
-          if (channel.connected()) {
-            let eventIndex = 0;
-            // publish missing
-            for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
-              const missingRef = missingElements[missingIndex];
-              if (!reorderedCache.has(missingRef)) {
-                const missingInstance = await stixLoadById(req.session.user, missingRef);
-                const missingData = buildStixData(missingInstance, { clearEmptyValues: true });
-                const markings = missingData.object_marking_refs || [];
-                const message = generateCreateMessage(missingInstance);
-                const content = { data: missingData, markings, message, version };
-                channel.sendEvent(`${eventId}-${eventIndex}`, EVENT_TYPE_CREATE, content);
-                eventIndex += 1;
-                await wait(channel.delay);
-                reorderedCache.add(missingData.id);
+          if (isFullVisibleElement(instance)) {
+            const stixData = buildStixData(instance, { clearEmptyValues: true });
+            const start = stixData.updated_at;
+            const eventId = utcDate(start).toDate().getTime();
+            // Looking for elements published after
+            const refs = stixRefsExtractor(stixData, generateStandardId);
+            // eslint-disable-next-line prettier/prettier
+            const missingElements = await resolveMissingReferences(req, streamFilters, after, start, refs, cache);
+            if (channel.connected()) {
+              let eventIndex = 0;
+              // publish missing
+              for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
+                const missingRef = missingElements[missingIndex];
+                if (!cache.has(missingRef)) {
+                  const missingInstance = await stixLoadById(req.session.user, missingRef);
+                  if (isFullVisibleElement(missingInstance)) {
+                    const missingData = buildStixData(missingInstance, { clearEmptyValues: true });
+                    const markings = missingData.object_marking_refs || [];
+                    const message = generateCreateMessage(missingInstance);
+                    const content = { data: missingData, markings, message, version };
+                    channel.sendEvent(`${eventId}-${eventIndex}`, EVENT_TYPE_CREATE, content);
+                    eventIndex += 1;
+                    await wait(channel.delay);
+                    cache.set(missingData.id);
+                  }
+                }
               }
+              // publish element
+              if (!cache.has(stixData.id)) {
+                const markings = stixData.object_marking_refs || [];
+                const message = generateCreateMessage(instance);
+                channel.sendEvent(`${eventId}-${eventIndex}`, EVENT_TYPE_CREATE, {
+                  data: stixData,
+                  markings,
+                  message,
+                  version,
+                });
+                await wait(channel.delay);
+              }
+              lastElementUpdate = start;
+            } else {
+              return channel.connected();
             }
-            // publish element
-            if (!reorderedCache.has(stixData.id)) {
-              const markings = stixData.object_marking_refs || [];
-              const message = generateCreateMessage(instance);
-              channel.sendEvent(`${eventId}-${eventIndex}`, EVENT_TYPE_CREATE, {
-                data: stixData,
-                markings,
-                message,
-                version,
-              });
-              await wait(channel.delay);
-            }
-            lastElementUpdate = stixData.updated_at;
-          } else {
-            return channel.connected();
           }
-        }
-        // Clear the cache as soon as we reach the starting date
-        if (utcDate(lastElementUpdate).isAfter(startListening)) {
-          reorderedCache.clear();
         }
         await wait(500);
         return channel.connected();
@@ -336,10 +340,9 @@ const createSeeMiddleware = () => {
       queryOptions.infinite = true;
       queryOptions.callback = queryCallback;
       // If listen delete
-      let processor;
-      if (listenDelete) {
-        processor = createStreamProcessor(req.session.user, req.session.user.user_email, async (elements) => {
-          // We need to keep deletion events and patch remove for meta relationships
+      const processor = createStreamProcessor(req.session.user, req.session.user.user_email, async (elements) => {
+        // We need to keep deletion events
+        if (listenDelete) {
           const stixDeletions = elements
             .filter((e) => e.topic === EVENT_TYPE_DELETE)
             .filter((d) => {
@@ -351,14 +354,15 @@ const createSeeMiddleware = () => {
             const { id: eventId, topic, data } = stixDeletions[deleteIndex];
             client.sendEvent(eventId, topic, data);
           }
-        });
-        // noinspection ES6MissingAwait
-        processor.start();
-      }
+        }
+        // All event must invalidate the cache
+        elements.forEach((e) => cache.del(e.data.data.id));
+      });
+      // noinspection ES6MissingAwait
+      processor.start();
       await initBroadcasting(req, res, client, processor);
       // Start fetching
       await elList(req.session.user, queryIndices, queryOptions);
-      reorderedCache.clear();
     } catch (e) {
       res.statusMessage = `Error in stream: ${e.message}`;
       res.status(500).end();

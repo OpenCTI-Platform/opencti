@@ -371,6 +371,9 @@ export const getInstanceIds = (instance, withoutInternal = false) => {
 };
 export const getInputIds = (type, input) => {
   const ids = [input.standard_id || generateStandardId(type, input)];
+  if (isNotEmptyField(input.internal_id)) {
+    ids.push(input.internal_id);
+  }
   if (isNotEmptyField(input.stix_id)) {
     ids.push(input.stix_id);
   }

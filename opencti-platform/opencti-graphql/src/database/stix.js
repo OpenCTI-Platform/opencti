@@ -443,7 +443,7 @@ export const extractFieldInputDefinition = (entityType) => {
 
 export const buildInputDataFromStix = (stix) => {
   const inputType = generateInternalType(stix);
-  const inputData = { stix_id: stix.id, type: inputType, update: true };
+  const inputData = { internal_id: stix.x_opencti_id, stix_id: stix.id, type: inputType, update: true };
   const compatibleTypes = extractFieldInputDefinition(inputType);
   const entries = Object.entries(stix);
   for (let index = 0; index < entries.length; index += 1) {

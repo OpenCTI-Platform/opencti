@@ -2,7 +2,6 @@ import moment from 'moment';
 import * as R from 'ramda';
 import DataLoader from 'dataloader';
 import { Promise } from 'bluebird';
-import { version as uuidVersion } from 'uuid';
 import {
   DatabaseError,
   FunctionalError,
@@ -630,7 +629,13 @@ const loadElementDependencies = async (user, element, args = {}) => {
     const entries = Object.entries(grouped);
     for (let index = 0; index < entries.length; index += 1) {
       const [key, values] = entries[index];
-      data[key] = R.map((v) => ({ ...toResolved[v.toId], i_relation: v }), values);
+      data[key] = R.map((v) => {
+        const resolvedElement = toResolved[v.toId];
+        if (resolvedElement) {
+          return { ...resolvedElement, i_relation: v };
+        }
+        return {};
+      }, values).filter((d) => isNotEmptyField(d));
     }
     if (fullResolve) {
       const flatRelations = fromRelations.map((rel) => ({ ...toResolved[rel.toId], i_relation: rel }));
@@ -846,8 +851,10 @@ const inputResolveRefs = async (user, input, type) => {
     }, resolved)
   );
   const unresolvedIds = R.filter((n) => !R.includes(n, resolvedIds), expectedIds);
-  if (unresolvedIds.length > 0) {
-    throw MissingReferenceError({ input, unresolvedIds });
+  // We only accepts missing objects_refs
+  const expectedUnresolvedIds = unresolvedIds.filter((u) => !(input[INPUT_OBJECTS] || []).includes(u));
+  if (expectedUnresolvedIds.length > 0) {
+    throw MissingReferenceError({ input, unresolvedIds: expectedUnresolvedIds });
   }
   const complete = { ...input, entity_type: type };
   const resolvedRefs = R.mergeAll(resolved);
