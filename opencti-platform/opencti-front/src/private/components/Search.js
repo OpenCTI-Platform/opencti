@@ -54,22 +54,9 @@ class Search extends Component {
       props.location,
       'view-search',
     );
-    const defaultFilters = {
-      entity_type: [
-        { id: 'Threat-Actor', value: props.t('entity_Threat-Actor') },
-        { id: 'Intrusion-Set', value: props.t('entity_Intrusion-Set') },
-        { id: 'Campaign', value: props.t('entity_Campaign') },
-        { id: 'Incident', value: props.t('entity_Incident') },
-        { id: 'Malware', value: props.t('entity_Malware') },
-        { id: 'Tool', value: props.t('entity_Tool') },
-        { id: 'Vulnerability', value: props.t('entity_Vulnerability') },
-        { id: 'Attack-Pattern', value: props.t('entity_Attack-Pattern') },
-        { id: 'Course-Of-Action', value: props.t('entity_Course-Of-Action') },
-      ],
-    };
-    const currentFilters = R.propOr(defaultFilters, 'filters', params);
+    const currentFilters = R.propOr([], 'filters', params);
     this.state = {
-      filters: R.isEmpty(currentFilters) ? defaultFilters : currentFilters,
+      filters: currentFilters,
     };
   }
 
