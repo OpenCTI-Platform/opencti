@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import EventSource from 'eventsource';
 import { assoc, filter, includes, map, pipe } from 'ramda';
 import {

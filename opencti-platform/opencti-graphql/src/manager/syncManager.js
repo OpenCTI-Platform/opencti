@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import EventSource from 'eventsource';
 import axios from 'axios';
 import conf, { logApp } from '../config/conf';
