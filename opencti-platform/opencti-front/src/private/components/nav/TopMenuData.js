@@ -125,7 +125,7 @@ class TopMenuData extends Component {
             }
             classes={{ root: classes.button }}
           >
-            {t('Live streams')}
+            {t('Data sharing')}
           </Button>
         </Security>
         <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>

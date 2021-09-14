@@ -700,6 +700,7 @@ const i18n = {
       'Delete this file': 'Supprimer ce fichier',
       'No file for the moment': 'Aucun fichier pour le moment',
       'Live streams': 'Streams live',
+      'Data sharing': 'Partage de données',
       'TAXII collections': 'Collections TAXII',
       Download: 'Télécharger',
       'Exported files': 'Fichiers exportés',
