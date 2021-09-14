@@ -326,6 +326,7 @@ const createSeeMiddleware = () => {
                   version,
                 });
                 await wait(channel.delay);
+                cache.set(stixData.id);
               }
               lastElementUpdate = start;
             } else {
