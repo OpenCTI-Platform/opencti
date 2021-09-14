@@ -24,10 +24,18 @@ from pycti.connector.opencti_connector_helper import (
     get_config_variable,
 )
 from requests.exceptions import RequestException, Timeout
+from prometheus_client import start_http_server, Counter
 
 PROCESSING_COUNT: int = 5
 MAX_PROCESSING_COUNT: int = 30
 
+# add metrics
+processed_messages_counter = Counter('processed_messages', 'Number of processed messages')
+connection_timeout_counter = Counter('connection_timeout', 'Number of connection timeouts')
+connection_error_counter = Counter('connection_error', 'Number of connection errors')
+lock_error_counter = Counter('lock_error', 'Number of lock errors')
+missing_reference_error_counter = Counter('missing_reference_error', 'Number of missing reference errors')
+unknown_error_counter = Counter('unknown_error', 'Number of unknown errors')
 
 @dataclass(unsafe_hash=True)
 class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
@@ -132,6 +140,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         while thread.is_alive():  # Loop while the thread is processing
             self.pika_connection.sleep(0.05)
         logging.info("Message processed, thread terminated")
+        processed_messages_counter.inc()
 
     # Data handling
     def data_handler(  # pylint: disable=too-many-statements, too-many-locals
@@ -171,6 +180,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             return True
         except Timeout as te:
             logging.warning("%s", f"A connection timeout occurred: {{ {te} }}")
+            connection_timeout_counter.inc()
             # Platform is under heavy load: wait for unlock & retry almost indefinitely.
             sleep_jitter = round(random.uniform(10, 30), 2)
             time.sleep(sleep_jitter)
@@ -178,6 +188,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             return True
         except RequestException as re:
             logging.error("%s", f"A connection error occurred: {{ {re} }}")
+            connection_error_counter.inc()
             time.sleep(60)
             logging.info(
                 "%s", f"Message (delivery_tag={delivery_tag}) NOT acknowledged"
@@ -189,6 +200,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         except Exception as ex:  # pylint: disable=broad-except
             error = str(ex)
             if "LockError" in error and self.processing_count < MAX_PROCESSING_COUNT:
+                lock_error_counter.inc()
                 # Platform is under heavy load:
                 # wait for unlock & retry almost indefinitely.
                 sleep_jitter = round(random.uniform(10, 30), 2)
@@ -198,6 +210,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 "MissingReferenceError" in error
                 and self.processing_count < PROCESSING_COUNT
             ):
+                missing_reference_error_counter.inc()
                 # In case of missing reference, wait & retry
                 sleep_jitter = round(random.uniform(1, 3), 2)
                 time.sleep(sleep_jitter)
@@ -213,6 +226,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 # Platform does not know what to do and raises an error:
                 # fail and acknowledge the message.
                 logging.error(error)
+                unknown_error_counter.inc()
                 self.processing_count = 0
                 cb = functools.partial(self.ack_message, channel, delivery_tag)
                 connection.add_callback_threadsafe(cb)
@@ -350,6 +364,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
 
 
 if __name__ == "__main__":
+    # Start up the server to expose the metrics.
+    start_http_server(9095)
     worker = Worker()
     try:
         worker.start()
