@@ -121,22 +121,22 @@ class StixSightingRelationships extends Component {
       },
       entity_type: {
         label: 'Entity type',
-        width: '15%',
+        width: '12%',
         isSortable: false,
       },
       entity: {
         label: 'Entity',
-        width: '15%',
+        width: '12%',
         isSortable: false,
       },
       first_seen: {
         label: 'First obs.',
-        width: '10%',
+        width: '12%',
         isSortable: true,
       },
       last_seen: {
         label: 'Last obs.',
-        width: '10%',
+        width: '12%',
         isSortable: true,
       },
       confidence: {

@@ -8,10 +8,20 @@ import {
   StixSightingRelationshipLine,
   StixSightingRelationshipLineDummy,
 } from './StixSightingRelationshipLine';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
 
 class StixSightingRelationshipsLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'stixSightingRelationships',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
     const {
       initialLoading, dataColumns, relay, onLabelClick,

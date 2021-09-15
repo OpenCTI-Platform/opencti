@@ -24,10 +24,13 @@ import { AutoFix } from 'mdi-material-ui';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import Tooltip from '@material-ui/core/Tooltip/Tooltip';
-import { FIVE_SECONDS } from '../../../utils/Time';
+import Typography from '@material-ui/core/Typography';
+import Paper from '@material-ui/core/Paper';
+import { FIVE_SECONDS, parse } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import { truncate } from '../../../utils/String';
+import ItemBoolean from '../../../components/ItemBoolean';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -63,6 +66,12 @@ const styles = (theme) => ({
     width: '100%',
     borderRadius: 5,
     height: 10,
+  },
+  paper: {
+    margin: '10px 0 20px 0',
+    padding: '15px',
+    borderRadius: 6,
+    position: 'relative',
   },
 });
 
@@ -154,14 +163,14 @@ class RulesListComponent extends Component {
 
   render() {
     const {
-      classes, t, data, keyword, nsdt,
+      classes, t, data, keyword, nsdt, n,
     } = this.props;
     const sortByNameCaseInsensitive = R.sortBy(
       R.compose(R.toLower, R.prop('name')),
     );
-    const filterByKeyword = (n) => keyword === ''
-      || n.user.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-      || n.user.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+    const filterByKeyword = (p) => keyword === ''
+      || p.user.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+      || p.user.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
     const rules = R.pipe(
       R.propOr([], 'rules'),
       R.filter(filterByKeyword),
@@ -170,16 +179,52 @@ class RulesListComponent extends Component {
     const tasks = R.pathOr([], ['tasks', 'edges'], data);
     const modules = R.pathOr([], ['settings', 'platform_modules'], data);
     const isEngineEnabled = R.head(
-      R.filter((n) => n.id === 'RULE_ENGINE', modules),
+      R.filter((p) => p.id === 'RULE_ENGINE', modules),
     )?.enable;
+    const ruleManagerInfo = R.propOr({}, 'ruleManagerInfo', data);
     return (
       <div>
+        <div style={{ width: '100%' }}>
+          <Paper
+            variant="outlined"
+            classes={{ root: classes.paper }}
+            elevation={2}
+          >
+            <Grid container={true} spacing={3}>
+              <Grid item={true} xs={4}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('Rule manager')}
+                </Typography>
+                <ItemBoolean
+                  status={ruleManagerInfo.activated}
+                  label={
+                    ruleManagerInfo.activated ? t('Enabled') : t('Disabled')
+                  }
+                />
+              </Grid>
+              <Grid item={true} xs={4}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('Last processed')}
+                </Typography>
+                {nsdt(
+                  parse(parseInt(ruleManagerInfo.lastEventId.split('-')[0], 10)),
+                )}
+              </Grid>
+              <Grid item={true} xs={4}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('Number of errors')}
+                </Typography>
+                {n(ruleManagerInfo.errors.length)}
+              </Grid>
+            </Grid>
+          </Paper>
+        </div>
         <Grid container={true} spacing={3}>
           {rules.map((rule) => {
             const task = R.head(
               R.map(
-                (n) => n.node,
-                R.filter((n) => n.node.rule === rule.id, tasks),
+                (p) => p.node,
+                R.filter((p) => p.node.rule === rule.id, tasks),
               ),
             );
             return (
@@ -362,6 +407,14 @@ const RulesList = createRefetchContainer(
           platform_modules {
             id
             enable
+          }
+        }
+        ruleManagerInfo {
+          id
+          activated
+          lastEventId
+          errors {
+            timestamp
           }
         }
         rules {

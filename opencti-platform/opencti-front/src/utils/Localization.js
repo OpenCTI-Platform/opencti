@@ -715,6 +715,8 @@ const i18n = {
       Field: 'Attribut',
       Continue: 'Continuer',
       'Field type': "Type d'attribut",
+      'Number of errors': "Nombre d'erreurs",
+      'Last run': 'Dernière exécution',
       Values: 'Valeurs',
       entity: 'entité',
       entities: 'entités',
