@@ -84,6 +84,7 @@ const uniqFilters = [
   'x_opencti_score_gt',
   'x_opencti_score_lte',
   'toSightingId',
+  'basedOn',
 ];
 export const isUniqFilter = (key) => uniqFilters.includes(key)
   || key.endsWith('start_date')
@@ -151,7 +152,7 @@ class Filters extends Component {
         break;
       case 'createdBy':
         fetchQuery(identityCreationIdentitiesSearchQuery, {
-          types: ['Organization', 'Individual'],
+          types: ['Organization', 'Individual', 'System'],
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
@@ -365,6 +366,22 @@ class Filters extends Component {
               detectionEntities,
               this.state.entities.x_opencti_detection,
             ),
+          },
+        });
+        break;
+      case 'basedOn':
+        // eslint-disable-next-line no-case-declarations
+        const basedOnEntities = R.pipe(
+          R.map((n) => ({
+            label: n === 'EXISTS' ? t('Yes') : t('No'),
+            value: n,
+            type: 'attribute',
+          })),
+        )(['EXISTS', null]);
+        this.setState({
+          entities: {
+            ...this.state.entities,
+            basedOn: R.union(basedOnEntities, this.state.entities.basedOn),
           },
         });
         break;
