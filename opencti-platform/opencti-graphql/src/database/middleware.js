@@ -803,24 +803,21 @@ const inputResolveRefs = async (user, input, type) => {
       const isListing = Array.isArray(id);
       // Handle specific case of object label that can be directly the value instead of the key.
       if (src === INPUT_LABELS) {
-        const elements = R.map((label) => ({ id: idLabel(label), destKey, multiple: true }), id);
+        const elements = R.uniq(id.map((label) => idLabel(label))).map((lid) => ({ id: lid, destKey, multiple: true }));
         fetchingIds.push(...elements);
         expectedIds.push(...elements.map((e) => e.id));
       } else if (isListing) {
         const elements = R.uniq(id).map((i) => ({ id: i, destKey, multiple: true }));
-        expectedIds.push(...R.uniq(id));
         fetchingIds.push(...elements);
-      } else {
-        expectedIds.push(id);
+        expectedIds.push(...elements.map((e) => e.id));
+      } else if (!expectedIds.includes(id)) {
         fetchingIds.push({ id, destKey, multiple: false });
+        expectedIds.push(id);
       }
     }
   }
   // eslint-disable-next-line prettier/prettier
-  const resolvedElements = await internalFindByIds(
-    user,
-    fetchingIds.map((i) => i.id)
-  );
+  const resolvedElements = await internalFindByIds(user, fetchingIds.map((i) => i.id));
   const resolvedElementWithConfGroup = resolvedElements.map((d) => {
     const elementIds = getInstanceIds(d);
     const matchingConfigs = R.filter((a) => elementIds.includes(a.id), fetchingIds);
@@ -851,7 +848,7 @@ const inputResolveRefs = async (user, input, type) => {
     }, resolved)
   );
   const unresolvedIds = R.filter((n) => !R.includes(n, resolvedIds), expectedIds);
-  // We only accepts missing objects_refs
+  // We only accepts missing objects_refs (Report, Opinion, Note, Observed-data)
   const expectedUnresolvedIds = unresolvedIds.filter((u) => !(input[INPUT_OBJECTS] || []).includes(u));
   if (expectedUnresolvedIds.length > 0) {
     throw MissingReferenceError({ input, unresolvedIds: expectedUnresolvedIds });

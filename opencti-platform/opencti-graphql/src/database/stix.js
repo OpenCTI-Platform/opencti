@@ -101,7 +101,7 @@ import {
 import { observableValue } from '../utils/format';
 import { generateInternalType } from '../schema/schemaUtils';
 import typeDefs from '../../config/schema/opencti.graphql';
-import { generateStandardId } from '../schema/identifier';
+import { generateStandardId, normalizeName } from '../schema/identifier';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
 
@@ -466,7 +466,10 @@ export const buildInputDataFromStix = (stix) => {
       } else if (isStixSightingRelationship(inputType) && translatedKey === 'toId') {
         inputData[translatedKey] = R.head(stix[key]);
       } else if (translatedKey === INPUT_LABELS) {
-        inputData[translatedKey] = stix[key].map((v) => generateStandardId(ENTITY_TYPE_LABEL, { value: v }));
+        inputData[translatedKey] = stix[key].map((v) => {
+          const labelName = { value: normalizeName(v) };
+          return generateStandardId(ENTITY_TYPE_LABEL, labelName);
+        });
       } else if (translatedKey === INPUT_EXTERNAL_REFS) {
         inputData[translatedKey] = stix[key].map((v) => generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, v));
       } else if (translatedKey === INPUT_KILLCHAIN) {
