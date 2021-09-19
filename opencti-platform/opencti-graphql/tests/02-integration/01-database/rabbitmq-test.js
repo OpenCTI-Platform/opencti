@@ -12,7 +12,7 @@ describe('Rabbit basic and utils', () => {
   it('should rabbit in correct version', async () => {
     // Just wait one second to let redis client initialize
     const rabbitVersion = await getRabbitMQVersion();
-    expect(rabbitVersion).toEqual(expect.stringMatching(/^3.8\./g));
+    expect(rabbitVersion).toEqual(expect.stringMatching(/^3.9\./g));
   });
 
   it('should rabbit metrics accurate', async () => {
@@ -20,7 +20,7 @@ describe('Rabbit basic and utils', () => {
     const data = await metrics();
     expect(data).not.toBeNull();
     expect(data.consumers).toEqual(0);
-    expect(data.overview.management_version).toEqual(expect.stringMatching(/^3.8\./g));
+    expect(data.overview.management_version).toEqual(expect.stringMatching(/^3.9\./g));
   });
 });
 
