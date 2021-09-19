@@ -45,7 +45,7 @@ const connectorResolvers = {
   },
   Connector: {
     connector_user: (connector, _, { user }) => findUserById(user, connector.connector_user_id),
-    works: (connector, args, { user }) => worksForConnector(connector.id, user, args),
+    works: (connector, args, { user }) => worksForConnector(user, connector.id, args),
   },
   Work: {
     connector: (work, _, { user }) => connectorForWork(user, work.id),

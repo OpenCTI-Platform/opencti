@@ -18,6 +18,7 @@ import { CONNECTOR_INTERNAL_EXPORT_FILE, CONNECTOR_INTERNAL_IMPORT_FILE } from '
 import { SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
+import { deleteWorkForConnector } from "./work";
 
 // region utils
 const completeConnector = (connector) => {
@@ -206,7 +207,7 @@ export const registerConnector = async (user, connectorData) => {
 };
 
 export const connectorDelete = async (user, connectorId) => {
-  // TODO Delete all works for this connector
+  await deleteWorkForConnector(user, connectorId);
   await unregisterConnector(connectorId);
   return deleteElementById(user, connectorId, ENTITY_TYPE_CONNECTOR);
 };
