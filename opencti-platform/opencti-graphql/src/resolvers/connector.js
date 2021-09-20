@@ -27,6 +27,7 @@ import {
   worksForConnector,
   findAll,
   findById,
+  deleteWorkForConnector,
 } from '../domain/work';
 import { findById as findUserById } from '../domain/user';
 import { redisGetWork, redisUpdateActionExpectation } from '../database/redis';
@@ -72,6 +73,7 @@ const connectorResolvers = {
       toReceived: ({ message }) => updateReceivedTime(user, id, message),
       toProcessed: ({ message, inError }) => updateProcessedTime(user, id, message, inError),
     }),
+    workDelete: (_, { connectorId }, { user }) => deleteWorkForConnector(user, connectorId),
     // Sync part
     synchronizerAdd: (_, { input }, { user }) => registerSync(user, input),
     synchronizerEdit: (_, { id }, { user }) => ({

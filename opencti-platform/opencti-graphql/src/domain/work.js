@@ -96,7 +96,7 @@ export const deleteWork = async (user, workId) => {
 };
 
 export const deleteWorkForConnector = async (user, connectorId) => {
-  const works = await worksForConnector(user, connectorId);
+  const works = await worksForConnector(user, connectorId, { first: 5000 });
   await Promise.all(R.map((w) => deleteWorkRaw(w), works));
   return true;
 };

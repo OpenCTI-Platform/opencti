@@ -9675,6 +9675,7 @@ type Mutation {
   workAdd(connectorId: String!, friendlyName: String): Work!
     @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   workEdit(id: ID!): WorkEditMutations @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  workDelete(connectorId: String!): Boolean
 
   ### TASK
   deleteTask(id: ID!): ID! @auth(for: [KNOWLEDGE_KNUPDATE])
