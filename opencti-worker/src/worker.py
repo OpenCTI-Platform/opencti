@@ -36,11 +36,16 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
     opencti_token: str
     log_level: str
     ssl_verify: Union[bool, str] = False
+    json_logging: bool = False
 
     def __post_init__(self) -> None:
         super().__init__()
         self.api = OpenCTIApiClient(
-            self.opencti_url, self.opencti_token, self.log_level, self.ssl_verify
+            url=self.opencti_url,
+            token=self.opencti_token,
+            log_level=self.log_level,
+            ssl_verify=self.ssl_verify,
+            json_logging=self.json_logging,
         )
         self.queue_name = self.connector["config"]["push"]
         self.pika_credentials = pika.PlainCredentials(
@@ -254,19 +259,31 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         else:
             config = {}
 
-        self.log_level = os.getenv("WORKER_LOG_LEVEL") or config["worker"]["log_level"]
-        self.opencti_url = os.getenv("OPENCTI_URL") or config["opencti"]["url"]
-        self.opencti_token = os.getenv("OPENCTI_TOKEN") or config["opencti"]["token"]
+        # Load API config
+        self.opencti_url = get_config_variable(
+            "OPENCTI_URL", ["opencti", "url"], config
+        )
+        self.opencti_token = get_config_variable(
+            "OPENCTI_TOKEN", ["opencti", "token"], config
+        )
         self.opencti_ssl_verify = get_config_variable(
             "OPENCTI_SSL_VERIFY", ["opencti", "ssl_verify"], config, False, False
+        )
+        self.opencti_json_logging = get_config_variable(
+            "OPENCTI_JSON_LOGGING", ["opencti", "json_logging"], config
+        )
+        # Load worker config
+        self.log_level = get_config_variable(
+            "WORKER_LOG_LEVEL", ["worker", "log_level"], config
         )
 
         # Check if openCTI is available
         self.api = OpenCTIApiClient(
-            self.opencti_url,
-            self.opencti_token,
-            self.log_level,
-            self.opencti_ssl_verify,
+            url=self.opencti_url,
+            token=self.opencti_token,
+            log_level=self.log_level,
+            ssl_verify=self.opencti_ssl_verify,
+            json_logging=self.opencti_json_logging,
         )
 
         # Configure logger
@@ -307,6 +324,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 self.opencti_token,
                                 self.log_level,
                                 self.opencti_ssl_verify,
+                                self.opencti_json_logging,
                             )
                             self.consumer_threads[queue].start()
                     else:
@@ -316,6 +334,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             self.opencti_token,
                             self.log_level,
                             self.opencti_ssl_verify,
+                            self.opencti_json_logging,
                         )
                         self.consumer_threads[queue].start()
 
