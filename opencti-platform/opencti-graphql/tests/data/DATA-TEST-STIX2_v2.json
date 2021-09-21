@@ -95,7 +95,6 @@
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
       "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
       "object_refs": [
-        "malware--00000000-0000-4000-0000-000000000000",
         "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
         "indicator--10e9a46e-7edb-496b-a167-e27ea3ed0079",
         "indicator--51640662-9c78-4402-932f-1d4531624723",

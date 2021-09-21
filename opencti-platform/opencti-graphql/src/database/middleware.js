@@ -2799,7 +2799,7 @@ export const createInferredEntity = async (input, ruleContent, type) => {
   const patch = createRuleDataPatch(input);
   const inputEntity = { ...input, ...patch };
   // TODO ASK JULIEN
-  // const data = await createEntity(RULE_MANAGER_USER, inputEntity, type);
+  // const data = await createEntityRaw(RULE_MANAGER_USER, inputEntity, type);
   // return data.event;
 };
 // endregion
