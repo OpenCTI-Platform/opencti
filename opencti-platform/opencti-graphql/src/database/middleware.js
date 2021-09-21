@@ -2582,12 +2582,12 @@ const createEntityRaw = async (user, participantIds, input, type) => {
   const standardId = input.standard_id || generateStandardId(type, input);
   // Check if the entity exists, must be done with SYSTEM USER to really find it.
   const existingEntities = await internalFindByIds(SYSTEM_USER, participantIds, { type });
-  const existingByStandard = R.find((e) => e.standard_id === standardId, filteredEntities);
   // If existing entities have been found and type is a STIX Core Object
   let dataEntity;
   if (existingEntities.length > 0) {
     // We need to filter what we found with the user rights
     const filteredEntities = filterElementsAccordingToUser(user, existingEntities);
+    const existingByStandard = R.find((e) => e.standard_id === standardId, filteredEntities);
     // If nothing accessible for this user, throw ForbiddenAccess
     if (filteredEntities.length === 0) {
       throw UnsupportedError('Restricted entity already exists');
