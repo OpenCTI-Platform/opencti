@@ -138,6 +138,7 @@ class RootStixCyberObservable extends Component {
                               'Sector',
                               'Organization',
                               'Individual',
+                              'System',
                             ]}
                           />
                         </React.Fragment>

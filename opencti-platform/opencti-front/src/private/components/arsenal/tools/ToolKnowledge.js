@@ -221,6 +221,7 @@ class ToolKnowledgeComponent extends Component {
                   'Sector',
                   'Organization',
                   'Individual',
+                  'System',
                 ]}
                 {...routeProps}
               />

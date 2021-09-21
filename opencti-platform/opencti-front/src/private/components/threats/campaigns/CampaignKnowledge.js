@@ -231,6 +231,7 @@ class CampaignKnowledgeComponent extends Component {
                   'Sector',
                   'Organization',
                   'Individual',
+                  'System',
                 ]}
                 {...routeProps}
               />

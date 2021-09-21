@@ -255,6 +255,7 @@ class ThreatActorKnowledgeComponent extends Component {
                 'Sector',
                 'Organization',
                 'Individual',
+                'System',
               ]}
               {...routeProps}
             />

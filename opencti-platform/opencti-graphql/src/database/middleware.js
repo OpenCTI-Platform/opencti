@@ -2758,7 +2758,19 @@ const createEntityRaw = async (user, participantIds, input, type) => {
   )(data);
   // Simply return the data
   const relations = relToCreate.map((r) => r.relation);
-  return { type: TRX_CREATION, element: created, relations };
+
+  // Index the created element
+  const dataEntity = { type: TRX_CREATION, element: created, relations };
+  await indexCreatedElement(dataEntity);
+  // Push the input in the stream
+  let event;
+  if (dataEntity.type === TRX_CREATION) {
+    const loaders = { stixLoadById, connectionLoaders };
+    event = await storeCreateEvent(user, dataEntity.element, input, loaders);
+  } else if (dataEntity.patchInputs.length > 0) {
+    event = await storeUpdateEvent(user, dataEntity.element, dataEntity.patchInputs);
+  }
+  return R.assoc('event', event, dataEntity);
 };
 export const createEntity = async (user, input, type) => {
   let lock;
@@ -2773,15 +2785,6 @@ export const createEntity = async (user, input, type) => {
     lock = await lockResource(participantIds);
     // Create the object
     const dataEntity = await createEntityRaw(user, participantIds, resolvedInput, type);
-    // Index the created element
-    await indexCreatedElement(dataEntity);
-    // Push the input in the stream
-    if (dataEntity.type === TRX_CREATION) {
-      const loaders = { stixLoadById, connectionLoaders };
-      await storeCreateEvent(user, dataEntity.element, resolvedInput, loaders);
-    } else if (dataEntity.patchInputs.length > 0) {
-      await storeUpdateEvent(user, dataEntity.element, dataEntity.patchInputs);
-    }
     // Return created element after waiting for it.
     return R.assoc('i_upserted', dataEntity.type !== TRX_CREATION, dataEntity.element);
   } catch (err) {
@@ -2792,6 +2795,14 @@ export const createEntity = async (user, input, type) => {
   } finally {
     if (lock) await lock.unlock();
   }
+};
+
+export const createInferredEntity = async (input, ruleContent, type) => {
+  logApp.info('Create inferred entity', { type });
+  const patch = createRuleDataPatch(input);
+  const inputEntity = { ...input, ...patch };
+  const data = await createEntity(RULE_MANAGER_USER, inputEntity, type);
+  return data.event;
 };
 // endregion
 

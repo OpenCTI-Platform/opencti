@@ -148,12 +148,14 @@ export default createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         fromId: fragmentVariables.fromId,
+        toId: fragmentVariables.toId,
         toTypes: fragmentVariables.toTypes,
         search: fragmentVariables.search,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: stixSightingRelationshipsLinesQuery,

@@ -6,9 +6,8 @@ import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INDICATOR } from '../.
 const id = 'observe_sighting';
 const name = 'Sighting observable';
 const description =
-  'If **observed-data A (created-by Organization X)** have `object` **observable B** and **indicator C** ' +
-  'is `based-on` **observable B**, and `revoked` = **false** and `x_opencti_detection` = **false**, ' +
-  'then **indicator C** is `sighted` in **organization X**.';
+  'If **observed-data A** (`created-by` **identity X**) have `object` **observable B** and **indicator C** ' +
+  'is `based-on` **observable B**, then **indicator C** is `sighted` in **identity X**.';
 
 // For rescan
 const scan = {

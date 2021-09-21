@@ -123,6 +123,7 @@ class RootArtifact extends Component {
                               'Sector',
                               'Organization',
                               'Individual',
+                              'System',
                             ]}
                           />
                         </React.Fragment>

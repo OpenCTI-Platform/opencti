@@ -15,9 +15,9 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
 
-// 'If **observed-data A (created-by Organization X)** have `object` **observable B** and **indicator C** ' +
-// 'is `based-on` **observable B**, and `revoked` = **false** and `x_opencti_detection` = **false**' +
-// 'then **indicator C** is `sighted` in **organization X**.';
+// 'If **observed-data A** (`created-by` **identity X**) have `object` **observable B** and **indicator C** ' +
+// 'is `based-on` **observable B**, then **indicator C** is `sighted` in **identity X**.';
+// TODO Adapt the rule to the description above
 
 const ruleObserveSightingBuilder = () => {
   const { id } = def;
