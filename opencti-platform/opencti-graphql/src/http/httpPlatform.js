@@ -27,6 +27,8 @@ import { LOGIN_ACTION } from '../config/audit';
 
 const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 
+const promMid = require('express-prometheus-middleware');
+
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
     maxAge: 5000,
@@ -83,6 +85,21 @@ const createApp = async (apolloServer) => {
   }
   app.use(securityMiddleware);
   app.use(compression({}));
+  const exposePrometheusMetrics = booleanConf('app:telemetry:prometheus:enabled', false);
+  if (exposePrometheusMetrics) {
+    const metricsPath = nconf.get('app:telemetry:prometheus:metrics_path') || '/metrics';
+    const fullMetricsPath = `${basePath}${metricsPath}`;
+    logApp.info(`Adding prometheus middleware (for metrics) on path: ${fullMetricsPath}`);
+    app.use(
+      promMid({
+        metricsPath: fullMetricsPath,
+        collectDefaultMetrics: true,
+        requestDurationBuckets: [0.1, 0.5, 1, 1.5],
+        requestLengthBuckets: [512, 1024, 5120, 10240, 51200, 102400],
+        responseLengthBuckets: [512, 1024, 5120, 10240, 51200, 102400],
+      })
+    );
+  }
 
   // -- Generated CSS with correct base path
   app.get(`${basePath}/static/css/*`, (req, res) => {
