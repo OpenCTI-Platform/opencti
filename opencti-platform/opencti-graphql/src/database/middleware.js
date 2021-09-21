@@ -182,7 +182,6 @@ import {
   yearFormat,
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
-// eslint-disable-next-line import/no-cycle
 import { deleteAllFiles } from './minio';
 import { filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
 import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
@@ -817,7 +816,10 @@ const inputResolveRefs = async (user, input, type) => {
     }
   }
   // eslint-disable-next-line prettier/prettier
-  const resolvedElements = await internalFindByIds(user, fetchingIds.map((i) => i.id));
+  const resolvedElements = await internalFindByIds(
+    user,
+    fetchingIds.map((i) => i.id)
+  );
   const resolvedElementWithConfGroup = resolvedElements.map((d) => {
     const elementIds = getInstanceIds(d);
     const matchingConfigs = R.filter((a) => elementIds.includes(a.id), fetchingIds);
@@ -2580,7 +2582,9 @@ const createEntityRaw = async (user, participantIds, input, type) => {
   const standardId = input.standard_id || generateStandardId(type, input);
   // Check if the entity exists, must be done with SYSTEM USER to really find it.
   const existingEntities = await internalFindByIds(SYSTEM_USER, participantIds, { type });
+  const existingByStandard = R.find((e) => e.standard_id === standardId, filteredEntities);
   // If existing entities have been found and type is a STIX Core Object
+  let dataEntity;
   if (existingEntities.length > 0) {
     // We need to filter what we found with the user rights
     const filteredEntities = filterElementsAccordingToUser(user, existingEntities);
@@ -2589,24 +2593,23 @@ const createEntityRaw = async (user, participantIds, input, type) => {
       throw UnsupportedError('Restricted entity already exists');
     }
     if (filteredEntities.length === 1) {
-      return upsertElementRaw(user, R.head(filteredEntities), type, input);
+      dataEntity = upsertElementRaw(user, R.head(filteredEntities), type, input);
     }
     // If creation is not by a reference
     // We can in best effort try to merge a common stix_id
-    if (input.update === true) {
+    else if (input.update === true) {
       // The new one is new reference, merge all found entities
       // Target entity is existingByStandard by default or any other
       const target = R.find((e) => e.standard_id === standardId, filteredEntities) || R.head(filteredEntities);
       const sourcesEntities = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
       const sources = sourcesEntities.map((s) => s.internal_id);
       await mergeEntities(user, target.internal_id, sources, { locks: participantIds });
-      return upsertElementRaw(user, target, type, input);
+      dataEntity = upsertElementRaw(user, target, type, input);
     }
     // Sometimes multiple entities can match
     // Looking for aliasA, aliasB, find in different entities for example
     // In this case, we try to find if one match the standard id
-    const existingByStandard = R.find((e) => e.standard_id === standardId, filteredEntities);
-    if (existingByStandard) {
+    else if (existingByStandard) {
       // If a STIX ID has been passed in the creation
       if (input.stix_id) {
         // Find the entity corresponding to this STIX ID
@@ -2622,146 +2625,149 @@ const createEntityRaw = async (user, participantIds, input, type) => {
       }
       // In this mode we can safely consider this entity like the existing one.
       // We can upsert element except the aliases that are part of other entities
-      const concurrentEntities = R.filter((e) => e.standard_id !== standardId, filteredEntities);
-      const key = resolveAliasesField(type);
-      const concurrentAliases = R.flatten(R.map((c) => [c[key], c.name], concurrentEntities));
-      const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
-      const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), input[key] || []);
-      const inputAliases = { ...input, [key]: filteredAliases };
-      return upsertElementRaw(user, existingByStandard, type, inputAliases);
+      else {
+        const concurrentEntities = R.filter((e) => e.standard_id !== standardId, filteredEntities);
+        const key = resolveAliasesField(type);
+        const concurrentAliases = R.flatten(R.map((c) => [c[key], c.name], concurrentEntities));
+        const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
+        const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), input[key] || []);
+        const inputAliases = { ...input, [key]: filteredAliases };
+        dataEntity = upsertElementRaw(user, existingByStandard, type, inputAliases);
+      }
+    } else {
+      // If not we dont know what to do, just throw an exception.
+      const entityIds = R.map((i) => i.standard_id, filteredEntities);
+      throw UnsupportedError('Cant upsert entity. Too many entities resolved', { input, entityIds });
     }
-    // If not we dont know what to do, just throw an exception.
-    const entityIds = R.map((i) => i.standard_id, filteredEntities);
-    throw UnsupportedError('Cant upsert entity. Too many entities resolved', { input, entityIds });
-  }
-  // Complete with identifiers
-  const today = now();
-  // Default attributes
-  let data = R.pipe(
-    R.assoc('_index', inferIndexFromConceptType(type)),
-    R.assoc(ID_INTERNAL, internalId),
-    R.assoc(ID_STANDARD, standardId),
-    R.assoc('entity_type', type),
-    R.dissoc('update'),
-    R.dissoc(INPUT_CREATED_BY),
-    R.dissoc(INPUT_MARKINGS),
-    R.dissoc(INPUT_LABELS),
-    R.dissoc(INPUT_KILLCHAIN),
-    R.dissoc(INPUT_EXTERNAL_REFS),
-    R.dissoc(INPUT_OBJECTS)
-  )(input);
-  // Some internal objects have dates
-  if (isDatedInternalObject(type)) {
-    data = R.pipe(R.assoc('created_at', today), R.assoc('updated_at', today))(data);
-  }
-  // Stix-Object
-  if (isStixObject(type)) {
-    const stixIds = input.x_opencti_stix_ids || [];
-    const haveStixId = isNotEmptyField(input.stix_id);
-    if (haveStixId && input.stix_id !== standardId) {
-      stixIds.push(input.stix_id.toLowerCase());
+  } else {
+    // Complete with identifiers
+    const today = now();
+    // Default attributes
+    let data = R.pipe(
+      R.assoc('_index', inferIndexFromConceptType(type)),
+      R.assoc(ID_INTERNAL, internalId),
+      R.assoc(ID_STANDARD, standardId),
+      R.assoc('entity_type', type),
+      R.dissoc('update'),
+      R.dissoc(INPUT_CREATED_BY),
+      R.dissoc(INPUT_MARKINGS),
+      R.dissoc(INPUT_LABELS),
+      R.dissoc(INPUT_KILLCHAIN),
+      R.dissoc(INPUT_EXTERNAL_REFS),
+      R.dissoc(INPUT_OBJECTS)
+    )(input);
+    // Some internal objects have dates
+    if (isDatedInternalObject(type)) {
+      data = R.pipe(R.assoc('created_at', today), R.assoc('updated_at', today))(data);
     }
-    data = R.pipe(
-      R.assoc(IDS_STIX, stixIds),
-      R.dissoc('stix_id'),
-      R.assoc('spec_version', STIX_SPEC_VERSION),
-      R.assoc('created_at', today),
-      R.assoc('updated_at', today)
-    )(data);
-  }
-  // Stix-Meta-Object
-  if (isStixMetaObject(type)) {
-    data = R.pipe(
-      R.assoc('created', R.isNil(input.created) ? today : input.created),
-      R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
-    )(data);
-  }
-  // STIX-Core-Object
-  // -- STIX-Domain-Object
-  if (isStixDomainObject(type)) {
-    data = R.pipe(
-      R.assoc('revoked', R.isNil(data.revoked) ? false : data.revoked),
-      R.assoc('confidence', R.isNil(data.confidence) ? computeConfidenceLevel(input) : data.confidence),
-      R.assoc('lang', R.isNil(data.lang) ? 'en' : data.lang),
-      R.assoc('created', R.isNil(input.created) ? today : input.created),
-      R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
-    )(data);
-    // Get statuses
-    const statuses = await listEntities(user, [ENTITY_TYPE_STATUS], {
-      first: 1,
-      orderBy: 'order',
-      orderMode: 'asc',
-      filters: [{ key: 'type', values: [type] }],
-      connectionFormat: false,
-    });
-    if (statuses.length > 0) {
-      data = R.assoc('status_id', R.head(statuses).id, data);
-    }
-  }
-  // -- Aliased entities
-  if (isStixObjectAliased(type)) {
-    data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesIdsForInstance(input), data);
-  }
-  // Add the additional fields for dates (day, month, year)
-  const dataKeys = Object.keys(data);
-  for (let index = 0; index < dataKeys.length; index += 1) {
-    // Adding dates elements
-    if (R.includes(dataKeys[index], statsDateAttributes)) {
-      const dayValue = dayFormat(data[dataKeys[index]]);
-      const monthValue = monthFormat(data[dataKeys[index]]);
-      const yearValue = yearFormat(data[dataKeys[index]]);
+    // Stix-Object
+    if (isStixObject(type)) {
+      const stixIds = input.x_opencti_stix_ids || [];
+      const haveStixId = isNotEmptyField(input.stix_id);
+      if (haveStixId && input.stix_id !== standardId) {
+        stixIds.push(input.stix_id.toLowerCase());
+      }
       data = R.pipe(
-        R.assoc(`i_${dataKeys[index]}_day`, dayValue),
-        R.assoc(`i_${dataKeys[index]}_month`, monthValue),
-        R.assoc(`i_${dataKeys[index]}_year`, yearValue)
+        R.assoc(IDS_STIX, stixIds),
+        R.dissoc('stix_id'),
+        R.assoc('spec_version', STIX_SPEC_VERSION),
+        R.assoc('created_at', today),
+        R.assoc('updated_at', today)
       )(data);
     }
-  }
-  // Create the input
-  const relToCreate = [];
-  if (isStixCoreObject(type)) {
-    const inputFields = STIX_META_RELATIONSHIPS_INPUTS;
-    for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
-      const inputField = inputFields[fieldIndex];
-      if (input[inputField]) {
-        const relType = FIELD_TO_META_RELATION[inputField];
-        relToCreate.push(...buildInnerRelation(data, input[inputField], relType));
+    // Stix-Meta-Object
+    if (isStixMetaObject(type)) {
+      data = R.pipe(
+        R.assoc('created', R.isNil(input.created) ? today : input.created),
+        R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
+      )(data);
+    }
+    // STIX-Core-Object
+    // -- STIX-Domain-Object
+    if (isStixDomainObject(type)) {
+      data = R.pipe(
+        R.assoc('revoked', R.isNil(data.revoked) ? false : data.revoked),
+        R.assoc('confidence', R.isNil(data.confidence) ? computeConfidenceLevel(input) : data.confidence),
+        R.assoc('lang', R.isNil(data.lang) ? 'en' : data.lang),
+        R.assoc('created', R.isNil(input.created) ? today : input.created),
+        R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
+      )(data);
+      // Get statuses
+      const statuses = await listEntities(user, [ENTITY_TYPE_STATUS], {
+        first: 1,
+        orderBy: 'order',
+        orderMode: 'asc',
+        filters: [{ key: 'type', values: [type] }],
+        connectionFormat: false,
+      });
+      if (statuses.length > 0) {
+        data = R.assoc('status_id', R.head(statuses).id, data);
       }
     }
-  }
-  if (isStixCyberObservable(type)) {
-    const inputFields = stixCyberObservableTypeFields()[type] || [];
-    for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
-      const inputField = inputFields[fieldIndex];
-      if (input[inputField]) {
-        const instancesToCreate = Array.isArray(input[inputField]) ? input[inputField] : [input[inputField]];
-        const stixField = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[inputField];
-        const relType = STIX_ATTRIBUTE_TO_CYBER_RELATIONS[stixField];
-        const newRelations = instancesToCreate
-          .map((to) => {
-            const authorizedRelationTypes = stixCyberObservableRelationshipsMapping[`${type}_${to.entity_type}`];
-            if (!authorizedRelationTypes.includes(relType)) {
-              throw UnsupportedError(`${relType} is not allowed for this`);
-            }
-            return buildInnerRelation(data, input[inputField], relType);
-          })
-          .flat();
-        relToCreate.push(...newRelations);
+    // -- Aliased entities
+    if (isStixObjectAliased(type)) {
+      data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesIdsForInstance(input), data);
+    }
+    // Add the additional fields for dates (day, month, year)
+    const dataKeys = Object.keys(data);
+    for (let index = 0; index < dataKeys.length; index += 1) {
+      // Adding dates elements
+      if (R.includes(dataKeys[index], statsDateAttributes)) {
+        const dayValue = dayFormat(data[dataKeys[index]]);
+        const monthValue = monthFormat(data[dataKeys[index]]);
+        const yearValue = yearFormat(data[dataKeys[index]]);
+        data = R.pipe(
+          R.assoc(`i_${dataKeys[index]}_day`, dayValue),
+          R.assoc(`i_${dataKeys[index]}_month`, monthValue),
+          R.assoc(`i_${dataKeys[index]}_year`, yearValue)
+        )(data);
       }
     }
+    // Create the input
+    const relToCreate = [];
+    if (isStixCoreObject(type)) {
+      const inputFields = STIX_META_RELATIONSHIPS_INPUTS;
+      for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
+        const inputField = inputFields[fieldIndex];
+        if (input[inputField]) {
+          const relType = FIELD_TO_META_RELATION[inputField];
+          relToCreate.push(...buildInnerRelation(data, input[inputField], relType));
+        }
+      }
+    }
+    if (isStixCyberObservable(type)) {
+      const inputFields = stixCyberObservableTypeFields()[type] || [];
+      for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
+        const inputField = inputFields[fieldIndex];
+        if (input[inputField]) {
+          const instancesToCreate = Array.isArray(input[inputField]) ? input[inputField] : [input[inputField]];
+          const stixField = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[inputField];
+          const relType = STIX_ATTRIBUTE_TO_CYBER_RELATIONS[stixField];
+          const newRelations = instancesToCreate
+            .map((to) => {
+              const authorizedRelationTypes = stixCyberObservableRelationshipsMapping[`${type}_${to.entity_type}`];
+              if (!authorizedRelationTypes.includes(relType)) {
+                throw UnsupportedError(`${relType} is not allowed for this`);
+              }
+              return buildInnerRelation(data, input[inputField], relType);
+            })
+            .flat();
+          relToCreate.push(...newRelations);
+        }
+      }
+    }
+    // Transaction succeed, complete the result to send it back
+    const created = R.pipe(
+      R.assoc('id', internalId),
+      R.assoc('base_type', BASE_TYPE_ENTITY),
+      R.assoc('parent_types', getParentTypes(type))
+    )(data);
+    // Simply return the data
+    const relations = relToCreate.map((r) => r.relation);
+    // Index the created element
+    dataEntity = { type: TRX_CREATION, element: created, relations };
+    await indexCreatedElement(dataEntity);
   }
-  // Transaction succeed, complete the result to send it back
-  const created = R.pipe(
-    R.assoc('id', internalId),
-    R.assoc('base_type', BASE_TYPE_ENTITY),
-    R.assoc('parent_types', getParentTypes(type))
-  )(data);
-  // Simply return the data
-  const relations = relToCreate.map((r) => r.relation);
-
-  // Index the created element
-  const dataEntity = { type: TRX_CREATION, element: created, relations };
-  await indexCreatedElement(dataEntity);
   // Push the input in the stream
   let event;
   if (dataEntity.type === TRX_CREATION) {
