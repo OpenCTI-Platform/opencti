@@ -22,6 +22,12 @@
       "logs_max_files": 7,
       "logs_directory": "./logs"
     },
+    "telemetry": {
+      "prometheus": {
+        "enabled": false,
+        "metrics_path": "/metrics"
+      }
+    },
     "request_timeout": 120000,
     "session_timeout": 1200000,
     "session_manager": "shared",
