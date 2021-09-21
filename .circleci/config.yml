@@ -91,17 +91,28 @@ jobs:
 
 workflows:
   version: 2
-  check-code:
-    jobs:
-      - ensure_formatting
-      - linter
-      - tests
   opencti_client_python:
     jobs:
+      - ensure_formatting:
+          filters:
+            tags:
+              only: /.*/    
+      - linter:
+          filters:
+            tags:
+              only: /.*/    
+      - tests:
+          filters:
+            tags:
+              only: /.*/      
       - build:
           filters:
             tags:
               only: /.*/
+          requires:
+            - ensure_formatting
+            - linter
+            - tests
       - deploy:
           requires:
             - build
