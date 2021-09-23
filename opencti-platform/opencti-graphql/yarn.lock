@@ -2835,7 +2835,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xmldom/xmldom@npm:^0.7.0":
+"@xmldom/xmldom@npm:^0.7.0, @xmldom/xmldom@npm:^0.7.2":
   version: 0.7.5
   resolution: "@xmldom/xmldom@npm:0.7.5"
   checksum: 8d7ec35c1ef6183b4f621df08e01d7e61f244fb964a4719025e65fe6ac06fac418919be64fb40fe5908e69158ef728f2d936daa082db326fe04603012b5f2a84
@@ -9476,7 +9476,7 @@ __metadata:
     passport-google-oauth: 2.0.0
     passport-ldapauth: 3.0.1
     passport-local: 1.0.0
-    passport-saml: 3.1.1
+    passport-saml: 3.1.2
     prettier: 2.3.2
     python-shell: 3.0.0
     ramda: 0.27.1
@@ -9821,18 +9821,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport-saml@npm:3.1.1":
-  version: 3.1.1
-  resolution: "passport-saml@npm:3.1.1"
+"passport-saml@npm:3.1.2":
+  version: 3.1.2
+  resolution: "passport-saml@npm:3.1.2"
   dependencies:
+    "@xmldom/xmldom": ^0.7.2
     debug: ^4.3.1
     passport-strategy: ^1.0.0
-    xml-crypto: ^2.1.2
-    xml-encryption: ^1.2.4
+    xml-crypto: ^2.1.3
+    xml-encryption: ^1.3.0
     xml2js: ^0.4.23
     xmlbuilder: ^15.1.1
-    xmldom: ^0.6.0
-  checksum: ebfba4c3c9a98a75dcec2800e2c5126906a7886f161fab112cbea54f6dbb871ff6777b080da396f571a783c4b90889faa068c59cca97bcd90c61ae9ea1fda494
+  checksum: 042abb863311005f01636ec5b73be32eb1c9fd4e6d13f6c2e254618e164165f2c2140243e0a3d66c78084bbf65322770a027a4ff53dac57aac635f4a7ade0431
   languageName: node
   linkType: hard
 
@@ -12651,7 +12651,7 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"xml-crypto@npm:^2.1.2":
+"xml-crypto@npm:^2.1.3":
   version: 2.1.3
   resolution: "xml-crypto@npm:2.1.3"
   dependencies:
@@ -12661,7 +12661,7 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"xml-encryption@npm:^1.2.4":
+"xml-encryption@npm:^1.3.0":
   version: 1.3.0
   resolution: "xml-encryption@npm:1.3.0"
   dependencies:
@@ -12715,13 +12715,6 @@ resolve@^2.0.0-next.3:
   version: 2.2.0
   resolution: "xmlchars@npm:2.2.0"
   checksum: 8c70ac94070ccca03f47a81fcce3b271bd1f37a591bf5424e787ae313fcb9c212f5f6786e1fa82076a2c632c0141552babcd85698c437506dfa6ae2d58723062
-  languageName: node
-  linkType: hard
-
-"xmldom@github:xmldom/xmldom#0.7.0":
-  version: 0.7.0
-  resolution: "xmldom@https://github.com/xmldom/xmldom.git#commit=c568938641cc1f121cef5b4df80fcfda1e489b6e"
-  checksum: 86beb4f90675610ad4c2de68a46c7747b90b2a077fa73069973bd681b07fe4384361cfe1785d090e42f499095a7cfaadc3988a1aca2a3ef55c3d9d9a98d9e1d0
   languageName: node
   linkType: hard
 

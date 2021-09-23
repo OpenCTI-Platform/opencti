@@ -86,7 +86,7 @@
     "passport-google-oauth": "2.0.0",
     "passport-ldapauth": "3.0.1",
     "passport-local": "1.0.0",
-    "passport-saml": "3.1.1",
+    "passport-saml": "3.1.2",
     "python-shell": "3.0.0",
     "ramda": "0.27.1",
     "redlock": "4.2.0",
@@ -141,7 +141,6 @@
     "webpack-node-externals": "3.0.0"
   },
   "resolutions": {
-    "xmldom": "github:xmldom/xmldom#0.7.0",
     "validator": "13.6.0",
     "url-parse": "1.5.3",
     "fs-capacitor": "6.2.0",
