@@ -207,7 +207,7 @@ class RulesListComponent extends Component {
                   {t('Last processed')}
                 </Typography>
                 {nsdt(
-                  parse(parseInt(ruleManagerInfo.lastEventId.split('-')[0], 10)),
+                  parse(parseInt((ruleManagerInfo.lastEventId || '-').split('-')[0], 10)),
                 )}
               </Grid>
               <Grid item={true} xs={4}>
