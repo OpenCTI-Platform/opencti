@@ -211,7 +211,7 @@ const stixCyberObservableRelationshipTypesMapping = {
   'Email-Message_Artifact': ['raw-email'],
   'Email-Mime-Part-Type_Artifact': ['body-raw'],
   StixFile_Directory: ['parent-directory', 'contains'],
-  StixFile_Artifact: ['content'],
+  StixFile_Artifact: ['obs_content'],
   'Domain-Name_IPv4-Addr': ['resolves-to'],
   'Domain-Name_IPv6-Addr': ['resolves-to'],
   'IPv4-Addr_Mac-Addr': ['resolves-to'],
