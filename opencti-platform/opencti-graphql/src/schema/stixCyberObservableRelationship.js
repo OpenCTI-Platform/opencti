@@ -15,7 +15,7 @@ export const INPUT_BCC = 'bcc';
 export const INPUT_RAW_EMAIL = 'rawEmail';
 export const INPUT_BODY_RAW = 'bodyRaw';
 export const INPUT_PARENT_DIRECTORY = 'parentDirectory';
-export const INPUT_RELATION_CONTENT = 'relationContent';
+export const INPUT_CONTENT = 'content';
 export const INPUT_SRC = 'src';
 export const INPUT_DST = 'dst';
 export const INPUT_SRC_PAYLOAD = 'srcPayload';
@@ -45,7 +45,7 @@ export const RELATION_BCC = 'bcc';
 export const RELATION_RAW_EMAIL = 'raw-email';
 export const RELATION_BODY_RAW = 'body-raw';
 export const RELATION_PARENT_DIRECTORY = 'parent-directory';
-export const RELATION_RELATION_CONTENT = 'relation-content';
+export const RELATION_CONTENT = 'content';
 export const RELATION_SRC = 'src';
 export const RELATION_DST = 'dst';
 export const RELATION_SRC_PAYLOAD = 'src-payload';
@@ -76,7 +76,7 @@ export const FIELD_CYBER_RELATIONS_TO_STIX_ATTRIBUTE = {
   [RELATION_RAW_EMAIL]: 'raw_email_ref',
   [RELATION_BODY_RAW]: 'body_raw_ref',
   [RELATION_PARENT_DIRECTORY]: 'parent_directory_ref',
-  [RELATION_RELATION_CONTENT]: 'content_ref',
+  [RELATION_CONTENT]: 'content_ref',
   [RELATION_SRC]: 'src_ref',
   [RELATION_DST]: 'dst_ref',
   [RELATION_SRC_PAYLOAD]: 'src_payload_ref',
@@ -114,7 +114,7 @@ export const STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD = {
   raw_email_ref: INPUT_RAW_EMAIL,
   body_raw_ref: INPUT_BODY_RAW,
   parent_directory_ref: INPUT_PARENT_DIRECTORY,
-  content_ref: INPUT_RELATION_CONTENT,
+  content_ref: INPUT_CONTENT,
   src_ref: INPUT_SRC,
   dst_ref: INPUT_DST,
   src_payload_ref: INPUT_SRC_PAYLOAD,
@@ -151,7 +151,7 @@ export const STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD = {
   [RELATION_RAW_EMAIL]: INPUT_RAW_EMAIL,
   [RELATION_BODY_RAW]: INPUT_BODY_RAW,
   [RELATION_PARENT_DIRECTORY]: INPUT_PARENT_DIRECTORY,
-  [RELATION_RELATION_CONTENT]: INPUT_RELATION_CONTENT,
+  [RELATION_CONTENT]: INPUT_CONTENT,
   [RELATION_SRC]: INPUT_SRC,
   [RELATION_DST]: INPUT_DST,
   [RELATION_SRC_PAYLOAD]: INPUT_SRC_PAYLOAD,
@@ -183,7 +183,7 @@ export const STIX_CYBER_OBSERVABLE_RELATIONSHIPS = [
   RELATION_RAW_EMAIL,
   RELATION_BODY_RAW,
   RELATION_PARENT_DIRECTORY,
-  RELATION_RELATION_CONTENT,
+  RELATION_CONTENT,
   RELATION_SRC,
   RELATION_DST,
   RELATION_SRC_PAYLOAD,
@@ -208,7 +208,7 @@ export const SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS = [
   INPUT_RAW_EMAIL,
   INPUT_BODY_RAW,
   INPUT_PARENT_DIRECTORY,
-  INPUT_RELATION_CONTENT,
+  INPUT_CONTENT,
   INPUT_SRC,
   INPUT_DST,
   INPUT_SRC_PAYLOAD,
@@ -246,7 +246,7 @@ export const singleStixCyberObservableRelationships = [
   RELATION_RAW_EMAIL,
   RELATION_BODY_RAW,
   RELATION_PARENT_DIRECTORY,
-  RELATION_RELATION_CONTENT,
+  RELATION_CONTENT,
   RELATION_SRC,
   RELATION_DST,
   RELATION_SRC_PAYLOAD,
