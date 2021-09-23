@@ -60,6 +60,7 @@ class ExternalImportConnector:
         os.environ["OPENCTI_URL"] = api_client.api_url
         os.environ["OPENCTI_TOKEN"] = api_client.api_token
         os.environ["OPENCTI_SSL_VERIFY"] = str(api_client.ssl_verify)
+        os.environ["OPENCTI_JSON_LOGGING"] = "true"
 
         config = (
             yaml.load(open(config_file_path), Loader=yaml.FullLoader)
