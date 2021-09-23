@@ -381,6 +381,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.opencti_ssl_verify = get_config_variable(
             "OPENCTI_SSL_VERIFY", ["opencti", "ssl_verify"], config, False, True
         )
+        self.opencti_json_logging = get_config_variable(
+            "OPENCTI_JSON_LOGGING", ["opencti", "json_logging"], config
+        )
         # Load connector config
         self.connect_id = get_config_variable(
             "CONNECTOR_ID", ["connector", "id"], config
@@ -438,7 +441,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
         # Initialize configuration
         self.api = OpenCTIApiClient(
-            self.opencti_url, self.opencti_token, self.log_level
+            self.opencti_url,
+            self.opencti_token,
+            self.log_level,
+            json_logging=self.opencti_json_logging,
         )
         # Register the connector in OpenCTI
         self.connector = OpenCTIConnector(
