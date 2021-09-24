@@ -209,6 +209,16 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     ),
                 )
                 self.data_handler(connection, channel, delivery_tag, data)
+            elif "Bad Gateway" in error:
+                logging.error("%s", f"A connection error occurred: {{ {error} }}")
+                time.sleep(60)
+                logging.info(
+                    "%s", f"Message (delivery_tag={delivery_tag}) NOT acknowledged"
+                )
+                cb = functools.partial(self.nack_message, channel, delivery_tag)
+                connection.add_callback_threadsafe(cb)
+                self.processing_count = 0
+                return False
             else:
                 # Platform does not know what to do and raises an error:
                 # fail and acknowledge the message.
