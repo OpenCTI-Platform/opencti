@@ -5,7 +5,7 @@ import { FIVE_MINUTES, sleep, FIVE_SECS } from '../utils/testQuery';
 import RuleObserveSighting from '../../src/rules/observed-sighting/ObserveSightingRule';
 import { RULE_PREFIX } from '../../src/schema/general';
 import { shutdownModules, startModules } from '../../src/modules';
-import { activateRule, disableRule, getInferences, inferenceLookup } from './rule-utils';
+import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
 import { createRelation, deleteElement, patchAttribute } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INDICATOR } from '../../src/schema/stixDomainObject';
