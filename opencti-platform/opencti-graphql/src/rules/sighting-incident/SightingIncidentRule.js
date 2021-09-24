@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import {
   createInferredEntity,
+  createInferredRelation,
   deleteInferredRuleElement,
   listAllRelations,
   stixDataById,
@@ -11,6 +12,7 @@ import { createRuleContent, RULE_MANAGER_USER, RULES_DECLARATION } from '../rule
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
+import { RELATION_RELATED_TO, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 
 // 'If **indicator A** has `revoked` **false** and **indicator A** is `sighted` in ' +
 // '**identity B**, then create **Incident C** `related-to` **indicator A** and ' +
@@ -23,6 +25,7 @@ const ruleSightingIncidentBuilder = () => {
     return [
       // Entities dependencies
       indicatorId,
+      `${indicatorId}_revoked:${false}`,
       identityId,
       // Relations dependencies
       stixSightingId,
@@ -30,31 +33,47 @@ const ruleSightingIncidentBuilder = () => {
   };
   const handleIndicatorUpsert = async (indicator) => {
     const events = [];
-    const { x_opencti_id: indicatorId, name, revoked, object_marking_refs, confidence } = indicator;
+    const { x_opencti_id: indicatorId, name, pattern, revoked, object_marking_refs, confidence } = indicator;
     if (revoked === false) {
       const sightingsArgs = { toType: ENTITY_TYPE_IDENTITY, fromId: indicatorId };
       const sightingsRelations = await listAllRelations(RULE_MANAGER_USER, STIX_SIGHTING_RELATIONSHIP, sightingsArgs);
       for (let index = 0; index < sightingsRelations.length; index += 1) {
-        const { internal_id: sightingId, toId: identityId } = sightingsRelations[index];
+        const { internal_id: sightingId, toId: identityId, first_seen, last_seen } = sightingsRelations[index];
         const dependencies = generateDependencies(indicatorId, identityId, sightingId);
         // Create the incident with everything
         const explanation = [indicatorId, identityId, sightingId];
-        const input = { name: `Sighting on valid indicator ${name}`, description: 'Automatically generated incident' };
-        const ruleContent = createRuleContent(id, dependencies, explanation, {
-          confidence,
-          objectMarking: object_marking_refs,
-        });
-        const event = await createInferredEntity(input, ruleContent, ENTITY_TYPE_INCIDENT);
-        // Re inject event if needed
-        if (event) {
-          events.push(event);
+        const input = {
+          name: `Sighting on valid indicator ${name}`,
+          description: `Automatically generated incident based on indicator pattern: ${pattern}`,
+        };
+        const ruleBaseContent = { confidence, objectMarking: object_marking_refs };
+        const ruleContentData = { ...ruleBaseContent, first_seen, last_seen };
+        const ruleContent = createRuleContent(id, dependencies, explanation, ruleContentData);
+        const inferredEntity = await createInferredEntity(input, ruleContent, ENTITY_TYPE_INCIDENT);
+        if (inferredEntity.event) {
+          events.push(inferredEntity.event);
+        }
+        const ruleRelContent = createRuleContent(id, dependencies, explanation, ruleBaseContent);
+        // Create **Incident C** `related-to` **indicator A**
+        // eslint-disable-next-line prettier/prettier
+        const incidentToIndicator = { fromId: inferredEntity.element.id,  toId: indicatorId,  relationship_type: RELATION_RELATED_TO };
+        const incidentToIndicatorEvent = await createInferredRelation(incidentToIndicator, ruleRelContent);
+        if (incidentToIndicatorEvent) {
+          events.push(incidentToIndicatorEvent);
+        }
+        // Create **Incident C** `targets` **identity B**
+        // eslint-disable-next-line prettier/prettier
+        const incidentToIdentity = { fromId: inferredEntity.element.id,  toId: identityId,  relationship_type: RELATION_TARGETS };
+        const incidentToIdentityEvent = await createInferredRelation(incidentToIdentity, ruleRelContent);
+        if (incidentToIdentityEvent) {
+          events.push(incidentToIdentityEvent);
         }
       }
     }
     return events;
   };
   const handleIndicatorRelationUpsert = async (sightingRelation) => {
-    const { x_opencti_source_ref: indicatorId } = sightingRelation;
+    const { x_opencti_sighting_of_ref: indicatorId } = sightingRelation;
     const sightingIndicator = await stixDataById(RULE_MANAGER_USER, indicatorId);
     return handleIndicatorUpsert(sightingIndicator);
   };

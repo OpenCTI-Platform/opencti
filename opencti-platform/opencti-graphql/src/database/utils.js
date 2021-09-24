@@ -206,6 +206,7 @@ export const buildPagination = (limit, searchAfter, instances, globalCount) => {
 export const inferIndexFromConceptType = (conceptType, inferred = false) => {
   // Inferred support
   if (inferred) {
+    if (isStixDomainObject(conceptType)) return INDEX_INFERRED_ENTITIES;
     if (isStixCoreRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
     if (isStixSightingRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
     throw DatabaseError(`Cant find inferred index for type ${conceptType}`);

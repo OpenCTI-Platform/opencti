@@ -214,6 +214,11 @@ export const idGen = (type, raw, data, namespace) => {
   const dataCanonicalize = jsonCanonicalize(data);
   return uuidv5(dataCanonicalize, namespace);
 };
+export const idGenFromData = (type, data) => {
+  const dataCanonicalize = jsonCanonicalize(data);
+  const uuid = uuidv5(dataCanonicalize, OPENCTI_NAMESPACE);
+  return `${convertEntityTypeToStixType(type)}--${uuid}`;
+};
 export const isTypeHasAliasIDs = (entityType) => {
   if (isBasicRelationship(entityType)) return false;
   if (isStixDomainObjectIdentity(entityType) || isStixDomainObjectLocation(entityType)) return true;

@@ -23,6 +23,8 @@ import { RULE_MANAGER_USER, RULES_DECLARATION } from '../rules/rules';
 import { MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/sseMiddleware';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { extractFieldsOfPatch, rebuildInstanceBeforePatch } from '../utils/patch';
+import { isBasicRelationship } from '../schema/stixRelationship';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
 let activatedRules = [];
 const RULE_ENGINE_ID = 'rule_engine_settings';
@@ -130,24 +132,19 @@ const isMatchRuleFilters = (rule, element, matchUpdateFields = false) => {
       const isCompatibleType = types.some((r) => elementTypes.includes(r));
       if (!isCompatibleType) isValidFilter = false;
     }
-    if (fromTypes.length > 0) {
-      const { source_ref: fromId, x_opencti_source_type: fromType } = element;
-      if (fromId) {
+    if (isBasicRelationship(element.x_opencti_type)) {
+      const isSighting = isStixSightingRelationship(element.x_opencti_type);
+      if (fromTypes.length > 0) {
+        const fromType = isSighting ? element.x_opencti_sighting_of_type : element.x_opencti_source_type;
         const instanceFromTypes = [fromType, ...getParentTypes(fromType)];
         const isCompatibleType = fromTypes.some((r) => instanceFromTypes.includes(r));
         if (!isCompatibleType) isValidFilter = false;
-      } else {
-        isValidFilter = false;
       }
-    }
-    if (toTypes.length > 0) {
-      const { target_ref: toId, x_opencti_target_type: toType } = element;
-      if (toId) {
+      if (toTypes.length > 0) {
+        const toType = isSighting ? R.head(element.x_opencti_where_sighted_types) : element.x_opencti_target_type;
         const instanceToTypes = [toType, ...getParentTypes(toType)];
         const isCompatibleType = toTypes.some((r) => instanceToTypes.includes(r));
         if (!isCompatibleType) isValidFilter = false;
-      } else {
-        isValidFilter = false;
       }
     }
     if (isValidFilter) {
@@ -218,8 +215,13 @@ export const rulesApplyHandler = async (events, forRules = []) => {
           const rule = rules[ruleIndex];
           const isImpactedElement = isMatchRuleFilters(rule, element, true);
           if (isImpactedElement) {
-            const stixData = await stixDataById(RULE_MANAGER_USER, element.id);
+            let elementId = element.id;
             const patchedFields = extractFieldsOfPatch(element.x_opencti_patch);
+            // If id is changed
+            if (patchedFields.includes('id')) {
+              elementId = element.x_opencti_patch.replace.id.current;
+            }
+            const stixData = await stixDataById(RULE_MANAGER_USER, elementId);
             const derivedEvents = await rule.update(stixData, patchedFields);
             await rulesApplyDerivedEvents(eventId, derivedEvents);
           }

@@ -25,11 +25,16 @@ const scopes = [
       fromTypes: [ENTITY_TYPE_INDICATOR],
       toTypes: [ENTITY_TYPE_IDENTITY],
     },
-    attributes: [],
+    attributes: [{ name: 'first_seen' }, { name: 'last_seen' }],
   },
   {
     filters: { types: [ENTITY_TYPE_INDICATOR] },
-    attributes: [{ name: 'revoked', dependency: true }],
+    attributes: [
+      { name: 'name' },
+      { name: 'pattern' },
+      { name: 'object_marking_refs' },
+      { name: 'revoked', dependency: true },
+    ],
   },
 ];
 

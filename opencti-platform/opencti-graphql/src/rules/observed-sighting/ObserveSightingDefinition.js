@@ -38,10 +38,7 @@ const scopes = [
   },
   {
     filters: { types: [ENTITY_TYPE_INDICATOR] },
-    attributes: [
-      { name: 'revoked', dependency: true },
-      { name: 'x_opencti_detection', dependency: true },
-    ],
+    attributes: [],
   },
   {
     filters: { types: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA] },

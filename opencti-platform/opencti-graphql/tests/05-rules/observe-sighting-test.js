@@ -1,6 +1,5 @@
-// 'If **observed-data A (created-by Organization X)** have `object` **observable B** and **indicator C** ' +
-// 'is `based-on` **observable B**, and `revoked` = **false** and `x_opencti_detection` = **false**' +
-// 'then **indicator C** is `sighted` in **organization X**.';
+// 'If **observed-data A** (`created-by` **identity X**) have `object` **observable B** and **indicator C** ' +
+// 'is `based-on` **observable B**, then **indicator C** is `sighted` in **identity X**.';
 
 import { FIVE_MINUTES, sleep, FIVE_SECS } from '../utils/testQuery';
 import RuleObserveSighting from '../../src/rules/observed-sighting/ObserveSightingRule';
@@ -68,8 +67,6 @@ describe('Observed sighting rule', () => {
       expect(cbrickToMitre).not.toBeNull();
       // Invalidate the rule with x_opencti_detection = true
       await patchAttribute(SYSTEM_USER, CBRICKSDOC, ENTITY_TYPE_INDICATOR, { x_opencti_detection: true });
-      await assertInferencesSize(0);
-      await patchAttribute(SYSTEM_USER, CBRICKSDOC, ENTITY_TYPE_INDICATOR, { x_opencti_detection: false });
       await assertInferencesSize(1);
       // ---- 02. Test rescan behavior
       // Disable the rule
