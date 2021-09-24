@@ -2729,7 +2729,7 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
     // Generate the internal id if needed
-    const standardId = input.standard_id || generateStandardId(type, input);
+    const standardId = resolvedInput.standard_id || generateStandardId(type, resolvedInput);
     // Check if the entity exists, must be done with SYSTEM USER to really find it.
     const existingEntities = await internalFindByIds(SYSTEM_USER, participantIds, { type });
     // If existing entities have been found and type is a STIX Core Object
@@ -2749,30 +2749,31 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
           throw UnsupportedError('Cant upsert inferred entity. Too many entities resolved', { input, entityIds });
         }
         // If upsert come from a rule, do a specific upsert.
-        return upsertEntityRule(R.head(filteredEntities), input, { ...opts, locks: participantIds });
+        return upsertEntityRule(R.head(filteredEntities), resolvedInput, { ...opts, locks: participantIds });
       }
       if (filteredEntities.length === 1) {
-        dataEntity = upsertElementRaw(user, R.head(filteredEntities), type, input);
+        dataEntity = upsertElementRaw(user, R.head(filteredEntities), type, resolvedInput);
       } else {
         // If creation is not by a reference
         // We can in best effort try to merge a common stix_id
         const existingByStandard = R.find((e) => e.standard_id === standardId, filteredEntities);
-        if (input.update === true) {
+        if (resolvedInput.update === true) {
           // The new one is new reference, merge all found entities
           // Target entity is existingByStandard by default or any other
           const target = R.find((e) => e.standard_id === standardId, filteredEntities) || R.head(filteredEntities);
           const sourcesEntities = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
           const sources = sourcesEntities.map((s) => s.internal_id);
           await mergeEntities(user, target.internal_id, sources, { locks: participantIds });
-          dataEntity = upsertElementRaw(user, target, type, input);
+          dataEntity = upsertElementRaw(user, target, type, resolvedInput);
         } else if (existingByStandard) {
           // Sometimes multiple entities can match
           // Looking for aliasA, aliasB, find in different entities for example
           // In this case, we try to find if one match the standard id
           // If a STIX ID has been passed in the creation
-          if (input.stix_id) {
+          if (resolvedInput.stix_id) {
             // Find the entity corresponding to this STIX ID
-            const stixIdFinder = (e) => e.standard_id === input.stix_id || e.x_opencti_stix_ids.includes(input.stix_id);
+            // eslint-disable-next-line prettier/prettier
+            const stixIdFinder = (e) => e.standard_id === resolvedInput.stix_id || e.x_opencti_stix_ids.includes(resolvedInput.stix_id);
             const existingByGivenStixId = R.find(stixIdFinder, filteredEntities);
             // If the entity exists by the stix id and not the same as the previously founded.
             if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
@@ -2788,8 +2789,8 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
           const key = resolveAliasesField(type);
           const concurrentAliases = R.flatten(R.map((c) => [c[key], c.name], concurrentEntities));
           const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
-          const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), input[key] || []);
-          const inputAliases = { ...input, [key]: filteredAliases };
+          const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), resolvedInput[key] || []);
+          const inputAliases = { ...resolvedInput, [key]: filteredAliases };
           dataEntity = upsertElementRaw(user, existingByStandard, type, inputAliases);
         } else {
           // If not we dont know what to do, just throw an exception.
