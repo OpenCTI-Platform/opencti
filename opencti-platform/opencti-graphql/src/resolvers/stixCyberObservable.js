@@ -66,10 +66,10 @@ const stixCyberObservableResolvers = {
     indicators: (stixCyberObservable, _, { user }) => indicatorsLoader.load(stixCyberObservable.id, user),
     stixCoreRelationships: (rel, args, { user }) => stixCoreRelationships(user, rel.id, args),
     toStix: (stixCyberObservable, _, { user }) => convertDataToRawStix(user, stixCyberObservable.id),
-  },
-  Artifact: {
     importFiles: (stixCyberObservable, { first }, { user }) =>
       filesListing(user, first, `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`),
+    exportFiles: (stixCyberObservable, { first }, { user }) =>
+      filesListing(user, first, `export/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`),
   },
   Mutation: {
     stixCyberObservableEdit: (_, { id }, { user }) => ({

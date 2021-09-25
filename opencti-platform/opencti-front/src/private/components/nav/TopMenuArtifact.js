@@ -121,6 +121,26 @@ class TopMenuArtifact extends Component {
         </Button>
         <Button
           component={Link}
+          to={`/dashboard/observations/artifacts/${observableId}/files`}
+          variant={
+            location.pathname
+            === `/dashboard/observations/artifacts/${observableId}/files`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/observations/artifacts/${observableId}/files`
+              ? 'secondary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Files')}
+        </Button>
+        <Button
+          component={Link}
           to={`/dashboard/observations/artifacts/${observableId}/history`}
           variant={
             location.pathname

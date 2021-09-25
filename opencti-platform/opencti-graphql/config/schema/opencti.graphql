@@ -1320,11 +1320,11 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   hash: String
   external_id: String
   # Technical
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
 }
 input ExternalReferenceAddInput {
   stix_id: String
@@ -1491,6 +1491,8 @@ interface StixCoreObject {
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -1738,9 +1740,9 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   isSubAttackPattern: Boolean
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -1869,9 +1871,9 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objective: String
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -2111,9 +2113,9 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   authors: [String]
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -2249,9 +2251,9 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   number_observed: Int!
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -2385,9 +2387,9 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   opinion: String!
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -2650,9 +2652,9 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   attackPatterns: AttackPatternConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -2781,9 +2783,9 @@ interface Identity {
   x_opencti_aliases: [String]
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -2912,9 +2914,9 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   organizations: OrganizationConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -3053,9 +3055,9 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   sectors: SectorConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -3188,9 +3190,9 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   targetedOrganizations: StixCoreRelationshipConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -3318,9 +3320,9 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   organizations: OrganizationConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -3472,9 +3474,9 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   observables: StixCyberObservableConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -3612,9 +3614,9 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   killChainPhases: KillChainPhaseConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -3743,9 +3745,9 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   locations: LocationConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -4005,9 +4007,9 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   city: City
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -4138,9 +4140,9 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   country: Country
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -4264,9 +4266,9 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   region: Region
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -4393,9 +4395,9 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   countries: CountryConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -4533,9 +4535,9 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   killChainPhases: KillChainPhaseConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -4672,9 +4674,9 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   locations: LocationConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -4803,9 +4805,9 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   killChainPhases: KillChainPhaseConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -4935,9 +4937,9 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   x_opencti_confidentiality_impact: String
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5064,9 +5066,9 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objective: String
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5212,6 +5214,8 @@ interface StixCyberObservable {
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5295,6 +5299,8 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5385,6 +5391,8 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5473,6 +5481,8 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5558,6 +5568,8 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5649,6 +5661,8 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5741,6 +5755,8 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5834,6 +5850,8 @@ interface HashedObservable {
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5920,9 +5938,10 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   decryption_key: String
   x_opencti_additional_names: [String]
   # Technical
-  importFiles(first: Int): FileConnection
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6024,6 +6043,8 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6130,6 +6151,8 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6225,6 +6248,8 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6311,6 +6336,8 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6395,6 +6422,8 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6479,6 +6508,8 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6573,6 +6604,8 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6673,6 +6706,8 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6768,6 +6803,8 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6857,6 +6894,8 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6955,6 +6994,8 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7055,6 +7096,8 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7143,6 +7186,8 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7244,6 +7289,8 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7343,6 +7390,8 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7427,6 +7476,8 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7511,6 +7562,8 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7595,6 +7648,8 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7679,6 +7734,8 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -9240,6 +9297,7 @@ type Subscription {
   label(id: ID!): Label @auth(for: [SETTINGS])
   markingDefinition(id: ID!): MarkingDefinition @auth(for: [SETTINGS])
   killChainPhase(id: ID!): KillChainPhase @auth(for: [SETTINGS])
+  stixCoreObject(id: ID!): StixCoreObject @auth(for: [KNOWLEDGE])
   stixDomainObject(id: ID!): StixDomainObject @auth(for: [KNOWLEDGE])
   stixCyberObservable(id: ID!): StixCyberObservable @auth(for: [KNOWLEDGE])
   stixCoreRelationship(id: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE])
@@ -9380,6 +9438,10 @@ type StixCoreObjectEditMutations {
   relationDelete(toId: String!, relationship_type: String!): StixCoreObject
   merge(stixCoreObjectsIds: [String]!): StixCoreObject
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
+  @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }
 
 ######## STIX DOMAIN OBJECT ENTITIES
@@ -9621,6 +9683,10 @@ type StixCyberObservableEditMutations {
   relationsAdd(input: StixMetaRelationshipsAddInput): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: String!, relationship_type: String!): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   promote: StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
+    @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }
 
 ######## STIX RELATIONSHIPS

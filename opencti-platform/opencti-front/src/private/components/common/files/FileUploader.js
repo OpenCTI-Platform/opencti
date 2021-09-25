@@ -18,7 +18,7 @@ const FileUploaderGlobalMutation = graphql`
 
 const FileUploaderEntityMutation = graphql`
   mutation FileUploaderEntityMutation($id: ID!, $file: Upload!) {
-    stixDomainObjectEdit(id: $id) {
+    stixCoreObjectEdit(id: $id) {
       importPush(file: $file) {
         ...FileLine_file
       }
