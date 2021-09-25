@@ -18,6 +18,7 @@ import { RELATION_INDICATES } from './stixCoreRelationship';
 
 export const ATTRIBUTE_ALIASES = 'aliases';
 export const ATTRIBUTE_ALIASES_OPENCTI = 'x_opencti_aliases';
+export const ATTRIBUTE_ADDITIONAL_NAMES = 'x_opencti_additional_names';
 
 export const ENTITY_TYPE_ATTACK_PATTERN = 'Attack-Pattern';
 export const ENTITY_TYPE_CAMPAIGN = 'Campaign';

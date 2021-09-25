@@ -155,6 +155,7 @@ import {
 } from '../schema/fieldDataAdapter';
 import { isStixCoreRelationship, RELATION_REVOKED_BY } from '../schema/stixCoreRelationship';
 import {
+  ATTRIBUTE_ADDITIONAL_NAMES,
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -1254,41 +1255,49 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   // Everything if fine update remaining attributes
   const updateAttributes = [];
   // 1. Update all possible attributes
-  const attributes = await queryAttributes(targetType);
-  const sourceFields = R.map((a) => a.node.value, attributes.edges).filter((s) => !s.startsWith(INTERNAL_PREFIX));
-  for (let fieldIndex = 0; fieldIndex < sourceFields.length; fieldIndex += 1) {
-    const sourceFieldKey = sourceFields[fieldIndex];
-    const mergedEntityCurrentFieldValue = targetEntity[sourceFieldKey];
-    const chosenSourceEntityId = chosenFields[sourceFieldKey];
+  const attributes = schemaTypes.getAttributes(targetType);
+  const targetFields = attributes.filter((s) => !s.startsWith(INTERNAL_PREFIX));
+  for (let fieldIndex = 0; fieldIndex < targetFields.length; fieldIndex += 1) {
+    const targetFieldKey = targetFields[fieldIndex];
+    const mergedEntityCurrentFieldValue = targetEntity[targetFieldKey];
+    const chosenSourceEntityId = chosenFields[targetFieldKey];
     // Select the one that will fill the empty MONO value of the target
     const takenFrom = chosenSourceEntityId
       ? R.find((i) => i.standard_id === chosenSourceEntityId, sourceEntities)
       : R.head(sourceEntities); // If not specified, take the first one.
-    const sourceFieldValue = takenFrom[sourceFieldKey];
-    const fieldValues = R.flatten(sourceEntities.map((s) => s[sourceFieldKey])).filter((s) => isNotEmptyField(s));
+    const sourceFieldValue = takenFrom[targetFieldKey];
+    const fieldValues = R.flatten(sourceEntities.map((s) => s[targetFieldKey])).filter((s) => isNotEmptyField(s));
     // Check if we need to do something
-    if (isDictionaryAttribute(sourceFieldKey)) {
+    if (isDictionaryAttribute(targetFieldKey)) {
       // Special case of dictionary
       const mergedDict = R.mergeAll([...fieldValues, mergedEntityCurrentFieldValue]);
       const dictInputs = Object.entries(mergedDict).map(([k, v]) => ({
-        key: `${sourceFieldKey}.${k}`,
+        key: `${targetFieldKey}.${k}`,
         value: [v],
       }));
       updateAttributes.push(...dictInputs);
-    } else if (isMultipleAttribute(sourceFieldKey)) {
+    } else if (isMultipleAttribute(targetFieldKey)) {
       const sourceValues = fieldValues || [];
       // For aliased entities, get name of the source to add it as alias of the target
-      if (sourceFieldKey === ATTRIBUTE_ALIASES || sourceFieldKey === ATTRIBUTE_ALIASES_OPENCTI) {
+      if (targetFieldKey === ATTRIBUTE_ALIASES || targetFieldKey === ATTRIBUTE_ALIASES_OPENCTI) {
         sourceValues.push(...sourceEntities.map((s) => s.name));
+      }
+      // For x_opencti_additional_names exists, add the source name inside
+      if (targetFieldKey === ATTRIBUTE_ADDITIONAL_NAMES) {
+        sourceValues.push(...sourceEntities.map((s) => s.name));
+      }
+      // standard_id of merged entities must be kept in x_opencti_stix_ids
+      if (targetFieldKey === IDS_STIX) {
+        sourceValues.push(...sourceEntities.map((s) => s.standard_id));
       }
       // If multiple attributes, concat all values
       if (sourceValues.length > 0) {
         const multipleValues = R.uniq(R.concat(mergedEntityCurrentFieldValue || [], sourceValues));
-        updateAttributes.push({ key: sourceFieldKey, value: multipleValues });
+        updateAttributes.push({ key: targetFieldKey, value: multipleValues, operation: UPDATE_OPERATION_ADD });
       }
     } else if (isEmptyField(mergedEntityCurrentFieldValue) && isNotEmptyField(sourceFieldValue)) {
       // Single value. Put the data in the merged field only if empty.
-      updateAttributes.push({ key: sourceFieldKey, value: [sourceFieldValue] });
+      updateAttributes.push({ key: targetFieldKey, value: [sourceFieldValue] });
     }
   }
   // eslint-disable-next-line no-use-before-define
