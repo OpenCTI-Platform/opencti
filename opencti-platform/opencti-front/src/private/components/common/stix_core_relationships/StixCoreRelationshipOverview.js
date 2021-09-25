@@ -266,6 +266,7 @@ class StixCoreRelationshipContainer extends Component {
                 />
               </div>
               <div className={classes.type}>
+                {/* eslint-disable-next-line no-nested-ternary */}
                 {!toRestricted
                   ? to.relationship_type
                     ? t('Relationship')
