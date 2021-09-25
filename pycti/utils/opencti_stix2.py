@@ -1165,6 +1165,15 @@ class OpenCTIStix2:
         if "attribute_date" in entity:
             entity["date"] = entity["attribute_date"]
             del entity["attribute_date"]
+        # Artifact
+        if entity["type"] == "artifact" and "importFiles" in entity:
+            first_file = entity["importFiles"][0]["id"]
+            url = self.opencti.api_url.replace("graphql", "storage/get/") + first_file
+            file = self.opencti.fetch_opencti_file(url, binary=True, serialize=True)
+            if file:
+                entity["payload_bin"] = file
+            del entity["importFiles"]
+            del entity["importFilesIds"]
 
         result.append(entity)
 
@@ -1400,7 +1409,10 @@ class OpenCTIStix2:
             "Tool": self.opencti.tool.read,
             "Vulnerability": self.opencti.vulnerability.read,
             "Incident": self.opencti.incident.read,
+            "Stix-Cyber-Observable": self.opencti.stix_cyber_observable.read,
         }
+        if StixCyberObservableTypes.has_value(entity_type):
+            entity_type = "Stix-Cyber-Observable"
         do_read = reader.get(
             entity_type, lambda **kwargs: self.unknown_type({"type": entity_type})
         )
