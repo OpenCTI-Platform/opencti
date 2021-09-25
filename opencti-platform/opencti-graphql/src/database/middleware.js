@@ -802,6 +802,7 @@ const idLabel = (label) => {
 const inputResolveRefs = async (user, input, type) => {
   const fetchingIds = [];
   const expectedIds = [];
+  const cleanedInput = { ...input };
   for (let index = 0; index < depsKeys.length; index += 1) {
     const { src, dst } = depsKeys[index];
     const destKey = dst || src;
@@ -821,13 +822,11 @@ const inputResolveRefs = async (user, input, type) => {
         fetchingIds.push({ id, destKey, multiple: false });
         expectedIds.push(id);
       }
+      cleanedInput[src] = null;
     }
   }
   // eslint-disable-next-line prettier/prettier
-  const resolvedElements = await internalFindByIds(
-    user,
-    fetchingIds.map((i) => i.id)
-  );
+  const resolvedElements = await internalFindByIds(user, fetchingIds.map((i) => i.id));
   const resolvedElementWithConfGroup = resolvedElements.map((d) => {
     const elementIds = getInstanceIds(d);
     const matchingConfigs = R.filter((a) => elementIds.includes(a.id), fetchingIds);
@@ -863,7 +862,7 @@ const inputResolveRefs = async (user, input, type) => {
   if (expectedUnresolvedIds.length > 0) {
     throw MissingReferenceError({ input, unresolvedIds: expectedUnresolvedIds });
   }
-  const complete = { ...input, entity_type: type };
+  const complete = { ...cleanedInput, entity_type: type };
   const resolvedRefs = R.mergeAll(resolved);
   return R.mergeRight(complete, resolvedRefs);
 };
