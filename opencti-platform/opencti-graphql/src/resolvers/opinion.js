@@ -57,9 +57,6 @@ const opinionResolvers = {
       return opinionContainsStixObjectOrStixRelationship(user, args.id, args.stixObjectOrStixRelationshipId);
     },
   },
-  OpinionsOrdering: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY, 'name'),
-  },
   OpinionsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),

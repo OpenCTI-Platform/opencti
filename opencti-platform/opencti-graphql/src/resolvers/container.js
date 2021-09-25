@@ -30,9 +30,6 @@ const containerResolvers = {
     },
     objects: (container, args, { user }) => objects(user, container.id, args),
   },
-  ContainersOrdering: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY, 'name'),
-  },
   ContainersFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),

@@ -62,6 +62,7 @@ const multipleAttributes = [
   // stix cyber observable
   ...MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
 ];
+export const runtimeAttributes = ['observable_value', 'createdBy', 'objectMarking'];
 export const statsDateAttributes = [
   'created_at',
   'first_seen',
@@ -163,6 +164,7 @@ export const isBooleanAttribute = (key) => booleanAttributes.includes(key);
 export const isNumericAttribute = (key) => numericAttributes.includes(key);
 export const isDateAttribute = (key) => dateAttributes.includes(key);
 export const isMultipleAttribute = (key) => key.startsWith(RULE_PREFIX) || multipleAttributes.includes(key);
+export const isRuntimeAttribute = (key) => runtimeAttributes.includes(key);
 
 // Must be call as soon as possible in the according resolvers
 export const apiAttributeToComplexFormat = (attribute, data) => {

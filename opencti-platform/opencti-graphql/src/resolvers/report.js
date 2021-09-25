@@ -61,9 +61,6 @@ const reportResolvers = {
       return reportContainsStixObjectOrStixRelationship(user, args.id, args.stixObjectOrStixRelationshipId);
     },
   },
-  ReportsOrdering: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY, 'name'),
-  },
   ReportsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),

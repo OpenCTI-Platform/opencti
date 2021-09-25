@@ -211,7 +211,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       createdBy: {
         label: 'Author',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
       objectLabel: {
         label: 'Labels',
@@ -226,7 +226,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       objectMarking: {
         label: 'Marking',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (

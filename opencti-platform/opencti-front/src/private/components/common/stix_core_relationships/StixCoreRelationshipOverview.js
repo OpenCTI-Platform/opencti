@@ -214,15 +214,14 @@ class StixCoreRelationshipContainer extends Component {
             </div>
             <div className={classes.content}>
               <span className={classes.name}>
-                {
-                  !fromRestricted
-                    ? truncate(
-                      defaultValue(from) !== 'Unknown'
-                        ? defaultValue(from)
-                        : t(`relationship_${from.entity_type}`),
-                      50,
-                    )
-                    : t('Restricted')}
+                {!fromRestricted
+                  ? truncate(
+                    defaultValue(from) !== 'Unknown'
+                      ? defaultValue(from)
+                      : t(`relationship_${from.entity_type}`),
+                    50,
+                  )
+                  : t('Restricted')}
               </span>
             </div>
           </div>
@@ -273,7 +272,8 @@ class StixCoreRelationshipContainer extends Component {
                     ? to.relationship_type
                       ? t('Relationship')
                       : t(`entity_${to.entity_type}`)
-                    : t('Restricted')}
+                    : t('Restricted')
+                }
               </div>
             </div>
             <div className={classes.content}>

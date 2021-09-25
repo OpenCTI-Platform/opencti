@@ -1512,6 +1512,8 @@ enum StixDomainObjectsOrdering {
   valid_until
   indicator_pattern
   status_id
+  createdBy
+  objectMarking
 }
 enum StixDomainObjectsFilter {
   name
@@ -1911,6 +1913,7 @@ enum ContainersOrdering {
   created_at
   updated_at
   createdBy
+  objectMarking
   status_id
 }
 enum ContainersFilter {
@@ -2153,6 +2156,7 @@ enum ObservedDatasOrdering {
   updated_at
   createdBy
   status_id
+  objectMarking
 }
 enum ObservedDatasFilter {
   first_observed
@@ -3369,6 +3373,7 @@ enum IndicatorsOrdering {
   created_at
   updated_at
   status_id
+  objectMarking
 }
 enum IndicatorsFilter {
   name
@@ -4980,6 +4985,7 @@ enum IncidentsOrdering {
   created_at
   updated_at
   status_id
+  objectMarking
 }
 enum IncidentsFilter {
   name
@@ -5103,6 +5109,8 @@ enum StixCyberObservablesOrdering {
   entity_type
   created_at
   updated_at
+  observable_value
+  objectMarking
 }
 enum StixCyberObservablesFilter {
   entity_type
@@ -7788,6 +7796,7 @@ enum StixObjectOrStixRelationshipsOrdering {
   createdBy
   objectMarking
   objectLabel
+  observable_value
 }
 enum StixObjectOrStixRelationshipsFilter {
   created_at

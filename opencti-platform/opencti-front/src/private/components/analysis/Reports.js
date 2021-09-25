@@ -169,7 +169,7 @@ class Reports extends Component {
       createdBy: {
         label: 'Author',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
       objectLabel: {
         label: 'Labels',
@@ -188,7 +188,7 @@ class Reports extends Component {
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (
