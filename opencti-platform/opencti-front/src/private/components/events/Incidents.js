@@ -203,7 +203,7 @@ class Incidents extends Component {
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (

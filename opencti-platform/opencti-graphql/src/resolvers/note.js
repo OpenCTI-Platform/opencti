@@ -55,9 +55,6 @@ const noteResolvers = {
       return noteContainsStixObjectOrStixRelationship(user, args.id, args.stixObjectOrStixRelationshipId);
     },
   },
-  NotesOrdering: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY, 'name'),
-  },
   NotesFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
