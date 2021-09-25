@@ -164,14 +164,24 @@ class StixCoreRelationshipContainer extends Component {
     } = this.props;
     const { from } = stixCoreRelationship;
     const { to } = stixCoreRelationship;
-    const linkFrom = from.relationship_type
-      ? `${resolveLink(from.from.entity_type)}/${
-        from.from.id
-      }/knowledge/relations`
-      : resolveLink(from.entity_type);
-    const linkTo = to.relationship_type
-      ? `${resolveLink(to.from.entity_type)}/${to.from.id}/knowledge/relations`
-      : resolveLink(to.entity_type);
+    const fromRestricted = from === null;
+    // eslint-disable-next-line no-nested-ternary
+    const linkFrom = from
+      ? from.relationship_type
+        ? `${resolveLink(from.from.entity_type)}/${
+          from.from.id
+        }/knowledge/relations`
+        : resolveLink(from.entity_type)
+      : '';
+    const toRestricted = to === null;
+    // eslint-disable-next-line no-nested-ternary
+    const linkTo = to
+      ? to.relationship_type
+        ? `${resolveLink(to.from.entity_type)}/${
+          to.from.id
+        }/knowledge/relations`
+        : resolveLink(to.entity_type)
+      : '';
     return (
       <div className={classes.container}>
         <Link to={`${linkFrom}/${from.id}`}>
@@ -204,12 +214,14 @@ class StixCoreRelationshipContainer extends Component {
             </div>
             <div className={classes.content}>
               <span className={classes.name}>
-                {truncate(
-                  defaultValue(from) !== 'Unknown'
-                    ? defaultValue(from)
-                    : t(`relationship_${from.entity_type}`),
-                  50,
-                )}
+                {!fromRestricted
+                  ? truncate(
+                    defaultValue(from) !== 'Unknown'
+                      ? defaultValue(from)
+                      : t(`relationship_${from.entity_type}`),
+                    50,
+                  )
+                  : t('Restricted')}
               </span>
             </div>
           </div>
@@ -254,9 +266,11 @@ class StixCoreRelationshipContainer extends Component {
                 />
               </div>
               <div className={classes.type}>
-                {to.relationship_type
-                  ? t('Relationship')
-                  : t(`entity_${to.entity_type}`)}
+                {!toRestricted
+                  ? to.relationship_type
+                    ? t('Relationship')
+                    : t(`entity_${to.entity_type}`)
+                  : t('Restricted')}
               </div>
             </div>
             <div className={classes.content}>
