@@ -77,7 +77,7 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_EMAIL_MESSAGE:
       return stixCyberObservable.body || stixCyberObservable.subject;
     case ENTITY_HASHED_OBSERVABLE_ARTIFACT:
-      return hashValue(stixCyberObservable) || stixCyberObservable.payload_bin || 'Unknown';
+      return hashValue(stixCyberObservable) || stixCyberObservable.payload_bin || stixCyberObservable.url || 'Unknown';
     case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
       return hashValue(stixCyberObservable) || stixCyberObservable.name || 'Unknown';
     case ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE:
