@@ -2018,6 +2018,7 @@ enum NotesOrdering {
   updated_at
   createdBy
   status_id
+  objectMarking
 }
 enum NotesFilter {
   attribute_abstract
@@ -2292,6 +2293,7 @@ enum OpinionsOrdering {
   created_at
   updated_at
   createdBy
+  objectMarking
   status_id
 }
 enum OpinionsFilter {
@@ -2429,6 +2431,7 @@ enum ReportsOrdering {
   created_at
   updated_at
   createdBy
+  objectMarking
   status_id
 }
 enum ReportsFilter {
@@ -2568,6 +2571,7 @@ enum CoursesOfActionOrdering {
   created_at
   updated_at
   status_id
+  objectMarking
 }
 enum CoursesOfActionFilter {
   name
@@ -2827,6 +2831,7 @@ enum IndividualsOrdering {
   created
   modified
   status_id
+  objectMarking
 }
 enum IndividualsFilter {
   name
@@ -3101,6 +3106,7 @@ enum SectorsOrdering {
   created_at
   updated_at
   status_id
+  objectMarking
 }
 enum SectorsFilter {
   name
