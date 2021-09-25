@@ -28,7 +28,7 @@ import { connectorsForEnrichment } from '../domain/enrichment';
 import { filesListing } from '../database/minio';
 import { stixDomainObjectCleanContext, stixDomainObjectEditContext } from '../domain/stixDomainObject';
 import { BUS_TOPICS } from '../config/conf';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import withCancel from '../graphql/subscriptionWrapper';
 
 const createdByLoader = batchLoader(batchCreatedBy);

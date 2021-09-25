@@ -11,7 +11,6 @@ import {
   deleteRelationsByFromAndTo,
   distributionEntities,
   fullLoadById,
-  internalLoadById,
   listEntities,
   listThroughGetFrom,
   loadById,
@@ -34,7 +33,6 @@ import {
   stixCyberObservableOptions,
 } from '../schema/stixCyberObservable';
 import {
-  ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_META_RELATIONSHIP,
 } from '../schema/general';
@@ -45,7 +43,6 @@ import { apiAttributeToComplexFormat } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
 import { escape, observableValue } from '../utils/format';
 import { uploadJobImport } from './file';
-import { stixCoreObjectOptions } from '../schema/stixCoreObject';
 
 export const findById = (user, stixCyberObservableId) => {
   return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);

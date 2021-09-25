@@ -312,7 +312,10 @@ const batchListThrough = async (user, sources, sourceSide, relationType, targetE
         if (first) {
           values = R.take(first, values);
         }
-        edges = values.map((i) => ({ node: R.find((s) => s.internal_id === i[`${opposite}Id`], targets) }));
+        edges = (values || [])
+          .map((i) => R.find((s) => s.internal_id === i[`${opposite}Id`], targets))
+          .filter((n) => isNotEmptyField(n))
+          .map((n) => ({ node: n }));
       }
       return buildPagination(0, null, edges, edges.length);
     });
@@ -322,7 +325,9 @@ const batchListThrough = async (user, sources, sourceSide, relationType, targetE
     if (first) {
       values = R.take(first, values);
     }
-    return values?.map((i) => R.find((s) => s.internal_id === i[`${opposite}Id`], targets)) || [];
+    return (values || [])
+      .map((i) => R.find((s) => s.internal_id === i[`${opposite}Id`], targets))
+      .filter((n) => isNotEmptyField(n));
   });
   if (batched) {
     return elements;
@@ -818,7 +823,10 @@ const inputResolveRefs = async (user, input, type) => {
     }
   }
   // eslint-disable-next-line prettier/prettier
-  const resolvedElements = await internalFindByIds(user, fetchingIds.map((i) => i.id));
+  const resolvedElements = await internalFindByIds(
+    user,
+    fetchingIds.map((i) => i.id)
+  );
   const resolvedElementWithConfGroup = resolvedElements.map((d) => {
     const elementIds = getInstanceIds(d);
     const matchingConfigs = R.filter((a) => elementIds.includes(a.id), fetchingIds);
@@ -2773,7 +2781,8 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
           if (resolvedInput.stix_id) {
             // Find the entity corresponding to this STIX ID
             // eslint-disable-next-line prettier/prettier
-            const stixIdFinder = (e) => e.standard_id === resolvedInput.stix_id || e.x_opencti_stix_ids.includes(resolvedInput.stix_id);
+            const stixIdFinder = (e) =>
+              e.standard_id === resolvedInput.stix_id || e.x_opencti_stix_ids.includes(resolvedInput.stix_id);
             const existingByGivenStixId = R.find(stixIdFinder, filteredEntities);
             // If the entity exists by the stix id and not the same as the previously founded.
             if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
