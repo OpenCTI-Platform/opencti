@@ -98,7 +98,7 @@ const indicatorMutation = graphql`
 const indicatorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   confidence: Yup.number(),
-  description: Yup.string(),
+  description: Yup.string().nullable(),
   pattern: Yup.string().required(t('This field is required')),
   pattern_type: Yup.string().required(t('This field is required')),
   x_opencti_main_observable_type: Yup.string().required(

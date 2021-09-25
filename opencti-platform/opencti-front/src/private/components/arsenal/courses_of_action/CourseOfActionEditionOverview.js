@@ -111,8 +111,8 @@ const courseOfActionValidation = (t) => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
-  x_opencti_threat_hunting: Yup.string(),
-  x_opencti_log_sources: Yup.string(),
+  x_opencti_threat_hunting: Yup.string().nullable(),
+  x_opencti_log_sources: Yup.string().nullable(),
 });
 
 class CourseOfActionEditionOverviewComponent extends Component {

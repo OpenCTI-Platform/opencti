@@ -108,10 +108,10 @@ const userValidation = (t) => Yup.object().shape({
   user_email: Yup.string()
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
-  firstname: Yup.string(),
-  lastname: Yup.string(),
-  language: Yup.string(),
-  description: Yup.string(),
+  firstname: Yup.string().nullable(),
+  lastname: Yup.string().nullable(),
+  language: Yup.string().nullable(),
+  description: Yup.string().nullable(),
 });
 
 class UserEditionOverviewComponent extends Component {

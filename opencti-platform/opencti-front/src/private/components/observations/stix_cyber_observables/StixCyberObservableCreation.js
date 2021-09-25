@@ -291,7 +291,7 @@ const stixCyberObservableMutation = graphql`
 
 const stixCyberObservableValidation = (t) => Yup.object().shape({
   x_opencti_score: Yup.number().required(t('This field is required')),
-  x_opencti_description: Yup.string(),
+  x_opencti_description: Yup.string().nullable(),
   createIndicator: Yup.boolean(),
 });
 

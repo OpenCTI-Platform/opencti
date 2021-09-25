@@ -159,7 +159,7 @@ const stixCoreRelationshipValidation = (t) => Yup.object().shape({
   stop_time: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  description: Yup.string(),
+  description: Yup.string().nullable(),
 });
 
 const StixCoreRelationshipEditionContainer = ({

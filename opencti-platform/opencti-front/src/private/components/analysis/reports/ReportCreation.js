@@ -90,7 +90,7 @@ const reportValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
   confidence: Yup.number().required(t('This field is required')),
   report_types: Yup.string().required(t('This field is required')),
-  description: Yup.string(),
+  description: Yup.string().nullable(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {

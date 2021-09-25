@@ -141,9 +141,9 @@ const stixDomainObjectMutationRelationDelete = graphql`
 
 const stixDomainObjectValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  description: Yup.string(),
-  aliases: Yup.string(),
-  x_opencti_aliases: Yup.string(),
+  description: Yup.string().nullable(),
+  aliases: Yup.string().nullable(),
+  x_opencti_aliases: Yup.string().nullable(),
 });
 
 class StixDomainObjectEditionContainer extends Component {

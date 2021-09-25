@@ -235,6 +235,7 @@ class IncidentEditionOverviewComponent extends Component {
     const {
       t, incident, context, enableReferences,
     } = this.props;
+    const isInferred = incident.is_inferred;
     const createdBy = pathOr(null, ['createdBy', 'name'], incident) === null
       ? ''
       : {
@@ -296,6 +297,7 @@ class IncidentEditionOverviewComponent extends Component {
               name="name"
               label={t('Name')}
               fullWidth={true}
+              disabled={isInferred}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               helperText={
@@ -307,6 +309,7 @@ class IncidentEditionOverviewComponent extends Component {
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
               label={t('Confidence')}
+              disabled={isInferred}
               fullWidth={true}
               containerstyle={{ width: '100%', marginTop: 20 }}
               editContext={context}
@@ -318,6 +321,7 @@ class IncidentEditionOverviewComponent extends Component {
               label={t('Description')}
               fullWidth={true}
               multiline={true}
+              disabled={isInferred}
               rows="4"
               style={{ marginTop: 20 }}
               onFocus={this.handleChangeFocus.bind(this)}
@@ -351,6 +355,7 @@ class IncidentEditionOverviewComponent extends Component {
             <ObjectMarkingField
               name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
+              disabled={isInferred}
               helpertext={
                 <SubscriptionFocus
                   context={context}
@@ -416,6 +421,7 @@ const IncidentEditionOverview = createFragmentContainer(
           }
         }
         workflowEnabled
+        is_inferred
       }
     `,
   },

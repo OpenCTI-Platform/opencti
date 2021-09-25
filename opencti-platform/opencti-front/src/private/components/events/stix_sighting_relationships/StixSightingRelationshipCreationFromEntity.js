@@ -275,7 +275,7 @@ const stixSightingRelationshipValidation = (t) => Yup.object().shape({
   last_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  description: Yup.string(),
+  description: Yup.string().nullable(),
   x_opencti_negative: Yup.boolean(),
 });
 

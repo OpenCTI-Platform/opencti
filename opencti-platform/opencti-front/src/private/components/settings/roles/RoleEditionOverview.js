@@ -115,7 +115,7 @@ const roleEditionOverviewCapabilities = graphql`
 
 const roleValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  description: Yup.string(),
+  description: Yup.string().nullable(),
   default_assignation: Yup.bool(),
 });
 
