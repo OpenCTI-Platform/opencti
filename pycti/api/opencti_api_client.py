@@ -3,6 +3,7 @@ import datetime
 import io
 import json
 import logging
+import base64
 from typing import Union
 
 import magic
@@ -319,7 +320,7 @@ class OpenCTIApiClient:
             logging.info(r.text)
             raise ValueError(r.text)
 
-    def fetch_opencti_file(self, fetch_uri, binary=False):
+    def fetch_opencti_file(self, fetch_uri, binary=False, serialize=False):
         """get file from the OpenCTI API
 
         :param fetch_uri: download URI to use
@@ -332,7 +333,11 @@ class OpenCTIApiClient:
 
         r = self.session.get(fetch_uri, headers=self.request_headers)
         if binary:
+            if serialize:
+                return base64.b64encode(r.content).decode("utf-8")
             return r.content
+        if serialize:
+            return base64.b64encode(r.text).decode("utf-8")
         return r.text
 
     def log(self, level, message):
