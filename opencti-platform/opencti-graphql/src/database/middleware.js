@@ -1639,7 +1639,11 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
   const enforceReferences = conf.get('app:enforce_references');
-  if (enforceReferences && enforceReferences.includes(instance.entity_type)) {
+  if (
+    enforceReferences &&
+    (enforceReferences.includes(instance.entity_type) ||
+      (enforceReferences.includes('stix-core-relationship') && isStixCoreRelationship(instance.entity_type)))
+  ) {
     if (isEmptyField(opts.references)) {
       throw FunctionalError('You must provide at least one external reference to update');
     }

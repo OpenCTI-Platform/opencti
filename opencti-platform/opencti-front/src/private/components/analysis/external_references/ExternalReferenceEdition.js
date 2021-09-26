@@ -90,7 +90,7 @@ const externalReferenceEditionFocus = graphql`
 const externalReferenceValidation = (t) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
   external_id: Yup.string().nullable(),
-  url: Yup.string().url(t('The value must be an URL')),
+  url: Yup.string().url(t('The value must be an URL')).nullable(),
   description: Yup.string().nullable(),
 });
 

@@ -23,6 +23,7 @@ import {
   LinkOutlined,
   LinkOffOutlined,
   HelpOutlined,
+  LanguageOutlined,
 } from '@material-ui/icons';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip/Tooltip';
@@ -33,7 +34,19 @@ import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import List from '@material-ui/core/List';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItem from '@material-ui/core/ListItem';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import Slide from '@material-ui/core/Slide';
+import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   container: {
@@ -46,7 +59,6 @@ const styles = (theme) => ({
     top: 50,
     left: 20,
     width: 1,
-    height: 18,
   },
   avatar: {
     float: 'left',
@@ -54,8 +66,12 @@ const styles = (theme) => ({
     height: 40,
     marginRight: 20,
   },
+  avatarReference: {
+    width: 24,
+    height: 24,
+    backgroundColor: theme.palette.primary.main,
+  },
   content: {
-    height: 50,
     width: 'auto',
     overflow: 'hidden',
   },
@@ -68,7 +84,7 @@ const styles = (theme) => ({
     width: '100%',
     height: '100%',
     backgroundColor: theme.palette.background.line,
-    padding: '17px 15px 15px 15px',
+    padding: '17px 15px 5px 15px',
   },
   description: {
     height: '100%',
@@ -86,7 +102,11 @@ const styles = (theme) => ({
 class StixCoreObjectHistoryLineComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false };
+    this.state = {
+      open: false,
+      displayExternalLink: false,
+      externalLink: null,
+    };
   }
 
   handleOpen() {
@@ -95,6 +115,19 @@ class StixCoreObjectHistoryLineComponent extends Component {
 
   handleClose() {
     this.setState({ open: false });
+  }
+
+  handleOpenExternalLink(url) {
+    this.setState({ displayExternalLink: true, externalLink: url });
+  }
+
+  handleCloseExternalLink() {
+    this.setState({ displayExternalLink: false, externalLink: null });
+  }
+
+  handleBrowseExternalLink() {
+    window.open(this.state.externalLink, '_blank');
+    this.setState({ displayExternalLink: false, externalLink: null });
   }
 
   renderIcon(eventType, isRelation, eventMesage, commit) {
@@ -282,6 +315,71 @@ class StixCoreObjectHistoryLineComponent extends Component {
                 </Markdown>
               </div>
             </Tooltip>
+            {node.context_data.references
+              && node.context_data.references.length > 0 && (
+                <List>
+                  {node.context_data.references.map((externalReference) => {
+                    const externalReferenceId = externalReference.external_id
+                      ? `(${externalReference.external_id})`
+                      : '';
+                    let externalReferenceSecondary = '';
+                    if (
+                      externalReference.url
+                      && externalReference.url.length > 0
+                    ) {
+                      externalReferenceSecondary = externalReference.url;
+                    } else if (
+                      externalReference.description
+                      && externalReference.description.length > 0
+                    ) {
+                      externalReferenceSecondary = externalReference.description;
+                    }
+                    if (externalReference.url) {
+                      return (
+                        <ListItem
+                          key={externalReference.id}
+                          dense={true}
+                          divider={true}
+                          button={true}
+                          onClick={this.handleOpenExternalLink.bind(
+                            this,
+                            externalReference.url,
+                          )}
+                        >
+                          <ListItemIcon>
+                            <LanguageOutlined />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={`${externalReference.source_name} ${externalReferenceId}`}
+                            secondary={truncate(externalReferenceSecondary, 90)}
+                          />
+                        </ListItem>
+                      );
+                    }
+                    return (
+                      <ListItem
+                        key={externalReference.id}
+                        dense={true}
+                        divider={true}
+                        button={false}
+                      >
+                        <ListItemIcon>
+                          <Avatar classes={{ root: classes.avatar }}>
+                            {externalReference.source_name.substring(0, 1)}
+                          </Avatar>
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={`${externalReference.source_name} ${externalReferenceId}`}
+                          secondary={truncate(
+                            externalReference.description,
+                            120,
+                          )}
+                        />
+                      </ListItem>
+                    );
+                  })}
+                </List>
+            )}
           </Paper>
         </div>
         <div className={classes.line} />
@@ -303,6 +401,30 @@ class StixCoreObjectHistoryLineComponent extends Component {
           <DialogActions>
             <Button color="primary" onClick={this.handleClose.bind(this)}>
               {t('Close')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          open={this.state.displayExternalLink}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseExternalLink.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to browse this external link?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleCloseExternalLink.bind(this)}>
+              {t('Cancel')}
+            </Button>
+            <Button
+              button={true}
+              color="secondary"
+              onClick={this.handleBrowseExternalLink.bind(this)}
+            >
+              {t('Browse the link')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -333,6 +455,14 @@ const StixCoreObjectHistoryLine = createFragmentContainer(
         context_data {
           message
           commit
+          references {
+            id
+            source_name
+            external_id
+            url
+            created
+            description
+          }
         }
       }
     `,

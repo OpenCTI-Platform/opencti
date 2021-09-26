@@ -18,6 +18,7 @@ import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import StatusField from '../../common/form/StatusField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -135,6 +136,7 @@ class ThreatActorEditionOverviewComponent extends Component {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
+      R.assoc('status_id', values.status_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
@@ -370,6 +372,19 @@ class ThreatActorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
+            {threatActor.workflowEnabled && (
+              <StatusField
+                name="status_id"
+                type="Threat-Actor"
+                onFocus={this.handleChangeFocus.bind(this)}
+                onChange={this.handleSubmitField.bind(this)}
+                setFieldValue={setFieldValue}
+                style={{ marginTop: 20 }}
+                helpertext={
+                  <SubscriptionFocus context={context} fieldName="status_id" />
+                }
+              />
+            )}
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
@@ -425,6 +440,7 @@ const ThreatActorEditionOverview = createFragmentContainer(
         threat_actor_types
         confidence
         description
+        workflowEnabled
         createdBy {
           ... on Identity {
             id

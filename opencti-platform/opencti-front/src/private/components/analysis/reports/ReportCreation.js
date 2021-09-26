@@ -202,7 +202,7 @@ class ReportCreation extends Component {
                           createdBy: '',
                           objectMarking: [],
                           objectLabel: [],
-                          externalReference: [],
+                          externalReferences: [],
                         }}
                         validationSchema={reportValidation(t)}
                         onSubmit={this.onSubmit.bind(this)}
