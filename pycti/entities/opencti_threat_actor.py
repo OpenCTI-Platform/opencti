@@ -93,6 +93,18 @@ class ThreatActor:
                         external_id
                         created
                         modified
+                        importFiles {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    size
+                                    metaData {
+                                        mimetype
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -113,6 +125,18 @@ class ThreatActor:
             primary_motivation
             secondary_motivations      
             personal_motivations
+            importFiles {
+                edges {
+                    node {
+                        id
+                        name
+                        size
+                        metaData {
+                            mimetype
+                        }
+                    }
+                }
+            }
         """
 
     def list(self, **kwargs) -> dict:

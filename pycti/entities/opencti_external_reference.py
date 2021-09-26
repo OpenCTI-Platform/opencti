@@ -29,6 +29,9 @@ class ExternalReference:
                         id
                         name
                         size
+                        metaData {
+                            mimetype
+                        }
                     }
                 }
             }
@@ -293,3 +296,33 @@ class ExternalReference:
              }
          """
         self.opencti.query(query, {"id": id})
+
+    def list_files(self, **kwargs):
+        id = kwargs.get("id", None)
+        self.opencti.log(
+            "info",
+            "Listing files of External-Reference { " + id + " }",
+        )
+        query = """
+            query externalReference($id: String!) {
+                externalReference(id: $id) {
+                    importFiles {
+                        edges {
+                            node {
+                                id
+                                name
+                                size
+                                metaData {
+                                    mimetype
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.opencti.query(query, {"id": id})
+        entity = self.opencti.process_multiple_fields(
+            result["data"]["externalReference"]
+        )
+        return entity["importFiles"]

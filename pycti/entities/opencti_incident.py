@@ -85,6 +85,18 @@ class Incident:
                         external_id
                         created
                         modified
+                        importFiles {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    size
+                                    metaData {
+                                        mimetype
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -98,6 +110,18 @@ class Incident:
             first_seen
             last_seen
             objective
+            importFiles {
+                edges {
+                    node {
+                        id
+                        name
+                        size
+                        metaData {
+                            mimetype
+                        }
+                    }
+                }
+            }
         """
 
     """

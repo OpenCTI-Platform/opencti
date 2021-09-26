@@ -85,6 +85,18 @@ class Campaign:
                         external_id
                         created
                         modified
+                        importFiles {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    size
+                                    metaData {
+                                        mimetype
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -98,6 +110,18 @@ class Campaign:
             first_seen
             last_seen
             objective
+            importFiles {
+                edges {
+                    node {
+                        id
+                        name
+                        size
+                        metaData {
+                            mimetype
+                        }
+                    }
+                }
+            }
         """
 
     """

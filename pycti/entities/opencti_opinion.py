@@ -85,6 +85,18 @@ class Opinion:
                         external_id
                         created
                         modified
+                        importFiles {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    size
+                                    metaData {
+                                        mimetype
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -177,6 +189,18 @@ class Opinion:
                             created_at
                             updated_at
                             relationship_type
+                        }
+                    }
+                }
+            }
+            importFiles {
+                edges {
+                    node {
+                        id
+                        name
+                        size
+                        metaData {
+                            mimetype
                         }
                     }
                 }

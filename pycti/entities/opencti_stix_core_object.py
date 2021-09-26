@@ -54,3 +54,31 @@ class StixCoreObject:
                 "[opencti_stix_core_object] Missing parameters: id and object_ids",
             )
             return None
+
+    def list_files(self, **kwargs):
+        id = kwargs.get("id", None)
+        self.opencti.log(
+            "info",
+            "Listing files of Stix-Core-Object { " + id + " }",
+        )
+        query = """
+                    query StixCoreObject($id: String!) {
+                        stixCoreObject(id: $id) {
+                            importFiles {
+                                edges {
+                                    node {
+                                        id
+                                        name
+                                        size
+                                        metaData {
+                                            mimetype
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                """
+        result = self.opencti.query(query, {"id": id})
+        entity = self.opencti.process_multiple_fields(result["data"]["stixCoreObject"])
+        return entity["importFiles"]

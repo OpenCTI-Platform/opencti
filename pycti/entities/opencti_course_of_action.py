@@ -85,6 +85,18 @@ class CourseOfAction:
                         external_id
                         created
                         modified
+                        importFiles {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    size
+                                    metaData {
+                                        mimetype
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -96,6 +108,18 @@ class CourseOfAction:
             description
             x_opencti_aliases
             x_mitre_id
+            importFiles {
+                edges {
+                    node {
+                        id
+                        name
+                        size
+                        metaData {
+                            mimetype
+                        }
+                    }
+                }
+            }
         """
 
     """

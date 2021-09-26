@@ -87,6 +87,18 @@ class Report:
                         external_id
                         created
                         modified
+                        importFiles {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    size
+                                    metaData {
+                                        mimetype
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -180,6 +192,18 @@ class Report:
                             created_at
                             updated_at
                             relationship_type
+                        }
+                    }
+                }
+            }
+            importFiles {
+                edges {
+                    node {
+                        id
+                        name
+                        size
+                        metaData {
+                            mimetype
                         }
                     }
                 }

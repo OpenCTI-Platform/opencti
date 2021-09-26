@@ -85,6 +85,18 @@ class IntrusionSet:
                         external_id
                         created
                         modified
+                        importFiles {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    size
+                                    metaData {
+                                        mimetype
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -100,7 +112,19 @@ class IntrusionSet:
             goals
             resource_level
             primary_motivation
-            secondary_motivations      
+            secondary_motivations
+            importFiles {
+                edges {
+                    node {
+                        id
+                        name
+                        size
+                        metaData {
+                            mimetype
+                        }
+                    }
+                }
+            }
         """
 
     """

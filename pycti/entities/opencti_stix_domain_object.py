@@ -88,6 +88,18 @@ class StixDomainObject:
                         external_id
                         created
                         modified
+                        importFiles {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    size
+                                    metaData {
+                                        mimetype
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -378,6 +390,9 @@ class StixDomainObject:
                         id
                         name
                         size
+                        metaData {
+                            mimetype
+                        }
                     }
                 }
             }
