@@ -169,7 +169,7 @@ import {
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { isStixCyberObservable, stixCyberObservableFieldsToBeUpdated } from '../schema/stixCyberObservable';
-import { BUS_TOPICS, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import {
   dayFormat,
   escape,
@@ -826,7 +826,10 @@ const inputResolveRefs = async (user, input, type) => {
     }
   }
   // eslint-disable-next-line prettier/prettier
-  const resolvedElements = await internalFindByIds(user, fetchingIds.map((i) => i.id));
+  const resolvedElements = await internalFindByIds(
+    user,
+    fetchingIds.map((i) => i.id)
+  );
   const resolvedElementWithConfGroup = resolvedElements.map((d) => {
     const elementIds = getInstanceIds(d);
     const matchingConfigs = R.filter((a) => elementIds.includes(a.id), fetchingIds);
@@ -1634,6 +1637,12 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
   const instance = await stixLoadById(user, id, type);
   if (!instance) {
     throw FunctionalError(`Cant find element to update`, { id, type });
+  }
+  const enforceReferences = conf.get('app:enforce_references');
+  if (enforceReferences && enforceReferences.includes(instance.entity_type)) {
+    if (isEmptyField(opts.references)) {
+      throw FunctionalError('You must provide at least one external reference to update');
+    }
   }
   const participantIds = getInstanceIds(instance).filter((e) => !locks.includes(e));
   // 01. Check if updating alias lead to entity conflict
@@ -2452,6 +2461,14 @@ export const createRelationRaw = async (user, input, opts = {}) => {
   let lock;
   const { publishStreamEvent = true, fromRule, locks = [] } = opts;
   const { fromId, toId, relationship_type: relationshipType } = input;
+  if (isStixCoreRelationship(relationshipType)) {
+    const enforceReferences = conf.get('app:enforce_references');
+    if (enforceReferences && enforceReferences.includes('stix-core-relationship')) {
+      if (isEmptyField(input.externalReferences)) {
+        throw FunctionalError('You must provide at least one external reference for relationships');
+      }
+    }
+  }
   // Pre check before inputs resolution
   if (fromId === toId) {
     /* istanbul ignore next */
@@ -2734,6 +2751,12 @@ const buildEntityData = async (user, participantIds, input, type, opts = {}) => 
   return { type: TRX_CREATION, element: created, relations };
 };
 export const createEntityRaw = async (user, input, type, opts = {}) => {
+  const enforceReferences = conf.get('app:enforce_references');
+  if (enforceReferences && enforceReferences.includes(type)) {
+    if (isEmptyField(input.externalReferences)) {
+      throw FunctionalError('You must provide at least one external reference for this type of entity');
+    }
+  }
   const { fromRule } = opts;
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(user, input, type);

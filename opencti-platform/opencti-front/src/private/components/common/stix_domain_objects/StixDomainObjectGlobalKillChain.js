@@ -133,133 +133,132 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
         <div id="container">
           <List id="test">
             {stixCoreRelationships.map((stixCoreRelationship) => (
-                <div key={stixCoreRelationship.id}>
-                  <ListItem
-                    button={true}
-                    divider={true}
-                    onClick={this.handleToggleLine.bind(
-                      this,
-                      stixCoreRelationship.id,
-                    )}
-                  >
-                    <ListItemIcon>
-                      <Launch color="primary" role="img" />
-                    </ListItemIcon>
-                    <ListItemText primary={stixCoreRelationship.phase_name} />
-                    <ListItemSecondaryAction>
-                      <IconButton
-                        onClick={this.handleToggleLine.bind(
-                          this,
-                          stixCoreRelationship.id,
-                        )}
-                        aria-haspopup="true"
-                      >
-                        {this.state.expandedLines[stixCoreRelationship.id]
-                        === false ? (
-                          <ExpandMore />
-                          ) : (
-                          <ExpandLess />
-                          )}
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                  <Collapse
-                    in={
-                      this.state.expandedLines[stixCoreRelationship.id]
-                      !== false
-                    }
-                  >
-                    <List>
-                      {stixCoreRelationship.stixDomainObjects.map(
-                        (stixDomainObject) => {
-                          const restricted = stixDomainObject.to === null;
-                          const link = `${entityLink}/relations/${stixDomainObject.id}`;
-                          return (
-                            <ListItem
-                              key={stixDomainObject.id}
-                              classes={{ root: classes.nested }}
-                              divider={true}
-                              button={true}
-                              dense={true}
-                              component={Link}
-                              to={link}
-                            >
-                              <ListItemIcon className={classes.itemIcon}>
-                                <ItemIcon
-                                  type={
-                                    !restricted
-                                      ? stixDomainObject.to.entity_type
-                                      : 'restricted'
-                                  }
-                                />
-                              </ListItemIcon>
-                              <ListItemText
-                                primary={
-                                  // eslint-disable-next-line no-nested-ternary
-                                  !restricted ? (
-                                    stixDomainObject.to.entity_type
-                                    === 'Attack-Pattern' ? (
-                                      <span>
-                                        <strong>
-                                          {stixDomainObject.to.x_mitre_id}
-                                        </strong>{' '}
-                                        - {stixDomainObject.to.name}
-                                      </span>
-                                      ) : (
-                                      <span>{stixDomainObject.to.name}</span>
-                                      )
-                                  ) : (
-                                    t('Restricted')
-                                  )
-                                }
-                                secondary={
-                                  stixDomainObject.description
-                                  && stixDomainObject.description.length > 0 ? (
-                                    <Markdown
-                                      remarkPlugins={[remarkGfm, remarkParse]}
-                                      parserOptions={{ commonmark: true }}
-                                      className="markdown"
-                                    >
-                                      {stixDomainObject.description}
-                                    </Markdown>
-                                    ) : (
-                                      t('No description of this usage')
-                                    )
-                                }
-                              />
-                              {take(
-                                1,
-                                pathOr(
-                                  [],
-                                  ['markingDefinitions', 'edges'],
-                                  stixDomainObject,
-                                ),
-                              ).map((markingDefinition) => (
-                                <ItemMarking
-                                  key={markingDefinition.node.id}
-                                  variant="inList"
-                                  label={markingDefinition.node.definition}
-                                  color={markingDefinition.node.x_opencti_color}
-                                />
-                              ))}
-                              <ItemYears
-                                variant="inList"
-                                years={stixDomainObject.years}
-                              />
-                              <ListItemSecondaryAction>
-                                <StixCoreRelationshipPopover
-                                  stixCoreRelationshipId={stixDomainObject.id}
-                                  paginationOptions={paginationOptions}
-                                  onDelete={this.props.relay.refetch.bind(this)}
-                                />
-                              </ListItemSecondaryAction>
-                            </ListItem>
-                          );
-                        },
+              <div key={stixCoreRelationship.id}>
+                <ListItem
+                  button={true}
+                  divider={true}
+                  onClick={this.handleToggleLine.bind(
+                    this,
+                    stixCoreRelationship.id,
+                  )}
+                >
+                  <ListItemIcon>
+                    <Launch color="primary" role="img" />
+                  </ListItemIcon>
+                  <ListItemText primary={stixCoreRelationship.phase_name} />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      onClick={this.handleToggleLine.bind(
+                        this,
+                        stixCoreRelationship.id,
                       )}
-                    </List>
-                  </Collapse>
-                </div>
+                      aria-haspopup="true"
+                    >
+                      {this.state.expandedLines[stixCoreRelationship.id]
+                      === false ? (
+                        <ExpandMore />
+                        ) : (
+                        <ExpandLess />
+                        )}
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+                <Collapse
+                  in={
+                    this.state.expandedLines[stixCoreRelationship.id] !== false
+                  }
+                >
+                  <List>
+                    {stixCoreRelationship.stixDomainObjects.map(
+                      (stixDomainObject) => {
+                        const restricted = stixDomainObject.to === null;
+                        const link = `${entityLink}/relations/${stixDomainObject.id}`;
+                        return (
+                          <ListItem
+                            key={stixDomainObject.id}
+                            classes={{ root: classes.nested }}
+                            divider={true}
+                            button={true}
+                            dense={true}
+                            component={Link}
+                            to={link}
+                          >
+                            <ListItemIcon className={classes.itemIcon}>
+                              <ItemIcon
+                                type={
+                                  !restricted
+                                    ? stixDomainObject.to.entity_type
+                                    : 'restricted'
+                                }
+                              />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={
+                                // eslint-disable-next-line no-nested-ternary
+                                !restricted ? (
+                                  stixDomainObject.to.entity_type
+                                  === 'Attack-Pattern' ? (
+                                    <span>
+                                      <strong>
+                                        {stixDomainObject.to.x_mitre_id}
+                                      </strong>{' '}
+                                      - {stixDomainObject.to.name}
+                                    </span>
+                                    ) : (
+                                    <span>{stixDomainObject.to.name}</span>
+                                    )
+                                ) : (
+                                  t('Restricted')
+                                )
+                              }
+                              secondary={
+                                stixDomainObject.description
+                                && stixDomainObject.description.length > 0 ? (
+                                  <Markdown
+                                    remarkPlugins={[remarkGfm, remarkParse]}
+                                    parserOptions={{ commonmark: true }}
+                                    className="markdown"
+                                  >
+                                    {stixDomainObject.description}
+                                  </Markdown>
+                                  ) : (
+                                    t('No description of this usage')
+                                  )
+                              }
+                            />
+                            {take(
+                              1,
+                              pathOr(
+                                [],
+                                ['markingDefinitions', 'edges'],
+                                stixDomainObject,
+                              ),
+                            ).map((markingDefinition) => (
+                              <ItemMarking
+                                key={markingDefinition.node.id}
+                                variant="inList"
+                                label={markingDefinition.node.definition}
+                                color={markingDefinition.node.x_opencti_color}
+                              />
+                            ))}
+                            <ItemYears
+                              variant="inList"
+                              years={stixDomainObject.years}
+                            />
+                            <ListItemSecondaryAction>
+                              <StixCoreRelationshipPopover
+                                stixCoreRelationshipId={stixDomainObject.id}
+                                paginationOptions={paginationOptions}
+                                onDelete={this.props.relay.refetch.bind(this)}
+                              />
+                            </ListItemSecondaryAction>
+                          </ListItem>
+                        );
+                      },
+                    )}
+                  </List>
+                </Collapse>
+              </div>
             ))}
           </List>
         </div>

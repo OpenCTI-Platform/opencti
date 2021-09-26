@@ -8,15 +8,12 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Switch from '@material-ui/core/Switch';
 import { ArrowRightAltOutlined } from '@material-ui/icons';
 import { interval } from 'rxjs';
 import Slide from '@material-ui/core/Slide';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { createRefetchContainer } from 'react-relay';
 import Chip from '@material-ui/core/Chip';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
 import inject18n from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import SubTypePopover from './SubTypePopover';
@@ -56,7 +53,7 @@ const styles = (theme) => ({
     margin: '-2px 7px 0 7px',
   },
   subtype: {
-    width: '20%',
+    width: '30%',
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -198,25 +195,6 @@ class WorkflowLinesComponent extends Component {
                             label={t('Disabled')}
                           />
                         )}
-                      </div>
-                      <div className={classes.reference}>
-                        <FormGroup>
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={data.settings.platform_enable_reference?.includes(
-                                  subType.id,
-                                )}
-                                size="small"
-                                onChange={this.handleSubmitReference.bind(
-                                  this,
-                                  subType.id,
-                                )}
-                              />
-                            }
-                            label={t('Reference knowledge update')}
-                          />
-                        </FormGroup>
                       </div>
                     </div>
                   }

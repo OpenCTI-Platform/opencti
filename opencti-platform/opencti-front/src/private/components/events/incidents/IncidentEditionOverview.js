@@ -58,9 +58,14 @@ const incidentMutationFieldPatch = graphql`
     $id: ID!
     $input: [EditInput]!
     $commitMessage: String
+    $references: [String]
   ) {
     incidentEdit(id: $id) {
-      fieldPatch(input: $input, commitMessage: $commitMessage) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...IncidentEditionOverview_incident
       }
     }
@@ -153,6 +158,7 @@ class IncidentEditionOverviewComponent extends Component {
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
       },
+      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         this.props.handleClose();

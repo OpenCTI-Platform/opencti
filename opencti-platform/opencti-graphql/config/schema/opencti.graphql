@@ -281,6 +281,7 @@ type ContextData {
   to_id: String
   message: String!
   commit: String
+  references: [ExternalReference]
 }
 type Log {
   id: ID!

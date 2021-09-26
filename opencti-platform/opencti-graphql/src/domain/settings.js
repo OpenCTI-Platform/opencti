@@ -1,6 +1,6 @@
 import { getHeapStatistics } from 'v8';
 import { createEntity, loadById, updateAttribute, loadEntity } from '../database/middleware';
-import {
+import conf, {
   BUS_TOPICS,
   ENABLED_EXPIRED_MANAGER,
   ENABLED_RULE_ENGINE,
@@ -41,7 +41,8 @@ export const getApplicationInfo = () => ({
 });
 
 export const getSettings = async () => {
-  return loadEntity(SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+  const settings = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+  return { ...settings, platform_enable_reference: conf.get('app:enforce_references') };
 };
 
 export const addSettings = async (user, settings) => {
