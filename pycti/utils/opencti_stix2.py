@@ -366,6 +366,14 @@ class OpenCTIStix2:
                         if "description" in external_reference
                         else None,
                     )["id"]
+                if "x_opencti_files" in external_reference:
+                    for file in external_reference["x_opencti_files"]:
+                        self.opencti.external_reference.add_file(
+                            id=external_reference_id,
+                            file_name=file["name"],
+                            data=base64.b64decode(file["data"]),
+                            mime_type=file["mime_type"],
+                        )
                 self.mapping_cache[url] = {"id": external_reference_id}
                 external_references_ids.append(external_reference_id)
                 if (
@@ -993,6 +1001,23 @@ class OpenCTIStix2:
                     external_reference["external_id"] = entity_external_reference[
                         "external_id"
                     ]
+                if "importFiles" in entity_external_reference:
+                    external_reference["x_opencti_files"] = []
+                    for file in entity_external_reference["importFiles"]:
+                        url = (
+                            self.opencti.api_url.replace("graphql", "storage/get/")
+                            + file["id"]
+                        )
+                        data = self.opencti.fetch_opencti_file(
+                            url, binary=True, serialize=True
+                        )
+                        external_reference["x_opencti_files"].append(
+                            {
+                                "name": file["name"],
+                                "data": data,
+                                "mime_type": file["metaData"]["mimetype"],
+                            }
+                        )
                 entity["external_references"].append(external_reference)
         if "externalReferences" in entity:
             del entity["externalReferences"]
@@ -1172,6 +1197,21 @@ class OpenCTIStix2:
             file = self.opencti.fetch_opencti_file(url, binary=True, serialize=True)
             if file:
                 entity["payload_bin"] = file
+        # Files
+        if "importFiles" in entity:
+            entity["x_opencti_files"] = []
+            for file in entity["importFiles"]:
+                url = (
+                    self.opencti.api_url.replace("graphql", "storage/get/") + file["id"]
+                )
+                data = self.opencti.fetch_opencti_file(url, binary=True, serialize=True)
+                entity["x_opencti_files"].append(
+                    {
+                        "name": file["name"],
+                        "data": data,
+                        "mime_type": file["metaData"]["mimetype"],
+                    }
+                )
             del entity["importFiles"]
             del entity["importFilesIds"]
 

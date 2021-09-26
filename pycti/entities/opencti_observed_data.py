@@ -85,6 +85,18 @@ class ObservedData:
                         external_id
                         created
                         modified
+                        importFiles {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    size
+                                    metaData {
+                                        mimetype
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -176,6 +188,18 @@ class ObservedData:
                             spec_version
                             created_at
                             updated_at
+                        }
+                    }
+                }
+            }
+            importFiles {
+                edges {
+                    node {
+                        id
+                        name
+                        size
+                        metaData {
+                            mimetype
                         }
                     }
                 }

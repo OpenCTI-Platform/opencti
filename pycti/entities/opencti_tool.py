@@ -85,6 +85,18 @@ class Tool:
                         external_id
                         created
                         modified
+                        importFiles {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    size
+                                    metaData {
+                                        mimetype
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -108,6 +120,18 @@ class Tool:
                         x_opencti_order
                         created
                         modified
+                    }
+                }
+            }
+            importFiles {
+                edges {
+                    node {
+                        id
+                        name
+                        size
+                        metaData {
+                            mimetype
+                        }
                     }
                 }
             }

@@ -87,6 +87,18 @@ class Identity:
                         external_id
                         created
                         modified
+                        importFiles {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    size
+                                    metaData {
+                                        mimetype
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -106,6 +118,18 @@ class Identity:
             ... on Organization {
                 x_opencti_organization_type
                 x_opencti_reliability
+            }
+            importFiles {
+                edges {
+                    node {
+                        id
+                        name
+                        size
+                        metaData {
+                            mimetype
+                        }
+                    }
+                }
             }
         """
 

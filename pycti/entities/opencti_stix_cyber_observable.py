@@ -89,6 +89,18 @@ class StixCyberObservable:
                         external_id
                         created
                         modified
+                        importFiles {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    size
+                                    metaData {
+                                        mimetype
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -286,6 +298,18 @@ class StixCyberObservable:
             }
             ... on XOpenCTIUserAgent {
                 value
+            }
+            importFiles {
+                edges {
+                    node {
+                        id
+                        name
+                        size
+                        metaData {
+                            mimetype
+                        }
+                    }
+                }
             }
         """
 

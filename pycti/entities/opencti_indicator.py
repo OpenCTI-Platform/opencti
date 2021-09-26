@@ -90,6 +90,18 @@ class Indicator:
                         external_id
                         created
                         modified
+                        importFiles {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    size
+                                    metaData {
+                                        mimetype
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -128,6 +140,18 @@ class Indicator:
                         x_opencti_order
                         created
                         modified
+                    }
+                }
+            }
+            importFiles {
+                edges {
+                    node {
+                        id
+                        name
+                        size
+                        metaData {
+                            mimetype
+                        }
                     }
                 }
             }
