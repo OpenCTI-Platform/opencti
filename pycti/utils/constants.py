@@ -63,6 +63,18 @@ class LocationTypes(Enum):
         return value.lower() in lower_attr
 
 
+class ContainerTypes(Enum):
+    NOTE = "Note"
+    OBSERVED_DATA = "Observed-Data"
+    OPINION = "Opinion"
+    REPORT = "Report"
+
+    @classmethod
+    def has_value(cls, value):
+        lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
+        return value.lower() in lower_attr
+
+
 class StixMetaTypes(Enum):
     MARKING_DEFINITION = "Marking-Definition"
     LABEL = "Label"
