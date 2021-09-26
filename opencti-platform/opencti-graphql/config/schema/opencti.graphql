@@ -3892,6 +3892,12 @@ interface Location {
   longitude: Float
   precision: Float
   x_opencti_aliases: [String]
+  # Technical
+  creator: User
+  toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
