@@ -39,7 +39,8 @@ const containerResolvers = {
   Mutation: {
     containerEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage }) => stixDomainObjectEditField(user, id, input, { commitMessage }),
+      fieldPatch: ({ input, commitMessage, references }) =>
+        stixDomainObjectEditField(user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),

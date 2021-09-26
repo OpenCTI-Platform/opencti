@@ -110,7 +110,7 @@ class WorkflowLinesComponent extends Component {
     const { checked } = event.target;
     let reference;
     if (checked) {
-      reference = R.uniq([...currentReference, type]);
+      reference = R.uniq([...(currentReference || []), type]);
     } else {
       reference = R.uniq(R.filter((n) => n !== type, currentReference));
     }
@@ -214,7 +214,7 @@ class WorkflowLinesComponent extends Component {
                                 )}
                               />
                             }
-                            label={t('Commit messages')}
+                            label={t('Reference knowledge update')}
                           />
                         </FormGroup>
                       </div>

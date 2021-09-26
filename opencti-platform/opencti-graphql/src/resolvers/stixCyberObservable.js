@@ -74,7 +74,8 @@ const stixCyberObservableResolvers = {
   Mutation: {
     stixCyberObservableEdit: (_, { id }, { user }) => ({
       delete: () => stixCyberObservableDelete(user, id),
-      fieldPatch: ({ input, commitMessage }) => stixCyberObservableEditField(user, id, input, { commitMessage }),
+      fieldPatch: ({ input, commitMessage, references }) =>
+        stixCyberObservableEditField(user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixCyberObservableEditContext(user, id, input),
       contextClean: () => stixCyberObservableCleanContext(user, id),
       relationAdd: ({ input }) => stixCyberObservableAddRelation(user, id, input),

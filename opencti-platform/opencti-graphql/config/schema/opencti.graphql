@@ -9455,7 +9455,7 @@ type StixCoreObjectEditMutations {
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
   importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
-  @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+    @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }
 
@@ -9464,7 +9464,8 @@ type StixCoreObjectEditMutations {
 type StixDomainObjectEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   changeType(newType: String!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): StixDomainObject
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9477,7 +9478,8 @@ type StixDomainObjectEditMutations {
 }
 type AttackPatternEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): AttackPattern
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9485,7 +9487,8 @@ type AttackPatternEditMutations {
 }
 type CampaignEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Campaign
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9494,7 +9497,8 @@ type CampaignEditMutations {
 ############### Containers
 type ContainerEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Container @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Container
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Container @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Container @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9502,7 +9506,7 @@ type ContainerEditMutations {
 }
 type NoteEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Note @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Note @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Note @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9510,7 +9514,8 @@ type NoteEditMutations {
 }
 type ObservedDataEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): ObservedData
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9518,7 +9523,7 @@ type ObservedDataEditMutations {
 }
 type OpinionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9526,7 +9531,7 @@ type OpinionEditMutations {
 }
 type ReportEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Report @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9534,7 +9539,8 @@ type ReportEditMutations {
 }
 type CourseOfActionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): CourseOfAction
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9543,7 +9549,8 @@ type CourseOfActionEditMutations {
 ############### Identities
 type IdentityEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Identity
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Identity @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9551,7 +9558,7 @@ type IdentityEditMutations {
 }
 type IndividualEditMutations {
   delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String): Individual
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Individual
   contextPatch(input: EditContext): Individual
   contextClean: Individual
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
@@ -9559,7 +9566,8 @@ type IndividualEditMutations {
 }
 type OrganizationEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Organization
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Organization @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9567,7 +9575,7 @@ type OrganizationEditMutations {
 }
 type SectorEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Sector @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9575,7 +9583,7 @@ type SectorEditMutations {
 }
 type SystemEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): System @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): System @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): System @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: System @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9583,7 +9591,8 @@ type SystemEditMutations {
 }
 type IndicatorEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Indicator
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9591,7 +9600,8 @@ type IndicatorEditMutations {
 }
 type InfrastructureEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Infrastructure
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9599,7 +9609,8 @@ type InfrastructureEditMutations {
 }
 type IntrusionSetEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): IntrusionSet
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9608,7 +9619,8 @@ type IntrusionSetEditMutations {
 ############### Locations
 type LocationEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Location @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Location
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Location @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Location @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9616,7 +9628,7 @@ type LocationEditMutations {
 }
 type CityEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): City @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): City @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): City @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: City @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9624,7 +9636,7 @@ type CityEditMutations {
 }
 type CountryEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Country @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Country @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Country @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Country @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9632,7 +9644,7 @@ type CountryEditMutations {
 }
 type RegionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Region @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Region @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Region @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Region @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9640,7 +9652,8 @@ type RegionEditMutations {
 }
 type PositionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Position @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Position
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Position @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Position @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9648,7 +9661,7 @@ type PositionEditMutations {
 }
 type MalwareEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Malware @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9656,7 +9669,8 @@ type MalwareEditMutations {
 }
 type ThreatActorEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): ThreatActor
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9664,7 +9678,7 @@ type ThreatActorEditMutations {
 }
 type ToolEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Tool @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9672,7 +9686,8 @@ type ToolEditMutations {
 }
 type VulnerabilityEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Vulnerability
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9680,7 +9695,8 @@ type VulnerabilityEditMutations {
 }
 type IncidentEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Incident
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Incident @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9691,7 +9707,8 @@ type IncidentEditMutations {
 
 type StixCyberObservableEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): StixCyberObservable
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9710,7 +9727,7 @@ type StixCyberObservableEditMutations {
 
 type StixCoreRelationshipEditMutations {
   delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String): StixCoreRelationship
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): StixCoreRelationship
   contextPatch(input: EditContext): StixCoreRelationship
   contextClean: StixCoreRelationship
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
@@ -9721,7 +9738,7 @@ type StixCoreRelationshipEditMutations {
 
 type StixSightingRelationshipEditMutations {
   delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String): StixSightingRelationship
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): StixSightingRelationship
   contextPatch(input: EditContext): StixSightingRelationship
   contextClean: StixSightingRelationship
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship

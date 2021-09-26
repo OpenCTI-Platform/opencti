@@ -52,7 +52,7 @@ class CommitMessage extends Component {
           onClose={this.handleClose.bind(this)}
           fullWidth={true}
         >
-          <DialogTitle>{t('Commit message')}</DialogTitle>
+          <DialogTitle>{t('Reference modification')}</DialogTitle>
           <DialogContent>
             <Field
               component={MarkDownField}
@@ -60,7 +60,7 @@ class CommitMessage extends Component {
               label={t('Message')}
               fullWidth={true}
               multiline={true}
-              rows="4"
+              rows="2"
             />
           </DialogContent>
           <DialogActions>
@@ -83,6 +83,7 @@ CommitMessage.propTypes = {
   submitForm: PropTypes.func,
   disabled: PropTypes.bool,
   validateForm: PropTypes.func,
+  externalReferences: PropTypes.array,
 };
 
 export default compose(

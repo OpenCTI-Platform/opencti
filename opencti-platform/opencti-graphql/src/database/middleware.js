@@ -1818,6 +1818,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
       const event = await storeUpdateEvent(user, updatedInstance, updatedInputs, {
         mustBeRepublished,
         commitMessage: opts.commitMessage,
+        references: opts.references,
       });
       return { element: updatedInstance, event };
     }
