@@ -5,3 +5,5 @@ opencti:
 
 worker:
   log_level: 'info'
+  expose_metrics: false
+  metrics_port: 9095

@@ -24,14 +24,26 @@ from pycti.connector.opencti_connector_helper import (
     get_config_variable,
 )
 from requests.exceptions import RequestException, Timeout
+from prometheus_client import start_http_server, Counter
 
 PROCESSING_COUNT: int = 5
 MAX_PROCESSING_COUNT: int = 30
+
+# prometheus metrics
+metrics = {
+    "processed_messages_counter": None,
+    "connection_timeout_counter": None,
+    "connection_error_counter": None,
+    "lock_error_counter": None,
+    "missing_reference_error_counter": None,
+    "unknown_error_counter": None,
+}
 
 
 @dataclass(unsafe_hash=True)
 class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
     connector: Dict[str, Any] = field(hash=False)
+    metrics: Dict[str, Any] = field(hash=False)
     opencti_url: str
     opencti_token: str
     log_level: str
@@ -137,6 +149,9 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         while thread.is_alive():  # Loop while the thread is processing
             self.pika_connection.sleep(0.05)
         logging.info("Message processed, thread terminated")
+        if metrics["processed_messages_counter"] is not None:
+            processed_messages_counter = metrics["processed_messages_counter"]
+            processed_messages_counter.inc()
 
     # Data handling
     def data_handler(  # pylint: disable=too-many-statements, too-many-locals
@@ -176,6 +191,9 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             return True
         except Timeout as te:
             logging.warning("%s", f"A connection timeout occurred: {{ {te} }}")
+            if metrics["connection_timeout_counter"] is not None:
+                connection_timeout_counter = metrics["connection_timeout_counter"]
+                connection_timeout_counter.inc()
             # Platform is under heavy load: wait for unlock & retry almost indefinitely.
             sleep_jitter = round(random.uniform(10, 30), 2)
             time.sleep(sleep_jitter)
@@ -183,6 +201,9 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             return True
         except RequestException as re:
             logging.error("%s", f"A connection error occurred: {{ {re} }}")
+            if metrics["connection_error_counter"] is not None:
+                connection_error_counter = metrics["connection_error_counter"]
+                connection_error_counter.inc()
             time.sleep(60)
             logging.info(
                 "%s", f"Message (delivery_tag={delivery_tag}) NOT acknowledged"
@@ -194,6 +215,9 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         except Exception as ex:  # pylint: disable=broad-except
             error = str(ex)
             if "LockError" in error and self.processing_count < MAX_PROCESSING_COUNT:
+                if metrics["lock_error_counter"] is not None:
+                    lock_error_counter = metrics["lock_error_counter"]
+                    lock_error_counter.inc()
                 # Platform is under heavy load:
                 # wait for unlock & retry almost indefinitely.
                 sleep_jitter = round(random.uniform(10, 30), 2)
@@ -203,6 +227,11 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 "MissingReferenceError" in error
                 and self.processing_count < PROCESSING_COUNT
             ):
+                if metrics["missing_reference_error_counter"] is not None:
+                    missing_reference_error_counter = metrics[
+                        "missing_reference_error_counter"
+                    ]
+                    missing_reference_error_counter.inc()
                 # In case of missing reference, wait & retry
                 sleep_jitter = round(random.uniform(1, 3), 2)
                 time.sleep(sleep_jitter)
@@ -228,6 +257,9 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 # Platform does not know what to do and raises an error:
                 # fail and acknowledge the message.
                 logging.error(error)
+                if metrics["unknown_error_counter"] is not None:
+                    unknown_error_counter = metrics["unknown_error_counter"]
+                    unknown_error_counter.inc()
                 self.processing_count = 0
                 cb = functools.partial(self.ack_message, channel, delivery_tag)
                 connection.add_callback_threadsafe(cb)
@@ -306,6 +338,36 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         self.connectors: List[Any] = []
         self.queues: List[Any] = []
 
+        # Start up the server to expose the metrics.
+        expose_metrics = get_config_variable(
+            "WORKER_EXPOSE_METRICS", ["worker", "expose_metrics"], config, False, False
+        )
+        metrics_port = get_config_variable(
+            "WORKER_METRICS_PORT", ["worker", "metrics_port"], config, True, 9095
+        )
+        if expose_metrics:
+            logging.info("%s", f"Exposing metrics on port {metrics_port}")
+            start_http_server(metrics_port)
+            # initialise metrics
+            metrics["processed_messages_counter"] = Counter(
+                "processed_messages", "Number of processed messages"
+            )
+            metrics["connection_timeout_counter"] = Counter(
+                "connection_timeout", "Number of connection timeouts"
+            )
+            metrics["connection_error_counter"] = Counter(
+                "connection_error", "Number of connection errors"
+            )
+            metrics["lock_error_counter"] = Counter(
+                "lock_error", "Number of lock errors"
+            )
+            metrics["missing_reference_error_counter"] = Counter(
+                "missing_reference_error", "Number of missing reference errors"
+            )
+            metrics["unknown_error_counter"] = Counter(
+                "unknown_error", "Number of unknown errors"
+            )
+
     # Start the main loop
     def start(self) -> None:
         while True:
@@ -330,6 +392,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             )
                             self.consumer_threads[queue] = Consumer(
                                 connector,
+                                metrics,
                                 self.opencti_url,
                                 self.opencti_token,
                                 self.log_level,
@@ -340,6 +403,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                     else:
                         self.consumer_threads[queue] = Consumer(
                             connector,
+                            metrics,
                             self.opencti_url,
                             self.opencti_token,
                             self.log_level,
