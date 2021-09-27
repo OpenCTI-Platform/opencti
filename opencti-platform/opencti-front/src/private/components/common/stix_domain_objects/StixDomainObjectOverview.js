@@ -140,9 +140,13 @@ class StixDomainObjectOverview extends Component {
                   aria-label="Close"
                   disableRipple={true}
                   size="small"
+                  disabled={stixIds.length === 0}
                   onClick={this.handleToggleOpenStixIds.bind(this)}
                 >
-                  <BrushOutlined fontSize="small" color="secondary" />
+                  <BrushOutlined
+                    fontSize="small"
+                    color={stixIds.length === 0 ? 'inherit' : 'secondary'}
+                  />
                 </IconButton>
               </div>
               <div className="clearfix" />
