@@ -78,8 +78,8 @@ jobs:
       - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
       - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push --force opencti master
       - run: mkdir release
-      - run: cp -a ./opencti-platform/opencti-graphql release/opencti
       - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
+      - run: cp -a ./opencti-platform/opencti-graphql release/opencti
       - run: cp -a ./opencti-worker/src release/opencti/worker
       - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/docker
       - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/connectors
@@ -102,6 +102,7 @@ jobs:
       - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
       - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push --force opencti master
       - run: mkdir release
+      - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
       - run: cp -a ./opencti-worker/src release/opencti/worker
       - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/docker
