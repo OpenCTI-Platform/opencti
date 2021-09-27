@@ -17,6 +17,7 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
+import FileManager from '../../common/files/FileManager';
 
 const subscription = graphql`
   subscription RootStixCyberObservableSubscription($id: ID!) {
@@ -24,6 +25,9 @@ const subscription = graphql`
       ...StixCyberObservable_stixCyberObservable
       ...StixCyberObservableEditionContainer_stixCyberObservable
       ...StixCyberObservableKnowledge_stixCyberObservable
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
     }
   }
 `;
@@ -38,6 +42,12 @@ const stixCyberObservableQuery = graphql`
       ...StixCyberObservableDetails_stixCyberObservable
       ...StixCyberObservableIndicators_stixCyberObservable
       ...StixCyberObservableKnowledge_stixCyberObservable
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
+    }
+    connectorsForExport {
+      ...FileManager_connectorsExport
     }
   }
 `;
@@ -138,7 +148,26 @@ class RootStixCyberObservable extends Component {
                               'Sector',
                               'Organization',
                               'Individual',
+                              'System',
                             ]}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/observables/:observableId/files"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixCyberObservableHeader
+                            stixCyberObservable={props.stixCyberObservable}
+                          />
+                          <FileManager
+                            {...routeProps}
+                            id={observableId}
+                            connectorsImport={[]}
+                            connectorsExport={props.connectorsForExport}
+                            entity={props.stixCyberObservable}
                           />
                         </React.Fragment>
                       )}

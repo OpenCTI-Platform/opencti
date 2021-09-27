@@ -10,6 +10,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import inject18n from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
+import ExternalReferencesField from './ExternalReferencesField';
 
 const styles = () => ({
   container: {
@@ -32,11 +33,11 @@ class CommitMessage extends Component {
   }
 
   handleSubmit() {
-    this.setState({ open: false }, () => this.props.submitForm());
+    this.props.submitForm();
   }
 
   render() {
-    const { disabled, t } = this.props;
+    const { disabled, t, id } = this.props;
     return (
       <div>
         <Button
@@ -52,15 +53,21 @@ class CommitMessage extends Component {
           onClose={this.handleClose.bind(this)}
           fullWidth={true}
         >
-          <DialogTitle>{t('Commit message')}</DialogTitle>
+          <DialogTitle>{t('Reference modification')}</DialogTitle>
           <DialogContent>
+            <ExternalReferencesField
+              name="references"
+              style={{ marginTop: 20, width: '100%' }}
+              id={id}
+            />
             <Field
               component={MarkDownField}
               name="message"
               label={t('Message')}
               fullWidth={true}
               multiline={true}
-              rows="4"
+              rows="2"
+              style={{ marginTop: 20 }}
             />
           </DialogContent>
           <DialogActions>
@@ -79,10 +86,12 @@ class CommitMessage extends Component {
 }
 
 CommitMessage.propTypes = {
+  id: PropTypes.string,
   t: PropTypes.func,
   submitForm: PropTypes.func,
   disabled: PropTypes.bool,
   validateForm: PropTypes.func,
+  externalReferences: PropTypes.array,
 };
 
 export default compose(

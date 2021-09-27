@@ -74,7 +74,7 @@ const taxiiCollectionMutationFieldPatch = graphql`
 
 const taxiiCollectionValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  description: Yup.string(),
+  description: Yup.string().nullable(),
 });
 
 const TaxiiCollectionEditionContainer = (props) => {

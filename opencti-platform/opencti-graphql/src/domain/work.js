@@ -51,7 +51,7 @@ export const findAll = (user, args = {}) => {
   return elPaginate(user, READ_INDEX_HISTORY, finalArgs);
 };
 
-export const worksForConnector = async (connectorId, user, args = {}) => {
+export const worksForConnector = async (user, connectorId, args = {}) => {
   const { first = 10, filters = [] } = args;
   filters.push({ key: 'connector_id', values: [connectorId] });
   return elPaginate(user, READ_INDEX_HISTORY, {
@@ -93,6 +93,12 @@ export const deleteWorkRaw = async (work) => {
 export const deleteWork = async (user, workId) => {
   const work = await loadWorkById(user, workId);
   return deleteWorkRaw(work);
+};
+
+export const deleteWorkForConnector = async (user, connectorId) => {
+  const works = await worksForConnector(user, connectorId, { first: 5000 });
+  await Promise.all(R.map((w) => deleteWorkRaw(w), works));
+  return true;
 };
 
 export const deleteWorkForFile = async (user, fileId) => {

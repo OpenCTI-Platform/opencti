@@ -83,7 +83,7 @@ services:
 - name: redis
   image: redis:6.2.5
 - name: elastic
-  image: docker.elastic.co/elasticsearch/elasticsearch:7.14.1
+  image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
   environment:
     discovery.type: single-node
     ES_JAVA_OPTS: -Xms2g -Xmx2g
@@ -94,7 +94,7 @@ services:
     MINIO_ROOT_PASSWORD: ChangeMe
   command: [ server, /data ]
 - name: rabbitmq
-  image: rabbitmq:3.8-management 
+  image: rabbitmq:3.9-management 
 - name: opencti-raw-start
   image: nikolaik/python-nodejs:python3.9-nodejs15-alpine
   environment:

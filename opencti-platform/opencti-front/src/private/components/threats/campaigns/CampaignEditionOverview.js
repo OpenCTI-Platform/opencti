@@ -47,9 +47,14 @@ const campaignMutationFieldPatch = graphql`
     $id: ID!
     $input: [EditInput]!
     $commitMessage: String
+    $references: [String]
   ) {
     campaignEdit(id: $id) {
-      fieldPatch(input: $input, commitMessage: $commitMessage) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...CampaignEditionOverview_campaign
         ...Campaign_campaign
       }
@@ -123,8 +128,10 @@ class CampaignEditionOverviewComponent extends Component {
 
   onSubmit(values, { setSubmitting }) {
     const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
       R.dissoc('message'),
+      R.dissoc('references'),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
@@ -140,7 +147,9 @@ class CampaignEditionOverviewComponent extends Component {
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
       },
+      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         this.props.handleClose();
@@ -316,6 +325,7 @@ class CampaignEditionOverviewComponent extends Component {
                 submitForm={submitForm}
                 disabled={isSubmitting}
                 validateForm={validateForm}
+                id={campaign.id}
               />
             )}
           </Form>

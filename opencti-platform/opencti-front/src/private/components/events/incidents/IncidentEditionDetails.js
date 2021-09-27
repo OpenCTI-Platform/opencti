@@ -70,7 +70,7 @@ const IncidentValidation = (t) => Yup.object().shape({
   last_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  objective: Yup.string(),
+  objective: Yup.string().nullable(),
 });
 
 class IncidentEditionDetailsComponent extends Component {
@@ -103,6 +103,7 @@ class IncidentEditionDetailsComponent extends Component {
 
   render() {
     const { t, incident, context } = this.props;
+    const isInferred = incident.is_inferred;
     const initialValues = pipe(
       assoc('first_seen', dateFormat(incident.first_seen)),
       assoc('last_seen', dateFormat(incident.last_seen)),
@@ -122,6 +123,7 @@ class IncidentEditionDetailsComponent extends Component {
               component={DatePickerField}
               name="first_seen"
               label={t('First seen')}
+              disabled={isInferred}
               invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
               fullWidth={true}
               onFocus={this.handleChangeFocus.bind(this)}
@@ -134,6 +136,7 @@ class IncidentEditionDetailsComponent extends Component {
               component={DatePickerField}
               name="last_seen"
               label={t('Last seen')}
+              disabled={isInferred}
               invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
               fullWidth={true}
               style={{ marginTop: 20 }}
@@ -181,6 +184,7 @@ const IncidentEditionDetails = createFragmentContainer(
         first_seen
         last_seen
         objective
+        is_inferred
       }
     `,
   },

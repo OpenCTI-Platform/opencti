@@ -163,7 +163,7 @@ class RulesListComponent extends Component {
 
   render() {
     const {
-      classes, t, data, keyword, nsdt, n,
+      classes, t, data, keyword, nsdt,
     } = this.props;
     const sortByNameCaseInsensitive = R.sortBy(
       R.compose(R.toLower, R.prop('name')),
@@ -191,7 +191,7 @@ class RulesListComponent extends Component {
             elevation={2}
           >
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={4}>
+              <Grid item={true} xs={8}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t('Rule manager')}
                 </Typography>
@@ -203,18 +203,19 @@ class RulesListComponent extends Component {
                 />
               </Grid>
               <Grid item={true} xs={4}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t('Last processed')}
-                </Typography>
-                {nsdt(
-                  parse(parseInt(ruleManagerInfo.lastEventId.split('-')[0], 10)),
-                )}
-              </Grid>
-              <Grid item={true} xs={4}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t('Number of errors')}
-                </Typography>
-                {n(ruleManagerInfo.errors.length)}
+                <div style={{ paddingLeft: 24 }}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Last processed')}
+                  </Typography>
+                  {nsdt(
+                    parse(
+                      parseInt(
+                        (ruleManagerInfo.lastEventId || '-').split('-')[0],
+                        10,
+                      ),
+                    ),
+                  )}
+                </div>
               </Grid>
             </Grid>
           </Paper>

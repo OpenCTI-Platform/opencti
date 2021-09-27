@@ -11,6 +11,7 @@ import {
   offsetToCursor,
   pascalize,
   READ_DATA_INDICES,
+  READ_ENTITIES_INDICES,
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_PLATFORM_INDICES,
@@ -18,7 +19,7 @@ import {
   WRITE_PLATFORM_INDICES,
 } from './utils';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
+import { ConfigurationError, DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import {
   isStixMetaRelationship,
   RELATION_CREATED_BY,
@@ -31,6 +32,7 @@ import {
   BASE_TYPE_RELATION,
   buildRefRelationKey,
   buildRefRelationSearchKey,
+  ENTITY_TYPE_IDENTITY,
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
@@ -44,6 +46,7 @@ import {
   dateAttributes,
   isBooleanAttribute,
   isMultipleAttribute,
+  isRuntimeAttribute,
   numericOrBooleanAttributes,
 } from '../schema/fieldDataAdapter';
 import { convertEntityTypeToStixType, getParentTypes } from '../schema/schemaUtils';
@@ -59,7 +62,8 @@ import {
   isSingleStixEmbeddedRelationship,
   STIX_EMBEDDED_RELATION_TO_FIELD,
 } from '../schema/stixEmbeddedRelationship';
-import { now } from '../utils/format';
+import { now, runtimeFieldObservableValueScript } from '../utils/format';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
@@ -412,6 +416,67 @@ export const elDeleteIndexes = async (indexesToDelete) => {
       });
     })
   );
+};
+
+export const RUNTIME_ATTRIBUTES = {
+  observable_value: {
+    field: 'observable_value.keyword',
+    type: 'keyword',
+    getSource: async () => runtimeFieldObservableValueScript(),
+    getParams: async () => {},
+  },
+  createdBy: {
+    field: 'createdBy.keyword',
+    type: 'keyword',
+    getSource: async () => `
+        if (doc.containsKey('rel_created-by.internal_id')) {
+          def creatorId = doc['rel_created-by.internal_id.keyword'];
+          if (creatorId.size() == 1) {
+            def creatorName = params[creatorId[0]];
+            emit(creatorName != null ? creatorName : 'Unknown')
+          } else {
+            emit('Unknown')
+          }
+        } else {
+          emit('Unknown')
+        }
+    `,
+    getParams: async (user) => {
+      // eslint-disable-next-line no-use-before-define
+      const identities = await elPaginate(user, READ_ENTITIES_INDICES, {
+        types: [ENTITY_TYPE_IDENTITY],
+        first: MAX_SEARCH_SIZE,
+        connectionFormat: false,
+      });
+      return R.mergeAll(identities.map((i) => ({ [i.internal_id]: i.name })));
+    },
+  },
+  objectMarking: {
+    field: 'objectMarking.keyword',
+    type: 'keyword',
+    getSource: async () => `
+        if (doc.containsKey('rel_object-marking.internal_id')) {
+          def markingId = doc['rel_object-marking.internal_id.keyword'];
+          if (markingId.size() >= 1) {
+            def markingName = params[markingId[0]];
+            emit(markingName != null ? markingName : 'Unknown')
+          } else {
+            emit('Unknown')
+          }
+        } else {
+          emit('Unknown')
+        }
+    `,
+    getParams: async (user) => {
+      // eslint-disable-next-line no-use-before-define
+      const identities = await elPaginate(user, READ_ENTITIES_INDICES, {
+        types: [ENTITY_TYPE_MARKING_DEFINITION],
+        first: MAX_SEARCH_SIZE,
+        connectionFormat: false,
+      });
+      return R.mergeAll(identities.map((i) => ({ [i.internal_id]: i.definition })));
+    },
+  },
 };
 
 export const elCount = (user, indexName, options = {}) => {
@@ -1369,6 +1434,21 @@ export const elPaginate = async (user, indexName, options = {}) => {
   } else {
     ordering.push({ 'standard_id.keyword': 'asc' });
   }
+  // Build runtime mappings
+  const runtimeMappings = {};
+  if (isRuntimeAttribute(orderBy)) {
+    const runtime = RUNTIME_ATTRIBUTES[orderBy];
+    if (isEmptyField(runtime)) {
+      throw UnsupportedError(`Unsupported runtime field ${orderBy}`);
+    }
+    const source = await runtime.getSource();
+    const params = await runtime.getParams(user);
+    runtimeMappings[runtime.field] = {
+      type: runtime.type,
+      script: { source, params },
+    };
+  }
+  // Build query
   const querySize = first || 10;
   let body = {
     size: querySize,
@@ -1379,6 +1459,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
         must_not: mustnot,
       },
     },
+    runtime_mappings: runtimeMappings,
   };
   if (searchAfter) {
     body = { ...body, search_after: searchAfter };
@@ -1458,7 +1539,7 @@ export const elList = async (user, indexName, options = {}) => {
 export const elLoadBy = async (user, field, value, type = null, indices = READ_DATA_INDICES) => {
   const opts = { filters: [{ key: field, values: [value] }], connectionFormat: false, types: type ? [type] : [] };
   const hits = await elPaginate(user, indices, opts);
-  if (hits.length > 1) throw Error(`Expected only one response, found ${hits.length}`);
+  if (hits.length > 1) throw UnsupportedError(`Expected only one response, found ${hits.length}`);
   return R.head(hits);
 };
 export const elAttributeValues = async (user, field) => {

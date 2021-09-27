@@ -53,6 +53,9 @@ const threatActorQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
+    settings {
+      platform_enable_reference
+    }
   }
 `;
 
@@ -193,6 +196,9 @@ class RootThreatActor extends Component {
                         <React.Fragment>
                           <StixDomainObjectHeader
                             stixDomainObject={props.threatActor}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Threat-Actor',
+                            )}
                             PopoverComponent={<ThreatActorPopover />}
                           />
                           <FileManager

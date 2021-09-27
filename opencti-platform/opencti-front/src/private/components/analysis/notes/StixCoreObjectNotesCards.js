@@ -53,7 +53,7 @@ const styles = (theme) => ({
 });
 
 const noteValidation = (t) => Yup.object().shape({
-  attribute_abstract: Yup.string(),
+  attribute_abstract: Yup.string().nullable(),
   content: Yup.string().required(t('This field is required')),
 });
 

@@ -112,7 +112,7 @@ const organizationValidation = (t) => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
-  contact_information: Yup.string(),
+  contact_information: Yup.string().nullable(),
   x_opencti_organization_type: Yup.string().required(
     t('This field is required'),
   ),

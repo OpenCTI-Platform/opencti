@@ -104,15 +104,24 @@ class ExternalReferencePopover extends Component {
         id: this.props.externalReferenceId,
       },
       updater: (store) => {
-        const container = store.getRoot();
-        const payload = store.getRootField('externalReferenceEdit');
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_externalReferences',
-          this.props.paginationOptions,
-        );
-        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
+        if (this.props.id) {
+          const entity = store.get(this.props.id);
+          const conn = ConnectionHandler.getConnection(
+            entity,
+            'Pagination_externalReferences',
+          );
+          ConnectionHandler.deleteNode(conn, this.props.externalReferenceId);
+        } else {
+          const container = store.getRoot();
+          const payload = store.getRootField('externalReferenceEdit');
+          const userProxy = store.get(container.getDataID());
+          const conn = ConnectionHandler.getConnection(
+            userProxy,
+            'Pagination_externalReferences',
+            this.props.paginationOptions,
+          );
+          ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
+        }
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -213,6 +222,7 @@ class ExternalReferencePopover extends Component {
 }
 
 ExternalReferencePopover.propTypes = {
+  id: PropTypes.string,
   externalReferenceId: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,

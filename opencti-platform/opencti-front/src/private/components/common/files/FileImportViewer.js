@@ -97,7 +97,7 @@ const FileImportViewerComponent = compose(
 
 const FileImportViewerRefetchQuery = graphql`
   query FileImportViewerRefetchQuery($id: String!) {
-    stixDomainObject(id: $id) {
+    stixCoreObject(id: $id) {
       ...FileImportViewer_entity
     }
   }
@@ -107,7 +107,7 @@ const FileImportViewer = createRefetchContainer(
   FileImportViewerComponent,
   {
     entity: graphql`
-      fragment FileImportViewer_entity on StixDomainObject {
+      fragment FileImportViewer_entity on StixCoreObject {
         id
         entity_type
         importFiles(first: 1000) @connection(key: "Pagination_importFiles") {

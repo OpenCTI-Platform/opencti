@@ -5,8 +5,9 @@ import moment from 'moment';
 import { ADMIN_USER, generateBasicAuth } from './testQuery';
 import { internalLoadById } from '../../src/database/middleware';
 import { isStixId } from '../../src/schema/schemaUtils';
-import { EVENT_TYPE_CREATE } from '../../src/database/rabbitmq';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_UPDATE } from '../../src/database/rabbitmq';
 import { isStixRelationship } from '../../src/schema/stixRelationship';
+import { isEmptyField } from '../../src/database/utils';
 
 export const fetchStreamEvents = (uri, { from } = {}) => {
   const opts = {
@@ -98,6 +99,51 @@ export const checkStreamData = (type, data) => {
     expect(moment(data.created_at).isValid()).toBeTruthy();
     expect(data.updated_at).toBeDefined();
     expect(moment(data.updated_at).isValid()).toBeTruthy();
+  }
+  if (type === EVENT_TYPE_UPDATE) {
+    expect(data.x_opencti_patch).toBeDefined();
+    if (data.x_opencti_patch.add) {
+      Object.entries(data.x_opencti_patch.add).forEach(([k, v]) => {
+        expect(k.includes('undefined')).toBeFalsy();
+        expect(k.includes('[object Object]')).toBeFalsy();
+        expect(k.endsWith('_ref')).toBeFalsy();
+        expect(v.length).toBeGreaterThan(0);
+        v.forEach((value) => {
+          expect(isEmptyField(value)).toBeFalsy();
+        });
+        if (k.endsWith('_refs')) {
+          v.forEach((value) => {
+            expect(value.value).toBeDefined();
+            expect(value.x_opencti_id).toBeDefined();
+          });
+        }
+      });
+    }
+    if (data.x_opencti_patch.remove) {
+      Object.entries(data.x_opencti_patch.remove).forEach(([k, v]) => {
+        expect(k.includes('undefined')).toBeFalsy();
+        expect(k.includes('[object Object]')).toBeFalsy();
+        expect(k.endsWith('_ref')).toBeFalsy();
+        expect(v.length).toBeGreaterThan(0);
+        v.forEach((value) => {
+          expect(isEmptyField(value)).toBeFalsy();
+        });
+        if (k.endsWith('_refs')) {
+          v.forEach((value) => {
+            expect(value.value).toBeDefined();
+            expect(value.x_opencti_id).toBeDefined();
+          });
+        }
+      });
+    }
+    if (data.x_opencti_patch.replace) {
+      Object.entries(data.x_opencti_patch.replace).forEach(([k, v]) => {
+        expect(k.includes('undefined')).toBeFalsy();
+        expect(k.includes('[object Object]')).toBeFalsy();
+        expect(v.current).toBeDefined();
+        expect(v.previous).toBeDefined();
+      });
+    }
   }
   if (data.type === 'relationship') {
     expect(data.relationship_type).toBeDefined();

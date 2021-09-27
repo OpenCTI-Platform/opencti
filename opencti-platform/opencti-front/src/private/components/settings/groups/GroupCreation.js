@@ -72,7 +72,7 @@ const groupMutation = graphql`
 
 const groupValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  description: Yup.string(),
+  description: Yup.string().nullable(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {

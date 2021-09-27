@@ -252,6 +252,12 @@ class ContainerStixDomainObjectLineDummyComponent extends Component {
     const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
+        <ListItemIcon
+          classes={{ root: classes.itemIconDisabled }}
+          style={{ minWidth: 40 }}
+        >
+          <Checkbox edge="start" disabled={true} disableRipple={true} />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Skeleton animation="wave" variant="circle" width={30} height={30} />
         </ListItemIcon>

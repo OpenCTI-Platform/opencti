@@ -1,6 +1,8 @@
 import { findAll, logsTimeSeries, logsWorkerConfig } from '../domain/log';
 import { findById } from '../domain/user';
 import { SYSTEM_USER } from '../utils/access';
+import { loadById } from '../database/middleware';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 
 const logResolvers = {
   Query: {
@@ -13,6 +15,10 @@ const logResolvers = {
       const findUser = await findById(user, log.applicant_id || log.user_id);
       return findUser || SYSTEM_USER;
     },
+  },
+  ContextData: {
+    references: (data, _, { user }) =>
+      Promise.all((data.references || []).map((n) => loadById(user, n, ENTITY_TYPE_EXTERNAL_REFERENCE))),
   },
   LogsFilter: {
     entity_id: 'context_data.id',

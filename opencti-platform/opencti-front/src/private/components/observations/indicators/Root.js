@@ -102,7 +102,8 @@ class RootIndicator extends Component {
                               'Country',
                               'City',
                               'Organization',
-                              'User',
+                              'Individual',
+                              'System',
                             ]}
                           />
                         </React.Fragment>

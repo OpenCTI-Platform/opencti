@@ -140,12 +140,12 @@ class ContainerStixCyberObservablesComponent extends Component {
       observable_value: {
         label: 'Value',
         width: '40%',
-        isSortable: false,
+        isSortable: true,
       },
       createdBy: {
         label: 'Creator',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
       created_at: {
         label: 'Creation date',
@@ -154,7 +154,7 @@ class ContainerStixCyberObservablesComponent extends Component {
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: false,
+        isSortable: true,
       },
     };
     const paginationOptions = {

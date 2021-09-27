@@ -17,8 +17,11 @@ import ExternalReferenceCreation from './external_references/ExternalReferenceCr
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 export const externalReferencesSearchQuery = graphql`
-  query ExternalReferencesSearchQuery($search: String) {
-    externalReferences(search: $search) {
+  query ExternalReferencesSearchQuery(
+    $search: String
+    $filters: [ExternalReferencesFiltering]
+  ) {
+    externalReferences(search: $search, filters: $filters) {
       edges {
         node {
           id

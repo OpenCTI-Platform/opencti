@@ -232,7 +232,7 @@ class StixDomainObjectIndicators extends Component {
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: false,
+        isSortable: true,
       },
     };
     const exportPaginationOptions = {

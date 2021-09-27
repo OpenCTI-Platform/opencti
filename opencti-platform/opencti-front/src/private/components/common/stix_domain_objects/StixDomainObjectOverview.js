@@ -7,15 +7,34 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
-import inject18n from '../../../../components/i18n';
-import ItemAuthor from '../../../../components/ItemAuthor';
-import ItemConfidence from '../../../../components/ItemConfidence';
-import ItemCreator from '../../../../components/ItemCreator';
-import ItemBoolean from '../../../../components/ItemBoolean';
-import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
-import ItemPatternType from '../../../../components/ItemPatternType';
-import ItemMarkings from '../../../../components/ItemMarkings';
+import Dialog from '@material-ui/core/Dialog';
+import { DialogTitle } from '@material-ui/core';
+import DialogContent from '@material-ui/core/DialogContent';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import IconButton from '@material-ui/core/IconButton';
+import { Delete, BrushOutlined } from '@material-ui/icons';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
+import Slide from '@material-ui/core/Slide';
 import StixCoreObjectOpinions from '../../analysis/opinions/StixCoreObjectOpinions';
+import ItemMarkings from '../../../../components/ItemMarkings';
+import ItemPatternType from '../../../../components/ItemPatternType';
+import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
+import ItemBoolean from '../../../../components/ItemBoolean';
+import ItemCreator from '../../../../components/ItemCreator';
+import ItemConfidence from '../../../../components/ItemConfidence';
+import ItemAuthor from '../../../../components/ItemAuthor';
+import inject18n from '../../../../components/i18n';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import { stixDomainObjectMutation } from './StixDomainObjectHeader';
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   paper: {
@@ -36,6 +55,37 @@ const styles = (theme) => ({
 });
 
 class StixDomainObjectOverview extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      openStixIds: false,
+    };
+  }
+
+  handleToggleOpenStixIds() {
+    this.setState({ openStixIds: !this.state.openStixIds });
+  }
+
+  deleteStixId(stixId) {
+    const { stixDomainObject } = this.props;
+    const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
+    const stixIds = R.filter(
+      (n) => n !== stixDomainObject.standard_id && n !== stixId,
+      otherStixIds,
+    );
+    commitMutation({
+      mutation: stixDomainObjectMutation,
+      variables: {
+        id: this.props.stixDomainObject.id,
+        input: {
+          key: 'x_opencti_stix_ids',
+          value: stixIds,
+        },
+      },
+      onCompleted: () => MESSAGING$.notifySuccess(this.props.t('The STIX ID has been removed')),
+    });
+  }
+
   render() {
     const {
       t, fldt, classes, stixDomainObject, withoutMarking, withPattern,
@@ -84,6 +134,16 @@ class StixDomainObjectOverview extends Component {
                 <Tooltip title={t('Other known STIX IDs for this entity.')}>
                   <InformationOutline fontSize="small" color="primary" />
                 </Tooltip>
+              </div>
+              <div style={{ float: 'right', margin: '-5px 0 0 8px' }}>
+                <IconButton
+                  aria-label="Close"
+                  disableRipple={true}
+                  size="small"
+                  onClick={this.handleToggleOpenStixIds.bind(this)}
+                >
+                  <BrushOutlined fontSize="small" color="secondary" />
+                </IconButton>
               </div>
               <div className="clearfix" />
               <pre style={{ margin: 0 }}>
@@ -200,6 +260,42 @@ class StixDomainObjectOverview extends Component {
             </Grid>
           </Grid>
         </Paper>
+        <Dialog
+          open={this.state.openStixIds}
+          TransitionComponent={Transition}
+          onClose={this.handleToggleOpenStixIds.bind(this)}
+          fullWidth={true}
+        >
+          <DialogTitle>{t('Other STIX IDs')}</DialogTitle>
+          <DialogContent dividers={true}>
+            <List>
+              {stixIds.map(
+                (stixId) => stixId.length > 0 && (
+                    <ListItem key={stixId} disableGutters={true} dense={true}>
+                      <ListItemText primary={stixId} />
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          edge="end"
+                          aria-label="delete"
+                          onClick={this.deleteStixId.bind(this, stixId)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                ),
+              )}
+            </List>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleToggleOpenStixIds.bind(this)}
+              color="primary"
+            >
+              {t('Close')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
