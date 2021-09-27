@@ -79,13 +79,14 @@ jobs:
       - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push --force opencti master
       - run: mkdir release
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
+      - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
       - run: cp -a ./opencti-worker/src release/opencti/worker
       - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/docker
       - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/connectors
       - run:
           working_directory: ~/opencti/release
           command: tar -zcvf "opencti-$(date '+%Y%m%d').tar.gz" opencti
-      - run: 
+      - run:
           working_directory: ~/opencti/release
           command: scp "opencti-$(date '+%Y%m%d').tar.gz" git-OLOszi5F@opencti.io:/dns/io/opencti/releases/
 
