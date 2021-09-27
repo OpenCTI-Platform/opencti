@@ -356,8 +356,10 @@ export const buildEvent = (eventType, user, markings, message, data, commitMessa
     origin: user.origin,
     markings: markings || [],
     message,
-    commit: commitMessage,
-    references,
+    commit: {
+      message: commitMessage,
+      references,
+    },
     data,
   };
 };
