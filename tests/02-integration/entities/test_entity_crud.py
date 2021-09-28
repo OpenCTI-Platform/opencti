@@ -25,6 +25,7 @@ def test_read(entity_class):
     test_indicator = entity_class.own_class().create(**class_data)
     assert test_indicator is not None, "Response is NoneType"
     assert "id" in test_indicator, "No ID on object"
+    assert "standard_id" in test_indicator, "No standard_id (STIX ID) on object"
     test_indicator = entity_class.own_class().read(id=test_indicator["id"])
     compare_values(
         class_data,
