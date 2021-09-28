@@ -18,6 +18,10 @@ import {
   ExpandLess,
   ExpandMore,
 } from '@material-ui/icons';
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
+import PersonIcon from '@material-ui/icons/Person';
+import LocationCityIcon from '@material-ui/icons/LocationCity';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import {
   CogOutline,
   Database,
@@ -41,7 +45,7 @@ import Security, {
 const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
-    width: 180,
+    width: 255,
     backgroundColor: theme.palette.background.nav,
   },
   menuList: {
@@ -64,8 +68,14 @@ const styles = (theme) => ({
     padding: '6px 10px 6px 10px',
   },
   menuItemNested: {
-    height: 40,
+    height: 30,
     padding: '6px 10px 6px 25px',
+  },
+  bottomNavigation: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    marginBottom: 40,
   },
 });
 
@@ -106,7 +116,7 @@ const LeftBar = ({ t, location, classes }) => {
             <ListItemIcon style={{ minWidth: 35 }}>
               <Brain />
             </ListItemIcon>
-            <ListItemText primary={t('Activities')} />
+            <ListItemText primary={t('Defender HQ')} />
             {open.activities ? <ExpandLess /> : <ExpandMore />}
           </MenuItem>
           <Collapse in={open.activities}>
@@ -119,9 +129,9 @@ const LeftBar = ({ t, location, classes }) => {
                 classes={{ root: classes.menuItemNested }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <AssignmentOutlined />
+                  <FiberManualRecordIcon style={{ fontSize: '0.55rem' }}/>
                 </ListItemIcon>
-                <ListItemText primary={t('Analysis')} />
+                <ListItemText primary={t('Assests')} />
               </MenuItem>
               <MenuItem
                 component={Link}
@@ -131,21 +141,9 @@ const LeftBar = ({ t, location, classes }) => {
                 classes={{ root: classes.menuItemNested }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <Timetable />
+                  <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
-                <ListItemText primary={t('Events')} />
-              </MenuItem>
-              <MenuItem
-                component={Link}
-                to="/dashboard/observations"
-                selected={location.pathname.includes('/dashboard/observations')}
-                dense={false}
-                classes={{ root: classes.menuItemNested }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <Binoculars />
-                </ListItemIcon>
-                <ListItemText primary={t('Observations')} />
+                <ListItemText primary={t('Information Systems')} />
               </MenuItem>
             </MenuList>
           </Collapse>
@@ -157,7 +155,7 @@ const LeftBar = ({ t, location, classes }) => {
             <ListItemIcon style={{ minWidth: 35 }}>
               <GlobeModel />
             </ListItemIcon>
-            <ListItemText primary={t('Knowledge')} />
+            <ListItemText primary={t('Activities')} />
             {open.knowledge ? <ExpandLess /> : <ExpandMore />}
           </MenuItem>
           <Collapse in={open.knowledge}>
@@ -170,9 +168,9 @@ const LeftBar = ({ t, location, classes }) => {
                 classes={{ root: classes.menuItemNested }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <FlaskOutline />
+                  <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
-                <ListItemText primary={t('Threats')} />
+                <ListItemText primary={t('Threats Assessment')} />
               </MenuItem>
               <MenuItem
                 component={Link}
@@ -182,9 +180,9 @@ const LeftBar = ({ t, location, classes }) => {
                 classes={{ root: classes.menuItemNested }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <LayersOutlined />
+                  <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
-                <ListItemText primary={t('Arsenal')} />
+                <ListItemText primary={t('Vulnerability Assessment')} />
               </MenuItem>
               <MenuItem
                 component={Link}
@@ -194,9 +192,9 @@ const LeftBar = ({ t, location, classes }) => {
                 classes={{ root: classes.menuItemNested }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <FolderTableOutline />
+                  <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
-                <ListItemText primary={t('Entities')} />
+                <ListItemText primary={t('Risk Assessment')} />
               </MenuItem>
             </MenuList>
           </Collapse>
@@ -204,7 +202,7 @@ const LeftBar = ({ t, location, classes }) => {
       </MenuList>
       <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
         <Divider />
-        <MenuList component="nav">
+        <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
           <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
             <MenuItem
               component={Link}
@@ -216,7 +214,43 @@ const LeftBar = ({ t, location, classes }) => {
               <ListItemIcon style={{ minWidth: 35 }}>
                 <Database />
               </ListItemIcon>
-              <ListItemText primary={t('Data')} />
+              <ListItemText primary={t('Data Source')} />
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              to={toData}
+              selected={location.pathname.includes('/dashboard/duane')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <PersonIcon />
+              </ListItemIcon>
+              <ListItemText primary={t('Duane Davis')} />
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              to={toData}
+              selected={location.pathname.includes('/dashboard/data/dark')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <LocationCityIcon />
+              </ListItemIcon>
+              <ListItemText primary={t('Dark Light')} />
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              to={toData}
+              selected={location.pathname.includes('/dashboard/data/sign')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ArrowBackIcon />
+              </ListItemIcon>
+              <ListItemText primary={t('Sign Out')} />
             </MenuItem>
           </Security>
           <Security needs={[SETTINGS]}>

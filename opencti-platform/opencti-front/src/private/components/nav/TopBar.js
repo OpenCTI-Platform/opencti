@@ -77,7 +77,14 @@ const styles = (theme) => ({
     flexGrow: 1,
   },
   logoContainer: {
-    marginLeft: -10,
+
+    height: 64,
+    width: 255,
+    marginLeft: -24,
+    paddingTop: 15,
+    borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+    backgroundColor: theme.palette.background.nav,
+
   },
   logo: {
     cursor: 'pointer',
