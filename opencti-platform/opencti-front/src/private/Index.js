@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
     height: '100%',
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
-    padding: '24px 24px 24px 204px',
+    padding: '24px 24px 24px 280px',
     minWidth: 0,
   },
   message: {
