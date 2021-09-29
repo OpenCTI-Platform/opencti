@@ -245,6 +245,7 @@ class IntrusionSetKnowledgeComponent extends Component {
                   'Sector',
                   'Organization',
                   'Individual',
+                  'System',
                 ]}
                 {...routeProps}
               />

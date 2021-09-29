@@ -9,12 +9,10 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import {
-  compose, evolve, path, pluck,
-} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
+import * as R from 'ramda';
 import { dayStartDate, parse } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
@@ -28,6 +26,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -90,7 +89,7 @@ const reportValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
   confidence: Yup.number().required(t('This field is required')),
   report_types: Yup.string().required(t('This field is required')),
-  description: Yup.string(),
+  description: Yup.string().nullable(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -118,19 +117,17 @@ class ReportCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const adaptedValues = evolve(
-      {
-        published: () => parse(values.published).format(),
-        createdBy: path(['value']),
-        objectMarking: pluck('value'),
-        objectLabel: pluck('value'),
-      },
-      values,
-    );
+    const finalValues = R.pipe(
+      R.assoc('published', parse(values.published).format()),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
+      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
+    )(values);
     commitMutation({
       mutation: reportMutation,
       variables: {
-        input: adaptedValues,
+        input: finalValues,
       },
       updater: (store) => {
         const payload = store.getRootField('reportAdd');
@@ -205,6 +202,7 @@ class ReportCreation extends Component {
                           createdBy: '',
                           objectMarking: [],
                           objectLabel: [],
+                          externalReferences: [],
                         }}
                         validationSchema={reportValidation(t)}
                         onSubmit={this.onSubmit.bind(this)}
@@ -283,6 +281,10 @@ class ReportCreation extends Component {
                               name="objectMarking"
                               style={{ marginTop: 20, width: '100%' }}
                             />
+                            <ExternalReferencesField
+                              name="externalReferences"
+                              style={{ marginTop: 20, width: '100%' }}
+                            />
                             <div className={classes.buttons}>
                               <Button
                                 variant="contained"
@@ -325,4 +327,4 @@ ReportCreation.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(ReportCreation);
+export default R.compose(inject18n, withStyles(styles))(ReportCreation);

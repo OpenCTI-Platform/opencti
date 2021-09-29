@@ -5,17 +5,8 @@ import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
-import {
-  assoc,
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pick,
-  difference,
-  head,
-} from 'ramda';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import { dateFormat } from '../../../../utils/Time';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -30,6 +21,8 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
+import CommitMessage from '../../common/form/CommitMessage';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = () => ({
   createButton: {
@@ -48,9 +41,15 @@ export const reportMutationFieldPatch = graphql`
   mutation ReportEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
   ) {
     reportEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         x_opencti_graph_data
         ...ReportEditionOverview_report
         ...Report_report
@@ -104,7 +103,7 @@ const reportValidation = (t) => Yup.object().shape({
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
   report_types: Yup.array().required(t('This field is required')),
-  description: Yup.string(),
+  description: Yup.string().nullable(),
   confidence: Yup.number(),
   status_id: Yup.object(),
 });
@@ -122,23 +121,60 @@ class ReportEditionOverviewComponent extends Component {
     });
   }
 
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.dissoc('references'),
+      R.assoc('status_id', values.status_id?.value),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: reportMutationFieldPatch,
+      variables: {
+        id: this.props.report.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
   handleSubmitField(name, value) {
-    let finalValue = value;
-    if (name === 'status_id') {
-      finalValue = value.value;
+    if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'status_id') {
+        finalValue = value.value;
+      }
+      reportValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: reportMutationFieldPatch,
+            variables: {
+              id: this.props.report.id,
+              input: {
+                key: name,
+                value: finalValue,
+              },
+            },
+          });
+        })
+        .catch(() => false);
     }
-    reportValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: reportMutationFieldPatch,
-          variables: {
-            id: this.props.report.id,
-            input: { key: name, value: finalValue },
-          },
-        });
-      })
-      .catch(() => false);
   }
 
   handleChangeCreatedBy(name, value) {
@@ -154,74 +190,75 @@ class ReportEditionOverviewComponent extends Component {
   }
 
   handleChangeObjectMarking(name, values) {
-    const { report } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(report);
-
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: reportMutationRelationAdd,
-        variables: {
-          id: this.props.report.id,
-          input: {
-            toId: head(added).value,
+    if (!this.props.enableReferences) {
+      const { report } = this.props;
+      const currentMarkingDefinitions = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(report);
+      const added = R.difference(values, currentMarkingDefinitions);
+      const removed = R.difference(currentMarkingDefinitions, values);
+      if (added.length > 0) {
+        commitMutation({
+          mutation: reportMutationRelationAdd,
+          variables: {
+            id: this.props.report.id,
+            input: {
+              toId: R.head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: reportMutationRelationDelete,
+          variables: {
+            id: this.props.report.id,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: reportMutationRelationDelete,
-        variables: {
-          id: this.props.report.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
+        });
+      }
     }
   }
 
   render() {
-    const { t, report, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], report) === null
+    const {
+      t, report, context, enableReferences,
+    } = this.props;
+    const createdBy = R.pathOr(null, ['createdBy', 'name'], report) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'name'], report),
-        value: pathOr(null, ['createdBy', 'id'], report),
+        label: R.pathOr(null, ['createdBy', 'name'], report),
+        value: R.pathOr(null, ['createdBy', 'id'], report),
       };
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
+    const objectMarking = R.pipe(
+      R.pathOr([], ['objectMarking', 'edges']),
+      R.map((n) => ({
         label: n.node.definition,
         value: n.node.id,
       })),
     )(report);
-    const status = pathOr(null, ['status', 'template', 'name'], report) === null
+    const status = R.pathOr(null, ['status', 'template', 'name'], report) === null
       ? ''
       : {
         label: t(
-          `status_${pathOr(null, ['status', 'template', 'name'], report)}`,
+          `status_${R.pathOr(null, ['status', 'template', 'name'], report)}`,
         ),
-        color: pathOr(null, ['status', 'template', 'color'], report),
-        value: pathOr(null, ['status', 'id'], report),
-        order: pathOr(null, ['status', 'order'], report),
+        color: R.pathOr(null, ['status', 'template', 'color'], report),
+        value: R.pathOr(null, ['status', 'id'], report),
+        order: R.pathOr(null, ['status', 'order'], report),
       };
-    const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('objectMarking', objectMarking),
-      assoc('published', dateFormat(report.published)),
-      assoc('status_id', status),
-      pick([
+    const initialValues = R.pipe(
+      R.assoc('createdBy', createdBy),
+      R.assoc('objectMarking', objectMarking),
+      R.assoc('published', dateFormat(report.published)),
+      R.assoc('status_id', status),
+      R.pick([
         'name',
         'published',
         'description',
@@ -245,8 +282,14 @@ class ReportEditionOverviewComponent extends Component {
                   enableReinitialize={true}
                   initialValues={initialValues}
                   validationSchema={reportValidation(t)}
+                  onSubmit={this.onSubmit.bind(this)}
                 >
-                  {({ setFieldValue }) => (
+                  {({
+                    submitForm,
+                    isSubmitting,
+                    validateForm,
+                    setFieldValue,
+                  }) => (
                     <div>
                       <Form style={{ margin: '20px 0 20px 0' }}>
                         <Field
@@ -366,6 +409,14 @@ class ReportEditionOverviewComponent extends Component {
                           }
                           onChange={this.handleChangeObjectMarking.bind(this)}
                         />
+                        {enableReferences && (
+                          <CommitMessage
+                            submitForm={submitForm}
+                            disabled={isSubmitting}
+                            validateForm={validateForm}
+                            id={report.id}
+                          />
+                        )}
                       </Form>
                     </div>
                   )}
@@ -429,7 +480,7 @@ const ReportEditionOverview = createFragmentContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(ReportEditionOverview);

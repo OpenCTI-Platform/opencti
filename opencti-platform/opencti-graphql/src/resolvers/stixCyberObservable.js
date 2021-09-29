@@ -66,15 +66,16 @@ const stixCyberObservableResolvers = {
     indicators: (stixCyberObservable, _, { user }) => indicatorsLoader.load(stixCyberObservable.id, user),
     stixCoreRelationships: (rel, args, { user }) => stixCoreRelationships(user, rel.id, args),
     toStix: (stixCyberObservable, _, { user }) => convertDataToRawStix(user, stixCyberObservable.id),
-  },
-  Artifact: {
     importFiles: (stixCyberObservable, { first }, { user }) =>
       filesListing(user, first, `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`),
+    exportFiles: (stixCyberObservable, { first }, { user }) =>
+      filesListing(user, first, `export/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`),
   },
   Mutation: {
     stixCyberObservableEdit: (_, { id }, { user }) => ({
       delete: () => stixCyberObservableDelete(user, id),
-      fieldPatch: ({ input, commitMessage }) => stixCyberObservableEditField(user, id, input, { commitMessage }),
+      fieldPatch: ({ input, commitMessage, references }) =>
+        stixCyberObservableEditField(user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixCyberObservableEditContext(user, id, input),
       contextClean: () => stixCyberObservableCleanContext(user, id),
       relationAdd: ({ input }) => stixCyberObservableAddRelation(user, id, input),

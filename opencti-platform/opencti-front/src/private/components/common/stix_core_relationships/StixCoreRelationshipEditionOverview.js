@@ -20,6 +20,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import { dateFormat } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
 import inject18n from '../../../../components/i18n';
@@ -38,6 +39,8 @@ import KillChainPhasesField from '../form/KillChainPhasesField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import CreatedByField from '../form/CreatedByField';
 import ConfidenceField from '../form/ConfidenceField';
+import CommitMessage from '../form/CommitMessage';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
   header: {
@@ -71,16 +74,13 @@ const styles = (theme) => ({
   },
   button: {
     float: 'right',
-    backgroundColor: '#f44336',
-    borderColor: '#f44336',
-    color: '#ffffff',
-    '&:hover': {
-      backgroundColor: '#c62828',
-      borderColor: '#c62828',
-    },
   },
   buttonLeft: {
     float: 'left',
+  },
+  buttonRight: {
+    float: 'right',
+    margin: '20px 0 0 10px',
   },
 });
 
@@ -96,9 +96,15 @@ const stixCoreRelationshipMutationFieldPatch = graphql`
   mutation StixCoreRelationshipEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
   ) {
     stixCoreRelationshipEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...StixCoreRelationshipEditionOverview_stixCoreRelationship
         ...StixCoreRelationshipOverview_stixCoreRelationship
       }
@@ -155,11 +161,11 @@ const stixCoreRelationshipValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
   start_time: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
+    .nullable(),
   stop_time: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
-  description: Yup.string(),
+    .nullable(),
+  description: Yup.string().nullable(),
 });
 
 const StixCoreRelationshipEditionContainer = ({
@@ -169,6 +175,7 @@ const StixCoreRelationshipEditionContainer = ({
   handleDelete,
   stixCoreRelationship,
   stixDomainObject,
+  enableReferences,
 }) => {
   const { editContext } = stixCoreRelationship;
   useEffect(() => {
@@ -288,6 +295,37 @@ const StixCoreRelationshipEditionContainer = ({
       })
       .catch(() => false);
   };
+  const onSubmit = (values, { setSubmitting }) => {
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.dissoc('references'),
+      R.assoc('status_id', values.status_id?.value),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: stixCoreRelationshipMutationFieldPatch,
+      variables: {
+        id: stixCoreRelationship.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        handleClose();
+      },
+    });
+  };
   const createdBy = pathOr(null, ['createdBy', 'name'], stixCoreRelationship) === null
     ? ''
     : {
@@ -348,8 +386,11 @@ const StixCoreRelationshipEditionContainer = ({
           enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={stixCoreRelationshipValidation(t)}
+          onSubmit={onSubmit}
         >
-          {({ setFieldValue }) => (
+          {({
+            submitForm, isSubmitting, validateForm, setFieldValue,
+          }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <ConfidenceField
                 component={SelectField}
@@ -446,33 +487,41 @@ const StixCoreRelationshipEditionContainer = ({
                 }
                 onChange={handleChangeobjectMarking}
               />
+              {stixDomainObject && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  component={Link}
+                  to={`${link}/${stixDomainObject.id}/knowledge/relations/${stixCoreRelationship.id}`}
+                  classes={{ root: classes.buttonLeft }}
+                >
+                  {t('Details')}
+                </Button>
+              )}
+              {typeof handleDelete === 'function' && (
+                <Button
+                  variant="contained"
+                  onClick={() => handleDelete()}
+                  classes={{
+                    root: enableReferences
+                      ? classes.buttonRight
+                      : classes.button,
+                  }}
+                >
+                  {t('Delete')}
+                </Button>
+              )}
+              {enableReferences && (
+                <CommitMessage
+                  submitForm={submitForm}
+                  disabled={isSubmitting}
+                  validateForm={validateForm}
+                  id={stixCoreRelationship.id}
+                />
+              )}
             </Form>
           )}
         </Formik>
-        {stixDomainObject ? (
-          <Button
-            variant="contained"
-            color="primary"
-            component={Link}
-            to={`${link}/${stixDomainObject.id}/knowledge/relations/${stixCoreRelationship.id}`}
-            classes={{ root: classes.buttonLeft }}
-          >
-            {t('Details')}
-          </Button>
-        ) : (
-          ''
-        )}
-        {typeof handleDelete === 'function' ? (
-          <Button
-            variant="contained"
-            onClick={() => handleDelete()}
-            classes={{ root: classes.button }}
-          >
-            {t('Delete')}
-          </Button>
-        ) : (
-          ''
-        )}
       </div>
     </div>
   );

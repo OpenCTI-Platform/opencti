@@ -281,6 +281,7 @@ type ContextData {
   to_id: String
   message: String!
   commit: String
+  references: [ExternalReference]
 }
 type Log {
   id: ID!
@@ -1320,11 +1321,11 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   hash: String
   external_id: String
   # Technical
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
 }
 input ExternalReferenceAddInput {
   stix_id: String
@@ -1491,6 +1492,8 @@ interface StixCoreObject {
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -1510,6 +1513,8 @@ enum StixDomainObjectsOrdering {
   valid_until
   indicator_pattern
   status_id
+  createdBy
+  objectMarking
 }
 enum StixDomainObjectsFilter {
   name
@@ -1738,9 +1743,9 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   isSubAttackPattern: Boolean
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -1869,9 +1874,9 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objective: String
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -1909,6 +1914,7 @@ enum ContainersOrdering {
   created_at
   updated_at
   createdBy
+  objectMarking
   status_id
 }
 enum ContainersFilter {
@@ -2013,6 +2019,7 @@ enum NotesOrdering {
   updated_at
   createdBy
   status_id
+  objectMarking
 }
 enum NotesFilter {
   attribute_abstract
@@ -2111,9 +2118,9 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   authors: [String]
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -2151,6 +2158,7 @@ enum ObservedDatasOrdering {
   updated_at
   createdBy
   status_id
+  objectMarking
 }
 enum ObservedDatasFilter {
   first_observed
@@ -2249,9 +2257,9 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   number_observed: Int!
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -2286,6 +2294,7 @@ enum OpinionsOrdering {
   created_at
   updated_at
   createdBy
+  objectMarking
   status_id
 }
 enum OpinionsFilter {
@@ -2385,9 +2394,9 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   opinion: String!
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -2423,6 +2432,7 @@ enum ReportsOrdering {
   created_at
   updated_at
   createdBy
+  objectMarking
   status_id
 }
 enum ReportsFilter {
@@ -2562,6 +2572,7 @@ enum CoursesOfActionOrdering {
   created_at
   updated_at
   status_id
+  objectMarking
 }
 enum CoursesOfActionFilter {
   name
@@ -2650,9 +2661,9 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   attackPatterns: AttackPatternConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -2781,9 +2792,9 @@ interface Identity {
   x_opencti_aliases: [String]
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -2821,6 +2832,7 @@ enum IndividualsOrdering {
   created
   modified
   status_id
+  objectMarking
 }
 enum IndividualsFilter {
   name
@@ -2912,9 +2924,9 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   organizations: OrganizationConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -3053,9 +3065,9 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   sectors: SectorConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -3095,6 +3107,7 @@ enum SectorsOrdering {
   created_at
   updated_at
   status_id
+  objectMarking
 }
 enum SectorsFilter {
   name
@@ -3188,9 +3201,9 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   targetedOrganizations: StixCoreRelationshipConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -3318,9 +3331,9 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   organizations: OrganizationConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -3367,6 +3380,7 @@ enum IndicatorsOrdering {
   created_at
   updated_at
   status_id
+  objectMarking
 }
 enum IndicatorsFilter {
   name
@@ -3472,9 +3486,9 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   observables: StixCyberObservableConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -3612,9 +3626,9 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   killChainPhases: KillChainPhaseConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -3743,9 +3757,9 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   locations: LocationConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -3878,6 +3892,12 @@ interface Location {
   longitude: Float
   precision: Float
   x_opencti_aliases: [String]
+  # Technical
+  creator: User
+  toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -4005,9 +4025,9 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   city: City
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -4138,9 +4158,9 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   country: Country
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -4264,9 +4284,9 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   region: Region
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -4393,9 +4413,9 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   countries: CountryConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -4533,9 +4553,9 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   killChainPhases: KillChainPhaseConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -4672,9 +4692,9 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   locations: LocationConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -4803,9 +4823,9 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   killChainPhases: KillChainPhaseConnection
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -4935,9 +4955,9 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   x_opencti_confidentiality_impact: String
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -4978,6 +4998,7 @@ enum IncidentsOrdering {
   created_at
   updated_at
   status_id
+  objectMarking
 }
 enum IncidentsFilter {
   name
@@ -5064,9 +5085,9 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objective: String
   # Technical
   creator: User
+  toStix: String
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  toStix: String
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5101,6 +5122,8 @@ enum StixCyberObservablesOrdering {
   entity_type
   created_at
   updated_at
+  observable_value
+  objectMarking
 }
 enum StixCyberObservablesFilter {
   entity_type
@@ -5212,6 +5235,8 @@ interface StixCyberObservable {
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5295,6 +5320,8 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5385,6 +5412,8 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5473,6 +5502,8 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5558,6 +5589,8 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5649,6 +5682,8 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5741,6 +5776,8 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5834,6 +5871,8 @@ interface HashedObservable {
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -5920,9 +5959,10 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   decryption_key: String
   x_opencti_additional_names: [String]
   # Technical
-  importFiles(first: Int): FileConnection
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6024,6 +6064,8 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6130,6 +6172,8 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6225,6 +6269,8 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6311,6 +6357,8 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6395,6 +6443,8 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6479,6 +6529,8 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6573,6 +6625,8 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6673,6 +6727,8 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6768,6 +6824,8 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6857,6 +6915,8 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -6955,6 +7015,8 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7055,6 +7117,8 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7143,6 +7207,8 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7244,6 +7310,8 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7343,6 +7411,8 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7427,6 +7497,8 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7511,6 +7583,8 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7595,6 +7669,8 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7679,6 +7755,8 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
   # Technical
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -7731,6 +7809,7 @@ enum StixObjectOrStixRelationshipsOrdering {
   createdBy
   objectMarking
   objectLabel
+  observable_value
 }
 enum StixObjectOrStixRelationshipsFilter {
   created_at
@@ -9240,6 +9319,7 @@ type Subscription {
   label(id: ID!): Label @auth(for: [SETTINGS])
   markingDefinition(id: ID!): MarkingDefinition @auth(for: [SETTINGS])
   killChainPhase(id: ID!): KillChainPhase @auth(for: [SETTINGS])
+  stixCoreObject(id: ID!): StixCoreObject @auth(for: [KNOWLEDGE])
   stixDomainObject(id: ID!): StixDomainObject @auth(for: [KNOWLEDGE])
   stixCyberObservable(id: ID!): StixCyberObservable @auth(for: [KNOWLEDGE])
   stixCoreRelationship(id: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE])
@@ -9380,6 +9460,10 @@ type StixCoreObjectEditMutations {
   relationDelete(toId: String!, relationship_type: String!): StixCoreObject
   merge(stixCoreObjectsIds: [String]!): StixCoreObject
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
+    @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }
 
 ######## STIX DOMAIN OBJECT ENTITIES
@@ -9387,7 +9471,8 @@ type StixCoreObjectEditMutations {
 type StixDomainObjectEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   changeType(newType: String!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): StixDomainObject
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9400,7 +9485,8 @@ type StixDomainObjectEditMutations {
 }
 type AttackPatternEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): AttackPattern
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9408,7 +9494,8 @@ type AttackPatternEditMutations {
 }
 type CampaignEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Campaign
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9417,7 +9504,8 @@ type CampaignEditMutations {
 ############### Containers
 type ContainerEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Container @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Container
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Container @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Container @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9425,7 +9513,7 @@ type ContainerEditMutations {
 }
 type NoteEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Note @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Note @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Note @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9433,7 +9521,8 @@ type NoteEditMutations {
 }
 type ObservedDataEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): ObservedData
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9441,7 +9530,7 @@ type ObservedDataEditMutations {
 }
 type OpinionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9449,7 +9538,7 @@ type OpinionEditMutations {
 }
 type ReportEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Report @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9457,7 +9546,8 @@ type ReportEditMutations {
 }
 type CourseOfActionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): CourseOfAction
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9466,7 +9556,8 @@ type CourseOfActionEditMutations {
 ############### Identities
 type IdentityEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Identity
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Identity @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9474,7 +9565,7 @@ type IdentityEditMutations {
 }
 type IndividualEditMutations {
   delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String): Individual
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Individual
   contextPatch(input: EditContext): Individual
   contextClean: Individual
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
@@ -9482,7 +9573,8 @@ type IndividualEditMutations {
 }
 type OrganizationEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Organization
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Organization @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9490,7 +9582,7 @@ type OrganizationEditMutations {
 }
 type SectorEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Sector @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9498,7 +9590,7 @@ type SectorEditMutations {
 }
 type SystemEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): System @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): System @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): System @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: System @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9506,7 +9598,8 @@ type SystemEditMutations {
 }
 type IndicatorEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Indicator
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9514,7 +9607,8 @@ type IndicatorEditMutations {
 }
 type InfrastructureEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Infrastructure
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9522,7 +9616,8 @@ type InfrastructureEditMutations {
 }
 type IntrusionSetEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): IntrusionSet
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9531,7 +9626,8 @@ type IntrusionSetEditMutations {
 ############### Locations
 type LocationEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Location @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Location
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Location @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Location @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9539,7 +9635,7 @@ type LocationEditMutations {
 }
 type CityEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): City @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): City @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): City @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: City @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9547,7 +9643,7 @@ type CityEditMutations {
 }
 type CountryEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Country @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Country @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Country @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Country @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9555,7 +9651,7 @@ type CountryEditMutations {
 }
 type RegionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Region @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Region @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Region @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Region @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9563,7 +9659,8 @@ type RegionEditMutations {
 }
 type PositionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Position @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Position
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Position @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Position @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9571,7 +9668,7 @@ type PositionEditMutations {
 }
 type MalwareEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Malware @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9579,7 +9676,8 @@ type MalwareEditMutations {
 }
 type ThreatActorEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): ThreatActor
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9587,7 +9685,7 @@ type ThreatActorEditMutations {
 }
 type ToolEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Tool @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9595,7 +9693,8 @@ type ToolEditMutations {
 }
 type VulnerabilityEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Vulnerability
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9603,7 +9702,8 @@ type VulnerabilityEditMutations {
 }
 type IncidentEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Incident
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Incident @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -9614,13 +9714,18 @@ type IncidentEditMutations {
 
 type StixCyberObservableEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): StixCyberObservable
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationsAdd(input: StixMetaRelationshipsAddInput): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: String!, relationship_type: String!): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   promote: StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
+    @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }
 
 ######## STIX RELATIONSHIPS
@@ -9629,7 +9734,7 @@ type StixCyberObservableEditMutations {
 
 type StixCoreRelationshipEditMutations {
   delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String): StixCoreRelationship
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): StixCoreRelationship
   contextPatch(input: EditContext): StixCoreRelationship
   contextClean: StixCoreRelationship
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
@@ -9640,7 +9745,7 @@ type StixCoreRelationshipEditMutations {
 
 type StixSightingRelationshipEditMutations {
   delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String): StixSightingRelationship
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): StixSightingRelationship
   contextPatch(input: EditContext): StixSightingRelationship
   contextClean: StixSightingRelationship
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship

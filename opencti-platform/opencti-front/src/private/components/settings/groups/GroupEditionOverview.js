@@ -63,7 +63,7 @@ const groupEditionOverviewFocus = graphql`
 
 const groupValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  description: Yup.string(),
+  description: Yup.string().nullable(),
   default_assignation: Yup.bool(),
   auto_new_marking: Yup.bool(),
 });

@@ -140,15 +140,15 @@ const settingsValidation = (t) => Yup.object().shape({
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
   platform_url: Yup.string().url(t('The value must be an URL')).nullable(),
-  platform_theme: Yup.string(),
-  platform_theme_dark_primary: Yup.string(),
-  platform_theme_dark_secondary: Yup.string(),
-  platform_theme_dark_logo: Yup.string(),
-  platform_theme_light_primary: Yup.string(),
-  platform_theme_light_secondary: Yup.string(),
-  platform_theme_light_logo: Yup.string(),
-  platform_language: Yup.string(),
-  platform_login_message: Yup.string(),
+  platform_theme: Yup.string().nullable(),
+  platform_theme_dark_primary: Yup.string().nullable(),
+  platform_theme_dark_secondary: Yup.string().nullable(),
+  platform_theme_dark_logo: Yup.string().nullable(),
+  platform_theme_light_primary: Yup.string().nullable(),
+  platform_theme_light_secondary: Yup.string().nullable(),
+  platform_theme_light_logo: Yup.string().nullable(),
+  platform_language: Yup.string().nullable(),
+  platform_login_message: Yup.string().nullable(),
 });
 
 class Settings extends Component {

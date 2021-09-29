@@ -60,11 +60,11 @@ const userValidation = (t) => Yup.object().shape({
   user_email: Yup.string()
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
-  firstname: Yup.string(),
-  lastname: Yup.string(),
-  theme: Yup.string(),
-  language: Yup.string(),
-  description: Yup.string(),
+  firstname: Yup.string().nullable(),
+  lastname: Yup.string().nullable(),
+  theme: Yup.string().nullable(),
+  language: Yup.string().nullable(),
+  description: Yup.string().nullable(),
 });
 
 const passwordValidation = (t) => Yup.object().shape({

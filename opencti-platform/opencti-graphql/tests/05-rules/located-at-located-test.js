@@ -7,7 +7,7 @@ import LocatedAtLocatedRule from '../../src/rules/located-at-located/LocatedAtLo
 import { addCity } from '../../src/domain/city';
 import { RULE_PREFIX } from '../../src/schema/general';
 import { FROM_START_STR, UNTIL_END_STR } from '../../src/utils/format';
-import { activateRule, disableRule, getInferences, inferenceLookup } from './rule-utils';
+import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
 
 const RULE = RULE_PREFIX + LocatedAtLocatedRule.id;
 const FRANCE = 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d';

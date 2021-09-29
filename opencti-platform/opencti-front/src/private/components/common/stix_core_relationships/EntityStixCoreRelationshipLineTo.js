@@ -17,6 +17,7 @@ import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
+import { defaultValue } from '../../../../utils/Graph';
 
 const styles = (theme) => ({
   item: {
@@ -55,6 +56,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
       paginationOptions,
       entityLink,
     } = this.props;
+    const restricted = node.from === null;
     const link = `${entityLink}/relations/${node.id}`;
     return (
       <ListItem
@@ -80,13 +82,15 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.from.name}
+                {!restricted ? defaultValue(node.from) : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {t(`entity_${node.from.entity_type}`)}
+                {!restricted
+                  ? t(`entity_${node.from.entity_type}`)
+                  : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}

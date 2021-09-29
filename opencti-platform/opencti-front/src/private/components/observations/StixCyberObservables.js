@@ -195,7 +195,7 @@ class StixCyberObservables extends Component {
       observable_value: {
         label: 'Value',
         width: '30%',
-        isSortable: false,
+        isSortable: true,
       },
       objectLabel: {
         label: 'Labels',
@@ -209,7 +209,7 @@ class StixCyberObservables extends Component {
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (

@@ -155,7 +155,7 @@ class StixCyberObservables extends Component {
       observable_value: {
         label: 'Value',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
       file_name: {
         label: 'File name',
@@ -184,7 +184,7 @@ class StixCyberObservables extends Component {
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (

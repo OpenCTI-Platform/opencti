@@ -117,7 +117,7 @@ const FileExternalReferencesViewer = createRefetchContainer(
   FileExternalReferencesViewerComponent,
   {
     entity: graphql`
-      fragment FileExternalReferencesViewer_entity on StixDomainObject {
+      fragment FileExternalReferencesViewer_entity on StixCoreObject {
         id
         entity_type
         externalReferences {

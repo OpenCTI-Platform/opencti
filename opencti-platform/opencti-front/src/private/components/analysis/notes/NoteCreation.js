@@ -94,7 +94,7 @@ const noteValidation = (t) => Yup.object().shape({
   created: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  attribute_abstract: Yup.string(),
+  attribute_abstract: Yup.string().nullable(),
   content: Yup.string().required(t('This field is required')),
 });
 

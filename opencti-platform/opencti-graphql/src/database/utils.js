@@ -4,21 +4,7 @@ import { DatabaseError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject } from '../schema/stixDomainObject';
-import {
-  ENTITY_AUTONOMOUS_SYSTEM,
-  ENTITY_DIRECTORY,
-  ENTITY_EMAIL_MESSAGE,
-  ENTITY_HASHED_OBSERVABLE_ARTIFACT,
-  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
-  ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
-  ENTITY_MUTEX,
-  ENTITY_NETWORK_TRAFFIC,
-  ENTITY_PROCESS,
-  ENTITY_SOFTWARE,
-  ENTITY_USER_ACCOUNT,
-  ENTITY_WINDOWS_REGISTRY_KEY,
-  isStixCyberObservable,
-} from '../schema/stixCyberObservable';
+import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable } from '../schema/stixCyberObservable';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -27,6 +13,7 @@ import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from './rabbitmq';
 import conf from '../config/conf';
+import { observableValue } from '../utils/format';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 
@@ -206,6 +193,7 @@ export const buildPagination = (limit, searchAfter, instances, globalCount) => {
 export const inferIndexFromConceptType = (conceptType, inferred = false) => {
   // Inferred support
   if (inferred) {
+    if (isStixDomainObject(conceptType)) return INDEX_INFERRED_ENTITIES;
     if (isStixCoreRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
     if (isStixSightingRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
     throw DatabaseError(`Cant find inferred index for type ${conceptType}`);
@@ -223,46 +211,6 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
   if (isStixCyberObservableRelationship(conceptType)) return INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS;
   if (isStixMetaRelationship(conceptType)) return INDEX_STIX_META_RELATIONSHIPS;
   throw DatabaseError(`Cant find index for type ${conceptType}`);
-};
-
-export const observableValue = (stixCyberObservable) => {
-  switch (stixCyberObservable.entity_type) {
-    case ENTITY_AUTONOMOUS_SYSTEM:
-      return stixCyberObservable.name || stixCyberObservable.number || 'Unknown';
-    case ENTITY_DIRECTORY:
-      return stixCyberObservable.path || 'Unknown';
-    case ENTITY_EMAIL_MESSAGE:
-      return stixCyberObservable.body || stixCyberObservable.subject;
-    case ENTITY_HASHED_OBSERVABLE_ARTIFACT:
-      if (R.values(stixCyberObservable.hashes).length > 0) {
-        return R.values(stixCyberObservable.hashes)[0];
-      }
-      return stixCyberObservable.payload_bin || 'Unknown';
-    case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
-      if (R.values(stixCyberObservable.hashes).length > 0) {
-        return R.values(stixCyberObservable.hashes)[0];
-      }
-      return stixCyberObservable.name || 'Unknown';
-    case ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE:
-      if (R.values(stixCyberObservable.hashes).length > 0) {
-        return R.values(stixCyberObservable.hashes)[0];
-      }
-      return stixCyberObservable.subject || stixCyberObservable.issuer || 'Unknown';
-    case ENTITY_MUTEX:
-      return stixCyberObservable.name || 'Unknown';
-    case ENTITY_NETWORK_TRAFFIC:
-      return stixCyberObservable.dst_port || 'Unknown';
-    case ENTITY_PROCESS:
-      return stixCyberObservable.pid || 'Unknown';
-    case ENTITY_SOFTWARE:
-      return stixCyberObservable.name || 'Unknown';
-    case ENTITY_USER_ACCOUNT:
-      return stixCyberObservable.account_login || 'Unknown';
-    case ENTITY_WINDOWS_REGISTRY_KEY:
-      return stixCyberObservable.attribute_key;
-    default:
-      return stixCyberObservable.value || 'Unknown';
-  }
 };
 
 const extractEntityMainValue = (entityData) => {

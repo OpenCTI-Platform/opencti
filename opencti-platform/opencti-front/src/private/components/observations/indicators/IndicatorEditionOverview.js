@@ -123,7 +123,7 @@ const indicatorValidation = (t) => Yup.object().shape({
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
   x_opencti_score: Yup.number(),
-  description: Yup.string(),
+  description: Yup.string().nullable(),
   x_opencti_detection: Yup.boolean(),
   x_mitre_platforms: Yup.array(),
   indicator_types: Yup.array(),

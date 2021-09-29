@@ -67,10 +67,11 @@ const styles = () => ({
   },
 });
 
-const stixDomainObjectMutation = graphql`
+export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation($id: ID!, $input: [EditInput]!) {
     stixDomainObjectEdit(id: $id) {
       fieldPatch(input: $input) {
+        x_opencti_stix_ids
         ... on AttackPattern {
           aliases
         }

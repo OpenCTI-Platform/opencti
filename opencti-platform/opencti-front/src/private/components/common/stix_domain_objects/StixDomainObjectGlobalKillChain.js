@@ -75,9 +75,12 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
     // Extract all kill chain phases
     const killChainPhases = pipe(
       // eslint-disable-next-line no-nested-ternary
-      map((n) => (n.node.killChainPhases && n.node.killChainPhases.edges.length > 0
+      map((n) => (n.node
+        && n.node.killChainPhases
+        && n.node.killChainPhases.edges.length > 0
         ? n.node.killChainPhases.edges[0].node
-        : n.node.to.killChainPhases
+        : n.node.to
+            && n.node.to.killChainPhases
             && n.node.to.killChainPhases.edges.length > 0
           ? n.node.to.killChainPhases.edges[0].node
           : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 })),
@@ -110,9 +113,11 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
       map((n) => assoc(
         'killChainPhase',
         // eslint-disable-next-line no-nested-ternary
-        n.killChainPhases && n.killChainPhases.edges.length > 0
+        n && n.killChainPhases && n.killChainPhases.edges.length > 0
           ? n.killChainPhases.edges[0].node
-          : n.to.killChainPhases && n.to.killChainPhases.edges.length > 0
+          : n.to
+              && n.to.killChainPhases
+              && n.to.killChainPhases.edges.length > 0
             ? n.to.killChainPhases.edges[0].node
             : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 },
         n,
@@ -166,6 +171,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                   <List>
                     {stixCoreRelationship.stixDomainObjects.map(
                       (stixDomainObject) => {
+                        const restricted = stixDomainObject.to === null;
                         const link = `${entityLink}/relations/${stixDomainObject.id}`;
                         return (
                           <ListItem
@@ -179,22 +185,31 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                           >
                             <ListItemIcon className={classes.itemIcon}>
                               <ItemIcon
-                                type={stixDomainObject.to.entity_type}
+                                type={
+                                  !restricted
+                                    ? stixDomainObject.to.entity_type
+                                    : 'restricted'
+                                }
                               />
                             </ListItemIcon>
                             <ListItemText
                               primary={
-                                stixDomainObject.to.entity_type
-                                === 'Attack-Pattern' ? (
-                                  <span>
-                                    <strong>
-                                      {stixDomainObject.to.x_mitre_id}
-                                    </strong>{' '}
-                                    - {stixDomainObject.to.name}
-                                  </span>
-                                  ) : (
-                                  <span>{stixDomainObject.to.name}</span>
-                                  )
+                                // eslint-disable-next-line no-nested-ternary
+                                !restricted ? (
+                                  stixDomainObject.to.entity_type
+                                  === 'Attack-Pattern' ? (
+                                    <span>
+                                      <strong>
+                                        {stixDomainObject.to.x_mitre_id}
+                                      </strong>{' '}
+                                      - {stixDomainObject.to.name}
+                                    </span>
+                                    ) : (
+                                    <span>{stixDomainObject.to.name}</span>
+                                    )
+                                ) : (
+                                  t('Restricted')
+                                )
                               }
                               secondary={
                                 stixDomainObject.description

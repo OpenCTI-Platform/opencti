@@ -40,6 +40,7 @@
     "performance_logger": false,
     "map_tile_server_dark": "https://map.opencti.io/styles/1fdd936a-084b-46ac-a948-22ce1686aadf/{z}/{x}/{y}.png",
     "map_tile_server_light": "https://map.opencti.io/styles/klokantech-basic/{z}/{x}/{y}.png",
+    "enforce_references": [],
     "admin": {
       "email": "admin@opencti.io",
       "password": "ChangeMe",

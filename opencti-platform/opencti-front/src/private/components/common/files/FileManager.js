@@ -70,7 +70,7 @@ export const fileManagerExportMutation = graphql`
     $exportType: String!
     $maxMarkingDefinition: String
   ) {
-    stixDomainObjectEdit(id: $id) {
+    stixCoreObjectEdit(id: $id) {
       exportAsk(
         format: $format
         exportType: $exportType
@@ -171,7 +171,7 @@ const FileManager = ({
         maxMarkingDefinition,
       },
       updater: (store) => {
-        const root = store.getRootField('stixDomainObjectEdit');
+        const root = store.getRootField('stixCoreObjectEdit');
         const payloads = root.getLinkedRecords('exportAsk', {
           format: values.format,
           exportType: values.type,

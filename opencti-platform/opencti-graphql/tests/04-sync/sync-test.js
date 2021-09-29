@@ -98,7 +98,7 @@ describe('Database provision', () => {
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
       // Sync
       await startModules();
-      const syncOpts = [API_URI, API_TOKEN, SYNC_RAW_START_REMOTE_URI, API_TOKEN, 421, '0'];
+      const syncOpts = [API_URI, API_TOKEN, SYNC_RAW_START_REMOTE_URI, API_TOKEN, 610, '0'];
       const execution = await execPython3(PYTHON_PATH, 'local_synchronizer.py', syncOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');

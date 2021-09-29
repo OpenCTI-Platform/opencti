@@ -149,7 +149,7 @@ class ContainerStixDomainObjectsComponent extends Component {
       createdBy: {
         label: 'Creator',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
       created_at: {
         label: 'Creation date',
@@ -158,7 +158,7 @@ class ContainerStixDomainObjectsComponent extends Component {
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: false,
+        isSortable: true,
       },
     };
     const paginationOptions = {

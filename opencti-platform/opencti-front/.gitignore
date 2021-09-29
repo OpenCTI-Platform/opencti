@@ -25,3 +25,12 @@ yarn-error.log*
 
 # relay
 __generated__
+
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*

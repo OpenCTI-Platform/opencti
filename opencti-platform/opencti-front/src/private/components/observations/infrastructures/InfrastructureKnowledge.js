@@ -218,6 +218,7 @@ class InfrastructureKnowledgeComponent extends Component {
                 'Sector',
                 'Organization',
                 'Individual',
+                'System',
               ]}
               {...routeProps}
             />

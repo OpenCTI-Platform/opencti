@@ -1,0 +1,64 @@
+// 'If **indicator A** has `revoked` **false** and **indicator A** is `sighted` in ' +
+// '**identity B**, then create **Incident C** `related-to` **indicator A** and ' +
+// '`targets` **identity B**.';
+
+import * as R from 'ramda';
+import { FIVE_MINUTES, FIVE_SECS, sleep } from '../utils/testQuery';
+import { shutdownModules, startModules } from '../../src/modules';
+import { activateRule, disableRule, getInferences } from '../utils/rule-utils';
+import { internalLoadById, listRelations, patchAttribute } from '../../src/database/middleware';
+import { SYSTEM_USER } from '../../src/utils/access';
+import { ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INDICATOR } from '../../src/schema/stixDomainObject';
+import RuleSightingIncident from '../../src/rules/sighting-incident/SightingIncidentRule';
+import { RELATION_RELATED_TO, RELATION_TARGETS } from '../../src/schema/stixCoreRelationship';
+
+const TLP_WHITE_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
+const ONE_CLAP = 'indicator--3e01a7d8-997b-5e7b-a1a3-32f8956ca752'; // indicator A
+
+describe('Sighting incident rule', () => {
+  const assertInferencesSize = async (type, expected) => {
+    await sleep(FIVE_SECS); // let some time to rule manager to create the elements
+    const inferences = await getInferences(type);
+    expect(inferences.length).toBe(expected);
+    return inferences;
+  };
+
+  // eslint-disable-next-line prettier/prettier
+  it('Should rule successfully activated', async () => {
+      // ---- 01. Test live behaviors
+      await startModules();
+      await activateRule(RuleSightingIncident.id);
+      // Check default state
+      // All sighted indicators are revoked
+      await assertInferencesSize(ENTITY_TYPE_INCIDENT, 0);
+      // Update the valid until to change the revoked to false
+      await patchAttribute(SYSTEM_USER, ONE_CLAP, ENTITY_TYPE_INDICATOR, { valid_until: '2024-02-17T23:00:00.000Z' });
+      const inferences = await assertInferencesSize(ENTITY_TYPE_INCIDENT, 1);
+      const inference = R.head(inferences);
+      expect(inference).not.toBeNull();
+      expect((inference.object_marking_refs || []).length).toBe(1);
+      const white = await internalLoadById(SYSTEM_USER, TLP_WHITE_ID);
+      expect(R.head(inference.object_marking_refs)).toBe(white.internal_id);
+      expect(inference.first_seen).toBe('2016-08-06T20:08:31.000Z');
+      expect(inference.last_seen).toBe('2016-08-07T20:08:31.000Z');
+      const relArgs = { fromId: inference.id, connectionFormat: false };
+      const related = await listRelations(SYSTEM_USER, RELATION_RELATED_TO, relArgs);
+      expect(related.length).toBe(1);
+      const targets = await listRelations(SYSTEM_USER, RELATION_TARGETS, relArgs);
+      expect(targets.length).toBe(1);
+      // ---- 02. Test rescan behavior
+      await disableRule(RuleSightingIncident.id);
+      await activateRule(RuleSightingIncident.id);
+      await assertInferencesSize(ENTITY_TYPE_INCIDENT, 1);
+      // Invalidate the rule with < valid until
+      await patchAttribute(SYSTEM_USER, ONE_CLAP, ENTITY_TYPE_INDICATOR, { valid_until: '2017-02-17T23:00:00.000Z' });
+      await assertInferencesSize(ENTITY_TYPE_INCIDENT, 0);
+      // Disable the rule
+      await disableRule(RuleSightingIncident.id);
+      await assertInferencesSize(ENTITY_TYPE_INCIDENT, 0);
+      // Stop modules
+      await shutdownModules();
+    },
+    FIVE_MINUTES
+  );
+});

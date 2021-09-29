@@ -379,7 +379,7 @@ const stixCoreRelationshipValidation = (t) => Yup.object().shape({
     .nullable()
     .default(null)
     .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  description: Yup.string(),
+  description: Yup.string().nullable(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {

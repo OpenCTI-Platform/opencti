@@ -15,9 +15,8 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
 
-// 'If **observed-data A (created-by Organization X)** have `object` **observable B** and **indicator C** ' +
-// 'is `based-on` **observable B**, and `revoked` = **false** and `x_opencti_detection` = **false**' +
-// 'then **indicator C** is `sighted` in **organization X**.';
+// 'If **observed-data A** (`created-by` **identity X**) have `object` **observable B** and **indicator C** ' +
+// 'is `based-on` **observable B**, then **indicator C** is `sighted` in **identity X**.';
 
 const ruleObserveSightingBuilder = () => {
   const { id } = def;
@@ -35,51 +34,47 @@ const ruleObserveSightingBuilder = () => {
       baseOnId,
       // Indicator dependencies
       indicatorId,
-      `${indicatorId}_revoked:${false}`,
-      `${indicatorId}_x_opencti_detection:${false}`,
     ];
   };
   const handleIndicatorUpsert = async (indicator) => {
     const events = [];
-    const { x_opencti_id: indicatorId, revoked, x_opencti_detection } = indicator;
-    if (revoked === false && x_opencti_detection === false) {
-      const baseOnArgs = { toType: ABSTRACT_STIX_CYBER_OBSERVABLE, fromId: indicatorId };
-      const baseOnRelations = await listAllRelations(RULE_MANAGER_USER, RELATION_BASED_ON, baseOnArgs);
-      for (let index = 0; index < baseOnRelations.length; index += 1) {
-        const { internal_id: baseOnId, toId: observableId } = baseOnRelations[index];
-        // Get the observed-data
-        const objectsArgs = { fromTypes: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], toId: observableId };
-        const objectsRelations = await listAllRelations(RULE_MANAGER_USER, RELATION_OBJECT, objectsArgs);
-        for (let objectIndex = 0; objectIndex < objectsRelations.length; objectIndex += 1) {
-          const { internal_id: objectId, fromId: observedDataId } = objectsRelations[objectIndex];
-          const observedData = await internalLoadById(RULE_MANAGER_USER, observedDataId);
-          const { created_by_ref: organizationId, confidence, object_marking_refs } = observedData;
-          const { number_observed, first_observed, last_observed } = observedData;
-          if (organizationId) {
-            const explanation = [observedDataId, objectId, observableId, baseOnId, indicatorId];
-            // eslint-disable-next-line prettier/prettier
+    const { x_opencti_id: indicatorId } = indicator;
+    const baseOnArgs = { toType: ABSTRACT_STIX_CYBER_OBSERVABLE, fromId: indicatorId };
+    const baseOnRelations = await listAllRelations(RULE_MANAGER_USER, RELATION_BASED_ON, baseOnArgs);
+    for (let index = 0; index < baseOnRelations.length; index += 1) {
+      const { internal_id: baseOnId, toId: observableId } = baseOnRelations[index];
+      // Get the observed-data
+      const objectsArgs = { fromTypes: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], toId: observableId };
+      const objectsRelations = await listAllRelations(RULE_MANAGER_USER, RELATION_OBJECT, objectsArgs);
+      for (let objectIndex = 0; objectIndex < objectsRelations.length; objectIndex += 1) {
+        const { internal_id: objectId, fromId: observedDataId } = objectsRelations[objectIndex];
+        const observedData = await internalLoadById(RULE_MANAGER_USER, observedDataId);
+        const { created_by_ref: organizationId, confidence, object_marking_refs } = observedData;
+        const { number_observed, first_observed, last_observed } = observedData;
+        if (organizationId) {
+          const explanation = [observedDataId, objectId, observableId, baseOnId, indicatorId];
+          // eslint-disable-next-line prettier/prettier
             const dependencies = generateDependencies(
-              observedDataId,
-              objectId,
-              observableId,
-              organizationId,
-              baseOnId,
-              indicatorId
-            );
-            // Create the sighting between the indicator and the organization
-            const input = { fromId: indicatorId, toId: organizationId, relationship_type: STIX_SIGHTING_RELATIONSHIP };
-            const ruleContent = createRuleContent(id, dependencies, explanation, {
-              first_seen: first_observed,
-              last_seen: last_observed,
-              attribute_count: number_observed,
-              confidence,
-              objectMarking: object_marking_refs,
-            });
-            const event = await createInferredRelation(input, ruleContent);
-            // Re inject event if needed
-            if (event) {
-              events.push(event);
-            }
+            observedDataId,
+            objectId,
+            observableId,
+            organizationId,
+            baseOnId,
+            indicatorId
+          );
+          // Create the sighting between the indicator and the organization
+          const input = { fromId: indicatorId, toId: organizationId, relationship_type: STIX_SIGHTING_RELATIONSHIP };
+          const ruleContent = createRuleContent(id, dependencies, explanation, {
+            first_seen: first_observed,
+            last_seen: last_observed,
+            attribute_count: number_observed,
+            confidence,
+            objectMarking: object_marking_refs,
+          });
+          const event = await createInferredRelation(input, ruleContent);
+          // Re inject event if needed
+          if (event) {
+            events.push(event);
           }
         }
       }
@@ -104,33 +99,29 @@ const ruleObserveSightingBuilder = () => {
         const baseOnRelations = await listAllRelations(RULE_MANAGER_USER, RELATION_BASED_ON, baseOnArgs);
         for (let index = 0; index < baseOnRelations.length; index += 1) {
           const { internal_id: baseOnId, fromId: indicatorId } = baseOnRelations[index];
-          const indicator = await internalLoadById(RULE_MANAGER_USER, indicatorId);
-          const { revoked, x_opencti_detection } = indicator;
-          if (revoked === false && x_opencti_detection === false) {
-            const explanation = [observedDataId, objectId, observableId, baseOnId, indicatorId];
-            // eslint-disable-next-line prettier/prettier
+          const explanation = [observedDataId, objectId, observableId, baseOnId, indicatorId];
+          // eslint-disable-next-line prettier/prettier
             const dependencies = generateDependencies(
-              observedDataId,
-              objectId,
-              observableId,
-              organization.internal_id,
-              baseOnId,
-              indicatorId
-            );
-            // Create the sighting between the indicator and the organization
-            const input = { fromId: indicatorId, toId: organizationId, relationship_type: STIX_SIGHTING_RELATIONSHIP };
-            const ruleContent = createRuleContent(id, dependencies, explanation, {
-              first_seen: first_observed,
-              last_seen: last_observed,
-              attribute_count: number_observed,
-              confidence,
-              objectMarking: object_marking_refs,
-            });
-            const event = await createInferredRelation(input, ruleContent);
-            // Re inject event if needed
-            if (event) {
-              events.push(event);
-            }
+            observedDataId,
+            objectId,
+            observableId,
+            organization.internal_id,
+            baseOnId,
+            indicatorId
+          );
+          // Create the sighting between the indicator and the organization
+          const input = { fromId: indicatorId, toId: organizationId, relationship_type: STIX_SIGHTING_RELATIONSHIP };
+          const ruleContent = createRuleContent(id, dependencies, explanation, {
+            first_seen: first_observed,
+            last_seen: last_observed,
+            attribute_count: number_observed,
+            confidence,
+            objectMarking: object_marking_refs,
+          });
+          const event = await createInferredRelation(input, ruleContent);
+          // Re inject event if needed
+          if (event) {
+            events.push(event);
           }
         }
       }

@@ -23,9 +23,14 @@ const intrusionSetMutationFieldPatch = graphql`
     $id: ID!
     $input: [EditInput]!
     $commitMessage: String
+    $references: [String]
   ) {
     intrusionSetEdit(id: $id) {
-      fieldPatch(input: $input, commitMessage: $commitMessage) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...IntrusionSetEditionDetails_intrusionSet
         ...IntrusionSet_intrusionSet
       }
@@ -74,8 +79,10 @@ class IntrusionSetEditionDetailsComponent extends Component {
 
   onSubmit(values, { setSubmitting }) {
     const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
       R.dissoc('message'),
+      R.dissoc('references'),
       R.assoc(
         'first_seen',
         values.first_seen ? parse(values.first_seen).format() : null,
@@ -101,7 +108,9 @@ class IntrusionSetEditionDetailsComponent extends Component {
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
       },
+      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         this.props.handleClose();
@@ -239,6 +248,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
                 submitForm={submitForm}
                 disabled={isSubmitting}
                 validateForm={validateForm}
+                id={intrusionSet.id}
               />
             )}
           </Form>

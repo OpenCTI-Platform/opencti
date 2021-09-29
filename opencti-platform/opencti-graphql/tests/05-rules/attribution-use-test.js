@@ -5,7 +5,7 @@ import { createRelation, deleteElement } from '../../src/database/middleware';
 import { RELATION_ATTRIBUTED_TO, RELATION_USES } from '../../src/schema/stixCoreRelationship';
 import { RULE_PREFIX } from '../../src/schema/general';
 import AttributionUseRule from '../../src/rules/attribution-use/AttributionUseRule';
-import { activateRule, disableRule, getInferences, inferenceLookup } from './rule-utils';
+import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
 import { FIVE_MINUTES, FIVE_SECS, sleep } from '../utils/testQuery';
 
 const RULE = RULE_PREFIX + AttributionUseRule.id;

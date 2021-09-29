@@ -19,7 +19,7 @@ import {
 } from '../database/middleware';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
-import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
+import { isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { workToExportFile } from './work';
 import { addIndicator } from './indicator';
 import { askEnrich } from './enrichment';
@@ -32,7 +32,10 @@ import {
   isStixCyberObservableHashedObservable,
   stixCyberObservableOptions,
 } from '../schema/stixCyberObservable';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
+import {
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+} from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
@@ -172,6 +175,9 @@ export const addStixCyberObservable = async (user, input) => {
   if (!observableInput) {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
+  if (isNotEmptyField(input.payload_bin) && isNotEmptyField(input.url)) {
+    throw FunctionalError(`Cannot create observable with both payload_bin and url filled.`);
+  }
   // Convert hashes to dictionary if needed.
   if (isStixCyberObservableHashedObservable(input.type) && observableInput.hashes) {
     const hashInputToJson = apiAttributeToComplexFormat('hashes', observableInput.hashes);
@@ -250,6 +256,30 @@ export const stixCyberObservableDeleteRelation = async (user, stixCyberObservabl
 };
 
 export const stixCyberObservableEditField = async (user, stixCyberObservableId, input, opts = {}) => {
+  const originalStixCyberObservable = await loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  if (isNotEmptyField(originalStixCyberObservable.payload_bin) && input[0].key === 'url') {
+    if (isNotEmptyField(originalStixCyberObservable.url)) {
+      await updateAttribute(
+        user,
+        stixCyberObservableId,
+        ABSTRACT_STIX_CYBER_OBSERVABLE,
+        [{ key: 'url', values: null }],
+        opts
+      );
+    }
+    throw FunctionalError(`Cannot update url when payload_bin is present.`);
+  } else if (isNotEmptyField(originalStixCyberObservable.url) && input[0].key === 'payload_bin') {
+    if (isNotEmptyField(originalStixCyberObservable.payload_bin)) {
+      await updateAttribute(
+        user,
+        stixCyberObservableId,
+        ABSTRACT_STIX_CYBER_OBSERVABLE,
+        [{ key: 'payload_bin', values: null }],
+        opts
+      );
+    }
+    throw FunctionalError(`Cannot update payload_bin when url is present.`);
+  }
   const { element: stixCyberObservable } = await updateAttribute(
     user,
     stixCyberObservableId,
@@ -257,7 +287,7 @@ export const stixCyberObservableEditField = async (user, stixCyberObservableId, 
     input,
     opts
   );
-  if (input.key === 'x_opencti_score') {
+  if (input[0].key === 'x_opencti_score') {
     // eslint-disable-next-line prettier/prettier
     const indicators = await listThroughGetFrom(
       user,

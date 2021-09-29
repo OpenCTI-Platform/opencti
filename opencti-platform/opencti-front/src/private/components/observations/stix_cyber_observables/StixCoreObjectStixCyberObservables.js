@@ -86,7 +86,7 @@ class StixCoreObjectStixCyberObservables extends Component {
       observable_value: {
         label: 'Value',
         width: '35%',
-        isSortable: false,
+        isSortable: true,
       },
       start_time: {
         label: 'First obs.',

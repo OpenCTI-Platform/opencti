@@ -102,7 +102,7 @@ const artifactMutation = graphql`
 
 const artifactValidation = (t) => Yup.object().shape({
   file: Yup.mixed().required(t('This field is required')),
-  x_opencti_description: Yup.string(),
+  x_opencti_description: Yup.string().nullable(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {

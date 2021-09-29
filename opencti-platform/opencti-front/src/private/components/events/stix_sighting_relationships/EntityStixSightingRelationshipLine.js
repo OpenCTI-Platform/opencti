@@ -12,6 +12,9 @@ import { MoreVertOutlined, HelpOutlined } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
 import { Link } from 'react-router-dom';
 import Skeleton from '@material-ui/lab/Skeleton';
+import Tooltip from '@material-ui/core/Tooltip';
+import * as R from 'ramda';
+import { AutoFix } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
@@ -147,11 +150,22 @@ class EntityStixSightingRelationshipLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <StixSightingRelationshipPopover
-            stixSightingRelationshipId={node.id}
-            paginationOptions={paginationOptions}
-            disabled={restricted}
-          />
+          {node.is_inferred ? (
+            <Tooltip
+              title={
+                t('Inferred knowledge based on the rule ')
+                + R.head(node.x_opencti_inferences).rule.name
+              }
+            >
+              <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
+            </Tooltip>
+          ) : (
+            <StixSightingRelationshipPopover
+              stixSightingRelationshipId={node.id}
+              paginationOptions={paginationOptions}
+              disabled={restricted}
+            />
+          )}
         </ListItemSecondaryAction>
       </ListItem>
     );
@@ -183,6 +197,13 @@ const EntityStixSightingRelationshipLineFragment = createFragmentContainer(
         first_seen
         last_seen
         description
+        is_inferred
+        x_opencti_inferences {
+          rule {
+            id
+            name
+          }
+        }
         from {
           ... on StixObject {
             id

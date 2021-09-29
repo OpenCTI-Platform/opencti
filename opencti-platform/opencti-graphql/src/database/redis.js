@@ -346,7 +346,7 @@ const mapJSToStream = (event) => {
   });
   return cmdArgs;
 };
-export const buildEvent = (eventType, user, markings, message, data, commitMessage = null) => {
+export const buildEvent = (eventType, user, markings, message, data, commitMessage = null, references = []) => {
   if (!data.id || !data.x_opencti_id || !data.type) {
     throw UnsupportedError('Stream event requires id, type and x_opencti_id');
   }
@@ -356,7 +356,10 @@ export const buildEvent = (eventType, user, markings, message, data, commitMessa
     origin: user.origin,
     markings: markings || [],
     message,
-    commit: commitMessage,
+    commit: {
+      message: commitMessage,
+      references,
+    },
     data,
   };
 };
@@ -486,7 +489,15 @@ export const buildUpdateEvent = (user, instance, patch, opts = {}) => {
   const message = withoutMessage ? '-' : generateUpdateMessage(patch);
   // Build and send the event
   const dataEvent = buildStixData(data, { clearEmptyValues });
-  return buildEvent(EVENT_TYPE_UPDATE, user, instance.object_marking_refs, message, dataEvent, opts.commitMessage);
+  return buildEvent(
+    EVENT_TYPE_UPDATE,
+    user,
+    instance.object_marking_refs,
+    message,
+    dataEvent,
+    opts.commitMessage,
+    opts.references
+  );
 };
 export const storeUpdateEvent = async (user, instance, patchInputs, opts = {}) => {
   const { mustBeRepublished = false } = opts;
@@ -636,8 +647,8 @@ const processStreamResult = async (results, callback) => {
   const processedResults = [];
   for (let index = 0; index < streamData.length; index += 1) {
     const dataElement = streamData[index];
-    const { eventId, type, markings, origin, data, message, commit, version } = dataElement;
-    const eventData = { markings, origin, data, message, commit, version };
+    const { eventId, type, markings, origin, data, message, commit, references, version } = dataElement;
+    const eventData = { markings, origin, data, message, commit, references, version };
     processedResults.push({ id: eventId, topic: type, data: eventData });
   }
   // Callback the data

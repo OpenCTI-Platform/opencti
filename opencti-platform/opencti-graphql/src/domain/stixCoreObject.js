@@ -19,7 +19,7 @@ import { findAll as relationFindAll } from './stixCoreRelationship';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
-import { isStixCoreObject } from '../schema/stixCoreObject';
+import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
   isStixMetaRelationship,
@@ -44,10 +44,12 @@ import {
 import { isStixRelationship } from '../schema/stixRelationship';
 import { connectorsForExport } from './connector';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
-import { createWork } from './work';
+import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-import { now } from '../utils/format';
+import { now, observableValue } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { upload } from '../database/minio';
+import { uploadJobImport } from './file';
 
 export const findAll = async (user, args) => {
   let types = [];
@@ -188,7 +190,9 @@ export const askEntityExport = async (user, format, entity, type = 'simple', max
   const connectors = await connectorsForExport(user, format, true);
   const markingLevel = maxMarkingId ? await findMarkingDefinitionById(user, maxMarkingId) : null;
   const toFileName = (connector) => {
-    const fileNamePart = `${entity.entity_type}-${entity.name}_${type}.${mime.extension(format)}`;
+    const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(
+      format
+    )}`;
     return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
   const buildExportMessage = (work, fileName) => {
@@ -281,4 +285,38 @@ export const askListExport = async (user, format, entityType, listParams, type =
     }, connectors)
   );
   return worksForExport;
+};
+
+export const stixCoreObjectsExportAsk = async (user, args) => {
+  const { format, type, exportType, maxMarkingDefinition } = args;
+  const { search, orderBy, orderMode, filters, filterMode } = args;
+  const argsFilters = { search, orderBy, orderMode, filters, filterMode };
+  const filtersOpts = stixCoreObjectOptions.StixCoreObjectsFilter;
+  const ordersOpts = stixCoreObjectOptions.StixCoreObjectsOrdering;
+  const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
+  const works = await askListExport(user, format, type, listParams, exportType, maxMarkingDefinition);
+  return map((w) => workToExportFile(w), works);
+};
+export const stixCoreObjectExportAsk = async (user, args) => {
+  const { format, stixCoreObjectId = null, exportType = null, maxMarkingDefinition = null } = args;
+  const entity = stixCoreObjectId ? await loadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT) : null;
+  const works = await askEntityExport(user, format, entity, exportType, maxMarkingDefinition);
+  return map((w) => workToExportFile(w), works);
+};
+export const stixCoreObjectsExportPush = async (user, type, file, listFilters) => {
+  await upload(user, `export/${type}`, file, { list_filters: listFilters });
+  return true;
+};
+export const stixCoreObjectExportPush = async (user, entityId, file) => {
+  const entity = await internalLoadById(user, entityId);
+  await upload(user, `export/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
+  return true;
+};
+// endregion
+
+export const stixCoreObjectImportPush = async (user, entityId, file) => {
+  const entity = await internalLoadById(user, entityId);
+  const up = await upload(user, `import/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
+  await uploadJobImport(user, up.id, up.metaData.mimetype, up.metaData.entity_id);
+  return up;
 };

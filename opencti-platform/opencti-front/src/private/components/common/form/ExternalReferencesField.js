@@ -39,8 +39,13 @@ class ExternalReferencesField extends Component {
   }
 
   searchExternalReferences(event) {
+    let filters = [];
+    if (this.props.id) {
+      filters = [{ key: 'usedBy', values: [this.props.id] }];
+    }
     fetchQuery(externalReferencesSearchQuery, {
       search: event && event.target.value,
+      filters,
     })
       .toPromise()
       .then((data) => {

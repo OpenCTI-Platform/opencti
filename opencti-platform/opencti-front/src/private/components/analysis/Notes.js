@@ -124,7 +124,7 @@ class Notes extends Component {
       createdBy: {
         label: 'Author',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
       objectLabel: {
         label: 'Labels',
@@ -139,7 +139,7 @@ class Notes extends Component {
       objectMarking: {
         label: 'Marking',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (
