@@ -1,5 +1,6 @@
 import EventSource from 'eventsource';
 import axios from 'axios';
+import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import conf, { logApp } from '../config/conf';
 import { createRelation, deleteElementById, internalLoadById, listEntities, loadById } from '../database/middleware';
 import { SYSTEM_USER } from '../utils/access';
@@ -72,9 +73,9 @@ import { addThreatActor } from '../domain/threatActor';
 import { addTool } from '../domain/tool';
 import { addVulnerability } from '../domain/vulnerability';
 import Queue from '../utils/queue';
-import { lockResource } from '../database/redis';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { createSyncHttpUri, httpBase, patchSync } from '../domain/connector';
+import { lockResource } from '../database/redis';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 
@@ -94,7 +95,7 @@ const syncManagerInstance = (syncId) => {
     const sync = await loadById(SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
     const { token, ssl_verify: ssl = false } = sync;
     const eventSourceUri = createSyncHttpUri(sync);
-    logApp.info(`[SYNC] Starting sync manager for ${syncId} (${eventSourceUri})`);
+    logApp.info(`[OPENCTI] Starting sync manager for ${syncId} (${eventSourceUri})`);
     eventSource = new EventSource(eventSourceUri, {
       rejectUnauthorized: ssl,
       headers: { authorization: `Bearer ${token}` },
@@ -109,7 +110,7 @@ const syncManagerInstance = (syncId) => {
       connectionId = JSON.parse(d.data).connectionId;
     });
     eventSource.on('error', (error) => {
-      logApp.error(`[SYNC] Error in sync manager for ${syncId}: ${error.message}`);
+      logApp.error(`[OPENCTI] Error in sync manager for ${syncId}: ${error.message}`);
     });
     return sync;
   };
@@ -132,20 +133,20 @@ const syncManagerInstance = (syncId) => {
   };
   const handleDeleteEvent = async (user, data) => {
     const { type } = buildInputDataFromStix(data);
-    logApp.info(`[SYNC] Deleting element ${type} ${data.id}`);
+    logApp.info(`[OPENCTI] Sync deleting element ${type} ${data.id}`);
     await deleteElementById(user, data.id, type);
   };
   const handleCreateEvent = async (user, data) => {
     const { type, input } = buildInputDataFromStix(data);
     // Then create the elements
     if (isStixCoreRelationship(type)) {
-      logApp.info(`[SYNC] Creating relation ${input.relationship_type} ${input.fromId}/${input.toId}`);
+      logApp.info(`[OPENCTI] Sync creating relation ${input.relationship_type} ${input.fromId}/${input.toId}`);
       await createRelation(user, input);
     } else if (isStixSightingRelationship(type)) {
-      logApp.info(`[SYNC] Creating sighting ${input.fromId}/${input.toId}`);
+      logApp.info(`[OPENCTI] Sync creating sighting ${input.fromId}/${input.toId}`);
       await addStixSightingRelationship(user, { ...input, relationship_type: input.type });
     } else if (isStixDomainObject(type) || isStixMetaObject(type)) {
-      logApp.info(`[SYNC] Creating entity ${type} ${input.stix_id}`);
+      logApp.info(`[OPENCTI] Sync creating entity ${type} ${input.stix_id}`);
       // Stix domains
       if (type === ENTITY_TYPE_ATTACK_PATTERN) {
         await addAttackPattern(user, input);
@@ -208,7 +209,7 @@ const syncManagerInstance = (syncId) => {
         throw UnsupportedError(`${type} not handle by synchronizer`);
       }
     } else if (isStixCyberObservable(type)) {
-      logApp.info(`[SYNC] Creating cyber observable ${type} ${input.stix_id}`);
+      logApp.info(`[OPENCTI] Sync creating cyber observable ${type} ${input.stix_id}`);
       await addStixCyberObservable(user, input);
     } else {
       throw UnsupportedError(`${type} not handle by synchronizer`);
@@ -217,7 +218,7 @@ const syncManagerInstance = (syncId) => {
   return {
     id: syncId,
     stop: () => {
-      logApp.info(`[SYNC] Stopping sync manager for ${syncId}`);
+      logApp.info(`[OPENCTI] Sync stopping manager for ${syncId}`);
       run = false;
       eventSource.close();
       eventsQueue = null;
@@ -248,7 +249,7 @@ const syncManagerInstance = (syncId) => {
             }
             eventCount += 1;
           } catch (e) {
-            logApp.error('[SYNC] Error processing event', { error: e });
+            logApp.error('[OPENCTI] Sync error processing event', { error: e });
           }
         }
         await sleep(10);
@@ -260,13 +261,12 @@ const syncManagerInstance = (syncId) => {
 
 const initSyncManager = () => {
   const WAIT_TIME_ACTION = 2000;
-  let processingLoopPromise;
   let syncListening = true;
   const syncManagers = new Map();
   const processStep = async () => {
     // Get syncs definition
     const syncs = await listEntities(SYSTEM_USER, [ENTITY_TYPE_SYNC], { connectionFormat: false });
-    // region Handle management of existing synchronizers
+    // region Handle management of existing synchronizer
     for (let index = 0; index < syncs.length; index += 1) {
       // eslint-disable-next-line prettier/prettier
       const { id, running } = syncs[index];
@@ -299,14 +299,24 @@ const initSyncManager = () => {
     // endregion
   };
   const processingLoop = async () => {
+    while (syncListening) {
+      await processStep();
+      await sleep(WAIT_TIME_ACTION);
+    }
+    // Stopping
+    // eslint-disable-next-line no-restricted-syntax
+    for (const syncManager of syncManagers.values()) {
+      if (syncManager.isRunning()) {
+        await syncManager.stop();
+      }
+    }
+  };
+  const syncManagerHandler = async () => {
     let lock;
     try {
       logApp.debug('[OPENCTI] Running sync manager');
       lock = await lockResource([SYNC_MANAGER_KEY]);
-      while (syncListening) {
-        await processStep();
-        await sleep(WAIT_TIME_ACTION);
-      }
+      await processingLoop();
     } catch (e) {
       // We dont care about failing to get the lock.
       logApp.info('[OPENCTI] Sync manager already in progress by another API');
@@ -315,22 +325,29 @@ const initSyncManager = () => {
       if (lock) await lock.unlock();
     }
   };
+  let scheduler;
+  const shutdown = async () => {
+    syncListening = false;
+    if (scheduler) {
+      return clearIntervalAsync(scheduler);
+    }
+    return true;
+  };
   return {
     start: async () => {
-      processingLoopPromise = processingLoop();
-    },
-    shutdown: async () => {
-      syncListening = false;
-      // eslint-disable-next-line no-restricted-syntax
-      for (const syncManager of syncManagers.values()) {
-        if (syncManager.isRunning()) {
-          await syncManager.stop();
-        }
-      }
-      if (processingLoopPromise) {
-        await processingLoopPromise;
+      // processingLoopPromise = processingLoop();
+      scheduler = setIntervalAsync(async () => {
+        await syncManagerHandler();
+      }, WAIT_TIME_ACTION);
+      // Handle hot module replacement resource dispose
+      if (module.hot) {
+        module.hot.dispose(async () => {
+          await shutdown();
+          logApp.info(`[OPENCTI] Sync hot reload dispose`);
+        });
       }
     },
+    shutdown,
   };
 };
 const syncManager = initSyncManager();
