@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
+import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import { buildDeleteEvent, buildEvent, buildScanEvent, createStreamProcessor, lockResource } from '../database/redis';
 import conf, { ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import {
@@ -30,6 +31,7 @@ let activatedRules = [];
 const RULE_ENGINE_ID = 'rule_engine_settings';
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
 const STATUS_WRITE_RANGE = conf.get('rule_engine:status_writing_delay') || 500;
+const SCHEDULE_TIME = 10000;
 
 export const getManagerInfo = async (user) => {
   const ruleStatus = await internalLoadById(user, RULE_ENGINE_ID);
@@ -161,7 +163,7 @@ const isMatchRuleFilters = (rule, element, matchUpdateFields = false) => {
 
 const handleRuleError = async (event, error) => {
   const { type } = event;
-  logApp.error(`Error applying ${type} event rule`, { event, error });
+  logApp.error(`[OPENCTI] Rule error applying ${type} event`, { event, error });
 };
 
 export const rulesApplyDerivedEvents = async (eventId, derivedEvents, forRules = []) => {
@@ -290,44 +292,61 @@ const ruleStreamHandler = async (streamEvents) => {
 };
 
 const initRuleManager = () => {
+  const WAIT_TIME_ACTION = 2000;
+  let scheduler;
   let streamProcessor;
+  let syncListening = true;
+  const wait = (ms) => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  };
+  const ruleHandler = async () => {
+    let lock;
+    try {
+      // Lock the manager
+      lock = await lockResource([RULE_ENGINE_KEY]);
+      logApp.debug('[RULE] Running Rule manager');
+      // Get the processor status
+      const ruleSettingsInput = { internal_id: RULE_ENGINE_ID, errors: [] };
+      const ruleStatus = await createEntity(RULE_MANAGER_USER, ruleSettingsInput, ENTITY_TYPE_RULE_MANAGER);
+      // Start the stream listening
+      activatedRules = await getActivatedRules();
+      streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler);
+      await streamProcessor.start(ruleStatus.lastEventId);
+      while (syncListening) {
+        await wait(WAIT_TIME_ACTION);
+      }
+      await streamProcessor.shutdown();
+    } catch (e) {
+      if (e.name === TYPE_LOCK_ERROR) {
+        logApp.info('[OPENCTI] Rule engine already started by another API');
+      } else {
+        logApp.error('[OPENCTI] Rule engine failed to start', { error: e });
+      }
+    } finally {
+      if (lock) await lock.unlock();
+    }
+  };
+  const shutdown = async () => {
+    syncListening = false;
+    if (scheduler) {
+      return clearIntervalAsync(scheduler);
+    }
+    return true;
+  };
   return {
     start: async () => {
-      let lock;
-      try {
-        // Lock the manager
-        lock = await lockResource([RULE_ENGINE_KEY]);
-        // Get the processor status
-        const ruleSettingsInput = { internal_id: RULE_ENGINE_ID, errors: [] };
-        const ruleStatus = await createEntity(RULE_MANAGER_USER, ruleSettingsInput, ENTITY_TYPE_RULE_MANAGER);
-        // Start the stream listening
-        activatedRules = await getActivatedRules();
-        streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler);
-        await streamProcessor.start(ruleStatus.lastEventId);
-        // Handle hot module replacement resource dispose
-        if (module.hot) {
-          module.hot.dispose(async () => {
-            await streamProcessor.shutdown();
-          });
-        }
-        return true;
-      } catch (e) {
-        if (e.name === TYPE_LOCK_ERROR) {
-          logApp.debug('[OPENCTI] Rule engine already started by another API');
-        } else {
-          logApp.error('[OPENCTI] Rule engine failed to start', { error: e });
-        }
-        return false;
-      } finally {
-        if (lock) await lock.unlock();
+      scheduler = setIntervalAsync(async () => {
+        await ruleHandler();
+      }, SCHEDULE_TIME);
+      // Handle hot module replacement resource dispose
+      if (module.hot) {
+        module.hot.dispose(async () => {
+          await shutdown();
+          logApp.info(`[RULE] Hot reload dispose`);
+        });
       }
     },
-    shutdown: async () => {
-      if (streamProcessor) {
-        await streamProcessor.shutdown();
-      }
-      return true;
-    },
+    shutdown,
   };
 };
 const ruleEngine = initRuleManager();
