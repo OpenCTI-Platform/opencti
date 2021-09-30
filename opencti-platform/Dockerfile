@@ -12,7 +12,7 @@ RUN yarn install --frozen-lockfile && yarn cache clean --all
 FROM base AS graphql-builder
 
 WORKDIR /opt/opencti-build/opencti-graphql
-COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/.yarnrc.yml opencti-graphql/.yarn ./
+COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/.yarnrc.yml ./
 COPY opencti-graphql/.yarn ./.yarn
 RUN yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
