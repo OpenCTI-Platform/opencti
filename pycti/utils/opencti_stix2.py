@@ -1010,7 +1010,7 @@ class OpenCTIStix2:
                     external_reference["external_id"] = entity_external_reference[
                         "external_id"
                     ]
-                if "importFiles" in entity_external_reference:
+                if "importFiles" in entity_external_reference and len(entity_external_reference["importFiles"]) > 0:
                     external_reference["x_opencti_files"] = []
                     for file in entity_external_reference["importFiles"]:
                         url = (
@@ -1208,7 +1208,7 @@ class OpenCTIStix2:
             if file:
                 entity["payload_bin"] = file
         # Files
-        if "importFiles" in entity:
+        if "importFiles" in entity and len(entity["importFiles"]) > 0:
             entity["x_opencti_files"] = []
             for file in entity["importFiles"]:
                 url = (
