@@ -1010,7 +1010,10 @@ class OpenCTIStix2:
                     external_reference["external_id"] = entity_external_reference[
                         "external_id"
                     ]
-                if "importFiles" in entity_external_reference and len(entity_external_reference["importFiles"]) > 0:
+                if (
+                    "importFiles" in entity_external_reference
+                    and len(entity_external_reference["importFiles"]) > 0
+                ):
                     external_reference["x_opencti_files"] = []
                     for file in entity_external_reference["importFiles"]:
                         url = (
