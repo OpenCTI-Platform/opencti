@@ -27,24 +27,6 @@ services:
         soft: 65536
         hard: 65536
 
-  minio:
-    image: minio/minio:RELEASE.2021-09-15T04-54-25Z
-    container_name: minio
-    volumes:
-      - s3data:/data
-    ports:
-      - "9000:9000"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    command: server /data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
-    restart: unless-stopped
-
   rabbitmq:
     image: rabbitmq:3.9-management
     container_name: rabbitmq
@@ -56,7 +38,8 @@ services:
     restart: unless-stopped
 
   opencti:
-    image: opencti/platform:5.0.0
+    # image: opencti/platform:5.0.1
+    image: derp
     container_name: opencti
     environment:
       - NODE_OPTIONS=--max-old-space-size=8096
@@ -91,22 +74,21 @@ services:
     depends_on:
       - redis
       - elasticsearch
-      - minio
       - rabbitmq
     restart: unless-stopped
 
-  worker:
-    image: opencti/worker:5.0.0
-    environment:
-      - OPENCTI_URL=http://opencti:8080
-      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
-      - WORKER_LOG_LEVEL=info
-    depends_on:
-      - opencti
-    deploy:
-      mode: replicated
-      replicas: 3
-    restart: unless-stopped
+  # worker:
+  #   image: opencti/worker:5.0.0
+  #   environment:
+  #     - OPENCTI_URL=http://opencti:8080
+  #     - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+  #     - WORKER_LOG_LEVEL=info
+  #   depends_on:
+  #     - opencti
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #   restart: unless-stopped
 
   # connector-history:
   #   image: opencti/connector-history:5.0.0
@@ -194,6 +176,5 @@ services:
 
 volumes:
   esdata:
-  s3data:
   redisdata:
   amqpdata:
