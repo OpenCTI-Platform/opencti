@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Card from '@material-ui/core/Card';
@@ -11,6 +10,8 @@ import { HexagonMultipleOutline, ShieldSearch } from 'mdi-material-ui';
 import { DescriptionOutlined, DeviceHubOutlined } from '@material-ui/icons';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import * as R from 'ramda';
+import Chip from '@material-ui/core/Chip';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -23,6 +24,13 @@ import StixDomainObjectTimeline from './StixDomainObjectTimeline';
 import Loader from '../../../../components/Loader';
 import { stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import ExportButtons from '../../../../components/ExportButtons';
+import Filters, { isUniqFilter } from '../lists/Filters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  convertFilters,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   card: {
@@ -67,6 +75,18 @@ const styles = (theme) => ({
     float: 'right',
     marginTop: -60,
   },
+  filters: {
+    float: 'left',
+    margin: '10px 0 0 15px',
+  },
+  filter: {
+    marginRight: 10,
+  },
+  operator: {
+    fontFamily: 'Consolas, monaco, monospace',
+    backgroundColor: theme.palette.background.chip,
+    marginRight: 10,
+  },
 });
 
 const stixDomainObjectThreatKnowledgeReportsNumberQuery = graphql`
@@ -103,19 +123,77 @@ const stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery = graphql`
 class StixDomainObjectThreatKnowledge extends Component {
   constructor(props) {
     super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      `view-stix-domain-object-${props.stixDomainObjectId}`,
+    );
     this.state = {
-      viewType: 'killchain',
+      sortBy: R.propOr('name', 'sortBy', params),
+      orderAsc: R.propOr(true, 'orderAsc', params),
+      searchTerm: R.propOr('', 'searchTerm', params),
+      viewType: R.propOr('killchain', 'viewType', params),
+      filters: R.propOr({}, 'filters', params),
+      openExports: false,
+      numberOfElements: { number: 0, symbol: '' },
     };
   }
 
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      `view-stix-domain-object-${this.props.stixDomainObjectId}`,
+      this.state,
+    );
+  }
+
   handleChangeViewType(event, type) {
-    this.setState({
-      viewType: type,
-    });
+    this.setState(
+      {
+        viewType: type,
+      },
+      () => this.saveView(),
+    );
+  }
+
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (this.state.filters[key] && this.state.filters[key].length > 0) {
+      this.setState(
+        {
+          filters: R.assoc(
+            key,
+            isUniqFilter(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
+            this.state.filters,
+          ),
+        },
+        () => this.saveView(),
+      );
+    } else {
+      this.setState(
+        {
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
+        },
+        () => this.saveView(),
+      );
+    }
+  }
+
+  handleRemoveFilter(key) {
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   render() {
-    const { viewType } = this.state;
+    const { viewType, filters } = this.state;
     const {
       t,
       n,
@@ -128,7 +206,13 @@ class StixDomainObjectThreatKnowledge extends Component {
       stixDomainObjectType,
     )}/${stixDomainObjectId}/knowledge`;
     let toTypes = [];
-    if (viewType === 'timeline') {
+    if (filters.entity_type && filters.entity_type.length > 0) {
+      if (R.filter((o) => o.id === 'all', filters.entity_type).length > 0) {
+        toTypes = [];
+      } else {
+        toTypes = filters.entity_type.map((o) => o.id);
+      }
+    } else if (viewType === 'timeline') {
       toTypes = [
         'Attack-Pattern',
         'Campaign',
@@ -146,10 +230,15 @@ class StixDomainObjectThreatKnowledge extends Component {
     } else {
       toTypes = ['Attack-Pattern', 'Malware', 'Tool', 'Vulnerability'];
     }
+    const finalFilters = convertFilters(R.dissoc('entity_type', filters));
     const paginationOptions = {
       fromId: stixDomainObjectId,
-      toTypes: filter((x) => x.toLowerCase() !== stixDomainObjectType, toTypes),
+      toTypes: R.filter(
+        (x) => x.toLowerCase() !== stixDomainObjectType,
+        toTypes,
+      ),
       relationship_type: 'stix-core-relationship',
+      filters: finalFilters,
     };
     if (viewType === 'timeline') {
       paginationOptions.orderBy = 'start_time';
@@ -334,6 +423,64 @@ class StixDomainObjectThreatKnowledge extends Component {
         >
           <Tab label={t('Global kill chain')} value="killchain" />
           <Tab label={t('Timeline')} value="timeline" />
+          <div className={classes.filters}>
+            <Filters
+              availableFilterKeys={[
+                'entity_type',
+                'markedBy',
+                'createdBy',
+                'created_start_date',
+                'created_end_date',
+              ]}
+              handleAddFilter={this.handleAddFilter.bind(this)}
+              currentFilters={filters}
+              allEntityTypes={true}
+            />{' '}
+            &nbsp;&nbsp;
+            {R.map((currentFilter) => {
+              const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
+              const values = (
+                <span>
+                  {R.map(
+                    (o) => (
+                      <span key={o.value}>
+                        {o.value && o.value.length > 0
+                          ? truncate(o.value, 15)
+                          : t('No label')}{' '}
+                        {R.last(currentFilter[1]).value !== o.value && (
+                          <code>OR</code>
+                        )}{' '}
+                      </span>
+                    ),
+                    currentFilter[1],
+                  )}
+                </span>
+              );
+              return (
+                <span key={label}>
+                  <Chip
+                    key={currentFilter[0]}
+                    classes={{ root: classes.filter }}
+                    label={
+                      <div>
+                        <strong>{label}</strong>: {values}
+                      </div>
+                    }
+                    onDelete={this.handleRemoveFilter.bind(
+                      this,
+                      currentFilter[0],
+                    )}
+                  />
+                  {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
+                    <Chip
+                      classes={{ root: classes.operator }}
+                      label={t('AND')}
+                    />
+                  )}
+                </span>
+              );
+            }, R.toPairs(filters))}
+          </div>
         </Tabs>
         <div className={classes.export}>
           <ExportButtons
@@ -383,7 +530,7 @@ StixDomainObjectThreatKnowledge.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixDomainObjectThreatKnowledge);

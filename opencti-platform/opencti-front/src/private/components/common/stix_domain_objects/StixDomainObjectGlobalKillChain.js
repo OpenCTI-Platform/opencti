@@ -289,6 +289,7 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
           first: $first
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) {
           edges {
             node {

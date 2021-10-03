@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, pipe, map, assoc, filter,
+  compose, pipe, map, assoc,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -16,7 +16,7 @@ import TimelineOppositeContent from '@material-ui/lab/TimelineOppositeContent';
 import TimelineDot from '@material-ui/lab/TimelineDot';
 import { createRefetchContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
-import inject18n, { isNone } from '../../../../components/i18n';
+import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 
@@ -39,7 +39,6 @@ class StixDomainObjectTimelineComponent extends Component {
     } = this.props;
     const stixCoreRelationships = pipe(
       map((n) => n.node),
-      filter((n) => !isNone(n.start_time)),
       map((n) => (n.from.id === stixDomainObjectId
         ? assoc('targetEntity', n.to, n)
         : assoc('targetEntity', n.from, n))),
@@ -109,6 +108,7 @@ const StixDomainObjectTimeline = createRefetchContainer(
           first: $first
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) {
           edges {
             node {

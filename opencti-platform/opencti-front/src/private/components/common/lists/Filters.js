@@ -566,7 +566,8 @@ class Filters extends Component {
         break;
       case 'entity_type':
         // eslint-disable-next-line no-case-declarations
-        const entitiesTypes = R.pipe(
+        // eslint-disable-next-line no-case-declarations
+        let entitiesTypes = R.pipe(
           R.map((n) => ({
             label: t(
               n.toString()[0] === n.toString()[0].toUpperCase()
@@ -607,6 +608,12 @@ class Filters extends Component {
           'uses',
           'located-at',
         ]);
+        if (this.props.allEntityTypes) {
+          entitiesTypes = R.prepend(
+            { label: t('entity_All'), value: 'all', type: 'entity' },
+            entitiesTypes,
+          );
+        }
         this.setState({
           entities: {
             ...this.state.entities,
@@ -1006,6 +1013,7 @@ Filters.propTypes = {
   variant: PropTypes.string,
   disabled: PropTypes.bool,
   noDirectFilters: PropTypes.bool,
+  allEntityTypes: PropTypes.bool,
 };
 
 export default R.compose(
