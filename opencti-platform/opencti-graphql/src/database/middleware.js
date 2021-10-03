@@ -998,6 +998,12 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
     finalVal = cleanStixIds(finalVal);
   }
   // endregion
+  if (dateAttributes.includes(finalKey)) {
+    const finalValElement = R.head(finalVal);
+    if (isEmptyField(finalValElement)) {
+      finalVal = [null];
+    }
+  }
   if (dateForLimitsAttributes.includes(finalKey)) {
     const finalValElement = R.head(finalVal);
     if (dateForStartAttributes.includes(finalKey) && isEmptyField(finalValElement)) {

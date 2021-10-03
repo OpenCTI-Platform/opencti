@@ -24,7 +24,7 @@ const DatePickerField = (props) => {
     (date) => {
       setFieldValue(name, date);
       if (typeof onChange === 'function') {
-        onChange(name, date);
+        onChange(name, date || '');
       }
     },
     [setFieldValue, onChange, name],
@@ -39,7 +39,7 @@ const DatePickerField = (props) => {
       setTouched(true);
       const { value } = event.target;
       if (typeof onSubmit === 'function') {
-        onSubmit(name, parse(value).toISOString());
+        onSubmit(name, value ? parse(value).toISOString() : '');
       }
     },
     [setTouched, onSubmit, name],

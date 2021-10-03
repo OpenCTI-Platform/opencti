@@ -119,6 +119,9 @@ export const dateAttributes = [
   'processed_time',
   'completed_time',
   'last_run',
+  'atime',
+  'ctime',
+  'mtime',
 ];
 export const numericAttributes = [
   'attribute_order',
