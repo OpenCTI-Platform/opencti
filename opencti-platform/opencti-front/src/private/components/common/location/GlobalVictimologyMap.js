@@ -23,7 +23,7 @@ const styles = () => ({
 class GlobalVictimologyMap extends Component {
   render() {
     const {
-      t, title, startDate, endDate,
+      t, title, startDate, endDate, dateAttribute,
     } = this.props;
     return (
       <div style={{ height: '100%', paddingBottom: 10 }}>
@@ -43,7 +43,7 @@ class GlobalVictimologyMap extends Component {
             toTypes: ['Country', 'City'],
             startDate,
             endDate,
-            dateAttribute: 'created_at',
+            dateAttribute,
             limit: 20,
           }}
           render={({ props }) => {
@@ -105,6 +105,7 @@ GlobalVictimologyMap.propTypes = {
   t: PropTypes.func,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
+  dateAttribute: PropTypes.string,
 };
 
 export default compose(inject18n, withStyles(styles))(GlobalVictimologyMap);

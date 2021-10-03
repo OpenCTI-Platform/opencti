@@ -775,6 +775,9 @@ const i18n = {
       'Creation date': 'Date de création',
       'Creation date (in this platform)':
         'Date de création (dans la plateforme)',
+      'Technical date': 'Date technique',
+      'Functional date': 'Date fonctionnelle',
+      'Date reference': 'Référence de la date',
       'Modification date': 'Date de modification',
       'Updated the': 'Mis à jour le',
       'Update entities': 'Modifier des entités',

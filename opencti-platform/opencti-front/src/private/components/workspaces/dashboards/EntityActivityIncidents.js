@@ -15,8 +15,12 @@ const styles = () => ({
 class EntityActivityIncidents extends Component {
   render() {
     const {
-      t, widget, startDate, endDate,
+      t, widget, startDate, endDate, timeField,
     } = this.props;
+    let dateAttribute = 'created_at';
+    if (timeField === 'functional') {
+      dateAttribute = 'first_seen';
+    }
     switch (widget.visualizationType) {
       case 'area':
         return (
@@ -25,6 +29,7 @@ class EntityActivityIncidents extends Component {
             stixCoreObjectId={widget.entity.id}
             startDate={startDate}
             endDate={endDate}
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -35,6 +40,7 @@ class EntityActivityIncidents extends Component {
             stixCoreObjectId={widget.entity.id}
             startDate={startDate}
             endDate={endDate}
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -73,6 +79,7 @@ class EntityActivityIncidents extends Component {
 EntityActivityIncidents.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
+  timeField: PropTypes.string,
   widget: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

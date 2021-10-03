@@ -18,8 +18,12 @@ const styles = () => ({
 class GlobalActivityVulnerabilities extends Component {
   render() {
     const {
-      t, widget, startDate, endDate,
+      t, widget, startDate, endDate, timeField,
     } = this.props;
+    let dateAttribute = 'created_at';
+    if (timeField === 'functional') {
+      dateAttribute = 'start_time';
+    }
     switch (widget.visualizationType) {
       case 'horizontal-bar':
         return (
@@ -30,7 +34,7 @@ class GlobalActivityVulnerabilities extends Component {
             field="internal_id"
             startDate={startDate}
             endDate={endDate}
-            dateAttribute="created_at"
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -43,7 +47,7 @@ class GlobalActivityVulnerabilities extends Component {
             field="internal_id"
             startDate={startDate}
             endDate={endDate}
-            dateAttribute="created_at"
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -55,7 +59,7 @@ class GlobalActivityVulnerabilities extends Component {
             toTypes={['Vulnerability']}
             startDate={startDate}
             endDate={endDate}
-            dateAttribute="created_at"
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -67,7 +71,7 @@ class GlobalActivityVulnerabilities extends Component {
             toTypes={['Vulnerability']}
             startDate={startDate}
             endDate={endDate}
-            dateAttribute="created_at"
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -80,7 +84,7 @@ class GlobalActivityVulnerabilities extends Component {
             field="internal_id"
             startDate={startDate}
             endDate={endDate}
-            dateAttribute="created_at"
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -105,6 +109,7 @@ class GlobalActivityVulnerabilities extends Component {
 GlobalActivityVulnerabilities.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
+  timeField: PropTypes.string,
   widget: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

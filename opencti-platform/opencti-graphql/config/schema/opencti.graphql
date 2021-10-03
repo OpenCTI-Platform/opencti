@@ -8634,6 +8634,7 @@ type Query {
     relationship_type: String!
     toTypes: [String]
     field: String!
+    dateAttribute: String
     operation: StatsOperation!
     limit: Int
     order: String
@@ -8712,6 +8713,7 @@ type Query {
   notesDistribution(
     objectId: String
     field: String!
+    dateAttribute: String
     operation: StatsOperation!
     limit: Int
     order: String
@@ -8742,6 +8744,7 @@ type Query {
   observedDatasDistribution(
     objectId: String
     field: String!
+    dateAttribute: String
     operation: StatsOperation!
     limit: Int
     order: String
@@ -8772,6 +8775,7 @@ type Query {
   opinionsDistribution(
     objectId: String
     field: String!
+    dateAttribute: String
     operation: StatsOperation!
     limit: Int
     order: String
@@ -8811,6 +8815,7 @@ type Query {
     order: String
     startDate: DateTime
     endDate: DateTime
+    dateAttribute: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   reportContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
     @auth(for: [KNOWLEDGE])
@@ -8910,6 +8915,7 @@ type Query {
     order: String
     startDate: DateTime
     endDate: DateTime
+    dateAttribute: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
   infrastructure(id: String!): Infrastructure @auth(for: [KNOWLEDGE])
   infrastructures(
@@ -9072,8 +9078,12 @@ type Query {
   stixCyberObservablesNumber(types: [String], authorId: String, endDate: DateTime): Number
     @auth(for: [KNOWLEDGE, EXPLORE])
   stixCyberObservablesTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
-  stixCyberObservablesDistribution(objectId: String, field: String!, operation: String!): [Distribution]
-    @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCyberObservablesDistribution(
+    objectId: String
+    field: String!
+    dateAttribute: String
+    operation: String!
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
 
   ######## STIX META RELATIONSHIPS
   stixMetaRelationship(id: String): StixMetaRelationship @auth(for: [KNOWLEDGE])
@@ -9114,6 +9124,7 @@ type Query {
     toTypes: [String]
     startDate: DateTime
     endDate: DateTime
+    dateAttribute: String
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
@@ -9255,6 +9266,7 @@ type Query {
     toTypes: [String]
     startDate: DateTime
     endDate: DateTime
+    dateAttribute: String
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
@@ -9298,6 +9310,7 @@ type Query {
     toTypes: [String]
     startDate: DateTime
     endDate: DateTime
+    dateAttribute: String
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])

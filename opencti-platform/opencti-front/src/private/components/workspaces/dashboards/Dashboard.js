@@ -145,6 +145,21 @@ class DashboardComponent extends Component {
     this.saveManifest(newManifest);
   }
 
+  handleTimeFieldChange(event) {
+    const newValue = event.target.value;
+    const manifest = this.decodeManifest();
+    const newManifest = R.assoc(
+      'config',
+      R.assoc(
+        'timeField',
+        newValue === 'none' ? null : newValue,
+        manifest.config,
+      ),
+      manifest,
+    );
+    this.saveManifest(newManifest);
+  }
+
   handleDateChange(type, value) {
     // eslint-disable-next-line no-nested-ternary
     const newValue = value && value.target
@@ -192,6 +207,7 @@ class DashboardComponent extends Component {
   // eslint-disable-next-line class-methods-use-this
   renderGlobalVisualization(widget, config) {
     const { relativeDate } = config;
+    const timeField = config.timeField || 'technical';
     const startDate = relativeDate
       ? this.computerRelativeDate(relativeDate)
       : config.startDate;
@@ -204,6 +220,7 @@ class DashboardComponent extends Component {
           <GlobalVictimologyAll
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -212,6 +229,7 @@ class DashboardComponent extends Component {
           <GlobalVictimologySectors
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -220,6 +238,7 @@ class DashboardComponent extends Component {
           <GlobalVictimologyCountries
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
             mapReload={this.state.mapReload}
           />
@@ -229,6 +248,7 @@ class DashboardComponent extends Component {
           <GlobalActivityIntrusionSets
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -237,6 +257,7 @@ class DashboardComponent extends Component {
           <GlobalActivityMalwares
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -245,6 +266,7 @@ class DashboardComponent extends Component {
           <GlobalActivityVulnerabilities
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -253,6 +275,7 @@ class DashboardComponent extends Component {
           <GlobalActivityReports
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -261,6 +284,7 @@ class DashboardComponent extends Component {
           <GlobalActivityIndicators
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -269,6 +293,7 @@ class DashboardComponent extends Component {
           <GlobalActivityIndicators
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
             field="revoked"
           />
@@ -278,6 +303,7 @@ class DashboardComponent extends Component {
           <GlobalActivityIndicators
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
             field="x_opencti_detection"
           />
@@ -440,6 +466,7 @@ class DashboardComponent extends Component {
     const { t, classes, workspace } = this.props;
     const manifest = this.decodeManifest();
     const relativeDate = R.propOr(null, 'relativeDate', manifest.config);
+    const timeField = R.propOr('technical', 'timeField', manifest.config);
     return (
       <div className={classes.container} id="container">
         <WorkspaceHeader workspace={workspace} variant="dashboard" />
@@ -452,6 +479,26 @@ class DashboardComponent extends Component {
             needs={[EXPLORE_EXUPDATE]}
             placeholder={
               <Grid container={true} spacing={1}>
+                <Grid item={true} xs="auto">
+                  <FormControl style={{ width: 194, marginRight: 20 }}>
+                    <InputLabel id="timeField">
+                      {t('Date reference')}
+                    </InputLabel>
+                    <Select
+                      labelId="timeField"
+                      value={relativeDate === null ? '' : relativeDate}
+                      onChange={this.handleTimeFieldChange.bind(this)}
+                      disabled={true}
+                    >
+                      <MenuItem value="technical">
+                        {t('Technical date')}
+                      </MenuItem>
+                      <MenuItem value="functional">
+                        {t('Functional date')}
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
                 <Grid item={true} xs="auto">
                   <FormControl style={{ width: 194, marginRight: 20 }}>
                     <InputLabel id="relative">{t('Relative time')}</InputLabel>
@@ -504,6 +551,23 @@ class DashboardComponent extends Component {
             }
           >
             <Grid container={true} spacing={1}>
+              <Grid item={true} xs="auto">
+                <FormControl style={{ width: 194, marginRight: 20 }}>
+                  <InputLabel id="timeField">{t('Date reference')}</InputLabel>
+                  <Select
+                    labelId="timeField"
+                    value={timeField === null ? '' : timeField}
+                    onChange={this.handleTimeFieldChange.bind(this)}
+                  >
+                    <MenuItem value="technical">
+                      {t('Technical date')}
+                    </MenuItem>
+                    <MenuItem value="functional">
+                      {t('Functional date')}
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
               <Grid item={true} xs="auto">
                 <FormControl style={{ width: 194, marginRight: 20 }}>
                   <InputLabel id="relative">{t('Relative time')}</InputLabel>

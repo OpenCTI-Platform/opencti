@@ -35,6 +35,7 @@ const entityStixCoreRelationshipsDonutStixCoreRelationshipDistributionQuery = gr
     $startDate: DateTime
     $endDate: DateTime
     $field: String!
+    $dateAttribute: String
     $operation: StatsOperation!
     $isTo: Boolean
   ) {
@@ -46,6 +47,7 @@ const entityStixCoreRelationshipsDonutStixCoreRelationshipDistributionQuery = gr
       startDate: $startDate
       endDate: $endDate
       field: $field
+      dateAttribute: $dateAttribute
       operation: $operation
       isTo: $isTo
     ) {
@@ -204,6 +206,7 @@ class EntityStixCoreRelationshipsDonut extends Component {
       variant,
       relationshipType,
       field,
+      dateAttribute,
       startDate,
       endDate,
       isTo,
@@ -216,6 +219,7 @@ class EntityStixCoreRelationshipsDonut extends Component {
       endDate: endDate || null,
       relationship_type: relationshipType,
       field,
+      dateAttribute,
       limit: 10,
       operation: 'count',
       isTo: isTo || false,
@@ -360,6 +364,7 @@ EntityStixCoreRelationshipsDonut.propTypes = {
   entityType: PropTypes.string,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
+  dateAttribute: PropTypes.string,
   field: PropTypes.string,
   classes: PropTypes.object,
   theme: PropTypes.object,

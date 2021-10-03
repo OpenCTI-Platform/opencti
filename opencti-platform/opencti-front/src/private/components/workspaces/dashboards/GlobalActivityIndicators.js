@@ -18,8 +18,12 @@ const styles = () => ({
 class GlobalActivityIndicators extends Component {
   render() {
     const {
-      t, widget, startDate, endDate, field,
+      t, widget, startDate, endDate, field, timeField,
     } = this.props;
+    let dateAttribute = 'created_at';
+    if (timeField === 'functional') {
+      dateAttribute = 'valid_from';
+    }
     switch (widget.visualizationType) {
       case 'horizontal-bar':
         return (
@@ -30,7 +34,7 @@ class GlobalActivityIndicators extends Component {
             field={field || 'pattern_type'}
             startDate={startDate}
             endDate={endDate}
-            dateAttribute="created_at"
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -43,7 +47,7 @@ class GlobalActivityIndicators extends Component {
             field={field || 'pattern_type'}
             startDate={startDate}
             endDate={endDate}
-            dateAttribute="created_at"
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -53,7 +57,7 @@ class GlobalActivityIndicators extends Component {
             title={`${t('Activity')} - ${t('Indicators')}`}
             startDate={startDate}
             endDate={endDate}
-            dateAttribute="created_at"
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -63,7 +67,7 @@ class GlobalActivityIndicators extends Component {
             title={`${t('Activity')} - ${t('Indicators')}`}
             startDate={startDate}
             endDate={endDate}
-            dateAttribute="created_at"
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -76,7 +80,7 @@ class GlobalActivityIndicators extends Component {
             field={field || 'pattern_type'}
             startDate={startDate}
             endDate={endDate}
-            dateAttribute="created_at"
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -101,6 +105,7 @@ class GlobalActivityIndicators extends Component {
 GlobalActivityIndicators.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
+  timeField: PropTypes.string,
   widget: PropTypes.object,
   classes: PropTypes.object,
   field: PropTypes.string,

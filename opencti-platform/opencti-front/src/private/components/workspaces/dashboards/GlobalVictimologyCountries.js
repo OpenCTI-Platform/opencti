@@ -16,11 +16,15 @@ const styles = () => ({
   },
 });
 
-class ThreatVictimologyAll extends Component {
+class GlobalVictimologyCountries extends Component {
   render() {
     const {
-      t, startDate, endDate, widget, mapReload,
+      t, startDate, endDate, widget, mapReload, timeField,
     } = this.props;
+    let dateAttribute = 'created_at';
+    if (timeField === 'functional') {
+      dateAttribute = 'start_time';
+    }
     switch (widget.visualizationType) {
       case 'map':
         if (mapReload) return <div />;
@@ -29,6 +33,7 @@ class ThreatVictimologyAll extends Component {
             title={`${t('Victimology')} - ${t('Countries')}`}
             startDate={startDate}
             endDate={endDate}
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -41,6 +46,7 @@ class ThreatVictimologyAll extends Component {
             field="internal_id"
             startDate={startDate}
             endDate={endDate}
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -53,6 +59,7 @@ class ThreatVictimologyAll extends Component {
             field="internal_id"
             startDate={startDate}
             endDate={endDate}
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -75,6 +82,7 @@ class ThreatVictimologyAll extends Component {
             relationshipType="targets"
             startDate={startDate}
             endDate={endDate}
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -87,6 +95,7 @@ class ThreatVictimologyAll extends Component {
             field="internal_id"
             startDate={startDate}
             endDate={endDate}
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -108,13 +117,14 @@ class ThreatVictimologyAll extends Component {
   }
 }
 
-ThreatVictimologyAll.propTypes = {
+GlobalVictimologyCountries.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
+  timeField: PropTypes.string,
   widget: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   mapReload: PropTypes.bool,
 };
 
-export default R.compose(inject18n, withStyles(styles))(ThreatVictimologyAll);
+export default R.compose(inject18n, withStyles(styles))(GlobalVictimologyCountries);

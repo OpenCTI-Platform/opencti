@@ -56,6 +56,7 @@ class ThreatVictimologyAll extends Component {
             relationshipType="targets"
             startDate={startDate}
             endDate={endDate}
+            field='created_at'
             variant="inLine"
           />
         );

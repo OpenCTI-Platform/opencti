@@ -66,6 +66,7 @@ class StixCoreObjectCampaignsAreaChart extends Component {
       campaignType,
       startDate,
       endDate,
+      dateAttribute,
       stixCoreObjectId,
       theme,
     } = this.props;
@@ -81,7 +82,7 @@ class StixCoreObjectCampaignsAreaChart extends Component {
       authorId: null,
       objectId: stixCoreObjectId,
       campaignType: campaignType || null,
-      field: 'created_at',
+      field: dateAttribute,
       operation: 'count',
       startDate: finalStartDate,
       endDate: finalEndDate,
@@ -200,6 +201,7 @@ StixCoreObjectCampaignsAreaChart.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   stixCoreObjectId: PropTypes.string,
+  dateAttribute: PropTypes.string,
   t: PropTypes.func,
   md: PropTypes.func,
 };

@@ -68,6 +68,7 @@ class IndicatorsVerticalBars extends Component {
       indicatorType,
       startDate,
       endDate,
+      dateAttribute,
       stixCoreObjectId,
       theme,
     } = this.props;
@@ -83,7 +84,7 @@ class IndicatorsVerticalBars extends Component {
       authorId: null,
       objectId: stixCoreObjectId,
       indicatorType: indicatorType || null,
-      field: 'created_at',
+      field: dateAttribute,
       operation: 'count',
       startDate: finalStartDate,
       endDate: finalEndDate,
@@ -199,6 +200,7 @@ IndicatorsVerticalBars.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   stixCoreObjectId: PropTypes.string,
+  dateAttribute: PropTypes.string,
   t: PropTypes.func,
   md: PropTypes.func,
 };
