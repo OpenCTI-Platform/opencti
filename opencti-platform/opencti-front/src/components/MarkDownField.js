@@ -32,7 +32,7 @@ const MarkDownField = (props) => {
   };
   const internalOnBlur = (event) => {
     const { nodeName } = event.relatedTarget || {};
-    if (nodeName === 'INPUT' || nodeName === undefined) {
+    if (nodeName === 'INPUT' || nodeName === 'DIV' || nodeName === undefined) {
       setTouched(true);
       if (typeof onSubmit === 'function') {
         onSubmit(name, field.value || '');

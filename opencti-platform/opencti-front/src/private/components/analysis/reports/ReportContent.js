@@ -42,6 +42,7 @@ import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
+import { truncate } from '../../../../utils/String';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/pdf.worker.js`;
 
@@ -207,19 +208,6 @@ class ReportContentComponent extends Component {
 
   onDocumentLoadSuccess({ numPages: nextNumPages }) {
     this.setState({ totalPdfPageNumber: nextNumPages });
-  }
-
-  handleChangePage(mode = 'next') {
-    this.setState({
-      currentPdfPageNumber:
-        mode === 'next'
-          ? this.state.currentPdfPageNumber + 1
-          : this.state.currentPdfPageNumber - 1,
-    });
-  }
-
-  onItemClick({ pageNumber: itemPageNumber }) {
-    this.setState({ totalPdfPageNumber: itemPageNumber });
   }
 
   setSunEditorInstance(editor) {
@@ -450,7 +438,10 @@ class ReportContentComponent extends Component {
             },
             () => {
               this.saveView();
-              if (currentFile.metaData.mimetype === 'text/markdown') {
+              if (
+                currentFile.metaData.mimetype === 'text/markdown'
+                || currentFile.metaData.mimetype === 'text/html'
+              ) {
                 this.loadFileContent();
               }
             },
@@ -463,7 +454,7 @@ class ReportContentComponent extends Component {
   handleChangeTab(event, value) {
     if (this.state.currentTab === 0 || this.state.currentTab === 1) {
       this.saveFileAndChangeTab(value);
-    } else if (this.state.currentFile === 2) {
+    } else if (this.state.currentTab === 2) {
       this.setState({ currentBase64Content: null, currentTab: value }, () => this.saveView());
     } else {
       this.setState({ currentTab: value }, () => this.saveView());
@@ -563,8 +554,8 @@ class ReportContentComponent extends Component {
         />
         <AppBar position="static" elevation={0} className={classes.appBar}>
           <Toolbar style={{ minHeight: 50 }}>
-            <span style={{ fontSize: 18, color: 'inherit', fontWeight: 400 }}>
-              {currentTitle}
+            <span style={{ fontSize: 14, color: 'inherit', fontWeight: 400 }}>
+              {truncate(currentTitle, 100)}
             </span>
             <Tabs
               value={currentTab}
