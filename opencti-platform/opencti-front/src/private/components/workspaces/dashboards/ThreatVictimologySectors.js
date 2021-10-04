@@ -18,8 +18,12 @@ const styles = () => ({
 class ThreatVictimologyAll extends Component {
   render() {
     const {
-      t, widget, startDate, endDate,
+      t, widget, startDate, endDate, timeField,
     } = this.props;
+    let dateAttribute = 'created_at';
+    if (timeField === 'functional') {
+      dateAttribute = 'start_time';
+    }
     switch (widget.visualizationType) {
       case 'horizontal-bar':
         return (
@@ -31,6 +35,7 @@ class ThreatVictimologyAll extends Component {
             field="internal_id"
             startDate={startDate}
             endDate={endDate}
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -44,6 +49,7 @@ class ThreatVictimologyAll extends Component {
             field="internal_id"
             startDate={startDate}
             endDate={endDate}
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -56,6 +62,7 @@ class ThreatVictimologyAll extends Component {
             relationshipType="targets"
             startDate={startDate}
             endDate={endDate}
+            field={dateAttribute}
             variant="inLine"
           />
         );
@@ -68,6 +75,7 @@ class ThreatVictimologyAll extends Component {
             relationshipType="targets"
             startDate={startDate}
             endDate={endDate}
+            field={dateAttribute}
             variant="inLine"
           />
         );
@@ -105,6 +113,7 @@ class ThreatVictimologyAll extends Component {
 ThreatVictimologyAll.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
+  timeField: PropTypes.string,
   widget: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

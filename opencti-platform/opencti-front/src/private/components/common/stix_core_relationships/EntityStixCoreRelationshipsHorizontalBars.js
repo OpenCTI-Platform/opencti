@@ -41,6 +41,7 @@ const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
     $limit: Int
     $startDate: DateTime
     $endDate: DateTime
+    $dateAttribute: String
   ) {
     stixCoreRelationshipsDistribution(
       fromId: $fromId
@@ -52,6 +53,7 @@ const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
       limit: $limit
       startDate: $startDate
       endDate: $endDate
+      dateAttribute: $dateAttribute
     ) {
       label
       value
@@ -154,6 +156,7 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
       startDate,
       endDate,
       theme,
+      dateAttribute,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
       fromId: stixCoreObjectId,
@@ -165,6 +168,7 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
       isTo: isTo || false,
       startDate,
       endDate,
+      dateAttribute,
     };
     return (
       <QueryRenderer
@@ -311,6 +315,7 @@ EntityStixCoreRelationshipsHorizontalBars.propTypes = {
   variant: PropTypes.string,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
+  dateAttribute: PropTypes.string,
 };
 
 export default compose(

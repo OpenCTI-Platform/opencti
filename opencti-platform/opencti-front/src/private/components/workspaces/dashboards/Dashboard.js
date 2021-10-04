@@ -206,8 +206,7 @@ class DashboardComponent extends Component {
 
   // eslint-disable-next-line class-methods-use-this
   renderGlobalVisualization(widget, config) {
-    const { relativeDate } = config;
-    const timeField = config.timeField || 'technical';
+    const { relativeDate, timeField = 'technical' } = config;
     const startDate = relativeDate
       ? this.computerRelativeDate(relativeDate)
       : config.startDate;
@@ -315,7 +314,7 @@ class DashboardComponent extends Component {
 
   // eslint-disable-next-line class-methods-use-this
   renderThreatVisualization(widget, config) {
-    const { relativeDate } = config;
+    const { relativeDate, timeField = 'technical' } = config;
     const startDate = relativeDate
       ? this.computerRelativeDate(relativeDate)
       : config.startDate;
@@ -328,6 +327,7 @@ class DashboardComponent extends Component {
           <ThreatVictimologyAll
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -336,6 +336,7 @@ class DashboardComponent extends Component {
           <ThreatVictimologySectors
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -344,6 +345,7 @@ class DashboardComponent extends Component {
           <ThreatVictimologyCountries
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
             mapReload={this.state.mapReload}
           />
@@ -353,6 +355,7 @@ class DashboardComponent extends Component {
           <ThreatActivityCampaigns
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -361,6 +364,7 @@ class DashboardComponent extends Component {
           <ThreatActivityIndicators
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -369,6 +373,7 @@ class DashboardComponent extends Component {
           <ThreatVulnerabilities
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -377,6 +382,7 @@ class DashboardComponent extends Component {
           <ThreatActivityReports
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -401,7 +407,7 @@ class DashboardComponent extends Component {
 
   // eslint-disable-next-line class-methods-use-this
   renderEntityVisualization(widget, config) {
-    const { relativeDate } = config;
+    const { relativeDate, timeField = 'technical' } = config;
     const startDate = relativeDate
       ? this.computerRelativeDate(relativeDate)
       : config.startDate;
@@ -414,6 +420,7 @@ class DashboardComponent extends Component {
           <EntityThreatsAll
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -422,6 +429,7 @@ class DashboardComponent extends Component {
           <EntityThreatsIntrusionSets
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -430,6 +438,7 @@ class DashboardComponent extends Component {
           <EntityThreatsMalwares
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -438,6 +447,7 @@ class DashboardComponent extends Component {
           <EntityActivityCampaigns
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -446,6 +456,7 @@ class DashboardComponent extends Component {
           <EntityActivityIncidents
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -454,6 +465,7 @@ class DashboardComponent extends Component {
           <EntityActivityReports
             startDate={startDate}
             endDate={endDate}
+            timeField={timeField}
             widget={widget}
           />
         );
@@ -559,9 +571,7 @@ class DashboardComponent extends Component {
                     value={timeField === null ? '' : timeField}
                     onChange={this.handleTimeFieldChange.bind(this)}
                   >
-                    <MenuItem value="technical">
-                      {t('Technical date')}
-                    </MenuItem>
+                    <MenuItem value="technical">{t('Technical date')}</MenuItem>
                     <MenuItem value="functional">
                       {t('Functional date')}
                     </MenuItem>

@@ -18,8 +18,12 @@ const styles = () => ({
 class GlobalActivityReports extends Component {
   render() {
     const {
-      t, widget, startDate, endDate,
+      t, widget, startDate, endDate, timeField,
     } = this.props;
+    let dateAttribute = 'created_at';
+    if (timeField === 'functional') {
+      dateAttribute = 'created';
+    }
     switch (widget.visualizationType) {
       case 'horizontal-bar':
         return (
@@ -28,6 +32,7 @@ class GlobalActivityReports extends Component {
             field="created-by.internal_id"
             startDate={startDate}
             endDate={endDate}
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -38,6 +43,7 @@ class GlobalActivityReports extends Component {
             field="created-by.internal_id"
             startDate={startDate}
             endDate={endDate}
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );
@@ -47,6 +53,7 @@ class GlobalActivityReports extends Component {
             title={`${t('Activity')} - ${t('Reports')}`}
             startDate={startDate}
             endDate={endDate}
+            field={dateAttribute}
             variant="inLine"
           />
         );
@@ -56,6 +63,7 @@ class GlobalActivityReports extends Component {
             title={`${t('Activity')} - ${t('Reports')}`}
             startDate={startDate}
             endDate={endDate}
+            field={dateAttribute}
             variant="inLine"
           />
         );
@@ -64,6 +72,7 @@ class GlobalActivityReports extends Component {
           <StixDomainObjectsTimeline
             title={`${t('Activity')} - ${t('Reports')}`}
             types={['Report']}
+            field={dateAttribute}
             variant="inLine"
           />
         );
@@ -88,6 +97,7 @@ class GlobalActivityReports extends Component {
 GlobalActivityReports.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
+  timeField: PropTypes.string,
   widget: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
