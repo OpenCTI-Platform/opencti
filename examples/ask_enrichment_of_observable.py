@@ -1,5 +1,5 @@
 # coding: utf-8
-from pycti import OpenCTIApiClient, OpenCTIApiConnector, OpenCTIApiWork
+from pycti import OpenCTIApiClient
 
 # Variables
 api_url = "https://demo.opencti.io"
@@ -9,8 +9,6 @@ connector_name = "AbuseIPDB"
 
 # OpenCTI initialization
 opencti_api_client = OpenCTIApiClient(api_url, api_token)
-opencti_api_connector = OpenCTIApiConnector(opencti_api_client)
-opencti_api_work = OpenCTIApiWork(opencti_api_client)
 
 # Create the observable
 observable = opencti_api_client.stix_cyber_observable.create(
@@ -21,7 +19,7 @@ observable = opencti_api_client.stix_cyber_observable.create(
 )
 
 # Get connector id for defined connector name
-connector_list = opencti_api_connector.list()
+connector_list = opencti_api_client.connector.list()
 connector_names = []
 connector_id = ""
 for connector in connector_list:
@@ -40,7 +38,7 @@ work_id = opencti_api_client.stix_cyber_observable.ask_for_enrichment(
     id=observable["id"], connector_id=connector_id
 )
 # Wait for connector to finish
-opencti_api_work.wait_for_work_to_finish(work_id)
+opencti_api_client.work.wait_for_work_to_finish(work_id)
 
 # Read the observable
 obs = opencti_api_client.stix_cyber_observable.read(id=observable["id"])
