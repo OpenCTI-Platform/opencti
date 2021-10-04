@@ -8,10 +8,11 @@ import sys
 import threading
 import time
 import uuid
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import pika
 from pika.exceptions import NackError, UnroutableError
+from prometheus_client import start_http_server, Counter, Enum
 from sseclient import SSEClient
 
 from pycti.api.opencti_api_client import OpenCTIApiClient
@@ -27,7 +28,7 @@ def get_config_variable(
     yaml_path: List,
     config: Dict = {},
     isNumber: Optional[bool] = False,
-    default=None,
+    default: Optional[Any] = None,
 ) -> Union[bool, int, None, str]:
     """[summary]
 
@@ -35,8 +36,8 @@ def get_config_variable(
     :param yaml_path: path to yaml config
     :param config: client config dict, defaults to {}
     :param isNumber: specify if the variable is a number, defaults to False
+    :param default: default value
     """
-
     if os.getenv(env_var) is not None:
         result = os.getenv(env_var)
     elif yaml_path is not None:
@@ -62,7 +63,6 @@ def create_ssl_context() -> ssl.SSLContext:
 
     `ssl` uses bitwise operations to specify context `<enum 'Options'>`
     """
-
     ssl_context_options: List[int] = [
         ssl.OP_NO_COMPRESSION,
         ssl.OP_NO_TICKET,  # pylint: disable=no-member
@@ -122,7 +122,6 @@ class ListenQueue(threading.Thread):
         :param body: message body (data)
         :type body: str or bytes or bytearray
         """
-
         json_data = json.loads(body)
         self.thread = threading.Thread(target=self._data_handler, args=[json_data])
         self.thread.start()
@@ -430,12 +429,54 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             False,
             False,
         )
+        # Start up the server to expose the metrics.
+        self.expose_metrics = get_config_variable(
+            "CONNECTOR_EXPOSE_METRICS",
+            ["connector", "expose_metrics"],
+            config,
+            False,
+            False,
+        )
+        metrics_port = get_config_variable(
+            "CONNECTOR_METRICS_PORT", ["connector", "metrics_port"], config, True, 9095
+        )
+        self.metrics = None
+        if self.expose_metrics:
+            self.log_info(f"Exposing metrics on port {metrics_port}")
+            start_http_server(metrics_port)
+
+            self.metrics = {
+                "bundle_send": Counter(
+                    "bundle_send",
+                    "Number of bundle send",
+                ),
+                "record_send": Counter(
+                    "record_send",
+                    "Number of record (objects per bundle) send",
+                ),
+                "run_count": Counter(
+                    "run_count",
+                    "Number of run",
+                ),
+                "error_count": Counter(
+                    "error_count",
+                    "Number of error",
+                ),
+                "client_error_count": Counter(
+                    "client_error_count",
+                    "Number of client error",
+                ),
+                "state": Enum(
+                    "state", "State of connector", states=["idle", "running", "stopped"]
+                ),
+            }
 
         # Configure logger
         numeric_level = getattr(
             logging, self.log_level.upper() if self.log_level else "INFO", None
         )
         if not isinstance(numeric_level, int):
+            self.metric_inc("error_count")
             raise ValueError(f"Invalid log level: {self.log_level}")
         logging.basicConfig(level=numeric_level)
 
@@ -473,6 +514,26 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         # self.listen_stream = None
         self.listen_queue = None
 
+    def metric_inc(self, metric: str, n: int = 1):
+        """Increase the given metric counter by `n`.
+
+        :param metric: metric name
+        :type metric: str
+        :param n: increase the counter by `n`
+        :type n: int
+        """
+        if self.metrics is not None:
+            self.metrics[metric].inc(n)
+
+    def metric_state(self, state: str):
+        """Set the state of the `state` metric.
+
+        :param state: new `state` to set
+        :type state: str
+        """
+        if self.metrics is not None:
+            self.metrics["state"].state(state)
+
     def stop(self) -> None:
         if self.listen_queue:
             self.listen_queue.stop()
@@ -493,7 +554,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :param state: state object
         :type state: Dict
         """
-
         self.connector_state = json.dumps(state)
 
     def get_state(self) -> Optional[Dict]:
@@ -502,7 +562,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :return: returns the current state of the connector if there is any
         :rtype:
         """
-
         try:
             if self.connector_state:
                 state = json.loads(self.connector_state)
@@ -518,7 +577,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :param message_callback: callback function to process messages
         :type message_callback: Callable[[Dict], str]
         """
-
         self.listen_queue = ListenQueue(self, self.config, message_callback)
         self.listen_queue.start()
 
@@ -535,7 +593,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
         :param message_callback: callback function to process messages
         """
-
         self.listen_stream = ListenStream(
             self,
             message_callback,
@@ -687,8 +744,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 ),
             )
             logging.info("Bundle has been sent")
+            self.metric_inc("bundle_send")
         except (UnroutableError, NackError) as e:
             logging.error("Unable to send bundle, retry...%s", e)
+            self.metric_inc("error_count")
             self._send_bundle(channel, bundle, **kwargs)
 
     def split_stix2_bundle(self, bundle) -> list:
@@ -700,12 +759,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :return: returns a list of bundles
         :rtype: list
         """
-
         self.cache_index = {}
         self.cache_added = []
         try:
             bundle_data = json.loads(bundle)
         except Exception as e:
+            self.metric_inc("error_count")
             raise Exception("File data is not a valid JSON") from e
 
         # validation = validate_parsed_json(bundle_data)
@@ -781,7 +840,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :return: entity objects as list
         :rtype: list
         """
-
         items = [entity]
         # Get embedded objects
         embedded_objects = self.stix2_get_embedded_objects(entity)
@@ -802,7 +860,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :return: list of relations objects
         :rtype: list
         """
-
         items = [relationship]
         # Get source ref
         if relationship["source_ref"] in self.cache_index:
@@ -831,7 +888,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :return: list of items for a stix2 report object
         :rtype: list
         """
-
         items = [report]
         # Add all object refs
         for object_ref in report["object_refs"]:
@@ -852,7 +908,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :return: de-duplicated list of items
         :rtype: list
         """
-
         ids = []
         final_items = []
         for item in items:
@@ -870,7 +925,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :return: JSON of the stix2 bundle
         :rtype:
         """
-
         bundle = {
             "type": "bundle",
             "id": f"bundle--{uuid.uuid4()}",
@@ -890,7 +944,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :return: TLP level in allowed TLPs
         :rtype: bool
         """
-
         allowed_tlps: Dict[str, List[str]] = {
             "TLP:RED": ["TLP:WHITE", "TLP:GREEN", "TLP:AMBER", "TLP:RED"],
             "TLP:AMBER": ["TLP:WHITE", "TLP:GREEN", "TLP:AMBER"],
