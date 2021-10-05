@@ -93,6 +93,7 @@ class CourseOfAction:
                                     size
                                     metaData {
                                         mimetype
+                                        version
                                     }
                                 }
                             }
@@ -116,6 +117,7 @@ class CourseOfAction:
                         size
                         metaData {
                             mimetype
+                            version
                         }
                     }
                 }

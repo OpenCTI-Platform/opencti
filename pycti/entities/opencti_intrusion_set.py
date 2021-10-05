@@ -93,6 +93,7 @@ class IntrusionSet:
                                     size
                                     metaData {
                                         mimetype
+                                        version
                                     }
                                 }
                             }
@@ -121,6 +122,7 @@ class IntrusionSet:
                         size
                         metaData {
                             mimetype
+                            version
                         }
                     }
                 }

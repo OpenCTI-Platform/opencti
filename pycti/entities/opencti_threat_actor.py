@@ -101,6 +101,7 @@ class ThreatActor:
                                     size
                                     metaData {
                                         mimetype
+                                        version
                                     }
                                 }
                             }
@@ -133,6 +134,7 @@ class ThreatActor:
                         size
                         metaData {
                             mimetype
+                            version
                         }
                     }
                 }

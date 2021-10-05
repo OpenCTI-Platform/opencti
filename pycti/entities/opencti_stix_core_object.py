@@ -72,6 +72,7 @@ class StixCoreObject:
                                         size
                                         metaData {
                                             mimetype
+                                            version
                                         }
                                     }
                                 }

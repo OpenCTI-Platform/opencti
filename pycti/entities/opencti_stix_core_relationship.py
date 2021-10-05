@@ -100,6 +100,7 @@ class StixCoreRelationship:
                                     size
                                     metaData {
                                         mimetype
+                                        version
                                     }
                                 }
                             }

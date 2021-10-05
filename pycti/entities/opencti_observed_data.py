@@ -93,6 +93,7 @@ class ObservedData:
                                     size
                                     metaData {
                                         mimetype
+                                        version
                                     }
                                 }
                             }
@@ -200,6 +201,7 @@ class ObservedData:
                         size
                         metaData {
                             mimetype
+                            version
                         }
                     }
                 }

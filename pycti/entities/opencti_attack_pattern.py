@@ -93,6 +93,7 @@ class AttackPattern:
                                     size
                                     metaData {
                                         mimetype
+                                        version
                                     }
                                 }
                             }
@@ -133,6 +134,7 @@ class AttackPattern:
                         size
                         metaData {
                             mimetype
+                            version
                         }
                     }
                 }

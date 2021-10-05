@@ -95,6 +95,7 @@ class Identity:
                                     size
                                     metaData {
                                         mimetype
+                                        version
                                     }
                                 }
                             }
@@ -127,6 +128,7 @@ class Identity:
                         size
                         metaData {
                             mimetype
+                            version
                         }
                     }
                 }

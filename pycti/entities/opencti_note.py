@@ -93,6 +93,7 @@ class Note:
                                     size
                                     metaData {
                                         mimetype
+                                        version
                                     }
                                 }
                             }
@@ -201,6 +202,7 @@ class Note:
                         size
                         metaData {
                             mimetype
+                            version
                         }
                     }
                 }
