@@ -35,8 +35,8 @@ services:
     ports:
       - "9000:9000"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_ROOT_USER: yoshida
+      MINIO_ROOT_PASSWORD: torajiro
     command: server /data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -49,8 +49,8 @@ services:
     image: rabbitmq:3.9-management
     container_name: rabbitmq
     environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_DEFAULT_USER=GUEST
+      - RABBITMQ_DEFAULT_PASS=GUEST
     volumes:
       - amqpdata:/var/lib/rabbitmq
     restart: unless-stopped
@@ -61,24 +61,24 @@ services:
     environment:
       - NODE_OPTIONS=--max-old-space-size=8096
       - APP__PORT=8080
-      - APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}
-      - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
-      - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - APP__ADMIN__EMAIL=admin@opencti.io
+      - APP__ADMIN__PASSWORD=opencti
+      - APP__ADMIN__TOKEN=0928d607-2abe-4b59-8c92-1ec9b565f3a7
       - APP__APP_LOGS__LOGS_LEVEL=error
       - REDIS__HOSTNAME=redis
       - REDIS__PORT=6379
-      - ELASTICSEARCH__URL=http://elasticsearch:9200
+      - ELASTICSEARCH__URL=http://localhost:9200
       - MINIO__ENDPOINT=minio
       - MINIO__PORT=9000
       - MINIO__USE_SSL=false
-      - MINIO__ACCESS_KEY=${MINIO_ROOT_USER}
-      - MINIO__SECRET_KEY=${MINIO_ROOT_PASSWORD}
+      - MINIO__ACCESS_KEY=yoshida
+      - MINIO__SECRET_KEY=torajiro
       - RABBITMQ__HOSTNAME=rabbitmq
       - RABBITMQ__PORT=5672
       - RABBITMQ__PORT_MANAGEMENT=15672
       - RABBITMQ__MANAGEMENT_SSL=false
-      - RABBITMQ__USERNAME=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ__PASSWORD=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ__USERNAME=admin
+      - RABBITMQ__PASSWORD=adminpass
       - SMTP__HOSTNAME=${SMTP_HOSTNAME}
       - SMTP__USERNAME=${SMTP_USERNAME}
       - SMTP__PASSWORD=${SMTP_PASSWORD}
@@ -99,7 +99,7 @@ services:
     image: opencti/worker:5.0.0
     environment:
       - OPENCTI_URL=http://opencti:8080
-      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - OPENCTI_TOKEN=0928d607-2abe-4b59-8c92-1ec9b565f3a7
       - WORKER_LOG_LEVEL=info
     depends_on:
       - opencti

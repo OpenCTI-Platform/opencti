@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Switch } from 'react-router-dom';
@@ -6,6 +7,7 @@ import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
 import Search from './components/Search';
+import RootVSAC from './components/vsac/Root';
 import RootImport from './components/import/Root';
 import RootAnalysis from './components/analysis/Root';
 import RootEvents from './components/events/Root';
@@ -71,6 +73,7 @@ const Index = (me) => {
             path="/dashboard/search/:keyword"
             render={(routeProps) => <Search {...routeProps} me={me} />}
           />
+          <BoundaryRoute path="/dashboard/vsac" component={RootVSAC} />
           <BoundaryRoute path="/dashboard/analysis" component={RootAnalysis} />
           <BoundaryRoute path="/dashboard/events" component={RootEvents} />
           <Route path="/dashboard/observations" component={RootObservations} />

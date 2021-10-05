@@ -42,8 +42,8 @@
     "map_tile_server_light": "https://map.opencti.io/styles/klokantech-basic/{z}/{x}/{y}.png",
     "admin": {
       "email": "admin@opencti.io",
-      "password": "ChangeMe",
-      "token": "ChangeMe"
+        "password": "opencti",
+        "token": "0928d607-2abe-4b59-8c92-1ec9b565f3a7"
     }
   },
   "rule_engine": {
@@ -62,7 +62,7 @@
     "interval": 300000
   },
   "subscription_scheduler": {
-    "enabled": true,
+    "enabled": false,
     "lock_key": "subscription_manager_lock",
     "interval": 10000
   },
@@ -93,8 +93,8 @@
     "endpoint": "localhost",
     "port": 9000,
     "use_ssl": false,
-    "access_key": "ChangeMe",
-    "secret_key": "ChangeMe"
+    "access_key": "yoshida",
+    "secret_key": "torajiro"
   },
   "rabbitmq": {
     "hostname": "localhost",
@@ -116,8 +116,15 @@
     "from_email": "notifications@opencti.io"
   },
   "providers": {
-    "local": {
-      "strategy": "LocalStrategy"
+    "openid": {
+      "strategy": "OpenIDConnectStrategy",
+      "config": {
+        "label": "Login with Keycloak",
+        "issuer": "http://localhost:8080/auth/realms/Cyio/",
+        "client_id": "opencti",
+        "client_secret": "9fb23b47-ab9f-42f7-b423-e5f2be4be693",
+        "redirect_uris": ["http://localhost:3000/auth/oic/callback"]
+      }
     }
   }
 }
