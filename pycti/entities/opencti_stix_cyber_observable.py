@@ -488,7 +488,12 @@ class StixCyberObservable:
                 else:
                     mime_type = magic.from_file(file_name, mime=True)
             self.opencti.log(
-                "info", "Uploading a file {" + final_file_name + "} in Stix-Cyber-Observable {" + id + "}."
+                "info",
+                "Uploading a file {"
+                + final_file_name
+                + "} in Stix-Cyber-Observable {"
+                + id
+                + "}.",
             )
             return self.opencti.query(
                 query,

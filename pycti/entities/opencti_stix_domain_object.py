@@ -682,7 +682,12 @@ class StixDomainObject:
                 else:
                     mime_type = magic.from_file(file_name, mime=True)
             self.opencti.log(
-                "info", "Uploading a file {" + final_file_name + "} in Stix-Domain-Object {" + id + "}."
+                "info",
+                "Uploading a file {"
+                + final_file_name
+                + "} in Stix-Domain-Object {"
+                + id
+                + "}.",
             )
             return self.opencti.query(
                 query,
