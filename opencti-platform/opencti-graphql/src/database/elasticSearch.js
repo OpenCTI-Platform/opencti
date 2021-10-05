@@ -1755,6 +1755,7 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
 
 export const elDeleteElements = async (user, elements, loaders) => {
   if (elements.length === 0) return [];
+  const toBeRemovedIds = elements.map((e) => e.internal_id);
   const { stixLoadById } = loaders;
   const opts = { concurrency: ES_MAX_CONCURRENCY };
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(user, elements);
@@ -1765,9 +1766,9 @@ export const elDeleteElements = async (user, elements, loaders) => {
   const cleanupRelations = relations.concat(basicCleanup);
   const relsFromToImpacts = cleanupRelations
     .map((r) => {
-      const fromWillNotBeRemoved = !relationsToRemoveMap.has(r.fromId);
+      const fromWillNotBeRemoved = !relationsToRemoveMap.has(r.fromId) && !toBeRemovedIds.includes(r.fromId);
       const isFromCleanup = fromWillNotBeRemoved && isImpactedTypeAndSide(r.entity_type, ROLE_FROM);
-      const toWillNotBeRemoved = !relationsToRemoveMap.has(r.toId);
+      const toWillNotBeRemoved = !relationsToRemoveMap.has(r.toId) && !toBeRemovedIds.includes(r.toId);
       const isToCleanup = toWillNotBeRemoved && isImpactedTypeAndSide(r.entity_type, ROLE_TO);
       return { relation: r, isFromCleanup, isToCleanup };
     })
@@ -1782,7 +1783,7 @@ export const elDeleteElements = async (user, elements, loaders) => {
   };
   await Promise.map(groupsOfDeletions, concurrentDeletions, opts);
   // Remove the elements
-  await elDeleteInstanceIds(elements); // Bulk
+  await elDeleteInstanceIds(elements);
   // Update all rel connections that will remain
   let currentRelationsCount = 0;
   const groupsOfRelsFromTo = R.splitEvery(MAX_SPLIT, relsFromToImpacts);
