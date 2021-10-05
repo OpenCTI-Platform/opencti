@@ -96,6 +96,7 @@ class StixDomainObject:
                                     size
                                     metaData {
                                         mimetype
+                                        version
                                     }
                                 }
                             }
@@ -392,6 +393,7 @@ class StixDomainObject:
                         size
                         metaData {
                             mimetype
+                            version
                         }
                     }
                 }
@@ -662,41 +664,30 @@ class StixDomainObject:
         data = kwargs.get("data", None)
         mime_type = kwargs.get("mime_type", "text/plain")
         if id is not None and file_name is not None:
-            stix_domain_object = self.read(id=id)
-            if stix_domain_object is None:
-                self.opencti.log("error", "Cannot add File, entity not found")
-                return False
             final_file_name = os.path.basename(file_name)
-            current_files = {}
-            for file in stix_domain_object["importFiles"]:
-                current_files[file["name"]] = file
-            if final_file_name in current_files:
-                return current_files[final_file_name]
-            else:
-                self.opencti.log(
-                    "info", "Uploading a file in Stix-Domain-Object {" + id + "}."
-                )
-                query = """
-                    mutation StixDomainObjectEdit($id: ID!, $file: Upload!) {
-                        stixDomainObjectEdit(id: $id) {
-                            importPush(file: $file) {
-                                id
-                                name
-                            }
+            query = """
+                mutation StixDomainObjectEdit($id: ID!, $file: Upload!) {
+                    stixDomainObjectEdit(id: $id) {
+                        importPush(file: $file) {
+                            id
+                            name
                         }
                     }
-                 """
-                if data is None:
-                    data = open(file_name, "rb")
-                    if file_name.endswith(".json"):
-                        mime_type = "application/json"
-                    else:
-                        mime_type = magic.from_file(file_name, mime=True)
-
-                return self.opencti.query(
-                    query,
-                    {"id": id, "file": (self.file(final_file_name, data, mime_type))},
-                )
+                }
+             """
+            if data is None:
+                data = open(file_name, "rb")
+                if file_name.endswith(".json"):
+                    mime_type = "application/json"
+                else:
+                    mime_type = magic.from_file(file_name, mime=True)
+            self.opencti.log(
+                "info", "Uploading a file {" + final_file_name + "} in Stix-Domain-Object {" + id + "}."
+            )
+            return self.opencti.query(
+                query,
+                {"id": id, "file": (self.file(final_file_name, data, mime_type))},
+            )
         else:
             self.opencti.log(
                 "error",

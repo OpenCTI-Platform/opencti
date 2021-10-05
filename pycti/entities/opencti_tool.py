@@ -93,6 +93,7 @@ class Tool:
                                     size
                                     metaData {
                                         mimetype
+                                        version
                                     }
                                 }
                             }
@@ -131,6 +132,7 @@ class Tool:
                         size
                         metaData {
                             mimetype
+                            version
                         }
                     }
                 }

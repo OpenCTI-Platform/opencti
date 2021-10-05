@@ -95,6 +95,7 @@ class Report:
                                     size
                                     metaData {
                                         mimetype
+                                        version
                                     }
                                 }
                             }
@@ -204,6 +205,7 @@ class Report:
                         size
                         metaData {
                             mimetype
+                            version
                         }
                     }
                 }

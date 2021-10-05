@@ -97,6 +97,7 @@ class StixCyberObservable:
                                     size
                                     metaData {
                                         mimetype
+                                        version
                                     }
                                 }
                             }
@@ -307,6 +308,7 @@ class StixCyberObservable:
                         size
                         metaData {
                             mimetype
+                            version
                         }
                     }
                 }
@@ -450,6 +452,52 @@ class StixCyberObservable:
             self.opencti.log(
                 "error",
                 "[opencti_stix_cyber_observable] Missing parameters: id or filters",
+            )
+            return None
+
+    """
+        Upload a file in this Observable
+
+        :param id: the Stix-Cyber-Observable id
+        :param file_name
+        :param data
+        :return void
+    """
+
+    def add_file(self, **kwargs):
+        id = kwargs.get("id", None)
+        file_name = kwargs.get("file_name", None)
+        data = kwargs.get("data", None)
+        mime_type = kwargs.get("mime_type", "text/plain")
+        if id is not None and file_name is not None:
+            final_file_name = os.path.basename(file_name)
+            query = """
+                    mutation StixCyberObservableEdit($id: ID!, $file: Upload!) {
+                        stixCyberObservableEdit(id: $id) {
+                            importPush(file: $file) {
+                                id
+                                name
+                            }
+                        }
+                    }
+                 """
+            if data is None:
+                data = open(file_name, "rb")
+                if file_name.endswith(".json"):
+                    mime_type = "application/json"
+                else:
+                    mime_type = magic.from_file(file_name, mime=True)
+            self.opencti.log(
+                "info", "Uploading a file {" + final_file_name + "} in Stix-Cyber-Observable {" + id + "}."
+            )
+            return self.opencti.query(
+                query,
+                {"id": id, "file": (self.file(final_file_name, data, mime_type))},
+            )
+        else:
+            self.opencti.log(
+                "error",
+                "[opencti_stix_cyber_observable Missing parameters: id or file_name",
             )
             return None
 

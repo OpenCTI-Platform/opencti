@@ -721,6 +721,15 @@ class OpenCTIStix2:
                 update=update,
             )
         if stix_observable_result is not None:
+            # Add files
+            if "x_opencti_files" in stix_object:
+                for file in stix_object["x_opencti_files"]:
+                    self.opencti.stix_cyber_observable.add_file(
+                        id=stix_observable_result["id"],
+                        file_name=file["name"],
+                        data=base64.b64decode(file["data"]),
+                        mime_type=file["mime_type"],
+                    )
             if "id" in stix_object:
                 self.mapping_cache[stix_object["id"]] = {
                     "id": stix_observable_result["id"],
@@ -1016,6 +1025,7 @@ class OpenCTIStix2:
                                 "name": file["name"],
                                 "data": data,
                                 "mime_type": file["metaData"]["mimetype"],
+                                "version": file["metaData"]["version"],
                             }
                         )
                 entity["external_references"].append(external_reference)
@@ -1210,6 +1220,7 @@ class OpenCTIStix2:
                         "name": file["name"],
                         "data": data,
                         "mime_type": file["metaData"]["mimetype"],
+                        "version": file["metaData"]["version"],
                     }
                 )
             del entity["importFiles"]

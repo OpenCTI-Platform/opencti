@@ -93,6 +93,7 @@ class Campaign:
                                     size
                                     metaData {
                                         mimetype
+                                        version
                                     }
                                 }
                             }
@@ -118,6 +119,7 @@ class Campaign:
                         size
                         metaData {
                             mimetype
+                            version
                         }
                     }
                 }

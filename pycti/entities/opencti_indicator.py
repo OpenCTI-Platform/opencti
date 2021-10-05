@@ -98,6 +98,7 @@ class Indicator:
                                     size
                                     metaData {
                                         mimetype
+                                        version
                                     }
                                 }
                             }
@@ -151,6 +152,7 @@ class Indicator:
                         size
                         metaData {
                             mimetype
+                            version
                         }
                     }
                 }

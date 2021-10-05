@@ -98,6 +98,7 @@ class Infrastructure:
                                     size
                                     metaData {
                                         mimetype
+                                        version
                                     }
                                 }
                             }
@@ -136,6 +137,7 @@ class Infrastructure:
                         size
                         metaData {
                             mimetype
+                            version
                         }
                     }
                 }
