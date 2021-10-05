@@ -5,7 +5,7 @@ import semver from 'semver';
 import { booleanConf, logApp, PLATFORM_VERSION } from './config/conf';
 import { elCreateIndexes, elIndexExists, elIsAlive } from './database/elasticSearch';
 import { initializeAdminUser } from './config/providers';
-// import { isStorageAlive } from './database/minio';
+import { isStorageAlive } from './database/s3';
 import { rabbitMQIsAlive } from './database/rabbitmq';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
@@ -115,8 +115,8 @@ export const checkSystemDependencies = async () => {
   await elIsAlive();
   logApp.info(`[CHECK] ElasticSearch is alive`);
   // Check if minio is here
-  // await isStorageAlive();
-  // logApp.info(`[CHECK] Minio is alive`);
+  await isStorageAlive();
+  logApp.info(`[CHECK] S3 is alive`);
   logApp.info(`[CHECK] Minio skipped`);
   // Check if RabbitMQ is here and create the logs exchange/queue
   await rabbitMQIsAlive();

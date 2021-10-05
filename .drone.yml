@@ -79,6 +79,7 @@ steps:
       exclude:
       - pull_request
     
+type:
 services:
 - name: redis
   image: redis:6.2.5

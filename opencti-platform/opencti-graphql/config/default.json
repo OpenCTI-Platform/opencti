@@ -41,13 +41,13 @@
     "map_tile_server_dark": "https://map.opencti.io/styles/1fdd936a-084b-46ac-a948-22ce1686aadf/{z}/{x}/{y}.png",
     "map_tile_server_light": "https://map.opencti.io/styles/klokantech-basic/{z}/{x}/{y}.png",
     "admin": {
-      "email": "admin@opencti.io",
-      "password": "ChangeMe",
-      "token": "ChangeMe"
+      "email": "dphillips@darklight.ai",
+      "password": "password",
+      "token": "a5b08a8d-5fcf-41a9-9bfe-448753e595ea"
     }
   },
   "rule_engine": {
-    "enabled": true,
+    "enabled": false,
     "lock_key": "rule_engine_lock",
     "status_writing_delay": 2000
   },
@@ -62,13 +62,8 @@
     "interval": 300000
   },
   "subscription_scheduler": {
-    "enabled": true,
+    "enabled": false,
     "lock_key": "subscription_manager_lock",
-    "interval": 10000
-  },
-  "sync_manager": {
-    "enabled": true,
-    "lock_key": "sync_manager_lock",
     "interval": 10000
   },
   "redis": {
@@ -78,6 +73,7 @@
     "ca": [],
     "port": 6379,
     "trimming": 0,
+    "live_depth_compact": 5000,
     "use_as_cache": false
   },
   "elasticsearch": {
@@ -88,36 +84,35 @@
     "max_pagination_result": 5000,
     "max_concurrency": 2
   },
-  "minio": {
-    "bucket_name": "opencti-bucket",
-    "endpoint": "localhost",
-    "port": 9000,
-    "use_ssl": false,
-    "access_key": "ChangeMe",
-    "secret_key": "ChangeMe"
-  },
   "rabbitmq": {
     "hostname": "localhost",
     "use_ssl": false,
     "ca": [],
     "port": 5672,
-    "port_management": 15672,
+    "port_management": 410,
     "management_ssl": false,
     "username": "guest",
     "password": "guest"
   },
-  "smtp": {
-    "hostname": "localhost",
-    "use_ssl": false,
-    "reject_unauthorized": false,
-    "port": 25,
-    "username": "",
-    "password": "",
-    "from_email": "notifications@opencti.io"
-  },
   "providers": {
     "local": {
       "strategy": "LocalStrategy"
+    },
+    "openid": {
+      "strategy": "OpenIDConnectStrategy",
+      "config": {
+        "label": "Login with Keycloak",
+        "issuer": "https://44.236.111.124:8443/auth/realms/Cyio/",
+        "client_id": "opencti",
+        "client_secret": "9fb23b47-ab9f-42f7-b423-e5f2be4be693",
+        "redirect_uris": ["http://localhost:3000/auth/oic/callback"]
+      }
     }
+  },
+  "s3": {
+    "access_key": "AKIA4IIFGDX6E6VN6TWD",
+    "secret_key": "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",
+    "bucket_name": "cyio-opencti",
+    "region": "us-west-2"
   }
 }

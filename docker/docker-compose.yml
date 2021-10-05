@@ -5,6 +5,8 @@ services:
     image: redis:6.2.5
     container_name: redis
     restart: unless-stopped
+    ports:
+      - "6379:6379"
     volumes:
       - redisdata:/data
   
@@ -17,6 +19,8 @@ services:
       - discovery.type=single-node
       - xpack.ml.enabled=false
     restart: unless-stopped
+    ports:
+      - "9200:9200"
     ulimits:
       memlock:
         soft: -1
@@ -25,68 +29,45 @@ services:
         soft: 65536
         hard: 65536
   
-  # minio:
-  #   image: minio/minio:RELEASE.2021-09-15T04-54-25Z
-  #   volumes:
-  #     - s3data:/data
-  #   ports:
-  #     - "9000:9000"
-  #   environment:
-  #     MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-  #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}    
-  #   command: server /data
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-  #     interval: 30s
-  #     timeout: 20s
-  #     retries: 3
-  #   restart: always
-  
   rabbitmq:
     image: rabbitmq:3.9-management
     container_name: rabbitmq
-    environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
     volumes:
       - amqpdata:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
     restart: unless-stopped
   
-  opencti:
-    image: docker.darklight.ai/opencti:5.0.1
-    container_name: opencti
-    environment:
-      - NODE_OPTIONS=--max-old-space-size=8096
-      - APP__PORT=8080
-      - APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}
-      - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
-      - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN}
-      - APP__APP_LOGS__LOGS_LEVEL=error
-      - REDIS__HOSTNAME=redis
-      - REDIS__PORT=6379
-      - ELASTICSEARCH__URL=http://elasticsearch:9200
-      - MINIO__ENDPOINT=minio
-      - MINIO__PORT=9000
-      - MINIO__USE_SSL=false
-      - MINIO__ACCESS_KEY=${MINIO_ROOT_USER}
-      - MINIO__SECRET_KEY=${MINIO_ROOT_PASSWORD}
-      - RABBITMQ__HOSTNAME=rabbitmq
-      - RABBITMQ__PORT=5672
-      - RABBITMQ__PORT_MANAGEMENT=15672
-      - RABBITMQ__MANAGEMENT_SSL=false
-      - RABBITMQ__USERNAME=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ__PASSWORD=${RABBITMQ_DEFAULT_PASS}
-      - SMTP__HOSTNAME=${SMTP_HOSTNAME}
-      - SMTP__PORT=25
-      - PROVIDERS__LOCAL__STRATEGY=LocalStrategy
-      - SUBSCRIPTION_SCHEDULER__ENABLED=false
-    ports:
-      - "8080:8080"
-    depends_on:
-      - redis
-      - elasticsearch
-      - rabbitmq
-    restart: unless-stopped
+#  opencti:
+#    image: docker.darklight.ai/opencti:5.0.1
+#    container_name: opencti
+#    environment:
+#      - NODE_OPTIONS=--max-old-space-size=8096
+#      - APP__PORT=8080
+#      - APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}
+#      - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
+#      - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN}
+#      - APP__APP_LOGS__LOGS_LEVEL=error
+#      - REDIS__HOSTNAME=redis
+#      - REDIS__PORT=6379
+#      - ELASTICSEARCH__URL=http://elasticsearch:9200
+#      - RABBITMQ__HOSTNAME=rabbitmq
+#      - RABBITMQ__PORT=5672
+#      - RABBITMQ__PORT_MANAGEMENT=15672
+#      - RABBITMQ__MANAGEMENT_SSL=false
+#      - RABBITMQ__USERNAME=${RABBITMQ_DEFAULT_USER}
+#      - RABBITMQ__PASSWORD=${RABBITMQ_DEFAULT_PASS}
+#      - SMTP__HOSTNAME=${SMTP_HOSTNAME}
+#      - SMTP__PORT=25
+#      - PROVIDERS__LOCAL__STRATEGY=LocalStrategy
+#      - SUBSCRIPTION_SCHEDULER__ENABLED=false
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - redis
+#      - elasticsearch
+#      - rabbitmq
+#    restart: unless-stopped
   
   # worker:
   #   image: opencti/worker:5.0.1

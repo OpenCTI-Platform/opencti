@@ -183,7 +183,7 @@ import {
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 // eslint-disable-next-line import/no-cycle
-import { deleteAllFiles } from './minio';
+import { deleteAllFiles } from './s3';
 import { filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
 import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import {

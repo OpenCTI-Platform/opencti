@@ -29,6 +29,7 @@
     "node": ">= 14.* <= 16.*"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.34.0",
     "@elastic/elasticsearch": "7.13.0",
     "@graphql-tools/schema": "7.1.5",
     "@graphql-tools/utils": "7.10.0",

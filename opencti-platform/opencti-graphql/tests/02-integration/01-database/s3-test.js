@@ -1,5 +1,5 @@
 import { head } from 'ramda';
-import { deleteFile, downloadFile, filesListing, loadFile } from '../../../src/database/minio';
+import { deleteFile, downloadFile, filesListing, loadFile } from '../../../src/database/s3';
 import { execPython3 } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/elasticSearch';
@@ -19,7 +19,7 @@ const exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
 const exportFileId = (malware) => `export/Malware/${malware.id}/${exportFileName}`;
 const importFileId = `import/global/${exportFileName}`;
 
-describe('Minio file listing', () => {
+describe('S3 file listing', () => {
   it('should file upload succeed', async () => {
     await startModules();
     const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
