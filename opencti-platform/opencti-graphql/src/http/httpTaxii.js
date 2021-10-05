@@ -9,7 +9,7 @@ import {
   restCollectionStix,
   restLoadCollectionById,
 } from '../domain/taxii';
-import { BYPASS } from '../utils/access';
+import { BYPASS, getBaseUrl } from '../utils/access';
 
 const TAXII_VERSION = 'application/taxii+json;version=2.1';
 
@@ -55,13 +55,7 @@ const initTaxiiApi = (app) => {
         title: 'OpenCTI TAXII Server',
         description: 'This TAXII Server exposes OpenCTI data through taxii protocol',
         default: `/root`,
-        api_roots: [
-          `${req.protocol}://${req.host}${
-            req.headers.host.split(':')[1] !== 80 || req.headers.host.split(':')[1] !== 443
-              ? `:${req.headers.host.split(':')[1]}`
-              : ''
-          }/${basePath ? `${basePath}/` : ''}root`,
-        ],
+        api_roots: [`${getBaseUrl(req)}/taxii2/root`],
       };
       res.json(discovery);
     } catch (e) {

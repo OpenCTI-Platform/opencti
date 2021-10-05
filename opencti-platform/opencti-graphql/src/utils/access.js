@@ -1,10 +1,23 @@
 import * as R from 'ramda';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
+import { baseUrl, basePath } from '../config/conf';
 
 export const BYPASS = 'BYPASS';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 export const isBypassUser = (user) => {
   return R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
+};
+
+export const getBaseUrl = (req) => {
+  if (baseUrl) {
+    return baseUrl;
+  }
+  if (req) {
+    const isCustomPort = req.headers.host.split(':')[1] !== 80 || req.headers.host.split(':')[1] !== 443;
+    const httpPort = isCustomPort ? `:${req.headers.host.split(':')[1]}` : '';
+    return `${req.protocol}://${req.hostname}${httpPort}${basePath}`;
+  }
+  return basePath;
 };
 
 export const filterElementsAccordingToUser = (user, elements) => {
