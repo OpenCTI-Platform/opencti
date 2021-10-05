@@ -4,7 +4,7 @@ import {
   deleteInferredRuleElement,
   internalLoadById,
   listAllRelations,
-  stixDataById,
+  loadStixById,
 } from '../../database/middleware';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import def from './ObserveSightingDefinition';
@@ -130,12 +130,12 @@ const ruleObserveSightingBuilder = () => {
   };
   const handleObservedDataRelationUpsert = async (objectRelation) => {
     const { x_opencti_source_ref: observedDataId } = objectRelation;
-    const observedData = await stixDataById(RULE_MANAGER_USER, observedDataId);
+    const observedData = await loadStixById(RULE_MANAGER_USER, observedDataId);
     return handleObservedDataUpsert(observedData);
   };
   const handleObservableRelationUpsert = async (baseOnRelation) => {
     const { x_opencti_source_ref: indicatorId } = baseOnRelation;
-    const baseOnIndicator = await stixDataById(RULE_MANAGER_USER, indicatorId);
+    const baseOnIndicator = await loadStixById(RULE_MANAGER_USER, indicatorId);
     return handleIndicatorUpsert(baseOnIndicator);
   };
   const applyUpsert = async (data) => {

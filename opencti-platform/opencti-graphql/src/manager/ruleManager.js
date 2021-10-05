@@ -9,8 +9,8 @@ import {
   internalLoadById,
   listAllRelations,
   patchAttribute,
-  stixDataById,
-  stixLoadById,
+  loadStixById,
+  loadByIdWithMetaRels,
 } from '../database/middleware';
 import { isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/rabbitmq';
@@ -63,7 +63,7 @@ const ruleMergeHandler = async (event) => {
   const { data, markings } = event;
   const events = [];
   const generateInternalDeleteEvent = (instance) => {
-    const loaders = { stixLoadById, connectionLoaders };
+    const loaders = { stixLoadById: loadByIdWithMetaRels, connectionLoaders };
     return buildDeleteEvent(RULE_MANAGER_USER, instance, [], loaders, { withoutMessage: true });
   };
   // region 01 - Generate events for deletion
@@ -223,7 +223,7 @@ export const rulesApplyHandler = async (events, forRules = []) => {
             if (patchedFields.includes('id')) {
               elementId = element.x_opencti_patch.replace.id.current;
             }
-            const stixData = await stixDataById(RULE_MANAGER_USER, elementId);
+            const stixData = await loadStixById(RULE_MANAGER_USER, elementId);
             const derivedEvents = await rule.update(stixData, patchedFields);
             await rulesApplyDerivedEvents(eventId, derivedEvents);
           }

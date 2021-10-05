@@ -16,9 +16,9 @@ import {
   batchLoadThroughGetTo,
 } from '../database/middleware';
 import { findAll as relationFindAll } from './stixCoreRelationship';
-import { notify } from '../database/redis';
+import { lockResource, notify, storeUpdateEvent } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { FunctionalError } from '../config/errors';
+import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
@@ -48,8 +48,11 @@ import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now, observableValue } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { upload } from '../database/minio';
+import { deleteFile, loadFile, stixFileConverter, upload } from '../database/minio';
 import { uploadJobImport } from './file';
+import { elUpdateElement } from '../database/elasticSearch';
+import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { getInstanceIds } from '../schema/identifier';
 
 export const findAll = async (user, args) => {
   let types = [];
@@ -309,14 +312,79 @@ export const stixCoreObjectsExportPush = async (user, type, file, listFilters) =
 };
 export const stixCoreObjectExportPush = async (user, entityId, file) => {
   const entity = await internalLoadById(user, entityId);
+  if (!entity) {
+    throw UnsupportedError('Cant upload a file an none existing element', { entityId });
+  }
   await upload(user, `export/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
   return true;
 };
 // endregion
 
-export const stixCoreObjectImportPush = async (user, entityId, file) => {
+export const stixCoreObjectImportPush = async (user, entity, file) => {
+  let lock;
+  const participantIds = getInstanceIds(entity);
+  try {
+    // Lock the participants that will be merged
+    lock = await lockResource(participantIds);
+    const { internal_id: internalId } = entity;
+    const up = await upload(user, `import/${entity.entity_type}/${internalId}`, file, { entity_id: internalId });
+    await uploadJobImport(user, up.id, up.metaData.mimetype, up.metaData.entity_id);
+    // Patch the updated_at to force live stream evolution
+    await elUpdateElement({ _index: entity._index, internal_id: internalId, updated_at: now() });
+    // Stream event generation
+    const eventFiles = [stixFileConverter(user, up)];
+    const eventInputs = [{ key: 'x_opencti_files', value: [eventFiles], operation: UPDATE_OPERATION_ADD }];
+    await storeUpdateEvent(user, entity, eventInputs);
+    return up;
+  } catch (err) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds });
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
+  }
+};
+
+export const stixCoreObjectIdImportPush = async (user, entityId, file) => {
   const entity = await internalLoadById(user, entityId);
-  const up = await upload(user, `import/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
-  await uploadJobImport(user, up.id, up.metaData.mimetype, up.metaData.entity_id);
-  return up;
+  if (!entity) {
+    throw UnsupportedError('Cant upload a file an none existing element', { entityId });
+  }
+  return stixCoreObjectImportPush(user, entity, file);
+};
+
+export const stixCoreObjectImportDelete = async (user, fileId) => {
+  if (!fileId.startsWith('import')) {
+    throw UnsupportedError('Cant delete an exported file with this method');
+  }
+  // Get the context
+  const up = await loadFile(user, fileId);
+  const entityId = up.metaData.entity_id;
+  const entity = await internalLoadById(user, entityId);
+  if (!entity) {
+    throw UnsupportedError('Cant delete a file of none existing element', { entityId });
+  }
+  let lock;
+  const participantIds = getInstanceIds(entity);
+  try {
+    // Lock the participants that will be merged
+    lock = await lockResource(participantIds);
+    // Delete the file
+    await deleteFile(user, fileId);
+    // Patch the updated_at to force live stream evolution
+    await elUpdateElement({ _index: entity._index, internal_id: entityId, updated_at: now() });
+    // Stream event generation
+    const eventFiles = [stixFileConverter(user, up)];
+    const eventInputs = [{ key: 'x_opencti_files', value: [eventFiles], operation: UPDATE_OPERATION_REMOVE }];
+    await storeUpdateEvent(user, entity, eventInputs);
+    return true;
+  } catch (err) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds });
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
+  }
 };

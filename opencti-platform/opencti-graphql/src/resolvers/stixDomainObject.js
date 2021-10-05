@@ -18,7 +18,6 @@ import {
   stixDomainObjectEditField,
   stixDomainObjectExportAsk,
   stixDomainObjectExportPush,
-  stixDomainObjectImportPush,
   stixDomainObjectsExportPush,
   stixDomainObjectsExportAsk,
   stixDomainObjectsTimeSeriesByAuthor,
@@ -29,6 +28,7 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/minio';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions } from '../schema/stixDomainObject';
+import { stixCoreObjectIdImportPush } from '../domain/stixCoreObject';
 
 const stixDomainObjectResolvers = {
   Query: {
@@ -78,7 +78,7 @@ const stixDomainObjectResolvers = {
       relationsAdd: ({ input }) => stixDomainObjectAddRelations(user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) =>
         stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
-      importPush: ({ file }) => stixDomainObjectImportPush(user, id, file),
+      importPush: ({ file }) => stixCoreObjectIdImportPush(user, id, file),
       exportAsk: (args) => stixDomainObjectExportAsk(user, R.assoc('stixDomainObjectId', id, args)),
       exportPush: ({ file }) => stixDomainObjectExportPush(user, id, file),
     }),

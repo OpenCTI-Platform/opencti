@@ -11,6 +11,7 @@ import {
   deleteRelationsByFromAndTo,
   distributionEntities,
   fullLoadById,
+  internalLoadById,
   listEntities,
   listThroughGetFrom,
   loadById,
@@ -23,7 +24,7 @@ import { isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/
 import { workToExportFile } from './work';
 import { addIndicator } from './indicator';
 import { askEnrich } from './enrichment';
-import { FunctionalError } from '../config/errors';
+import { FunctionalError, UnsupportedError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax } from '../utils/syntax';
 import { upload } from '../database/minio';
@@ -32,10 +33,7 @@ import {
   isStixCyberObservableHashedObservable,
   stixCyberObservableOptions,
 } from '../schema/stixCyberObservable';
-import {
-  ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_META_RELATIONSHIP,
-} from '../schema/general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
@@ -349,6 +347,10 @@ export const stixCyberObservablesExportPush = async (user, file, listFilters) =>
   return true;
 };
 export const stixCyberObservableExportPush = async (user, entityId, file) => {
+  const entity = await internalLoadById(user, entityId);
+  if (!entity) {
+    throw UnsupportedError('Cant upload a file an none existing element', { entityId });
+  }
   await upload(user, `export/Stix-Cyber-Observable/${entityId}`, file, { entity_id: entityId });
   return true;
 };

@@ -18,8 +18,6 @@ import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-import { upload } from '../database/minio';
-import { uploadJobImport } from './file';
 import { askEnrich } from './enrichment';
 
 export const findById = (user, externalReferenceId) => {
@@ -111,11 +109,4 @@ export const externalReferenceEditContext = async (user, externalReferenceId, in
   return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) =>
     notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user)
   );
-};
-
-export const externalReferenceImportPush = async (user, entityId, file) => {
-  const entity = await internalLoadById(user, entityId);
-  const up = await upload(user, `import/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
-  await uploadJobImport(user, up.id, up.metaData.mimetype, up.metaData.entity_id);
-  return up;
 };

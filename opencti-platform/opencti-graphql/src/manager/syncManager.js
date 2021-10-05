@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import EventSource from 'eventsource';
 import axios from 'axios';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
@@ -76,6 +77,8 @@ import Queue from '../utils/queue';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { createSyncHttpUri, httpBase, patchSync } from '../domain/connector';
 import { lockResource } from '../database/redis';
+import { stixCoreObjectImportDelete, stixCoreObjectImportPush } from '../domain/stixCoreObject';
+import { rawFilesListing } from '../database/minio';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 
@@ -89,12 +92,13 @@ const syncManagerInstance = (syncId) => {
   let connectionId = null;
   let eventsQueue;
   let eventSource;
+  let syncElement;
   let run = true;
   const startStreamListening = async () => {
     eventsQueue = new Queue();
-    const sync = await loadById(SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
-    const { token, ssl_verify: ssl = false } = sync;
-    const eventSourceUri = createSyncHttpUri(sync);
+    syncElement = await loadById(SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
+    const { token, ssl_verify: ssl = false } = syncElement;
+    const eventSourceUri = createSyncHttpUri(syncElement);
     logApp.info(`[OPENCTI] Starting sync manager for ${syncId} (${eventSourceUri})`);
     eventSource = new EventSource(eventSourceUri, {
       rejectUnauthorized: ssl,
@@ -112,7 +116,7 @@ const syncManagerInstance = (syncId) => {
     eventSource.on('error', (error) => {
       logApp.error(`[OPENCTI] Error in sync manager for ${syncId}: ${error.message}`);
     });
-    return sync;
+    return syncElement;
   };
   const manageBackPressure = async ({ uri, token }, currentDelay) => {
     if (connectionId) {
@@ -135,6 +139,43 @@ const syncManagerInstance = (syncId) => {
     const { type } = buildInputDataFromStix(data);
     logApp.info(`[OPENCTI] Sync deleting element ${type} ${data.id}`);
     await deleteElementById(user, data.id, type);
+  };
+  const handleFilesSync = async (user, id, data) => {
+    if (data.x_opencti_files) {
+      const { token, uri } = syncElement;
+      const elementFile = await internalLoadById(user, id);
+      if (!elementFile) {
+        throw UnsupportedError('Cant sync a file an none existing element', { id });
+      }
+      const entityFiles = data.x_opencti_files || [];
+      const entityDirectory = `import/${data.x_opencti_type}/${elementFile.internal_id}/`;
+      // Find the files we need to upload/update and files that need to be deleted.
+      const currentFiles = await rawFilesListing(user, entityDirectory);
+      const currentFileIds = currentFiles.map((c) => c.name);
+      const entityFileIds = entityFiles.map((c) => c.value);
+      // Delete files when needed
+      const filesToDelete = currentFileIds.filter((c) => !entityFileIds.includes(c));
+      for (let deleteIndex = 0; deleteIndex < filesToDelete.length; deleteIndex += 1) {
+        const fileToDeleteId = filesToDelete[deleteIndex];
+        const file = R.find((c) => c.name === fileToDeleteId, currentFiles);
+        await stixCoreObjectImportDelete(user, file.id);
+      }
+      // Add new files if needed
+      const currentFileVersionIds = currentFiles.map((c) => `${c.name}-${c.metaData.version}`);
+      const entityFileVersionIds = entityFiles.map((c) => `${c.value}-${c.version}`);
+      const filesToUpload = entityFileVersionIds.filter((c) => !currentFileVersionIds.includes(c));
+      for (let index = 0; index < filesToUpload.length; index += 1) {
+        const fileToUploadId = filesToUpload[index];
+        const fileToUpload = R.find((c) => `${c.value}-${c.version}` === fileToUploadId, entityFiles);
+        const { uri: fileUri, value, mime_type: mimetype, version } = fileToUpload;
+        const fileStream = await axios.get(`${httpBase(uri)}storage/get/${fileUri}`, {
+          responseType: 'stream',
+          headers: { authorization: `Bearer ${token}` },
+        });
+        const file = { createReadStream: () => fileStream.data, filename: value, mimetype, version };
+        await stixCoreObjectImportPush(user, elementFile, file);
+      }
+    }
   };
   const handleCreateEvent = async (user, data) => {
     const { type, input } = buildInputDataFromStix(data);
@@ -205,12 +246,15 @@ const syncManagerInstance = (syncId) => {
       } else if (type === ENTITY_TYPE_MARKING_DEFINITION) {
         await addMarkingDefinition(user, input);
       } else {
-        // await createEntity(SYSTEM_USER, input, type);
         throw UnsupportedError(`${type} not handle by synchronizer`);
       }
+      // Handle files
+      await handleFilesSync(user, input.stix_id, data);
     } else if (isStixCyberObservable(type)) {
       logApp.info(`[OPENCTI] Sync creating cyber observable ${type} ${input.stix_id}`);
       await addStixCyberObservable(user, input);
+      // Handle files
+      await handleFilesSync(user, input.stix_id, data);
     } else {
       throw UnsupportedError(`${type} not handle by synchronizer`);
     }

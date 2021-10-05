@@ -16,9 +16,9 @@ import {
   batchOpinions,
   batchReports,
   stixCoreObjectAskEnrichment,
-  stixCoreObjectImportPush,
   stixCoreObjectExportAsk,
   stixCoreObjectExportPush,
+  stixCoreObjectIdImportPush,
 } from '../domain/stixCoreObject';
 import { creator } from '../domain/log';
 import { fetchEditContext, pubsub } from '../database/redis';
@@ -81,7 +81,7 @@ const stixCoreObjectResolvers = {
         stixCoreObjectDeleteRelation(user, id, toId, relationshipType),
       merge: ({ stixCoreObjectsIds }) => stixCoreObjectMerge(user, id, stixCoreObjectsIds),
       askEnrichment: ({ connectorId }) => stixCoreObjectAskEnrichment(user, id, connectorId),
-      importPush: ({ file }) => stixCoreObjectImportPush(user, id, file),
+      importPush: ({ file }) => stixCoreObjectIdImportPush(user, id, file),
       exportAsk: (args) => stixCoreObjectExportAsk(user, R.assoc('stixCoreObjectId', id, args)),
       exportPush: ({ file }) => stixCoreObjectExportPush(user, id, file),
     }),

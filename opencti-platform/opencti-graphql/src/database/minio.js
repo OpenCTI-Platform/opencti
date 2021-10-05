@@ -5,7 +5,7 @@ import querystring from 'querystring';
 import conf, { booleanConf, logApp, logAudit } from '../config/conf';
 import { buildPagination } from './utils';
 import { loadExportWorksAsProgressFiles, deleteWorkForFile } from '../domain/work';
-import { sinceNowInMinutes } from '../utils/format';
+import { now, sinceNowInMinutes } from '../utils/format';
 import { DatabaseError } from '../config/errors';
 import { UPLOAD_ACTION } from '../config/audit';
 
@@ -75,6 +75,16 @@ export const getFileContent = (id) => {
   });
 };
 
+export const stixFileConverter = (user, file) => {
+  return {
+    name: file.name,
+    value: file.name,
+    uri: file.id,
+    version: file.metaData.version,
+    mime_type: file.metaData.mimetype,
+  };
+};
+
 export const loadFile = async (user, filename) => {
   try {
     const stat = await minioClient.statObject(bucketName, filename);
@@ -93,14 +103,12 @@ export const loadFile = async (user, filename) => {
   }
 };
 
-const rawFilesListing = (user, directory) => {
+export const rawFilesListing = (user, directory) => {
   return new Promise((resolve, reject) => {
     const files = [];
     const stream = minioClient.listObjectsV2(bucketName, directory);
     stream.on('data', async (obj) => {
-      if (obj.size > 0) {
-        files.push(assoc('id', obj.name, obj));
-      }
+      files.push(assoc('id', obj.name, obj));
     });
     /* istanbul ignore next */
     stream.on('error', (e) => {
@@ -119,17 +127,20 @@ const rawFilesListing = (user, directory) => {
 };
 
 export const upload = async (user, path, file, metadata = {}) => {
-  const { createReadStream, filename, mimetype, encoding } = await file;
+  const { createReadStream, filename, mimetype, encoding = '', version = now() } = await file;
   logAudit.info(user, UPLOAD_ACTION, { path, filename, metadata });
   const escapeName = querystring.escape(filename);
-  const internalMeta = { filename: escapeName, mimetype, encoding };
+  const internalMeta = { filename: escapeName, mimetype, encoding, version };
   const fileMeta = { ...metadata, ...internalMeta };
   const fileDirName = `${path}/${filename}`;
   logApp.debug(`[MINIO] Upload file ${fileDirName} by ${user.user_email}`);
   // Upload the file in the storage
   return new Promise((resolve, reject) => {
-    return minioClient.putObject(bucketName, fileDirName, createReadStream(), null, fileMeta, (err) => {
-      if (err) return reject(err);
+    const fileStream = createReadStream();
+    return minioClient.putObject(bucketName, fileDirName, fileStream, null, fileMeta, (err) => {
+      if (err) {
+        return reject(err);
+      }
       return resolve(loadFile(user, fileDirName));
     });
   });

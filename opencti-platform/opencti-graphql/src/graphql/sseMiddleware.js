@@ -7,7 +7,7 @@ import { createStreamProcessor } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { findById } from '../domain/stream';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from '../database/rabbitmq';
-import { stixDataById, stixLoadById } from '../database/middleware';
+import { loadStixById, loadByIdWithMetaRels } from '../database/middleware';
 import { convertFiltersToQueryOptions } from '../domain/taxii';
 import { elList, ES_MAX_CONCURRENCY } from '../database/elasticSearch';
 import {
@@ -125,12 +125,12 @@ const createSeeMiddleware = () => {
     const refsToResolve = missingRefs.filter((m) => !cache.has(m));
     const missingElements = [];
     if (refsToResolve.length > 0) {
-      const idsOpts = { ids: refsToResolve, /* ...missingOptions, */ connectionFormat: false };
+      const idsOpts = { ids: refsToResolve, connectionFormat: false };
       const findMissing = await elList(req.session.user, queryIndices, idsOpts);
       const missingIds = R.uniq(findMissing.map((f) => f.standard_id));
       missingElements.push(...missingIds);
-      // eslint-disable-next-line prettier/prettier
-      const resolvedElements = await Promise.map(missingIds, (id) => stixDataById(req.session.user, id), { concurrency: ES_MAX_CONCURRENCY });
+      const elementResolver = (id) => loadStixById(req.session.user, id, { withFiles: true });
+      const resolvedElements = await Promise.map(missingIds, elementResolver, { concurrency: ES_MAX_CONCURRENCY });
       const parentRefs = resolvedElements.map((r) => stixRefsExtractor(r, generateStandardId)).flat();
       if (parentRefs.length > 0) {
         const newMissing = await resolveMissingReferences(req, streamFilters, start, after, parentRefs, cache);
@@ -287,7 +287,7 @@ const createSeeMiddleware = () => {
       const queryCallback = async (elements) => {
         for (let index = 0; index < elements.length; index += 1) {
           const { internal_id: elemId } = elements[index];
-          const instance = await stixLoadById(req.session.user, elemId);
+          const instance = await loadByIdWithMetaRels(req.session.user, elemId, { withFiles: true });
           if (isFullVisibleElement(instance)) {
             const stixData = buildStixData(instance, { clearEmptyValues: true });
             const start = stixData.updated_at;
@@ -302,7 +302,7 @@ const createSeeMiddleware = () => {
               for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
                 const missingRef = missingElements[missingIndex];
                 if (!cache.has(missingRef)) {
-                  const missingInstance = await stixLoadById(req.session.user, missingRef);
+                  const missingInstance = await loadByIdWithMetaRels(req.session.user, missingRef);
                   if (isFullVisibleElement(missingInstance)) {
                     const missingData = buildStixData(missingInstance, { clearEmptyValues: true });
                     const markings = missingData.object_marking_refs || [];
@@ -312,11 +312,12 @@ const createSeeMiddleware = () => {
                     eventIndex += 1;
                     await wait(channel.delay);
                     cache.set(missingData.id);
+                    cache.set(`${missingData.id}-${missingData.updated_at}`);
                   }
                 }
               }
               // publish element
-              if (!cache.has(stixData.id)) {
+              if (!cache.has(`${stixData.id}-${stixData.updated_at}`)) {
                 const markings = stixData.object_marking_refs || [];
                 const message = generateCreateMessage(instance);
                 channel.sendEvent(`${eventId}-${eventIndex}`, EVENT_TYPE_CREATE, {
@@ -327,6 +328,7 @@ const createSeeMiddleware = () => {
                 });
                 await wait(channel.delay);
                 cache.set(stixData.id);
+                cache.set(`${stixData.id}-${stixData.updated_at}`);
               }
               lastElementUpdate = start;
             } else {

@@ -26,7 +26,7 @@ import {
 } from '../domain/stixCyberObservable';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { stixCoreRelationships } from '../domain/stixCoreObject';
+import { stixCoreObjectIdImportPush, stixCoreRelationships } from '../domain/stixCoreObject';
 import { filesListing } from '../database/minio';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { complexAttributeToApiFormat } from '../schema/fieldDataAdapter';
@@ -84,6 +84,7 @@ const stixCyberObservableResolvers = {
         stixCyberObservableDeleteRelation(user, id, toId, relationshipType),
       exportAsk: (args) => stixCyberObservableExportAsk(user, assoc('stixCyberObservableId', id, args)),
       exportPush: ({ file }) => stixCyberObservableExportPush(user, id, file),
+      importPush: ({ file }) => stixCoreObjectIdImportPush(user, id, file),
       promote: () => promoteObservableToIndicator(user, id),
     }),
     stixCyberObservableAdd: (_, args, { user }) => addStixCyberObservable(user, args),

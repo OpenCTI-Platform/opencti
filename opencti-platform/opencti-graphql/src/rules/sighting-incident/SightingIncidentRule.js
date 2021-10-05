@@ -4,7 +4,7 @@ import {
   createInferredRelation,
   deleteInferredRuleElement,
   listAllRelations,
-  stixDataById,
+  loadStixById,
 } from '../../database/middleware';
 import def from './SightingIncidentDefinition';
 import { ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
@@ -74,7 +74,7 @@ const ruleSightingIncidentBuilder = () => {
   };
   const handleIndicatorRelationUpsert = async (sightingRelation) => {
     const { x_opencti_sighting_of_ref: indicatorId } = sightingRelation;
-    const sightingIndicator = await stixDataById(RULE_MANAGER_USER, indicatorId);
+    const sightingIndicator = await loadStixById(RULE_MANAGER_USER, indicatorId);
     return handleIndicatorUpsert(sightingIndicator);
   };
   const applyUpsert = async (data) => {

@@ -11,7 +11,6 @@ import {
   findAll,
   findById,
   externalReferenceAskEnrichment,
-  externalReferenceImportPush,
 } from '../domain/externalReference';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -20,6 +19,7 @@ import { buildRefRelationKey } from '../schema/general';
 import { worksForSource } from '../domain/work';
 import { connectorsForEnrichment } from '../domain/enrichment';
 import { filesListing } from '../database/minio';
+import { stixCoreObjectIdImportPush } from '../domain/stixCoreObject';
 
 const externalReferenceResolvers = {
   Query: {
@@ -49,7 +49,7 @@ const externalReferenceResolvers = {
       relationDelete: ({ fromId, relationship_type: relationshipType }) =>
         externalReferenceDeleteRelation(user, id, fromId, relationshipType),
       askEnrichment: ({ connectorId }) => externalReferenceAskEnrichment(user, id, connectorId),
-      importPush: ({ file }) => externalReferenceImportPush(user, id, file),
+      importPush: ({ file }) => stixCoreObjectIdImportPush(user, id, file),
     }),
     externalReferenceAdd: (_, { input }, { user }) => addExternalReference(user, input),
   },

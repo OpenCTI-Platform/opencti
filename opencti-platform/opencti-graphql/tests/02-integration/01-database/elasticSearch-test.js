@@ -35,7 +35,7 @@ import {
 import { utcDate } from '../../../src/utils/format';
 import { ADMIN_USER } from '../../utils/testQuery';
 import { BASE_TYPE_RELATION } from '../../../src/schema/general';
-import { stixLoadById } from '../../../src/database/middleware';
+import { loadByIdWithMetaRels } from '../../../src/database/middleware';
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
@@ -93,7 +93,7 @@ describe('Elasticsearch document loader', () => {
     const dataThroughStix = await elLoadById(ADMIN_USER, standardId, null, ['test_index']);
     expect(dataThroughStix.standard_id).toEqual(documentWithIndex.standard_id);
     // Try to delete
-    await elDeleteElements(ADMIN_USER, [dataThroughStix], { stixLoadById });
+    await elDeleteElements(ADMIN_USER, [dataThroughStix], { idLoader: loadByIdWithMetaRels });
     const removedInternal = await elLoadById(ADMIN_USER, internalId, null, ['test_index']);
     expect(removedInternal).toBeUndefined();
   });

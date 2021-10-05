@@ -376,6 +376,7 @@ export const stixCyberObservablesAttributes = {
     'updated_at',
     'x_opencti_description',
     'x_opencti_score',
+    'mime_type',
     'hashes',
     'payload_bin',
     'url',

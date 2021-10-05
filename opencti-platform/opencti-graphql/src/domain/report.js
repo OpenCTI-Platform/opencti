@@ -1,4 +1,4 @@
-import { assoc, pipe, dissoc } from 'ramda';
+import * as R from 'ramda';
 import {
   createEntity,
   distributionEntities,
@@ -51,11 +51,11 @@ export const reportsTimeSeries = (user, args) => {
 };
 
 export const reportsNumber = (user, args) => ({
-  count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_REPORT], args)),
+  count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_CONTAINER_REPORT], args)),
   total: elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]), dissoc('endDate'))(args)
+    R.pipe(R.assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]), R.dissoc('endDate'))(args)
   ),
 });
 
@@ -75,22 +75,22 @@ export const reportsNumberByEntity = (user, args) => ({
   count: elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(
-      assoc('isMetaRelationship', true),
-      assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
-      assoc('relationshipType', RELATION_OBJECT),
-      assoc('fromId', args.objectId)
+    R.pipe(
+      R.assoc('isMetaRelationship', true),
+      R.assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
+      R.assoc('relationshipType', RELATION_OBJECT),
+      R.assoc('fromId', args.objectId)
     )(args)
   ),
   total: elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(
-      assoc('isMetaRelationship', true),
-      assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
-      assoc('relationshipType', RELATION_OBJECT),
-      assoc('fromId', args.objectId),
-      dissoc('endDate')
+    R.pipe(
+      R.assoc('isMetaRelationship', true),
+      R.assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
+      R.assoc('relationshipType', RELATION_OBJECT),
+      R.assoc('fromId', args.objectId),
+      R.dissoc('endDate')
     )(args)
   ),
 });
@@ -99,22 +99,22 @@ export const reportsNumberByAuthor = (user, args) => ({
   count: elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(
-      assoc('isMetaRelationship', true),
-      assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
-      assoc('relationshipType', RELATION_CREATED_BY),
-      assoc('fromId', args.authorId)
+    R.pipe(
+      R.assoc('isMetaRelationship', true),
+      R.assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
+      R.assoc('relationshipType', RELATION_CREATED_BY),
+      R.assoc('fromId', args.authorId)
     )(args)
   ),
   total: elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(
-      assoc('isMetaRelationship', true),
-      assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
-      assoc('relationshipType', RELATION_CREATED_BY),
-      assoc('fromId', args.authorId),
-      dissoc('endDate')
+    R.pipe(
+      R.assoc('isMetaRelationship', true),
+      R.assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
+      R.assoc('relationshipType', RELATION_CREATED_BY),
+      R.assoc('fromId', args.authorId),
+      R.dissoc('endDate')
     )(args)
   ),
 });
@@ -139,7 +139,7 @@ export const addReport = async (user, report) => {
       })
     );
   }
-  const finalReport = assoc('created', report.published, report);
+  const finalReport = R.assoc('created', report.published, report);
   const created = await createEntity(user, finalReport, ENTITY_TYPE_CONTAINER_REPORT);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

@@ -1,11 +1,11 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
-import { elIndex, elPaginate } from '../database/elasticSearch';
+import { Promise } from 'bluebird';
+import { elIndex, elPaginate, ES_MAX_CONCURRENCY } from '../database/elasticSearch';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
-import { deleteElementById, listEntities, loadById, stixLoadById, updateAttribute } from '../database/middleware';
-import { buildStixData } from '../database/stix';
+import { deleteElementById, listEntities, loadById, loadStixById, updateAttribute } from '../database/middleware';
 import { FunctionalError, ResourceNotFoundError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
@@ -54,10 +54,6 @@ export const taxiiCollectionEditContext = async (user, collectionId, input) => {
 };
 
 // Taxii rest API
-const prepareStixElement = async (user, data) => {
-  const element = await stixLoadById(user, data.internal_id);
-  return buildStixData(element);
-};
 const prepareManifestElement = async (data) => {
   return {
     id: data.standard_id,
@@ -127,7 +123,9 @@ const collectionQuery = async (user, collectionId, args) => {
 };
 export const restCollectionStix = async (user, id, args) => {
   const { edges, pageInfo } = await collectionQuery(user, id, args);
-  const objects = await Promise.all(edges.map((e) => prepareStixElement(user, e.node)));
+  const objects = await Promise.map(edges, (e) => loadStixById(user, e.node, { withFiles: true }), {
+    concurrency: ES_MAX_CONCURRENCY,
+  });
   return {
     more: pageInfo.hasNextPage,
     next: R.last(edges)?.cursor || '',

@@ -121,13 +121,13 @@ import {
   STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
 } from '../schema/stixCyberObservableRelationship';
 import {
-  STIX_ATTRIBUTE_TO_META_RELATIONS,
+  FIELD_TO_META_RELATION,
   META_FIELD_TO_STIX_ATTRIBUTE,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_MARKING,
-  FIELD_TO_META_RELATION,
+  STIX_ATTRIBUTE_TO_META_RELATIONS,
 } from '../schema/stixMetaRelationship';
 import {
   ENTITY_TYPE_STATUS,
@@ -185,7 +185,7 @@ import {
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 // eslint-disable-next-line import/no-cycle
-import { deleteAllFiles } from './minio';
+import { deleteAllFiles, rawFilesListing, stixFileConverter } from './minio';
 import { filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
 import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import {
@@ -687,30 +687,29 @@ export const fullLoadById = async (user, id, type = null) => {
   return { ...element, i_fully_resolved: true };
 };
 // Get element with every elements connected element -> rel -> to
-export const stixLoadById = async (user, id, type = null) => {
-  return loadByIdWithDependencies(user, id, type, {
+export const loadByIdWithMetaRels = async (user, id, opts = {}) => {
+  const { type = null, withFiles = false } = opts;
+  const instance = await loadByIdWithDependencies(user, id, type, {
     dependencyTypes: [ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP],
     onlyMarking: false,
     fullResolve: false,
   });
+  if (instance && withFiles) {
+    const filesList = await rawFilesListing(user, `import/${instance.entity_type}/${instance.id}/`);
+    instance.x_opencti_files = filesList.map((f) => stixFileConverter(user, f));
+  }
+  return instance;
 };
-export const stixDataById = async (user, id) => {
-  const instance = await stixLoadById(user, id);
+export const loadStixById = async (user, id, opts = {}) => {
+  const instance = await loadByIdWithMetaRels(user, id, opts);
   if (instance) {
     return buildStixData(instance, { clearEmptyValues: true });
   }
   return undefined;
 };
 export const convertDataToRawStix = async (user, id) => {
-  const data = await stixDataById(user, id);
+  const data = await loadStixById(user, id, { withFiles: true });
   return data ? JSON.stringify(data) : '';
-};
-export const stixLoadByQuery = async (user, query) => {
-  return loadByQueryWithDependencies(user, query, {
-    dependencyTypes: [ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP],
-    onlyMarking: false,
-    fullResolve: false,
-  });
 };
 // endregion
 
@@ -1259,7 +1258,9 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     { concurrency: ES_MAX_CONCURRENCY }
   );
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
-  const dependencyDeletions = await elDeleteElements(user, sourceEntities, { stixLoadById });
+  const dependencyDeletions = await elDeleteElements(user, sourceEntities, {
+    stixLoadById: loadByIdWithMetaRels,
+  });
   // Everything if fine update remaining attributes
   const updateAttributes = [];
   // 1. Update all possible attributes
@@ -1365,9 +1366,9 @@ export const mergeEntities = async (user, targetEntityId, sourceEntityIds, opts 
     // Lock the participants that will be merged
     lock = await lockResource(participantIds);
     // - TRANSACTION PART
-    const initialInstance = await stixLoadById(user, targetEntityId);
+    const initialInstance = await loadByIdWithMetaRels(user, targetEntityId);
     const mergeImpacts = await mergeEntitiesRaw(user, target, sources, opts);
-    const mergedInstance = await stixLoadById(user, targetEntityId);
+    const mergedInstance = await loadByIdWithMetaRels(user, targetEntityId);
     await storeMergeEvent(user, initialInstance, mergedInstance, sources, mergeImpacts);
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id));
@@ -1539,10 +1540,7 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
               previous,
             };
           }
-          return {
-            ...filteredInput,
-            previous,
-          };
+          return { ...filteredInput, previous };
         });
         updatedInputs.push(...updatedInputsFiltered);
       }
@@ -1640,7 +1638,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
   // Load the element to update
-  const instance = await stixLoadById(user, id, type);
+  const instance = await loadByIdWithMetaRels(user, id, { type });
   if (!instance) {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
@@ -2073,7 +2071,13 @@ const upsertIdentifiedFields = (element, input, fields) => {
       const fieldKey = fields[fieldIndex];
       const inputData = input[fieldKey];
       if (isNotEmptyField(inputData)) {
-        patch[fieldKey] = Array.isArray(inputData) ? inputData : [inputData];
+        if (isDictionaryAttribute(fieldKey)) {
+          Object.entries(inputData).forEach(([k, v]) => {
+            patch[`${fieldKey}.${k}`] = v;
+          });
+        } else {
+          patch[fieldKey] = Array.isArray(inputData) ? inputData : [inputData];
+        }
       }
     }
     if (!R.isEmpty(patch)) {
@@ -2573,7 +2577,7 @@ export const createRelationRaw = async (user, input, opts = {}) => {
     if (publishStreamEvent) {
       const relWithConnections = { ...dataRel.element, from, to };
       if (dataRel.type === TRX_CREATION) {
-        const loaders = { stixLoadById, connectionLoaders };
+        const loaders = { stixLoadById: loadByIdWithMetaRels, connectionLoaders };
         event = await storeCreateEvent(user, relWithConnections, resolvedInput, loaders);
       } else if (dataRel.patchInputs.length > 0) {
         event = await storeUpdateEvent(user, relWithConnections, dataRel.patchInputs);
@@ -2857,7 +2861,7 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
     // Push the input in the stream
     let event;
     if (dataEntity.type === TRX_CREATION) {
-      const loaders = { stixLoadById, connectionLoaders };
+      const loaders = { stixLoadById: loadByIdWithMetaRels, connectionLoaders };
       event = await storeCreateEvent(user, dataEntity.element, resolvedInput, loaders);
     } else if (dataEntity.patchInputs.length > 0) {
       event = await storeUpdateEvent(user, dataEntity.element, dataEntity.patchInputs);
@@ -2899,11 +2903,17 @@ export const deleteElement = async (user, element, opts = {}) => {
   try {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
-    await deleteAllFiles(user, `import/${element.entity_type}/${element.internal_id}`);
-    const dependencyDeletions = await elDeleteElements(user, [element], { stixLoadById });
+    // Start by deleting external files
+    const importDeletePromise = deleteAllFiles(user, `import/${element.entity_type}/${element.internal_id}/`);
+    const exportDeletePromise = deleteAllFiles(user, `export/${element.entity_type}/${element.internal_id}/`);
+    await Promise.all([importDeletePromise, exportDeletePromise]);
+    // Delete all linked elements
+    const dependencyDeletions = await elDeleteElements(user, [element], {
+      stixLoadById: loadByIdWithMetaRels,
+    });
     // Publish event in the stream
     if (publishStreamEvent) {
-      const loaders = { stixLoadById, connectionLoaders };
+      const loaders = { stixLoadById: loadByIdWithMetaRels, connectionLoaders };
       await storeDeleteEvent(user, element, dependencyDeletions, loaders);
     }
     // Temporary stored the deleted elements to prevent concurrent problem at creation
@@ -2934,7 +2944,7 @@ export const deleteElementById = async (user, elementId, type, opts = {}) => {
     throw FunctionalError(`You need to specify a type when deleting an entity`);
   }
   // Check consistency
-  const element = await stixLoadById(user, elementId, type);
+  const element = await loadByIdWithMetaRels(user, elementId, { type });
   if (!element) {
     throw FunctionalError('Cant find element to delete', { elementId });
   }
@@ -2967,7 +2977,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
       if (isPurelyInferred && monoRule) {
         // If purely inferred and mono rule we can safely delete it.
         await deleteElementById(RULE_MANAGER_USER, instance.id, instance.entity_type);
-        const loaders = { stixLoadById, connectionLoaders };
+        const loaders = { stixLoadById: loadByIdWithMetaRels, connectionLoaders };
         const opts = { withoutMessage: true };
         const event = await buildDeleteEvent(RULE_MANAGER_USER, instance, [], loaders, opts);
         derivedEvents.push(event);

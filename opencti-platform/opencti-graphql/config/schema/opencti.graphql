@@ -626,6 +626,7 @@ type WorkConnection {
 type FileMetadata {
   encoding: String
   mimetype: String
+  version: String
   messages: [WorkMessage]
   errors: [WorkMessage]
   list_filters: String
