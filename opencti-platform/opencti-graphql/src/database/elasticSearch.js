@@ -1772,15 +1772,6 @@ export const elDeleteElements = async (user, elements, loaders) => {
       return { relation: r, isFromCleanup, isToCleanup };
     })
     .filter((r) => r.isFromCleanup || r.isToCleanup);
-  // Update all rel connections that will remain
-  let currentRelationsCount = 0;
-  const groupsOfRelsFromTo = R.splitEvery(MAX_SPLIT, relsFromToImpacts);
-  const concurrentRelsFromTo = async (relsToClean) => {
-    await elRemoveRelationConnection(user, relsToClean);
-    currentRelationsCount += relsToClean.length;
-    logApp.debug(`[OPENCTI] Updating relations for deletion ${currentRelationsCount} / ${relsFromToImpacts.length}`);
-  };
-  await Promise.map(groupsOfRelsFromTo, concurrentRelsFromTo, opts);
   // Remove all relations
   let currentRelationsDelete = 0;
   const groupsOfDeletions = R.splitEvery(MAX_SPLIT, relations);
@@ -1792,6 +1783,15 @@ export const elDeleteElements = async (user, elements, loaders) => {
   await Promise.map(groupsOfDeletions, concurrentDeletions, opts);
   // Remove the elements
   await elDeleteInstanceIds(elements); // Bulk
+  // Update all rel connections that will remain
+  let currentRelationsCount = 0;
+  const groupsOfRelsFromTo = R.splitEvery(MAX_SPLIT, relsFromToImpacts);
+  const concurrentRelsFromTo = async (relsToClean) => {
+    await elRemoveRelationConnection(user, relsToClean);
+    currentRelationsCount += relsToClean.length;
+    logApp.debug(`[OPENCTI] Updating relations for deletion ${currentRelationsCount} / ${relsFromToImpacts.length}`);
+  };
+  await Promise.map(groupsOfRelsFromTo, concurrentRelsFromTo, opts);
   // Return the relations deleted because of the entity deletion
   return dependencyDeletions;
 };
@@ -1875,7 +1875,7 @@ export const elIndexElements = async (elements) => {
     R.pipe(R.dissoc('_index'))(doc),
   ]);
   if (body.length > 0) {
-    await elBulk({ refresh: true, body });
+    await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body });
   }
   // 02. If relation, generate impacts for from and to sides
   const cache = {};
@@ -2064,5 +2064,7 @@ export const elUpdateElement = async (instance) => {
 };
 
 export const getStats = () => {
-  return el.indices.stats({ index: READ_PLATFORM_INDICES }).then((result) => result.body._all.total);
+  return el.indices
+    .stats({ index: READ_PLATFORM_INDICES }) //
+    .then((result) => result.body._all.total);
 };
