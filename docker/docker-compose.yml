@@ -87,6 +87,8 @@ services:
       - elasticsearch
       - rabbitmq
     restart: unless-stopped
+
+    
   # worker:
   #   image: opencti/worker:5.0.1
   #   environment:
