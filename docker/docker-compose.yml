@@ -5,13 +5,11 @@ services:
     image: redis:6.2.5
     container_name: redis
     restart: unless-stopped
-    environment:
-      - ALLOW_EMPTY_PASSWORD=true
     volumes:
       - redisdata:/data
-
+  
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.14.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
     container_name: elasticsearch
     volumes:
       - esdata:/usr/share/elasticsearch/data
@@ -26,25 +24,24 @@ services:
       nofile:
         soft: 65536
         hard: 65536
-
-  minio:
-    image: minio/minio:RELEASE.2021-09-15T04-54-25Z
-    container_name: minio
-    volumes:
-      - s3data:/data
-    ports:
-      - "9000:9000"
-    environment:
-      MINIO_ROOT_USER: yoshida
-      MINIO_ROOT_PASSWORD: torajiro
-    command: server /data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
-    restart: unless-stopped
-
+  
+  # minio:
+  #   image: minio/minio:RELEASE.2021-09-15T04-54-25Z
+  #   volumes:
+  #     - s3data:/data
+  #   ports:
+  #     - "9000:9000"
+  #   environment:
+  #     MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+  #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}    
+  #   command: server /data
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+  #     interval: 30s
+  #     timeout: 20s
+  #     retries: 3
+  #   restart: always
+  
   rabbitmq:
     image: rabbitmq:3.9-management
     container_name: rabbitmq
@@ -54,9 +51,9 @@ services:
     volumes:
       - amqpdata:/var/lib/rabbitmq
     restart: unless-stopped
-
+  
   opencti:
-    image: opencti/platform:5.0.0
+    image: docker.darklight.ai/opencti:5.0.1
     container_name: opencti
     environment:
       - NODE_OPTIONS=--max-old-space-size=8096
@@ -80,9 +77,6 @@ services:
       - RABBITMQ__USERNAME=admin
       - RABBITMQ__PASSWORD=adminpass
       - SMTP__HOSTNAME=${SMTP_HOSTNAME}
-      - SMTP__USERNAME=${SMTP_USERNAME}
-      - SMTP__PASSWORD=${SMTP_PASSWORD}
-      - SMTP__FROM_EMAIL=${SMTP_FROM_EMAIL}
       - SMTP__PORT=25
       - PROVIDERS__LOCAL__STRATEGY=LocalStrategy
       - SUBSCRIPTION_SCHEDULER__ENABLED=false
@@ -91,26 +85,24 @@ services:
     depends_on:
       - redis
       - elasticsearch
-      - minio
       - rabbitmq
     restart: unless-stopped
-
-  worker:
-    image: opencti/worker:5.0.0
-    environment:
-      - OPENCTI_URL=http://opencti:8080
-      - OPENCTI_TOKEN=0928d607-2abe-4b59-8c92-1ec9b565f3a7
-      - WORKER_LOG_LEVEL=info
-    depends_on:
-      - opencti
-    deploy:
-      mode: replicated
-      replicas: 3
-    restart: unless-stopped
-
+    
+  # worker:
+  #   image: opencti/worker:5.0.1
+  #   environment:
+  #     - OPENCTI_URL=http://opencti:8080
+  #     - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+  #     - WORKER_LOG_LEVEL=info
+  #   depends_on:
+  #     - opencti
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 3
+  #   restart: always
+  
   # connector-history:
-  #   image: opencti/connector-history:5.0.0
-  #   container_name: connector-history
+  #   image: opencti/connector-history:5.0.1
   #   environment:
   #     - OPENCTI_URL=http://opencti:8080
   #     - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -123,10 +115,9 @@ services:
   #   restart: always
   #   depends_on:
   #     - opencti
-
+  
   # connector-export-file-stix:
-  #   image: opencti/connector-export-file-stix:5.0.0
-  #   container_name: connector-export-file-stix
+  #   image: opencti/connector-export-file-stix:5.0.1
   #   environment:
   #     - OPENCTI_URL=http://opencti:8080
   #     - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -139,10 +130,9 @@ services:
   #   restart: always
   #   depends_on:
   #     - opencti
-
+  
   # connector-export-file-csv:
-  #   image: opencti/connector-export-file-csv:5.0.0
-  #   container_name: connector-export-file-csv
+  #   image: opencti/connector-export-file-csv:5.0.1
   #   environment:
   #     - OPENCTI_URL=http://opencti:8080
   #     - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -155,10 +145,9 @@ services:
   #   restart: always
   #   depends_on:
   #     - opencti
-
+  
   # connector-import-file-stix:
-  #   image: opencti/connector-import-file-stix:5.0.0
-  #   container_name: connector-import-file-stix
+  #   image: opencti/connector-import-file-stix:5.0.1
   #   environment:
   #     - OPENCTI_URL=http://opencti:8080
   #     - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -172,10 +161,9 @@ services:
   #   restart: always
   #   depends_on:
   #     - opencti
-
+  
   # connector-import-report:
-  #   image: opencti/connector-import-report:5.0.0
-  #   container_name: connector-import-report
+  #   image: opencti/connector-import-report:5.0.1
   #   environment:
   #     - OPENCTI_URL=http://opencti:8080
   #     - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -194,6 +182,5 @@ services:
 
 volumes:
   esdata:
-  s3data:
   redisdata:
   amqpdata:
