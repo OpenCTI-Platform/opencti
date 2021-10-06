@@ -18,15 +18,18 @@ import { sinceNowInMinutes } from '../utils/format';
 import { DatabaseError } from '../config/errors';
 import { UPLOAD_ACTION } from '../config/audit';
 
-const s3AccessKeyId = conf.get('s3:access_key');
-const s3SecretAccessKey = conf.get('s3:secret_key');
+const s3AccessKeyId = process.env.AWS_ACCESS_KEY_ID;
+const s3SecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 const s3BucketName = conf.get('s3:bucket_name');
 const s3Region = conf.get('s3:region');
 
-const s3Client = new S3Client({
-  region: s3Region,
-  credentials: { accessKeyId: s3AccessKeyId, secretAccessKey: s3SecretAccessKey },
-});
+const s3Client =
+  s3AccessKeyId !== undefined && s3SecretAccessKey !== undefined
+    ? new S3Client({
+        region: s3Region,
+        credentials: { accessKeyId: s3AccessKeyId, secretAccessKey: s3SecretAccessKey },
+      })
+    : new S3Client({ region: s3Region });
 
 const bucketExists = async () => {
   const command = new ListBucketsCommand({ bucketName: s3BucketName, bucketRegion: s3Region });

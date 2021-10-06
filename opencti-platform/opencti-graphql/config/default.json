@@ -110,8 +110,6 @@
     }
   },
   "s3": {
-    "access_key": "AKIA4IIFGDX6E6VN6TWD",
-    "secret_key": "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",
     "bucket_name": "cyio-opencti",
     "region": "us-west-2"
   }
