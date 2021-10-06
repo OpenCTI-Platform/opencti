@@ -25,23 +25,6 @@ services:
         soft: 65536
         hard: 65536
   
-  # minio:
-  #   image: minio/minio:RELEASE.2021-09-15T04-54-25Z
-  #   volumes:
-  #     - s3data:/data
-  #   ports:
-  #     - "9000:9000"
-  #   environment:
-  #     MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-  #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}    
-  #   command: server /data
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-  #     interval: 30s
-  #     timeout: 20s
-  #     retries: 3
-  #   restart: always
-  
   rabbitmq:
     image: rabbitmq:3.9-management
     container_name: rabbitmq
@@ -82,7 +65,7 @@ services:
       - SUBSCRIPTION_SCHEDULER__ENABLED=false
       # - PROVIDERS__OPENID__STRATEGY=OpenIDConnectStrategy 
       # - "PROVIDERS__OPENID__CONFIG__LABEL=Login with OpenID"
-      # - PROVIDERS__OPENID__CONFIG__ISSUER=${OPENID_ISSUER} https://xxxxxxx/auth/realms/xxxx
+      # - PROVIDERS__OPENID__CONFIG__ISSUER=${OPENID_ISSUER}
       # - PROVIDERS__OPENID__CONFIG__CLIENT_ID=${OPENID_CLIENT_ID}
       # - PROVIDERS__OPENID__CONFIG__CLIENT_SECRET=${OPENID_CLIENT_SECRET}
       # - "PROVIDERS__OPENID__CONFIG__REDIRECT_URIS=[\"https://demo.opencti.io/auth/oic/callback\"]"
@@ -93,98 +76,6 @@ services:
       - elasticsearch
       - rabbitmq
     restart: unless-stopped
-
-  # worker:
-  #   image: opencti/worker:5.0.1
-  #   environment:
-  #     - OPENCTI_URL=http://opencti:8080
-  #     - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
-  #     - WORKER_LOG_LEVEL=info
-  #   depends_on:
-  #     - opencti
-  #   deploy:
-  #     mode: replicated
-  #     replicas: 3
-  #   restart: always
-  
-  # connector-history:
-  #   image: opencti/connector-history:5.0.1
-  #   environment:
-  #     - OPENCTI_URL=http://opencti:8080
-  #     - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
-  #     - CONNECTOR_ID=${CONNECTOR_HISTORY_ID} # Valid UUIDv4
-  #     - CONNECTOR_TYPE=STREAM
-  #     - CONNECTOR_NAME=History
-  #     - CONNECTOR_SCOPE=history
-  #     - CONNECTOR_CONFIDENCE_LEVEL=15 # From 0 (Unknown) to 100 (Fully trusted)
-  #     - CONNECTOR_LOG_LEVEL=info
-  #   restart: always
-  #   depends_on:
-  #     - opencti
-  
-  # connector-export-file-stix:
-  #   image: opencti/connector-export-file-stix:5.0.1
-  #   environment:
-  #     - OPENCTI_URL=http://opencti:8080
-  #     - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
-  #     - CONNECTOR_ID=${CONNECTOR_EXPORT_FILE_STIX_ID} # Valid UUIDv4
-  #     - CONNECTOR_TYPE=INTERNAL_EXPORT_FILE
-  #     - CONNECTOR_NAME=ExportFileStix2
-  #     - CONNECTOR_SCOPE=application/json
-  #     - CONNECTOR_CONFIDENCE_LEVEL=15 # From 0 (Unknown) to 100 (Fully trusted)
-  #     - CONNECTOR_LOG_LEVEL=info
-  #   restart: always
-  #   depends_on:
-  #     - opencti
-  
-  # connector-export-file-csv:
-  #   image: opencti/connector-export-file-csv:5.0.1
-  #   environment:
-  #     - OPENCTI_URL=http://opencti:8080
-  #     - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
-  #     - CONNECTOR_ID=${CONNECTOR_EXPORT_FILE_CSV_ID} # Valid UUIDv4
-  #     - CONNECTOR_TYPE=INTERNAL_EXPORT_FILE
-  #     - CONNECTOR_NAME=ExportFileCsv
-  #     - CONNECTOR_SCOPE=text/csv
-  #     - CONNECTOR_CONFIDENCE_LEVEL=15 # From 0 (Unknown) to 100 (Fully trusted)
-  #     - CONNECTOR_LOG_LEVEL=info
-  #   restart: always
-  #   depends_on:
-  #     - opencti
-  
-  # connector-import-file-stix:
-  #   image: opencti/connector-import-file-stix:5.0.1
-  #   environment:
-  #     - OPENCTI_URL=http://opencti:8080
-  #     - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
-  #     - CONNECTOR_ID=${CONNECTOR_IMPORT_FILE_STIX_ID} # Valid UUIDv4
-  #     - CONNECTOR_TYPE=INTERNAL_IMPORT_FILE
-  #     - CONNECTOR_NAME=ImportFileStix
-  #     - CONNECTOR_SCOPE=application/json,text/xml
-  #     - CONNECTOR_AUTO=false # Enable/disable auto-import of file
-  #     - CONNECTOR_CONFIDENCE_LEVEL=15 # From 0 (Unknown) to 100 (Fully trusted)
-  #     - CONNECTOR_LOG_LEVEL=info
-  #   restart: always
-  #   depends_on:
-  #     - opencti
-  
-  # connector-import-report:
-  #   image: opencti/connector-import-report:5.0.1
-  #   environment:
-  #     - OPENCTI_URL=http://opencti:8080
-  #     - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
-  #     - CONNECTOR_ID=${CONNECTOR_IMPORT_REPORT_ID} # Valid UUIDv4
-  #     - CONNECTOR_TYPE=INTERNAL_IMPORT_FILE
-  #     - CONNECTOR_NAME=ImportReport
-  #     - CONNECTOR_SCOPE=application/pdf,text/plain
-  #     - CONNECTOR_AUTO=false # Enable/disable auto-import of file
-  #     - CONNECTOR_ONLY_CONTEXTUAL=true # Only extract data related to an entity (a report, a threat actor, etc.)
-  #     - CONNECTOR_CONFIDENCE_LEVEL=15 # From 0 (Unknown) to 100 (Fully trusted)
-  #     - CONNECTOR_LOG_LEVEL=info
-  #     - IMPORT_REPORT_CREATE_INDICATOR=false
-  #   restart: always
-  #   depends_on:
-  #     - opencti
 
 volumes:
   esdata:
