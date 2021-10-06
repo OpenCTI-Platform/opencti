@@ -1,3 +1,5 @@
+import * as R from 'ramda';
+import { createReadStream } from 'fs';
 import {
   ADMIN_USER,
   API_TOKEN,
@@ -5,6 +7,8 @@ import {
   executeExternalQuery,
   FIFTEEN_MINUTES,
   PYTHON_PATH,
+  sleep,
+  SYNC_DIRECT_START_REMOTE_URI,
   SYNC_LIVE_START_REMOTE_URI,
   SYNC_RAW_START_REMOTE_URI,
 } from '../utils/testQuery';
@@ -15,6 +19,8 @@ import { buildStixData } from '../../src/database/stix';
 import { checkInstanceDiff } from '../utils/testStream';
 import { shutdownModules, startModules } from '../../src/modules';
 import { FROM_START_STR } from '../../src/utils/format';
+import { SYSTEM_USER } from '../../src/utils/access';
+import { stixCoreObjectIdImportPush } from '../../src/domain/stixCoreObject';
 
 const STAT_QUERY = `query stats {
       about {
@@ -34,6 +40,15 @@ const STAT_QUERY = `query stats {
 const REPORT_QUERY = `query report($id: String) {
       report(id: $id) {
         toStix
+        importFiles {
+          edges {
+            node {
+              id
+              name
+              size
+            }
+          }
+        }
       }
     }
   `;
@@ -45,6 +60,19 @@ const STANDARD_LOADER_QUERY = `query standard($id: String!) {
         ... on StixRelationship {
           standard_id
         }
+      }
+    }
+  `;
+const SYNC_CREATION_QUERY = `mutation SynchronizerAdd($input: SynchronizerAddInput) {
+      synchronizerAdd(input: $input) {
+        id
+      }
+    }
+  `;
+
+const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
+      synchronizerStart(id: $id) {
+        id
       }
     }
   `;
@@ -93,7 +121,7 @@ describe('Database provision', () => {
   };
 
   // eslint-disable-next-line prettier/prettier
-  it('Should raw sync succeed', async () => {
+  it('Should python raw sync succeed', async () => {
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
       // Sync
@@ -110,7 +138,7 @@ describe('Database provision', () => {
   );
 
   // eslint-disable-next-line prettier/prettier
-  it('Should live sync succeed', async () => {
+  it('Should python live sync succeed', async () => {
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
       // Sync
@@ -122,6 +150,51 @@ describe('Database provision', () => {
       await shutdownModules();
       // Post check
       await checkPostSyncContent(SYNC_LIVE_START_REMOTE_URI, objectMap, relMap, initStixReport);
+    },
+    FIFTEEN_MINUTES
+  );
+
+  // eslint-disable-next-line prettier/prettier
+  it('Should direct sync succeed', async () => {
+      // Pre check
+      const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
+      await startModules();
+      // Upload a file
+      const file = {
+        createReadStream: () => createReadStream('./tests/data/DATA-TEST-STIX2_v2.json'),
+        filename: 'DATA-TEST-STIX2_v2.json',
+        mimetype: 'application/json',
+      };
+      await stixCoreObjectIdImportPush(SYSTEM_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7', file);
+      // Need to create the synchronizer on the remote host
+      const SYNC_CREATE = {
+        input: {
+          name: 'SYNC',
+          uri: 'http://api-tests:4000',
+          listen_deletion: true,
+          stream_id: 'live',
+          token: API_TOKEN,
+        },
+      };
+      const synchronizer = await executeExternalQuery(SYNC_DIRECT_START_REMOTE_URI, SYNC_CREATION_QUERY, SYNC_CREATE);
+      // Start the sync
+      const syncId = synchronizer.synchronizerAdd.id;
+      await executeExternalQuery(SYNC_DIRECT_START_REMOTE_URI, SYNC_START_QUERY, { id: syncId });
+      // Wait 1 min sync to consume all the stream
+      await sleep(60000);
+      // Stop and checl
+      await shutdownModules();
+      // Post check
+      await checkPostSyncContent(SYNC_DIRECT_START_REMOTE_URI, objectMap, relMap, initStixReport);
+      // Check file availability
+      const reportData = await executeExternalQuery(SYNC_DIRECT_START_REMOTE_URI, REPORT_QUERY, {
+        id: 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7',
+      });
+      const files = reportData.report.importFiles.edges;
+      expect(files.length).toEqual(1);
+      const uploadedFile = R.head(files).node;
+      expect(uploadedFile.name).toEqual('DATA-TEST-STIX2_v2.json');
+      expect(uploadedFile.size).toEqual(37750);
     },
     FIFTEEN_MINUTES
   );

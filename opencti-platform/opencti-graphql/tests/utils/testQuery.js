@@ -7,6 +7,7 @@ import { BYPASS, ROLE_ADMINISTRATOR } from '../../src/utils/access';
 
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
 export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_uri');
+export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remote_uri');
 
 export const PYTHON_PATH = './src/python';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
