@@ -174,8 +174,8 @@ const LeftBar = ({ t, location, classes }) => {
               </MenuItem>
               <MenuItem
                 component={Link}
-                to="/dashboard/arsenal"
-                selected={location.pathname.includes('/dashboard/arsenal')}
+                to="/dashboard/vsac"
+                selected={location.pathname.includes('/dashboard/vsac')}
                 dense={false}
                 classes={{ root: classes.menuItemNested }}
               >
