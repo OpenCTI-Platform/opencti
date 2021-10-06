@@ -80,6 +80,12 @@ services:
       - SMTP__PORT=25
       - PROVIDERS__LOCAL__STRATEGY=LocalStrategy
       - SUBSCRIPTION_SCHEDULER__ENABLED=false
+      # - PROVIDERS__OPENID__STRATEGY=OpenIDConnectStrategy 
+      # - "PROVIDERS__OPENID__CONFIG__LABEL=Login with OpenID"
+      # - PROVIDERS__OPENID__CONFIG__ISSUER=${OPENID_ISSUER} https://xxxxxxx/auth/realms/xxxx
+      # - PROVIDERS__OPENID__CONFIG__CLIENT_ID=${OPENID_CLIENT_ID}
+      # - PROVIDERS__OPENID__CONFIG__CLIENT_SECRET=${OPENID_CLIENT_SECRET}
+      # - "PROVIDERS__OPENID__CONFIG__REDIRECT_URIS=[\"https://demo.opencti.io/auth/oic/callback\"]"
     ports:
       - "8080:8080"
     depends_on:
