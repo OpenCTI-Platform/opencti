@@ -2,7 +2,7 @@ import { PythonShell } from 'python-shell';
 import { DEV_MODE, logApp } from '../config/conf';
 import { ConfigurationError } from '../config/errors';
 
-export const execPython3 = async (scriptPath, scriptName, args) => {
+export const execPython3 = async (scriptPath, scriptName, args, stopCondition) => {
   try {
     return new Promise((resolve, reject) => {
       const options = {
@@ -27,7 +27,10 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
         /* istanbul ignore if */
         if (DEV_MODE && stderr.startsWith('ERROR:')) {
           jsonResult = { status: 'error', message: stderr };
-          shell.terminate();
+          shell.kill();
+        }
+        if (stopCondition && stopCondition(stderr)) {
+          shell.kill();
         }
       });
       shell.end((err) => {
@@ -68,6 +71,16 @@ export const checkIndicatorSyntax = async (patternType, indicatorValue) => {
     return result.data;
   } catch (err) {
     logApp.warn(`[BRIDGE] extractObservables error > ${err.message}`);
+    return null;
+  }
+};
+
+export const executePython = async (path, file, args, stopCondition) => {
+  try {
+    const result = await execPython3(path, file, args, stopCondition);
+    return result.data;
+  } catch (err) {
+    logApp.warn(`[BRIDGE] executePython error > ${err.message}`);
     return null;
   }
 };
