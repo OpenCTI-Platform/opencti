@@ -224,7 +224,7 @@ describe('Database provision', () => {
     };
     const backupConf = JSON.stringify(BACKUP_CONFIG);
     await executePython(
-      path.resolve('../../../opencti-connectors/stream/backup-files/src'),
+      path.resolve('../../opencti-connectors/stream/backup-files/src'),
       'backup-files.py',
       [backupConf],
       (message) => {
@@ -255,7 +255,7 @@ describe('Database provision', () => {
     };
     const restoreConf = JSON.stringify(RESTORE_CONFIG);
     await executePython(
-      path.resolve('../../../opencti-connectors/external-import/restore-files/src'),
+      path.resolve('../../opencti-connectors/external-import/restore-files/src'),
       'restore-files.py',
       [restoreConf],
       (message) => message.includes('restore run completed')
