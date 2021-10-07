@@ -281,7 +281,16 @@ const createSeeMiddleware = () => {
       const cache = new LRU({ max: MAX_CACHE_SIZE, maxAge: ONE_HOUR });
       // If empty start date, stream all results corresponding to the filters
       // We need to fetch from this start date until the stream existence
-      const after = isNotEmptyField(startFrom) ? startFrom : FROM_START_STR;
+      let after = isNotEmptyField(startFrom) ? startFrom : FROM_START_STR;
+      // Also handle event id with redis format stamp or stamp-index
+      if (isNotEmptyField(startFrom)) {
+        if (!startFrom.includes('-')) {
+          after = utcDate(parseInt(startFrom, 10)).toISOString();
+        } else if (startFrom.split('-').length === 2) {
+          const [timestamp] = startFrom.split('-');
+          after = utcDate(parseInt(timestamp, 10)).toISOString();
+        }
+      }
       let lastElementUpdate;
       // noinspection UnnecessaryLocalVariableJS
       const queryCallback = async (elements) => {
