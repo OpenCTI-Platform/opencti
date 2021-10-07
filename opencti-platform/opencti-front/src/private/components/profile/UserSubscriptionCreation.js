@@ -317,7 +317,7 @@ class UserSubscriptionCreation extends Component {
   }
 
   render() {
-    const { t, classes } = this.props;
+    const { t, classes, disabled } = this.props;
     const { filters, options } = this.state;
     return (
       <div>
@@ -326,6 +326,7 @@ class UserSubscriptionCreation extends Component {
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
+          disabled={disabled}
         >
           <Add />
         </Fab>
@@ -540,6 +541,7 @@ UserSubscriptionCreation.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  disabled: PropTypes.bool,
 };
 
 export default R.compose(

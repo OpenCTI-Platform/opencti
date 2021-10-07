@@ -698,6 +698,10 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContain
                   first_seen
                   last_seen
                 }
+                ... on Report {
+                  name
+                  published
+                }
                 ... on CourseOfAction {
                   name
                 }

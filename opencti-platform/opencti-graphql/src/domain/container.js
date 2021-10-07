@@ -41,12 +41,16 @@ export const objects = async (user, containerId, args) => {
 
 export const containersObjectsOfObject = async (user, { id, types, filters = [], search = null }) => {
   const containers = await findAll(user, {
-    connectionFormat: false,
-    first: 500,
+    first: 1000,
     search,
     filters: [...filters, { key: buildRefRelationKey(RELATION_OBJECT), values: [id] }],
   });
-  const containersObjects = await Promise.all(R.map((n) => objects(user, n.id, { first: 1000, types }), containers));
-  const containersObjectsResult = R.uniqBy(R.path(['node', 'id']), R.flatten(R.map((n) => n.edges, containersObjects)));
+  const containersObjects = await Promise.all(
+    R.map((n) => objects(user, n.node.id, { first: 1000, types }), containers.edges)
+  );
+  const containersObjectsResult = R.uniqBy(R.path(['node', 'id']), [
+    ...containers.edges,
+    ...R.flatten(R.map((n) => n.edges, containersObjects)),
+  ]);
   return buildPagination(0, null, containersObjectsResult, containersObjectsResult.length);
 };

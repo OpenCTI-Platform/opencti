@@ -18,6 +18,7 @@ import { SendClockOutline } from 'mdi-material-ui';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItem from '@material-ui/core/ListItem';
+import Alert from '@material-ui/lab/Alert';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
@@ -76,7 +77,7 @@ const passwordValidation = (t) => Yup.object().shape({
 
 const ProfileOverviewComponent = (props) => {
   const {
-    t, me, classes, fldt,
+    t, me, classes, fldt, subscriptionStatus,
   } = props;
   const external = false;
   const initialValues = pick(
@@ -228,7 +229,17 @@ const ProfileOverviewComponent = (props) => {
             <Typography variant="h1" gutterBottom={true}>
               {t('Subscriptions & digests')}
             </Typography>
-            <UserSubscriptionCreation userId={me.id} />
+            <UserSubscriptionCreation
+              userId={me.id}
+              disabled={!subscriptionStatus}
+            />
+            {!subscriptionStatus && (
+              <Alert severity="info">
+                {t(
+                  'To use this feature, your platform administrator must enable the subscription manager in the config.',
+                )}
+              </Alert>
+            )}
             {me.userSubscriptions.edges.length > 0 ? (
               <div style={{ marginTop: 20 }}>
                 <List>
@@ -239,7 +250,7 @@ const ProfileOverviewComponent = (props) => {
                         key={userSubscription.id}
                         classes={{ root: classes.item }}
                         divider={true}
-                        button={true}
+                        disabled={!subscriptionStatus}
                       >
                         <ListItemIcon classes={{ root: classes.itemIcon }}>
                           <SendClockOutline />
@@ -348,7 +359,11 @@ const ProfileOverviewComponent = (props) => {
                   {t('Renew')}
                 </Button>
               )}
-              <Typography variant="h4" gutterBottom={true}>
+              <Typography
+                variant="h4"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('Required headers')}
               </Typography>
               <pre>
@@ -378,6 +393,7 @@ ProfileOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   me: PropTypes.object,
+  subscriptionStatus: PropTypes.bool,
 };
 
 const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {

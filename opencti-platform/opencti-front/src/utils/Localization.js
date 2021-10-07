@@ -1063,6 +1063,8 @@ const i18n = {
       'Enable commit messages': 'Activer les messages de justification',
       'Commit message when updating data from the UI.':
         "Message lors de la modification des données dans l'interface.",
+      'To use this feature, your platform administrator must enable the subscription manager in the config.':
+        "Pour utiliser cette fonctionnalité, l'administrateur de votre plateforme doit activer le manager de souscriptions.",
       None: 'Aucun',
       Nonee: 'Aucune',
       Status: 'Statut',

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles/index';
 import inject18n from '../../components/i18n';
@@ -19,6 +19,12 @@ const profileQuery = graphql`
     me {
       ...ProfileOverview_me
     }
+    settings {
+      platform_modules {
+        id
+        enable
+      }
+    }
   }
 `;
 
@@ -31,7 +37,18 @@ class Profile extends Component {
           query={profileQuery}
           render={({ props }) => {
             if (props) {
-              return <ProfileOverview me={props.me} />;
+              const subscriptionStatus = R.head(
+                R.filter(
+                  (n) => n.id === 'SUBSCRIPTION_MANAGER',
+                  R.pathOr([], ['settings', 'platform_modules'], props.settings),
+                ),
+              )?.enable;
+              return (
+                <ProfileOverview
+                  me={props.me}
+                  subscriptionStatus={subscriptionStatus}
+                />
+              );
             }
             return <Loader />;
           }}
@@ -46,4 +63,4 @@ Profile.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(Profile);
+export default R.compose(inject18n, withStyles(styles))(Profile);
