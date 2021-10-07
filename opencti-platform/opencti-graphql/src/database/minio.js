@@ -108,7 +108,9 @@ export const rawFilesListing = (user, directory) => {
     const files = [];
     const stream = minioClient.listObjectsV2(bucketName, directory);
     stream.on('data', async (obj) => {
-      files.push(assoc('id', obj.name, obj));
+      if (obj.name) {
+        files.push(assoc('id', obj.name, obj));
+      }
     });
     /* istanbul ignore next */
     stream.on('error', (e) => {
