@@ -8,7 +8,7 @@ import attributeResolvers from '../resolvers/attribute';
 import workspaceResolvers from '../resolvers/workspace';
 import subTypeResolvers from '../resolvers/subType';
 import labelResolvers from '../resolvers/label';
-import rabbitmqMetricsResolvers from '../resolvers/rabbitmqMetrics';
+import amqpMetricsResolvers from '../resolvers/amqpMetrics';
 import elasticSearchMetricsResolvers from '../resolvers/elasticSearchMetrics';
 import internalObjectResolvers from '../resolvers/internalObject';
 import stixObjectOrStixRelationshipResolvers from '../resolvers/stixObjectOrStixRelationship';
@@ -78,7 +78,7 @@ const createSchema = () => {
     userSubscriptionResolvers,
     statusResolvers,
     logResolvers,
-    rabbitmqMetricsResolvers,
+    amqpMetricsResolvers,
     elasticSearchMetricsResolvers,
     attributeResolvers,
     workspaceResolvers,

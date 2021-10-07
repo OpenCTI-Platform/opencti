@@ -84,15 +84,15 @@
     "max_pagination_result": 5000,
     "max_concurrency": 2
   },
-  "rabbitmq": {
+  "amqp": {
     "hostname": "localhost",
-    "use_ssl": false,
+    "use_ssl": true,
     "ca": [],
     "port": 5672,
     "port_management": 410,
     "management_ssl": false,
-    "username": "guest",
-    "password": "guest"
+    "username": "",
+    "password": ""
   },
   "providers": {
     "local": {
@@ -102,15 +102,21 @@
       "strategy": "OpenIDConnectStrategy",
       "config": {
         "label": "Login with Keycloak",
-        "issuer": "https://44.236.111.124:8443/auth/realms/Cyio/",
-        "client_id": "opencti",
-        "client_secret": "9fb23b47-ab9f-42f7-b423-e5f2be4be693",
+        "issuer": "",
+        "client_id": "",
+        "client_secret": "",
         "redirect_uris": ["http://localhost:3000/auth/oic/callback"]
       }
     }
   },
   "s3": {
-    "bucket_name": "cyio-opencti",
-    "region": "us-west-2"
+    "bucket_name": "",
+    "region": ""
+  },
+  "keycloak": {
+    "realm": "",
+    "server": "",
+    "client_id": "",
+    "client_secret": ""
   }
 }

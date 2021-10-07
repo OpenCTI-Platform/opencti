@@ -17,7 +17,7 @@ import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { createWork } from './work';
-import { pushToConnector } from '../database/rabbitmq';
+import { pushToConnector } from '../database/amqp';
 import { upload } from '../database/s3';
 import { uploadJobImport } from './file';
 import { askEnrich } from './enrichment';

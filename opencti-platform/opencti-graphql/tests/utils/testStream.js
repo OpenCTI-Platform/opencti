@@ -5,7 +5,7 @@ import moment from 'moment';
 import { ADMIN_USER, generateBasicAuth } from './testQuery';
 import { internalLoadById } from '../../src/database/middleware';
 import { isStixId } from '../../src/schema/schemaUtils';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_UPDATE } from '../../src/database/rabbitmq';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_UPDATE } from '../../src/database/amqp';
 import { isStixRelationship } from '../../src/schema/stixRelationship';
 import { isEmptyField } from '../../src/database/utils';
 

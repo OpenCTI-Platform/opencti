@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { loadFile, upload } from '../database/s3';
-import { pushToConnector } from '../database/rabbitmq';
+import { pushToConnector } from '../database/amqp';
 import { connectorsForImport } from './connector';
 import { createWork } from './work';
 import { logApp } from '../config/conf';

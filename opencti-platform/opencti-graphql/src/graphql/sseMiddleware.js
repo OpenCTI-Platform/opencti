@@ -6,7 +6,7 @@ import { authenticateUserFromRequest, STREAMAPI } from '../domain/user';
 import { createStreamProcessor } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { findById } from '../domain/stream';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from '../database/rabbitmq';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from '../database/amqp';
 import { stixDataById, stixLoadById } from '../database/middleware';
 import { convertFiltersToQueryOptions } from '../domain/taxii';
 import { elList, ES_MAX_CONCURRENCY } from '../database/elasticSearch';
