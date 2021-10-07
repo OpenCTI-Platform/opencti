@@ -201,66 +201,74 @@ describe('Database provision', () => {
     FIFTEEN_MINUTES
   );
 
+  const backupFiles = async () => {
+    await startModules();
+    const BACKUP_CONFIG = {
+      opencti: {
+        url: 'http://api-tests:4000',
+        token: API_TOKEN,
+      },
+      connector: {
+        id: uuidv4(),
+        type: 'STREAM',
+        live_stream_id: 'live',
+        name: 'BackupFiles',
+        scope: 'backup',
+        confidence_level: 15,
+        log_level: 'info',
+      },
+      backup: {
+        protocol: 'local',
+        path: path.resolve('tests'),
+      },
+    };
+    const backupConf = JSON.stringify(BACKUP_CONFIG);
+    await executePython(
+      path.resolve('../../../opencti-connectors/stream/backup-files/src'),
+      'backup-files.py',
+      [backupConf],
+      (message) => {
+        return message.includes('/ report--01d982e0-4850-5e0c-b3cc-c9a25c1cf1b8');
+      }
+    );
+    await shutdownModules();
+  };
+  const restoreFile = async () => {
+    const RESTORE_CONFIG = {
+      opencti: {
+        url: SYNC_RESTORE_START_REMOTE_URI,
+        token: API_TOKEN,
+      },
+      connector: {
+        id: uuidv4(),
+        type: 'EXTERNAL_IMPORT',
+        name: 'RestoreFiles',
+        scope: 'restore',
+        confidence_level: 15,
+        log_level: 'info',
+      },
+      backup: {
+        protocol: 'local',
+        direct_creation: true,
+        path: path.resolve('tests'),
+      },
+    };
+    const restoreConf = JSON.stringify(RESTORE_CONFIG);
+    await executePython(
+      path.resolve('../../../opencti-connectors/external-import/restore-files/src'),
+      'restore-files.py',
+      [restoreConf],
+      (message) => message.includes('restore run completed')
+    );
+  };
   // eslint-disable-next-line prettier/prettier
   it('Should backup/restore sync succeed', async () => {
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
       // Create the backup
-      await startModules();
-      const BACKUP_CONFIG = {
-        opencti: {
-          url: 'http://api-tests:4000',
-          token: API_TOKEN,
-        },
-        connector: {
-          id: uuidv4(),
-          type: 'STREAM',
-          live_stream_id: 'live',
-          name: 'BackupFiles',
-          scope: 'backup',
-          confidence_level: 15,
-          log_level: 'info',
-        },
-        backup: {
-          protocol: 'local',
-          path: path.resolve('tests'),
-        },
-      };
-      const backupConf = JSON.stringify(BACKUP_CONFIG);
-      await executePython(
-        path.resolve('../../opencti-connectors/stream/backup-files/src'),
-        'backup-files.py',
-        [backupConf],
-        (message) => message.includes('report--f3e554eb-60f5-587c-9191-4f25e9ba9f32')
-      );
-      await shutdownModules();
+      await backupFiles();
       // Restore the backup
-      const RESTORE_CONFIG = {
-        opencti: {
-          url: SYNC_RESTORE_START_REMOTE_URI,
-          token: API_TOKEN,
-        },
-        connector: {
-          id: uuidv4(),
-          type: 'EXTERNAL_IMPORT',
-          name: 'RestoreFiles',
-          scope: 'restore',
-          confidence_level: 15,
-          log_level: 'info',
-        },
-        backup: {
-          protocol: 'local',
-          direct_creation: true,
-          path: path.resolve('tests'),
-        },
-      };
-      const restoreConf = JSON.stringify(RESTORE_CONFIG);
-      await executePython(
-        path.resolve('../../opencti-connectors/external-import/restore-files/src'),
-        'restore-files.py',
-        [restoreConf],
-        (message) => message.includes('restore run completed')
-      );
+      await restoreFile();
       // Post check
       await checkPostSyncContent(SYNC_RESTORE_START_REMOTE_URI, objectMap, relMap, initStixReport);
       // Check file availability

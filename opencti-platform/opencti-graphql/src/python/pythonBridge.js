@@ -5,6 +5,7 @@ import { ConfigurationError } from '../config/errors';
 export const execPython3 = async (scriptPath, scriptName, args, stopCondition) => {
   try {
     return new Promise((resolve, reject) => {
+      let messageCount = 0;
       const options = {
         mode: 'text',
         pythonPath: 'python3',
@@ -23,13 +24,14 @@ export const execPython3 = async (scriptPath, scriptName, args, stopCondition) =
         }
       });
       shell.on('stderr', (stderr) => {
+        messageCount += 1;
         logApp.info(`[BRIDGE] ${stderr}`);
         /* istanbul ignore if */
         if (DEV_MODE && stderr.startsWith('ERROR:')) {
           jsonResult = { status: 'error', message: stderr };
           shell.kill();
         }
-        if (stopCondition && stopCondition(stderr)) {
+        if (stopCondition && stopCondition(stderr, messageCount)) {
           shell.kill();
         }
       });
