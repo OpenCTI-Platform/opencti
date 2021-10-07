@@ -4,4 +4,4 @@
 .mypy_cache
 .venv
 venv
-docker/.env
+**/.env
