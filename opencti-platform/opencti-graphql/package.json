@@ -33,6 +33,7 @@
     "@elastic/elasticsearch": "7.13.0",
     "@graphql-tools/schema": "7.1.5",
     "@graphql-tools/utils": "7.10.0",
+    "@keycloak/keycloak-admin-client": "^15.0.2",
     "amqplib": "0.8.0",
     "apollo-errors": "1.9.0",
     "apollo-server-express": "2.25.2",

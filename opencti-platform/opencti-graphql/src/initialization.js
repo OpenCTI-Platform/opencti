@@ -7,6 +7,7 @@ import { elCreateIndexes, elIndexExists, elIsAlive } from './database/elasticSea
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/s3';
 import { rabbitMQIsAlive } from './database/rabbitmq';
+import { keycloakAlive} from "./service/keycloak";
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
 import { ROLE_DEFAULT, STREAMAPI, TAXIIAPI } from './domain/user';
@@ -111,6 +112,8 @@ export const CAPABILITIES = [
 
 // Check every dependencies
 export const checkSystemDependencies = async () => {
+  await keycloakAlive();
+  logApp.info('[Check] Keycloak is alive');
   // Check if elasticsearch is available
   await elIsAlive();
   logApp.info(`[CHECK] ElasticSearch is alive`);
