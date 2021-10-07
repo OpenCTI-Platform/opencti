@@ -100,7 +100,7 @@ describe('Database provision', () => {
   const checkMapConsistency = (before, after) => {
     after.forEach((value, key) => {
       const compareValue = before.get(key);
-      expect(compareValue).toEqual(value);
+      expect(`${key} - ${compareValue}`).toEqual(`${key} - ${value}`);
     });
   };
   const checkPostSyncContent = async (remoteUri, objectMap, relMap, initStixReport) => {
@@ -227,9 +227,7 @@ describe('Database provision', () => {
       path.resolve('../../opencti-connectors/stream/backup-files/src'),
       'backup-files.py',
       [backupConf],
-      (message) => {
-        return message.includes('/ report--01d982e0-4850-5e0c-b3cc-c9a25c1cf1b8');
-      }
+      (message, messageCount) => messageCount === 346
     );
     await shutdownModules();
   };
