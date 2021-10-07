@@ -15,6 +15,7 @@ steps:
     ELASTICSEARCH__URL: http://elastic:9200
     MINIO__ENDPOINT: minio
     RABBITMQ__HOSTNAME: rabbitmq
+    SUBSCRIPTION_SCHEDULER__ENABLED: false
     SMTP__HOSTNAME: smtp.ethereal.email
     SMTP__PORT: 587
     SMTP__USERNAME: jennyfer.mraz@ethereal.email
@@ -111,10 +112,7 @@ services:
     MINIO__ENDPOINT: minio
     MINIO__BUCKET_NAME: raw-start-bucket
     RABBITMQ__HOSTNAME: rabbitmq
-    SMTP__HOSTNAME: smtp.ethereal.email
-    SMTP__PORT: 587
-    SMTP__USERNAME: jennyfer.mraz@ethereal.email
-    SMTP__PASSWORD: frhJ2mSPTfaEutpbug
+    SUBSCRIPTION_SCHEDULER__ENABLED: false
   commands:
     - sleep 30
     - apk add build-base git libffi-dev
@@ -137,10 +135,7 @@ services:
     MINIO__ENDPOINT: minio
     MINIO__BUCKET_NAME: live-start-bucket
     RABBITMQ__HOSTNAME: rabbitmq
-    SMTP__HOSTNAME: smtp.ethereal.email
-    SMTP__PORT: 587
-    SMTP__USERNAME: jennyfer.mraz@ethereal.email
-    SMTP__PASSWORD: frhJ2mSPTfaEutpbug
+    SUBSCRIPTION_SCHEDULER__ENABLED: false
   commands:
     - sleep 60
     - apk add build-base git libffi-dev
@@ -163,10 +158,7 @@ services:
     MINIO__ENDPOINT: minio
     MINIO__BUCKET_NAME: direct-start-bucket
     RABBITMQ__HOSTNAME: rabbitmq
-    SMTP__HOSTNAME: smtp.ethereal.email
-    SMTP__PORT: 587
-    SMTP__USERNAME: jennyfer.mraz@ethereal.email
-    SMTP__PASSWORD: frhJ2mSPTfaEutpbug
+    SUBSCRIPTION_SCHEDULER__ENABLED: false
   commands:
     - sleep 90
     - apk add build-base git libffi-dev
@@ -189,10 +181,7 @@ services:
     MINIO__ENDPOINT: minio
     MINIO__BUCKET_NAME: restore-start-bucket
     RABBITMQ__HOSTNAME: rabbitmq
-    SMTP__HOSTNAME: smtp.ethereal.email
-    SMTP__PORT: 587
-    SMTP__USERNAME: jennyfer.mraz@ethereal.email
-    SMTP__PASSWORD: frhJ2mSPTfaEutpbug
+    SUBSCRIPTION_SCHEDULER__ENABLED: false
   commands:
     - sleep 90
     - apk add build-base git libffi-dev
