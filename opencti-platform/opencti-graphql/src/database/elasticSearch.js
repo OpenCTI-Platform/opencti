@@ -193,7 +193,7 @@ export const elIsAlive = async () => {
 export const elVersion = () => {
   return el
     .info()
-    .then((info) => info.body.version.number)
+    .then((info) => info.body.version)
     .catch(
       /* istanbul ignore next */ () => {
         return 'Disconnected';
@@ -1450,7 +1450,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
   }
   // Build query
   const querySize = first || 10;
-  let body = {
+  const body = {
     size: querySize,
     sort: ordering,
     query: {
@@ -1459,10 +1459,13 @@ export const elPaginate = async (user, indexName, options = {}) => {
         must_not: mustnot,
       },
     },
-    runtime_mappings: runtimeMappings,
   };
+  // Add extra configuration
+  if (isNotEmptyField(runtimeMappings)) {
+    body.runtime_mappings = runtimeMappings;
+  }
   if (searchAfter) {
-    body = { ...body, search_after: searchAfter };
+    body.search_after = searchAfter;
   }
   if (querySize > ES_MAX_PAGINATION) {
     const message = `You cannot ask for more than ${ES_MAX_PAGINATION} results. If you need more, please use pagination`;

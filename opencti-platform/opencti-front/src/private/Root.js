@@ -1,4 +1,5 @@
 import React from 'react';
+import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { QueryRenderer } from '../relay/environment';
@@ -25,12 +26,25 @@ const rootPrivateQuery = graphql`
     settings {
       platform_map_tile_server_dark
       platform_map_tile_server_light
+      platform_feature_flags {
+        id
+        enable
+      }
       ...AppThemeProvider_settings
       ...AppIntlProvider_settings
     }
   }
 `;
 
+const isFeatureEnable = (settings, id) => {
+  const flags = settings.platform_feature_flags || [];
+  const feature = R.find((f) => f.id === id, flags);
+  return feature !== undefined && feature.enable === true;
+};
+const buildHelper = (settings) => ({
+  isFeatureEnable: (id) => isFeatureEnable(settings, id),
+  isRuntimeFieldEnable: () => isFeatureEnable(settings, 'RUNTIME_SORTING'),
+});
 const Root = () => (
   <AuthBoundaryComponent>
     <QueryRenderer
@@ -39,9 +53,9 @@ const Root = () => (
       render={({ props }) => {
         if (props) {
           return (
-            <UserContext.Provider
-              value={{ me: props.me, settings: props.settings }}
-            >
+            <UserContext.Provider value={
+              { me: props.me, settings: props.settings, helper: buildHelper(props.settings) }
+            }>
               <ConnectedThemeProvider settings={props.settings}>
                 <CssBaseline />
                 <ConnectedIntlProvider settings={props.settings}>

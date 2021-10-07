@@ -1,4 +1,5 @@
 import { getHeapStatistics } from 'v8';
+import semver from 'semver';
 import { createEntity, loadById, updateAttribute, loadEntity } from '../database/middleware';
 import conf, {
   BUS_TOPICS,
@@ -33,7 +34,7 @@ export const getApplicationInfo = () => ({
   version: PLATFORM_VERSION,
   memory: getMemoryStatistics(),
   dependencies: [
-    { name: 'Elasticsearch', version: elVersion() },
+    { name: 'Search engine', version: elVersion().then((v) => `${v.distribution || 'elk'} - ${v.number}`) },
     { name: 'RabbitMQ', version: getRabbitMQVersion() },
     { name: 'Redis', version: getRedisVersion() },
   ],
@@ -41,8 +42,19 @@ export const getApplicationInfo = () => ({
 });
 
 export const getSettings = async () => {
-  const settings = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
-  return { ...settings, platform_enable_reference: conf.get('app:enforce_references') };
+  const platformSettings = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+  const elasticInfo = await elVersion();
+  const esPlatform = elasticInfo.distribution || 'elk'; // opensearch or elasticsearch
+  const esVersion = elasticInfo.number;
+  const featureFlags = [
+    // List of specific feature flags
+    { id: 'RUNTIME_SORTING', enable: esPlatform === 'elk' && semver.satisfies(esVersion, '>=7.12.x') },
+  ];
+  return {
+    ...platformSettings,
+    platform_enable_reference: conf.get('app:enforce_references'),
+    platform_feature_flags: featureFlags,
+  };
 };
 
 export const addSettings = async (user, settings) => {

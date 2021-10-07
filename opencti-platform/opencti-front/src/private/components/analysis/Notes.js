@@ -12,7 +12,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import NotesLines, { notesLinesQuery } from './notes/NotesLines';
 import inject18n from '../../../components/i18n';
 import NoteCreation from './notes/NoteCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security, { KNOWLEDGE_KNUPDATE, UserContext } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 
 class Notes extends Component {
@@ -98,7 +98,7 @@ class Notes extends Component {
     this.setState({ numberOfElements });
   }
 
-  renderLines(paginationOptions) {
+  renderLines(paginationOptions, helper) {
     const {
       sortBy,
       orderAsc,
@@ -114,7 +114,7 @@ class Notes extends Component {
     } else if (authorId) {
       exportContext = `of-entity-${authorId}`;
     }
-
+    const isRuntimeSort = helper.isRuntimeFieldEnable();
     const dataColumns = {
       attribute_abstract: {
         label: 'Abstract',
@@ -124,7 +124,7 @@ class Notes extends Component {
       createdBy: {
         label: 'Author',
         width: '15%',
-        isSortable: true,
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
@@ -139,7 +139,7 @@ class Notes extends Component {
       objectMarking: {
         label: 'Marking',
         width: '15%',
-        isSortable: true,
+        isSortable: isRuntimeSort,
       },
     };
     return (
@@ -216,12 +216,14 @@ class Notes extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div>
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <NoteCreation paginationOptions={paginationOptions} />
-        </Security>
-      </div>
+      <UserContext.Consumer>
+        {({ helper }) => <div>
+          { view === 'lines' ? this.renderLines(paginationOptions, helper) : '' }
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <NoteCreation paginationOptions={paginationOptions} />
+            </Security>
+          </div>}
+      </UserContext.Consumer>
     );
   }
 }
