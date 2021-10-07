@@ -2628,7 +2628,7 @@ export const createRelations = async (user, inputs) => {
 // endregion
 
 // region mutation entity
-const buildEntityData = async (user, participantIds, input, type, opts = {}) => {
+const buildEntityData = async (user, input, type, opts = {}) => {
   const { fromRule } = opts;
   const internalId = input.internal_id || generateInternalId();
   const standardId = input.standard_id || generateStandardId(type, input);
@@ -2854,7 +2854,7 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
       }
     } else {
       // Create the object
-      dataEntity = await buildEntityData(user, participantIds, resolvedInput, type, opts);
+      dataEntity = await buildEntityData(user, resolvedInput, type, opts);
     }
     // Index the created element
     await indexCreatedElement(dataEntity);
