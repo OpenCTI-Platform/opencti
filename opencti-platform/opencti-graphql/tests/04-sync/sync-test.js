@@ -1,5 +1,7 @@
 import * as R from 'ramda';
+import { v4 as uuidv4 } from 'uuid';
 import { createReadStream } from 'fs';
+import path from 'path';
 import {
   ADMIN_USER,
   API_TOKEN,
@@ -11,9 +13,10 @@ import {
   SYNC_DIRECT_START_REMOTE_URI,
   SYNC_LIVE_START_REMOTE_URI,
   SYNC_RAW_START_REMOTE_URI,
+  SYNC_RESTORE_START_REMOTE_URI,
 } from '../utils/testQuery';
 import { elAggregationCount } from '../../src/database/elasticSearch';
-import { execPython3 } from '../../src/python/pythonBridge';
+import { execPython3, executePython } from '../../src/python/pythonBridge';
 import { fullLoadById } from '../../src/database/middleware';
 import { buildStixData } from '../../src/database/stix';
 import { checkInstanceDiff } from '../utils/testStream';
@@ -69,7 +72,6 @@ const SYNC_CREATION_QUERY = `mutation SynchronizerAdd($input: SynchronizerAddInp
       }
     }
   `;
-
 const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
       synchronizerStart(id: $id) {
         id
@@ -182,12 +184,87 @@ describe('Database provision', () => {
       await executeExternalQuery(SYNC_DIRECT_START_REMOTE_URI, SYNC_START_QUERY, { id: syncId });
       // Wait 1 min sync to consume all the stream
       await sleep(60000);
-      // Stop and checl
+      // Stop and check
       await shutdownModules();
       // Post check
       await checkPostSyncContent(SYNC_DIRECT_START_REMOTE_URI, objectMap, relMap, initStixReport);
       // Check file availability
       const reportData = await executeExternalQuery(SYNC_DIRECT_START_REMOTE_URI, REPORT_QUERY, {
+        id: 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7',
+      });
+      const files = reportData.report.importFiles.edges;
+      expect(files.length).toEqual(1);
+      const uploadedFile = R.head(files).node;
+      expect(uploadedFile.name).toEqual('DATA-TEST-STIX2_v2.json');
+      expect(uploadedFile.size).toEqual(37750);
+    },
+    FIFTEEN_MINUTES
+  );
+
+  // eslint-disable-next-line prettier/prettier
+  it('Should backup/restore sync succeed', async () => {
+      // Pre check
+      const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
+      // Create the backup
+      await startModules();
+      const BACKUP_CONFIG = {
+        opencti: {
+          url: 'http://api-tests:4000',
+          token: API_TOKEN,
+        },
+        connector: {
+          id: uuidv4(),
+          type: 'STREAM',
+          live_stream_id: 'live',
+          name: 'BackupFiles',
+          scope: 'backup',
+          confidence_level: 15,
+          log_level: 'info',
+        },
+        backup: {
+          protocol: 'local',
+          path: path.resolve('tests'),
+        },
+      };
+      const backupConf = JSON.stringify(BACKUP_CONFIG);
+      await executePython(
+        path.resolve('../../opencti-connectors/stream/backup-files/src'),
+        'backup-files.py',
+        [backupConf],
+        (message) => message.includes('report--f3e554eb-60f5-587c-9191-4f25e9ba9f32')
+      );
+      await shutdownModules();
+      // Restore the backup
+      const RESTORE_CONFIG = {
+        opencti: {
+          url: SYNC_RESTORE_START_REMOTE_URI,
+          token: API_TOKEN,
+        },
+        connector: {
+          id: uuidv4(),
+          type: 'EXTERNAL_IMPORT',
+          name: 'RestoreFiles',
+          scope: 'restore',
+          confidence_level: 15,
+          log_level: 'info',
+        },
+        backup: {
+          protocol: 'local',
+          direct_creation: true,
+          path: path.resolve('tests'),
+        },
+      };
+      const restoreConf = JSON.stringify(RESTORE_CONFIG);
+      await executePython(
+        path.resolve('../../opencti-connectors/external-import/restore-files/src'),
+        'restore-files.py',
+        [restoreConf],
+        (message) => message.includes('restore run completed')
+      );
+      // Post check
+      await checkPostSyncContent(SYNC_RESTORE_START_REMOTE_URI, objectMap, relMap, initStixReport);
+      // Check file availability
+      const reportData = await executeExternalQuery(SYNC_RESTORE_START_REMOTE_URI, REPORT_QUERY, {
         id: 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7',
       });
       const files = reportData.report.importFiles.edges;
