@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useContext } from 'react';
 import * as PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
@@ -12,7 +12,7 @@ import ContainerStixObjectsOrStixRelationshipsLines, {
   ContainerStixObjectsOrStixRelationshipsLinesQuery,
 } from './ContainerStixObjectsOrStixRelationshipsLines';
 import inject18n from '../../../../components/i18n';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security, { KNOWLEDGE_KNUPDATE, UserContext } from '../../../../utils/Security';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 
 const styles = () => ({
@@ -25,33 +25,33 @@ const styles = () => ({
   },
 });
 
-class ContainerStixObjectsOrStixRelationshipsComponent extends Component {
-  render() {
-    const {
-      container, classes, t, paginationOptions,
-    } = this.props;
-    const dataColumns = {
-      entity_type: {
-        label: 'Type',
-        width: '20%',
-        isSortable: true,
-      },
-      name: {
-        label: 'Name',
-        width: '45%',
-        isSortable: true,
-      },
-      created_at: {
-        label: 'Creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        isSortable: true,
-      },
-    };
-    return (
+const ContainerStixObjectsOrStixRelationshipsComponent = ({
+  container, classes, t, paginationOptions,
+}) => {
+  const { helper } = useContext(UserContext);
+  const isRuntimeSort = helper.isRuntimeFieldEnable();
+  const dataColumns = {
+    entity_type: {
+      label: 'Type',
+      width: '20%',
+      isSortable: true,
+    },
+    name: {
+      label: 'Name',
+      width: '45%',
+      isSortable: true,
+    },
+    created_at: {
+      label: 'Creation date',
+      width: '15%',
+      isSortable: true,
+    },
+    objectMarking: {
+      label: 'Marking',
+      isSortable: isRuntimeSort,
+    },
+  };
+  return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Related entities')}
@@ -89,9 +89,8 @@ class ContainerStixObjectsOrStixRelationshipsComponent extends Component {
           </ListLines>
         </Paper>
       </div>
-    );
-  }
-}
+  );
+};
 
 ContainerStixObjectsOrStixRelationshipsComponent.propTypes = {
   container: PropTypes.object,

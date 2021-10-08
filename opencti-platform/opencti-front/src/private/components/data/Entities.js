@@ -17,6 +17,7 @@ import {
 } from '../../../utils/ListParameters';
 import StixDomainObjectsRightBar from '../common/stix_domain_objects/StixDomainObjectsRightBar';
 import { isUniqFilter } from '../common/lists/Filters';
+import { UserContext } from '../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -156,6 +157,42 @@ class Entities extends Component {
     this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  buildColumns(helper) {
+    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    return {
+      entity_type: {
+        label: 'Type',
+        width: '10%',
+        isSortable: true,
+      },
+      name: {
+        label: 'Name',
+        width: '25%',
+        isSortable: true,
+      },
+      createdBy: {
+        label: 'Author',
+        width: '15%',
+        isSortable: isRuntimeSort,
+      },
+      objectLabel: {
+        label: 'Labels',
+        width: '20%',
+        isSortable: false,
+      },
+      created_at: {
+        label: 'Creation date',
+        width: '15%',
+        isSortable: true,
+      },
+      objectMarking: {
+        label: 'Marking',
+        isSortable: isRuntimeSort,
+      },
+    };
+  }
+
   renderLines(paginationOptions) {
     const {
       sortBy,
@@ -172,64 +209,32 @@ class Entities extends Component {
       numberOfSelectedElements = numberOfElements.original;
     }
     const entityTypes = R.map((n) => ({ id: n, value: n }), types);
-    const dataColumns = {
-      entity_type: {
-        label: 'Type',
-        width: '10%',
-        isSortable: true,
-      },
-      name: {
-        label: 'Name',
-        width: '25%',
-        isSortable: true,
-      },
-      createdBy: {
-        label: 'Author',
-        width: '15%',
-        isSortable: true,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '20%',
-        isSortable: false,
-      },
-      created_at: {
-        label: 'Creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        isSortable: true,
-      },
-    };
     return (
-      <div>
-        <ListLines
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={this.handleSort.bind(this)}
-          handleSearch={this.handleSearch.bind(this)}
-          handleAddFilter={this.handleAddFilter.bind(this)}
-          handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-          handleChangeView={this.handleChangeView.bind(this)}
-          handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-          selectAll={selectAll}
-          disableCards={true}
-          keyword={searchTerm}
-          filters={filters}
-          paginationOptions={paginationOptions}
-          numberOfElements={numberOfElements}
-          iconExtension={true}
-          availableFilterKeys={[
-            'labelledBy',
-            'markedBy',
-            'created_start_date',
-            'created_end_date',
-            'createdBy',
-          ]}
-        >
+        <UserContext.Consumer>
+          {({ helper }) => <div><ListLines
+            sortBy={sortBy}
+            orderAsc={orderAsc}
+            dataColumns={this.buildColumns(helper)}
+            handleSort={this.handleSort.bind(this)}
+            handleSearch={this.handleSearch.bind(this)}
+            handleAddFilter={this.handleAddFilter.bind(this)}
+            handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+            handleChangeView={this.handleChangeView.bind(this)}
+            handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+            selectAll={selectAll}
+            disableCards={true}
+            keyword={searchTerm}
+            filters={filters}
+            paginationOptions={paginationOptions}
+            numberOfElements={numberOfElements}
+            iconExtension={true}
+            availableFilterKeys={[
+              'labelledBy',
+              'markedBy',
+              'created_start_date',
+              'created_end_date',
+              'createdBy',
+            ]}>
           <QueryRenderer
             query={entitiesStixDomainObjectsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
@@ -237,7 +242,7 @@ class Entities extends Component {
               <EntitiesStixDomainObjectsLines
                 data={props}
                 paginationOptions={paginationOptions}
-                dataColumns={dataColumns}
+                dataColumns={this.buildColumns(helper)}
                 initialLoading={props === null}
                 onLabelClick={this.handleAddFilter.bind(this)}
                 selectedElements={selectedElements}
@@ -265,8 +270,8 @@ class Entities extends Component {
             this,
           )}
           withPaddingRight={true}
-        />
-      </div>
+        /></div>}
+        </UserContext.Consumer>
     );
   }
 

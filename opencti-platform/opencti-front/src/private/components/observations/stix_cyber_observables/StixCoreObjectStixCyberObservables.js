@@ -5,6 +5,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
+import { UserContext } from '../../../../utils/Security';
 import StixCoreObjectStixCyberObservablesLines, {
   stixCoreObjectStixCyberObservablesLinesQuery,
 } from './StixCoreObjectStixCyberObservablesLines';
@@ -74,10 +75,10 @@ class StixCoreObjectStixCyberObservables extends Component {
     this.setState({ targetStixCyberObservableTypes: [] }, () => this.saveView());
   }
 
-  renderLines(paginationOptions) {
-    const { sortBy, orderAsc, numberOfElements } = this.state;
-    const { stixCoreObjectLink, isRelationReversed } = this.props;
-    const dataColumns = {
+  // eslint-disable-next-line class-methods-use-this
+  buildColumns(helper) {
+    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    return {
       entity_type: {
         label: 'Type',
         width: '15%',
@@ -86,7 +87,7 @@ class StixCoreObjectStixCyberObservables extends Component {
       observable_value: {
         label: 'Value',
         width: '35%',
-        isSortable: true,
+        isSortable: isRuntimeSort,
       },
       start_time: {
         label: 'First obs.',
@@ -103,33 +104,39 @@ class StixCoreObjectStixCyberObservables extends Component {
         isSortable: true,
       },
     };
+  }
+
+  renderLines(paginationOptions) {
+    const { sortBy, orderAsc, numberOfElements } = this.state;
+    const { stixCoreObjectLink, isRelationReversed } = this.props;
     return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        displayImport={true}
-        secondaryAction={true}
-        numberOfElements={numberOfElements}
-      >
-        <QueryRenderer
-          query={stixCoreObjectStixCyberObservablesLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <StixCoreObjectStixCyberObservablesLines
-              data={props}
-              paginationOptions={paginationOptions}
-              stixCoreObjectLink={stixCoreObjectLink}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-              isRelationReversed={isRelationReversed}
+        <UserContext.Consumer>
+          {({ helper }) => <ListLines
+            sortBy={sortBy}
+            orderAsc={orderAsc}
+            dataColumns={this.buildColumns(helper)}
+            handleSort={this.handleSort.bind(this)}
+            handleSearch={this.handleSearch.bind(this)}
+            displayImport={true}
+            secondaryAction={true}
+            numberOfElements={numberOfElements}>
+            <QueryRenderer
+              query={stixCoreObjectStixCyberObservablesLinesQuery}
+              variables={{ count: 25, ...paginationOptions }}
+              render={({ props }) => (
+                <StixCoreObjectStixCyberObservablesLines
+                  data={props}
+                  paginationOptions={paginationOptions}
+                  stixCoreObjectLink={stixCoreObjectLink}
+                  dataColumns={this.buildColumns(helper)}
+                  initialLoading={props === null}
+                  setNumberOfElements={this.setNumberOfElements.bind(this)}
+                  isRelationReversed={isRelationReversed}
+                />
+              )}
             />
-          )}
-        />
-      </ListLines>
+          </ListLines>}
+       </UserContext.Consumer>
     );
   }
 

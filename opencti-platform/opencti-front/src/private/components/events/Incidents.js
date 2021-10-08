@@ -18,7 +18,7 @@ import IncidentsLines, {
   incidentsLinesQuery,
 } from './incidents/IncidentsLines';
 import IncidentCreation from './incidents/IncidentCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security, { KNOWLEDGE_KNUPDATE, UserContext } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 
 class Incidents extends Component {
@@ -166,16 +166,10 @@ class Incidents extends Component {
     );
   }
 
-  renderLines(paginationOptions) {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = this.state;
-    const dataColumns = {
+  // eslint-disable-next-line class-methods-use-this
+  buildColumns(helper) {
+    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    return {
       name: {
         label: 'Name',
         width: '28%',
@@ -203,50 +197,62 @@ class Incidents extends Component {
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: true,
+        isSortable: isRuntimeSort,
       },
     };
+  }
+
+  renderLines(paginationOptions) {
+    const {
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      openExports,
+      numberOfElements,
+    } = this.state;
     return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        handleChangeView={this.handleChangeView.bind(this)}
-        handleAddFilter={this.handleAddFilter.bind(this)}
-        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        handleToggleExports={this.handleToggleExports.bind(this)}
-        openExports={openExports}
-        exportEntityType="Incident"
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'labelledBy',
-          'markedBy',
-          'status_id',
-          'created_start_date',
-          'created_end_date',
-          'createdBy',
-        ]}
-      >
-        <QueryRenderer
-          query={incidentsLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <IncidentsLines
-              data={props}
+        <UserContext.Consumer>
+          {({ helper }) => <ListLines
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={this.buildColumns(helper)}
+              handleSort={this.handleSort.bind(this)}
+              handleSearch={this.handleSearch.bind(this)}
+              handleChangeView={this.handleChangeView.bind(this)}
+              handleAddFilter={this.handleAddFilter.bind(this)}
+              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+              handleToggleExports={this.handleToggleExports.bind(this)}
+              openExports={openExports}
+              exportEntityType="Incident"
+              keyword={searchTerm}
+              filters={filters}
               paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          )}
-        />
-      </ListLines>
+              numberOfElements={numberOfElements}
+              availableFilterKeys={[
+                'labelledBy',
+                'markedBy',
+                'status_id',
+                'created_start_date',
+                'created_end_date',
+                'createdBy',
+              ]}>
+              <QueryRenderer
+                query={incidentsLinesQuery}
+                variables={{ count: 25, ...paginationOptions }}
+                render={({ props }) => (
+                  <IncidentsLines
+                    data={props}
+                    paginationOptions={paginationOptions}
+                    dataColumns={this.buildColumns(helper)}
+                    initialLoading={props === null}
+                    onLabelClick={this.handleAddFilter.bind(this)}
+                    setNumberOfElements={this.setNumberOfElements.bind(this)}
+                  />
+                )}
+              />
+            </ListLines>}
+        </UserContext.Consumer>
     );
   }
 

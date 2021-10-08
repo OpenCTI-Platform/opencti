@@ -16,7 +16,7 @@ import IndicatorsLines, {
 } from './indicators/IndicatorsLines';
 import IndicatorCreation from './indicators/IndicatorCreation';
 import IndicatorsRightBar from './indicators/IndicatorsRightBar';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security, { UserContext, KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import ToolBar from '../data/ToolBar';
 import { isUniqFilter } from '../common/lists/Filters';
 
@@ -186,6 +186,42 @@ class Indicators extends Component {
     this.setState({ numberOfElements });
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  buildColumns(helper) {
+    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    return {
+      pattern_type: {
+        label: 'Pattern type',
+        width: '10%',
+        isSortable: true,
+      },
+      name: {
+        label: 'Name',
+        width: '25%',
+        isSortable: true,
+      },
+      objectLabel: {
+        label: 'Labels',
+        width: '20%',
+        isSortable: false,
+      },
+      created: {
+        label: 'Creation date',
+        width: '18%',
+        isSortable: true,
+      },
+      valid_until: {
+        label: 'Valid until',
+        width: '13%',
+        isSortable: true,
+      },
+      objectMarking: {
+        label: 'Marking',
+        isSortable: isRuntimeSort,
+      },
+    };
+  }
+
   renderLines(paginationOptions) {
     const {
       sortBy,
@@ -223,102 +259,72 @@ class Indicators extends Component {
         finalFilters,
       );
     }
-    const dataColumns = {
-      pattern_type: {
-        label: 'Pattern type',
-        width: '10%',
-        isSortable: true,
-      },
-      name: {
-        label: 'Name',
-        width: '25%',
-        isSortable: true,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '20%',
-        isSortable: false,
-      },
-      created: {
-        label: 'Creation date',
-        width: '18%',
-        isSortable: true,
-      },
-      valid_until: {
-        label: 'Valid until',
-        width: '13%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        isSortable: true,
-      },
-    };
     return (
-      <div>
-        <ListLines
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={this.handleSort.bind(this)}
-          handleSearch={this.handleSearch.bind(this)}
-          handleAddFilter={this.handleAddFilter.bind(this)}
-          handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-          handleToggleExports={this.handleToggleExports.bind(this)}
-          openExports={openExports}
-          handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-          selectAll={selectAll}
-          exportEntityType="Indicator"
-          exportContext={null}
-          iconExtension={true}
-          keyword={searchTerm}
-          filters={filters}
-          paginationOptions={paginationOptions}
-          numberOfElements={numberOfElements}
-          availableFilterKeys={[
-            'labelledBy',
-            'markedBy',
-            'created_start_date',
-            'created_end_date',
-            'valid_from_start_date',
-            'valid_until_end_date',
-            'x_opencti_score_gt',
-            'x_opencti_score_lte',
-            'createdBy',
-            'x_opencti_detection',
-            'sightedBy',
-            'basedOn',
-          ]}
-        >
-          <QueryRenderer
-            query={indicatorsLinesQuery}
-            variables={{ count: 25, ...paginationOptions }}
-            render={({ props }) => (
-              <IndicatorsLines
-                data={props}
-                paginationOptions={paginationOptions}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                selectedElements={selectedElements}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                selectAll={selectAll}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
+        <UserContext.Consumer>
+          {({ helper }) => <div>
+            <ListLines
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={this.buildColumns(helper)}
+              handleSort={this.handleSort.bind(this)}
+              handleSearch={this.handleSearch.bind(this)}
+              handleAddFilter={this.handleAddFilter.bind(this)}
+              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+              handleToggleExports={this.handleToggleExports.bind(this)}
+              openExports={openExports}
+              handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+              selectAll={selectAll}
+              exportEntityType="Indicator"
+              exportContext={null}
+              iconExtension={true}
+              keyword={searchTerm}
+              filters={filters}
+              paginationOptions={paginationOptions}
+              numberOfElements={numberOfElements}
+              availableFilterKeys={[
+                'labelledBy',
+                'markedBy',
+                'created_start_date',
+                'created_end_date',
+                'valid_from_start_date',
+                'valid_until_end_date',
+                'x_opencti_score_gt',
+                'x_opencti_score_lte',
+                'createdBy',
+                'x_opencti_detection',
+                'sightedBy',
+                'basedOn',
+              ]}>
+              <QueryRenderer
+                query={indicatorsLinesQuery}
+                variables={{ count: 25, ...paginationOptions }}
+                render={({ props }) => (
+                  <IndicatorsLines
+                    data={props}
+                    paginationOptions={paginationOptions}
+                    dataColumns={this.buildColumns(helper)}
+                    initialLoading={props === null}
+                    onLabelClick={this.handleAddFilter.bind(this)}
+                    selectedElements={selectedElements}
+                    onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                    selectAll={selectAll}
+                    setNumberOfElements={this.setNumberOfElements.bind(this)}
+                  />
+                )}
               />
-            )}
-          />
-        </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          filters={finalFilters}
-          handleClearSelectedElements={this.handleClearSelectedElements.bind(
-            this,
-          )}
-          withPaddingRight={true}
-        />
-      </div>
+            </ListLines>
+            <ToolBar
+              selectedElements={selectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              selectAll={selectAll}
+              filters={finalFilters}
+              handleClearSelectedElements={this.handleClearSelectedElements.bind(
+                this,
+              )}
+              withPaddingRight={true}
+            />
+          </div>}
+        </UserContext.Consumer>
     );
   }
 

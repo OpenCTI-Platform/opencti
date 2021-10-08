@@ -16,7 +16,7 @@ import {
   convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security, { UserContext, KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import ToolBar from '../data/ToolBar';
 import { isUniqFilter } from '../common/lists/Filters';
 
@@ -162,6 +162,37 @@ class StixCyberObservables extends Component {
     this.setState({ numberOfElements });
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  buildColumns(helper) {
+    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    return {
+      entity_type: {
+        label: 'Type',
+        width: '15%',
+        isSortable: true,
+      },
+      observable_value: {
+        label: 'Value',
+        width: '30%',
+        isSortable: isRuntimeSort,
+      },
+      objectLabel: {
+        label: 'Labels',
+        width: '20%',
+        isSortable: false,
+      },
+      created_at: {
+        label: 'Creation date',
+        width: '18%',
+        isSortable: true,
+      },
+      objectMarking: {
+        label: 'Marking',
+        isSortable: isRuntimeSort,
+      },
+    };
+  }
+
   renderLines(paginationOptions) {
     const {
       sortBy,
@@ -186,93 +217,68 @@ class StixCyberObservables extends Component {
         : [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }],
       finalFilters,
     );
-    const dataColumns = {
-      entity_type: {
-        label: 'Type',
-        width: '15%',
-        isSortable: true,
-      },
-      observable_value: {
-        label: 'Value',
-        width: '30%',
-        isSortable: true,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '20%',
-        isSortable: false,
-      },
-      created_at: {
-        label: 'Creation date',
-        width: '18%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        isSortable: true,
-      },
-    };
     return (
-      <div>
-        <ListLines
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={this.handleSort.bind(this)}
-          handleSearch={this.handleSearch.bind(this)}
-          handleAddFilter={this.handleAddFilter.bind(this)}
-          handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-          handleToggleExports={this.handleToggleExports.bind(this)}
-          openExports={openExports}
-          handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-          selectAll={selectAll}
-          exportEntityType="Stix-Cyber-Observable"
-          exportContext={null}
-          keyword={searchTerm}
-          filters={filters}
-          iconExtension={true}
-          paginationOptions={paginationOptions}
-          numberOfElements={numberOfElements}
-          availableFilterKeys={[
-            'labelledBy',
-            'markedBy',
-            'created_at_start_date',
-            'created_at_end_date',
-            'x_opencti_score_gt',
-            'x_opencti_score_lte',
-            'createdBy',
-            'sightedBy',
-          ]}
-        >
-          <QueryRenderer
-            query={stixCyberObservablesLinesQuery}
-            variables={{ count: 25, ...paginationOptions }}
-            render={({ props }) => (
-              <StixCyberObservablesLines
-                data={props}
-                paginationOptions={paginationOptions}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                selectedElements={selectedElements}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                selectAll={selectAll}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
+        <UserContext.Consumer>
+          {({ helper }) => <div>
+            <ListLines
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={this.buildColumns(helper)}
+              handleSort={this.handleSort.bind(this)}
+              handleSearch={this.handleSearch.bind(this)}
+              handleAddFilter={this.handleAddFilter.bind(this)}
+              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+              handleToggleExports={this.handleToggleExports.bind(this)}
+              openExports={openExports}
+              handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+              selectAll={selectAll}
+              exportEntityType="Stix-Cyber-Observable"
+              exportContext={null}
+              keyword={searchTerm}
+              filters={filters}
+              iconExtension={true}
+              paginationOptions={paginationOptions}
+              numberOfElements={numberOfElements}
+              availableFilterKeys={[
+                'labelledBy',
+                'markedBy',
+                'created_at_start_date',
+                'created_at_end_date',
+                'x_opencti_score_gt',
+                'x_opencti_score_lte',
+                'createdBy',
+                'sightedBy',
+              ]}>
+              <QueryRenderer
+                query={stixCyberObservablesLinesQuery}
+                variables={{ count: 25, ...paginationOptions }}
+                render={({ props }) => (
+                  <StixCyberObservablesLines
+                    data={props}
+                    paginationOptions={paginationOptions}
+                    dataColumns={this.buildColumns(helper)}
+                    initialLoading={props === null}
+                    onLabelClick={this.handleAddFilter.bind(this)}
+                    selectedElements={selectedElements}
+                    onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                    selectAll={selectAll}
+                    setNumberOfElements={this.setNumberOfElements.bind(this)}
+                  />
+                )}
               />
-            )}
-          />
-        </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          filters={finalFilters}
-          handleClearSelectedElements={this.handleClearSelectedElements.bind(
-            this,
-          )}
-          withPaddingRight={true}
-        />
-      </div>
+            </ListLines>
+            <ToolBar
+              selectedElements={selectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              selectAll={selectAll}
+              filters={finalFilters}
+              handleClearSelectedElements={this.handleClearSelectedElements.bind(
+                this,
+              )}
+              withPaddingRight={true}
+            />
+          </div>}
+        </UserContext.Consumer>
     );
   }
 

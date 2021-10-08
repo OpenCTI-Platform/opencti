@@ -20,6 +20,7 @@ import {
 import inject18n from '../../../../components/i18n';
 import { defaultValue } from '../../../../utils/Graph';
 import ToolBar from '../../data/ToolBar';
+import { UserContext } from '../../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -119,6 +120,37 @@ class ContainerStixDomainObjectsComponent extends Component {
     this.setState({ selectAll: false, selectedElements: null });
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  buildColumns(helper) {
+    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    return {
+      entity_type: {
+        label: 'Type',
+        width: '15%',
+        isSortable: true,
+      },
+      name: {
+        label: 'Name',
+        width: '40%',
+        isSortable: true,
+      },
+      createdBy: {
+        label: 'Creator',
+        width: '15%',
+        isSortable: isRuntimeSort,
+      },
+      created_at: {
+        label: 'Creation date',
+        width: '15%',
+        isSortable: true,
+      },
+      objectMarking: {
+        label: 'Marking',
+        isSortable: isRuntimeSort,
+      },
+    };
+  }
+
   render() {
     const { container, classes } = this.props;
     const {
@@ -135,32 +167,6 @@ class ContainerStixDomainObjectsComponent extends Component {
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original;
     }
-    const dataColumns = {
-      entity_type: {
-        label: 'Type',
-        width: '15%',
-        isSortable: true,
-      },
-      name: {
-        label: 'Name',
-        width: '40%',
-        isSortable: true,
-      },
-      createdBy: {
-        label: 'Creator',
-        width: '15%',
-        isSortable: true,
-      },
-      created_at: {
-        label: 'Creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        isSortable: true,
-      },
-    };
     const paginationOptions = {
       types: types.length > 0 ? types : ['Stix-Domain-Object'],
       filters: null,
@@ -186,61 +192,63 @@ class ContainerStixDomainObjectsComponent extends Component {
       containedBy: [{ id: container.id, value: defaultValue(container) }],
     };
     return (
-      <div className={classes.container}>
-        <ListLines
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={this.handleSort.bind(this)}
-          handleSearch={this.handleSearch.bind(this)}
-          handleToggleExports={this.handleToggleExports.bind(this)}
-          handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-          selectAll={selectAll}
-          iconExtension={true}
-          exportEntityType="Stix-Domain-Object"
-          openExports={openExports}
-          exportContext={`of-container-${container.id}`}
-          keyword={searchTerm}
-          secondaryAction={true}
-          numberOfElements={numberOfElements}
-          paginationOptions={exportPaginationOptions}
-        >
-          <QueryRenderer
-            query={containerStixDomainObjectsLinesQuery}
-            variables={{ id: container.id, count: 25, ...paginationOptions }}
-            render={({ props }) => (
-              <ContainerStixDomainObjectsLines
-                container={props ? props.container : null}
-                paginationOptions={paginationOptions}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-                onTypesChange={this.handleToggle.bind(this)}
-                openExports={openExports}
-                selectedElements={selectedElements}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                selectAll={selectAll}
+        <UserContext.Consumer>
+          {({ helper }) => <div className={classes.container}>
+            <ListLines
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={this.buildColumns(helper)}
+              handleSort={this.handleSort.bind(this)}
+              handleSearch={this.handleSearch.bind(this)}
+              handleToggleExports={this.handleToggleExports.bind(this)}
+              handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+              selectAll={selectAll}
+              iconExtension={true}
+              exportEntityType="Stix-Domain-Object"
+              openExports={openExports}
+              exportContext={`of-container-${container.id}`}
+              keyword={searchTerm}
+              secondaryAction={true}
+              numberOfElements={numberOfElements}
+              paginationOptions={exportPaginationOptions}
+            >
+              <QueryRenderer
+                query={containerStixDomainObjectsLinesQuery}
+                variables={{ id: container.id, count: 25, ...paginationOptions }}
+                render={({ props }) => (
+                  <ContainerStixDomainObjectsLines
+                    container={props ? props.container : null}
+                    paginationOptions={paginationOptions}
+                    dataColumns={this.buildColumns(helper)}
+                    initialLoading={props === null}
+                    setNumberOfElements={this.setNumberOfElements.bind(this)}
+                    onTypesChange={this.handleToggle.bind(this)}
+                    openExports={openExports}
+                    selectedElements={selectedElements}
+                    onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                    selectAll={selectAll}
+                  />
+                )}
               />
-            )}
-          />
-        </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          filters={finalFilters}
-          handleClearSelectedElements={this.handleClearSelectedElements.bind(
-            this,
-          )}
-          withPaddingRight={true}
-        />
-        <StixDomainObjectsRightBar
-          types={types}
-          handleToggle={this.handleToggle.bind(this)}
-          handleClear={this.handleClear.bind(this)}
-          openExports={openExports}
-        />
-      </div>
+            </ListLines>
+            <ToolBar
+              selectedElements={selectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              selectAll={selectAll}
+              filters={finalFilters}
+              handleClearSelectedElements={this.handleClearSelectedElements.bind(
+                this,
+              )}
+              withPaddingRight={true}
+            />
+            <StixDomainObjectsRightBar
+              types={types}
+              handleToggle={this.handleToggle.bind(this)}
+              handleClear={this.handleClear.bind(this)}
+              openExports={openExports}
+            />
+          </div>}
+        </UserContext.Consumer>
     );
   }
 }

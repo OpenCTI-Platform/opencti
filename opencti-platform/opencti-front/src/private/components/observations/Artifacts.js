@@ -10,7 +10,7 @@ import {
   convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security, { UserContext, KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import ToolBar from '../data/ToolBar';
 import ArtifactsLines, {
   artifactsLinesQuery,
@@ -130,32 +130,14 @@ class StixCyberObservables extends Component {
     this.setState({ numberOfElements });
   }
 
-  renderLines(paginationOptions) {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-      selectedElements,
-      selectAll,
-    } = this.state;
-    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
-    if (selectAll) {
-      numberOfSelectedElements = numberOfElements.original;
-    }
-    let finalFilters = filters;
-    finalFilters = R.assoc(
-      'entity_type',
-      [{ id: 'Artifact', value: 'Artifact' }],
-      finalFilters,
-    );
-    const dataColumns = {
+  // eslint-disable-next-line class-methods-use-this
+  buildColumns(helper) {
+    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    return {
       observable_value: {
         label: 'Value',
         width: '15%',
-        isSortable: true,
+        isSortable: isRuntimeSort,
       },
       file_name: {
         label: 'File name',
@@ -184,66 +166,90 @@ class StixCyberObservables extends Component {
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: true,
+        isSortable: isRuntimeSort,
       },
     };
+  }
+
+  renderLines(paginationOptions) {
+    const {
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      openExports,
+      numberOfElements,
+      selectedElements,
+      selectAll,
+    } = this.state;
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original;
+    }
+    let finalFilters = filters;
+    finalFilters = R.assoc(
+      'entity_type',
+      [{ id: 'Artifact', value: 'Artifact' }],
+      finalFilters,
+    );
     return (
-      <div>
-        <ListLines
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={this.handleSort.bind(this)}
-          handleSearch={this.handleSearch.bind(this)}
-          handleAddFilter={this.handleAddFilter.bind(this)}
-          handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-          handleToggleExports={this.handleToggleExports.bind(this)}
-          openExports={openExports}
-          handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-          selectAll={selectAll}
-          exportEntityType="Artifact"
-          exportContext={null}
-          keyword={searchTerm}
-          filters={filters}
-          iconExtension={true}
-          paginationOptions={paginationOptions}
-          numberOfElements={numberOfElements}
-          availableFilterKeys={[
-            'labelledBy',
-            'markedBy',
-            'created_at_start_date',
-            'created_at_end_date',
-            'createdBy',
-          ]}
-        >
-          <QueryRenderer
-            query={artifactsLinesQuery}
-            variables={{ count: 25, ...paginationOptions }}
-            render={({ props }) => (
-              <ArtifactsLines
-                data={props}
-                paginationOptions={paginationOptions}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                selectedElements={selectedElements}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+        <UserContext.Consumer>
+          {({ helper }) => <div>
+              <ListLines
+                sortBy={sortBy}
+                orderAsc={orderAsc}
+                dataColumns={this.buildColumns(helper)}
+                handleSort={this.handleSort.bind(this)}
+                handleSearch={this.handleSearch.bind(this)}
+                handleAddFilter={this.handleAddFilter.bind(this)}
+                handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+                handleToggleExports={this.handleToggleExports.bind(this)}
+                openExports={openExports}
+                handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
                 selectAll={selectAll}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
+                exportEntityType="Artifact"
+                exportContext={null}
+                keyword={searchTerm}
+                filters={filters}
+                iconExtension={true}
+                paginationOptions={paginationOptions}
+                numberOfElements={numberOfElements}
+                availableFilterKeys={[
+                  'labelledBy',
+                  'markedBy',
+                  'created_at_start_date',
+                  'created_at_end_date',
+                  'createdBy',
+                ]}>
+                <QueryRenderer
+                  query={artifactsLinesQuery}
+                  variables={{ count: 25, ...paginationOptions }}
+                  render={({ props }) => (
+                    <ArtifactsLines
+                      data={props}
+                      paginationOptions={paginationOptions}
+                      dataColumns={this.buildColumns(helper)}
+                      initialLoading={props === null}
+                      onLabelClick={this.handleAddFilter.bind(this)}
+                      selectedElements={selectedElements}
+                      onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                      selectAll={selectAll}
+                      setNumberOfElements={this.setNumberOfElements.bind(this)}
+                    />
+                  )}
+                />
+              </ListLines>
+              <ToolBar
+                selectedElements={selectedElements}
+                numberOfSelectedElements={numberOfSelectedElements}
+                selectAll={selectAll}
+                filters={finalFilters}
+                handleClearSelectedElements={this.handleClearSelectedElements.bind(
+                  this,
+                )}
               />
-            )}
-          />
-        </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          filters={finalFilters}
-          handleClearSelectedElements={this.handleClearSelectedElements.bind(
-            this,
-          )}
-        />
-      </div>
+          </div>}
+        </UserContext.Consumer>
     );
   }
 

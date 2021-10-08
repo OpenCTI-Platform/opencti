@@ -29,6 +29,7 @@ import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreOb
 import Filters, { isUniqFilter } from '../lists/Filters';
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
+import { UserContext } from '../../../../utils/Security';
 
 const VIEW_AS_KNOWLEDGE = 'knowledge';
 
@@ -185,6 +186,38 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
     this.setState({ numberOfElements });
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  buildColumns(helper) {
+    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    return {
+      name: {
+        label: 'Title',
+        width: '30%',
+        isSortable: true,
+      },
+      createdBy: {
+        label: 'Author',
+        width: '15%',
+        isSortable: isRuntimeSort,
+      },
+      objectLabel: {
+        label: 'Labels',
+        width: '20%',
+        isSortable: false,
+      },
+      created: {
+        label: 'Date',
+        width: '15%',
+        isSortable: true,
+      },
+      objectMarking: {
+        label: 'Marking',
+        width: '15%',
+        isSortable: isRuntimeSort,
+      },
+    };
+  }
+
   renderLines(paginationOptions) {
     const {
       sortBy,
@@ -202,76 +235,50 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       exportContext = `of-entity-${authorId}`;
     }
 
-    const dataColumns = {
-      name: {
-        label: 'Title',
-        width: '30%',
-        isSortable: true,
-      },
-      createdBy: {
-        label: 'Author',
-        width: '15%',
-        isSortable: true,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '20%',
-        isSortable: false,
-      },
-      created: {
-        label: 'Date',
-        width: '15%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        width: '15%',
-        isSortable: true,
-      },
-    };
     return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        handleAddFilter={this.handleAddFilter.bind(this)}
-        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        handleToggleExports={this.handleToggleExports.bind(this)}
-        openExports={openExports}
-        noPadding={typeof this.props.onChangeOpenExports === 'function'}
-        exportEntityType="Report"
-        exportContext={exportContext}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'labelledBy',
-          'createdBy',
-          'markedBy',
-          'created_start_date',
-          'created_end_date',
-          'container_type',
-          'report_types',
-        ]}
-      >
-        <QueryRenderer
-          query={stixCoreObjectOrStixCoreRelationshipContainersLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <StixCoreObjectOrStixCoreRelationshipContainersLines
-              data={props}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
+        <UserContext.Consumer>
+          {({ helper }) => <ListLines
+            sortBy={sortBy}
+            orderAsc={orderAsc}
+            dataColumns={this.buildColumns(helper)}
+            handleSort={this.handleSort.bind(this)}
+            handleSearch={this.handleSearch.bind(this)}
+            handleAddFilter={this.handleAddFilter.bind(this)}
+            handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+            handleToggleExports={this.handleToggleExports.bind(this)}
+            openExports={openExports}
+            noPadding={typeof this.props.onChangeOpenExports === 'function'}
+            exportEntityType="Report"
+            exportContext={exportContext}
+            keyword={searchTerm}
+            filters={filters}
+            paginationOptions={paginationOptions}
+            numberOfElements={numberOfElements}
+            availableFilterKeys={[
+              'labelledBy',
+              'createdBy',
+              'markedBy',
+              'created_start_date',
+              'created_end_date',
+              'container_type',
+              'report_types',
+            ]}>
+            <QueryRenderer
+              query={stixCoreObjectOrStixCoreRelationshipContainersLinesQuery}
+              variables={{ count: 25, ...paginationOptions }}
+              render={({ props }) => (
+                <StixCoreObjectOrStixCoreRelationshipContainersLines
+                  data={props}
+                  paginationOptions={paginationOptions}
+                  dataColumns={this.buildColumns(helper)}
+                  initialLoading={props === null}
+                  onLabelClick={this.handleAddFilter.bind(this)}
+                  setNumberOfElements={this.setNumberOfElements.bind(this)}
+                />
+              )}
             />
-          )}
-        />
-      </ListLines>
+          </ListLines>}
+      </UserContext.Consumer>
     );
   }
 

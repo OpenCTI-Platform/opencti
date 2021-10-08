@@ -13,7 +13,7 @@ import {
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import IndicatorsRightBar from './IndicatorsRightBar';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security, { UserContext, KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import ToolBar from '../../data/ToolBar';
 import { isUniqFilter } from '../../common/lists/Filters';
 
@@ -166,6 +166,42 @@ class StixDomainObjectIndicators extends Component {
     this.setState({ numberOfElements });
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  buildColumns(helper) {
+    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    return {
+      pattern_type: {
+        label: 'Type',
+        width: '10%',
+        isSortable: true,
+      },
+      name: {
+        label: 'Name',
+        width: '30%',
+        isSortable: true,
+      },
+      objectLabel: {
+        label: 'Labels',
+        width: '15%',
+        isSortable: false,
+      },
+      created_at: {
+        label: 'Creation date',
+        width: '15%',
+        isSortable: true,
+      },
+      valid_until: {
+        label: 'Valid until',
+        width: '15%',
+        isSortable: true,
+      },
+      objectMarking: {
+        label: 'Marking',
+        isSortable: isRuntimeSort,
+      },
+    };
+  }
+
   renderLines(paginationOptions) {
     const {
       sortBy,
@@ -204,37 +240,7 @@ class StixDomainObjectIndicators extends Component {
         finalFilters,
       );
     }
-    const dataColumns = {
-      pattern_type: {
-        label: 'Type',
-        width: '10%',
-        isSortable: true,
-      },
-      name: {
-        label: 'Name',
-        width: '30%',
-        isSortable: true,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '15%',
-        isSortable: false,
-      },
-      created_at: {
-        label: 'Creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      valid_until: {
-        label: 'Valid until',
-        width: '15%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        isSortable: true,
-      },
-    };
+
     const exportPaginationOptions = {
       filters: [{ key: 'indicates', values: [stixDomainObjectId] }],
       orderBy: sortBy,
@@ -242,60 +248,62 @@ class StixDomainObjectIndicators extends Component {
       search: searchTerm,
     };
     return (
-      <div>
-        <ListLines
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={this.handleSort.bind(this)}
-          handleSearch={this.handleSearch.bind(this)}
-          handleAddFilter={this.handleAddFilter.bind(this)}
-          handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-          handleToggleExports={this.handleToggleExports.bind(this)}
-          openExports={openExports}
-          handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-          selectAll={selectAll}
-          noPadding={typeof this.props.onChangeOpenExports === 'function'}
-          paginationOptions={exportPaginationOptions}
-          exportEntityType="Indicator"
-          filters={filters}
-          exportContext={`of-entity-${stixDomainObjectId}`}
-          keyword={searchTerm}
-          secondaryAction={true}
-          iconExtension={true}
-          numberOfElements={numberOfElements}
-          availableFilterKeys={['created_start_date', 'created_end_date']}
-        >
-          <QueryRenderer
-            query={stixDomainObjectIndicatorsLinesQuery}
-            variables={{ count: 25, ...paginationOptions }}
-            render={({ props }) => (
-              <StixDomainObjectIndicatorsLines
-                data={props}
-                paginationOptions={paginationOptions}
-                entityLink={stixDomainObjectLink}
-                entityId={stixDomainObjectId}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-                selectedElements={selectedElements}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                selectAll={selectAll}
+        <UserContext.Consumer>
+          {({ helper }) => <div>
+            <ListLines
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={this.buildColumns(helper)}
+              handleSort={this.handleSort.bind(this)}
+              handleSearch={this.handleSearch.bind(this)}
+              handleAddFilter={this.handleAddFilter.bind(this)}
+              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+              handleToggleExports={this.handleToggleExports.bind(this)}
+              openExports={openExports}
+              handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+              selectAll={selectAll}
+              noPadding={typeof this.props.onChangeOpenExports === 'function'}
+              paginationOptions={exportPaginationOptions}
+              exportEntityType="Indicator"
+              filters={filters}
+              exportContext={`of-entity-${stixDomainObjectId}`}
+              keyword={searchTerm}
+              secondaryAction={true}
+              iconExtension={true}
+              numberOfElements={numberOfElements}
+              availableFilterKeys={['created_start_date', 'created_end_date']}
+            >
+              <QueryRenderer
+                query={stixDomainObjectIndicatorsLinesQuery}
+                variables={{ count: 25, ...paginationOptions }}
+                render={({ props }) => (
+                  <StixDomainObjectIndicatorsLines
+                    data={props}
+                    paginationOptions={paginationOptions}
+                    entityLink={stixDomainObjectLink}
+                    entityId={stixDomainObjectId}
+                    dataColumns={this.buildColumns(helper)}
+                    initialLoading={props === null}
+                    setNumberOfElements={this.setNumberOfElements.bind(this)}
+                    selectedElements={selectedElements}
+                    onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                    selectAll={selectAll}
+                  />
+                )}
               />
-            )}
-          />
-        </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          filters={finalFilters}
-          handleClearSelectedElements={this.handleClearSelectedElements.bind(
-            this,
-          )}
-          withPaddingRight={true}
-        />
-      </div>
+            </ListLines>
+            <ToolBar
+              selectedElements={selectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              selectAll={selectAll}
+              filters={finalFilters}
+              handleClearSelectedElements={this.handleClearSelectedElements.bind(
+                this,
+              )}
+              withPaddingRight={true}
+            />
+          </div>}
+        </UserContext.Consumer>
     );
   }
 

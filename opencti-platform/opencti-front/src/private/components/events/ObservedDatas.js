@@ -14,7 +14,7 @@ import ObservedDatasLines, {
 } from './observed_data/ObservedDatasLines';
 import inject18n from '../../../components/i18n';
 import ObservedDataCreation from './observed_data/ObservedDataCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security, { UserContext, KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 
 class ObservedDatas extends Component {
@@ -102,24 +102,10 @@ class ObservedDatas extends Component {
     this.setState({ numberOfElements });
   }
 
-  renderLines(paginationOptions) {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = this.state;
-    const { objectId, authorId } = this.props;
-    let exportContext = null;
-    if (objectId) {
-      exportContext = `of-entity-${objectId}`;
-    } else if (authorId) {
-      exportContext = `of-entity-${authorId}`;
-    }
-
-    const dataColumns = {
+  // eslint-disable-next-line class-methods-use-this
+  buildColumns(helper) {
+    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    return {
       first_entity: {
         label: 'First entity',
         width: '25%',
@@ -143,7 +129,7 @@ class ObservedDatas extends Component {
       createdBy: {
         label: 'Author',
         width: '15%',
-        isSortable: true,
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
@@ -152,50 +138,70 @@ class ObservedDatas extends Component {
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: true,
+        isSortable: isRuntimeSort,
       },
     };
+  }
+
+  renderLines(paginationOptions) {
+    const {
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      openExports,
+      numberOfElements,
+    } = this.state;
+    const { objectId, authorId } = this.props;
+    let exportContext = null;
+    if (objectId) {
+      exportContext = `of-entity-${objectId}`;
+    } else if (authorId) {
+      exportContext = `of-entity-${authorId}`;
+    }
     return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        handleAddFilter={this.handleAddFilter.bind(this)}
-        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        handleToggleExports={this.handleToggleExports.bind(this)}
-        openExports={openExports}
-        noPadding={typeof this.props.onChangeOpenExports === 'function'}
-        exportEntityType="ObservedData"
-        exportContext={exportContext}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'labelledBy',
-          'createdBy',
-          'markedBy',
-          'created_start_date',
-          'created_end_date',
-        ]}
-      >
-        <QueryRenderer
-          query={observedDatasLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <ObservedDatasLines
-              data={props}
+        <UserContext.Consumer>
+          {({ helper }) => <ListLines
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={this.buildColumns(helper)}
+              handleSort={this.handleSort.bind(this)}
+              handleSearch={this.handleSearch.bind(this)}
+              handleAddFilter={this.handleAddFilter.bind(this)}
+              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+              handleToggleExports={this.handleToggleExports.bind(this)}
+              openExports={openExports}
+              noPadding={typeof this.props.onChangeOpenExports === 'function'}
+              exportEntityType="ObservedData"
+              exportContext={exportContext}
+              keyword={searchTerm}
+              filters={filters}
               paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          )}
-        />
-      </ListLines>
+              numberOfElements={numberOfElements}
+              availableFilterKeys={[
+                'labelledBy',
+                'createdBy',
+                'markedBy',
+                'created_start_date',
+                'created_end_date',
+              ]}
+            >
+              <QueryRenderer
+                query={observedDatasLinesQuery}
+                variables={{ count: 25, ...paginationOptions }}
+                render={({ props }) => (
+                  <ObservedDatasLines
+                    data={props}
+                    paginationOptions={paginationOptions}
+                    dataColumns={this.buildColumns(helper)}
+                    initialLoading={props === null}
+                    onLabelClick={this.handleAddFilter.bind(this)}
+                    setNumberOfElements={this.setNumberOfElements.bind(this)}
+                  />
+                )}
+              />
+            </ListLines>}
+        </UserContext.Consumer>
     );
   }
 

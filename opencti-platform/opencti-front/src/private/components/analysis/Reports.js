@@ -14,7 +14,7 @@ import inject18n from '../../../components/i18n';
 import ReportCreation from './reports/ReportCreation';
 import ToolBar from '../data/ToolBar';
 import { isUniqFilter } from '../common/lists/Filters';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security, { KNOWLEDGE_KNUPDATE, UserContext } from '../../../utils/Security';
 
 class Reports extends Component {
   constructor(props) {
@@ -132,7 +132,7 @@ class Reports extends Component {
     this.setState({ numberOfElements });
   }
 
-  renderLines(paginationOptions) {
+  renderLines(paginationOptions, helper) {
     const {
       sortBy,
       orderAsc,
@@ -160,6 +160,7 @@ class Reports extends Component {
       [{ id: 'Report', value: 'Report' }],
       finalFilters,
     );
+    const isRuntimeSort = helper.isRuntimeFieldEnable();
     const dataColumns = {
       name: {
         label: 'Title',
@@ -169,7 +170,7 @@ class Reports extends Component {
       createdBy: {
         label: 'Author',
         width: '15%',
-        isSortable: true,
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
@@ -188,7 +189,7 @@ class Reports extends Component {
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: true,
+        isSortable: isRuntimeSort,
       },
     };
     return (
@@ -257,7 +258,6 @@ class Reports extends Component {
 
   render() {
     const {
-      displayCreate,
       match: {
         params: { reportType },
       },
@@ -286,14 +286,14 @@ class Reports extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div>
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        {displayCreate === true && (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <ReportCreation paginationOptions={paginationOptions} />
-          </Security>
-        )}
-      </div>
+        <UserContext.Consumer>
+          {({ helper }) => <div>
+            { view === 'lines' ? this.renderLines(paginationOptions, helper) : '' }
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <ReportCreation paginationOptions={paginationOptions} />
+            </Security>
+          </div>}
+        </UserContext.Consumer>
     );
   }
 }
