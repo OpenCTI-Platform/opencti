@@ -1,5 +1,4 @@
 import { getHeapStatistics } from 'v8';
-import semver from 'semver';
 import { createEntity, loadById, updateAttribute, loadEntity } from '../database/middleware';
 import conf, {
   BUS_TOPICS,
@@ -11,7 +10,7 @@ import conf, {
   ENABLED_SYNC_MANAGER,
 } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
-import { elVersion } from '../database/elasticSearch';
+import { elVersion, isRuntimeSortEnable } from '../database/elasticSearch';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
@@ -43,12 +42,9 @@ export const getApplicationInfo = () => ({
 
 export const getSettings = async () => {
   const platformSettings = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
-  const elasticInfo = await elVersion();
-  const esPlatform = elasticInfo.distribution || 'elk'; // opensearch or elasticsearch
-  const esVersion = elasticInfo.number;
   const featureFlags = [
     // List of specific feature flags
-    { id: 'RUNTIME_SORTING', enable: esPlatform === 'elk' && semver.satisfies(esVersion, '>=7.12.x') },
+    { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
   ];
   return {
     ...platformSettings,

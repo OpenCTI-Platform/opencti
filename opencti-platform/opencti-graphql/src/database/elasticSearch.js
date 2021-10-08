@@ -2,6 +2,7 @@
 import { Client } from '@elastic/elasticsearch';
 import { Promise } from 'bluebird';
 import * as R from 'ramda';
+import semver from 'semver';
 import {
   buildPagination,
   cursorToOffset,
@@ -200,6 +201,19 @@ export const elVersion = () => {
       }
     );
 };
+
+let isRuntimeSortingEnable;
+export const isRuntimeSortEnable = async () => {
+  if (isNotEmptyField(isRuntimeSortingEnable)) {
+    return isRuntimeSortingEnable;
+  }
+  const elasticInfo = await elVersion();
+  const esPlatform = elasticInfo.distribution || 'elk'; // opensearch or elasticsearch
+  const esVersion = elasticInfo.number;
+  isRuntimeSortingEnable = esPlatform === 'elk' && semver.satisfies(esVersion, '>=7.12.x');
+  return isRuntimeSortingEnable;
+};
+
 export const elIndexExists = async (indexName) => {
   const existIndex = await el.indices.exists({ index: indexName });
   return existIndex.body === true;
@@ -1461,7 +1475,8 @@ export const elPaginate = async (user, indexName, options = {}) => {
     },
   };
   // Add extra configuration
-  if (isNotEmptyField(runtimeMappings)) {
+  const isRuntimeSortFeatureEnable = await isRuntimeSortEnable();
+  if (isRuntimeSortFeatureEnable && isNotEmptyField(runtimeMappings)) {
     body.runtime_mappings = runtimeMappings;
   }
   if (searchAfter) {
