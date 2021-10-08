@@ -1475,8 +1475,11 @@ export const elPaginate = async (user, indexName, options = {}) => {
     },
   };
   // Add extra configuration
-  const isRuntimeSortFeatureEnable = await isRuntimeSortEnable();
-  if (isRuntimeSortFeatureEnable && isNotEmptyField(runtimeMappings)) {
+  if (isNotEmptyField(runtimeMappings)) {
+    const isRuntimeSortFeatureEnable = await isRuntimeSortEnable();
+    if (!isRuntimeSortFeatureEnable) {
+      throw UnsupportedError(`Sorting of field ${orderBy} is only possible with elastic >=7.12`);
+    }
     body.runtime_mappings = runtimeMappings;
   }
   if (searchAfter) {
