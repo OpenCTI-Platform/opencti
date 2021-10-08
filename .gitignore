@@ -5,3 +5,4 @@
 .venv
 venv
 **/.env
+docker/graphql/node_modules

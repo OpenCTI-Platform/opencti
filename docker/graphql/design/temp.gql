@@ -1,0 +1,102 @@
+# directives
+directive @constraint(
+    minLength: Int
+    maxLength: Int
+    startsWith: String
+    endsWith: String
+    notContains: String
+    pattern: String
+    format: String
+
+    # number constraints
+    min: Int
+    max: Int
+    exclusiveMin: Int
+    exclusiveMax: Int
+    multipleOf: Int
+) on INPUT_FIELD_DEFINITION
+
+
+
+# defines the query entry points for this type
+extend type Query {
+
+}
+
+# defines the mutation entry points for this type
+extend type Mutation {
+
+}
+
+# defines the subscription entry points for this type
+extend type Subscription {
+
+}
+
+# SCALARS
+scalar DateTime
+scalar ConstraintString
+scalar ConstraintNumber
+
+# ENUMERATIONS
+enum AssetType {
+    operating-system
+    database
+    web-server
+    dns-server
+    email-server
+    directory-server
+    pbx
+    firewall
+    router
+    switch
+    storage-array
+    appliance
+    application-software
+    network-device
+    circuit
+    compute-device
+    workstation
+    server
+    network
+    service
+    software
+    physical-device
+    system
+    web-site
+    voip-handset
+    voip-router
+}
+
+enum OperationalStatus {
+    operational_status
+    under-development
+    under-major-modification
+    disposition
+    other
+}
+
+# INTERFACES
+interface Common {
+    id: id!
+    object_type: String!
+}
+
+interface Asset {
+    asset_id: String
+    description: String
+    name: String!
+    locations: [Location]
+}
+
+interface ItAsset {
+    asset_taget: String
+    asset_type: AssetType!
+    operational_status: OperationalStatus!
+    release_date: DateTime
+    serial_number: String
+    vendor_name: String
+    version: String
+}
+
+interface DocumentaryAsset { }

@@ -1,0 +1,101 @@
+[
+    {   // simple datatype value
+        // value of rdfs:range is NOT bnode
+        "iri": "xxxxx",
+        "name": "xxxxx",
+        "simple": "ssssss",
+        "type": "pppppp",
+        "range": {
+            "owl#DatatypeProperty'": ["xsd:string"]
+        }
+    },
+    {   
+        // value of rdfs:range is a bnode to what it is
+        // owl:oneOf predicate has bnode to first item
+        // rdf:first contains value
+        // rdf:rest bnode to next or rdf:nil
+
+        // <http://scap.nist.gov/ns/asset-identification#implementation_point> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+        // <http://scap.nist.gov/ns/asset-identification#implementation_point> <http://www.w3.org/2000/01/rdf-schema#label> "Implementation Point"@en-US .
+        // <http://scap.nist.gov/ns/asset-identification#implementation_point> <http://www.w3.org/2000/01/rdf-schema#comment> "Identifies the relative placement of the component ('internal' or 'external') to the system boundary."@en-US .
+        // <http://scap.nist.gov/ns/asset-identification#implementation_point> <http://www.w3.org/2000/01/rdf-schema#range> _:genid1 .
+        // _:genid1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Datatype> .
+        // _:genid1 <http://www.w3.org/2002/07/owl#oneOf> _:genid2 .
+        // _:genid2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "internal"^^<http://www.w3.org/2001/XMLSchema#string> .
+        // _:genid2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:genid3 .
+        // _:genid3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "external"^^<http://www.w3.org/2001/XMLSchema#string> .
+        // _:genid3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+        "iri": "xxxxx",
+        "name": "xxxxx",
+        "simple": "ssssss",
+        "type": "pppppp",
+        "range": {
+            "owl:oneOf": [
+                "asset-owner",
+                "asset-administrator"
+            ]
+        }
+    },
+    { 
+        // value of rdfs:range is a bnode to what it is
+        // _gen1 owl:UnionOf predicate has bnode of first item
+        // _gen2 rdf:first contains value
+        // _gen2 rdf:rest bnode to next or rdf:nil
+
+        // <http://docs.oasis-open.org/ns/cti/stix/domain-name#resolves_to_refs> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+        // <http://docs.oasis-open.org/ns/cti/stix/domain-name#resolves_to_refs> <http://www.w3.org/2000/01/rdf-schema#comment> "Specifies a list of references to one or more IP addresses or domain names that the domain name resolves to.\\\n\\\nThe objects referenced in this list MUST be of type ipv4-addr or ipv6-addr or domain-name (for cases such as CNAME records)."@en-US .
+        // <http://docs.oasis-open.org/ns/cti/stix/domain-name#resolves_to_refs> <http://www.w3.org/2000/01/rdf-schema#label> "resolved_to_refs"@en-US .
+        // <http://docs.oasis-open.org/ns/cti/stix/domain-name#resolves_to_refs> <http://www.w3.org/2000/01/rdf-schema#range> _:genid1 .
+        // _:genid1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+        // _:genid1 <http://www.w3.org/2002/07/owl#unionOf> _:genid2 .
+        // _:genid2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://docs.oasis-open.org/ns/cti/stix#DomainName> .
+        // _:genid2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:genid3 .
+        // _:genid3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://docs.oasis-open.org/ns/cti/stix#IPv4Address> .
+        // _:genid3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:genid4 .
+        // _:genid4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://docs.oasis-open.org/ns/cti/stix#IPv6Address> .
+        // _:genid4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+        "iri": "xxxxx",
+        "name": "xxxxx",
+        "simple": "ssssss",
+        "type": "pppppp",
+        "range": {
+            "owl:unionOf": [
+                "stix:IPv4Address",
+                "stix:IPv6Address"
+            ]
+        }
+    },
+    { 
+        // value of rdfs:range is a bnode to what it is
+        // _gen1 owl:onDatatype predicate has the datatype
+        // _gen1 owl:withRestrictions predicate has bnode of first item
+        // _gen2 rdf:first contains bnode
+        // _gen2 rdf:rest contains rdf:nil
+        // _gen3 xsd:minInclusive predicate has value
+        // _gen3 xsd:maxInclusive predicate has value
+
+        // <http://docs.oasis-open.org/ns/cti#confidence> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+        // <http://docs.oasis-open.org/ns/cti#confidence> <http://www.w3.org/2000/01/rdf-schema#comment> "Identifies the confidence that the creator has in the correctness of their data. The confidence value MUST be a number in the range of 0-100."@en-US .
+        // <http://docs.oasis-open.org/ns/cti#confidence> <http://www.w3.org/2000/01/rdf-schema#label> "confidence"@en-US .
+        // <http://docs.oasis-open.org/ns/cti#confidence> <http://www.w3.org/2000/01/rdf-schema#range> _:genid1 .
+        // _:genid1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Datatype> .
+        // _:genid1 <http://www.w3.org/2002/07/owl#onDatatype> <http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+        // _:genid1 <http://www.w3.org/2002/07/owl#withRestrictions> _:genid2 .
+        // _:genid3 <http://www.w3.org/2001/XMLSchema#minInclusive> "100"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+        // _:genid3 <http://www.w3.org/2001/XMLSchema#maxInclusive> "100"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+        // _:genid3 <http://www.w3.org/2001/XMLSchema#pattern> "^[a-z][a-z0-9-]+[a-z0-9]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"^^<http://www.w3.org/2001/XMLSchema#string> .
+        // _:genid2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:genid3 .
+        // _:genid2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .        
+        "iri": "xxxxx",
+        "name": "xxxxx",
+        "simple": "ssssss",
+        "type": "pppppp",
+        "range": {
+            "owl:onDatatype": ["xsd:nonNegativeInteger"],
+            "xsd:minInclusion": ["1"],
+            "xsd:maxInclusion": ["100"],
+            "xsd:pattern": ["^[a-z][a-z0-9-]+[a-z0-9]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"]
+        }
+    }
+
+]

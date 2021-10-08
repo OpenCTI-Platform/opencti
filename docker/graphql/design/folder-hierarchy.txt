@@ -1,0 +1,98 @@
+/build
+    /static
+        /css
+        /js
+        /media
+/src
+    /context - 
+        sparql.ts - this is where the SPARQL Queries/GraphQL-to-SPARQL would go
+        index.ts
+    /schema
+        /assets
+            /data
+            /database
+            /hardware
+                /resolvers
+                    ComputingDevice.ts
+                    Hardware.ts
+                    index.ts - imports ts files and exports them
+                    NetworkDevice.ts
+                    Query.ts -defined QueryResolvers that access the data source
+                typeDefs.ts
+                utils.ts - ???? (if needed)
+            /network
+                resolvers.ts
+                typeDefs.ts
+            /service
+                resolvers.ts
+                typeDefs.ts
+            /software
+                /resolvers
+                    ApplicationSoftware.ts
+                    index.ts - imports ts files and exports them
+                    OperatingSystem.ts
+                    Query.ts -defined QueryResolvers that access the data source
+                    Software.ts
+                typeDefs.ts
+                utils.ts - ???? (if needed)
+            /system
+                /resolvers
+                    System.ts
+                    index.ts - imports ts files and exports them
+                    InformationSystem.ts
+                    Query.ts -defined QueryResolvers that access the data source
+                typeDefs.ts
+                utils.ts - ???? (if needed)
+            /website
+                resolvers.ts
+                typeDefs.ts
+        /cti
+            resolvers.ts
+            typeDefs.ts
+        /global
+            /typesDefs
+                common.ts
+                directives.ts
+                entryPoints.ts - exports graphql-tag entry points (e.g, Query, Mutation, Subscription)
+                index.ts
+                scalars.ts
+        /markings
+            resolvers.ts
+            typeDefs.ts
+        /oasis-stix
+            /core               - typeDefs and resolvers for each object that is common across STIX objects
+            /cyber-observables  - typeDefs and resolvers for each cyber observables
+            /meta-objects       - typeDefs and resolvers for each meta-object
+            /relationships      - typeDefs and resolvers for Relationship and Sighting
+            /threat-intel       - typeDefs and resolvers for each domain objects
+        /oscal
+            /assessment-common  - typeDefs and resolvers for each object common to assessments
+            /assessment-plan    - typeDefs and resolvers for each assessment plan entity
+            /assessment-results - typeDefs and resolvers for each assessment result entity
+            /catalog            - typeDefs and resolvers for each catalog object entity
+            /common             - typeDefs for common types 
+            /component-definition
+            /control            - typeDefs and resolvers for each object that is part of a Control
+            /poam               - typeDefs and resolvers for each object that is part of the POAM
+            /profile            - typeDefs and resolvers for each object that is part of the Profile
+            /ssp                - typeDefs and resolvers for each object that is part of the System Security Plan
+        index.ts    - makesExecutableSchema from typeDefs, resolver, and schema directives
+        resolvers.ts - imports resolves from folders and merges into a resolvers list
+        typeDefs.ts - imports the typeDefs from folders and merges into typeDefs list
+    /servers
+        graphql.ts - this is for establishing the GraphQL server
+        rest.ts - this to register the legacy REST API
+    /types
+        context.d.ts - defined what can be retained in the Context past to resolvers
+        types.d.ts - ??? exports all the interface types 
+    /utils
+        /filters - tightly coupled to data source
+            find.ts - perform finds against data source against data source
+            limit.ts - provides limit functionality against data soruc
+            offset.ts - provides offset functionality against data source
+            order.ts - provides ordering functionality against data source
+            sort.ts - provides sorting functionality against data source
+        dateRange.ts - handles date range function when querying
+        index.ts - exports each of the filters and the rateLimit functionality
+        rateLimits.ts - registered rate limiting directive (e.g, graphql-rate-limit)
+    index.ts

@@ -37,6 +37,7 @@ services:
   
   opencti:
     image: docker.darklight.ai/opencti
+    build: ../opencti-platform
     container_name: opencti
     environment:
       - NODE_OPTIONS=--max-old-space-size=8096
@@ -78,7 +79,8 @@ services:
     restart: unless-stopped
   
   graphql:
-    image: node:14.18.0-alpine
+    image: docker.darklight.ai/graphql
+    build: ./graphql
     container_name: graphql
     restart: unless-stopped
     working_dir: /graphql
