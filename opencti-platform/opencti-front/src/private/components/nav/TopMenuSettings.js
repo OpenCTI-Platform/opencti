@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
@@ -23,10 +23,7 @@ const styles = (theme) => ({
   },
 });
 
-class TopMenuSettings extends Component {
-  render() {
-    const { t, location, classes } = this.props;
-    return (
+const TopMenuSettings = ({ t, location, classes }) => (
       <div>
         <Button
           component={Link}
@@ -125,9 +122,7 @@ class TopMenuSettings extends Component {
           </Button>
         </Security>
       </div>
-    );
-  }
-}
+);
 
 TopMenuSettings.propTypes = {
   classes: PropTypes.object,

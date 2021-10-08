@@ -4,10 +4,12 @@ import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Slide from '@material-ui/core/Slide';
+import Alert from '@material-ui/lab/Alert';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import RulesList, { rulesListQuery } from './RulesList';
 import SearchInput from '../../../components/SearchInput';
+import { UserContext } from '../../../utils/Security';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
@@ -56,27 +58,38 @@ class Rules extends Component {
     const { searchTerm } = this.state;
     const { classes } = this.props;
     return (
-      <div className={classes.container}>
-        <div className={classes.parameters}>
-          <div style={{ float: 'left', marginRight: 20 }}>
-            <SearchInput
-              variant="small"
-              onSubmit={this.handleSearch.bind(this)}
-              keyword={searchTerm}
-            />
-          </div>
-        </div>
-        <div className="clearfix" />
-        <QueryRenderer
-          query={rulesListQuery}
-          render={({ props }) => {
-            if (props) {
-              return <RulesList data={props} keyword={searchTerm} />;
+        <UserContext.Consumer>
+          {({ helper }) => {
+            if (!helper.isRuleEngineEnable()) {
+              return <Alert severity="info">
+                {this.props.t(
+                  'To use this feature, your platform administrator must enable the rule engine in the config.',
+                )}
+              </Alert>;
             }
-            return <div />;
+            return <div className={classes.container}>
+              <div className={classes.parameters}>
+                <div style={{ float: 'left', marginRight: 20 }}>
+                  <SearchInput
+                      variant="small"
+                      onSubmit={this.handleSearch.bind(this)}
+                      keyword={searchTerm}
+                  />
+                </div>
+              </div>
+              <div className="clearfix"/>
+              <QueryRenderer
+                  query={rulesListQuery}
+                  render={({ props }) => {
+                    if (props) {
+                      return <RulesList data={props} keyword={searchTerm}/>;
+                    }
+                    return <div/>;
+                  }}
+              />
+            </div>;
           }}
-        />
-      </div>
+        </UserContext.Consumer>
     );
   }
 }

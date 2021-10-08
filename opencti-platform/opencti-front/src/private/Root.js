@@ -30,6 +30,10 @@ const rootPrivateQuery = graphql`
         id
         enable
       }
+      platform_modules {
+        id
+        enable
+      }
       ...AppThemeProvider_settings
       ...AppIntlProvider_settings
     }
@@ -41,7 +45,14 @@ const isFeatureEnable = (settings, id) => {
   const feature = R.find((f) => f.id === id, flags);
   return feature !== undefined && feature.enable === true;
 };
+const isModuleEnable = (settings, id) => {
+  const modules = settings.platform_modules || [];
+  const module = R.find((f) => f.id === id, modules);
+  return module !== undefined && module.enable === true;
+};
 const buildHelper = (settings) => ({
+  isModuleEnable: (id) => isModuleEnable(settings, id),
+  isRuleEngineEnable: () => isModuleEnable(settings, 'RULE_ENGINE'),
   isFeatureEnable: (id) => isFeatureEnable(settings, id),
   isRuntimeFieldEnable: () => isFeatureEnable(settings, 'RUNTIME_SORTING'),
 });
