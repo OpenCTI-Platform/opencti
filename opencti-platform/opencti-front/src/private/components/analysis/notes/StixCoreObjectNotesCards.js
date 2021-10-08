@@ -8,11 +8,13 @@ import Typography from '@material-ui/core/Typography';
 import { Field, Form, Formik } from 'formik';
 import Button from '@material-ui/core/Button';
 import {
+  Add,
   EditOutlined,
   ExpandMoreOutlined,
   RateReviewOutlined,
 } from '@material-ui/icons';
 import Accordion from '@material-ui/core/Accordion';
+import Grid from '@material-ui/core/Grid';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import * as Yup from 'yup';
@@ -29,6 +31,7 @@ import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import { dayStartDate } from '../../../../utils/Time';
 
 const styles = (theme) => ({
   paper: {
@@ -48,11 +51,19 @@ const styles = (theme) => ({
   },
   createButton: {
     float: 'left',
-    margin: '-15px 0 0 10px',
+    margin: '-15px 0 0 0px',
   },
 });
 
+// const noteValidation = (t) => Yup.object().shape({
+//   attribute_abstract: Yup.string(),
+//   content: Yup.string().required(t('This field is required')),
+// });
 const noteValidation = (t) => Yup.object().shape({
+  confidence: Yup.number(),
+  created: Yup.date()
+    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .required(t('This field is required')),
   attribute_abstract: Yup.string(),
   content: Yup.string().required(t('This field is required')),
 });
@@ -67,7 +78,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
   constructor(props) {
     super(props);
     this.bottomRef = React.createRef();
-    this.state = { open: false };
+    this.state = { open: false, search: '' };
   }
 
   scrollToBottom() {
@@ -140,7 +151,8 @@ class StixCoreObjectNotesCardsContainer extends Component {
             onClick={this.handleToggleWrite.bind(this)}
             classes={{ root: classes.createButton }}
           >
-            <EditOutlined fontSize="small" />
+            {/* <EditOutlined fontSize="small" /> */}
+            <Add fontSize="small" />
           </IconButton>
           <AddNotes
             stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
@@ -159,6 +171,98 @@ class StixCoreObjectNotesCardsContainer extends Component {
           );
         })}
         <Accordion
+          style={{ margin: `${notes.length > 0 ? '30' : '5'}px 0 30px 0` }}
+          expanded={open}
+          onChange={this.handleToggleWrite.bind(this)}
+        >
+          {/* <AccordionSummary expandIcon={<ExpandMoreOutlined />} style={{}}>
+            <Typography className={classes.heading}>
+              <RateReviewOutlined />
+              &nbsp;&nbsp;&nbsp;&nbsp;
+              <span style={{ fontWeight: 500 }}>{t('Write a note')}</span>
+            </Typography>
+          </AccordionSummary> */}
+          <AccordionDetails style={{ width: '100%' }}>
+            <Formik
+              enableReinitialize={true}
+              initialValues={{
+                created: dayStartDate(),
+                attribute_abstract: '',
+                content: '',
+                createdBy: '',
+                objectMarking: [],
+                objectLabel: [],
+              }}
+              validationSchema={noteValidation(t)}
+              onSubmit={this.onSubmit.bind(this)}
+              onReset={this.onReset.bind(this)}
+            >
+              {({
+                submitForm,
+                handleReset,
+                setFieldValue,
+                values,
+                isSubmitting,
+              }) => (
+                <Form style={{ width: '100%' }}>
+                  <Grid
+                    container={true}
+                    spacing={3}
+                    classes={{ container: classes.gridContainer }}
+                  >
+                    <Grid item={true} xs={12}>
+                      <Field
+                        component={MarkDownField}
+                        name="content"
+                        fullWidth={true}
+                        multiline={true}
+                        rows="4"
+                        style={{ marginTop: 20 }}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={4}>
+                      <CreatedByField
+                        name="createdBy"
+                        style={{ marginTop: 20 }}
+                        setFieldValue={setFieldValue}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={4}>
+                      <ObjectLabelField
+                        name="objectLabel"
+                        style={{ marginTop: 20 }}
+                        setFieldValue={setFieldValue}
+                        values={values.objectLabel}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={4}>
+                      <div className={classes.buttons}>
+                        <Button
+                          variant="contained"
+                          onClick={handleReset}
+                          disabled={isSubmitting}
+                          classes={{ root: classes.button }}
+                        >
+                          {t('Cancel')}
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={submitForm}
+                          disabled={isSubmitting}
+                          classes={{ root: classes.button }}
+                        >
+                          {t('Create')}
+                        </Button>
+                      </div>
+                    </Grid>
+                  </Grid>
+                </Form>
+              )}
+            </Formik>
+          </AccordionDetails>
+        </Accordion>
+        {/* <Accordion
           style={{ margin: `${notes.length > 0 ? '30' : '5'}px 0 30px 0` }}
           expanded={open}
           onChange={this.handleToggleWrite.bind(this)}
@@ -244,7 +348,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
               )}
             </Formik>
           </AccordionDetails>
-        </Accordion>
+        </Accordion> */}
         <div style={{ marginTop: 100 }} />
         <div ref={this.bottomRef} />
       </div>

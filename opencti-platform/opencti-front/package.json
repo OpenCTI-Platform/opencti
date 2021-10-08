@@ -67,6 +67,7 @@
     "typeface-roboto": "1.1.13",
     "uuid": "8.3.2",
     "uuid-time": "1.0.0",
+    "webpack": "4.44.2",
     "yup": "0.32.9"
   },
   "devDependencies": {

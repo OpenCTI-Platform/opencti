@@ -39,9 +39,9 @@ const styles = (theme) => ({
     right: 30,
   },
   createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
+    // position: 'fixed',
+    // bottom: 30,
+    // right: 30,
     zIndex: 3000,
   },
   buttons: {
@@ -247,14 +247,14 @@ class ExternalReferenceCreation extends Component {
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
+        <IconButton
+          color="inherit"
           aria-label="Add"
-          className={classes.createButtonContextual}
+          edge="end"
+          onClick={this.handleOpen.bind(this)}
         >
-          <Add />
-        </Fab>
+          <Add fontSize="small" />
+        </IconButton>
         <Dialog open={this.state.open} onClose={this.handleClose.bind(this)}>
           <Formik
             enableReinitialize={true}
@@ -303,7 +303,7 @@ class ExternalReferenceCreation extends Component {
                   />
                 </DialogContent>
                 <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
+                  <Button variant="outlined" onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button

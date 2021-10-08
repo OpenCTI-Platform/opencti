@@ -222,11 +222,11 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                             externalReference.url,
                           )}
                         >
-                          <ListItemIcon>
+                          {/* <ListItemIcon>
                             <Avatar classes={{ root: classes.avatar }}>
                               {externalReference.source_name.substring(0, 1)}
                             </Avatar>
-                          </ListItemIcon>
+                          </ListItemIcon> */}
                           <ListItemText
                             primary={`${externalReference.source_name} ${externalReferenceId}`}
                             secondary={truncate(externalReferenceSecondary, 90)}

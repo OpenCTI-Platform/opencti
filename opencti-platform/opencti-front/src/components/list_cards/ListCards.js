@@ -5,15 +5,20 @@ import {
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
+import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import {
+  Edit,
+  Delete,
   ArrowDownward,
   ArrowUpward,
   TableChartOutlined,
   DashboardOutlined,
+  AddCircleOutline,
+  FormatListBulleted,
 } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -31,7 +36,7 @@ const styles = (theme) => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    marginLeft: -10,
+    padding: '0 0 50px 0',
   },
   containerOpenExports: {
     flexGrow: 1,
@@ -41,17 +46,31 @@ const styles = (theme) => ({
     }),
     margin: '0 300px 0 -10px',
   },
+  toolBar: {
+    marginLeft: -25,
+    marginRight: -25,
+    marginTop: -28,
+    height: '4rem',
+    color: theme.palette.header.text,
+    boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
+  },
   parameters: {
     float: 'left',
-    margin: '-10px 0 0 15px',
+    padding: '18px',
   },
   views: {
     display: 'flex',
     float: 'right',
+    padding: '10px',
   },
   cardsContainer: {
     marginTop: 10,
     paddingTop: 0,
+  },
+  iconButton: {
+    minWidth: '0px',
+    marginLeft: 15,
+    padding: '7px',
   },
   sortField: {
     float: 'left',
@@ -116,147 +135,178 @@ class ListCards extends Component {
           openExports ? classes.containerOpenExports : classes.container
         }
       >
-        <div className={classes.parameters}>
-          <div style={{ float: 'left', marginRight: 20 }}>
-            <SearchInput
-              variant="small"
-              onSubmit={handleSearch.bind(this)}
-              keyword={keyword}
-            />
-          </div>
-          {availableFilterKeys && availableFilterKeys.length > 0 ? (
-            <Filters
-              availableFilterKeys={availableFilterKeys}
-              handleAddFilter={handleAddFilter}
-              currentFilters={filters}
-            />
-          ) : (
-            ''
-          )}
-          <InputLabel
-            classes={{ root: classes.sortFieldLabel }}
-            style={{
-              marginLeft:
-                availableFilterKeys && availableFilterKeys.length > 0 ? 10 : 0,
-            }}
-          >
-            {t('Sort by')}
-          </InputLabel>
-          <FormControl classes={{ root: classes.sortField }}>
-            <Select
-              name="sort-by"
-              value={sortBy}
-              onChange={this.sortBy.bind(this)}
-              inputProps={{
-                name: 'sort-by',
-                id: 'sort-by',
+        <div
+            className={classes.toolBar}
+            elevation={1}
+            style={{ backgroundColor: '#075AD333' }}
+        >
+          <div className={classes.parameters}>
+            <div style={{ float: 'left', marginRight: 20 }}>
+              <SearchInput
+                variant="small"
+                onSubmit={handleSearch.bind(this)}
+                keyword={keyword}
+              />
+            </div>
+            {availableFilterKeys && availableFilterKeys.length > 0 ? (
+              <Filters
+                availableFilterKeys={availableFilterKeys}
+                handleAddFilter={handleAddFilter}
+                currentFilters={filters}
+              />
+            ) : (
+              ''
+            )}
+            {numberOfElements ? (
+                <div style={{ float: 'left', padding: '5px' }}>
+                  {t('Count:')}{' '}
+                  <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>
+                </div>
+            ) : (
+              ''
+            )}
+            {/* <InputLabel
+              classes={{ root: classes.sortFieldLabel }}
+              style={{
+                marginLeft:
+                  availableFilterKeys && availableFilterKeys.length > 0 ? 10 : 0,
               }}
             >
-              {toPairs(dataColumns).map((dataColumn) => (
-                <MenuItem key={dataColumn[0]} value={dataColumn[0]}>
-                  {t(dataColumn[1].label)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <IconButton
-            aria-label="Sort by"
-            onClick={this.reverse.bind(this)}
-            classes={{ root: classes.sortIcon }}
-          >
-            {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
-          </IconButton>
-          <div className={classes.filters}>
-            {map((currentFilter) => {
-              const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
-              const values = (
-                <span>
-                  {map(
-                    (n) => (
-                      <span key={n.value}>
-                        {n.value && n.value.length > 0
-                          ? truncate(n.value, 15)
-                          : t('No label')}{' '}
-                        {last(currentFilter[1]).value !== n.value && (
-                          <code>OR</code>
-                        )}{' '}
-                      </span>
-                    ),
-                    currentFilter[1],
-                  )}
-                </span>
-              );
-              return (
-                <span>
-                  <Chip
-                    key={currentFilter[0]}
-                    classes={{ root: classes.filter }}
-                    label={
-                      <div>
-                        <strong>{label}</strong>: {values}
-                      </div>
-                    }
-                    onDelete={handleRemoveFilter.bind(this, currentFilter[0])}
-                  />
-                  {last(toPairs(filters))[0] !== currentFilter[0] && (
+              {t('Sort by')}
+            </InputLabel>
+            <FormControl classes={{ root: classes.sortField }}>
+              <Select
+                name="sort-by"
+                value={sortBy}
+                onChange={this.sortBy.bind(this)}
+                inputProps={{
+                  name: 'sort-by',
+                  id: 'sort-by',
+                }}
+              >
+                {toPairs(dataColumns).map((dataColumn) => (
+                  <MenuItem key={dataColumn[0]} value={dataColumn[0]}>
+                    {t(dataColumn[1].label)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <IconButton
+              aria-label="Sort by"
+              onClick={this.reverse.bind(this)}
+              classes={{ root: classes.sortIcon }}
+            >
+              {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
+            </IconButton> */}
+            <div className={classes.filters}>
+              {map((currentFilter) => {
+                const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
+                const values = (
+                  <span>
+                    {map(
+                      (n) => (
+                        <span key={n.value}>
+                          {n.value && n.value.length > 0
+                            ? truncate(n.value, 15)
+                            : t('No label')}{' '}
+                          {last(currentFilter[1]).value !== n.value && (
+                            <code>OR</code>
+                          )}{' '}
+                        </span>
+                      ),
+                      currentFilter[1],
+                    )}
+                  </span>
+                );
+                return (
+                  <span>
                     <Chip
-                      classes={{ root: classes.operator }}
-                      label={t('AND')}
+                      key={currentFilter[0]}
+                      classes={{ root: classes.filter }}
+                      label={
+                        <div>
+                          <strong>{label}</strong>: {values}
+                        </div>
+                      }
+                      onDelete={handleRemoveFilter.bind(this, currentFilter[0])}
                     />
-                  )}
-                </span>
-              );
-            }, toPairs(filters))}
+                    {last(toPairs(filters))[0] !== currentFilter[0] && (
+                      <Chip
+                        classes={{ root: classes.operator }}
+                        label={t('AND')}
+                      />
+                    )}
+                  </span>
+                );
+              }, toPairs(filters))}
+            </div>
           </div>
-        </div>
-        <div className={classes.views}>
-          <div style={{ float: 'right', marginTop: -20 }}>
-            {numberOfElements ? (
-              <div style={{ float: 'left', padding: '15px 5px 0 0' }}>
-                <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
-                {t('entitie(s)')}
-              </div>
-            ) : (
-              ''
-            )}
-            {typeof handleChangeView === 'function' ? (
-              <Tooltip title={t('Cards view')}>
-                <IconButton
-                  color="secondary"
-                  onClick={handleChangeView.bind(this, 'cards')}
-                >
-                  <DashboardOutlined />
-                </IconButton>
-              </Tooltip>
-            ) : (
-              ''
-            )}
-            {typeof handleChangeView === 'function' ? (
-              <Tooltip title={t('Lines view')}>
-                <IconButton
-                  color="primary"
-                  onClick={handleChangeView.bind(this, 'lines')}
-                >
-                  <TableChartOutlined />
-                </IconButton>
-              </Tooltip>
-            ) : (
-              ''
-            )}
-            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              {typeof handleToggleExports === 'function' ? (
-                <Tooltip title={t('Exports panel')}>
-                  <IconButton
-                    color={openExports ? 'secondary' : 'primary'}
-                    onClick={handleToggleExports.bind(this)}
+          <div className={classes.views}>
+            <div style={{ float: 'right' }}>
+              {typeof handleChangeView === 'function' && (
+                <Tooltip title={t('Delete')}>
+                  <Button
+                    variant="contained"
+                    className={classes.iconButton}
+                    size="large"
+                    color="primary"
+                    disabled={true}
                   >
-                    <FileExportOutline />
+                    <Delete fontSize="inherit"/>
+                  </Button>
+                </Tooltip>
+              )}
+              {typeof handleChangeView === 'function' && (
+                <Tooltip title={t('Edit')}>
+                  <Button
+                    variant="contained"
+                    className={classes.iconButton}
+                    size="large"
+                    color="primary"
+                    disabled={true}
+                  >
+                    <Edit fontSize="inherit"/>
+                  </Button>
+                </Tooltip>
+              )}
+              {typeof handleChangeView === 'function' && (
+                <Tooltip title={t('Create New')}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    startIcon={<AddCircleOutline />}
+                    color='secondary'
+                    style={{ marginLeft: 15 }}
+                  >
+                    {t('New')}
+                  </Button>
+                </Tooltip>
+              )}
+              {typeof handleChangeView === 'function' && (
+                <Tooltip title={t('Lines view')}>
+                  <IconButton
+                    color="primary"
+                    onClick={handleChangeView.bind(this, 'lines')}
+                  >
+                    <FormatListBulleted />
                   </IconButton>
                 </Tooltip>
-              ) : (
-                ''
               )}
-            </Security>
+              {/* <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+                {typeof handleToggleExports === 'function' ? (
+                  <Tooltip title={t('Exports panel')}>
+                    <IconButton
+                      color={openExports ? 'secondary' : 'primary'}
+                      onClick={handleToggleExports.bind(this)}
+                    >
+                      <FileExportOutline />
+                    </IconButton>
+                  </Tooltip>
+                ) : (
+                  ''
+                )}
+              </Security> */}
+            </div>
           </div>
         </div>
         <div className="clearfix" />

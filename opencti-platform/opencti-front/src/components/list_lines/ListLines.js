@@ -11,12 +11,17 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import {
+  Edit,
+  Delete,
   ArrowDropDown,
   ArrowDropUp,
   DashboardOutlined,
   TableChartOutlined,
+  AppsOutlined,
+  AddCircleOutline,
 } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
+import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
 import Checkbox from '@material-ui/core/Checkbox';
@@ -52,12 +57,26 @@ const styles = (theme) => ({
     }),
     padding: '0 310px 50px 0',
   },
+  toolBar: {
+    marginLeft: -25,
+    marginRight: -25,
+    marginTop: -28,
+    height: '4rem',
+    color: theme.palette.header.text,
+    boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
+  },
   parameters: {
     float: 'left',
-    marginTop: -10,
+    padding: '18px',
   },
   views: {
     float: 'right',
+    padding: '10px',
+  },
+  iconButton: {
+    minWidth: '0px',
+    marginLeft: 15,
+    padding: '7px',
   },
   linesContainer: {
     margin: '10px 0 0 0',
@@ -183,230 +202,267 @@ class ListLines extends Component {
       className = classes.containerOpenExports;
     }
     return (
-      <div className={className}>
-        <div className={classes.parameters}>
-          {typeof handleSearch === 'function' && (
-            <div style={{ float: 'left', marginRight: 20 }}>
-              <SearchInput
-                variant={searchVariant || 'small'}
-                onSubmit={handleSearch.bind(this)}
-                keyword={keyword}
-              />
-            </div>
-          )}
-          {availableFilterKeys && availableFilterKeys.length > 0 && (
-            <Filters
-              availableFilterKeys={availableFilterKeys}
-              handleAddFilter={handleAddFilter}
-              currentFilters={filters}
-            />
-          )}
-          {(!availableFilterKeys || availableFilterKeys.length === 0)
-            && !noHeaders && <div style={{ height: 38 }}> &nbsp; </div>}
-          <div className={classes.filters}>
-            {map((currentFilter) => {
-              const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
-              const values = (
-                <span>
-                  {map(
-                    (n) => (
-                      <span key={n.value}>
-                        {n.value && n.value.length > 0
-                          ? truncate(n.value, 15)
-                          : t('No label')}{' '}
-                        {last(currentFilter[1]).value !== n.value && (
-                          <code>OR</code>
-                        )}
-                      </span>
-                    ),
-                    currentFilter[1],
-                  )}
-                </span>
-              );
-              return (
-                <span>
-                  <Chip
-                    key={currentFilter[0]}
-                    classes={{ root: classes.filter }}
-                    label={
-                      <div>
-                        <strong>{label}</strong>: {values}
-                      </div>
-                    }
-                    onDelete={handleRemoveFilter.bind(this, currentFilter[0])}
-                  />
-                  {last(toPairs(filters))[0] !== currentFilter[0] && (
-                    <Chip
-                      classes={{ root: classes.operator }}
-                      label={t('AND')}
-                    />
-                  )}
-                </span>
-              );
-            }, toPairs(filters))}
-          </div>
-        </div>
-        <div className={classes.views}>
-          <div style={{ float: 'right', marginTop: -20 }}>
-            {numberOfElements && (
-              <div style={{ float: 'left', padding: '15px 5px 0 0' }}>
-                <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
-                {t('entitie(s)')}
+      <>
+        <div
+          className={classes.toolBar}
+          elevation={1}
+          style={{ backgroundColor: '#075AD333' }}
+        >
+          <div className={classes.parameters}>
+            {typeof handleSearch === 'function' && (
+              <div style={{ float: 'left', marginRight: 20 }}>
+                <SearchInput
+                  variant={searchVariant || 'small'}
+                  onSubmit={handleSearch.bind(this)}
+                  keyword={keyword}
+                />
               </div>
             )}
-            {typeof handleChangeView === 'function' && !disableCards && (
-              <Tooltip title={t('Cards view')}>
-                <IconButton
-                  color="primary"
-                  onClick={handleChangeView.bind(this, 'cards')}
-                >
-                  <DashboardOutlined />
-                </IconButton>
-              </Tooltip>
+            {availableFilterKeys && availableFilterKeys.length > 0 && (
+              <Filters
+                availableFilterKeys={availableFilterKeys}
+                handleAddFilter={handleAddFilter}
+                currentFilters={filters}
+              />
             )}
-            {typeof handleChangeView === 'function' && (
-              <Tooltip title={t('Lines view')}>
-                <IconButton
-                  color="secondary"
-                  onClick={handleChangeView.bind(this, 'lines')}
-                >
-                  <TableChartOutlined />
-                </IconButton>
-              </Tooltip>
+            {numberOfElements && (
+                <div style={{ float: 'left', padding: '5px' }}>
+                  {t('Count:')}{' '}
+                  <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>
+                </div>
             )}
-            {typeof handleChangeView === 'function' && enableDuplicates && (
-              <Tooltip title={t('Detect duplicates')}>
-                <IconButton
-                  color="secondary"
-                  onClick={handleChangeView.bind(this, 'duplicates')}
-                >
-                  <TableChartOutlined />
-                </IconButton>
-              </Tooltip>
-            )}
-            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              {typeof handleToggleExports === 'function' && (
-                <Tooltip title={t('Exports panel')}>
-                  <IconButton
-                    color={openExports ? 'secondary' : 'primary'}
-                    onClick={handleToggleExports.bind(this)}
+            {(!availableFilterKeys || availableFilterKeys.length === 0)
+              && !noHeaders && <div style={{ height: 38 }}> &nbsp; </div>}
+            <div className={classes.filters}>
+              {map((currentFilter) => {
+                const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
+                const values = (
+                  <span>
+                    {map(
+                      (n) => (
+                        <span key={n.value}>
+                          {n.value && n.value.length > 0
+                            ? truncate(n.value, 15)
+                            : t('No label')}{' '}
+                          {last(currentFilter[1]).value !== n.value && (
+                            <code>OR</code>
+                          )}
+                        </span>
+                      ),
+                      currentFilter[1],
+                    )}
+                  </span>
+                );
+                return (
+                  <span>
+                    <Chip
+                      key={currentFilter[0]}
+                      classes={{ root: classes.filter }}
+                      label={
+                        <div>
+                          <strong>{label}</strong>: {values}
+                        </div>
+                      }
+                      onDelete={handleRemoveFilter.bind(this, currentFilter[0])}
+                    />
+                    {last(toPairs(filters))[0] !== currentFilter[0] && (
+                      <Chip
+                        classes={{ root: classes.operator }}
+                        label={t('AND')}
+                      />
+                    )}
+                  </span>
+                );
+              }, toPairs(filters))}
+            </div>
+          </div>
+          <div className={classes.views}>
+            <div style={{ float: 'right' }}>
+              {typeof handleChangeView === 'function' && (
+                <Tooltip title={t('Delete')}>
+                  <Button
+                    variant="contained"
+                    className={classes.iconButton}
+                    size="large"
+                    color="primary"
+                    disabled={true}
                   >
-                    <FileExportOutline />
+                    <Delete fontSize="inherit"/>
+                  </Button>
+                </Tooltip>
+              )}
+              {typeof handleChangeView === 'function' && (
+                <Tooltip title={t('Edit')}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    disabled={true}
+                    className={classes.iconButton}
+                    size="large"
+                  >
+                    <Edit fontSize="inherit"/>
+                  </Button>
+                </Tooltip>
+              )}
+              {typeof handleChangeView === 'function' && (
+                <Tooltip title={t('Create New')}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    startIcon={<AddCircleOutline />}
+                    color='primary'
+                    style={{ marginLeft: 15 }}
+                  >
+                    {t('New')}
+                  </Button>
+                </Tooltip>
+              )}
+              {/* {typeof handleChangeView === 'function' && enableDuplicates && (
+                <Tooltip title={t('Detect duplicates')}>
+                  <IconButton
+                    color="secondary"
+                    onClick={handleChangeView.bind(this, 'duplicates')}
+                  >
+                    <TableChartOutlined />
+                  </IconButton>
+                </Tooltip>
+              )} */}
+              {/* <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+                {typeof handleToggleExports === 'function' && (
+                  <Tooltip title={t('Exports panel')}>
+                    <IconButton
+                      color={openExports ? 'secondary' : 'primary'}
+                      onClick={handleToggleExports.bind(this)}
+                    >
+                      <FileExportOutline />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </Security> */}
+              {typeof handleChangeView === 'function' && !disableCards && (
+                <Tooltip title={t('Cards view')}>
+                  <IconButton
+                    color="primary"
+                    onClick={handleChangeView.bind(this, 'cards')}
+                  >
+                    <AppsOutlined />
                   </IconButton>
                 </Tooltip>
               )}
-            </Security>
+            </div>
           </div>
         </div>
-        <div className="clearfix" />
-        {message && (
-          <div style={{ width: '100%' }}>
-            <Alert
-              severity="info"
-              variant="outlined"
-              style={{ padding: '0px 10px 0px 10px' }}
-              classes={{ message: classes.info }}
-            >
-              {message}
-            </Alert>
-          </div>
-        )}
-        <List
-          classes={{
-            root: bottomNav
-              ? classes.linesContainerBottomNav
-              : classes.linesContainer,
-          }}
-        >
-          {!noHeaders ? (
-            <ListItem
-              classes={{ root: classes.item }}
-              divider={false}
-              style={{ paddingTop: 0 }}
-            >
-              <ListItemIcon
-                style={{
-                  minWidth:
-                    typeof handleToggleSelectAll === 'function' ? 38 : 56,
-                }}
+        <div className={className}>
+          <div className="clearfix" />
+          {message && (
+            <div style={{ width: '100%' }}>
+              <Alert
+                severity="info"
+                variant="outlined"
+                style={{ padding: '0px 10px 0px 10px' }}
+                classes={{ message: classes.info }}
               >
-                {typeof handleToggleSelectAll === 'function' ? (
-                  <Checkbox
-                    edge="start"
-                    checked={selectAll}
-                    disableRipple={true}
-                    onChange={handleToggleSelectAll.bind(this)}
-                  />
-                ) : (
-                  <span
-                    style={{
-                      padding: '0 8px 0 8px',
-                      fontWeight: 700,
-                      fontSize: 12,
-                    }}
-                  >
-                    &nbsp;
-                  </span>
-                )}
-              </ListItemIcon>
-              {iconExtension && (
-                <ListItemIcon>
-                  <span
-                    style={{
-                      padding: '0 8px 0 8px',
-                      fontWeight: 700,
-                      fontSize: 12,
-                    }}
-                  >
-                    &nbsp;
-                  </span>
-                </ListItemIcon>
-              )}
-              <ListItemText
-                primary={
-                  <div>
-                    {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
-                      dataColumn[0],
-                      dataColumn[1].label,
-                      dataColumn[1].width,
-                      dataColumn[1].isSortable,
-                    ))}
-                  </div>
-                }
-              />
-              {secondaryAction && (
-                <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
-              )}
-            </ListItem>
-          ) : (
-            ''
+                {message}
+              </Alert>
+            </div>
           )}
-          {children}
-        </List>
-        {typeof handleToggleExports === 'function'
-          && exportEntityType !== 'Stix-Cyber-Observable' && (
-            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              <StixDomainObjectsExports
-                open={openExports}
-                handleToggle={handleToggleExports.bind(this)}
-                paginationOptions={paginationOptions}
-                exportEntityType={exportEntityType}
-                context={exportContext}
-              />
-            </Security>
-        )}
-        {typeof handleToggleExports === 'function'
-          && exportEntityType === 'Stix-Cyber-Observable' && (
-            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              <StixCyberObservablesExports
-                open={openExports}
-                handleToggle={handleToggleExports.bind(this)}
-                paginationOptions={paginationOptions}
-                context={exportContext}
-              />
-            </Security>
-        )}
-      </div>
+          <List
+            classes={{
+              root: bottomNav
+                ? classes.linesContainerBottomNav
+                : classes.linesContainer,
+            }}
+          >
+            {!noHeaders ? (
+              <ListItem
+                classes={{ root: classes.item }}
+                divider={false}
+                style={{ paddingTop: 0 }}
+              >
+                <ListItemIcon
+                  style={{
+                    minWidth:
+                      typeof handleToggleSelectAll === 'function' ? 38 : 56,
+                  }}
+                >
+                  {typeof handleToggleSelectAll === 'function' ? (
+                    <Checkbox
+                      edge="start"
+                      checked={selectAll}
+                      disableRipple={true}
+                      onChange={handleToggleSelectAll.bind(this)}
+                    />
+                  ) : (
+                    <span
+                      style={{
+                        padding: '0 8px 0 8px',
+                        fontWeight: 700,
+                        fontSize: 12,
+                      }}
+                    >
+                      &nbsp;
+                    </span>
+                  )}
+                </ListItemIcon>
+                {iconExtension && (
+                  <ListItemIcon>
+                    <span
+                      style={{
+                        padding: '0 8px 0 8px',
+                        fontWeight: 700,
+                        fontSize: 12,
+                      }}
+                    >
+                      &nbsp;
+                    </span>
+                  </ListItemIcon>
+                )}
+                <ListItemText
+                  primary={
+                    <div>
+                      {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
+                        dataColumn[0],
+                        dataColumn[1].label,
+                        dataColumn[1].width,
+                        dataColumn[1].isSortable,
+                      ))}
+                    </div>
+                  }
+                />
+                {secondaryAction && (
+                  <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
+                )}
+              </ListItem>
+            ) : (
+              ''
+            )}
+            {children}
+          </List>
+          {typeof handleToggleExports === 'function'
+            && exportEntityType !== 'Stix-Cyber-Observable' && (
+              <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+                <StixDomainObjectsExports
+                  open={openExports}
+                  handleToggle={handleToggleExports.bind(this)}
+                  paginationOptions={paginationOptions}
+                  exportEntityType={exportEntityType}
+                  context={exportContext}
+                />
+              </Security>
+          )}
+          {typeof handleToggleExports === 'function'
+            && exportEntityType === 'Stix-Cyber-Observable' && (
+              <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+                <StixCyberObservablesExports
+                  open={openExports}
+                  handleToggle={handleToggleExports.bind(this)}
+                  paginationOptions={paginationOptions}
+                  context={exportContext}
+                />
+              </Security>
+          )}
+        </div>
+      </>
     );
   }
 }

@@ -78,9 +78,9 @@ class SearchInput extends Component {
             onSubmit(value);
           }
         }}
-        startAdornment={
+        endAdornment={
           <InputAdornment position="start">
-            <Search />
+            <Search fontSize="inherit" />
           </InputAdornment>
         }
         classes={{

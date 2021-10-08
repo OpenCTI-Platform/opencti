@@ -12,7 +12,7 @@ import {
 } from 'react-virtualized';
 import inject18n from '../i18n';
 
-const numberOfCardsPerLine = 4;
+const numberOfCardsPerLine = 3;
 
 const styles = () => ({
   windowScrollerWrapper: {
@@ -193,7 +193,7 @@ class ListCardsContent extends Component {
                               onScroll={onChildScroll}
                               columnWidth={columnWidth}
                               columnCount={numberOfCardsPerLine}
-                              rowHeight={rowHeight || 195}
+                              rowHeight={rowHeight || 345}
                               overscanColumnCount={numberOfCardsPerLine}
                               overscanRowCount={2}
                               rowCount={rowCount}

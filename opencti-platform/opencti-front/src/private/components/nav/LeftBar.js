@@ -13,8 +13,8 @@ import Drawer from '@material-ui/core/Drawer';
 import Collapse from '@material-ui/core/Collapse';
 import {
   DashboardOutlined,
-  AssignmentOutlined,
-  LayersOutlined,
+  // AssignmentOutlined,
+  // LayersOutlined,
   ExpandLess,
   ExpandMore,
 } from '@material-ui/icons';
@@ -25,10 +25,10 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import {
   CogOutline,
   Database,
-  Binoculars,
-  FlaskOutline,
-  FolderTableOutline,
-  Timetable,
+  // Binoculars,
+  // FlaskOutline,
+  // FolderTableOutline,
+  // Timetable,
   Brain,
   GlobeModel,
 } from 'mdi-material-ui';
@@ -123,8 +123,8 @@ const LeftBar = ({ t, location, classes }) => {
             <MenuList component="nav" disablePadding={true}>
               <MenuItem
                 component={Link}
-                to="/dashboard/analysis"
-                selected={location.pathname.includes('/dashboard/analysis')}
+                to="/dashboard/assets"
+                selected={location.pathname.includes('/dashboard/assets')}
                 dense={false}
                 classes={{ root: classes.menuItemNested }}
               >

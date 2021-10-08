@@ -16,6 +16,8 @@ import Menu from '@material-ui/core/Menu';
 import Divider from '@material-ui/core/Divider';
 import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
+import { capitalize } from 'lodash';
+import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
@@ -35,9 +37,13 @@ import TopMenuInfrastructure from './TopMenuInfrastructure';
 import TopMenuStixCyberObservable from './TopMenuStixCyberObservable';
 import TopMenuArtifact from './TopMenuArtifact';
 import TopMenuThreats from './TopMenuThreats';
+import TopMenuAssets from './TopMenuAssets';
 import TopMenuThreatActor from './TopMenuThreatActor';
+import TopMenuDevice from './TopMenuDevice';
 import TopMenuIntrusionSet from './TopMenuIntrusionSet';
+import TopMenuNetwork from './TopMenuNetwork';
 import TopMenuCampaign from './TopMenuCampaign';
+import TopMenuSoftware from './TopMenuSoftware';
 import TopMenuArsenal from './TopMenuArsenal';
 import TopMenuMalware from './TopMenuMalware';
 import TopMenuTool from './TopMenuTool';
@@ -86,6 +92,10 @@ const styles = (theme) => ({
     backgroundColor: theme.palette.background.nav,
 
   },
+  toolbar: {
+    alignItems: 'flex-end',
+    borderBottom: '2px solid #075AD3',
+  },
   logo: {
     cursor: 'pointer',
     height: 35,
@@ -97,29 +107,8 @@ const styles = (theme) => ({
   barRight: {
     position: 'absolute',
     right: 5,
-    verticalAlign: 'middle',
+    alignItems: 'flex-end',
     height: '100%',
-  },
-  barContainer: {
-    display: 'table-cell',
-    float: 'left',
-    paddingTop: 10,
-  },
-  divider: {
-    display: 'table-cell',
-    float: 'left',
-    height: '100%',
-    margin: '0 5px 0 5px',
-  },
-  searchContainer: {
-    display: 'table-cell',
-    float: 'left',
-    marginRight: 5,
-    paddingTop: 9,
-  },
-  button: {
-    display: 'table-cell',
-    float: 'left',
   },
 });
 
@@ -133,6 +122,8 @@ const TopBar = ({
   t, classes, location, history, keyword, theme,
 }) => {
   const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
+  const breadCrumbPaths = location.pathname.substr(1).split('/');
+  let linkPath = '';
   const handleOpenMenu = (event) => {
     event.preventDefault();
     setMenuOpen({ open: true, anchorEl: event.currentTarget });
@@ -162,7 +153,7 @@ const TopBar = ({
       elevation={1}
       style={{ backgroundColor: theme.palette.header.background }}
     >
-      <Toolbar>
+      <Toolbar className={classes.toolbar}>
         <div className={classes.logoContainer}>
           <Link to="/dashboard">
             <img src={theme.logo} alt="logo" className={classes.logo} />
@@ -230,6 +221,19 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/threats/campaigns/') && (
             <TopMenuCampaign />
           )}
+          {(location.pathname === '/dashboard/assets'
+            || location.pathname.match('/dashboard/assets/[a-z_]+$')) && (
+            <TopMenuAssets />
+          )}
+          {location.pathname.includes('/dashboard/assets/devices/') && (
+            <TopMenuDevice />
+          )}
+          {location.pathname.includes('/dashboard/assets/network/') && (
+            <TopMenuNetwork />
+          )}
+          {location.pathname.includes('/dashboard/assets/software/') && (
+            <TopMenuSoftware />
+          )}
           {(location.pathname === '/dashboard/arsenal'
             || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && (
             <TopMenuArsenal />
@@ -290,128 +294,17 @@ const TopBar = ({
           {location.pathname === '/dashboard/profile' ? <TopMenuProfile /> : ''}
         </div>
         <div className={classes.barRight}>
-          <div className={classes.barContainer}>
-            <Security needs={[KNOWLEDGE]}>
-              <div className={classes.searchContainer}>
-                <SearchInput onSubmit={handleSearch} keyword={keyword} />
-              </div>
-              <Filters
-                variant="dialog"
-                availableFilterKeys={[
-                  'entity_type',
-                  'markedBy',
-                  'labelledBy',
-                  'createdBy',
-                  'confidence_gt',
-                  'x_opencti_organization_type',
-                  'created_start_date',
-                  'created_end_date',
-                  'created_at_start_date',
-                  'created_at_end_date',
-                ]}
-                currentFilters={{}}
-                disabled={location.pathname.includes('/dashboard/search')}
-              />
-            </Security>
-          </div>
-          <Divider className={classes.divider} orientation="vertical" />
-          <div className={classes.barContainer}>
-            <Security needs={[EXPLORE]}>
-              <Tooltip title={t('Custom dashboards')}>
-                <IconButton
-                  component={Link}
-                  to="/dashboard/workspaces/dashboards"
-                  variant={
-                    location.pathname.includes(
-                      '/dashboard/workspaces/dashboards',
-                    )
-                      ? 'contained'
-                      : 'text'
-                  }
-                  color={
-                    location.pathname.includes(
-                      '/dashboard/workspaces/dashboards',
-                    )
-                      ? 'secondary'
-                      : 'inherit'
-                  }
-                  classes={{ root: classes.button }}
-                >
-                  <InsertChartOutlined fontSize="default" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title={t('Investigations')}>
-                <IconButton
-                  component={Link}
-                  to="/dashboard/workspaces/investigations"
-                  variant={
-                    location.pathname.includes(
-                      '/dashboard/workspaces/investigations',
-                    )
-                      ? 'contained'
-                      : 'text'
-                  }
-                  color={
-                    location.pathname.includes(
-                      '/dashboard/workspaces/investigations',
-                    )
-                      ? 'secondary'
-                      : 'inherit'
-                  }
-                  classes={{ root: classes.button }}
-                >
-                  <ExploreOutlined fontSize="default" />
-                </IconButton>
-              </Tooltip>
-            </Security>
-            <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
-              <Tooltip title={t('Data import')}>
-                <IconButton
-                  component={Link}
-                  to="/dashboard/import"
-                  variant={
-                    location.pathname === '/dashboard/import'
-                      ? 'contained'
-                      : 'text'
-                  }
-                  color={
-                    location.pathname === '/dashboard/import'
-                      ? 'secondary'
-                      : 'inherit'
-                  }
-                  classes={{ root: classes.button }}
-                >
-                  <UploadOutline fontSize="default" />
-                </IconButton>
-              </Tooltip>
-            </Security>
-            <IconButton
-              size="medium"
-              classes={{ root: classes.button }}
-              aria-owns={menuOpen.open ? 'menu-appbar' : null}
-              aria-haspopup="true"
-              onClick={handleOpenMenu}
-              color="inherit"
-            >
-              <AccountCircleOutlined fontSize="default" />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              style={{ marginTop: 40, zIndex: 2100 }}
-              anchorEl={menuOpen.anchorEl}
-              open={menuOpen.open}
-              onClose={handleCloseMenu}
-            >
-              <MenuItem
-                component={Link}
-                to="/dashboard/profile"
-                onClick={handleCloseMenu}
-              >
-                {t('Profile')}
-              </MenuItem>
-              <MenuItem onClick={handleLogout}>{t('Logout')}</MenuItem>
-            </Menu>
-          </div>
+          <Breadcrumbs aria-label="breadcrumb">
+            { breadCrumbPaths.map((path, key) => {
+              linkPath = `${linkPath}/${path}`;
+              console.log('linkPath', linkPath);
+              return (<>
+                <Link key={key} underline="hover" color="#000" to={linkPath}>
+                { capitalize(path) }
+                </Link>
+              </>);
+            }) }
+          </Breadcrumbs>
         </div>
       </Toolbar>
     </AppBar>
