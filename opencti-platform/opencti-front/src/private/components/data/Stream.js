@@ -81,17 +81,16 @@ class Stream extends Component {
         keyword={searchTerm}
         message={
           <span>
-            {t('A default live stream without any filter is available on')}{' '}
-            <a
-              href="/stream/live"
-              style={{ color: theme.palette.secondary.main }}
-            >
+            {t('Global streams are available for granted users. Live at')}{' '}
+            <a href="/stream/live" target="_blank" style={{ color: theme.palette.secondary.main }}>
               <i>/stream/live</i>
             </a>
-            .
+            {' '}{t('and raw at')}{' '}
+            <a href="/stream" target="_blank" style={{ color: theme.palette.secondary.main }}>
+              <i>/stream</i>
+            </a>
           </span>
-        }
-      >
+        }>
         <QueryRenderer
           query={StreamLinesQuery}
           variables={{ count: 25, ...paginationOptions }}

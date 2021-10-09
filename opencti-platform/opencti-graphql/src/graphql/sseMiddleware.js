@@ -2,10 +2,10 @@ import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import LRU from 'lru-cache';
 import { basePath, logApp } from '../config/conf';
-import { authenticateUserFromRequest, STREAMAPI } from '../domain/user';
+import { authenticateUserFromRequest, batchGroups, STREAMAPI } from '../domain/user';
 import { createStreamProcessor } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { findById } from '../domain/stream';
+import { findById, streamCollectionGroups } from '../domain/stream';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from '../database/rabbitmq';
 import { loadStixById, loadByIdWithMetaRels } from '../database/middleware';
 import { convertFiltersToQueryOptions } from '../domain/taxii';
@@ -89,9 +89,7 @@ const createHeartbeatProcessor = () => {
 const authenticate = async (req, res, next) => {
   try {
     const auth = await authenticateUserFromRequest(req);
-    const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;
-    const isUserGranted = auth && R.find(capabilityControl, auth.capabilities || []) !== undefined;
-    if (isUserGranted) {
+    if (auth) {
       req.userId = auth.id;
       req.capabilities = auth.capabilities;
       req.allowed_marking = auth.allowed_marking;
@@ -120,6 +118,10 @@ const createSeeMiddleware = () => {
   createHeartbeatProcessor();
   const wait = (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  };
+  const isUserGlobalCapabilityGranted = (user) => {
+    const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;
+    return R.find(capabilityControl, user.capabilities || []) !== undefined;
   };
   const resolveMissingReferences = async (req, streamFilters, start, after, missingRefs, cache) => {
     const refsToResolve = missingRefs.filter((m) => !cache.has(m));
@@ -205,6 +207,11 @@ const createSeeMiddleware = () => {
   };
   const genericStreamHandler = async (req, res) => {
     try {
+      if (!isUserGlobalCapabilityGranted(req.session.user)) {
+        res.statusMessage = 'You are not authorized, please check your credentials';
+        res.status(401).end();
+        return;
+      }
       const { client } = createSseChannel(req, res);
       const processor = createStreamProcessor(req.session.user, req.session.user.user_email, async (elements) => {
         for (let index = 0; index < elements.length; index += 1) {
@@ -247,7 +254,7 @@ const createSeeMiddleware = () => {
     const isFullVisibleRelation = isMissingRelation && instance.from && instance.to;
     return isFullVisibleRelation || !isMissingRelation;
   };
-  const filteredStreamHandler = async (req, res) => {
+  const liveStreamHandler = async (req, res) => {
     try {
       const { id } = req.params;
       const version = STREAM_EVENT_VERSION;
@@ -261,7 +268,28 @@ const createSeeMiddleware = () => {
           res.status(404).end();
           return;
         }
+        const userGroups = await batchGroups(req.session.user, req.session.user.id, {
+          batched: false,
+          paginate: false,
+        });
+        const collectionGroups = await streamCollectionGroups(req.session.user, collection);
+        if (collectionGroups.length > 0) {
+          // User must have one of the collection groups
+          const collectionGroupIds = collectionGroups.map((g) => g.id);
+          const userGroupIds = userGroups.map((g) => g.id);
+          if (!collectionGroupIds.some((c) => userGroupIds.includes(c))) {
+            res.statusMessage = 'You need to have access granted for this live stream';
+            res.status(401).end();
+            return;
+          }
+        }
         streamFilters = JSON.parse(collection.filters);
+      }
+      if (!isUserGlobalCapabilityGranted(req.session.user)) {
+        // Access to the global live stream
+        res.statusMessage = 'You are not authorized, please check your credentials';
+        res.status(401).end();
+        return;
       }
       // If no marking part of filtering are accessible for the user, return
       // Its better to prevent connection instead of having no events accessible
@@ -388,7 +416,7 @@ const createSeeMiddleware = () => {
     applyMiddleware: ({ app }) => {
       app.use(`${basePath}/stream`, authenticate);
       app.get(`${basePath}/stream`, genericStreamHandler);
-      app.get(`${basePath}/stream/:id`, filteredStreamHandler);
+      app.get(`${basePath}/stream/:id`, liveStreamHandler);
       app.post(`${basePath}/stream/connection/:id`, manageStreamConnectionHandler);
     },
   };

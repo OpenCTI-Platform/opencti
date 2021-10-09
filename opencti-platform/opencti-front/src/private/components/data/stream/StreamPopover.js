@@ -59,6 +59,7 @@ const streamCollectionEditionQuery = graphql`
       name
       description
       filters
+      ...StreamCollectionEdition_streamCollection
     }
   }
 `;

@@ -407,6 +407,7 @@ type StreamCollection {
   name: String
   description: String
   filters: String
+  groups: [Group]
 }
 type StreamCollectionConnection {
   pageInfo: PageInfo!
@@ -419,6 +420,7 @@ type StreamCollectionEdge {
 input StreamCollectionAddInput {
   name: String!
   description: String
+  groups: [String]
   filters: String
 }
 enum StreamCollectionOrdering {
@@ -9416,6 +9418,8 @@ type TaxiiCollectionEditMutations {
 type StreamCollectionEditMutations {
   delete: ID
   fieldPatch(input: [EditInput]!): StreamCollection
+  addGroup(id: ID!): StreamCollection
+  deleteGroup(id: ID!): StreamCollection
 }
 
 type UserSubscriptionEditMutations {

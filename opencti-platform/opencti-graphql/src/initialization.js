@@ -104,7 +104,7 @@ export const CAPABILITIES = [
   {
     name: STREAMAPI,
     attribute_order: 5000,
-    description: 'Connect and consume the platform stream',
+    description: 'Connect and consume the platform streams (/stream, /stream/live)',
   },
 ];
 // endregion

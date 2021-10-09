@@ -13,11 +13,13 @@ import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import Chip from '@material-ui/core/Chip';
 import * as R from 'ramda';
+import { evolve, pluck } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters, { isUniqFilter } from '../../common/lists/Filters';
 import { truncate } from '../../../../utils/String';
+import GroupField from '../../common/form/GroupField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -109,16 +111,18 @@ const StreamCollectionCreation = (props) => {
   const handleOpen = () => {
     setOpen(true);
   };
+
   const handleClose = () => {
     setOpen(false);
   };
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
+    const adaptedValues = evolve({ groups: pluck('value') }, values);
     const jsonFilters = JSON.stringify(filters);
     commitMutation({
       mutation: StreamCollectionCreationMutation,
       variables: {
-        input: { ...values, filters: jsonFilters },
+        input: { ...adaptedValues, filters: jsonFilters },
       },
       updater: (store) => {
         const payload = store.getRootField('streamCollectionAdd');
@@ -159,6 +163,7 @@ const StreamCollectionCreation = (props) => {
       setFilters(R.assoc(key, [{ id, value }], filters));
     }
   };
+
   const handleRemoveFilter = (key) => {
     setFilters(R.dissoc(key, filters));
   };
@@ -194,6 +199,7 @@ const StreamCollectionCreation = (props) => {
             initialValues={{
               name: '',
               description: '',
+              groups: [],
             }}
             validationSchema={streamCollectionCreationValidation(t)}
             onSubmit={onSubmit}
@@ -213,6 +219,10 @@ const StreamCollectionCreation = (props) => {
                   label={t('Description')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
+                />
+                <GroupField
+                    name="groups"
+                    style={{ marginTop: 20, width: '100%' }}
                 />
                 <div style={{ marginTop: 35 }}>
                   <Filters
@@ -292,7 +302,7 @@ const StreamCollectionCreation = (props) => {
                     variant="contained"
                     color="primary"
                     onClick={submitForm}
-                    disabled={R.isEmpty(filters) || isSubmitting}
+                    disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
                     {t('Create')}

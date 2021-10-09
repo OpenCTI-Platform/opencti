@@ -10,11 +10,15 @@ import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import Chip from '@material-ui/core/Chip';
 import * as R from 'ramda';
+import {
+  difference, head, map, pathOr, pipe,
+} from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters, { isUniqFilter } from '../../common/lists/Filters';
 import { truncate } from '../../../../utils/String';
+import GroupField from '../../common/form/GroupField';
 
 const styles = (theme) => ({
   header: {
@@ -77,11 +81,45 @@ const streamCollectionValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
 });
 
+const groupMutationRelationAdd = graphql`
+  mutation StreamCollectionEditionGroupAddMutation(
+    $id: ID!
+    $groupId: ID!
+  ) {
+    streamCollectionEdit(id: $id) {
+      addGroup(id: $groupId) {
+        ...StreamCollectionEdition_streamCollection
+      }
+    }
+  }
+`;
+
+const groupMutationRelationDelete = graphql`
+  mutation StreamCollectionEditionGroupDeleteMutation(
+    $id: ID!
+    $groupId: ID!
+  ) {
+    streamCollectionEdit(id: $id) {
+      deleteGroup(id: $groupId) {
+        ...StreamCollectionEdition_streamCollection
+      }
+    }
+  }
+`;
+
 const StreamCollectionEditionContainer = (props) => {
   const {
     t, classes, handleClose, streamCollection,
   } = props;
+  const groups = pipe(
+    pathOr([], ['groups']),
+    map((n) => ({
+      label: n.name,
+      value: n.id,
+    })),
+  )(streamCollection);
   const initialValues = R.pickAll(['name', 'description'], streamCollection);
+  initialValues.groups = groups;
   const [filters, setFilters] = useState(
     JSON.parse(props.streamCollection.filters),
   );
@@ -139,7 +177,38 @@ const StreamCollectionEditionContainer = (props) => {
       },
     });
   };
+  const handleChangeGroups = (name, values) => {
+    const currentGroups = pipe(
+      pathOr([], ['groups']),
+      map((n) => ({
+        label: n.name,
+        value: n.id,
+      })),
+    )(streamCollection);
 
+    const added = difference(values, currentGroups);
+    const removed = difference(currentGroups, values);
+
+    if (added.length > 0) {
+      commitMutation({
+        mutation: groupMutationRelationAdd,
+        variables: {
+          id: streamCollection.id,
+          groupId: head(added).value,
+        },
+      });
+    }
+
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: groupMutationRelationDelete,
+        variables: {
+          id: streamCollection.id,
+          groupId: head(removed).value,
+        },
+      });
+    }
+  };
   return (
     <div>
       <div className={classes.header}>
@@ -175,6 +244,11 @@ const StreamCollectionEditionContainer = (props) => {
                 style={{ marginTop: 20 }}
                 onSubmit={handleSubmitField}
               />
+              <GroupField
+                  name="groups"
+                  style={{ marginTop: 20, width: '100%' }}
+                  onChange={handleChangeGroups}
+              />
               <div style={{ marginTop: 35 }}>
                 <Filters
                   variant="text"
@@ -189,7 +263,7 @@ const StreamCollectionEditionContainer = (props) => {
                     'confidence_gt',
                     'pattern_type',
                   ]}
-                  currentFilters={[]}
+                  currentFilters={{}}
                   handleAddFilter={handleAddFilter}
                   noDirectFilters={true}
                 />
@@ -227,7 +301,6 @@ const StreamCollectionEditionContainer = (props) => {
                             <strong>{label}</strong>: {values}
                           </div>
                         }
-                        disabled={Object.keys(filters).length === 1}
                         onDelete={() => handleRemoveFilter(currentFilter[0])}
                       />
                       {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
@@ -265,6 +338,10 @@ const StreamCollectionEditionFragment = createFragmentContainer(
         name
         description
         filters
+        groups {
+          id
+          name
+        }
       }
     `,
   },

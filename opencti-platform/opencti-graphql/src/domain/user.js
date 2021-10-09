@@ -96,8 +96,8 @@ export const findAll = (user, args) => {
   return listEntities(user, [ENTITY_TYPE_USER], args);
 };
 
-export const batchGroups = async (user, userIds) => {
-  return batchListThroughGetTo(user, userIds, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
+export const batchGroups = async (user, userId, opts = {}) => {
+  return batchListThroughGetTo(user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
 };
 
 export const batchRoles = async (user, userId) => {
