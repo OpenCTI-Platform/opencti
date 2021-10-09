@@ -222,6 +222,7 @@ const StreamCollectionCreation = (props) => {
                 />
                 <GroupField
                     name="groups"
+                    helpertext={t('Let the field empty to grant all users')}
                     style={{ marginTop: 20, width: '100%' }}
                 />
                 <div style={{ marginTop: 35 }}>

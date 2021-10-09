@@ -370,6 +370,7 @@ const i18n = {
       'Create a TAXII collection': 'Créer une collection TAXII',
       'Update a TAXII collection': 'Modifier une collection TAXII',
       'Create a live stream': 'Créer un stream live',
+      'Let the field empty to grant all users': 'Laissez le champ vide pour autoriser tous les utilisateurs',
       'Update a live stream': 'Modifier un stream live',
       'Add external references': 'Ajouter des références externes',
       'Add notes': 'Ajouter des notes',
