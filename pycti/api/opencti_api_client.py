@@ -100,7 +100,7 @@ class OpenCTIApiClient:
         token,
         log_level="info",
         ssl_verify=False,
-        proxies={},
+        proxies=None,
         json_logging=False,
     ):
         """Constructor method"""
