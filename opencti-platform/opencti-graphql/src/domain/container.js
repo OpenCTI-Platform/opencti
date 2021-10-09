@@ -1,9 +1,11 @@
 import * as R from 'ramda';
+import { propOr } from 'ramda';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { paginateAllThings, listEntities, listThings, loadById } from '../database/middleware';
-import { buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
+import { paginateAllThings, listEntities, listThings, loadById, listRelations } from '../database/middleware';
+import { ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination } from '../database/utils';
+import { isStixCoreRelationship } from "../schema/stixCoreRelationship";
 
 export const STATUS_STATUS_PROGRESS = 1;
 export const STATUS_STATUS_ANALYZED = 2;
@@ -45,12 +47,25 @@ export const containersObjectsOfObject = async (user, { id, types, filters = [],
     search,
     filters: [...filters, { key: buildRefRelationKey(RELATION_OBJECT), values: [id] }],
   });
+  const containersObjectsRelationshipsEdges = await Promise.all(
+    R.map(
+      (n) =>
+        listRelations(user, RELATION_OBJECT, {
+          first: 1000,
+          fromId: n.node.id,
+          toTypes: types,
+        }),
+      containers.edges
+    )
+  );
+  const containersObjectsRelationships = R.flatten(R.map((n) => n.edges, containersObjectsRelationshipsEdges));
   const containersObjects = await Promise.all(
-    R.map((n) => objects(user, n.node.id, { first: 1000, types }), containers.edges)
+    R.map((n) => loadById(user, n.node.toId, n.node.toType), containersObjectsRelationships)
   );
   const containersObjectsResult = R.uniqBy(R.path(['node', 'id']), [
     ...containers.edges,
-    ...R.flatten(R.map((n) => n.edges, containersObjects)),
+    ...R.filter((n) => !isStixCoreRelationship(n.node.toType), containersObjectsRelationships),
+    ...R.map((n) => ({ node: n }), containersObjects),
   ]);
   return buildPagination(0, null, containersObjectsResult, containersObjectsResult.length);
 };

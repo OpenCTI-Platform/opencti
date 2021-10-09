@@ -773,12 +773,7 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContain
                   entity_type
                   parent_types
                 }
-                ... on StixCoreRelationship {
-                  relationship_type
-                  start_time
-                  stop_time
-                  confidence
-                  created
+                ... on StixRelationship {
                   from {
                     ... on BasicObject {
                       id
@@ -809,6 +804,16 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContain
                       relationship_type
                     }
                   }
+                }
+                ... on StixMetaRelationship {
+                  created_at
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                  start_time
+                  stop_time
+                  confidence
+                  created
                   created_at
                   createdBy {
                     ... on Identity {
