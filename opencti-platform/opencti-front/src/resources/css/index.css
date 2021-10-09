@@ -98,6 +98,10 @@ div.markdown p {
   text-overflow: ellipsis;
 }
 
+div.markdown p:last-child {
+  margin: 0 !important;
+}
+
 .leaflet-container {
   width: 100%;
   height: 100%;

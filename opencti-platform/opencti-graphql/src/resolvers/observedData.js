@@ -9,6 +9,7 @@ import {
   observedDatasTimeSeries,
   observedDatasTimeSeriesByAuthor,
   observedDatasTimeSeriesByEntity,
+  resolveName,
 } from '../domain/observedData';
 import {
   stixDomainObjectAddRelation,
@@ -49,6 +50,9 @@ const observedDataResolvers = {
     observedDataContainsStixObjectOrStixRelationship: (_, args, { user }) => {
       return observedDataContainsStixObjectOrStixRelationship(user, args.id, args.stixObjectOrStixRelationshipId);
     },
+  },
+  ObservedData: {
+    name: (observedData, _, { user }) => resolveName(user, observedData.id),
   },
   ObservedDatasFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),

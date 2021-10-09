@@ -173,6 +173,9 @@ const ContainerStixDomainObjectLineFragment = createFragmentContainer(
         ... on CourseOfAction {
           name
         }
+        ... on ObservedData {
+          name
+        }
         ... on Individual {
           name
         }

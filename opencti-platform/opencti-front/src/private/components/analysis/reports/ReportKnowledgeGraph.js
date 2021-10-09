@@ -1165,6 +1165,9 @@ const ReportKnowledgeGraph = createFragmentContainer(
                 first_seen
                 last_seen
               }
+              ... on ObservedData {
+                name
+              }
               ... on CourseOfAction {
                 name
               }

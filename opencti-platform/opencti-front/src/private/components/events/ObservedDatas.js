@@ -106,8 +106,8 @@ class ObservedDatas extends Component {
   buildColumns(helper) {
     const isRuntimeSort = helper.isRuntimeFieldEnable();
     return {
-      first_entity: {
-        label: 'First entity',
+      name: {
+        label: 'Name',
         width: '25%',
         isSortable: false,
       },

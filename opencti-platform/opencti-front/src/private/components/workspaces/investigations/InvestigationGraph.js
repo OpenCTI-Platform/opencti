@@ -81,6 +81,7 @@ const investigationGraphStixCoreObjectQuery = graphql`
         content
       }
       ... on ObservedData {
+        name
         first_observed
         last_observed
       }
@@ -334,6 +335,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
               content
             }
             ... on ObservedData {
+              name
               first_observed
               last_observed
             }
@@ -528,6 +530,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
               attribute_abstract
             }
             ... on ObservedData {
+              name
               first_observed
               last_observed
             }
@@ -1695,6 +1698,7 @@ const InvestigationGraph = createFragmentContainer(
                 content
               }
               ... on ObservedData {
+                name
                 first_observed
                 last_observed
               }

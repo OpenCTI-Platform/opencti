@@ -188,61 +188,68 @@ class ContainerStixCyberObservablesComponent extends Component {
       containedBy: [{ id: container.id, value: defaultValue(container) }],
     };
     return (
-        <UserContext.Consumer>
-          {({ helper }) => <div className={classes.container}>
+      <UserContext.Consumer>
+        {({ helper }) => (
+          <div className={classes.container}>
             <ListLines
-                sortBy={sortBy}
-                orderAsc={orderAsc}
-                dataColumns={this.buildColumns(helper)}
-                handleSort={this.handleSort.bind(this)}
-                handleSearch={this.handleSearch.bind(this)}
-                secondaryAction={true}
-                numberOfElements={numberOfElements}
-                handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-                selectAll={selectAll}
-                iconExtension={true}
-                handleToggleExports={this.handleToggleExports.bind(this)}
-                exportEntityType="Stix-Cyber-Observable"
-                openExports={openExports}
-                exportContext={`of-container-${container.id}`}
-                paginationOptions={exportPaginationOptions}>
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={this.buildColumns(helper)}
+              handleSort={this.handleSort.bind(this)}
+              handleSearch={this.handleSearch.bind(this)}
+              secondaryAction={true}
+              numberOfElements={numberOfElements}
+              handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+              selectAll={selectAll}
+              iconExtension={true}
+              handleToggleExports={this.handleToggleExports.bind(this)}
+              exportEntityType="Stix-Cyber-Observable"
+              openExports={openExports}
+              exportContext={`of-container-${container.id}`}
+              paginationOptions={exportPaginationOptions}
+            >
               <QueryRenderer
-                  query={containerStixCyberObservablesLinesQuery}
-                  variables={{ id: container.id, count: 25, ...paginationOptions }}
-                  render={({ props }) => (
-                      <ContainerStixCyberObservablesLines
-                          container={props ? props.container : null}
-                          paginationOptions={paginationOptions}
-                          dataColumns={this.buildColumns(helper)}
-                          initialLoading={props === null}
-                          setNumberOfElements={this.setNumberOfElements.bind(this)}
-                          onTypesChange={this.handleToggle.bind(this)}
-                          openExports={openExports}
-                          selectedElements={selectedElements}
-                          onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                          selectAll={selectAll}
-                      />
-                  )}
+                query={containerStixCyberObservablesLinesQuery}
+                variables={{
+                  id: container.id,
+                  count: 25,
+                  ...paginationOptions,
+                }}
+                render={({ props }) => (
+                  <ContainerStixCyberObservablesLines
+                    container={props ? props.container : null}
+                    paginationOptions={paginationOptions}
+                    dataColumns={this.buildColumns(helper)}
+                    initialLoading={props === null}
+                    setNumberOfElements={this.setNumberOfElements.bind(this)}
+                    onTypesChange={this.handleToggle.bind(this)}
+                    openExports={openExports}
+                    selectedElements={selectedElements}
+                    onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                    selectAll={selectAll}
+                  />
+                )}
               />
             </ListLines>
             <ToolBar
-                selectedElements={selectedElements}
-                numberOfSelectedElements={numberOfSelectedElements}
-                selectAll={selectAll}
-                filters={finalFilters}
-                handleClearSelectedElements={this.handleClearSelectedElements.bind(
-                  this,
-                )}
-                withPaddingRight={true}
+              selectedElements={selectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              selectAll={selectAll}
+              filters={finalFilters}
+              handleClearSelectedElements={this.handleClearSelectedElements.bind(
+                this,
+              )}
+              withPaddingRight={true}
             />
             <StixCyberObservablesRightBar
-                types={types}
-                handleToggle={this.handleToggle.bind(this)}
-                handleClear={this.handleClear.bind(this)}
-                openExports={openExports}
+              types={types}
+              handleToggle={this.handleToggle.bind(this)}
+              handleClear={this.handleClear.bind(this)}
+              openExports={openExports}
             />
-          </div>}
-        </UserContext.Consumer>
+          </div>
+        )}
+      </UserContext.Consumer>
     );
   }
 }
@@ -272,6 +279,7 @@ const ContainerStixCyberObservables = createFragmentContainer(
           opinion
         }
         ... on ObservedData {
+          name
           first_observed
           last_observed
         }

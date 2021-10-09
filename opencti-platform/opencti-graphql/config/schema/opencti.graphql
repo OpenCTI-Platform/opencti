@@ -2257,6 +2257,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   first_observed: DateTime!
   last_observed: DateTime!
   number_observed: Int!
+  name: String!
   # Technical
   creator: User
   toStix: String

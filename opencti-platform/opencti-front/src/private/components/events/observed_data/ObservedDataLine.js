@@ -16,7 +16,6 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
-import { defaultValue } from '../../../../utils/Graph';
 
 const styles = (theme) => ({
   item: {
@@ -51,9 +50,8 @@ const styles = (theme) => ({
 class ObservedDataLineComponent extends Component {
   render() {
     const {
-      t, nsdt, classes, node, dataColumns, onLabelClick, n,
+      nsdt, classes, node, dataColumns, onLabelClick, n,
     } = this.props;
-    const firstEntity = node.objects.edges.length > 0 ? R.head(node.objects.edges).node : null;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -70,9 +68,9 @@ class ObservedDataLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.first_entity.width }}
+                style={{ width: dataColumns.name.width }}
               >
-                {firstEntity ? defaultValue(firstEntity) : t('None')}
+                {node.name}
               </div>
               <div
                 className={classes.bodyItem}
@@ -149,6 +147,7 @@ const ObservedDataLineFragment = createFragmentContainer(
       fragment ObservedDataLine_node on ObservedData {
         id
         created
+        name
         first_observed
         last_observed
         number_observed
@@ -177,140 +176,6 @@ const ObservedDataLineFragment = createFragmentContainer(
             }
           }
         }
-        objects(first: 1) {
-          edges {
-            node {
-              ... on StixCoreObject {
-                id
-                entity_type
-                parent_types
-                created_at
-                createdBy {
-                  ... on Identity {
-                    id
-                    name
-                    entity_type
-                  }
-                }
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition
-                    }
-                  }
-                }
-              }
-              ... on AttackPattern {
-                name
-                description
-                x_mitre_id
-              }
-              ... on Campaign {
-                name
-                description
-                first_seen
-                last_seen
-              }
-              ... on Note {
-                attribute_abstract
-              }
-              ... on ObservedData {
-                first_observed
-                last_observed
-              }
-              ... on Opinion {
-                opinion
-              }
-              ... on Report {
-                name
-                description
-                published
-              }
-              ... on CourseOfAction {
-                name
-                description
-              }
-              ... on Individual {
-                name
-                description
-              }
-              ... on Organization {
-                name
-                description
-              }
-              ... on Sector {
-                name
-                description
-              }
-              ... on System {
-                name
-                description
-              }
-              ... on Indicator {
-                name
-                description
-                valid_from
-              }
-              ... on Infrastructure {
-                name
-                description
-              }
-              ... on IntrusionSet {
-                name
-                description
-                first_seen
-                last_seen
-              }
-              ... on Position {
-                name
-                description
-              }
-              ... on City {
-                name
-                description
-              }
-              ... on Country {
-                name
-                description
-              }
-              ... on Region {
-                name
-                description
-              }
-              ... on Malware {
-                name
-                description
-                first_seen
-                last_seen
-              }
-              ... on ThreatActor {
-                name
-                description
-                first_seen
-                last_seen
-              }
-              ... on Tool {
-                name
-                description
-              }
-              ... on Vulnerability {
-                name
-                description
-              }
-              ... on Incident {
-                name
-                description
-                first_seen
-                last_seen
-              }
-              ... on StixCyberObservable {
-                observable_value
-                x_opencti_description
-              }
-            }
-          }
-        }
       }
     `,
   },
@@ -334,7 +199,7 @@ class ObservedDataLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.first_entity.width }}
+                style={{ width: dataColumns.name.width }}
               >
                 <Skeleton
                   animation="wave"

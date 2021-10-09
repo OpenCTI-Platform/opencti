@@ -1,4 +1,4 @@
-import { assoc, dissoc, pipe } from 'ramda';
+import * as R from 'ramda';
 import {
   createEntity,
   distributionEntities,
@@ -9,13 +9,15 @@ import {
 } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, isStixDomainObject } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { FunctionalError } from '../config/errors';
 import { isStixId } from '../schema/schemaUtils';
+import { objects } from './container';
+import { observableValue } from '../utils/format';
 
 export const findById = (user, observedDataId) => {
   return loadById(user, observedDataId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
@@ -23,6 +25,19 @@ export const findById = (user, observedDataId) => {
 
 export const findAll = async (user, args) => {
   return listEntities(user, [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args);
+};
+
+export const resolveName = async (user, observedDataId) => {
+  const observedDataObjects = await objects(user, observedDataId, {
+    first: 1,
+    types: [ABSTRACT_STIX_CORE_OBJECT],
+    connectionFormat: false,
+  });
+  const firstObject = R.head(observedDataObjects);
+  if (isStixDomainObject(firstObject.entity_type)) {
+    return firstObject.name;
+  }
+  return observableValue(firstObject);
 };
 
 // All entities
@@ -44,11 +59,11 @@ export const observedDatasTimeSeries = (user, args) => {
 };
 
 export const observedDatasNumber = (user, args) => ({
-  count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args)),
+  count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args)),
   total: elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]), dissoc('endDate')(args))
+    R.pipe(R.assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]), R.dissoc('endDate')(args))
   ),
 });
 
@@ -75,22 +90,22 @@ export const observedDatasNumberByEntity = (user, args) => ({
   count: elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(
-      assoc('isMetaRelationship', true),
-      assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]),
-      assoc('relationshipType', RELATION_OBJECT),
-      assoc('fromId', args.objectId)
+    R.pipe(
+      R.assoc('isMetaRelationship', true),
+      R.assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]),
+      R.assoc('relationshipType', RELATION_OBJECT),
+      R.assoc('fromId', args.objectId)
     )(args)
   ),
   total: elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(
-      assoc('isMetaRelationship', true),
-      assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]),
-      assoc('relationshipType', RELATION_OBJECT),
-      assoc('fromId', args.objectId),
-      dissoc('endDate')
+    R.pipe(
+      R.assoc('isMetaRelationship', true),
+      R.assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]),
+      R.assoc('relationshipType', RELATION_OBJECT),
+      R.assoc('fromId', args.objectId),
+      R.dissoc('endDate')
     )(args)
   ),
 });

@@ -58,7 +58,7 @@ const styles = (theme) => ({
     width: '100%',
   },
   listItem: {
-    width: '100M',
+    width: '100%',
   },
   icon: {
     color: theme.palette.primary.main,
@@ -455,6 +455,7 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
                 attribute_abstract
               }
               ... on ObservedData {
+                name
                 first_observed
                 last_observed
               }
