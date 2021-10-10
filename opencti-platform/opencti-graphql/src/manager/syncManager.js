@@ -140,41 +140,35 @@ const syncManagerInstance = (syncId) => {
     logApp.info(`[OPENCTI] Sync deleting element ${type} ${data.id}`);
     await deleteElementById(user, data.id, type);
   };
-  const handleFilesSync = async (user, id, data) => {
-    if (data.x_opencti_files) {
-      const { token, uri } = syncElement;
-      const elementFile = await internalLoadById(user, id);
-      if (!elementFile) {
-        throw UnsupportedError('Cant sync a file an none existing element', { id });
-      }
-      const entityFiles = data.x_opencti_files || [];
-      const entityDirectory = `import/${data.x_opencti_type}/${elementFile.internal_id}/`;
-      // Find the files we need to upload/update and files that need to be deleted.
-      const currentFiles = await rawFilesListing(user, entityDirectory);
-      const currentFileIds = currentFiles.map((c) => c.name);
-      const entityFileIds = entityFiles.map((c) => c.value);
-      // Delete files when needed
-      const filesToDelete = currentFileIds.filter((c) => !entityFileIds.includes(c));
-      for (let deleteIndex = 0; deleteIndex < filesToDelete.length; deleteIndex += 1) {
-        const fileToDeleteId = filesToDelete[deleteIndex];
-        const file = R.find((c) => c.name === fileToDeleteId, currentFiles);
-        await stixCoreObjectImportDelete(user, file.id);
-      }
-      // Add new files if needed
-      const currentFileVersionIds = currentFiles.map((c) => `${c.name}-${c.metaData.version}`);
-      const entityFileVersionIds = entityFiles.map((c) => `${c.value}-${c.version}`);
-      const filesToUpload = entityFileVersionIds.filter((c) => !currentFileVersionIds.includes(c));
-      for (let index = 0; index < filesToUpload.length; index += 1) {
-        const fileToUploadId = filesToUpload[index];
-        const fileToUpload = R.find((c) => `${c.value}-${c.version}` === fileToUploadId, entityFiles);
-        const { uri: fileUri, value, mime_type: mimetype, version } = fileToUpload;
-        const fileStream = await axios.get(`${httpBase(uri)}storage/get/${fileUri}`, {
-          responseType: 'stream',
-          headers: { authorization: `Bearer ${token}` },
-        });
-        const file = { createReadStream: () => fileStream.data, filename: value, mimetype, version };
-        await stixCoreObjectImportPush(user, elementFile, file);
-      }
+  const handleFilesSync = async (user, elementFile, data) => {
+    const { token, uri } = syncElement;
+    const entityFiles = data.x_opencti_files || [];
+    const entityDirectory = `import/${data.x_opencti_type}/${elementFile.internal_id}/`;
+    // Find the files we need to upload/update and files that need to be deleted.
+    const currentFiles = await rawFilesListing(user, entityDirectory);
+    const currentFileIds = currentFiles.map((c) => c.name);
+    const entityFileIds = entityFiles.map((c) => c.value);
+    // Delete files when needed
+    const filesToDelete = currentFileIds.filter((c) => !entityFileIds.includes(c));
+    for (let deleteIndex = 0; deleteIndex < filesToDelete.length; deleteIndex += 1) {
+      const fileToDeleteId = filesToDelete[deleteIndex];
+      const file = R.find((c) => c.name === fileToDeleteId, currentFiles);
+      await stixCoreObjectImportDelete(user, file.id);
+    }
+    // Add new files if needed
+    const currentFileVersionIds = currentFiles.map((c) => `${c.name}-${c.metaData.version}`);
+    const entityFileVersionIds = entityFiles.map((c) => `${c.value}-${c.version}`);
+    const filesToUpload = entityFileVersionIds.filter((c) => !currentFileVersionIds.includes(c));
+    for (let index = 0; index < filesToUpload.length; index += 1) {
+      const fileToUploadId = filesToUpload[index];
+      const fileToUpload = R.find((c) => `${c.value}-${c.version}` === fileToUploadId, entityFiles);
+      const { uri: fileUri, value, mime_type: mimetype, version } = fileToUpload;
+      const fileStream = await axios.get(`${httpBase(uri)}storage/get/${fileUri}`, {
+        responseType: 'stream',
+        headers: { authorization: `Bearer ${token}` },
+      });
+      const file = { createReadStream: () => fileStream.data, filename: value, mimetype, version };
+      await stixCoreObjectImportPush(user, elementFile, file);
     }
   };
   const handleCreateEvent = async (user, data) => {
@@ -187,74 +181,75 @@ const syncManagerInstance = (syncId) => {
       logApp.info(`[OPENCTI] Sync creating sighting ${input.fromId}/${input.toId}`);
       await addStixSightingRelationship(user, { ...input, relationship_type: input.type });
     } else if (isStixDomainObject(type) || isStixMetaObject(type)) {
+      let element;
       logApp.info(`[OPENCTI] Sync creating entity ${type} ${input.stix_id}`);
       // Stix domains
       if (type === ENTITY_TYPE_ATTACK_PATTERN) {
-        await addAttackPattern(user, input);
+        element = await addAttackPattern(user, input);
       } else if (type === ENTITY_TYPE_CAMPAIGN) {
-        await addCampaign(user, input);
+        element = await addCampaign(user, input);
       } else if (type === ENTITY_TYPE_CONTAINER_NOTE) {
-        await addNote(user, input);
+        element = await addNote(user, input);
       } else if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
-        await addObservedData(user, input);
+        element = await addObservedData(user, input);
       } else if (type === ENTITY_TYPE_CONTAINER_OPINION) {
-        await addOpinion(user, input);
+        element = await addOpinion(user, input);
       } else if (type === ENTITY_TYPE_CONTAINER_REPORT) {
-        await addReport(user, input);
+        element = await addReport(user, input);
       } else if (type === ENTITY_TYPE_COURSE_OF_ACTION) {
-        await addCourseOfAction(user, input);
+        element = await addCourseOfAction(user, input);
       } else if (type === ENTITY_TYPE_IDENTITY_INDIVIDUAL) {
-        await addIndividual(user, input);
+        element = await addIndividual(user, input);
       } else if (type === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
-        await addOrganization(user, input);
+        element = await addOrganization(user, input);
       } else if (type === ENTITY_TYPE_IDENTITY_SECTOR) {
-        await addSector(user, input);
+        element = await addSector(user, input);
       } else if (type === ENTITY_TYPE_IDENTITY_SYSTEM) {
-        await addSystem(user, input);
+        element = await addSystem(user, input);
       } else if (type === ENTITY_TYPE_INDICATOR) {
-        await addIndicator(user, input);
+        element = await addIndicator(user, input);
       } else if (type === ENTITY_TYPE_INFRASTRUCTURE) {
-        await addInfrastructure(user, input);
+        element = await addInfrastructure(user, input);
       } else if (type === ENTITY_TYPE_INTRUSION_SET) {
-        await addIntrusionSet(user, input);
+        element = await addIntrusionSet(user, input);
       } else if (type === ENTITY_TYPE_LOCATION_CITY) {
-        await addCity(user, input);
+        element = await addCity(user, input);
       } else if (type === ENTITY_TYPE_LOCATION_COUNTRY) {
-        await addCountry(user, input);
+        element = await addCountry(user, input);
       } else if (type === ENTITY_TYPE_LOCATION_REGION) {
-        await addRegion(user, input);
+        element = await addRegion(user, input);
       } else if (type === ENTITY_TYPE_LOCATION_POSITION) {
-        await addPosition(user, input);
+        element = await addPosition(user, input);
       } else if (type === ENTITY_TYPE_MALWARE) {
-        await addMalware(user, input);
+        element = await addMalware(user, input);
       } else if (type === ENTITY_TYPE_THREAT_ACTOR) {
-        await addThreatActor(user, input);
+        element = await addThreatActor(user, input);
       } else if (type === ENTITY_TYPE_TOOL) {
-        await addTool(user, input);
+        element = await addTool(user, input);
       } else if (type === ENTITY_TYPE_VULNERABILITY) {
-        await addVulnerability(user, input);
+        element = await addVulnerability(user, input);
       } else if (type === ENTITY_TYPE_INCIDENT) {
-        await addIncident(user, input);
+        element = await addIncident(user, input);
       }
       // Stix meta
       else if (type === ENTITY_TYPE_LABEL) {
-        await addLabel(user, input);
+        element = await addLabel(user, input);
       } else if (type === ENTITY_TYPE_EXTERNAL_REFERENCE) {
-        await addExternalReference(user, input);
+        element = await addExternalReference(user, input);
       } else if (type === ENTITY_TYPE_KILL_CHAIN_PHASE) {
-        await addKillChainPhase(user, input);
+        element = await addKillChainPhase(user, input);
       } else if (type === ENTITY_TYPE_MARKING_DEFINITION) {
-        await addMarkingDefinition(user, input);
+        element = await addMarkingDefinition(user, input);
       } else {
         throw UnsupportedError(`${type} not handle by synchronizer`);
       }
       // Handle files
-      await handleFilesSync(user, input.stix_id, data);
+      await handleFilesSync(user, element, data);
     } else if (isStixCyberObservable(type)) {
       logApp.info(`[OPENCTI] Sync creating cyber observable ${type} ${input.stix_id}`);
-      await addStixCyberObservable(user, input);
+      const element = await addStixCyberObservable(user, input);
       // Handle files
-      await handleFilesSync(user, input.stix_id, data);
+      await handleFilesSync(user, element, data);
     } else {
       throw UnsupportedError(`${type} not handle by synchronizer`);
     }

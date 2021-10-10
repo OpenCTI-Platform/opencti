@@ -361,8 +361,7 @@ export const stixDataConverter = (data, args = {}) => {
   for (let index = 0; index < entries.length; index += 1) {
     const [key, val] = entries[index];
     const isEmpty = Array.isArray(val) ? val.length === 0 : isEmptyField(val);
-    // Empty x_opencti_files must be forced to prevent to much sync effort
-    const clearEmptyKey = clearEmptyValues && isEmpty && key !== 'x_opencti_files';
+    const clearEmptyKey = clearEmptyValues && isEmpty;
     const isInternal = key.startsWith(INTERNAL_PREFIX) || key.startsWith(REL_INDEX_PREFIX);
     const isInternalKey = isInternal || key === 'x_opencti_graph_data'; // Specific case of graph
     if (isInternalKey || isStixRelationShipExceptMeta(key) || clearEmptyKey) {
