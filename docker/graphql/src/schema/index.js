@@ -15,6 +15,7 @@ import {
   PositiveIntTypeDefinition, PositiveIntResolver,
   PostalCodeTypeDefinition, PostalCodeResolver, 
   URLTypeDefinition, URLResolver,
+  VoidTypeDefinition, VoidResolver,
 } from 'graphql-scalars';
 
 export default async () => {
@@ -33,6 +34,7 @@ export default async () => {
       PositiveIntTypeDefinition,
       PostalCodeTypeDefinition,
       URLTypeDefinition,
+      VoidTypeDefinition,
     ],
     resolvers: {
       DateTime: DateTimeResolver,
@@ -47,6 +49,7 @@ export default async () => {
       PositiveInt: PositiveIntResolver,
       PostalCode: PostalCodeResolver,
       URL: URLResolver,
+      Void: VoidResolver,
     }
   });
 

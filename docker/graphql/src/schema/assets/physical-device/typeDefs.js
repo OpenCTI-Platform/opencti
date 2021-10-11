@@ -1,26 +1,6 @@
 import gql from 'graphql-tag' ;
 
 const typeDefs = gql`
-    enum PhysicalDeviceOrdering {
-        name
-        asset_type
-        asset_id
-        ip_address
-        installed_operating_system
-        network_id
-        labels
-    }
-
-    enum PhysicalDeviceFilter {
-        name
-        asset_type
-        asset_id
-        ip_address
-        installed_operating_system
-        network_id
-        labels
-    }
-
     # Query Extensions
     extend type Query {
         physicalDeviceList(
@@ -43,31 +23,31 @@ const typeDefs = gql`
 
     # Query Types
     "Defines identifying information about a network."
-    type Physical implements BasicObject & ExternalObject & Asset & ItAsset & Hardware {
-        # Basic Object
+    type Physical implements RootObject & CoreObject & Asset & ItAsset & Hardware {
+        # Root Object
         id: String!
-        object_type: String!
-        # ExternalObject
+        entity_type: String!
+        # CoreObject
         created: DateTime!
         modified: DateTime!
         labels: [String]
-        external_references: [ExternalReference]
-        notes: [Note]
         # Asset
+        asset_id: String
         name: String!
         description: String
-        locations: [AssetLocation]!
-        asset_id: String
-        # responsible_parties: [ResponsibleParty]
-        # IT Asset
-        asset_type: AssetType!
+        locations: [Location]
+        external_references( first: Int ): ExternalReferenceConnection
+        notes( first: Int ): NoteConnection
+        # ItAsset
         asset_tag: String
+        asset_type: AssetType!
         serial_number: String
         vendor_name: String
         version: String
         release_date: DateTime
         implementation_point: ImplementationPoint!
         operational_status: OperationalStatus!
+        # responsible_parties: [ResponsibleParty]
         # Hardware
         cpe_identifier: String
         installation_id: String
@@ -80,37 +60,16 @@ const typeDefs = gql`
         # PhysicalDevice
     }
 
-    # Pagination Types
-    type PhysicalDeviceConnection {
-        pageInfo: PageInfo!
-        edges: [PhysicalDeviceEdge]
-    }
-
-    type PhysicalDeviceEdge {
-        cursor: String!
-        node: PhysicalDevice!
-    }
-
     # Mutation Types
     input PhysicalDeviceAddInput {
-        # Basic Object
-        id: String!
-        object_type: String!
-        # ExternalObject
-        created: DateTime!
-        modified: DateTime!
         labels: [String]
-        external_references: [ExternalReferenceAddInput]
-        notes: [NoteAddInput]
         # Asset
+        asset_id: String
         name: String!
         description: String
-        locations: [AssetLocation]!
-        asset_id: String
-        # responsible_parties: [ResponsibleParty]
-        # IT Asset
-        asset_type: AssetType!
+        # ItAsset
         asset_tag: String
+        asset_type: AssetType!
         serial_number: String
         vendor_name: String
         version: String
@@ -120,8 +79,6 @@ const typeDefs = gql`
         # Hardware
         cpe_identifier: String
         installation_id: String
-        installed_hardware: [ComputingDeviceAddInput!]!
-        installed_operating_system: OperatingSystemAddInput!
         model: String
         motherboard_id: String
         baseline_configuration_name: String
@@ -134,6 +91,37 @@ const typeDefs = gql`
         values: [String]
         operator: String
         filterMode: FilterMode 
+    }
+
+    enum PhysicalDeviceOrdering {
+        name
+        asset_type
+        asset_id
+        ip_address
+        installed_operating_system
+        network_id
+        labels
+    }
+
+    enum PhysicalDeviceFilter {
+        name
+        asset_type
+        asset_id
+        ip_address
+        installed_operating_system
+        network_id
+        labels
+    }
+
+    # Pagination Types
+    type PhysicalDeviceConnection {
+        pageInfo: PageInfo!
+        edges: [PhysicalDeviceEdge]
+    }
+
+    type PhysicalDeviceEdge {
+        cursor: String!
+        node: PhysicalDevice!
     }
 
 `;

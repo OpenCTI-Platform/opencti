@@ -1,6 +1,8 @@
 import { ApolloServer } from 'apollo-server-express';
 import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
-import http from 'http';
+import { createServer } from 'http';
+import { execute, subscribe } from 'graphql';
+import { SubscriptionServer } from 'subscriptions-transport-ws';
 import depthLimit from "graphql-depth-limit";
 // import { createComplexityLimitRule } from 'graphql-validation-complexity';
 import { 
@@ -15,13 +17,14 @@ import {
   PortMock,
   PositiveIntMock,
   PostalCodeMock,
-  URLMock
+  URLMock,
+  VoidMock,
 } from 'graphql-scalars';
 
 
 async function startApolloServer(app, port, schema) {
   // Required logic for integrating with Express
-  const httpServer = http.createServer(app);
+  const httpServer = createServer(app);
 
   // build the set of mocks
   const mocks = {
@@ -37,9 +40,10 @@ async function startApolloServer(app, port, schema) {
     PositiveInt: PositiveIntMock,
     PostalCode: PostalCodeMock,
     URL: URLMock,
+    Void: VoidMock,
     AssetLocation: () => ({
       id: 'location--befc3ca8-79a6-4d59-b535-ed53bf2f7c51',
-      object_type: 'location',
+      entity_type: 'location',
       name: 'DarkLight Headquarters',
       street_address: '8201 164th Ave NE',
       city: 'Redmond',
@@ -52,19 +56,71 @@ async function startApolloServer(app, port, schema) {
       description: 'Aurora-R4 Owners manual',
       external_id: 'aurora-r4-owner',
       url: 'https://downloads.dell.com/manuals/all-products/esuprt_desktop/esuprt_alienware_dsk/alienware-aurora-r4_owner%27s%20manual_en-us.pdf'
-    })
+    }),
+    ComputingDevice: () => ({
+      id: 'computing-device--204d01a8-4866-4144-b7ff-a6ba40127a2d',
+      asset_id: 'darklight-2021-125',
+      asset_type: 'compute_device',
+      asset_tag: 'MM249847',
+      name: 'Paul Patrick Personal Macbook Pro',
+      description: 'Macbook Pro (16-inch 2019)',
+      serial_number: 'C02D20NFMD6T',
+      mac_address: ['14:b1:c8:01:9c:11'],
+      vendor_name: 'Apple',
+      implementation_point: 'external',
+      operational_status: 'operational',
+      function: 'Developer laptop',
+      network_id: '192.168.1.255'
+    }),
+    OperatingSystem: () => ({
+      id: 'software--29da67b2-b7eb-4c1a-9458-348669b77a0e',
+      asset_type: 'operating_system',
+      asset_id: 'darklight-2021-100',
+      name: 'MacOS 11.6 (20G165)',
+      description: 'MacOS',
+      vendor_name: 'Apple',
+      version: '11.6',
+    }),
   };
+
+  // create the subscription server
+  const subscriptionServer = SubscriptionServer.create(
+    {
+      // This is the `schema` we just created.
+      schema,
+      // These are imported from `graphql`.
+      execute,
+      subscribe,
+    }, 
+    {
+    // This is the `httpServer` we created in a previous step.
+    server: httpServer,
+    // This `server` is the instance returned from `new ApolloServer`.
+    // path: server.graphqlPath,
+    path: '/graphql'
+    }
+  );
+ 
 
   // Same ApolloServer initialization as before, plus the drain plugin.
   const server = new ApolloServer({
     schema,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    introspection: true,
     mocks,
+    // plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    plugins: [{
+      async serverWillStart() {
+        return {
+          async drainServer() {
+            subscriptionServer.close();
+          }
+        };
+      }
+    }],
     validationRules: [
       depthLimit(10), 
       // createComplexityLimitRule(1000)
     ],
-    introspection: true
   });
 
   // More required logic for integrating with Express

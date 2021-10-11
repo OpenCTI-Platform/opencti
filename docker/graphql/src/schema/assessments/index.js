@@ -1,10 +1,7 @@
-import oscalCommon from './oscal-common/typeDefs.js';
-import poam from './poam/typeDefs.js';
-
+import risk from './risk/index.js' ;
 
 const typeDefs = [
-    oscalCommon,
-    poam
+    risk,
 ];
 
 export default typeDefs;

@@ -1,26 +1,6 @@
 import gql from 'graphql-tag' ;
 
 const typeDefs = gql`
-    enum NetworkOrdering {
-        name
-        asset_type
-        asset_id
-        ip_address
-        installed_operating_system
-        network_id
-        labels
-    }
-
-    enum NetworkFilter {
-        name
-        asset_type
-        asset_id
-        ip_address
-        installed_operating_system
-        network_id
-        labels
-    }
-
     # Query Extensions
     extend type Query {
         networkList(
@@ -36,76 +16,54 @@ const typeDefs = gql`
     }
 
     extend type Mutation {
-        networkAdd(input: NetworkAddInput): Network
-        networkDelete(id: String!): String!
-        networkEdit(id: String!, input: [EditInput]!, commitMessage: String): Network
+        createNetwork(input: NetworkAddInput): Network
+        deleteNetwork(id: String!): String!
+        editNetwork(id: String!, input: [EditInput]!, commitMessage: String): Network
     }
 
     # Query Types
     "Defines identifying information about a network."
-    type Network implements BasicObject & ExternalObject & Asset & ItAsset {
-        # Basic Object
+    type Network implements RootObject & CoreObject & Asset & ItAsset {
+        # Root Object
         id: String!
-        object_type: String!
-        # ExternalObject
+        entity_type: String!
+        # CoreObject
         created: DateTime!
         modified: DateTime!
         labels: [String]
-        external_references: [ExternalReference]
-        notes: [Note]
         # Asset
+        asset_id: String
         name: String!
         description: String
-        locations: [AssetLocation]!
-        asset_id: String
-        # responsible_parties: [ResponsibleParty]
-        # IT Asset
-        asset_type: AssetType!
+        locations: [Location]
+        external_references( first: Int ): ExternalReferenceConnection
+        notes( first: Int ): NoteConnection
+        # ItAsset
         asset_tag: String
+        asset_type: AssetType!
         serial_number: String
         vendor_name: String
         version: String
         release_date: DateTime
         implementation_point: ImplementationPoint!
         operational_status: OperationalStatus!
+        # responsible_parties: [ResponsibleParty]
         # Network
         network_id: String!
         network_name: String!
         network_address_range: IpAddressRange
     }
 
-    # Pagination Types
-    type NetworkConnection {
-        pageInfo: PageInfo!
-        edges: [NetworkEdge]
-    }
-
-    type NetworkEdge {
-        cursor: String!
-        node: Network!
-    }
-
-
     # Mutation Types
     input NetworkAddInput {
-        # Basic Object
-        id: String!
-        object_type: String!
-        # ExternalObject
-        created: DateTime!
-        modified: DateTime!
         labels: [String]
-        external_references: [ExternalReferenceAddInput]
-        notes: [NoteAddInput]
         # Asset
+        asset_id: String
         name: String!
         description: String
-        locations: [AssetLocationAddInput]!
-        asset_id: String
-        # responsible_parties: [ResponsibleParty]
-        # IT Asset
-        asset_type: AssetType!
+        # ItAsset
         asset_tag: String
+        asset_type: AssetType!
         serial_number: String
         vendor_name: String
         version: String
@@ -124,6 +82,37 @@ const typeDefs = gql`
         values: [String]
         operator: String
         filterMode: FilterMode 
+    }
+
+    # Pagination Types
+    type NetworkConnection {
+        pageInfo: PageInfo!
+        edges: [NetworkEdge]
+    }
+
+    type NetworkEdge {
+        cursor: String!
+        node: Network!
+    }
+
+    enum NetworkOrdering {
+        name
+        asset_type
+        asset_id
+        ip_address
+        installed_operating_system
+        network_id
+        labels
+    }
+
+    enum NetworkFilter {
+        name
+        asset_type
+        asset_id
+        ip_address
+        installed_operating_system
+        network_id
+        labels
     }
 
 `;

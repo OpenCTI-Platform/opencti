@@ -71,16 +71,16 @@ const typeDefs = gql`
         SOCKS
     }
 
-    type AssetLocation implements BasicObject & ExternalObject & Location {
-      # Basic Object
+    type AssetLocation implements RootObject & CoreObject & Location {
+      # Root Object
       id: String!
-      object_type: String!
-      # ExternalObject
+      entity_type: String!
+      # CoreObject
       created: DateTime!
       modified: DateTime!
       labels: [String]
-      external_references: [ExternalReference]
-      notes: [Note]
+      external_references( first: Int ): ExternalReferenceConnection
+      notes( first: Int ): NoteConnection
       # Location
       name: String!
       description: String
@@ -93,15 +93,7 @@ const typeDefs = gql`
     }
     
     input AssetLocationAddInput {
-      # Basic Object
-      id: String!
-      object_type: String!
-      # ExternalObject
-      created: DateTime!
-      modified: DateTime!
       labels: [String]
-      external_references: [ExternalReferenceAddInput]
-      notes: [NoteAddInput]
       # Location
       name: String!
       description: String
@@ -115,97 +107,114 @@ const typeDefs = gql`
 
     "An abstract interface that defines identifying information about an asset in it generic form as something of value."
     interface Asset {
-        # Basic Object
+        # Root Object
         id: String!
-        object_type: String!
-        # ExternalObject
+        entity_type: String!
+        # CoreObject
         created: DateTime!
         modified: DateTime!
         labels: [String]
-        external_references: [ExternalReference]
-        notes: [Note]
-        #Asset
+        # Asset
         asset_id: String
-        description: String
         name: String!
+        description: String
         locations: [Location]
+        external_references( first: Int ): ExternalReferenceConnection
+        notes( first: Int ): NoteConnection
     }
 
     "An abstract interface that defines identifying information about an asset that is technology-based, such as hardware, software, and networking."
     interface ItAsset {
-        # Basic Object
+        # Root Object
         id: String!
-        object_type: String!
-        # ExternalObject
+        entity_type: String!
+        # CoreObject
         created: DateTime!
         modified: DateTime!
         labels: [String]
-        external_references: [ExternalReference]
-        notes: [Note]
+        # Asset
+        asset_id: String
+        name: String!
+        description: String
+        locations: [Location]
+        external_references( first: Int ): ExternalReferenceConnection
+        notes( first: Int ): NoteConnection
         # ItAsset
         asset_tag: String
         asset_type: AssetType!
-        operational_status: OperationalStatus!
-        release_date: DateTime
-        serial_number: String
-        vendor_name: String
-        version: String
-    }
-
-    "An abstract interface that defines identifying information about a documentary asset, such as policies, procedures."
-    interface DocumentaryAsset {
-        # Basic Object
-        id: String!
-        object_type: String!
-        # ExternalObject
-        created: DateTime!
-        modified: DateTime!
-        labels: [String]
-        external_references: [ExternalReference]
-        notes: [Note]
-        # DocumentaryAsset
-        release_date: DateTime!
-    }
-
-    "An abstract interface that defines identifying information about an instance of data."
-    interface Data {
-        # Basic Object
-        id: String!
-        object_type: String!
-        # ExternalObject
-        created: DateTime!
-        modified: DateTime!
-        labels: [String]
-        external_references: [ExternalReference]
-        notes: [Note]
-        # Data
-    }
-
-    interface Hardware {
-        # Basic Object
-        id: String!
-        object_type: String!
-        # ExternalObject
-        created: DateTime!
-        modified: DateTime!
-        labels: [String]
-        external_references: [ExternalReference]
-        notes: [Note]
-        # Asset
-        name: String!
-        description: String
-        locations: [AssetLocation]!
-        asset_id: String
-        # responsible_parties: [ResponsibleParty]
-        # IT Asset
-        asset_type: AssetType!
-        asset_tag: String
         serial_number: String
         vendor_name: String
         version: String
         release_date: DateTime
         implementation_point: ImplementationPoint!
         operational_status: OperationalStatus!
+        # responsible_parties: [ResponsibleParty]
+    }
+
+    "An abstract interface that defines identifying information about a documentary asset, such as policies, procedures."
+    interface DocumentaryAsset {
+        # Root Object
+        id: String!
+        entity_type: String!
+        # CoreObject
+        created: DateTime!
+        modified: DateTime!
+        labels: [String]
+        # Asset
+        asset_id: String
+        name: String!
+        description: String
+        locations: [Location]
+        external_references( first: Int ): ExternalReferenceConnection
+        notes( first: Int ): NoteConnection
+        # DocumentaryAsset
+        release_date: DateTime!
+    }
+
+    "An abstract interface that defines identifying information about an instance of data."
+    interface Data {
+        # Root Object
+        id: String!
+        entity_type: String!
+        # CoreObject
+        created: DateTime!
+        modified: DateTime!
+        labels: [String]
+        # Asset
+        asset_id: String
+        name: String!
+        description: String
+        locations: [Location]
+        external_references( first: Int ): ExternalReferenceConnection
+        notes( first: Int ): NoteConnection
+        # Data
+    }
+
+    interface Hardware {
+        # Root Object
+        id: String!
+        entity_type: String!
+        # CoreObject
+        created: DateTime!
+        modified: DateTime!
+        labels: [String]
+        # Asset
+        asset_id: String
+        name: String!
+        description: String
+        locations: [Location]
+        external_references( first: Int ): ExternalReferenceConnection
+        notes( first: Int ): NoteConnection
+        # ItAsset
+        asset_tag: String
+        asset_type: AssetType!
+        serial_number: String
+        vendor_name: String
+        version: String
+        release_date: DateTime
+        implementation_point: ImplementationPoint!
+        operational_status: OperationalStatus!
+        # responsible_parties: [ResponsibleParty]
         # Hardware
         cpe_identifier: String
         installation_id: String
@@ -219,28 +228,30 @@ const typeDefs = gql`
 
     "Captures identifying information about an account.  The Account class is an extension to NIST-7693 that was \\\"missing\\\". The relationship with other Account classes from other ontologies will likely be established here."
     interface Account {
-        # Basic Object
+        # Root Object
         id: String!
-        object_type: String!
-        # ExternalObject
+        entity_type: String!
+        # CoreObject
         created: DateTime!
         modified: DateTime!
         labels: [String]
-        external_references: [ExternalReference]
-        notes: [Note]
         # Asset
+        asset_id: String
         name: String!
         description: String
-        locations: [AssetLocation]!
-        asset_id: String
-        # IT Asset
+        locations: [Location]
+        external_references( first: Int ): ExternalReferenceConnection
+        notes( first: Int ): NoteConnection
+        # ItAsset
         asset_tag: String
         asset_type: AssetType!
-        operational_status: OperationalStatus!
-        release_date: DateTime
         serial_number: String
         vendor_name: String
         version: String
+        release_date: DateTime
+        implementation_point: ImplementationPoint!
+        operational_status: OperationalStatus!
+        # responsible_parties: [ResponsibleParty]
     }
 
     type IpAddressRange {
@@ -260,33 +271,33 @@ const typeDefs = gql`
 
     interface IpAddress {
         id: String!
-        object_type: String!
+        entity_type: String!
     }
 
-    type IpV4Address implements BasicObject & IpAddress {
+    type IpV4Address implements RootObject & IpAddress {
         id: String!
-        object_type: String!
+        entity_type: String!
         # IpV4Address
         ip_address_value: IPv4!
     }
 
-    type IpV6Address implements BasicObject & IpAddress {
+    type IpV6Address implements RootObject & IpAddress {
         id: String!
-        object_type: String!
+        entity_type: String!
         # IpV6Address
         ip_address_value: IPv6!
     }
 
     input IpV4AddressAddInput {
         id: String!
-        object_type: String!
+        entity_type: String!
         # IpV4Address
         ip_address_value: IPv4!
    } 
 
     input IpV6AddressAddInput {
         id: String!
-        object_type: String!
+        entity_type: String!
         # IpV6Address
         ip_address_value: IPv6!
     }
@@ -294,18 +305,18 @@ const typeDefs = gql`
     "Defines identifying information about a network port."
     type PortInfo {
         port_number: Port
-        protocols: NetworkProtocol
+        protocols: [NetworkProtocol]
     }
 
     input PortInfoAddInput {
         port_number: Port
-        protocols: NetworkProtocol
+        protocols: [NetworkProtocol]
     }
 
     type StartEndPortRange {
         starting_port: Port
         ending_port: Port
-        protocols: NetworkProtocol
+        protocols: [NetworkProtocol]
     }
     
     union PortRange = PortInfo | StartEndPortRange

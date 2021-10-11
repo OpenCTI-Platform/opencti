@@ -18,11 +18,11 @@ const directives = gql`
         multipleOf: Int
     ) on INPUT_FIELD_DEFINITION
 
-    directive @rateLimit(
-        max: Int
-        window: String
-        message: String
-        identityArgs: [String]
-    ) on FIELD_DEFINITION
+    # directive @rateLimit(
+    #     max: Int
+    #     window: String
+    #     message: String
+    #     identityArgs: [String]
+    # ) on FIELD_DEFINITION
 `;
 export default directives;
