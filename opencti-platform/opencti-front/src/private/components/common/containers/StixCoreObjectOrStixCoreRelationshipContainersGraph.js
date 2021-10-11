@@ -30,7 +30,7 @@ import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreOb
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
 
-const ignoredStixCoreObjectsTypes = ['Report', 'Note', 'Opinion'];
+const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
 
 class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Component {
   constructor(props) {

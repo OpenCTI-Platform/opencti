@@ -113,10 +113,7 @@ class ToolCreation extends Component {
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
-      R.assoc(
-        'externalReferences',
-        R.R.pluck('value', values.externalReferences),
-      ),
+      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
     )(values);
     commitMutation({
       mutation: toolMutation,
