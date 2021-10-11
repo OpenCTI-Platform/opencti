@@ -141,7 +141,7 @@ class ObservedDataPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this ObservedData?')}
+              {t('Do you want to delete this observed data?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>

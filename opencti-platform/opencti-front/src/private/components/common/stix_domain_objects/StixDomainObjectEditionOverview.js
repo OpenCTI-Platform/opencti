@@ -33,6 +33,7 @@ import {
 } from '../../../../components/Subscription';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
+import { typesWithoutName } from '../../../../utils/Entity';
 
 const styles = (theme) => ({
   header: {
@@ -305,21 +306,26 @@ class StixDomainObjectEditionContainer extends Component {
           >
             {(setFieldValue) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  name="name"
-                  label={t('Name')}
-                  fullWidth={true}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="last_seen"
-                    />
-                  }
-                />
-                {'aliases' in stixDomainObject ? (
+                {'name' in stixDomainObject && (
+                  <Field
+                    component={TextField}
+                    name="name"
+                    label={t('Name')}
+                    fullWidth={true}
+                    disabled={typesWithoutName.includes(
+                      stixDomainObject.entity_type,
+                    )}
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onSubmit={this.handleSubmitField.bind(this)}
+                    helperText={
+                      <SubscriptionFocus
+                        context={editContext}
+                        fieldName="name"
+                      />
+                    }
+                  />
+                )}
+                {'aliases' in stixDomainObject && (
                   <Field
                     component={TextField}
                     name="aliases"
@@ -335,10 +341,8 @@ class StixDomainObjectEditionContainer extends Component {
                       />
                     }
                   />
-                ) : (
-                  ''
                 )}
-                {'x_opencti_aliases' in stixDomainObject ? (
+                {'x_opencti_aliases' in stixDomainObject && (
                   <Field
                     component={TextField}
                     name="x_opencti_aliases"
@@ -354,26 +358,26 @@ class StixDomainObjectEditionContainer extends Component {
                       />
                     }
                   />
-                ) : (
-                  ''
                 )}
-                <Field
-                  component={MarkDownField}
-                  name="description"
-                  label={t('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows={4}
-                  style={{ marginTop: 20 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="description"
-                    />
-                  }
-                />
+                {'description' in stixDomainObject && (
+                  <Field
+                    component={MarkDownField}
+                    name="description"
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows={4}
+                    style={{ marginTop: 20 }}
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onSubmit={this.handleSubmitField.bind(this)}
+                    helperText={
+                      <SubscriptionFocus
+                        context={editContext}
+                        fieldName="description"
+                      />
+                    }
+                  />
+                )}
                 <CreatedByField
                   name="createdBy"
                   style={{ marginTop: 20, width: '100%' }}
@@ -436,6 +440,12 @@ const StixDomainObjectEditionFragment = createFragmentContainer(
           name
           description
           x_opencti_aliases
+        }
+        ... on ObservedData {
+          name
+        }
+        ... on Report {
+          name
         }
         ... on Individual {
           name

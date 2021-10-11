@@ -97,6 +97,8 @@ const i18n = {
         'Souhaitez-vous supprimer cet indicateur ?',
       'Do you want to delete this observable?':
         'Souhaitez-vous supprimer cet observable ?',
+      'Do you want to delete this observed data?':
+        'Souhaitez-vous supprimer cette données observée ?',
       'Do you want to remove the entity from this report?':
         'Souhaitez-vous retirer cette entité de ce rapport ?',
       'Do you want to delete this attribute?':

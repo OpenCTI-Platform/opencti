@@ -80,6 +80,10 @@ export const resolveLink = (type) => {
   }
 };
 
+export const typesWithoutName = [
+  'Observed-Data',
+];
+
 export const openVocabularies = {
   'malware-type-ov': [
     {

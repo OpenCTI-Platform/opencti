@@ -69,7 +69,7 @@ class ObservedDataEditionContainer extends Component {
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update a ObservedData')}
+            {t('Update an observed data')}
           </Typography>
           <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
