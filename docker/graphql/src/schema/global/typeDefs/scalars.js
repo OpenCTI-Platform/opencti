@@ -19,6 +19,7 @@ const scalars = gql`
   scalar PostalCode         # graphql-scalars
   scalar URL                # graphql-scalars
   scalar UUID               # graphql-scalars
+  scalar Void               # graphql-scalars
 `;
 
 export default scalars;

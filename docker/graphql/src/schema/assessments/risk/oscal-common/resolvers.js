@@ -12,6 +12,11 @@ const query = {
     person: 'person',
     organization: 'organization',
   },
+  PrivilegeLevel: {
+    privileged: 'privileged',
+    non_privileged: 'non-privileged',
+    no_logical_access: 'no-logical-asses',
+  },
   ResourceType: {
     logo: 'logo',
     image: 'image',
@@ -48,6 +53,11 @@ const query = {
     security_operations: 'security-operations',
     maintainer: 'maintainer',
     provider: 'provider',
-  }
+  },
+  UserType: {
+    internal: 'internal',
+    external: 'external',
+    general_public: 'general-public',
+  },
 
 }

@@ -2,32 +2,31 @@ import gql from 'graphql-tag' ;
 
 const typeDefs = gql`
     "Defines identifying information about an instance of electronic collection of data, or information, that is specially organized for rapid search and retrieval."
-    type Database implements BasicObject & ExternalObject & Asset & ItAsset {
-        # Basic Object
+    type Database implements RootObject & CoreObject & Asset & ItAsset {
+        # Root Object
         id: String!
-        object_type: String!
-        # ExternalObject
+        entity_type: String!
+        # CoreObject
         created: DateTime!
         modified: DateTime!
         labels: [String]
-        external_references: [ExternalReference]
-        notes: [Note]
         # Asset
+        asset_id: String
         name: String!
         description: String
-        locations: [AssetLocation]!
-        asset_id: String
-        # responsible_parties: [ResponsibleParty]
-        # IT Asset
-        asset_type: AssetType!
+        locations: [Location]
+        external_references( first: Int ): ExternalReferenceConnection
+        notes( first: Int ): NoteConnection
+        # ItAsset
         asset_tag: String
+        asset_type: AssetType!
         serial_number: String
         vendor_name: String
         version: String
         release_date: DateTime
-        labels: [String]
         implementation_point: ImplementationPoint!
         operational_status: OperationalStatus!
+        # responsible_parties: [ResponsibleParty]
         # database
         instance_name: String!
         served_by: Service

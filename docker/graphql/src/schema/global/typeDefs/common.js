@@ -1,116 +1,107 @@
 import gql from 'graphql-tag';
 
 const common = gql`
-    interface BasicObject {
+  # declares the query entry-points for this type
+  extend type Query {
+    note(id: String!): Note
+    noteList( 
+          first: Int
+          offset: Int
+          orderedBy: NotesOrdering
+          orderMode: OrderingMode
+          filters: [NotesFiltering]
+          filterMode: FilterMode
+          search: String
+        ): NoteConnection
+  }
+
+  # declares the mutation entry-points for this type
+  extend type Mutation {
+    addReference(input: ReferenceAddInput): Boolean
+    removeReference( input: ReferenceAddInput): Boolean
+    createNote(input: NoteAddInput): Note
+    deleteNote(id: String!): String!
+    editNote(id: String!, input: [EditInput]!, commitMessage: String): Note
+  }
+
+  # Type Definitions
+    interface RootObject {
         id: String!
-        object_type: String!
+        entity_type: String!
     }
 
-    interface ExternalObject {
+    interface CoreObject {
       created: DateTime!
       modified: DateTime!
       labels: [String]
-      external_references: [ExternalReference]
-      notes: [Note]
+      external_references( first: Int ): ExternalReferenceConnection
+      notes( first: Int ): NoteConnection
     }
 
-    type Note implements BasicObject & ExternalObject {
-      # Basic Object
-      id: String!
-      object_type: String!
-      # ExternalObject
-      created: DateTime!
-      modified: DateTime!
-      labels: [String]
-      external_references: [ExternalReference]
-      notes: [Note]
-      # Note
-      abstract: String
-      content: String!
-      authors: [String]
-      object_refs: [String]
+    "Reference input to add a reference between two different objects"
+    input ReferenceAddInput {
+      field_name: String!  # this is the name of the field
+      from_id: String!
+      to_id: String!
     }
 
-    input NoteAddInput {
-      # Basic Object
-      id: String!
-      object_type: String!
-      # ExternalObject
-      created: DateTime!
-      modified: DateTime!
-      labels: [String]
-      external_references: [ExternalReferenceAddInput]
-      notes: [NoteAddInput]
-      # Note
-      abstract: String
-      content: String!
-      authors: [String]
-      object_refs: [String!]!
+    ############## ExternalReferences
+    enum ExternalReferencesOrdering {
+      source_name
+      url
+      hash
+      external_id
+      created
+      modified
+      created_at
+      updated_at
+    }
+    enum ExternalReferencesFilter {
+      url
+      source_name
+      external_id
+    }
+    input ExternalReferencesFiltering {
+      key: ExternalReferencesFilter!
+      values: [String]
+      operator: String
+      filterMode: FilterMode
     }
 
-    interface Location {
-      # Basic Object
-      id: String!
-      object_type: String!
-      # ExternalObject
-      created: DateTime!
-      modified: DateTime!
-      labels: [String]
-      external_references: [ExternalReference]
-      notes: [Note]
-      # Location
-      name: String!
-      description: String
+    # Pagination Types
+    type ExternalReferenceConnection {
+      pageInfo: PageInfo!
+      edges: [ExternalReferenceEdge]
     }
-    
-    input LocationAddInput {
-      # Basic Object
-      id: String!
-      object_type: String!
-      # ExternalObject
-      created: DateTime!
-      modified: DateTime!
-      labels: [String]
-      external_references: [ExternalReferenceAddInput]
-      notes: [NoteAddInput]
-      # Location
-      name: String!
-      description: String
+    type ExternalReferenceEdge {
+      cursor: String!
+      node: ExternalReference!
     }
 
-    interface Identity {
-      # Basic Object
-      id: String!
-      object_type: String!
-      # ExternalObject
-      created: DateTime!
-      modified: DateTime!
-      labels: [String]
-      external_references: [ExternalReference]
-      notes: [Note]
-      # Identity
-      name: String!
-      description: String
-    }
-
-    type ExternalReference {
+    type ExternalReference implements RootObject {
+      id: String! # internal_id
+      entity_type: String!
+      # ExternalReference
+      created: DateTime
+      modified: DateTime
       source_name: String!
       description: String
-      external_id: String
-      reference_purpose: ReferencePurposeType
-      media_type: String
       url: URL
       hashes: [HashInfo]
+      external_id: String
+      # OSCAL Link
+      reference_purpose: ReferencePurposeType
+      media_type: String
     }
 
     input ExternalReferenceAddInput {
       source_name: String!
       description: String
-      external_id: String
-      reference_purpose: ReferencePurposeType
-      media_type: String
       url: URL
       hashes: [HashInfoAddInput]
+      # OSCAL Link
+      reference_purpose: ReferencePurposeType
+      media_type: String
     }
 
     type HashInfo {
@@ -121,6 +112,15 @@ const common = gql`
     input HashInfoAddInput {
       algorithm: HashAlgorithm!
       value: String!
+    }
+
+    enum ReferencePurposeType {
+      "Identifies a reference to an external resource."
+      reference
+      "Identifies the authoritative location for this file."
+      canonical
+      "Identifies an alternative location or format for this file."
+      alternative
     }
 
     enum HashAlgorithm {
@@ -142,44 +142,104 @@ const common = gql`
       SHA3_512
     }
 
-    type PageInfo {
-      startCursor: String!
-      endCursor: String!
-      hasNextPage: Boolean!
-      hasPreviousPage: Boolean!
-      globalCount: Int!
+    type Note implements RootObject {
+      # Root Object
+      id: String!
+      entity_type: String!
+      # CoreObject
+      created: DateTime!
+      modified: DateTime!
+      labels: [String]
+      external_references( first: Int ): ExternalReferenceConnection
+      # Note
+      abstract: String
+      content: String!
+      authors: [String]
+    }
+
+    input NoteAddInput {
+      # Note
+      abstract: String
+      content: String!
+      authors: [String]
+    }
+
+    enum NotesOrdering {
+      created
+      modified
+      labels
+    }
+
+    enum NotesFilter {
+      abstract
+      authors
+      created
+      modified
+      labels
+    }
+
+    input NotesFiltering {
+      key: NotesFilter!
+      values: [String]!
+      operator: String
+      filterMode: FilterMode
+    }
+
+    # Pagination Types
+    type NoteConnection {
+      pageInfo: PageInfo!
+      edges: [NoteEdge]
+    }
+
+    type NoteEdge {
+      cursor: String!
+      node: Note!
+    }
+
+    interface Location {
+      # Root Object
+      id: String!
+      entity_type: String!
+      # CoreObject
+      created: DateTime!
+      modified: DateTime!
+      labels: [String]
+      external_references( first: Int ): ExternalReferenceConnection
+      notes( first: Int ): NoteConnection
+      # Location
+      name: String!
+      description: String
     }
     
-    enum OrderingMode {
-      asc
-      desc
+    input LocationAddInput {
+      labels: [String]
+      # Location
+      location_type: LocationType
+      name: String!
+      description: String
     }
 
-    enum FilterMode {
-      and
-      or
+    interface Identity {
+      # Root Object
+      id: String!
+      entity_type: String!
+      # CoreObject
+      created: DateTime!
+      modified: DateTime!
+      labels: [String]
+      external_references( first: Int ): ExternalReferenceConnection
+      notes( first: Int ): NoteConnection
+      # Identity
+      name: String!
+      description: String
     }
 
-    enum EditOperation {
-      add
-      replace
-      remove
-    }
-
-    # Editing
-    input EditInput {
-      key: String!              # Field name to change
-      value: [String]!          # Values to apply
-      operation: EditOperation  # Undefined = REPLACE
-    }
-
-    enum ReferencePurposeType {
-      "Identifies a reference to an external resource."
-      reference
-      "Identifies the authoritative location for this file."
-      canonical
-      "Identifies an alternative location or format for this file."
-      alternative
+    enum LocationType {
+      geo_location
+      city
+      country
+      region
+      civic_address
     }
 
     enum Region {
@@ -214,8 +274,40 @@ const common = gql`
       polynesia
     }
 
+
+    type PageInfo {
+      startCursor: String!
+      endCursor: String!
+      hasNextPage: Boolean!
+      hasPreviousPage: Boolean!
+      globalCount: Int!
+    }
+    
+    enum OrderingMode {
+      asc
+      desc
+    }
+
+    enum FilterMode {
+      and
+      or
+    }
+
+    enum EditOperation {
+      add
+      replace
+      remove
+    }
+
+    # Editing
+    input EditInput {
+      key: String!              # Field name to change
+      value: [String]!          # Values to apply
+      operation: EditOperation  # Undefined = REPLACE
+    }
+
     enum OperationalStatus {
-        operational_status
+        operational
         under_development
         under_major_modification
         disposition

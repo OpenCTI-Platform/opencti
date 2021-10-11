@@ -34,10 +34,6 @@ const Query: QueryResolvers.Resolvers = {
     dr_approved: 'dr-approved',
     dr_rejected: 'dr-rejected',
   },
-  FacetState: {
-    initial: 'initial',
-    adjusted: 'adjusted',
-  },
   ImplementationStatus: {
     implemented: 'implemented',
     partial: 'partial',
@@ -86,6 +82,31 @@ const Query: QueryResolvers.Resolvers = {
     planned: 'planned',
     completed: 'completed',
   },
+  RiskImpact: {
+    very_high: 'very-high',
+    high: 'high',
+    moderate: 'moderate',
+    low: 'low',
+    very_low: 'very-low',
+  },
+  RiskLikelihood: {
+    very_high: 'very-high',
+    high: 'high',
+    moderate: 'moderate',
+    low: 'low',
+    very_low: 'very-low',
+  },
+  RiskLevel: {
+    very_high: 'very-high',
+    high: 'high',
+    moderate: 'moderate',
+    low: 'low',
+    very_low: 'very-low',
+  },
+  RiskState: {
+    initial: 'initial',
+    adjusted: 'adjusted',
+  },
   RiskStatus: {
     open: 'open',
     investigating: 'investigating',
@@ -106,5 +127,11 @@ const Query: QueryResolvers.Resolvers = {
     user: 'user',
     resource: 'resource',
   },
-
+  VulnerabilitySeverity: {
+    very_high: 'very-high',
+    high: 'high',
+    moderate: 'moderate',
+    low: 'low',
+    very_low: 'very-low',  
+  },
 }

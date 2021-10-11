@@ -1,99 +1,6 @@
 import gql from 'graphql-tag' ;
 
 const typeDefs = gql`
-    enum ComputingDeviceOrdering {
-        name
-        asset_type
-        asset_id
-        ip_address
-        installed_operating_system
-        network_id
-        labels
-    }
-
-    enum ComputingDeviceFilter {
-        name
-        asset_type
-        asset_id
-        ip_address
-        installed_operating_system
-        network_id
-        labels
-    }
-
-    input ComputingDeviceFiltering {
-        key: ComputingDeviceFilter!
-        values: [String]
-        operator: String
-        filterMode: FilterMode 
-    }
-
-    # Mutation Types
-    input ComputingDeviceAddInput {
-        # Basic Object
-        id: String!
-        object_type: String!
-        # ExternalObject
-        created: DateTime!
-        modified: DateTime!
-        labels: [String]
-        external_references: [ExternalReferenceAddInput]
-        notes: [NoteAddInput]
-        # Asset
-        name: String!
-        description: String
-        locations: [AssetLocationAddInput]!
-        asset_id: String
-        # responsible_parties: [ResponsibleParty]
-        # IT Asset
-        asset_type: AssetType!
-        asset_tag: String
-        serial_number: String
-        vendor_name: String
-        version: String
-        release_date: DateTime
-        implementation_point: ImplementationPoint!
-        operational_status: OperationalStatus!
-        # Hardware
-        cpe_identifier: String
-        installation_id: String
-        installed_hardware: [ComputingDeviceAddInput!]!
-        installed_operating_system: OperatingSystemAddInput!
-        model: String
-        motherboard_id: String
-        baseline_configuration_name: String
-        function: String
-        # Computing Device
-        bios_id: String
-        connected_to_network: NetworkAddInput
-        default_gateway: String
-        fqdn: String
-        hostname: String
-        netbios_name: String
-        installed_software: [SoftwareAddInput!]!
-        ipv4_address: [IpV4AddressAddInput]!
-        ipv6_address: [IpV6AddressAddInput]!
-        mac_address: [MAC!]!
-        network_id: String
-        vlan_id: String
-        uri: URL
-        ports: [PortInfoAddInput!]!
-        is_publicly_accessible: Boolean
-        is_scanned: Boolean
-        is_virtual: Boolean
-    }
-
-    # Pagination Types
-    type ComputingDeviceConnection {
-        pageInfo: PageInfo!
-        edges: [ComputingDeviceEdge]
-    }
-
-    type ComputingDeviceEdge {
-        cursor: String!
-        node: ComputingDevice!
-    }
-
     extend type Query {
         computingDeviceList(
             first: Int
@@ -108,37 +15,37 @@ const typeDefs = gql`
     }
 
     extend type Mutation {
-        computingDeviceAdd(input: ComputingDeviceAddInput): ComputingDevice
-        computingDeviceDelete(id: String!): String!
-        computingDeviceEdit(id: String!, input: [EditInput]!, commitMessage: String): ComputingDevice
+        addComputingDevice(input: ComputingDeviceAddInput): ComputingDevice
+        deleteComputingDevice(id: String!): String!
+        editComputingDevice(id: String!, input: [EditInput]!, commitMessage: String): ComputingDevice
     }
 
     "Defines identifying information about a network."
-    type ComputingDevice implements BasicObject & ExternalObject & Asset & ItAsset {
-        # Basic Object
+    type ComputingDevice implements RootObject & CoreObject & Asset & ItAsset {
+        # Root Object
         id: String!
-        object_type: String!
-        # ExternalObject
+        entity_type: String!
+        # CoreObject
         created: DateTime!
         modified: DateTime!
         labels: [String]
-        external_references: [ExternalReference]
-        notes: [Note]
         # Asset
+        asset_id: String
         name: String!
         description: String
-        locations: [AssetLocation]!
-        asset_id: String
-        # responsible_parties: [ResponsibleParty]
-        # IT Asset
-        asset_type: AssetType!
+        locations: [Location]
+        external_references( first: Int ): ExternalReferenceConnection
+        notes( first: Int ): NoteConnection
+        # ItAsset
         asset_tag: String
+        asset_type: AssetType!
         serial_number: String
         vendor_name: String
         version: String
         release_date: DateTime
         implementation_point: ImplementationPoint!
         operational_status: OperationalStatus!
+        # responsible_parties: [ResponsibleParty]
         # Hardware
         cpe_identifier: String
         installation_id: String
@@ -168,31 +75,31 @@ const typeDefs = gql`
     }
 
     "Defines identifying information about infrastructure server device that perform generic computing capabilities."
-    type Server implements BasicObject & ExternalObject & Asset & ItAsset {
-        # Basic Object
+    type Server implements RootObject & CoreObject & Asset & ItAsset {
+        # Root Object
         id: String!
-        object_type: String!
-        # ExternalObject
+        entity_type: String!
+        # CoreObject
         created: DateTime!
         modified: DateTime!
         labels: [String]
-        external_references: [ExternalReference]
-        notes: [Note]
         # Asset
+        asset_id: String
         name: String!
         description: String
-        locations: [AssetLocation]!
-        asset_id: String
-        # responsible_parties: [ResponsibleParty]
-        # IT Asset
-        asset_type: AssetType!
+        locations: [Location]
+        external_references( first: Int ): ExternalReferenceConnection
+        notes( first: Int ): NoteConnection
+        # ItAsset
         asset_tag: String
+        asset_type: AssetType!
         serial_number: String
         vendor_name: String
         version: String
         release_date: DateTime
         implementation_point: ImplementationPoint!
         operational_status: OperationalStatus!
+        # responsible_parties: [ResponsibleParty]
         # Hardware
         cpe_identifier: String
         installation_id: String
@@ -221,31 +128,31 @@ const typeDefs = gql`
     }
 
     "Defines identifying information about a workstation that perform generic computing capabilities."
-    type Workstation implements BasicObject & ExternalObject & Asset & ItAsset {
-        # Basic Object
+    type Workstation implements RootObject & CoreObject & Asset & ItAsset {
+        # Root Object
         id: String!
-        object_type: String!
-        # ExternalObject
+        entity_type: String!
+        # CoreObject
         created: DateTime!
         modified: DateTime!
         labels: [String]
-        external_references: [ExternalReference]
-        notes: [Note]
         # Asset
+        asset_id: String
         name: String!
         description: String
-        locations: [AssetLocation]!
-        asset_id: String
-        # responsible_parties: [ResponsibleParty]
-        # IT Asset
-        asset_type: AssetType!
+        locations: [Location]
+        external_references( first: Int ): ExternalReferenceConnection
+        notes( first: Int ): NoteConnection
+        # ItAsset
         asset_tag: String
+        asset_type: AssetType!
         serial_number: String
         vendor_name: String
         version: String
         release_date: DateTime
         implementation_point: ImplementationPoint!
         operational_status: OperationalStatus!
+        # responsible_parties: [ResponsibleParty]
         # Hardware
         cpe_identifier: String
         installation_id: String
@@ -272,6 +179,87 @@ const typeDefs = gql`
         is_scanned: Boolean
         is_virtual: Boolean
     }
+
+    # Mutation Types
+    input ComputingDeviceAddInput {
+        labels: [String]
+        # Asset
+        asset_id: String
+        name: String!
+        description: String
+        # ItAsset
+        asset_tag: String
+        asset_type: AssetType!
+        serial_number: String
+        vendor_name: String
+        version: String
+        release_date: DateTime
+        implementation_point: ImplementationPoint!
+        operational_status: OperationalStatus!
+        # responsible_parties: [ResponsibleParty]
+        # Hardware
+        cpe_identifier: String
+        installation_id: String
+        model: String
+        motherboard_id: String
+        baseline_configuration_name: String
+        function: String
+        # Computing Device
+        bios_id: String
+        default_gateway: String
+        fqdn: String
+        hostname: String
+        netbios_name: String
+        ipv4_address: [IpV4AddressAddInput]!
+        ipv6_address: [IpV6AddressAddInput]!
+        mac_address: [MAC!]!
+        network_id: String
+        vlan_id: String
+        uri: URL
+        ports: [PortInfoAddInput!]!
+        is_publicly_accessible: Boolean
+        is_scanned: Boolean
+        is_virtual: Boolean
+    }
+
+    enum ComputingDeviceOrdering {
+        name
+        asset_type
+        asset_id
+        ip_address
+        installed_operating_system
+        network_id
+        labels
+    }
+
+    enum ComputingDeviceFilter {
+        name
+        asset_type
+        asset_id
+        ip_address
+        installed_operating_system
+        network_id
+        labels
+    }
+
+    input ComputingDeviceFiltering {
+        key: ComputingDeviceFilter!
+        values: [String]
+        operator: String
+        filterMode: FilterMode 
+    }
+
+    # Pagination Types
+    type ComputingDeviceConnection {
+        pageInfo: PageInfo!
+        edges: [ComputingDeviceEdge]
+    }
+
+    type ComputingDeviceEdge {
+        cursor: String!
+        node: ComputingDevice!
+    }
+
 `;
 
 export default typeDefs ;
