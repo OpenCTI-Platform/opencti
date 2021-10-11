@@ -8,14 +8,14 @@ import {
 } from '../../../src/database/amqp';
 import { CONNECTOR_INTERNAL_IMPORT_FILE } from '../../../src/schema/general';
 
-describe('Rabbit basic and utils', () => {
-  it('should rabbit in correct version', async () => {
+describe('AMQP basic and utils', () => {
+  it('should amqp in correct version', async () => {
     // Just wait one second to let redis client initialize
-    const rabbitVersion = await getAMQPVersion();
-    expect(rabbitVersion).toEqual(expect.stringMatching(/^3.9\./g));
+    const amqpVersion = await getAMQPVersion();
+    expect(amqpVersion).toEqual(expect.stringMatching(/^3.9\./g));
   });
 
-  it('should rabbit metrics accurate', async () => {
+  it('should amqp metrics accurate', async () => {
     // Just wait one second to let redis client initialize
     const data = await metrics();
     expect(data).not.toBeNull();
@@ -24,7 +24,7 @@ describe('Rabbit basic and utils', () => {
   });
 });
 
-describe('Rabbit connector management', () => {
+describe('AMQP connector management', () => {
   const connectorId = uuid();
   const connectorName = 'MY STIX IMPORTER';
   const connectorType = CONNECTOR_INTERNAL_IMPORT_FILE;

@@ -32,8 +32,6 @@ services:
   rabbitmq:
     image: rabbitmq:3.9-management
     container_name: rabbitmq
-    volumes:
-      - amqpdata:/var/lib/rabbitmq
     ports:
       - "5672:5672"
     restart: unless-stopped

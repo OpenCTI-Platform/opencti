@@ -70,11 +70,22 @@ const subscribeFn = (request, variables) => {
   return Observable.from(subscribeObservable);
 };
 
+const buildHeaders = () => {
+  const accessToken = localStorage.getItem('token');
+  if (accessToken) {
+    return {
+      Authorization: `Bearer ${accessToken}`,
+    };
+  }
+  return {};
+};
+
 const network = new RelayNetworkLayer(
   [
     urlMiddleware({
       url: `${APP_BASE_PATH}/graphql`,
       credentials: 'same-origin',
+      headers: buildHeaders(),
     }),
     uploadMiddleware(),
   ],

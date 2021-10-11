@@ -6,7 +6,7 @@ import { Canceler } from "axios";
 export let cancelAllAnalysis;
 export let cancelAnalysisProfileData;
 
-const filters = (options): any => {
+const filters = options => {
   const filters = options;
 
   Object.entries(options).forEach(([key, value]) => {
