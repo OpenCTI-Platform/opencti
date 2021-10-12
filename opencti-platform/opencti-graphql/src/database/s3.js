@@ -45,7 +45,14 @@ const bucketExists = async () => {
 };
 
 export const isStorageAlive = async () => {
-  await bucketExists();
+  bucketExists()
+    .then(() => {
+      return true;
+    })
+    .catch((e) => {
+      logApp.error(`[S3] Failed to establish storage alive. ${e.error}`);
+      return false;
+    });
 };
 
 export const deleteFile = async (user, id) => {
