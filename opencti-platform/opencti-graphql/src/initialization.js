@@ -5,8 +5,9 @@ import semver from 'semver';
 import { booleanConf, logApp, PLATFORM_VERSION } from './config/conf';
 import { elCreateIndexes, elIndexExists, elIsAlive } from './database/elasticSearch';
 import { initializeAdminUser } from './config/providers';
-// import { isStorageAlive } from './database/minio';
-import { rabbitMQIsAlive } from './database/rabbitmq';
+import { isStorageAlive } from './database/s3';
+import { amqpIsAlive } from './database/amqp';
+import { keycloakAlive } from './service/keycloak';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
 import { ROLE_DEFAULT, STREAMAPI, TAXIIAPI } from './domain/user';
@@ -111,16 +112,20 @@ export const CAPABILITIES = [
 
 // Check every dependencies
 export const checkSystemDependencies = async () => {
+  await keycloakAlive();
+  logApp.info('[Check] Keycloak is alive');
   // Check if elasticsearch is available
   await elIsAlive();
   logApp.info(`[CHECK] ElasticSearch is alive`);
-  // Check if minio is here
-  // await isStorageAlive();
-  // logApp.info(`[CHECK] Minio is alive`);
-  logApp.info(`[CHECK] Minio skipped`);
-  // Check if RabbitMQ is here and create the logs exchange/queue
-  await rabbitMQIsAlive();
-  logApp.info(`[CHECK] RabbitMQ is alive`);
+  // Check if s3 is accessible
+  if (await isStorageAlive()) {
+    logApp.info(`[CHECK] S3 is alive`);
+  } else {
+    logApp.info(`[CHECK] S3 skipped`);
+  }
+  // Check if AMQP connection is here and create the logs exchange/queue
+  await amqpIsAlive();
+  logApp.info(`[CHECK] AMQP is alive`);
   // Check if redis is here
   await redisIsAlive();
   logApp.info(`[CHECK] Redis is alive`);

@@ -14,35 +14,35 @@ export const EVENT_TYPE_UPDATE = 'update';
 export const EVENT_TYPE_MERGE = 'merge';
 export const EVENT_TYPE_DELETE = 'delete';
 
-const USE_SSL = booleanConf('rabbitmq:use_ssl', false);
-const RABBITMQ_CA = conf.get('rabbitmq:ca').map((path) => readFileSync(path));
+const USE_SSL = booleanConf('amqp:use_ssl', false);
+const AMQP_CA = conf.get('amqp:ca').map((path) => readFileSync(path));
 
 const amqpUri = () => {
-  const host = conf.get('rabbitmq:hostname');
-  const port = conf.get('rabbitmq:port');
+  const host = conf.get('amqp:hostname');
+  const port = conf.get('amqp:port');
   return `amqp${USE_SSL ? 's' : ''}://${host}:${port}`;
 };
 
 const amqpCred = () => {
-  const user = conf.get('rabbitmq:username');
-  const pass = conf.get('rabbitmq:password');
+  const user = conf.get('amqp:username');
+  const pass = conf.get('amqp:password');
   return { credentials: amqp.credentials.plain(user, pass) };
 };
 
 export const config = () => {
   return {
-    host: conf.get('rabbitmq:hostname'),
-    use_ssl: booleanConf('rabbitmq:use_ssl', false),
-    port: conf.get('rabbitmq:port'),
-    user: conf.get('rabbitmq:username'),
-    pass: conf.get('rabbitmq:password'),
+    host: conf.get('amqp:hostname'),
+    use_ssl: booleanConf('amqp:use_ssl', false),
+    port: conf.get('amqp:port'),
+    user: conf.get('amqp:username'),
+    pass: conf.get('amqp:password'),
   };
 };
 
 const amqpExecute = (execute) => {
   return new Promise((resolve, reject) => {
     amqp
-      .connect(amqpUri(), USE_SSL ? { ...amqpCred(), ...configureCA(RABBITMQ_CA) } : amqpCred())
+      .connect(amqpUri(), USE_SSL ? { ...amqpCred(), ...configureCA(AMQP_CA) } : amqpCred())
       .then((connection) => {
         return connection
           .createConfirmChannel()
@@ -82,16 +82,16 @@ export const send = (exchangeName, routingKey, message) => {
 };
 
 export const metrics = async () => {
-  const baseURL = `http${conf.get('rabbitmq:management_ssl') === true ? 's' : ''}://${conf.get(
-    'rabbitmq:hostname'
-  )}:${conf.get('rabbitmq:port_management')}`;
+  const baseURL = `http${conf.get('amqp:management_ssl') === true ? 's' : ''}://${conf.get('amqp:hostname')}:${conf.get(
+    'amqp:port_management'
+  )}`;
   const overview = await axios
     .get('/api/overview', {
       baseURL,
       withCredentials: true,
       auth: {
-        username: conf.get('rabbitmq:username'),
-        password: conf.get('rabbitmq:password'),
+        username: conf.get('amqp:username'),
+        password: conf.get('amqp:password'),
       },
     })
     .then((response) => {
@@ -102,8 +102,8 @@ export const metrics = async () => {
       baseURL,
       withCredentials: true,
       auth: {
-        username: conf.get('rabbitmq:username'),
-        password: conf.get('rabbitmq:password'),
+        username: conf.get('amqp:username'),
+        password: conf.get('amqp:password'),
       },
     })
     .then((response) => {
@@ -171,7 +171,7 @@ export const unregisterConnector = async (id) => {
   return { listen, push };
 };
 
-export const rabbitMQIsAlive = async () => {
+export const amqpIsAlive = async () => {
   // 01. Ensure exchange exists
   await amqpExecute((channel) =>
     channel.assertExchange(CONNECTOR_EXCHANGE, 'direct', {
@@ -179,7 +179,7 @@ export const rabbitMQIsAlive = async () => {
     })
   ).catch(
     /* istanbul ignore next */ (e) => {
-      throw DatabaseError('RabbitMQ seems down', { error: e.message });
+      throw DatabaseError('amqp seems down', { error: e.message });
     }
   );
 };
@@ -188,8 +188,8 @@ export const pushToConnector = (connector, message) => {
   return send(CONNECTOR_EXCHANGE, listenRouting(connector.internal_id), JSON.stringify(message));
 };
 
-export const getRabbitMQVersion = () => {
+export const getAMQPVersion = () => {
   return metrics()
-    .then((data) => data.overview.rabbitmq_version)
+    .then((data) => data.overview.amqp_version)
     .catch(/* istanbul ignore next */ () => 'Disconnected');
 };

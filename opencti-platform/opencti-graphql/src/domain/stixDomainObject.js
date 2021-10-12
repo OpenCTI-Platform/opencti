@@ -16,7 +16,7 @@ import {
   updateAttribute,
 } from '../database/middleware';
 import { elCount } from '../database/elasticSearch';
-import { upload } from '../database/minio';
+import { upload } from '../database/s3';
 import { workToExportFile } from './work';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';

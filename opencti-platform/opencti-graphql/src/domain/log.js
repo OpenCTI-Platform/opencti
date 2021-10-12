@@ -2,7 +2,7 @@ import { head } from 'ramda';
 import * as R from 'ramda';
 import { elPaginate } from '../database/elasticSearch';
 import conf, { booleanConf } from '../config/conf';
-import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
+import { EVENT_TYPE_CREATE } from '../database/amqp';
 import { findById } from './user';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import { loadById, timeSeriesEntities } from '../database/middleware';

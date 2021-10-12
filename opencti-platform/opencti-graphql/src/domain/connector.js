@@ -8,7 +8,7 @@ import {
   patchAttribute,
   updateAttribute,
 } from '../database/middleware';
-import { connectorConfig, registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
+import { connectorConfig, registerConnectorQueues, unregisterConnector } from '../database/amqp';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { FROM_START_STR, now, sinceNowInMinutes } from '../utils/format';

@@ -72,7 +72,7 @@ class WorkersStatusComponent extends Component {
     const {
       classes, t, n, data,
     } = this.props;
-    const { consumers, overview } = data.rabbitMQMetrics;
+    const { consumers, overview } = data.amqpMetrics;
     const { docs, search, indexing } = data.elasticSearchMetrics;
     const currentReadOperations = search.query_total;
     const currentWriteOperations = indexing.index_total + indexing.delete_total;
@@ -189,7 +189,7 @@ const WorkersStatus = createRefetchContainer(
             total
           }
         }
-        rabbitMQMetrics {
+        amqpMetrics {
           consumers
           overview {
             queue_totals {

@@ -19,7 +19,7 @@ import { RELATION_EXTERNAL_REFERENCE } from '../schema/stixMetaRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { worksForSource } from '../domain/work';
 import { connectorsForEnrichment } from '../domain/enrichment';
-import { filesListing } from '../database/minio';
+import { filesListing } from '../database/s3';
 
 const externalReferenceResolvers = {
   Query: {

@@ -1,6 +1,6 @@
 import { filter, map, assoc } from 'ramda';
 import moment from 'moment';
-import { metrics } from '../database/rabbitmq';
+import { metrics } from '../database/amqp';
 
 // eslint-disable-next-line
 export const getMetrics = async (args) => {

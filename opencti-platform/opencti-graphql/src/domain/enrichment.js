@@ -2,7 +2,7 @@ import { Promise } from 'bluebird';
 import { map } from 'ramda';
 import { connectorsFor } from './connector';
 import { createWork } from './work';
-import { pushToConnector } from '../database/rabbitmq';
+import { pushToConnector } from '../database/amqp';
 import { CONNECTOR_INTERNAL_ENRICHMENT } from '../schema/general';
 
 export const connectorsForEnrichment = async (user, scope, onlyAlive = false, onlyAuto = false) =>

@@ -11,7 +11,7 @@ import {
 } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { elVersion } from '../database/elasticSearch';
-import { getRabbitMQVersion } from '../database/rabbitmq';
+import { getAMQPVersion } from '../database/amqp';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 
@@ -34,7 +34,7 @@ export const getApplicationInfo = () => ({
   memory: getMemoryStatistics(),
   dependencies: [
     { name: 'Elasticsearch', version: elVersion() },
-    { name: 'RabbitMQ', version: getRabbitMQVersion() },
+    { name: 'AMQP', version: getAMQPVersion() },
     { name: 'Redis', version: getRedisVersion() },
   ],
   debugStats: {}, // Lazy loaded

@@ -14,7 +14,7 @@ import {
   EVENT_TYPE_DELETE,
   EVENT_TYPE_MERGE,
   EVENT_TYPE_UPDATE,
-} from '../../../src/database/rabbitmq';
+} from '../../../src/database/amqp';
 import { fullLoadById } from '../../../src/database/middleware';
 import { rebuildInstanceWithPatch } from '../../../src/utils/patch';
 import { buildStixData } from '../../../src/database/stix';
