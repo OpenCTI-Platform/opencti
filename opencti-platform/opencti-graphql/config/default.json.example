@@ -86,13 +86,13 @@
   },
   "amqp": {
     "hostname": "localhost",
-    "use_ssl": true,
+    "use_ssl": false,
     "ca": [],
     "port": 5672,
     "port_management": 410,
     "management_ssl": false,
-    "username": "",
-    "password": ""
+    "username": "guest",
+    "password": "guest"
   },
   "providers": {
     "local": {
@@ -101,7 +101,7 @@
     "openid": {
       "strategy": "OpenIDConnectStrategy",
       "config": {
-        "label": "Login with Keycloak",
+        "label": "",
         "issuer": "",
         "client_id": "",
         "client_secret": "",
