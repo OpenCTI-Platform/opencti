@@ -1,7 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "5.0.1",
-  "main": "index.js",
+  "version": "5.0.0",
   "author": "Luatix",
   "license": "Apache-2.0",
   "dependencies": {
@@ -131,5 +130,5 @@
     "bezier-js": "4.0.3",
     "webpack": "4.44.2"
   },
-  "packageManager": "yarn@3.0.2"
+  "main": "index.js"
 }

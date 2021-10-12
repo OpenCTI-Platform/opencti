@@ -4,4 +4,5 @@
 .mypy_cache
 .venv
 venv
-docker/.env
+**/.env
+docker/graphql/node_modules
