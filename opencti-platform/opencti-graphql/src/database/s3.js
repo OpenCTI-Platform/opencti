@@ -23,13 +23,7 @@ const s3SecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 const s3BucketName = conf.get('s3:bucket_name');
 const s3Region = conf.get('s3:region');
 
-const s3Client =
-  s3AccessKeyId !== undefined && s3SecretAccessKey !== undefined
-    ? new S3Client({
-        region: s3Region,
-        credentials: { accessKeyId: s3AccessKeyId, secretAccessKey: s3SecretAccessKey },
-      })
-    : new S3Client({ region: s3Region });
+let s3Client;
 
 const bucketExists = async () => {
   const command = new ListBucketsCommand({ bucketName: s3BucketName, bucketRegion: s3Region });
@@ -45,14 +39,20 @@ const bucketExists = async () => {
 };
 
 export const isStorageAlive = async () => {
-  bucketExists()
-    .then(() => {
-      return true;
-    })
-    .catch((e) => {
-      logApp.error(`[S3] Failed to establish storage alive. ${e.error}`);
-      return false;
-    });
+  try {
+    s3Client =
+      s3AccessKeyId !== undefined && s3SecretAccessKey !== undefined
+        ? new S3Client({
+            region: s3Region,
+            credentials: { accessKeyId: s3AccessKeyId, secretAccessKey: s3SecretAccessKey },
+          })
+        : new S3Client({ region: s3Region });
+    await bucketExists();
+    return true;
+  } catch (e) {
+    logApp.error(`[S3] Failed to establish storage alive. ${e.error}`);
+    return false;
+  }
 };
 
 export const deleteFile = async (user, id) => {
