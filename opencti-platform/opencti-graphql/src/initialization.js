@@ -120,8 +120,9 @@ export const checkSystemDependencies = async () => {
   // Check if s3 is accessible
   if (await isStorageAlive()) {
     logApp.info(`[CHECK] S3 is alive`);
+  } else {
+    logApp.info(`[CHECK] S3 skipped`);
   }
-  logApp.info(`[CHECK] Minio skipped`);
   // Check if AMQP connection is here and create the logs exchange/queue
   await amqpIsAlive();
   logApp.info(`[CHECK] AMQP is alive`);
