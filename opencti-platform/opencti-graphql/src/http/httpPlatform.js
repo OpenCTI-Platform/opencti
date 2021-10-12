@@ -17,7 +17,6 @@ import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, logApp, logAudit } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
-// import { downloadFile, getFileContent, loadFile } from '../database/minio';
 import { checkSystemDependencies } from '../initialization';
 import { getSettings } from '../domain/settings';
 import createSeeMiddleware from '../graphql/sseMiddleware';

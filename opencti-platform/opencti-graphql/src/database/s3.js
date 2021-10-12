@@ -118,7 +118,6 @@ export const loadFile = async (user, filename) => {
       lastModified: response.LastModified,
       lastModifiedSinceMin: sinceNowInMinutes(response.LastModified),
       metaData: {
-        // TODO: Extract metadata from would-be-header values starting with 'x-amz-meta-(eg. storage-class)' and others... (https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingMetadata.html, https://github.com/minio/minio-js/blob/99f8d56332639feb8c573670df50581e538f59f4/src/main/helpers.js#L348)
         messages: [],
         errors: [],
       },
