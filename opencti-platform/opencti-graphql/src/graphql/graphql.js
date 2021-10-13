@@ -9,20 +9,35 @@ import { UnknownError, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
 import { applicationSession } from '../database/session';
+// Keycloak
 import { expandToken } from '../service/keycloak';
+// import configureKeycloak from './keycloak-config.js';
+// import cors from "cors";
+// import { KeycloakContext, KeycloakTypeDefs, KeycloakSchemaDirectives } from 'keycloak-connect-graphql';
+
+// mocks
+import mocks from './mocks.js' ;
 
 const buildContext = (user, req, res) => {
+  // const kauth = new KeycloakContext({ req }, keycloak);
+  // const dbName = req.headers['x-cyio-client'];
   const workId = req.headers['opencti-work-id'];
   if (user) {
     return { req, res, user: userWithOrigin(req, user), workId };
   }
   return { req, res, user, workId };
 };
+
+// perform the standard keycloak-connect middleware setup on our app
+// const { keycloak } = configureKeycloak(app, graphqlPath)  // Same ApolloServer initialization as before, plus the drain plugin.
+
 const createApolloServer = () => {
   const cdnUrl = conf.get('app:playground_cdn_url');
   return new ApolloServer({
     schema: createSchema(),
     introspection: true,
+    mocks,
+    mockEntireSchema: false,
     playground: {
       cdnUrl,
       settings: {
