@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -148,7 +149,7 @@ class SessionsListComponent extends Component {
         <List
           component="nav"
           aria-labelledby="nested-list-subheader"
-          className={classes.root}
+          
         >
           {sessions.map((session) => {
             const { user, sessions: userSessions } = session;

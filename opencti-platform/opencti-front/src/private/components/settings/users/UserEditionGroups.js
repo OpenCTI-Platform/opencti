@@ -101,7 +101,7 @@ class UserEditionGroupsComponent extends Component {
                 map((n) => n.node),
               )(props);
               return (
-                <List className={classes.root}>
+                <List >
                   {groups.map((group) => {
                     const userGroup = find(propEq('id', group.id))(userGroups);
                     return (

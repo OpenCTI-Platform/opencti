@@ -338,6 +338,20 @@ class Scans extends Component {
       this.setState({ openDialog: false });
     };
 
+    const handleLinkClink = (path, data) => {
+      this.props.history.push({
+        pathname: path,
+          state: data 
+      });
+    }
+
+    const getCurrentScan = (id, scans) => {
+      const scan = scans.find((i) => i.id === id);
+      if (scan) {
+        return scan;
+      }
+    }
+
     const getScatterPlotData = (data) => {
       console.log(data);
       let scatterPlot = [];
@@ -677,11 +691,14 @@ class Scans extends Component {
                             }
                           >
                             <MenuItem
-                              component={Link}
-                              to="/dashboard/vsac/scans/exploreresults"
-                              selected={location.pathname.includes(
-                                "/dashboard/vsac/scans/exploreresults"
-                              )}
+                              onClick={() => 
+                                handleLinkClink('/dashboard/vsac/scans/exploreresults',
+                                { analysis: analysis,
+                                  client:
+                                    "30f033d4-e90d-44f9-8ce0-36597ff08c93",
+                                  scan: getCurrentScan(analysis.scan.id, scans)
+                                })}
+                              
                             >
                               <ListItemIcon>
                                 <ExploreIcon fontSize="small" />

@@ -74,7 +74,7 @@ class SubTypeEditionContainer extends Component {
           <List
             component="nav"
             aria-labelledby="nested-list-subheader"
-            className={classes.root}
+            
           >
             {subType.statuses.edges.map((statusEdge) => {
               const status = statusEdge.node;
