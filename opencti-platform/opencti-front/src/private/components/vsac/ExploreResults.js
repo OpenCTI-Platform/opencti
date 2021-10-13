@@ -1,51 +1,51 @@
 /* eslint-disable */
-import React, { Component } from "react";
-import * as PropTypes from "prop-types";
-import ReactHtmlParser from "react-html-parser";
-import { withRouter, Link } from "react-router-dom";
-import * as R from "ramda";
-import { QueryRenderer } from "../../../relay/environment";
+import React, { Component } from 'react';
+import * as PropTypes from 'prop-types';
+import ReactHtmlParser from 'react-html-parser';
+import { withRouter, Link } from 'react-router-dom';
+import * as R from 'ramda';
+import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
   saveViewParameters,
-} from "../../../utils/ListParameters";
-import ListLines from "../../../components/list_lines/ListLines";
-import inject18n from "../../../components/i18n";
-import ToolBar from "../data/ToolBar";
-import { isUniqFilter } from "../common/lists/Filters";
-import Security, { KNOWLEDGE_KNUPDATE } from "../../../utils/Security";
-import DescriptionIcon from "@material-ui/icons/Description";
-import AddIcon from "@material-ui/icons/Add";
-import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
-import ExploreIcon from "@material-ui/icons/Explore";
-import ShowChartIcon from "@material-ui/icons/ShowChart";
-import DeleteIcon from "@material-ui/icons/Delete";
-import IconButton from "@material-ui/core/IconButton";
-import CloudUploadIcon from "@material-ui/icons/CloudUpload";
-import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
-import ImportExportIcon from "@material-ui/icons/ImportExport";
-import CompareIcon from "@material-ui/icons/Compare";
-import ScannerIcon from "@material-ui/icons/Scanner";
-import PublishIcon from "@material-ui/icons/Publish";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import Button from "@material-ui/core/Button";
-import Card from "@material-ui/core/Card";
-import CardHeader from "@material-ui/core/CardHeader";
-import CardActions from "@material-ui/core/CardActions";
-import Grid from "@material-ui/core/Grid";
-import Paper from "@material-ui/core/Paper";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
-import Typography from "@material-ui/core/Typography";
-import Tooltip from "@material-ui/core/Tooltip";
-import CardContent from "@material-ui/core/CardContent";
-import { DescriptionOutlined } from "@material-ui/icons";
-import { makeStyles } from "@material-ui/core/styles";
-import { fetchAllScans } from "../../../services/scan.service";
+} from '../../../utils/ListParameters';
+import ListLines from '../../../components/list_lines/ListLines';
+import inject18n from '../../../components/i18n';
+import ToolBar from '../data/ToolBar';
+import { isUniqFilter } from '../common/lists/Filters';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import DescriptionIcon from '@material-ui/icons/Description';
+import AddIcon from '@material-ui/icons/Add';
+import EditOutlinedIcon from '@material-ui/icons/EditOutlined';
+import ExploreIcon from '@material-ui/icons/Explore';
+import ShowChartIcon from '@material-ui/icons/ShowChart';
+import DeleteIcon from '@material-ui/icons/Delete';
+import IconButton from '@material-ui/core/IconButton';
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import ImportExportIcon from '@material-ui/icons/ImportExport';
+import CompareIcon from '@material-ui/icons/Compare';
+import ScannerIcon from '@material-ui/icons/Scanner';
+import PublishIcon from '@material-ui/icons/Publish';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import Button from '@material-ui/core/Button';
+import Card from '@material-ui/core/Card';
+import CardHeader from '@material-ui/core/CardHeader';
+import CardActions from '@material-ui/core/CardActions';
+import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import Typography from '@material-ui/core/Typography';
+import Tooltip from '@material-ui/core/Tooltip';
+import CardContent from '@material-ui/core/CardContent';
+import { DescriptionOutlined } from '@material-ui/icons';
+import { makeStyles } from '@material-ui/core/styles';
+import { fetchAllScans } from '../../../services/scan.service';
 import {
   fetchAllAnalysis,
   getAnalysisHosts,
@@ -56,30 +56,30 @@ import {
   getAnalysisFilteredResults,
   getAnalysisFilteredResultsDetails,
   getAnalysisFilteredResultsVulnerability,
-} from "../../../services/analysis.service";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
-import Menu from "@material-ui/core/Menu";
-import MenuItem from "@material-ui/core/MenuItem";
-import moment from "moment";
-import Dialog from "@material-ui/core/Dialog";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import Chip from "@material-ui/core/Chip";
-import Hosts from "./components/Hosts";
-import Products from "./components/Products";
-import VulnerabilityAccordionCards from "./components/VulnerabilityAccordionCards";
-import WeaknessAccordionCards from "./components/WeaknessAccordionCards";
-import Tabs from "@material-ui/core/Tabs";
-import Tab from "@material-ui/core/Tab";
-import Box from "@material-ui/core/Box";
-import Accordion from "@material-ui/core/Accordion";
-import AccordionSummary from "@material-ui/core/AccordionSummary";
-import AccordionDetails from "@material-ui/core/AccordionDetails";
-import CircularProgress from "@material-ui/core/CircularProgress";
+} from '../../../services/analysis.service';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import moment from 'moment';
+import Dialog from '@material-ui/core/Dialog';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Chip from '@material-ui/core/Chip';
+import Hosts from './components/Hosts';
+import Products from './components/Products';
+import VulnerabilityAccordionCards from './components/VulnerabilityAccordionCards';
+import WeaknessAccordionCards from './components/WeaknessAccordionCards';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Box from '@material-ui/core/Box';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -110,7 +110,7 @@ TabPanel.propTypes = {
 function a11yProps(index) {
   return {
     id: `simple-tab-${index}`,
-    "aria-controls": `simple-tabpanel-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
   };
 }
 
@@ -191,7 +191,7 @@ class ExploreResults extends Component {
     } = this.state;
 
     const handleFilterResults = (params, name) => {
-      this.setState({ filteredResultsData: "loading" });
+      this.setState({ filteredResultsData: 'loading' });
       getAnalysisFilteredResults(
         this.state.analysis.id,
         this.state.client,
@@ -255,7 +255,7 @@ class ExploreResults extends Component {
 
     const handleWeaknessAccordion = (panel, params) => (event, isExpanded) => {
       this.setState({ weaknessAccordion: isExpanded ? panel : false });
-      this.setState({ weaknessDetails: "" });
+      this.setState({ weaknessDetails: '' });
       getAnalysisFilteredResultsWeakness(
         this.state.analysis.id,
         this.state.client,
@@ -314,7 +314,7 @@ class ExploreResults extends Component {
     const handleVulnerabilitiesAccordion =
       (panel, params) => (event, isExpanded) => {
         this.setState({ vulnerabilitiesAccordion: isExpanded ? panel : false });
-        this.setState({ vulnerabilitiesDetails: "" });
+        this.setState({ vulnerabilitiesDetails: '' });
         getAnalysisFilteredResultsVulnerability(
           this.state.analysis.id,
           this.state.client,
@@ -333,7 +333,7 @@ class ExploreResults extends Component {
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={12}>
             <Typography variant="h1" component="h2" gutterBottom>
-              {analysis.scan.scan_name} :{" "}
+              {analysis.scan.scan_name} :{' '}
               {moment(analysis.completed_date).fromNow()}
             </Typography>
             <div>
@@ -422,17 +422,17 @@ class ExploreResults extends Component {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {filteredResultsData === "loading" ? (
+                        {filteredResultsData === 'loading' ? (
                           <CircularProgress
                             style={{
-                              position: "absolute",
-                              left: "50%",
-                              top: "50%",
+                              position: 'absolute',
+                              left: '50%',
+                              top: '50%',
                             }}
                           />
                         ) : filteredResultsData ? (
                           filteredResultsData.map((result, i) => {
-                            const rowName = "resultsRow-" + i;
+                            const rowName = 'resultsRow-' + i;
 
                             return (
                               <TableRow
@@ -467,7 +467,7 @@ class ExploreResults extends Component {
                 <Typography variant="h4" gutterBottom={true}>
                   Solutions
                 </Typography>
-                <div style={{ maxHeight: 250, overflow: "auto" }}>
+                <div style={{ maxHeight: 250, overflow: 'auto' }}>
                   {ReactHtmlParser(filteredResultsDataDetails?.solution)}
                 </div>
                 <Tabs value={tabValue} onChange={handleTabChange}>
@@ -475,7 +475,11 @@ class ExploreResults extends Component {
                   <Tab label="Weaknesses" />
                   <Tab label="Vulnerabilities" />
                 </Tabs>
-                <TabPanel style={{ maxHeight: 700, overflow: "auto"}} value={tabValue} index={0}>
+                <TabPanel
+                  style={{ maxHeight: 700, overflow: 'auto' }}
+                  value={tabValue}
+                  index={0}
+                >
                   <Typography variant="h4" gutterBottom={true}>
                     Problems
                   </Typography>
@@ -503,8 +507,8 @@ class ExploreResults extends Component {
                 <TabPanel value={tabValue} index={1}>
                   {weakness?.map((i, j) => (
                     <Accordion
-                      expanded={weaknessAccordion === "panel-" + j}
-                      onChange={handleWeaknessAccordion("panel-" + j, {
+                      expanded={weaknessAccordion === 'panel-' + j}
+                      onChange={handleWeaknessAccordion('panel-' + j, {
                         cwe_id: i.cwe_id,
                       })}
                     >
@@ -532,8 +536,8 @@ class ExploreResults extends Component {
                 <TabPanel value={tabValue} index={2}>
                   {vulnerabilities?.map((i, j) => (
                     <Accordion
-                      expanded={vulnerabilitiesAccordion === "panel-" + j}
-                      onChange={handleVulnerabilitiesAccordion("panel-" + j, {
+                      expanded={vulnerabilitiesAccordion === 'panel-' + j}
+                      onChange={handleVulnerabilitiesAccordion('panel-' + j, {
                         cve_id: i.cve_id,
                       })}
                     >
@@ -544,32 +548,32 @@ class ExploreResults extends Component {
                       >
                         <Typography>{i.cve_id}</Typography>
                       </AccordionSummary>
-                      <AccordionDetails style={{ display: "block" }}>
-                        <div style={{ marginBottom: "10px" }}>
+                      <AccordionDetails style={{ display: 'block' }}>
+                        <div style={{ marginBottom: '10px' }}>
                           <Typography variant="h4" gutterBottom={true}>
                             Publish Date:
                           </Typography>
                           <p>{vulnerabilitiesDetails?.pub_date}</p>
                         </div>
-                        <div style={{ marginBottom: "10px" }}>
+                        <div style={{ marginBottom: '10px' }}>
                           <Typography variant="h4" gutterBottom={true}>
                             CVSS2 Base Score:
                           </Typography>
                           <p>
-                            {vulnerabilitiesDetails?.v2_base}{" "}
+                            {vulnerabilitiesDetails?.v2_base}{' '}
                             {vulnerabilitiesDetails?.v2_vector}
                           </p>
                         </div>
-                        <div style={{ marginBottom: "10px" }}>
+                        <div style={{ marginBottom: '10px' }}>
                           <Typography variant="h4" gutterBottom={true}>
                             CVSS3 Base Score:
                           </Typography>
                           <p>
-                            {vulnerabilitiesDetails?.v3_base}{" "}
+                            {vulnerabilitiesDetails?.v3_base}{' '}
                             {vulnerabilitiesDetails?.v3_vector}
                           </p>
                         </div>
-                        <div style={{ marginBottom: "10px" }}>
+                        <div style={{ marginBottom: '10px' }}>
                           <Typography variant="h4" gutterBottom={true}>
                             Description
                           </Typography>
