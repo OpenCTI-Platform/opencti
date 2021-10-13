@@ -927,6 +927,7 @@ type User implements BasicObject & InternalObject {
   language: String
   external: Boolean
   dashboard: String
+  access_token: String
   roles: [Role]!
   capabilities: [Capability]!
   groups: GroupConnection

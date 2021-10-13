@@ -107,6 +107,7 @@ export const internalObjectsAttributes = {
     'description',
     'firstname',
     'lastname',
+    'access_token',
     'theme',
     'language',
     'external',
