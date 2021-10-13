@@ -1,119 +1,125 @@
 import gql from 'graphql-tag' ;
 
 const typeDefs = gql`
-    # Query Extensions
-    extend type Query {
-        networkList(
-            first: Int
-            offset: Int
-            orderedBy: NetworkOrdering
-            orderMode: OrderingMode
-            filters: [NetworkFiltering]
-            filterMode: FilterMode
-            search: String
-         ): [Network]
-        network(id: String!): Network
-    }
+  # Query Extensions
+  extend type Query {
+    networkAssetList(
+        first: Int
+        offset: Int
+        orderedBy: NetworkAssetOrdering
+        orderMode: OrderingMode
+        filters: [NetworkAssetFiltering]
+        filterMode: FilterMode
+        search: String
+      ): NetworkAssetConnection
+    networkAsset(id: ID!): NetworkAsset
+  }
 
-    extend type Mutation {
-        createNetwork(input: NetworkAddInput): Network
-        deleteNetwork(id: String!): String!
-        editNetwork(id: String!, input: [EditInput]!, commitMessage: String): Network
-    }
+  extend type Mutation {
+    createNetworkAsset(input: NetworkAssetAddInput): NetworkAsset
+    deleteNetworkAsset(id: ID!): String!
+    editNetworkAsset(id: ID!, input: [EditInput]!, commitMessage: String): NetworkAsset
+  }
 
-    # Query Types
-    "Defines identifying information about a network."
-    type Network implements RootObject & CoreObject & Asset & ItAsset {
-        # Root Object
-        id: String!
-        entity_type: String!
-        # CoreObject
-        created: DateTime!
-        modified: DateTime!
-        labels: [String]
-        # Asset
-        asset_id: String
-        name: String!
-        description: String
-        locations: [Location]
-        external_references( first: Int ): ExternalReferenceConnection
-        notes( first: Int ): NoteConnection
-        # ItAsset
-        asset_tag: String
-        asset_type: AssetType!
-        serial_number: String
-        vendor_name: String
-        version: String
-        release_date: DateTime
-        implementation_point: ImplementationPoint!
-        operational_status: OperationalStatus!
-        # responsible_parties: [ResponsibleParty]
-        # Network
-        network_id: String!
-        network_name: String!
-        network_address_range: IpAddressRange
-    }
+  # Query Types
+  "Defines identifying information about a network."
+  type NetworkAsset implements BasicObject & LifecycleObject & CoreObject & Asset & ItAsset {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # CoreObject
+    created: DateTime!
+    modified: DateTime!
+    labels: [String]
+    # Asset
+    asset_id: String
+    name: String!
+    description: String
+    locations: [AssetLocation]
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
+    # ItAsset
+    asset_tag: String
+    asset_type: AssetType!
+    serial_number: String
+    vendor_name: String
+    version: String
+    release_date: DateTime
+    implementation_point: ImplementationPoint!
+    operational_status: OperationalStatus!
+    # responsible_parties: [ResponsibleParty]
+    # NetworkAsset
+    network_id: String!
+    network_name: String!
+    network_address_range: IpAddressRange
+  }
 
-    # Mutation Types
-    input NetworkAddInput {
-        labels: [String]
-        # Asset
-        asset_id: String
-        name: String!
-        description: String
-        # ItAsset
-        asset_tag: String
-        asset_type: AssetType!
-        serial_number: String
-        vendor_name: String
-        version: String
-        release_date: DateTime
-        implementation_point: ImplementationPoint!
-        operational_status: OperationalStatus!
-        # Network
-        network_id: String!
-        network_name: String!
-        network_ipv4_address_range: IpV4AddressRangeAddInput
-        network_ipv6_address_range: IpV6AddressRangeAddInput
-    }
+  # Mutation Types
+  input NetworkAssetAddInput {
+    labels: [String]
+    # Asset
+    asset_id: String
+    name: String!
+    description: String
+    # ItAsset
+    asset_tag: String
+    asset_type: AssetType!
+    serial_number: String
+    vendor_name: String
+    version: String
+    release_date: DateTime
+    implementation_point: ImplementationPoint!
+    operational_status: OperationalStatus!
+    # NetworkAsset
+    network_id: String!
+    network_name: String!
+    network_ipv4_address_range: IpV4AddressRangeAddInput
+    network_ipv6_address_range: IpV6AddressRangeAddInput
+  }
 
-    input NetworkFiltering {
-        key: NetworkFilter!
-        values: [String]
-        operator: String
-        filterMode: FilterMode 
-    }
+  input NetworkAssetFiltering {
+    key: NetworkAssetFilter!
+    values: [String]
+    operator: String
+    filterMode: FilterMode 
+  }
 
-    # Pagination Types
-    type NetworkConnection {
-        pageInfo: PageInfo!
-        edges: [NetworkEdge]
-    }
+  # Pagination Types
+  type NetworkAssetConnection {
+    pageInfo: PageInfo!
+    edges: [NetworkAssetEdge]
+  }
 
-    type NetworkEdge {
-        cursor: String!
-        node: Network!
-    }
+  type NetworkAssetEdge {
+    cursor: String!
+    node: NetworkAsset!
+  }
 
-    enum NetworkOrdering {
-        name
-        asset_type
-        asset_id
-        ip_address
-        installed_operating_system
-        network_id
-        labels
-    }
+  enum NetworkAssetOrdering {
+    name
+    asset_type
+    asset_id
+    ip_address
+    installed_operating_system
+    network_id
+    labels
+  }
 
-    enum NetworkFilter {
-        name
-        asset_type
-        asset_id
-        ip_address
-        installed_operating_system
-        network_id
-        labels
-    }
+  enum NetworkAssetFilter {
+    name
+    asset_type
+    asset_id
+    ip_address
+    installed_operating_system
+    network_id
+    labels
+  }
 
 `;
 

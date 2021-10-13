@@ -4,7 +4,7 @@ const typeDefs = gql`
   # declares the query entry-points for this type
   extend type Query {
     # Characterization
-    characterization(id: String!): Characterization
+    characterization(id: ID!): Characterization
     characterizationList( 
       first: Int
       offset: Int
@@ -15,7 +15,7 @@ const typeDefs = gql`
       search: String
     ): CharacterizationConnection
     # Facet
-    facet(id: String!): Facet
+    facet(id: ID!): Facet
     facetList( 
       first: Int
       offset: Int
@@ -26,7 +26,7 @@ const typeDefs = gql`
       search: String
     ): FacetConnection
     # Log Entry
-    logEntry(id: String!): LogEntry
+    logEntry(id: ID!): LogEntry
     logEntryList( 
       first: Int
       offset: Int
@@ -37,7 +37,7 @@ const typeDefs = gql`
       search: String
     ): LogEntryConnection
     # Observation
-    observation(id: String!): Observation
+    observation(id: ID!): Observation
     observationList( 
       first: Int
       offset: Int
@@ -48,7 +48,7 @@ const typeDefs = gql`
       search: String
     ): ObservationConnection
     # Origin
-    origin(id: String!): Origin
+    origin(id: ID!): Origin
     originList( 
       first: Int
       offset: Int
@@ -59,7 +59,7 @@ const typeDefs = gql`
       search: String
     ): OriginConnection
     # Remediation Task
-    remediationTask(id: String!): RemediationTask
+    remediationTask(id: ID!): RemediationTask
     remediationTaskList( 
       first: Int
       offset: Int
@@ -70,7 +70,7 @@ const typeDefs = gql`
       search: String
     ): RemediationTaskConnection
     # Required Asset
-    requiredAsset(id: String!): RequiredAsset
+    requiredAsset(id: ID!): RequiredAsset
     requiredAssetList( 
       first: Int
       offset: Int
@@ -81,7 +81,7 @@ const typeDefs = gql`
       search: String
     ): RequiredAssetConnection
     # Risk 
-    risk(id: String!): Risk
+    risk(id: ID!): Risk
     riskList( 
       first: Int
       offset: Int
@@ -91,7 +91,7 @@ const typeDefs = gql`
       filterMode: FilterMode
       search: String
     ): RiskConnection
-    riskCharacterization(id: String!): RiskCharacterization
+    riskCharacterization(id: ID!): RiskCharacterization
     riskCharacterizationList( 
       first: Int
       offset: Int
@@ -102,7 +102,7 @@ const typeDefs = gql`
       search: String
     ): RiskCharacterizationConnection
     # Risk Response
-    riskResponse(id: String!): RiskResponse
+    riskResponse(id: ID!): RiskResponse
     riskResponseList( 
       first: Int
       offset: Int
@@ -113,7 +113,7 @@ const typeDefs = gql`
       search: String
     ): RiskResponseConnection
     # Subject
-    subject(id: String!): Subject
+    subject(id: ID!): Subject
     subjectList( 
       first: Int
       offset: Int
@@ -129,51 +129,55 @@ const typeDefs = gql`
   extend type Mutation {
     # Facet
     createFacet(input: FacetAddInput): Facet
-    deleteFacet(id: String!): String!
-    editFacet(id: String!, input: [EditInput]!, commitMessage: String): Facet
+    deleteFacet(id: ID!): String!
+    editFacet(id: ID!, input: [EditInput]!, commitMessage: String): Facet
     # Generic Characterization
     createGenericCharacterization(input: GenericCharacterizationAddInput): GenericCharacterization
-    deleteGenericCharacterization(id: String!): String!
-    editGenericCharacterization(id: String!, input: [EditInput]!, commitMessage: String): GenericCharacterization
+    deleteGenericCharacterization(id: ID!): String!
+    editGenericCharacterization(id: ID!, input: [EditInput]!, commitMessage: String): GenericCharacterization
     # Log Entry
     createLogEntry(input: LogEntryAddInput): LogEntry
-    deleteLogEntry(id: String!): String!
-    editLogEntry(id: String!, input: [EditInput]!, commitMessage: String): LogEntry
+    deleteLogEntry(id: ID!): String!
+    editLogEntry(id: ID!, input: [EditInput]!, commitMessage: String): LogEntry
     # Remediation Task
     createRemediationTask(input: RemediationTaskAddInput): RemediationTask
-    deleteRemediationTask(id: String!): String!
-    editRemediation(id: String!, input: [EditInput]!, commitMessage: String): RemediationTask
+    deleteRemediationTask(id: ID!): String!
+    editRemediation(id: ID!, input: [EditInput]!, commitMessage: String): RemediationTask
     # Risk 
     createRisk(input: RiskAddInput): Risk
-    deleteRisk(id: String!): String!
-    editRisk(id: String!, input: [EditInput]!, commitMessage: String): Risk
+    deleteRisk(id: ID!): String!
+    editRisk(id: ID!, input: [EditInput]!, commitMessage: String): Risk
     # Risk Characterization
     createRiskCharacterization(input: RiskCharacterizationAddInput): RiskCharacterization
-    deleteRiskCharacterization(id: String!): String!
-    editRiskCharacterization(id: String!, input: [EditInput]!, commitMessage: String): RiskCharacterization
+    deleteRiskCharacterization(id: ID!): String!
+    editRiskCharacterization(id: ID!, input: [EditInput]!, commitMessage: String): RiskCharacterization
     # Risk Response
     createRiskResponse(input: RiskResponseAddInput): RiskResponse
-    deleteRiskResponse(id: String!): String!
-    editRiskResponse(id: String!, input: [EditInput]!, commitMessage: String): RiskResponse
+    deleteRiskResponse(id: ID!): String!
+    editRiskResponse(id: ID!, input: [EditInput]!, commitMessage: String): RiskResponse
     # Subject
     createSubject(input: SubjectAddInput): Subject
-    deleteSubject(id: String!): String!
-    editSubject(id: String!, input: [EditInput]!, commitMessage: String): Subject
+    deleteSubject(id: ID!): String!
+    editSubject(id: ID!, input: [EditInput]!, commitMessage: String): Subject
     # Vulnerability Characterization
     createVulnerabilityCharacterization(input: VulnerabilityCharacterizationAddInput): VulnerabilityCharacterization
-    deleteVulnerabilityCharacterization(id: String!): String!
-    editVulnerabilityCharacterization(id: String!, input: [EditInput]!, commitMessage: String): VulnerabilityCharacterization
+    deleteVulnerabilityCharacterization(id: ID!): String!
+    editVulnerabilityCharacterization(id: ID!, input: [EditInput]!, commitMessage: String): VulnerabilityCharacterization
   }
 
 ## Activity
 #
   "Defines identifying information about an assessment or related process that can be performed. In the assessment plan, this is an intended activity which may be associated with an assessment task. In the assessment results, this an activity that was actually performed as part of an assessment."
-  type Activity implements RootObject & CoreObject & OscalObject {
-    # Root Object
+  type Activity implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -182,10 +186,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -219,8 +223,8 @@ const typeDefs = gql`
     actor_type: ActorType!
     "For a party, this can optionally be used to specify the role the actor was performing."
     role: OscalRole
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
   }
 
   # Pagination Types
@@ -258,10 +262,10 @@ const typeDefs = gql`
     subject_type: SubjectType!
     "Identifies a human-readable description of the collection of subjects being included in this assessment."
     description: String
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Indicates to include all subjects."
     include_all: Boolean!
     "Identifies a set of assessment subjects to include"
@@ -276,14 +280,14 @@ const typeDefs = gql`
   type AssociatedActivity {
     "Identifies a references to an activity defined in the list of activities."
     activity: Activity
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies the person or organization responsible for performing a specific role related to the task."
     responsible_roles: [OscalResponsibleParty]
     "Identifies an include/exclude pair starts with processing the include, then removing matching entries in the exclude."
     subject: [AssessmentSubject]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
   }
 
 ## Characterization
@@ -291,14 +295,14 @@ const typeDefs = gql`
   "Defines identifying information about a characterization of risk."
   interface Characterization {
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
     "Indicates the date and time at which the object was originally created."
     created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
     modified: DateTime
     # Characterization
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies a reference to tool that performed the detection."
     origins(first: Int): OriginConnection
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
@@ -359,10 +363,10 @@ const typeDefs = gql`
     href: URL
     "Identifies a human-readable description of the evidence."
     description: String
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
   }
 
 ## Facet
@@ -370,7 +374,7 @@ const typeDefs = gql`
   "Defines identifying information about a facet."
   type Facet {
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
     "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
     risk_state: RiskState!
     "Identifies the name of the risk metric within the specified system."
@@ -379,10 +383,10 @@ const typeDefs = gql`
     source_system: URL!
     "Indicates the value of the facet."
     value: String!
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
   }
 
   input FacetAddInput {
@@ -439,8 +443,8 @@ const typeDefs = gql`
     name: String
     "Identifies a human-readable description of the assessor's conclusions regarding the degree to which an objective is satisfied."
     description: String
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies whether the objective is satisfied or not within a given system."
     objective_status_state: ObjectiveStatusState!
     "Identifies the reason the objective was given it's status."
@@ -450,7 +454,7 @@ const typeDefs = gql`
     "Indicates the degree to which the given control was implemented."
     implementation_status: ImplementationStatus
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
   }
 
 ## Generic Characterization
@@ -458,14 +462,14 @@ const typeDefs = gql`
   "Defines identifying information about a Generic characterization of risk."
   type GenericCharacterization implements Characterization {
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
     "Indicates the date and time at which the object was originally created."
     created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
     modified: DateTime
     # Characterization
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies a reference to tool that performed the detection."
     origins(first: Int): OriginConnection
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
@@ -480,12 +484,16 @@ const typeDefs = gql`
 ## Log Entry
 #
   "Defines identifying information about a risk log entry of all risk-related tasks taken."
-  type LogEntry implements RootObject & CoreObject & OscalObject {
-    # Root Object
+  type LogEntry implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -494,10 +502,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -585,12 +593,16 @@ const typeDefs = gql`
 ## Mitigating Factor
 #
   "Defines identifying information about a mitigation factor."
-  type MitigatingFactor implements RootObject & CoreObject & OscalObject {
-    # Root Object
+  type MitigatingFactor implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -599,10 +611,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -625,12 +637,16 @@ const typeDefs = gql`
 ## Observation
 #
   "Defines identifying information about an observation."
-  type Observation implements RootObject & CoreObject & OscalObject {
-    # Root Object
+  type Observation implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -639,10 +655,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -731,7 +747,7 @@ const typeDefs = gql`
   "Defines identifying information about the source of the finding, such as a tool, interviewed person, or activity."
   type Origin {
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
     "Identifies one or more actors that produces an observation, a finding, or a risk. One or more actor type can be used to specify a person that is using a tool."
     origin_actors: [Actor!]!
     "Identifies one or more task for which the containing object is a consequence of."
@@ -785,12 +801,16 @@ const typeDefs = gql`
 ## Remediation Task
 #
   "Defines identifying information about a scheduled event or milestone, which may be associated with a series of assessment actions."
-  type RemediationTask implements RootObject & CoreObject & OscalObject {
-    # Root Object
+  type RemediationTask implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -799,10 +819,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -886,12 +906,16 @@ const typeDefs = gql`
 ## RequiredAsset
 #
   "Defines identifying information about an asset required to achieve remediation."
-  type RequiredAsset implements RootObject & CoreObject & OscalObject {
-    # Root Object
+  type RequiredAsset implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -900,10 +924,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -967,12 +991,16 @@ const typeDefs = gql`
   }
 
   # "Defines identifying information about a Risk"
-  type Risk implements RootObject & CoreObject & OscalObject {
-    # Root Object
+  type Risk implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -981,10 +1009,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -1102,13 +1130,13 @@ const typeDefs = gql`
   "Defines identifying information about a general characterization of the risk."
   type RiskCharacterization implements Characterization {
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
     "Indicates the date and time at which the object was originally created."
     created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
     modified: DateTime
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies a reference to tool that performed the detection."
     origins(first: Int): OriginConnection
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
@@ -1175,12 +1203,16 @@ const typeDefs = gql`
 ## Risk Response
 #
   "Defines identifying information about a response to a risk."
-  type RiskResponse implements RootObject & CoreObject & OscalObject {
-    # Root Object
+  type RiskResponse implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -1189,10 +1221,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -1271,17 +1303,17 @@ const typeDefs = gql`
   "Defines the identifying information about a resource. Use type to indicate whether the identified resource is a component, inventory item, location, user, or something else."
   type Subject {
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
     "Indicates the type of subject"
     subject_type: SubjectType!
     "Identifies a reference to a component, inventory-item, location, party, user, or resource."
     subject: SubjectTarget
     "Identifies the name for the referenced subject."
     name: String!
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
   }
 
   input SubjectAddInput {
@@ -1337,13 +1369,13 @@ const typeDefs = gql`
   "Defines identifying information about a characterization of a vulnerability."
   type VulnerabilityCharacterization implements Characterization {
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
     "Indicates the date and time at which the object was originally created."
     created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
     modified: DateTime
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies a reference to tool that performed the detection."
     origins(first: Int): OriginConnection
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
