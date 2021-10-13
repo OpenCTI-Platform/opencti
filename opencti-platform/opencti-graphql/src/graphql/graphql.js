@@ -36,11 +36,11 @@ const createApolloServer = () => {
       }
       const user = await authenticateUserFromRequest(req);
       if (user === undefined) return buildContext(user, req, res);
-      const expandedInfo = expandToken(req.headers);
-      const combined = { ...user, ...expandedInfo };
+      // const expandedInfo = expandToken(req.headers);
+      // const combined = { ...user, ...expandedInfo };
       // Get user session from request
       // Return the context
-      return buildContext(combined, req, res);
+      return buildContext(user, req, res);
     },
     tracing: DEV_MODE,
     plugins: [loggerPlugin, httpResponsePlugin],
