@@ -1,10 +1,10 @@
 
-const query = {
+const oscalCommonResolvers = {
   // Map enum GraphQL values to data model required values
-  LocationType: {
+  OscalLocationType: {
     data_center: 'data-center',
   },
-  LocationClass: {
+  OscalLocationClass: {
     primary: 'primary',
     alternate: 'alternate',
   },
@@ -60,4 +60,6 @@ const query = {
     general_public: 'general-public',
   },
 
-}
+};
+
+export default oscalCommonResolvers;

@@ -3,7 +3,7 @@ import gql from 'graphql-tag' ;
 const typeDefs = gql`
   # declares the query entry-points for this type
   extend type Query {
-    component(id: String!): Component
+    component(id: ID!): Component
     componentList( 
         first: Int
         offset: Int
@@ -13,7 +13,7 @@ const typeDefs = gql`
         filterMode: FilterMode
         search: String
       ): ComponentConnection
-    hardwareComponent(id: String!): HardwareComponent
+    hardwareComponent(id: ID!): HardwareComponent
     hardwareComponentList( 
       first: Int
       offset: Int
@@ -23,7 +23,7 @@ const typeDefs = gql`
       filterMode: FilterMode
       search: String
     ): HardwareComponentConnection
-    networkComponent(id: String!): NetworkComponent
+    networkComponent(id: ID!): NetworkComponent
     networkComponentList( 
       first: Int
       offset: Int
@@ -33,7 +33,7 @@ const typeDefs = gql`
       filterMode: FilterMode
       search: String
     ): NetworkComponentConnection
-    serviceComponent(id: String!): ServiceComponent
+    serviceComponent(id: ID!): ServiceComponent
     serviceComponentList( 
       first: Int
       offset: Int
@@ -43,7 +43,7 @@ const typeDefs = gql`
       filterMode: FilterMode
       search: String
     ): ServiceComponentConnection
-    softwareComponent(id: String!): SoftwareComponent
+    softwareComponent(id: ID!): SoftwareComponent
     softwareComponentList( 
       first: Int
       offset: Int
@@ -53,7 +53,7 @@ const typeDefs = gql`
       filterMode: FilterMode
       search: String
     ): SoftwareComponentConnection
-    systemComponent(id: String!): SystemComponent
+    systemComponent(id: ID!): SystemComponent
     systemComponentList( 
       first: Int
       offset: Int
@@ -68,34 +68,38 @@ const typeDefs = gql`
   # declares the mutation entry-points for this type
   extend type Mutation {
     createComponent(input: ComponentAddInput): Component
-    deleteComponent(id: String!): String!
-    editComponent(id: String!, input: [EditInput]!, commitMessage: String): Component
+    deleteComponent(id: ID!): String!
+    editComponent(id: ID!, input: [EditInput]!, commitMessage: String): Component
     createHardwareComponent( input: HardwareComponentAddInput ): HardwareComponent
-    deleteHardwareComponent( id: String! ): String!
-    editHardwareComponent(id: String!, input: [EditInput]!, commitMessage: String): HardwareComponent
+    deleteHardwareComponent( id: ID! ): String!
+    editHardwareComponent(id: ID!, input: [EditInput]!, commitMessage: String): HardwareComponent
     createNetworkComponent( input: NetworkComponentAddInput ): NetworkComponent
-    deleteNetworkComponent( id: String! ): String!
-    editNetworkComponent(id: String!, input: [EditInput]!, commitMessage: String): NetworkComponent
+    deleteNetworkComponent( id: ID! ): String!
+    editNetworkComponent(id: ID!, input: [EditInput]!, commitMessage: String): NetworkComponent
     createServiceComponent( input: HardwareComponentAddInput ): ServiceComponent
-    deleteServiceComponent( id: String! ): String!
-    editServiceComponent(id: String!, input: [EditInput]!, commitMessage: String): ServiceComponent
+    deleteServiceComponent( id: ID! ): String!
+    editServiceComponent(id: ID!, input: [EditInput]!, commitMessage: String): ServiceComponent
     createSoftwareComponent( input: SoftwareComponentAddInput ): SoftwareComponent
-    deleteSoftwareComponent( id: String! ): String!
-    editSoftwareComponent(id: String!, input: [EditInput]!, commitMessage: String): SoftwareComponent
+    deleteSoftwareComponent( id: ID! ): String!
+    editSoftwareComponent(id: ID!, input: [EditInput]!, commitMessage: String): SoftwareComponent
     createSystemComponent( input: SystemComponentAddInput ): SystemComponent
-    deleteSystemComponent( id: String! ): String!
-    editSystemComponent(id: String!, input: [EditInput]!, commitMessage: String): SystemComponent
+    deleteSystemComponent( id: ID! ): String!
+    editSystemComponent(id: ID!, input: [EditInput]!, commitMessage: String): SystemComponent
 }
 
 #####  Component 
 ##
   "Defines identifying information about an OSCAL component"
   interface Component {
-    # Root Object
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -104,10 +108,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -256,12 +260,16 @@ const typeDefs = gql`
 #####   Hardware Component 
 ##
   "Defines identifying information about an OSCAL hardware component"
-  type HardwareComponent implements RootObject & CoreObject & OscalObject & Component {
-    # Root Object
+  type HardwareComponent implements BasicObject & LifecycleObject & CoreObject & OscalObject & Component {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -270,10 +278,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -439,12 +447,16 @@ const typeDefs = gql`
 
 #####   Network Component 
 ##
-  type NetworkComponent implements RootObject & CoreObject & OscalObject & Component {
-    # Root Object
+  type NetworkComponent implements BasicObject & LifecycleObject & CoreObject & OscalObject & Component {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -453,10 +465,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -624,12 +636,16 @@ const typeDefs = gql`
 #####   Service Component 
 ##
 "Defines identifying information about a Service Component"
-  type ServiceComponent implements RootObject & CoreObject & OscalObject & Component {
-    # Root Object
+  type ServiceComponent implements BasicObject & LifecycleObject & CoreObject & OscalObject & Component {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -638,10 +654,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -802,12 +818,16 @@ const typeDefs = gql`
 #####   Software Component 
 ##
   "Defines identifying information about a Software Component"
-  type SoftwareComponent implements RootObject & CoreObject & OscalObject & Component {
-    # Root Object
+  type SoftwareComponent implements BasicObject & LifecycleObject & CoreObject & OscalObject & Component {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -816,10 +836,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -995,12 +1015,16 @@ const typeDefs = gql`
 #####   System Component 
 ##
 "Defines identifying information about a System Component"
-  type SystemComponent implements RootObject & CoreObject & OscalObject & Component {
-    # Root Object
+  type SystemComponent implements BasicObject & LifecycleObject & CoreObject & OscalObject & Component {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -1009,10 +1033,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int

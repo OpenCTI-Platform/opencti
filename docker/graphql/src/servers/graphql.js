@@ -1,10 +1,17 @@
 import { ApolloServer } from 'apollo-server-express';
 import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
 import { createServer } from 'http';
+// Keycloak
+import configureKeycloak from './keycloak-config.js';
+import cors from "cors";
+import { KeycloakContext, KeycloakTypeDefs, KeycloakSchemaDirectives } from 'keycloak-connect-graphql';
+// Subscription
 import { execute, subscribe } from 'graphql';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
+// Constraints
 import depthLimit from "graphql-depth-limit";
 // import { createComplexityLimitRule } from 'graphql-validation-complexity';
+// Custom scalars
 import { 
   DateTimeMock,
   EmailAddressMock,
@@ -20,11 +27,16 @@ import {
   URLMock,
   VoidMock,
 } from 'graphql-scalars';
+// build schema
+import getSchema from "../schema/index.js" ;
 
 
-async function startApolloServer(app, port, schema) {
+async function startApolloServer(app, port) {
+  const graphqlPath = '/graphql'
+
   // Required logic for integrating with Express
   const httpServer = createServer(app);
+  const schema = await getSchema();
 
   // build the set of mocks
   const mocks = {
@@ -51,7 +63,7 @@ async function startApolloServer(app, port, schema) {
       postal_code: '98052',
       country: 'US'
     }),
-    ExternalReference: () => ({
+    CyioExternalReference: () => ({
       source_name: 'Alienware',
       description: 'Aurora-R4 Owners manual',
       external_id: 'aurora-r4-owner',
@@ -97,12 +109,17 @@ async function startApolloServer(app, port, schema) {
     server: httpServer,
     // This `server` is the instance returned from `new ApolloServer`.
     // path: server.graphqlPath,
-    path: '/graphql'
+    path: graphqlPath
     }
   );
  
+  // perform the standard keycloak-connect middleware setup on our app
+  const { keycloak } = configureKeycloak(app, graphqlPath)  // Same ApolloServer initialization as before, plus the drain plugin.
 
-  // Same ApolloServer initialization as before, plus the drain plugin.
+  // Ensure entire GraphQL Api can only be accessed by authenticated users
+  // app.use(graphqlPath, keycloak.protect())
+  // app.use(cors());
+
   const server = new ApolloServer({
     schema,
     introspection: true,
@@ -121,6 +138,12 @@ async function startApolloServer(app, port, schema) {
       depthLimit(10), 
       // createComplexityLimitRule(1000)
     ],
+    async context({req, res, connection}) {
+      // 
+      const kauth = new KeycloakContext({ req }, keycloak);
+      const dbName = req.headers['x-cyio-client']               
+      return { req, res, kauth, dbName, }
+    },
   });
 
   // More required logic for integrating with Express
@@ -131,7 +154,7 @@ async function startApolloServer(app, port, schema) {
      // By default, apollo-server hosts its GraphQL endpoint at the
      // server root. However, *other* Apollo Server packages host it at
      // /graphql. Optionally provide this to match apollo-server.
-     path: '/'
+     path: graphqlPath
   });
 
   // Modified server startup

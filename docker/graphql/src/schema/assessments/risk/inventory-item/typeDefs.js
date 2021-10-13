@@ -3,7 +3,7 @@ import gql from 'graphql-tag' ;
 const typeDefs = gql`
   # declares the query entry-points for this type
   extend type Query {
-    inventoryItem(id: String!): InventoryItem
+    inventoryItem(id: ID!): InventoryItem
     inventoryItemList( 
           first: Int
           offset: Int
@@ -18,8 +18,8 @@ const typeDefs = gql`
   # declares the mutation entry-points for this type
   extend type Mutation {
     createInventoryItem(input: InventoryItemAddInput): InventoryItem
-    deleteInventoryItem(id: String!): String!
-    editInventory(id: String!, input: [EditInput]!, commitMessage: String): InventoryItem
+    deleteInventoryItem(id: ID!): String!
+    editInventory(id: ID!, input: [EditInput]!, commitMessage: String): InventoryItem
   }
 
 
@@ -27,11 +27,15 @@ const typeDefs = gql`
 ##
   "Defines identifying information about a single managed inventory item within the system."
   interface InventoryItem {
-    # Root Object
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -40,10 +44,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int

@@ -2,12 +2,16 @@ import gql from 'graphql-tag' ;
 
 const typeDefs = gql`
   "Defines identifying information about an individual finding."
-  type Finding implements RootObject & CoreObject & OscalObject {
-    # Root Object
+  type Finding implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -16,10 +20,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int

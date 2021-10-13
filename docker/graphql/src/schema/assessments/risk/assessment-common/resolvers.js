@@ -1,5 +1,5 @@
 
-const Query: QueryResolvers.Resolvers = {
+const assessmentCommonResolvers = {
   // Map enum GraphQL values to data model required values
   ActorType: {
     tool: 'tool',
@@ -134,4 +134,6 @@ const Query: QueryResolvers.Resolvers = {
     low: 'low',
     very_low: 'very-low',  
   },
-}
+};
+
+export default assessmentCommonResolvers;

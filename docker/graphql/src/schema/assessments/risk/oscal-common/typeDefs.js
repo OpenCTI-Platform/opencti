@@ -5,7 +5,7 @@ const typeDefs = gql`
   # declares the query entry-points for this type
   extend type Query {
     # OSCAL Location
-    oscalLocation(id: String!): OscalLocation
+    oscalLocation(id: ID!): OscalLocation
     oscalLocationList(
       first: Int
       offset: Int
@@ -16,7 +16,7 @@ const typeDefs = gql`
       search: String
     ): OscalLocationConnection
     # OSCAL Organization
-    oscalOrganization(id: String!): OscalOrganization
+    oscalOrganization(id: ID!): OscalOrganization
     oscalOrganizationList(
       first: Int
       offset: Int
@@ -27,7 +27,7 @@ const typeDefs = gql`
       search: String
     ): OscalOrganizationConnection
     # OSCAL Party
-    oscalParty(id: String!): OscalParty
+    oscalParty(id: ID!): OscalParty
     oscalPartyList(
       first: Int
       offset: Int
@@ -38,7 +38,7 @@ const typeDefs = gql`
       search: String
     ): OscalPartyConnection
     # OSCAL Relationship
-    oscalRelationship(id: String!): OscalRelationship
+    oscalRelationship(id: ID!): OscalRelationship
     oscalRelationshipList(
       first: Int
       offset: Int
@@ -49,7 +49,7 @@ const typeDefs = gql`
       search: String
     ): OscalRelationshipConnection
     # OSCAL Resource
-    oscalResource(id: String!): OscalResource
+    oscalResource(id: ID!): OscalResource
     oscalResourceList(
       first: Int
       offset: Int
@@ -60,7 +60,7 @@ const typeDefs = gql`
       search: String
     ): OscalResourceConnection
     # OSCAL Responsible Party
-    oscalResponsibleParty(id: String!): OscalResponsibleParty
+    oscalResponsibleParty(id: ID!): OscalResponsibleParty
     oscalResponsiblePartyList(
       first: Int
       offset: Int
@@ -71,7 +71,7 @@ const typeDefs = gql`
       search: String
     ): OscalResponsiblePartyConnection
     # OSCAL Role
-    oscalRole(id: String!): OscalRole
+    oscalRole(id: ID!): OscalRole
     oscalRoleList(
       first: Int
       offset: Int
@@ -82,7 +82,7 @@ const typeDefs = gql`
       search: String
     ): OscalRoleConnection
     # OSCAL User
-    oscalUser(id: String!): OscalUser
+    oscalUser(id: ID!): OscalUser
     oscalUserList(
       first: Int
       offset: Int
@@ -98,44 +98,44 @@ const typeDefs = gql`
   extend type Mutation {
     # Base64Content
     createBase64Content(input: Base64ContentAddInput): Base64Content
-    deleteBase64Content(id: String!): String!
-    editBase64Content( id: String!, input: [EditInput]!, commitMessage: String): Base64Content
+    deleteBase64Content(id: ID!): String!
+    editBase64Content( id: ID!, input: [EditInput]!, commitMessage: String): Base64Content
     # Citation
     createCitation(input: CitationAddInput): Citation
-    deleteCitation(id: String!): String!
-    editCitation( id: String!, input: [EditInput]!, commitMessage: String): Citation
+    deleteCitation(id: ID!): String!
+    editCitation( id: ID!, input: [EditInput]!, commitMessage: String): Citation
     # OSCAL Location
     createOscalLocation(input: OscalLocationAddInput): OscalLocation
-    deleteOscalLocation(id: String!): String!
-    editOscalLocation( id: String!, input: [EditInput]!, commitMessage: String): OscalLocation
+    deleteOscalLocation(id: ID!): String!
+    editOscalLocation( id: ID!, input: [EditInput]!, commitMessage: String): OscalLocation
     # OSCAL Organization
     createOscalOrganization(input: OscalOrganizationAddInput): OscalOrganization
-    deleteOscalOrganization(id: String!): String!
-    editOscalOrganization( id: String!, input: [EditInput]!, commitMessage: String): OscalOrganization
+    deleteOscalOrganization(id: ID!): String!
+    editOscalOrganization( id: ID!, input: [EditInput]!, commitMessage: String): OscalOrganization
     # OSCAL Person
     createOscalPerson(input: OscalPersonAddInput): OscalPerson
-    deleteOscalPerson(id: String!): String!
-    editOscalPerson( id: String!, input: [EditInput]!, commitMessage: String): OscalPerson
+    deleteOscalPerson(id: ID!): String!
+    editOscalPerson( id: ID!, input: [EditInput]!, commitMessage: String): OscalPerson
     # OSCAL Relationship
     createOscalRelationship(input: OscalRelationshipAddInput): OscalRelationship
-    deleteOscalRelationship(id: String!): String!
-    editOscalRelationship( id: String!, input: [EditInput]!, commitMessage: String): OscalRelationship
+    deleteOscalRelationship(id: ID!): String!
+    editOscalRelationship( id: ID!, input: [EditInput]!, commitMessage: String): OscalRelationship
     # OSCAL Resource
     createOscalResource(input: OscalResourceAddInput): OscalResource
-    deleteOscalResource(id: String!): String!
-    editOscalResource( id: String!, input: [EditInput]!, commitMessage: String): OscalResource
+    deleteOscalResource(id: ID!): String!
+    editOscalResource( id: ID!, input: [EditInput]!, commitMessage: String): OscalResource
     # OSCAL Responsible Party
     createOscalResponsibleParty(input: OscalResponsiblePartyAddInput): OscalResponsibleParty
-    deleteOscalResponsibleParty(id: String!): String!
-    editOscalResponsibleParty( id: String!, input: [EditInput]!, commitMessage: String): OscalResponsibleParty
+    deleteOscalResponsibleParty(id: ID!): String!
+    editOscalResponsibleParty( id: ID!, input: [EditInput]!, commitMessage: String): OscalResponsibleParty
     # OSCAL Role
     createOscalRole(input: OscalRoleAddInput): OscalRole
-    deleteOscalRole(id: String!): String!
-    editOscalRole( id: String!, input: [EditInput]!, commitMessage: String): OscalRole
+    deleteOscalRole(id: ID!): String!
+    editOscalRole( id: ID!, input: [EditInput]!, commitMessage: String): OscalRole
     # OSCAL User
     createOscalUser(input: OscalUserAddInput): OscalUser
-    deleteOscalUser(id: String!): String!
-    editOscalUser( id: String!, input: [EditInput]!, commitMessage: String): OscalUser
+    deleteOscalUser(id: ID!): String!
+    editOscalUser( id: ID!, input: [EditInput]!, commitMessage: String): OscalUser
     
   }
 
@@ -178,36 +178,41 @@ const typeDefs = gql`
   type Citation {
     "Identifies a line of citation text."
     text: String!
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
   }
 
   input CitationAddInput {
     "Identifies a line of citation text."
     text: String!
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [ExternalReferenceAddInput]
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references: [CyioExternalReferenceAddInput]
   }
 
   "Defines identifying information about an OSCAL Model."
   interface Model {
-    # Root Object
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
-    # CoreObject
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # LifecycleObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
     "Indicates the date and time that this particular version of the object was last modified."
     modified: DateTime!
+    # CoreObject
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -247,23 +252,27 @@ const typeDefs = gql`
 
   "Defines the identifying information about an OSCAL object."
   interface OscalObject {
-    # Root Object
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
-    # CoreObject
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # LifecycleObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
     "Indicates the date and time that this particular version of the object was last modified."
     modified: DateTime!
+    # OscalObject
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
-    # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -277,12 +286,16 @@ const typeDefs = gql`
   }
 
   "Defines identifying information about a location."
-  type OscalLocation implements RootObject & CoreObject & OscalObject & Location {
-    # Root Object
+  type OscalLocation implements BasicObject & LifecycleObject & CoreObject & OscalObject & CyioLocation{
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -291,10 +304,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -305,16 +318,15 @@ const typeDefs = gql`
       filterMode: FilterMode
       search: String 
     ): OscalRelationshipConnection
-    # Location
+    # CyioLocation
     "Identifies the name given to the location."
     name: String!
     "Identifies a brief description of the location."
     description: String
-    # OscalLocation
     "Identifies the type of the location."
-    location_type: LocationType
+    location_type: OscalLocationType
     "Identifies the purpose of the location."
-    location_class: LocationClass
+    location_class: OscalLocationClass
     "Identifies a postal addresses for the location."
     address: CivicAddress
     "Identifies one or more email addresses for the location."
@@ -327,12 +339,12 @@ const typeDefs = gql`
 
   input OscalLocationAddInput {
     labels: [String]
-    # Location
+    # CyioLocation
     name: String!
     description: String
     # OscalLocation
-    location_type: LocationType
-    location_class: LocationClass
+    location_type: OscalLocationType
+    location_class: OscalLocationClass
     address: [CivicAddressAddInput]
     email_addresses: EmailAddress
     telephone_numbers: [TelephoneNumberAddInput]
@@ -367,13 +379,17 @@ const typeDefs = gql`
     filterMode: FilterMode
   }
 
-  "Defines identifying information about an OSCAL Location"
-  type OscalOrganization implements RootObject & CoreObject & OscalObject & Identity & OscalParty {
-    # Root Object
+  "Defines identifying information about an OSCAL Organization"
+  type OscalOrganization implements BasicObject & LifecycleObject & CoreObject & OscalObject & CyioIdentity & OscalParty {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -382,10 +398,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -396,7 +412,7 @@ const typeDefs = gql`
       filterMode: FilterMode
       search: String 
     ): OscalRelationshipConnection
-    # Identity
+    # CyioIdentity
     "Identifies the name given to the party."
     name: String!
     "Identifies a brief description of the Party."
@@ -407,7 +423,7 @@ const typeDefs = gql`
     "Identifies a short common name, abbreviation, or acronym for the party."
     short_name: String
     "Identifies one or more external identifiers for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)."
-    external_ids( first: Int ): ExternalReferenceConnection
+    external_ids( first: Int ): CyioExternalReferenceConnection
     "Identifies a postal addresses for the location."
     address: CivicAddress
     "Identifies one or more email addresses for the location."
@@ -427,7 +443,7 @@ const typeDefs = gql`
   input OscalOrganizationAddInput {
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
-    # Identity
+    # CyioIdentity
     "Identifies the name given to the party."
     name: String!
     "Identifies a brief description of the Party."
@@ -479,11 +495,15 @@ const typeDefs = gql`
 
   "Defines identifying information about a Party in OSCAL"
   interface OscalParty {
-    # Root Object
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -492,10 +512,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -506,7 +526,7 @@ const typeDefs = gql`
       filterMode: FilterMode
       search: String 
     ): OscalRelationshipConnection
-    # Identity
+    # CyioIdentity
     "Identifies the name given to the party."
     name: String!
     "Identifies a brief description of the Party."
@@ -517,7 +537,7 @@ const typeDefs = gql`
     "Identifies a short common name, abbreviation, or acronym for the party."
     short_name: String
     "Identifies one or more external identifiers for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)."
-    external_ids( first: Int ): ExternalReferenceConnection
+    external_ids( first: Int ): CyioExternalReferenceConnection
     "Identifies a postal addresses for the location."
     address: CivicAddress
     "Identifies one or more email addresses for the location."
@@ -563,12 +583,16 @@ const typeDefs = gql`
   }
 
   "Defines identifying information about a Person in OSCAL"
-  type OscalPerson implements RootObject & CoreObject & OscalObject & Identity & OscalParty {
-    # Root Object
+  type OscalPerson implements BasicObject & LifecycleObject & CoreObject & OscalObject & CyioIdentity & OscalParty {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -577,10 +601,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -591,7 +615,7 @@ const typeDefs = gql`
       filterMode: FilterMode
       search: String 
     ): OscalRelationshipConnection
-    # Identity
+    # CyioIdentity
     "Identifies the name given to the party."
     name: String!
     "Identifies a brief description of the Party."
@@ -602,7 +626,7 @@ const typeDefs = gql`
     "Identifies a short common name, abbreviation, or acronym for the party."
     short_name: String
     "Identifies one or more external identifiers for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)."
-    external_ids( first: Int ): ExternalReferenceConnection
+    external_ids( first: Int ): CyioExternalReferenceConnection
     "Identifies a postal addresses for the location."
     address: CivicAddress
     "Identifies one or more email addresses for the location."
@@ -624,7 +648,7 @@ const typeDefs = gql`
   input OscalPersonAddInput {
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
-    # Identity
+    # CyioIdentity
     "Identifies the name given to the party."
     name: String!
     "Identifies a brief description of the Party."
@@ -678,11 +702,15 @@ const typeDefs = gql`
 
   "Defines identifying information about a relationship in OSCAL"
   type OscalRelationship {
-    # Root Object
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -691,10 +719,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     # OscalRelationship
     "Identifies the type of the relationship"
     relationship_type: String!
@@ -769,12 +797,16 @@ const typeDefs = gql`
 
 
   "Defines identifying information about a resource in OSCAL"
-  type OscalResource implements RootObject & CoreObject & OscalObject {
-    # Root Object
+  type OscalResource implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -783,10 +815,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -813,7 +845,7 @@ const typeDefs = gql`
     "Identifies a citation consisting of end note text and optional structured bibliographic data."
     citations: [Citation]
     "identifies one or more references to an external resource with an optional hash for verification and change detection."
-    rlinks(first: Int): ExternalReferenceConnection
+    rlinks(first: Int): CyioExternalReferenceConnection
     "Identifies the base64 encoded content."
     base64: Base64Content
   }
@@ -878,11 +910,15 @@ const typeDefs = gql`
 
   "Defines identifying information about a Responsible Party in OSCAL"
   type OscalResponsibleParty implements OscalObject {
-    # Root Object
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -891,10 +927,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -954,12 +990,16 @@ const typeDefs = gql`
   }
 
   "Defines identifying information about a function assumed or expected to be assumed by a party in a specific situation."
-  type OscalRole implements RootObject & CoreObject & OscalObject {
-    # Root Object
+  type OscalRole implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -968,10 +1008,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -1038,12 +1078,16 @@ const typeDefs = gql`
   }
 
   "Defines identifying information about a type of user that interacts with the system based on an associated role."
-  type OscalUser implements RootObject & CoreObject & OscalObject {
-    # Root Object
+  type OscalUser implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+    # BasicObject
     "Uniquely identifies this object."
-    id: String!
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
     created: DateTime!
@@ -1052,10 +1096,10 @@ const typeDefs = gql`
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -1066,7 +1110,7 @@ const typeDefs = gql`
       filterMode: FilterMode
       search: String 
     ): OscalRelationshipConnection
-    # OSCAL System User
+    # OSCAL SystemAsset User
     "Identifies type of user, such as internal, external, or general-public."
     user_type: UserType
     "Identifies a name given to the user, which may be used by a tool for display and navigation."
@@ -1148,10 +1192,10 @@ const typeDefs = gql`
     version: String
     "Identifies the OSCAL model version the document was authored against."
     oscal_version: String
-    "Identifies a list of ExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): ExternalReferenceConnection
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): NoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -1178,13 +1222,13 @@ const typeDefs = gql`
   }
 
   "Characterizes the kind of location."
-  enum LocationType {
+  enum OscalLocationType {
     "A location that contains computing assets."
     data_center
   }
 
   "Characterizes the purpose of the location."
-  enum LocationClass {
+  enum OscalLocationClass {
     "The location is a data-center used for normal operations."
     primary
     "The location is a data-center used for fail-over or backup operations."

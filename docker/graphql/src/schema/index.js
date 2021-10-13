@@ -18,9 +18,15 @@ import {
   VoidTypeDefinition, VoidResolver,
 } from 'graphql-scalars';
 
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
+
 export default async () => {
+  const openctiTypeDefs = readFileSync(resolve('./config/schema/opencti.graphql'), 'utf8');
+
   let schema = makeExecutableSchema({
     typeDefs: [
+      openctiTypeDefs,
       typeDefs,
       DateTimeTypeDefinition,
       EmailAddressTypeDefinition,
