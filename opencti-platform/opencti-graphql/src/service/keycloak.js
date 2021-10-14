@@ -12,11 +12,16 @@ const client = new KcAdminClient({ realmName: realm, baseUrl: keycloakServer });
 // const validateJwt = (decoded) => {};
 
 export const keycloakAlive = async () => {
-  await client.auth({
-    grantType: 'client_credentials',
-    clientId,
-    clientSecret,
-  });
+  try {
+    await client.auth({
+      grantType: 'client_credentials',
+      clientId,
+      clientSecret,
+    });
+    return true;
+  } catch (e) {
+    return false;
+  }
 };
 
 export const expandToken = (headers) => {

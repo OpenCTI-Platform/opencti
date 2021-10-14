@@ -112,8 +112,11 @@ export const CAPABILITIES = [
 
 // Check every dependencies
 export const checkSystemDependencies = async () => {
-  await keycloakAlive();
-  logApp.info('[Check] Keycloak is alive');
+  if (await keycloakAlive()) {
+    logApp.info('[Check] Keycloak service is alive');
+  } else {
+    logApp.info('[Check] Keycloak service did not load.');
+  }
   // Check if elasticsearch is available
   await elIsAlive();
   logApp.info(`[CHECK] ElasticSearch is alive`);

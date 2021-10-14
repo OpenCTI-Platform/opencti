@@ -34,6 +34,7 @@ class AuthDirective extends SchemaDirectiveVisitor {
     // If a role is required
     const context = args[2];
     const { user } = context;
+
     if (!user) throw AuthRequired(); // User must be authenticated.
     // Start checking capabilities
     if (requiredCapabilities.length === 0) return func.apply(this, args);

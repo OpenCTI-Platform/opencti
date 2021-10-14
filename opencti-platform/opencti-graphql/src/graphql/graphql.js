@@ -9,6 +9,7 @@ import { UnknownError, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
 import { applicationSession } from '../database/session';
+
 // Keycloak
 import { expandToken } from '../service/keycloak';
 // import configureKeycloak from './keycloak-config.js';
@@ -17,6 +18,7 @@ import { expandToken } from '../service/keycloak';
 
 // mocks
 import mocks from './mocks.js' ;
+
 
 const buildContext = (user, req, res) => {
   // const kauth = new KeycloakContext({ req }, keycloak);
@@ -49,13 +51,9 @@ const createApolloServer = () => {
       if (connection) {
         return { req, res, user: connection.context.user };
       }
-      const user = await authenticateUserFromRequest(req);
-      if (user === undefined) return buildContext(user, req, res);
-      const expandedInfo = expandToken(req.headers);
-      const combined = { ...user, ...expandedInfo };
       // Get user session from request
-      // Return the context
-      return buildContext(combined, req, res);
+      const user = await authenticateUserFromRequest(req);
+      return buildContext(user, req, res);
     },
     tracing: DEV_MODE,
     plugins: [loggerPlugin, httpResponsePlugin],
