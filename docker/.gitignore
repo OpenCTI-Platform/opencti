@@ -1,0 +1,4 @@
+# We should not be commiting these configs and should only have a stub to show possible values and each developer
+# have their own for development. This will prevent accidental credential leaks into the git repository.
+.env
+.vscode

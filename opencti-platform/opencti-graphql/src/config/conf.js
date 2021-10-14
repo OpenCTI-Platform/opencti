@@ -255,9 +255,13 @@ export const logAudit = {
   error: (user, operation, meta = {}) => logAudit._log('error', user, operation, meta),
 };
 
-const AppBasePath = nconf.get('app:base_path').trim();
-const contextPath = isEmpty(AppBasePath) || AppBasePath === '/' ? '' : AppBasePath;
-export const basePath = isEmpty(AppBasePath) || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
+// const AppBasePath = nconf.get('app:base_path').trim();
+// const contextPath = isEmpty(AppBasePath) || AppBasePath === '/' ? '' : AppBasePath;
+// export const basePath = isEmpty(AppBasePath) || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
+
+const BasePathConfig = nconf.get('app:base_path')?.trim() ?? '';
+const AppBasePath = BasePathConfig.endsWith('/') ? BasePathConfig.slice(0, -1) : BasePathConfig;
+export const basePath = isEmpty(AppBasePath) || AppBasePath.startsWith('/') ? AppBasePath : `/${AppBasePath}`;
 
 export const configureCA = (certificates) => {
   if (certificates.length) {
