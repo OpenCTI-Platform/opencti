@@ -41,6 +41,7 @@ services:
     container_name: opencti
     environment:
       - NODE_OPTIONS=--max-old-space-size=8096
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
       - APP__PORT=8080
       - APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}
       - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
@@ -72,18 +73,6 @@ services:
       - elasticsearch
       - rabbitmq
     restart: unless-stopped
-
-  graphql:
-    image: docker.darklight.ai/graphql
-    build: ./graphql
-    container_name: graphql
-    restart: unless-stopped
-    working_dir: /graphql
-    entrypoint: node ./src/index.js
-    volumes:
-      - "./graphql:/graphql"
-    ports:
-      - "4000:4000"
 
 volumes:
   esdata:
