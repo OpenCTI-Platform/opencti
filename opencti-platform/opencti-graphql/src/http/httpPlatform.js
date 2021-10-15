@@ -7,6 +7,7 @@ import { readFileSync } from 'fs';
 // noinspection NodeCoreCodingAssistance
 import path from 'path';
 import bodyParser from 'body-parser';
+import prometheus from 'express-prometheus-middleware';
 import compression from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
@@ -14,7 +15,7 @@ import showdown from 'showdown';
 import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
-import { basePath, booleanConf, DEV_MODE, logApp, logAudit } from '../config/conf';
+import { basePath, booleanConf, DEV_MODE, formatPath, logApp, logAudit } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, loadFile } from '../database/minio';
@@ -26,8 +27,6 @@ import { initializeSession } from '../database/session';
 import { LOGIN_ACTION } from '../config/audit';
 
 const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
-
-const promMid = require('express-prometheus-middleware');
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -85,13 +84,14 @@ const createApp = async (apolloServer) => {
   }
   app.use(securityMiddleware);
   app.use(compression({}));
+  // -- Telemetry
   const exposePrometheusMetrics = booleanConf('app:telemetry:prometheus:enabled', false);
   if (exposePrometheusMetrics) {
-    const metricsPath = nconf.get('app:telemetry:prometheus:metrics_path') || '/metrics';
-    const fullMetricsPath = `${basePath}${metricsPath}`;
+    const metricsPath = nconf.get('app:telemetry:prometheus:metrics_path') || '/prometheus/metrics';
+    const fullMetricsPath = `${basePath}${formatPath(metricsPath)}`;
     logApp.info(`Adding prometheus middleware (for metrics) on path: ${fullMetricsPath}`);
     app.use(
-      promMid({
+      prometheus({
         metricsPath: fullMetricsPath,
         collectDefaultMetrics: true,
         requestDurationBuckets: [0.1, 0.5, 1, 1.5],
@@ -100,7 +100,6 @@ const createApp = async (apolloServer) => {
       })
     );
   }
-
   // -- Generated CSS with correct base path
   app.get(`${basePath}/static/css/*`, (req, res) => {
     const cssFileName = R.last(req.url.split('/'));
@@ -110,7 +109,7 @@ const createApp = async (apolloServer) => {
     res.send(withBasePath);
   });
   app.use(`${basePath}/static`, express.static(path.join(__dirname, '../../public/static')));
-
+  // -- Session and data middlewares
   app.use(appSessionHandler.session);
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
   app.use(bodyParser.json({ limit: requestSizeLimit }));

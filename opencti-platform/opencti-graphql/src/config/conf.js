@@ -261,6 +261,10 @@ export const basePath = isEmpty(AppBasePath) || AppBasePath.startsWith('/') ? Ap
 
 const BasePathUrl = nconf.get('app:base_url')?.trim() ?? '';
 const AppBaseUrl = BasePathUrl.endsWith('/') ? BasePathUrl.slice(0, -1) : BasePathUrl;
+export const formatPath = (pathToFormat) => {
+  const withStartSlash = pathToFormat.startsWith('/') ? pathToFormat : `/${pathToFormat}`;
+  return withStartSlash.endsWith('/') ? withStartSlash.slice(0, -1) : withStartSlash;
+};
 export const baseUrl = isEmpty(AppBaseUrl) ? undefined : `${AppBaseUrl}${basePath}`;
 
 export const configureCA = (certificates) => {

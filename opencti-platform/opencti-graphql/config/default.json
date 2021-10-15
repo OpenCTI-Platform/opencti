@@ -25,7 +25,7 @@
     "telemetry": {
       "prometheus": {
         "enabled": false,
-        "metrics_path": "/metrics"
+        "metrics_path": "/prometheus/metrics"
       }
     },
     "request_timeout": 120000,
