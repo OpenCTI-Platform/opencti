@@ -38,8 +38,8 @@ const createApolloServer = () => {
   return new ApolloServer({
     schema: createSchema(),
     introspection: true,
-    mocks,
-    mockEntireSchema: false,
+    // mocks,
+    // mockEntireSchema: false,
     playground: {
       cdnUrl,
       settings: {
@@ -53,6 +53,10 @@ const createApolloServer = () => {
       }
       // Get user session from request
       const user = await authenticateUserFromRequest(req);
+      // if (user == undefined) return buildContext( user, req, res);
+      // const expandedInfo = expandToken( req.headers );
+      // const combined = { ...user, ...expandedInfo };
+      // return buildContext( combined, req, res)
       return buildContext(user, req, res);
     },
     tracing: DEV_MODE,
