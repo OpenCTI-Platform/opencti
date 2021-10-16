@@ -1,11 +1,7 @@
-import global from './global/typeDefs/index.js';
-import assets from './assets/index.js' ;
-import assessments from './assessments/index.js' ;
+import global from './global/typeDefs/index';
+import assets from './assets/index';
+import assessments from './assessments/index';
 
-const typeDefs = [
-    ...global,
-    assets,
-    assessments,
-] ;
+const typeDefs = [...global, assets, assessments];
 
-export default typeDefs ;
+export default typeDefs;
