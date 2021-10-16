@@ -6,3 +6,4 @@
 venv
 **/.env
 docker/graphql/node_modules
+.vscode

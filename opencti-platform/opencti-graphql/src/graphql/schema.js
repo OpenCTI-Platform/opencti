@@ -1,4 +1,5 @@
-import { mergeResolvers } from 'merge-graphql-schemas';
+//import { mergeResolvers } from 'merge-graphql-schemas';
+import { mergeResolvers } from '@graphql-tools/merge';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { constraintDirective } from 'graphql-constraint-directive';
 import {
