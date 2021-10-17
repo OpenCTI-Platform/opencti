@@ -5,8 +5,7 @@ const API_URL = process.env.REACT_APP_API_URL || "";
 
 const BearerToken = () => {
   const accessToken = localStorage.getItem('token');
-  const token = `Bearer ${accessToken}`;
-  return token;
+  return `Bearer ${accessToken}`;
 };
 
 const headers = {
