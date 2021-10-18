@@ -38,8 +38,8 @@ const createApolloServer = () => {
   return new ApolloServer({
     schema: createSchema(),
     introspection: true,
-    // mocks,
-    // mockEntireSchema: false,
+    mocks,
+    mockEntireSchema: false,
     playground: {
       cdnUrl,
       settings: {

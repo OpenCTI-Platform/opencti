@@ -2,3 +2,4 @@
 # have their own for development. This will prevent accidental credential leaks into the git repository.
 .env
 .vscode
+node_modules
