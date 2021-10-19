@@ -11,10 +11,6 @@ import {
   ExploreOutlined,
   InsertChartOutlined,
 } from '@material-ui/icons';
-import NoteAddIcon from '@material-ui/icons/NoteAdd';
-import PublishIcon from '@material-ui/icons/Publish';
-import FindInPageIcon from '@material-ui/icons/FindInPage';
-import DashboardIcon from '@material-ui/icons/Dashboard';
 import { UploadOutline } from 'mdi-material-ui';
 import Menu from '@material-ui/core/Menu';
 import Divider from '@material-ui/core/Divider';
@@ -92,9 +88,7 @@ const styles = (theme) => ({
   },
   logo: {
     cursor: 'pointer',
-    height: 20,
-    marginTop: 10,
-    marginLeft: 10,
+    height: 35,
   },
   menuContainer: {
     float: 'left',
@@ -323,6 +317,7 @@ const TopBar = ({
               />
             </Security>
           </div>
+          <Divider className={classes.divider} orientation="vertical" />
           <div className={classes.barContainer}>
             <Security needs={[EXPLORE]}>
               <Tooltip title={t('Custom dashboards')}>
@@ -372,38 +367,6 @@ const TopBar = ({
                 </IconButton>
               </Tooltip>
             </Security>
-            <Tooltip title={t('Dashboard')}>
-                <IconButton
-                  component={Link}
-                  classes={{ root: classes.button }}
-                >
-                <DashboardIcon fontSize="default" />
-                </IconButton>
-              </Tooltip>
-            <Tooltip title={t('Find in Page')}>
-                <IconButton
-                  component={Link}
-                  classes={{ root: classes.button }}
-                >
-                <FindInPageIcon fontSize="default" />
-                </IconButton>
-              </Tooltip>
-            <Tooltip title={t('Upload')}>
-                <IconButton
-                  component={Link}
-                  classes={{ root: classes.button }}
-                >
-                <PublishIcon fontSize="default" />
-                </IconButton>
-              </Tooltip>
-            <Tooltip title={t('Add Note')}>
-                <IconButton
-                  component={Link}
-                  classes={{ root: classes.button }}
-                >
-                <NoteAddIcon fontSize="default" />
-                </IconButton>
-              </Tooltip>
             <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
               <Tooltip title={t('Data import')}>
                 <IconButton
@@ -421,9 +384,36 @@ const TopBar = ({
                   }
                   classes={{ root: classes.button }}
                 >
+                  <UploadOutline fontSize="default" />
                 </IconButton>
               </Tooltip>
             </Security>
+            <IconButton
+              size="medium"
+              classes={{ root: classes.button }}
+              aria-owns={menuOpen.open ? 'menu-appbar' : null}
+              aria-haspopup="true"
+              onClick={handleOpenMenu}
+              color="inherit"
+            >
+              <AccountCircleOutlined fontSize="default" />
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              style={{ marginTop: 40, zIndex: 2100 }}
+              anchorEl={menuOpen.anchorEl}
+              open={menuOpen.open}
+              onClose={handleCloseMenu}
+            >
+              <MenuItem
+                component={Link}
+                to="/dashboard/profile"
+                onClick={handleCloseMenu}
+              >
+                {t('Profile')}
+              </MenuItem>
+              <MenuItem onClick={handleLogout}>{t('Logout')}</MenuItem>
+            </Menu>
           </div>
         </div>
       </Toolbar>
