@@ -42,6 +42,13 @@ const transformObjectToUpperKeys = (data) => {
 export const INTERNAL_FROM_FIELD = 'i_relations_from';
 export const INTERNAL_TO_FIELD = 'i_relations_to';
 export const NAME_FIELD = 'name';
+export const FIRST_SEEN = 'first_seen';
+export const LAST_SEEN = 'last_seen';
+export const START_TIME = 'start_time';
+export const STOP_TIME = 'stop_time';
+export const VALID_FROM = 'valid_from';
+export const FIRST_OBSERVED = 'first_observed';
+export const LAST_OBSERVED = 'last_observed';
 export const VALID_UNTIL = 'valid_until';
 export const REVOKED = 'revoked';
 export const CONTENT_FIELD = 'content';

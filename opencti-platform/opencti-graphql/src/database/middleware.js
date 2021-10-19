@@ -47,6 +47,8 @@ import {
   ROLE_TO,
 } from './elasticSearch';
 import {
+  FIRST_OBSERVED,
+  FIRST_SEEN,
   generateAliasesId,
   generateAliasesIdsForInstance,
   generateInternalId,
@@ -58,9 +60,14 @@ import {
   INTERNAL_TO_FIELD,
   isFieldContributingToStandardId,
   isTypeHasAliasIDs,
+  LAST_OBSERVED,
+  LAST_SEEN,
   NAME_FIELD,
   normalizeName,
   REVOKED,
+  START_TIME,
+  STOP_TIME,
+  VALID_FROM,
   VALID_UNTIL,
 } from '../schema/identifier';
 import {
@@ -1490,6 +1497,14 @@ const getPreviousInstanceValue = (key, instance) => {
   return isMultipleAttribute(key) ? data : [data];
 };
 
+const updateDateRangeValidation = (instance, inputs, from, to) => {
+  const fromVal = R.head(R.find((e) => e.key === from, inputs)?.value || [instance[from]]);
+  const toVal = R.head(R.find((e) => e.key === to, inputs)?.value || [instance[to]]);
+  if (utcDate(fromVal) > utcDate(toVal)) {
+    const data = { inputs, [from]: fromVal, [to]: toVal };
+    throw DatabaseError(`You cant update an element with ${to} less than ${from}`, data);
+  }
+};
 export const updateAttributeRaw = (instance, inputs, opts = {}) => {
   const { impactStandardId = true } = opts;
   const elements = Array.isArray(inputs) ? inputs : [inputs];
@@ -1498,6 +1513,20 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
   const instanceType = instance.entity_type;
   // Prepare attributes
   const preparedElements = prepareAttributes(elements);
+  // Check date range
+  const inputKeys = inputs.map((i) => i.key);
+  if (inputKeys.includes(START_TIME) || inputKeys.includes(STOP_TIME)) {
+    updateDateRangeValidation(instance, inputs, START_TIME, STOP_TIME);
+  }
+  if (inputKeys.includes(FIRST_SEEN) || inputKeys.includes(LAST_SEEN)) {
+    updateDateRangeValidation(instance, inputs, FIRST_SEEN, LAST_SEEN);
+  }
+  if (inputKeys.includes(VALID_FROM) || inputKeys.includes(VALID_UNTIL)) {
+    updateDateRangeValidation(instance, inputs, VALID_FROM, VALID_UNTIL);
+  }
+  if (inputKeys.includes(FIRST_OBSERVED) || inputKeys.includes(LAST_OBSERVED)) {
+    updateDateRangeValidation(instance, inputs, FIRST_OBSERVED, LAST_OBSERVED);
+  }
   // Update all needed attributes
   for (let index = 0; index < preparedElements.length; index += 1) {
     const input = preparedElements[index];
@@ -1976,7 +2005,7 @@ const buildRelationInput = (input) => {
     relationAttributes.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     /* istanbul ignore if */
     if (relationAttributes.start_time > relationAttributes.stop_time) {
-      throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
+      throw DatabaseError('You cant create a relation with stop_time less than start_time', {
         from: input.fromId,
         input,
       });
@@ -1988,7 +2017,7 @@ const buildRelationInput = (input) => {
     relationAttributes.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     /* istanbul ignore if */
     if (relationAttributes.start_time > relationAttributes.stop_time) {
-      throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
+      throw DatabaseError('You cant create a relation with stop_time less than start_time', {
         from: input.fromId,
         input,
       });
@@ -2406,7 +2435,7 @@ const buildRelationData = async (user, input, opts = {}) => {
     data.last_seen = R.isNil(input.last_seen) ? new Date(UNTIL_END) : input.last_seen;
     /* istanbul ignore if */
     if (data.first_seen > data.last_seen) {
-      throw DatabaseError('You cant create a relation with a first_seen less than the last_seen', {
+      throw DatabaseError('You cant create a relation with last_seen less than first_seen', {
         from: input.fromId,
         input,
       });
@@ -2545,7 +2574,7 @@ export const createRelationRaw = async (user, input, opts = {}) => {
       if (fromRule) {
         return upsertRelationRule(existingRelationship, input, { ...opts, locks: participantIds });
       }
-      // If not upsert the rule
+      // If not upsert the element
       dataRel = upsertElementRaw(user, existingRelationship, relationshipType, resolvedInput);
     } else {
       // Check cyclic reference consistency for embedded relationships before creation

@@ -14,7 +14,7 @@ import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelation
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
-import { FunctionalError } from '../config/errors';
+import { DatabaseError, FunctionalError } from '../config/errors';
 import { isStixId } from '../schema/schemaUtils';
 import { objects } from './container';
 import { observableValue } from '../utils/format';
@@ -121,6 +121,11 @@ export const observedDatasDistributionByEntity = async (user, args) => {
 export const addObservedData = async (user, observedData) => {
   if (observedData.objects.length === 0) {
     throw FunctionalError('Observed data must contain at least 1 object');
+  }
+  if (observedData.first_observed > observedData.last_observed) {
+    throw DatabaseError('You cant create an observed data with last_observed less than first_observed', {
+      input: observedData,
+    });
   }
   const observedDataResult = await createEntity(user, observedData, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, observedDataResult, user);

@@ -2274,8 +2274,8 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
 input ObservedDataAddInput {
   stix_id: String
   x_opencti_stix_ids: [String]
-  first_observed: DateTime
-  last_observed: DateTime
+  first_observed: DateTime!
+  last_observed: DateTime!
   number_observed: Int
   revoked: Boolean
   lang: String

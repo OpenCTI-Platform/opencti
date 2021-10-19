@@ -155,8 +155,8 @@ export const addIndicator = async (user, indicator) => {
     observablesToLink = indicator.basedOn;
   }
   if (indicatorToCreate.valid_from > indicatorToCreate.valid_until) {
-    throw DatabaseError('You cant create an indicator with a valid_from greater than the valid_to', {
-      indicatorToCreate,
+    throw DatabaseError('You cant create an indicator with valid_until less than valid_from', {
+      input: indicatorToCreate,
     });
   }
   const created = await createEntity(user, indicatorToCreate, ENTITY_TYPE_INDICATOR);

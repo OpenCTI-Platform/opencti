@@ -6,6 +6,7 @@ import {
   deleteRelationsByFromAndTo,
   distributionEntities,
   distributionRelations,
+  fullLoadById,
   internalLoadById,
   listEntities,
   listRelations,
@@ -16,7 +17,6 @@ import {
   timeSeriesEntities,
   timeSeriesRelations,
   updateAttribute,
-  fullLoadById,
 } from '../../../src/database/middleware';
 import { attributeEditField, findAll as findAllAttributes } from '../../../src/domain/attribute';
 import { el, elFindByIds, elLoadById, ES_IGNORE_THROTTLED } from '../../../src/database/elasticSearch';
@@ -841,6 +841,37 @@ describe('Upsert and merge entities', () => {
     expect(rawMarkings.includes(mitre.internal_id)).toBeTruthy();
     // Delete the malware
     await deleteElementById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
+  });
+  it('should dates update correctly rejected', async () => {
+    const target = await createThreat({ name: 'THREAT_UPDATE' });
+    const malware = await createEntity(ADMIN_USER, { name: 'MALWARE_UPDATE_02' }, ENTITY_TYPE_MALWARE);
+    const createBadRelation = () =>
+      createRelation(ADMIN_USER, {
+        fromId: target.internal_id,
+        toId: malware.internal_id,
+        relationship_type: RELATION_USES,
+        start_time: '2021-10-11T22:00:00.000Z',
+        stop_time: '2021-10-08T22:00:00.000Z',
+      });
+    await expect(createBadRelation()).rejects.toHaveProperty(
+      `data.reason`,
+      'You cant create a relation with a start_time less than the stop_time'
+    );
+    const rel = await createRelation(ADMIN_USER, {
+      fromId: target.internal_id,
+      toId: malware.internal_id,
+      relationship_type: RELATION_USES,
+      start_time: '2021-10-19T22:00:00.000Z',
+      stop_time: '2021-10-19T22:00:00.000Z',
+    });
+    const inputUpdate = { key: 'start_time', value: ['2021-10-20T22:00:00.000Z'] };
+    const update = () => updateAttribute(ADMIN_USER, rel.id, RELATION_USES, [inputUpdate]);
+    await expect(update()).rejects.toHaveProperty(
+      'data.reason',
+      'You cant update an element with stop_time less than start_time'
+    );
+    await deleteElementById(ADMIN_USER, target.id, ENTITY_TYPE_THREAT_ACTOR);
+    await deleteElementById(ADMIN_USER, malware.id, ENTITY_TYPE_MALWARE);
   });
   it('should entity merged', async () => {
     // 01. Create malware
