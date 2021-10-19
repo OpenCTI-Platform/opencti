@@ -62,12 +62,24 @@ const deviceDarkLightQuery = graphql`
   query RootDeviceDarkLightQuery($computingDeviceAssetId: ID!) {
     computingDeviceAsset(id: $computingDeviceAssetId) {
       id
-      standard_id
       name
+      installed_operating_system {
+        name
+      }
       asset_id
+      fqdn
+      network_id
       description
-      vendor_name
+      locations {
+        description
+      }
       version
+      vendor_name
+      asset_tag
+      asset_type
+      serial_number
+      release_date
+      operational_status
     }
   }
 `;
