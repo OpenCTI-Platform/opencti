@@ -20,6 +20,7 @@ import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
+import AssetType from '../../common/form/AssetType';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
@@ -222,6 +223,7 @@ class DeviceEditionOverviewComponent extends Component {
       context,
       enableReferences,
     } = this.props;
+    console.log('fetched device ', device);
     const createdBy = R.pathOr(null, ['createdBy', 'name'], device) === null
       ? ''
       : {
@@ -244,29 +246,31 @@ class DeviceEditionOverviewComponent extends Component {
     )(device);
 
     const initialValues = R.pipe(
+      R.assoc('id', device.id),
+      R.assoc('asset_id', device.asset_id),
       R.assoc('description', device.description),
       R.assoc('name', device.name),
       R.assoc('asset_tag', device.asset_tag),
       R.assoc('asset_type', device.asset_type),
       R.assoc('location', device.locations.map((index) => [index.description]).join('\n')),
-      R.assoc('createdBy', createdBy),
-      R.assoc('killChainPhases', killChainPhases),
-      R.assoc('objectMarking', objectMarking),
-      R.assoc(
-        'threat_actor_types',
-        device.threat_actor_types ? device.threat_actor_types : [],
-      ),
+      R.assoc('version', device.version),
+      R.assoc('vendor_name', device.vendor_name),
+      R.assoc('serial_number', device.serial_number),
+      R.assoc('release_date', device.release_date),
+      R.assoc('operational_status', device.operational_status),
       R.pick([
+        'id',
+        'asset_id',
         'name',
         'description',
         'asset_tag',
         'asset_type',
         'location',
-        'threat_actor_types',
-        'confidence',
-        'createdBy',
-        'killChainPhases',
-        'objectMarking',
+        'version',
+        'vendor_name',
+        'serial_number',
+        'release_date',
+        'operational_status',
       ]),
     )(device);
     return (
@@ -311,9 +315,6 @@ class DeviceEditionOverviewComponent extends Component {
                         containerstyle={{ width: '100%' }}
                         onFocus={this.handleChangeFocus.bind(this)}
                         onSubmit={this.handleSubmitField.bind(this)}
-                        // helperText={
-                        //   <SubscriptionFocus fieldName="name" />
-                        // }
                       />
                     </div>
                     <div>
@@ -334,14 +335,11 @@ class DeviceEditionOverviewComponent extends Component {
                         component={TextField}
                         variant= 'outlined'
                         size= 'small'
-                        name="assetId"
+                        name="asset_id"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
                         onFocus={this.handleChangeFocus.bind(this)}
                         onSubmit={this.handleSubmitField.bind(this)}
-                        // helperText={
-                        //   <SubscriptionFocus context={context} fieldName="name" />
-                        // }
                       />
                     </div>
                     {/* <div>
@@ -419,9 +417,6 @@ class DeviceEditionOverviewComponent extends Component {
                         name="version"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
-                        // helperText={
-                        //   <SubscriptionFocus context={context} fieldName="name" />
-                        // }
                       />
                     </div>
                     <div>
@@ -447,12 +442,9 @@ class DeviceEditionOverviewComponent extends Component {
                         component={TextField}
                         variant= 'outlined'
                         size= 'small'
-                        name="serialNumber"
+                        name="serial_number"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
-                        // helperText={
-                        //   <SubscriptionFocus context={context} fieldName="name" />
-                        // }
                       />
                     </div>
                     <div>
@@ -576,7 +568,7 @@ class DeviceEditionOverviewComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                    <Field
+                    <AssetType
                             component={SelectField}
                             variant='outlined'
                             name="asset_type"
@@ -586,16 +578,7 @@ class DeviceEditionOverviewComponent extends Component {
                             containerstyle={{ width: '100%' }}
                             helperText={t('Select Asset Type')}
                           >
-                            <MenuItem key="physical-devices" value="activist">
-                              {t('Physical Devices')}
-                            </MenuItem>
-                            <MenuItem key="network" value="competitor">
-                              {t('Network')}
-                            </MenuItem>
-                            <MenuItem key="software" value="crime-syndicate">
-                              {t('software')}
-                            </MenuItem>
-                    </Field>
+                    </AssetType>
                   </div>
                   <div>
                     <Typography
@@ -670,19 +653,13 @@ class DeviceEditionOverviewComponent extends Component {
                     </div>
                     <div className="clearfix" />
                     <Field
-                      component={SelectField}
+                      component={TextField}
                       variant= 'outlined'
-                      name="vendorName"
+                      name="vendor_name"
                       size= 'small'
                       fullWidth={true}
                       style={{ height: '38.09px' }}
                       containerstyle={{ width: '100%' }}
-                      // helperText={
-                      //   <SubscriptionFocus
-                      //   context={context}
-                      //   fieldName="vendorName"
-                      //   />
-                      // }
                     />
                   </div>
                   <div>
@@ -701,9 +678,9 @@ class DeviceEditionOverviewComponent extends Component {
                     </div>
                     <div className="clearfix" />
                     <Field
-                      component={SelectField}
+                      component={TextField}
                       variant= 'outlined'
-                      name="releaseDate"
+                      name="release_date"
                       size= 'small'
                       fullWidth={true}
                       style={{ height: '38.09px' }}
@@ -723,7 +700,7 @@ class DeviceEditionOverviewComponent extends Component {
                       gutterBottom={true}
                       style={{ float: 'left', marginTop: 20 }}
                     >
-                      {t('Operation State')}
+                      {t('Operational State')}
                     </Typography>
                     <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                       <Tooltip title={t('Operation State')}>
@@ -732,19 +709,13 @@ class DeviceEditionOverviewComponent extends Component {
                     </div>
                     <div className="clearfix" />
                     <Field
-                      component={SelectField}
+                      component={TextField}
                       variant= 'outlined'
-                      name="operationState"
+                      name="operational_status"
                       size= 'small'
                       fullWidth={true}
                       style={{ height: '38.09px' }}
                       containerstyle={{ width: '100%' }}
-                      // helperText={
-                      //   <SubscriptionFocus
-                      //   context={context}
-                      //   fieldName="OperationState"
-                      //   />
-                      // }
                     />
                   </div>
                   </Grid>

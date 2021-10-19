@@ -28,6 +28,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import AssetTaglist from '../../common/form/AssetTaglist';
+import AssetType from '../../common/form/AssetType';
 import Ports from '../../common/form/Ports';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
@@ -585,7 +586,7 @@ class DeviceCreationOverviewComponent extends Component {
                             </Tooltip>
                           </div>
                           <div className="clearfix" />
-                          <Field
+                          <AssetType
                             component={SelectField}
                             variant='outlined'
                             name="asset_type"
@@ -594,17 +595,7 @@ class DeviceCreationOverviewComponent extends Component {
                             style={{ height: '38.09px' }}
                             containerstyle={{ width: '100%' }}
                             helperText={t('Select Asset Type')}
-                          >
-                            <MenuItem key="physical-devices" value="activist">
-                              {t('Physical Devices')}
-                            </MenuItem>
-                            <MenuItem key="network" value="competitor">
-                              {t('Network')}
-                            </MenuItem>
-                            <MenuItem key="software" value="crime-syndicate">
-                              {t('software')}
-                            </MenuItem>
-                          </Field>
+                          />
                         </div>
                         <div>
                           <Typography
