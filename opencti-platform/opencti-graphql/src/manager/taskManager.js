@@ -257,7 +257,8 @@ const executeProcessing = async (user, taskId, processingElements) => {
         }
       }
     } catch (err) {
-      errors.push({ id: element.id, message: err.message });
+      logApp.error('Error executing background task', { error: err, element, actions });
+      errors.push({ id: element.id, message: err.message, reason: err.reason });
     }
   }
   return errors;
