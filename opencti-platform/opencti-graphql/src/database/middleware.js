@@ -263,11 +263,11 @@ export const queryAttributes = async (type) => {
   )(attributes);
   return buildPagination(0, null, finalResult, finalResult.length);
 };
-const checkInferenceRight = (user, element) => {
+const checkIfInferenceOperationIsValid = (user, element) => {
   const isRuleManaged = isRuleUser(user);
-  const isPurelyInferred = isInferredIndex(element._index);
-  if (isPurelyInferred && !isRuleManaged) {
-    // throw UnsupportedError('Manual inference update/deletion is not allowed', { id: element.id });
+  const ifElementInferred = isInferredIndex(element._index);
+  if (ifElementInferred && !isRuleManaged) {
+    throw UnsupportedError('Manual inference deletion is not allowed', { id: element.id });
   }
 };
 // endregion
@@ -1621,18 +1621,6 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
   if (multiOperationKeys.length > 1) {
     throw UnsupportedError('We cant update the same attribute multiple times in the same operation');
   }
-  // for (let updateIndex = 0; updateIndex < updates.length; updateIndex += 1) {
-  //   const updateInput = updates[updateIndex];
-  //   const updateOperation = updateInput.operation ?? UPDATE_OPERATION_REPLACE;
-  //   if (isMultipleAttribute(updateInput.key) === false) {
-  //     if (updateInput.value.length > 1) {
-  //       throw UnsupportedError(`${updateInput.key} doesn't support multiples values`);
-  //     }
-  //     if (updateOperation !== UPDATE_OPERATION_REPLACE) {
-  //       throw UnsupportedError(`${updateInput.operation} is not supported on single attribute ${updateInput.key}`);
-  //     }
-  //   }
-  // }
   // Split attributes and meta
   // Supports inputs meta or stix meta
   const metaKeys = [...META_STIX_ATTRIBUTES, ...META_FIELD_ATTRIBUTES];
@@ -2160,8 +2148,6 @@ const buildRelationTimeFilter = (input) => {
 };
 
 const upsertElementRaw = (user, instance, type, input) => {
-  // Check consistency
-  checkInferenceRight(user, instance);
   // Upsert relation
   const forceUpdate = input.update === true;
   const patchInputs = []; // Direct modified inputs (add)
@@ -2899,7 +2885,8 @@ export const createInferredEntity = async (input, ruleContent, type) => {
 export const deleteElement = async (user, element, opts = {}) => {
   let lock;
   const { publishStreamEvent = true } = opts;
-  checkInferenceRight(user, element);
+  // Check inference operation
+  checkIfInferenceOperationIsValid(user, element);
   // Apply deletion
   const participantIds = [element.internal_id];
   try {
