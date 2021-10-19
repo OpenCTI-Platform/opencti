@@ -8,18 +8,17 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import {
-  assoc, compose, pipe, pluck,
-} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -77,6 +76,12 @@ const cityMutation = graphql`
 const cityValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
+  latitude: Yup.number()
+    .typeError(t('This field must be a number'))
+    .nullable(),
+  longitude: Yup.number()
+    .typeError(t('This field must be a number'))
+    .nullable(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -104,9 +109,12 @@ class CityCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = pipe(
-      assoc('createdBy', values.createdBy?.value),
-      assoc('objectMarking', pluck('value', values.objectMarking)),
+    const finalValues = R.pipe(
+      R.assoc('latitude', parseFloat(values.latitude)),
+      R.assoc('longitude', parseFloat(values.longitude)),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
     )(values);
     commitMutation({
       mutation: cityMutation,
@@ -170,8 +178,11 @@ class CityCreation extends Component {
               initialValues={{
                 name: '',
                 description: '',
+                latitude: '',
+                longitude: '',
                 createdBy: '',
                 objectMarking: [],
+                externalReferences: [],
               }}
               validationSchema={cityValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -197,6 +208,20 @@ class CityCreation extends Component {
                     rows={4}
                     style={{ marginTop: 20 }}
                   />
+                  <Field
+                    component={TextField}
+                    name="latitude"
+                    label={t('Latitude')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={TextField}
+                    name="longitude"
+                    label={t('Longitude')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
                   <CreatedByField
                     name="createdBy"
                     style={{ marginTop: 20, width: '100%' }}
@@ -204,6 +229,10 @@ class CityCreation extends Component {
                   />
                   <ObjectMarkingField
                     name="objectMarking"
+                    style={{ marginTop: 20, width: '100%' }}
+                  />
+                  <ExternalReferencesField
+                    name="externalReferences"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>
@@ -242,7 +271,7 @@ CityCreation.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(CityCreation);

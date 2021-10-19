@@ -22,6 +22,7 @@ import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import CommitMessage from '../../common/form/CommitMessage';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -110,6 +111,8 @@ const positionValidation = (t) => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
+  latitude: Yup.number().typeError(t('This field must be a number')),
+  longitude: Yup.number().typeError(t('This field must be a number')),
 });
 
 class PositionEditionOverviewComponent extends Component {
@@ -126,18 +129,23 @@ class PositionEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    positionValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: positionMutationFieldPatch,
-          variables: {
-            id: this.props.position.id,
-            input: { key: name, value: value || '' },
-          },
-        });
-      })
-      .catch(() => false);
+    if (!this.props.enableReferences) {
+      positionValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: positionMutationFieldPatch,
+            variables: {
+              id: this.props.position.id,
+              input: {
+                key: name,
+                value: value || '',
+              },
+            },
+          });
+        })
+        .catch(() => false);
+    }
   }
 
   handleChangeCreatedBy(name, value) {
@@ -153,45 +161,46 @@ class PositionEditionOverviewComponent extends Component {
   }
 
   handleChangeObjectMarking(name, values) {
-    const { position } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(position);
-
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: positionMutationRelationAdd,
-        variables: {
-          id: this.props.position.id,
-          input: {
-            toId: head(added).value,
+    if (!this.props.enableReferences) {
+      const { position } = this.props;
+      const currentMarkingDefinitions = pipe(
+        pathOr([], ['objectMarking', 'edges']),
+        map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(position);
+      const added = difference(values, currentMarkingDefinitions);
+      const removed = difference(currentMarkingDefinitions, values);
+      if (added.length > 0) {
+        commitMutation({
+          mutation: positionMutationRelationAdd,
+          variables: {
+            id: this.props.position.id,
+            input: {
+              toId: head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: positionMutationRelationDelete,
+          variables: {
+            id: this.props.position.id,
+            toId: head(removed).value,
             relationship_type: 'object-marking',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: positionMutationRelationDelete,
-        variables: {
-          id: this.props.position.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
+        });
+      }
     }
   }
 
   render() {
-    const { t, position, context } = this.props;
+    const {
+      t, position, context, enableReferences,
+    } = this.props;
     const createdBy = pathOr(null, ['createdBy', 'name'], position) === null
       ? ''
       : {
@@ -208,7 +217,14 @@ class PositionEditionOverviewComponent extends Component {
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('objectMarking', objectMarking),
-      pick(['name', 'description', 'createdBy', 'objectMarking']),
+      pick([
+        'name',
+        'description',
+        'latitude',
+        'longitude',
+        'createdBy',
+        'objectMarking',
+      ]),
     )(position);
     return (
       <Formik
@@ -217,7 +233,9 @@ class PositionEditionOverviewComponent extends Component {
         validationSchema={positionValidation(t)}
         onSubmit={() => true}
       >
-        {({ setFieldValue }) => (
+        {({
+          submitForm, isSubmitting, validateForm, setFieldValue,
+        }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
@@ -244,6 +262,30 @@ class PositionEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
+            <Field
+              component={TextField}
+              style={{ marginTop: 20 }}
+              name="latitude"
+              label={t('Latitude')}
+              fullWidth={true}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="latitude" />
+              }
+            />
+            <Field
+              component={TextField}
+              style={{ marginTop: 20 }}
+              name="longitude"
+              label={t('Longitude')}
+              fullWidth={true}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="longitude" />
+              }
+            />
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
@@ -264,6 +306,14 @@ class PositionEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeObjectMarking.bind(this)}
             />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                validateForm={validateForm}
+                id={position.id}
+              />
+            )}
           </Form>
         )}
       </Formik>
