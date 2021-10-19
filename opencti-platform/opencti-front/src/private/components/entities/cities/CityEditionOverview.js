@@ -4,17 +4,8 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import {
-  assoc,
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pick,
-  difference,
-  head,
-} from 'ramda';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -23,6 +14,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import CommitMessage from '../../common/form/CommitMessage';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -53,9 +45,15 @@ const cityMutationFieldPatch = graphql`
   mutation CityEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
   ) {
     cityEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...CityEditionOverview_city
         ...City_city
       }
@@ -125,6 +123,38 @@ class CityEditionOverviewComponent extends Component {
     });
   }
 
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.dissoc('references'),
+      R.assoc('status_id', values.status_id?.value),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: cityMutationFieldPatch,
+      variables: {
+        id: this.props.city.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
   handleSubmitField(name, value) {
     if (!this.props.enableReferences) {
       cityValidation(this.props.t)
@@ -160,22 +190,22 @@ class CityEditionOverviewComponent extends Component {
   handleChangeObjectMarking(name, values) {
     if (!this.props.enableReferences) {
       const { city } = this.props;
-      const currentMarkingDefinitions = pipe(
-        pathOr([], ['objectMarking', 'edges']),
-        map((n) => ({
+      const currentMarkingDefinitions = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
           label: n.node.definition,
           value: n.node.id,
         })),
       )(city);
-      const added = difference(values, currentMarkingDefinitions);
-      const removed = difference(currentMarkingDefinitions, values);
+      const added = R.difference(values, currentMarkingDefinitions);
+      const removed = R.difference(currentMarkingDefinitions, values);
       if (added.length > 0) {
         commitMutation({
           mutation: cityMutationRelationAdd,
           variables: {
             id: this.props.city.id,
             input: {
-              toId: head(added).value,
+              toId: R.head(added).value,
               relationship_type: 'object-marking',
             },
           },
@@ -186,7 +216,7 @@ class CityEditionOverviewComponent extends Component {
           mutation: cityMutationRelationDelete,
           variables: {
             id: this.props.city.id,
-            toId: head(removed).value,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
@@ -198,23 +228,23 @@ class CityEditionOverviewComponent extends Component {
     const {
       t, city, context, enableReferences,
     } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], city) === null
+    const createdBy = R.pathOr(null, ['createdBy', 'name'], city) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'name'], city),
-        value: pathOr(null, ['createdBy', 'id'], city),
+        label: R.pathOr(null, ['createdBy', 'name'], city),
+        value: R.pathOr(null, ['createdBy', 'id'], city),
       };
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
+    const objectMarking = R.pipe(
+      R.pathOr([], ['objectMarking', 'edges']),
+      R.map((n) => ({
         label: n.node.definition,
         value: n.node.id,
       })),
     )(city);
-    const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('objectMarking', objectMarking),
-      pick([
+    const initialValues = R.pipe(
+      R.assoc('createdBy', createdBy),
+      R.assoc('objectMarking', objectMarking),
+      R.pick([
         'name',
         'description',
         'latitude',
@@ -228,7 +258,7 @@ class CityEditionOverviewComponent extends Component {
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={cityValidation(t)}
-        onSubmit={() => true}
+        onSubmit={this.onSubmit.bind(this)}
       >
         {({
           submitForm, isSubmitting, validateForm, setFieldValue,
@@ -357,7 +387,7 @@ const CityEditionOverview = createFragmentContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(CityEditionOverview);

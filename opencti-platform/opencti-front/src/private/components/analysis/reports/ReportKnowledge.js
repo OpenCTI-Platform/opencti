@@ -169,14 +169,16 @@ class ReportKnowledgeComponent extends Component {
         className={classes.container}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
       >
-        <ContainerHeader
-          container={report}
-          PopoverComponent={<ReportPopover />}
-          link={`/dashboard/analysis/reports/${report.id}/knowledge`}
-          modes={['graph', 'correlation', 'matrix']}
-          currentMode={mode}
-          knowledge={true}
-        />
+        {mode !== 'graph' && (
+          <ContainerHeader
+            container={report}
+            PopoverComponent={<ReportPopover />}
+            link={`/dashboard/analysis/reports/${report.id}/knowledge`}
+            modes={['graph', 'correlation', 'matrix']}
+            currentMode={mode}
+            knowledge={true}
+          />
+        )}
         <Route
           exact
           path="/dashboard/analysis/reports/:reportId/knowledge/graph"
@@ -186,7 +188,9 @@ class ReportKnowledgeComponent extends Component {
               variables={{ id: report.id }}
               render={({ props }) => {
                 if (props && props.report) {
-                  return <ReportKnowledgeGraph report={props.report} />;
+                  return (
+                    <ReportKnowledgeGraph report={props.report} mode={mode} />
+                  );
                 }
                 return <Loader />;
               }}

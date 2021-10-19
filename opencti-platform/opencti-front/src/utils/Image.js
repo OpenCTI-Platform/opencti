@@ -11,9 +11,12 @@ const ignoredClasses = [
 
 export const exportImage = (
   domElementId,
+  currentWidth,
+  currentHeight,
   name,
   backgroundColor = null,
-  pixelRatio = 3,
+  pixelRatio = 1,
+  adjust = null,
 ) => {
   const container = document.getElementById(domElementId);
   return new Promise((resolve) => {
@@ -37,6 +40,13 @@ export const exportImage = (
       })
       .then((blob) => {
         fileDownload(blob, `${name}.png`, 'image/png');
+        if (adjust) {
+          container.setAttribute(
+            'style',
+            `width:${currentWidth}px; height:${currentHeight}px;`,
+          );
+          adjust(true);
+        }
         resolve();
       });
   });
@@ -46,7 +56,8 @@ export const exportPdf = (
   domElementId,
   name,
   backgroundColor = null,
-  pixelRatio = 3,
+  pixelRatio = 1,
+  adjust = null,
 ) => {
   const documentWidth = 595.28;
   const documentHeight = 841.89;
@@ -104,6 +115,12 @@ export const exportPdf = (
         };
         const pdf = pdfMake.createPdf(docDefinition);
         pdf.download(`${name}.pdf`);
+        if (adjust) {
+          container.setAttribute(
+            'style',
+            `width:${offsetWidth}px; height:${offsetHeight}px;`,
+          );
+        }
         resolve();
       });
   });

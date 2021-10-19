@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { assoc, descend, dissoc, head, includes, isNil, map, pipe, prop, sortWith } from 'ramda';
+import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import {
   createEntity,
@@ -15,7 +15,7 @@ import { notify } from '../database/redis';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { findById as findKillChainPhaseById } from './killChainPhase';
 import { checkIndicatorSyntax } from '../python/pythonBridge';
-import { FunctionalError } from '../config/errors';
+import { DatabaseError, FunctionalError } from '../config/errors';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { RELATION_BASED_ON, RELATION_INDICATES } from '../schema/stixCoreRelationship';
@@ -81,7 +81,11 @@ const computeValidUntil = async (user, indicator) => {
         return findMarkingDefinitionById(user, markingDefinitionId);
       })
     );
-    markingDefinition = pipe(sortWith([descend(prop('level'))]), head, prop('definition'))(markingDefinitions);
+    markingDefinition = R.pipe(
+      R.sortWith([R.descend(R.prop('level'))]),
+      R.head,
+      R.prop('definition')
+    )(markingDefinitions);
   }
   // check if kill chain phase is delivery
   let isKillChainPhaseDelivery = 'no';
@@ -91,9 +95,11 @@ const computeValidUntil = async (user, indicator) => {
         return findKillChainPhaseById(user, killChainPhaseId);
       })
     );
-    const killChainPhasesNames = map((n) => n.phase_name, killChainPhases);
+    const killChainPhasesNames = R.map((n) => n.phase_name, killChainPhases);
     isKillChainPhaseDelivery =
-      includes('initial-access', killChainPhasesNames) || includes('execution', killChainPhasesNames) ? 'yes' : 'no';
+      R.includes('initial-access', killChainPhasesNames) || R.includes('execution', killChainPhasesNames)
+        ? 'yes'
+        : 'no';
   }
   // compute with delivery and marking definition
   const ttlPattern = `${markingDefinition}-${isKillChainPhaseDelivery}`;
@@ -102,7 +108,7 @@ const computeValidUntil = async (user, indicator) => {
     indicator.x_opencti_main_observable_type && indicator.x_opencti_main_observable_type.includes('File')
       ? 'File'
       : indicator.x_opencti_main_observable_type;
-  if (mainObservableType && includes(indicator.x_opencti_main_observable_type, OpenCTITimeToLive)) {
+  if (mainObservableType && R.has(indicator.x_opencti_main_observable_type, OpenCTITimeToLive)) {
     ttl = OpenCTITimeToLive[indicator.x_opencti_main_observable_type][ttlPattern];
   }
   const validUntil = validFrom.add(ttl, 'days');
@@ -129,24 +135,29 @@ export const addIndicator = async (user, indicator) => {
   if (check === false) {
     throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
   }
-  const indicatorToCreate = pipe(
-    dissoc('basedOn'),
-    assoc(
+  const indicatorToCreate = R.pipe(
+    R.dissoc('basedOn'),
+    R.assoc(
       'x_opencti_main_observable_type',
-      isNil(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type
+      R.isNil(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type
     ),
-    assoc('x_opencti_score', isNil(indicator.x_opencti_score) ? 50 : indicator.x_opencti_score),
-    assoc('x_opencti_detection', isNil(indicator.x_opencti_detection) ? false : indicator.x_opencti_detection),
-    assoc('valid_from', isNil(indicator.valid_from) ? now() : indicator.valid_from),
-    assoc(
+    R.assoc('x_opencti_score', R.isNil(indicator.x_opencti_score) ? 50 : indicator.x_opencti_score),
+    R.assoc('x_opencti_detection', R.isNil(indicator.x_opencti_detection) ? false : indicator.x_opencti_detection),
+    R.assoc('valid_from', R.isNil(indicator.valid_from) ? now() : indicator.valid_from),
+    R.assoc(
       'valid_until',
-      isNil(indicator.valid_until) ? await computeValidUntil(user, indicator) : indicator.valid_until
+      R.isNil(indicator.valid_until) ? await computeValidUntil(user, indicator) : indicator.valid_until
     )
   )(indicator);
   // create the linked observables
   let observablesToLink = [];
   if (indicator.basedOn) {
     observablesToLink = indicator.basedOn;
+  }
+  if (indicatorToCreate.valid_from > indicatorToCreate.valid_until) {
+    throw DatabaseError('You cant create an indicator with a valid_from greater than the valid_to', {
+      indicatorToCreate,
+    });
   }
   const created = await createEntity(user, indicatorToCreate, ENTITY_TYPE_INDICATOR);
   await Promise.all(
@@ -166,11 +177,11 @@ export const indicatorsTimeSeries = (user, args) => {
 };
 
 export const indicatorsNumber = (user, args) => ({
-  count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_INDICATOR], args)),
+  count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_INDICATOR], args)),
   total: elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(assoc('types', [ENTITY_TYPE_INDICATOR]), dissoc('endDate'))(args)
+    R.pipe(R.assoc('types', [ENTITY_TYPE_INDICATOR]), R.dissoc('endDate'))(args)
   ),
 });
 
@@ -183,22 +194,22 @@ export const indicatorsNumberByEntity = (user, args) => ({
   count: elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(
-      assoc('isMetaRelationship', true),
-      assoc('types', [ENTITY_TYPE_INDICATOR]),
-      assoc('relationshipType', RELATION_INDICATES),
-      assoc('fromId', args.objectId)
+    R.pipe(
+      R.assoc('isMetaRelationship', true),
+      R.assoc('types', [ENTITY_TYPE_INDICATOR]),
+      R.assoc('relationshipType', RELATION_INDICATES),
+      R.assoc('fromId', args.objectId)
     )(args)
   ),
   total: elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(
-      assoc('isMetaRelationship', true),
-      assoc('types', [ENTITY_TYPE_INDICATOR]),
-      assoc('relationshipType', RELATION_INDICATES),
-      assoc('fromId', args.objectId),
-      dissoc('endDate')
+    R.pipe(
+      R.assoc('isMetaRelationship', true),
+      R.assoc('types', [ENTITY_TYPE_INDICATOR]),
+      R.assoc('relationshipType', RELATION_INDICATES),
+      R.assoc('fromId', args.objectId),
+      R.dissoc('endDate')
     )(args)
   ),
 });

@@ -35,6 +35,8 @@ import {
   reportKnowledgeGraphtMutationRelationDeleteMutation,
 } from './ReportKnowledgeGraphQuery';
 import { stixCoreRelationshipEditionDeleteMutation } from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
+import ContainerHeader from '../../common/containers/ContainerHeader';
+import ReportPopover from './ReportPopover';
 
 const ignoredStixCoreObjectsTypes = ['Report', 'Note', 'Opinion'];
 
@@ -278,6 +280,8 @@ class ReportKnowledgeGraphComponent extends Component {
       ),
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
+      width: null,
+      height: null,
     };
   }
 
@@ -458,8 +462,16 @@ class ReportKnowledgeGraphComponent extends Component {
     }
   }
 
-  handleZoomToFit() {
-    this.graph.current.zoomToFit(400, 150);
+  handleZoomToFit(adjust = false) {
+    if (adjust) {
+      const container = document.getElementById('container');
+      const { offsetWidth, offsetHeight } = container;
+      this.setState({ width: offsetWidth, height: offsetHeight }, () => {
+        this.graph.current.zoomToFit(400, 150);
+      });
+    } else {
+      this.graph.current.zoomToFit(400, 150);
+    }
   }
 
   handleZoomEnd(zoom) {
@@ -839,7 +851,7 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   render() {
-    const { report, theme } = this.props;
+    const { report, theme, mode } = this.props;
     const {
       mode3D,
       modeFixed,
@@ -852,9 +864,11 @@ class ReportKnowledgeGraphComponent extends Component {
       numberOfSelectedLinks,
       displayTimeRange,
       selectedTimeRangeInterval,
+      width,
+      height,
     } = this.state;
-    const width = window.innerWidth - 210;
-    const height = window.innerHeight - 180;
+    const graphWidth = width || window.innerWidth - 210;
+    const graphHeight = height || window.innerHeight - 180;
     const stixCoreObjectsTypes = R.uniq(
       R.map((n) => n.entity_type, this.graphData.nodes),
     );
@@ -874,6 +888,15 @@ class ReportKnowledgeGraphComponent extends Component {
     const displayLabels = graphData.links.length < 200;
     return (
       <div>
+        <ContainerHeader
+          container={report}
+          PopoverComponent={<ReportPopover />}
+          link={`/dashboard/analysis/reports/${report.id}/knowledge`}
+          modes={['graph', 'correlation', 'matrix']}
+          currentMode={mode}
+          adjust={this.handleZoomToFit.bind(this)}
+          knowledge={true}
+        />
         <ReportKnowledgeGraphBar
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
           currentMode3D={mode3D}
@@ -921,8 +944,8 @@ class ReportKnowledgeGraphComponent extends Component {
         {mode3D ? (
           <ForceGraph3D
             ref={this.graph}
-            width={width}
-            height={height}
+            width={graphWidth}
+            height={graphHeight}
             backgroundColor={theme.palette.background.default}
             graphData={graphData}
             nodeThreeObjectExtend={true}
@@ -1015,8 +1038,8 @@ class ReportKnowledgeGraphComponent extends Component {
         ) : (
           <ForceGraph2D
             ref={this.graph}
-            width={width}
-            height={height}
+            width={graphWidth}
+            height={graphHeight}
             graphData={graphData}
             onZoomEnd={this.handleZoomEnd.bind(this)}
             nodeRelSize={4}
@@ -1105,6 +1128,7 @@ ReportKnowledgeGraphComponent.propTypes = {
   report: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
+  mode: PropTypes.string,
   t: PropTypes.func,
 };
 

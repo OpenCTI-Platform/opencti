@@ -31,6 +31,7 @@ import {
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import { investigationAddStixCoreObjectsLinesRelationsDeleteMutation } from './InvestigationAddStixCoreObjectsLines';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
+import WorkspaceHeader from '../WorkspaceHeader';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -740,6 +741,8 @@ class InvestigationGraphComponent extends Component {
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
       displayProgress: false,
+      width: null,
+      height: null,
     };
   }
 
@@ -925,8 +928,16 @@ class InvestigationGraphComponent extends Component {
     }
   }
 
-  handleZoomToFit() {
-    this.graph.current.zoomToFit(400, 150);
+  handleZoomToFit(adjust = false) {
+    if (adjust === true) {
+      const container = document.getElementById('container');
+      const { offsetWidth, offsetHeight } = container;
+      this.setState({ width: offsetWidth, height: offsetHeight }, () => {
+        this.graph.current.zoomToFit(400, 150);
+      });
+    } else {
+      this.graph.current.zoomToFit(400, 150);
+    }
   }
 
   handleZoomEnd(zoom) {
@@ -1387,9 +1398,11 @@ class InvestigationGraphComponent extends Component {
       displayProgress,
       displayTimeRange,
       selectedTimeRangeInterval,
+      width,
+      height,
     } = this.state;
-    const width = window.innerWidth - 210;
-    const height = window.innerHeight - 180;
+    const graphWidth = width || window.innerWidth - 210;
+    const graphHeight = height || window.innerHeight - 180;
     const stixCoreObjectsTypes = R.uniq(
       R.map((n) => n.entity_type, this.graphData.nodes),
     );
@@ -1408,6 +1421,10 @@ class InvestigationGraphComponent extends Component {
     );
     return (
       <div>
+        <WorkspaceHeader
+          workspace={workspace}
+          adjust={this.handleZoomToFit.bind(this)}
+        />
         <InvestigationGraphBar
           displayProgress={displayProgress}
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
@@ -1457,8 +1474,8 @@ class InvestigationGraphComponent extends Component {
         {mode3D ? (
           <ForceGraph3D
             ref={this.graph}
-            width={width}
-            height={height}
+            width={graphWidth}
+            height={graphHeight}
             backgroundColor={theme.palette.background.default}
             graphData={graphData}
             nodeThreeObjectExtend={true}
@@ -1549,8 +1566,8 @@ class InvestigationGraphComponent extends Component {
         ) : (
           <ForceGraph2D
             ref={this.graph}
-            width={width}
-            height={height}
+            width={graphWidth}
+            height={graphHeight}
             graphData={graphData}
             onZoomEnd={this.handleZoomEnd.bind(this)}
             nodeRelSize={4}

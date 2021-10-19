@@ -17,6 +17,7 @@ import {
 } from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@material-ui/core/MenuItem';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -30,6 +31,8 @@ import SelectField from '../../../../components/SelectField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { adaptFieldValue } from '../../../../utils/String';
+import CommitMessage from '../../common/form/CommitMessage';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -60,9 +63,15 @@ const indicatorMutationFieldPatch = graphql`
   mutation IndicatorEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
   ) {
     indicatorEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...IndicatorEditionOverview_indicator
         ...Indicator_indicator
       }
@@ -142,56 +151,92 @@ class IndicatorEditionOverviewComponent extends Component {
     });
   }
 
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.dissoc('references'),
+      R.assoc('status_id', values.status_id?.value),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: indicatorMutationFieldPatch,
+      variables: {
+        id: this.props.indicator.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
   handleSubmitField(name, value) {
-    indicatorValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: indicatorMutationFieldPatch,
-          variables: {
-            id: this.props.indicator.id,
-            input: { key: name, value: value || '' },
-          },
-        });
-      })
-      .catch(() => false);
+    if (!this.props.enableReferences) {
+      indicatorValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: indicatorMutationFieldPatch,
+            variables: {
+              id: this.props.indicator.id,
+              input: {
+                key: name,
+                value: value || '',
+              },
+            },
+          });
+        })
+        .catch(() => false);
+    }
   }
 
   handleChangeKillChainPhases(name, values) {
-    const { indicator } = this.props;
-    const currentKillChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-      })),
-    )(indicator);
-
-    const added = difference(values, currentKillChainPhases);
-    const removed = difference(currentKillChainPhases, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: indicatorMutationRelationAdd,
-        variables: {
-          id: this.props.indicator.id,
-          input: {
-            toId: head(added).value,
+    if (!this.props.enableReferences) {
+      const { indicator } = this.props;
+      const currentKillChainPhases = pipe(
+        pathOr([], ['killChainPhases', 'edges']),
+        map((n) => ({
+          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+          value: n.node.id,
+        })),
+      )(indicator);
+      const added = difference(values, currentKillChainPhases);
+      const removed = difference(currentKillChainPhases, values);
+      if (added.length > 0) {
+        commitMutation({
+          mutation: indicatorMutationRelationAdd,
+          variables: {
+            id: this.props.indicator.id,
+            input: {
+              toId: head(added).value,
+              relationship_type: 'kill-chain-phase',
+            },
+          },
+        });
+      }
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: indicatorMutationRelationDelete,
+          variables: {
+            id: this.props.indicator.id,
+            toId: head(removed).value,
             relationship_type: 'kill-chain-phase',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: indicatorMutationRelationDelete,
-        variables: {
-          id: this.props.indicator.id,
-          toId: head(removed).value,
-          relationship_type: 'kill-chain-phase',
-        },
-      });
+        });
+      }
     }
   }
 
@@ -208,45 +253,46 @@ class IndicatorEditionOverviewComponent extends Component {
   }
 
   handleChangeObjectMarking(name, values) {
-    const { indicator } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(indicator);
-
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: indicatorMutationRelationAdd,
-        variables: {
-          id: this.props.indicator.id,
-          input: {
-            toId: head(added).value,
+    if (!this.props.enableReferences) {
+      const { indicator } = this.props;
+      const currentMarkingDefinitions = pipe(
+        pathOr([], ['objectMarking', 'edges']),
+        map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(indicator);
+      const added = difference(values, currentMarkingDefinitions);
+      const removed = difference(currentMarkingDefinitions, values);
+      if (added.length > 0) {
+        commitMutation({
+          mutation: indicatorMutationRelationAdd,
+          variables: {
+            id: this.props.indicator.id,
+            input: {
+              toId: head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: indicatorMutationRelationDelete,
+          variables: {
+            id: this.props.indicator.id,
+            toId: head(removed).value,
             relationship_type: 'object-marking',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: indicatorMutationRelationDelete,
-        variables: {
-          id: this.props.indicator.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
+        });
+      }
     }
   }
 
   render() {
-    const { t, indicator, context } = this.props;
+    const {
+      t, indicator, context, enableReferences,
+    } = this.props;
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
@@ -295,9 +341,11 @@ class IndicatorEditionOverviewComponent extends Component {
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={indicatorValidation(t)}
-        onSubmit={() => true}
+        onSubmit={this.onSubmit.bind(this)}
       >
-        {({ setFieldValue }) => (
+        {({
+          submitForm, isSubmitting, validateForm, setFieldValue,
+        }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
@@ -468,6 +516,14 @@ class IndicatorEditionOverviewComponent extends Component {
                 />
               }
             />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                validateForm={validateForm}
+                id={indicator.id}
+              />
+            )}
           </Form>
         )}
       </Formik>

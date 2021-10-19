@@ -132,7 +132,7 @@ class WorkspaceHeader extends Component {
 
   render() {
     const {
-      t, classes, workspace, variant,
+      t, classes, workspace, variant, adjust,
     } = this.props;
     const tags = propOr([], 'tags', workspace);
     return (
@@ -150,7 +150,11 @@ class WorkspaceHeader extends Component {
           </div>
         </Security>
         <div className={classes.export}>
-          <ExportButtons domElementId="container" name={workspace.name} />
+          <ExportButtons
+            domElementId="container"
+            name={workspace.name}
+            adjust={adjust}
+          />
         </div>
         <div className={classes.tags}>
           {take(5, tags).map(
@@ -225,6 +229,7 @@ WorkspaceHeader.propTypes = {
   t: PropTypes.func,
   fld: PropTypes.func,
   variant: PropTypes.string,
+  adjust: PropTypes.func,
 };
 
 export default compose(inject18n, withStyles(styles))(WorkspaceHeader);

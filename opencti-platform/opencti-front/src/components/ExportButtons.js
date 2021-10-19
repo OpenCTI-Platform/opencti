@@ -48,40 +48,50 @@ class ExportButtons extends Component {
   }
 
   exportImage(domElementId, name, theme, background) {
-    this.setState({ exporting: true });
+    // this.setState({ exporting: true });
     this.handleCloseImage();
-    const { theme: currentTheme, pixelRatio = 2 } = this.props;
+    const { theme: currentTheme, pixelRatio = 1 } = this.props;
     let timeout = 4000;
     if (theme !== currentTheme.palette.type) {
       timeout = 6000;
       commitLocalUpdate((store) => {
         const me = store.getRoot().getLinkedRecord('me');
         me.setValue(theme, 'theme');
-        me.setValue(true, 'exporting');
+        // me.setValue(true, 'exporting');
       });
     }
     setTimeout(() => {
-      exportImage(
-        domElementId,
-        name,
-        // eslint-disable-next-line no-nested-ternary
-        background
-          ? theme === 'light'
-            ? themeLight().palette.background.default
-            : themeDark().palette.background.default
-          : null,
-        pixelRatio,
-      ).then(() => {
-        if (theme !== currentTheme.palette.type) {
-          commitLocalUpdate((store) => {
-            const me = store.getRoot().getLinkedRecord('me');
-            me.setValue(false, 'exporting');
-            me.setValue(currentTheme.palette.type, 'theme');
-          });
-        } else {
-          this.setState({ exporting: false });
-        }
-      });
+      const container = document.getElementById(domElementId);
+      const { offsetWidth, offsetHeight } = container;
+      if (this.props.adjust) {
+        container.setAttribute('style', 'width:3840px; height:2160px');
+        this.props.adjust(true);
+      }
+      setTimeout(() => {
+        exportImage(
+          domElementId,
+          offsetWidth,
+          offsetHeight,
+          name,
+          // eslint-disable-next-line no-nested-ternary
+          background
+            ? theme === 'light'
+              ? themeLight().palette.background.default
+              : themeDark().palette.background.default
+            : null,
+          pixelRatio,
+        ).then(() => {
+          if (theme !== currentTheme.palette.type) {
+            commitLocalUpdate((store) => {
+              const me = store.getRoot().getLinkedRecord('me');
+              me.setValue(false, 'exporting');
+              me.setValue(currentTheme.palette.type, 'theme');
+            });
+          } else {
+            this.setState({ exporting: false });
+          }
+        });
+      }, timeout / 2);
     }, timeout);
   }
 
@@ -93,10 +103,10 @@ class ExportButtons extends Component {
     this.setState({ anchorElPdf: null });
   }
 
-  exportPdf(domElementId, name, theme, background) {
+  exportPdf(domElementId, name, theme, background, adjust = null) {
     this.setState({ exporting: true });
     this.handleClosePdf();
-    const { theme: currentTheme, pixelRatio = 2 } = this.props;
+    const { theme: currentTheme, pixelRatio = 1 } = this.props;
     let timeout = 4000;
     if (theme !== currentTheme.palette.type) {
       timeout = 6000;
@@ -117,6 +127,7 @@ class ExportButtons extends Component {
             : themeDark().palette.background.default
           : null,
         pixelRatio,
+        adjust,
       ).then(() => {
         if (theme !== currentTheme.palette.type) {
           commitLocalUpdate((store) => {
@@ -134,7 +145,7 @@ class ExportButtons extends Component {
   render() {
     const { anchorElImage, anchorElPdf, exporting } = this.state;
     const {
-      classes, t, domElementId, name, csvData,
+      classes, t, domElementId, name, csvData, adjust,
     } = this.props;
     return (
       <div className={classes.exportButtons}>
@@ -160,6 +171,7 @@ class ExportButtons extends Component {
               name,
               'dark',
               true,
+              adjust,
             )}
           >
             {t('Dark (with background)')}
@@ -171,6 +183,7 @@ class ExportButtons extends Component {
               name,
               'dark',
               false,
+              adjust,
             )}
           >
             {t('Dark (without background)')}
@@ -182,6 +195,7 @@ class ExportButtons extends Component {
               name,
               'light',
               true,
+              adjust,
             )}
           >
             {t('Light (with background)')}
@@ -193,6 +207,7 @@ class ExportButtons extends Component {
               name,
               'light',
               false,
+              adjust,
             )}
           >
             {t('Light (without background)')}
@@ -220,6 +235,7 @@ class ExportButtons extends Component {
               name,
               'dark',
               true,
+              adjust,
             )}
           >
             {t('Dark')}
@@ -231,6 +247,7 @@ class ExportButtons extends Component {
               name,
               'light',
               true,
+              adjust,
             )}
           >
             {t('Light')}

@@ -28,6 +28,7 @@ import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -139,6 +140,7 @@ class IndicatorCreation extends Component {
         createdBy: path(['value']),
         objectMarking: pluck('value'),
         objectLabel: pluck('value'),
+        externalReferences: pluck('value'),
       },
       values,
     );
@@ -217,6 +219,7 @@ class IndicatorCreation extends Component {
                 objectMarking: [],
                 killChainPhases: [],
                 objectLabel: [],
+                externalReferences: [],
                 x_opencti_detection: false,
               }}
               validationSchema={indicatorValidation(t)}
@@ -332,6 +335,10 @@ class IndicatorCreation extends Component {
                   />
                   <ObjectMarkingField
                     name="objectMarking"
+                    style={{ marginTop: 20, width: '100%' }}
+                  />
+                  <ExternalReferencesField
+                    name="externalReferences"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <Field

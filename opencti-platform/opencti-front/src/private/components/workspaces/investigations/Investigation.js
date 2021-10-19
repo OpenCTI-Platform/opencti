@@ -10,7 +10,6 @@ import InvestigationKnowledgeGraph, {
   investigationGraphQuery,
 } from './InvestigationGraph';
 import Loader from '../../../../components/Loader';
-import WorkspaceHeader from '../WorkspaceHeader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const styles = () => ({
@@ -27,7 +26,6 @@ class InvestigationComponent extends Component {
     const { classes, workspace } = this.props;
     return (
       <div className={classes.container} id="container">
-        <WorkspaceHeader workspace={workspace} />
         <QueryRenderer
           query={investigationGraphQuery}
           variables={{ id: workspace.id }}

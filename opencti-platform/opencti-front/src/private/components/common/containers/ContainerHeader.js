@@ -62,6 +62,7 @@ class ContainerHeaderComponent extends Component {
       modes,
       currentMode,
       knowledge,
+      adjust,
       t,
     } = this.props;
     return (
@@ -105,7 +106,8 @@ class ContainerHeaderComponent extends Component {
             <ExportButtons
               domElementId="container"
               name={t('Report representation')}
-              pixelRatio={currentMode === 'graph' ? 4 : 2}
+              pixelRatio={currentMode === 'graph' ? 1 : 2}
+              adjust={adjust}
             />
           </div>
         )}
@@ -165,6 +167,7 @@ ContainerHeaderComponent.propTypes = {
   modes: PropTypes.array,
   currentMode: PropTypes.string,
   knowledge: PropTypes.bool,
+  adjust: PropTypes.func,
 };
 
 const ContainerHeader = createFragmentContainer(ContainerHeaderComponent, {

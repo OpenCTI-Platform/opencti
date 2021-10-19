@@ -2003,7 +2003,7 @@ const buildRelationInput = (input) => {
     relationAttributes.last_seen = R.isNil(input.last_seen) ? new Date(UNTIL_END) : input.last_seen;
     /* istanbul ignore if */
     if (relationAttributes.first_seen > relationAttributes.last_seen) {
-      throw DatabaseError('You cant create a relation with a first_seen less than the last_seen', {
+      throw DatabaseError('You cant create a relation with a first_seen greater than the last_seen', {
         from: input.fromId,
         input,
       });
