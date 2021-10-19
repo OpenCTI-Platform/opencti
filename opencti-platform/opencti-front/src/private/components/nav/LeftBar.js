@@ -4,6 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { assoc, compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Toolbar from '@material-ui/core/Toolbar';
+import graphql from 'babel-plugin-relay/macro';
 import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -41,6 +42,7 @@ import Security, {
   UserContext,
   granted,
 } from '../../../utils/Security';
+import { commitMutation } from '../../../relay/environment';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -49,7 +51,8 @@ const styles = (theme) => ({
     backgroundColor: theme.palette.background.nav,
   },
   menuList: {
-    height: '100%',
+    marginTop: 20,
+    marginBottom: 20,
   },
   lastItem: {
     bottom: 0,
@@ -79,7 +82,15 @@ const styles = (theme) => ({
   },
 });
 
-const LeftBar = ({ t, location, classes }) => {
+const logoutMutation = graphql`
+  mutation TopBarLogoutMutation {
+    logout
+  }
+`;
+
+const LeftBar = ({
+  t, location, history, classes,
+}) => {
   const [open, setOpen] = useState({ activities: true, knowledge: true });
   const toggle = (key) => setOpen(assoc(key, !open[key], open));
   const { me } = useContext(UserContext);
@@ -91,11 +102,20 @@ const LeftBar = ({ t, location, classes }) => {
   } else {
     toData = '/dashboard/data/taxii';
   }
+
+  const handleLogout = () => {
+    commitMutation({
+      mutation: logoutMutation,
+      variables: {},
+      onCompleted: () => history.push('/'),
+    });
+  };
+
   return (
     <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
       <Toolbar />
-      <MenuList component="nav">
-        <MenuItem
+      <MenuList component="nav"classes={{ root: classes.menuList }}>
+        {/* <MenuItem
           component={Link}
           to="/dashboard"
           selected={location.pathname === '/dashboard'}
@@ -106,7 +126,7 @@ const LeftBar = ({ t, location, classes }) => {
             <DashboardOutlined />
           </ListItemIcon>
           <ListItemText primary={t('Dashboard')} />
-        </MenuItem>
+        </MenuItem> */}
         <Security needs={[KNOWLEDGE]}>
           <MenuItem
             dense={false}
@@ -117,9 +137,7 @@ const LeftBar = ({ t, location, classes }) => {
               <Brain />
             </ListItemIcon>
             <ListItemText primary={t('Defender HQ')} />
-            {open.activities ? <ExpandLess /> : <ExpandMore />}
           </MenuItem>
-          <Collapse in={open.activities}>
             <MenuList component="nav" disablePadding={true}>
               <MenuItem
                 component={Link}
@@ -146,7 +164,6 @@ const LeftBar = ({ t, location, classes }) => {
                 <ListItemText primary={t('Information Systems')} />
               </MenuItem>
             </MenuList>
-          </Collapse>
           <MenuItem
             dense={false}
             classes={{ root: classes.menuItem }}
@@ -156,9 +173,7 @@ const LeftBar = ({ t, location, classes }) => {
               <GlobeModel />
             </ListItemIcon>
             <ListItemText primary={t('Activities')} />
-            {open.knowledge ? <ExpandLess /> : <ExpandMore />}
           </MenuItem>
-          <Collapse in={open.knowledge}>
             <MenuList component="nav" disablePadding={true}>
               <MenuItem
                 component={Link}
@@ -197,13 +212,11 @@ const LeftBar = ({ t, location, classes }) => {
                 <ListItemText primary={t('Risk Assessment')} />
               </MenuItem>
             </MenuList>
-          </Collapse>
         </Security>
       </MenuList>
       <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
         <Divider />
-        <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
-          <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
+        <MenuList component="nav" classes={{ root: classes.menuList }}>
             <MenuItem
               component={Link}
               to={toData}
@@ -218,15 +231,29 @@ const LeftBar = ({ t, location, classes }) => {
             </MenuItem>
             <MenuItem
               component={Link}
-              to={toData}
-              selected={location.pathname.includes('/dashboard/duane')}
+              to="/dashboard/settings"
+              selected={location.pathname.includes('/dashboard/setings')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <CogOutline />
+              </ListItemIcon>
+              <ListItemText primary={t('Settings')} />
+            </MenuItem>
+            </MenuList>
+            <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
+            <MenuItem
+              component={Link}
+              to="dashboard/profile"
+              selected={location.pathname.includes('dashboard/profile')}
               dense={false}
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon style={{ minWidth: 35 }}>
                 <PersonIcon />
               </ListItemIcon>
-              <ListItemText primary={t('Duane Davis')} />
+              <ListItemText primary={t(me.name)} />
             </MenuItem>
             <MenuItem
               component={Link}
@@ -242,8 +269,7 @@ const LeftBar = ({ t, location, classes }) => {
             </MenuItem>
             <MenuItem
               component={Link}
-              to={toData}
-              selected={location.pathname.includes('/dashboard/data/sign')}
+              onClick={handleLogout}
               dense={false}
               classes={{ root: classes.menuItem }}
             >
@@ -252,22 +278,6 @@ const LeftBar = ({ t, location, classes }) => {
               </ListItemIcon>
               <ListItemText primary={t('Sign Out')} />
             </MenuItem>
-          </Security>
-          <Security needs={[SETTINGS]}>
-            <MenuItem
-              component={Link}
-              to="/dashboard/settings"
-              selected={location.pathname.includes('/dashboard/settings')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-              style={{ marginBottom: 50 }}
-            >
-              <ListItemIcon style={{ minWidth: 35 }}>
-                <CogOutline />
-              </ListItemIcon>
-              <ListItemText primary={t('Settings')} />
-            </MenuItem>
-          </Security>
         </MenuList>
       </Security>
     </Drawer>
