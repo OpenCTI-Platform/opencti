@@ -14,6 +14,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Cancel from '@material-ui/icons/Cancel';
 import Button from '@material-ui/core/Button';
 import MenuItem from '@material-ui/core/MenuItem';
+import AssetTaglist from '../../common/form/AssetTaglist';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -241,8 +242,13 @@ class DeviceEditionOverviewComponent extends Component {
         value: n.node.id,
       })),
     )(device);
+
     const initialValues = R.pipe(
       R.assoc('description', device.description),
+      R.assoc('name', device.name),
+      R.assoc('asset_tag', device.asset_tag),
+      R.assoc('asset_type', device.asset_type),
+      R.assoc('location', device.locations.map((index) => [index.description]).join('\n')),
       R.assoc('createdBy', createdBy),
       R.assoc('killChainPhases', killChainPhases),
       R.assoc('objectMarking', objectMarking),
@@ -253,6 +259,9 @@ class DeviceEditionOverviewComponent extends Component {
       R.pick([
         'name',
         'description',
+        'asset_tag',
+        'asset_type',
+        'location',
         'threat_actor_types',
         'confidence',
         'createdBy',
@@ -568,20 +577,25 @@ class DeviceEditionOverviewComponent extends Component {
                     </div>
                     <div className="clearfix" />
                     <Field
-                      component={SelectField}
-                      variant= 'outlined'
-                      name="assetType"
-                      size= 'small'
-                      fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '100%' }}
-                      // helperText={
-                      //   <SubscriptionFocus
-                      //   context={context}
-                      //   fieldName="AssetType"
-                      //   />
-                      // }
-                    />
+                            component={SelectField}
+                            variant='outlined'
+                            name="asset_type"
+                            size='small'
+                            fullWidth={true}
+                            style={{ height: '38.09px' }}
+                            containerstyle={{ width: '100%' }}
+                            helperText={t('Select Asset Type')}
+                          >
+                            <MenuItem key="physical-devices" value="activist">
+                              {t('Physical Devices')}
+                            </MenuItem>
+                            <MenuItem key="network" value="competitor">
+                              {t('Network')}
+                            </MenuItem>
+                            <MenuItem key="software" value="crime-syndicate">
+                              {t('software')}
+                            </MenuItem>
+                    </Field>
                   </div>
                   <div>
                     <Typography
@@ -598,21 +612,16 @@ class DeviceEditionOverviewComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                    <Field
-                      component={SelectField}
-                      variant= 'outlined'
-                      name="assetTag"
-                      size= 'small'
-                      fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '100%' }}
-                      // helperText={
-                      //   <SubscriptionFocus
-                      //   context={context}
-                      //   fieldName="AssetType"
-                      //   />
-                      // }
-                    />
+                    <AssetTaglist
+                              component={SelectField}
+                              variant='outlined'
+                              name="asset_tag"
+                              size='small'
+                              fullWidth={true}
+                              style={{ height: '38.09px' }}
+                              containerstyle={{ width: '100%' }}
+                            >
+                    </AssetTaglist>
                   </div>
                   <div>
                     <Typography
