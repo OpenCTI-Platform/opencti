@@ -245,7 +245,7 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
                 left: 0,
               }}
             >
-              <PolarGrid stroke={theme.palette.background.paperLight} />
+              <PolarGrid stroke={theme.palette.navAlt.backgroundHeader} />
               <PolarAngleAxis
                 dataKey="label"
                 tick={(innerProps) => this.tickFormatter(innerProps)}
