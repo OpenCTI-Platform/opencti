@@ -48,7 +48,7 @@ class TopMenuDevice extends Component {
     } = this.props;
     return (
       <div>
-        {!deviceId && (
+        {/* {!deviceId && (
           <Button
             component={Link}
             to="/dashboard/assets/devices"
@@ -60,7 +60,7 @@ class TopMenuDevice extends Component {
             <PublicOutlined className={classes.icon} fontSize="small" />
             {t('Device')}
           </Button>
-        )}
+        )} */}
         {/* <ArrowForwardIosOutlined
           color="inherit"
           classes={{ root: classes.arrow }}

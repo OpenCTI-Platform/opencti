@@ -21,11 +21,13 @@ class DevicesLines extends Component {
 
   render() {
     const {
-      initialLoading,
-      dataColumns,
       relay,
+      selectAll,
+      dataColumns,
       onLabelClick,
+      initialLoading,
       onToggleEntity,
+      selectedElements,
     } = this.props;
     return (
       <ListLinesContent
@@ -33,7 +35,7 @@ class DevicesLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['threatActors', 'edges'], this.props.data)}
+        dataList={pathOr([], ['computingDeviceAssetList', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
           ['threatActors', 'pageInfo', 'globalCount'],
@@ -41,8 +43,10 @@ class DevicesLines extends Component {
         )}
         LineComponent={<DeviceLine />}
         DummyLineComponent={<DeviceLineDummy />}
+        selectAll={selectAll}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
+        selectedElements={selectedElements}
         onLabelClick={onLabelClick.bind(this)}
         onToggleEntity={onToggleEntity.bind(this)}
       />
@@ -80,6 +84,33 @@ export const devicesLinesQuery = graphql`
         orderMode: $orderMode
         filters: $filters
       )
+  }
+`;
+
+// const deleteComputingDevicesMutation = graphql`
+//   mutation DeleteComputingDeviceAssetMutation($deleteComputingDeviceAssetId: ID!) {
+//     deleteComputingDeviceAsset(id: $deleteComputingDeviceAssetId)
+//   }
+// `;
+
+export const devicesLinesdarkLightRootQuery = graphql`
+  query DevicesLinesDarkLightQuery {
+    computingDeviceAssetList {
+      edges {
+        node {
+          id
+          name
+          installed_operating_system {
+            name
+          }
+          asset_id
+          fqdn
+          network_id
+          created
+          modified
+        }
+      }
+    }
   }
 `;
 

@@ -4,6 +4,8 @@ import {
   Route, Redirect, withRouter, Switch,
 } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
+import { QueryRenderer as QR } from 'react-relay';
+import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import {
   QueryRenderer,
   requestSubscription,
@@ -56,6 +58,20 @@ const deviceQuery = graphql`
   }
 `;
 
+const deviceDarkLightQuery = graphql`
+  query RootDeviceDarkLightQuery($computingDeviceAssetId: ID!) {
+    computingDeviceAsset(id: $computingDeviceAssetId) {
+      id
+      standard_id
+      name
+      asset_id
+      description
+      vendor_name
+      version
+    }
+  }
+`;
+
 class RootDevice extends Component {
   constructor(props) {
     super(props);
@@ -104,7 +120,35 @@ class RootDevice extends Component {
             ]}
           />
         </Route>
-        <QueryRenderer
+        <QR
+          environment={QueryRendererDarkLight}
+          query={deviceDarkLightQuery}
+          variables={{ computingDeviceAssetId: deviceId }}
+          render={({ error, props }) => {
+            console.log(`deviceDarkLightQuery ${JSON.stringify(props)} OR Error: ${error}`);
+            if (props) {
+              if (props.computingDeviceAsset) {
+                return (
+                  <Switch>
+                    <Route
+                      exact
+                      path="/dashboard/assets/devices/:deviceId"
+                      render={(routeProps) => (
+                        <Device
+                          {...routeProps}
+                          device={props.computingDeviceAsset}
+                        />
+                      )}
+                    />
+                </Switch>
+                );
+              }
+              return <ErrorNotFound />;
+            }
+            return <Loader />;
+          }}
+        />
+        {/* <QueryRenderer
           query={deviceQuery}
           variables={{ id: deviceId }}
           render={({ props }) => {
@@ -171,7 +215,7 @@ class RootDevice extends Component {
                           <StixDomainObjectIndicators
                             {...routeProps}
                             stixDomainObjectId={deviceId}
-                            stixDomainObjectLink={`/dashboard/assets/devices/${deviceId}/indicators`}
+    stixDomainObjectLink={`/dashboard/assets/devices/${deviceId}/indicators`}
                           />
                         </React.Fragment>
                       )}
@@ -228,7 +272,7 @@ class RootDevice extends Component {
             }
             return <Loader />;
           }}
-        />
+        /> */}
       </div>
     );
   }

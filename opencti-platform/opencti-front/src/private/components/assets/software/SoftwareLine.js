@@ -7,8 +7,10 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
+import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
+import AppleIcon from '@material-ui/icons/Apple';
 import { ChessKnight } from 'mdi-material-ui';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
@@ -47,7 +49,14 @@ const styles = (theme) => ({
 class SoftwareLineComponent extends Component {
   render() {
     const {
-      fd, classes, node, dataColumns, onLabelClick,
+      fd,
+      classes,
+      node,
+      selectAll,
+      dataColumns,
+      onLabelClick,
+      onToggleEntity,
+      selectedElements,
     } = this.props;
     return (
       <ListItem
@@ -57,7 +66,90 @@ class SoftwareLineComponent extends Component {
         component={Link}
         to={`/dashboard/assets/software/${node.id}`}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 50 }}
+          onClick={onToggleEntity.bind(this, node)}
+        >
+          <Checkbox
+            edge="start"
+            checked={selectAll || node.id in (selectedElements || {})}
+            disableRipple={true}
+          />
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {/* KK-HWELL-011 */}
+                {node.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.type.width }}
+              >
+                <AppleIcon />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.assetId.width }}
+              >
+                {/* Lorem Ipsum Lorem Ipsum */}
+                {node.asset_id}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.vendorName.width }}
+              >
+                {node.vendor_name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.version.width }}
+              >
+                {/* {fd(node.created)} */}
+                {/* Lorem Ipsum Lorem Ipsum */}
+                {node.version}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.patchLevel.width }}
+              >
+                {node.patch_level}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.cpeId.width }}
+              >
+                {/* {fd(node.modified)} */}
+                {/* Lorem Ipsum Lorem Ipsum */}
+                {node.cpe_identifier}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.swId.width }}
+              >
+                {/* {fd(node.modified)} */}
+                {/* Lorem Ipsum Lorem Ipsum */}
+                {node.software_identifier}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectLabel.width }}
+              >
+                {/* <StixCoreObjectLabels
+                  variant="inList"
+                  labels={node.objectLabel}
+                  onClick={onLabelClick.bind(this)}
+                /> */}
+              </div>
+            </div>
+          }
+        />
+        {/* <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ChessKnight />
         </ListItemIcon>
         <ListItemText
@@ -71,16 +163,6 @@ class SoftwareLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
-              >
-                <StixCoreObjectLabels
-                  variant="inList"
-                  labels={node.objectLabel}
-                  onClick={onLabelClick.bind(this)}
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
                 style={{ width: dataColumns.created.width }}
               >
                 {fd(node.created)}
@@ -91,12 +173,22 @@ class SoftwareLineComponent extends Component {
               >
                 {fd(node.modified)}
               </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectLabel.width }}
+              >
+                <StixCoreObjectLabels
+                  variant="inList"
+                  labels={node.objectLabel}
+                  onClick={onLabelClick.bind(this)}
+                />
+              </div>
             </div>
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <KeyboardArrowRight />
-        </ListItemIcon>
+        </ListItemIcon> */}
       </ListItem>
     );
   }
@@ -168,34 +260,89 @@ class SoftwareDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.type.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.assetId.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.vendorName.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.version.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.patchLevel.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.cpeId.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.swId.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
                 <Skeleton
                   animation="wave"
                   variant="rect"
                   width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width={140}
                   height="100%"
                 />
               </div>

@@ -11,6 +11,7 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import Slide from '@material-ui/core/Slide';
+import { Link } from 'react-router-dom';
 import {
   Add,
   Edit,
@@ -37,7 +38,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 
 const Transition = React.forwardRef((props, ref) => (
@@ -50,7 +51,7 @@ const styles = () => ({
     float: 'left',
     minWidth: '0px',
     marginRight: 15,
-    padding: '7px',
+    padding: '8px 16px 8px 8px',
   },
   title: {
     float: 'left',
@@ -58,7 +59,7 @@ const styles = () => ({
   },
   popover: {
     float: 'left',
-    marginTop: '-13px',
+    // marginTop: '-13px',
   },
   aliases: {
     float: 'right',
@@ -149,8 +150,12 @@ class StixDomainObjectHeader extends Component {
       openEdit: false,
       openAlias: false,
       openAliases: false,
+      displayEdit: false,
+      displayDelete: false,
       openAliasesCreate: false,
     };
+    // console.log('hymn for the weekend ---->>>>>>>>>');
+    // console.log(this.props);
   }
 
   handleToggleOpenAliases() {
@@ -159,6 +164,21 @@ class StixDomainObjectHeader extends Component {
 
   handleToggleCreateAlias() {
     this.setState({ openAlias: !this.state.openAlias });
+  }
+
+  handleOpenDelete() {
+    this.setState({ displayDelete: true });
+    // this.handleClose();
+  }
+
+  handleOpenEdit() {
+    this.setState({ openEdit: !this.state.openEdit });
+    this.props.handleToggleEdit();
+  }
+
+  handleCloseEdit() {
+    this.setState({ openEdit: !this.state.openEdit });
+    this.props.handleToggleEdit();
   }
 
   getCurrentAliases() {
@@ -215,9 +235,11 @@ class StixDomainObjectHeader extends Component {
       t,
       classes,
       variant,
+      history,
       stixDomainObject,
       isOpenctiAlias,
       PopoverComponent,
+      OperationsComponent,
       viewAs,
       onViewAs,
       openEdit,
@@ -230,26 +252,28 @@ class StixDomainObjectHeader extends Component {
     );
     return (
       <div>
-        <Tooltip title={t('Back')} style={{ marginTop: -5 }}>
-          <Button variant="outlined" className={classes.iconButton} size="large" >
-            <ArrowBack fontSize="inherit"/>
-          </Button>
-        </Tooltip>
+        {stixDomainObject
+          && (<Tooltip title={t('Back')} style={{ marginTop: -5 }}>
+            <Button variant="outlined" className={classes.iconButton} size="large" onClick={() => history.goBack()}>
+              <ArrowBack fontSize="inherit"/>
+            </Button>
+          </Tooltip>)}
         <Typography
           variant="h1"
           gutterBottom={true}
           classes={{ root: classes.title }}
         >
-          {stixDomainObject.name}
+          {t(stixDomainObject ? stixDomainObject.name : 'New Asset')}
         </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        {console.log('PopoverComponent', PopoverComponent)}
+        {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <div className={classes.popover}>
             {React.cloneElement(PopoverComponent, {
               id: stixDomainObject.id,
               disabled: disablePopover,
             })}
           </div>
-        </Security>
+        </Security> */}
         {typeof onViewAs === 'function' && (
           <div>
             <InputLabel classes={{ root: classes.viewAsFieldLabel }}>
@@ -285,33 +309,59 @@ class StixDomainObjectHeader extends Component {
                   />
               ),
             )} */}
-            {this.state.openEdit ? (
-              <Tooltip title={t('Save')}>
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<CheckCircleOutline />}
-                  color='primary'
-                >
-                  {t('Save')}
-                </Button>
-              </Tooltip>
+            {!stixDomainObject || this.state.openEdit ? (
+              <>
+                <Tooltip title={t('Cancel')}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<Close />}
+                    color='primary'
+                    onClick={this.handleCloseEdit.bind(this)}
+                    className={classes.iconButton}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                </Tooltip>
+                <Tooltip title={t('Save')}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    startIcon={<CheckCircleOutline />}
+                    color='primary'
+                    className={classes.iconButton}
+                  >
+                    {t('Done')}
+                  </Button>
+                </Tooltip>
+              </>
             ) : (
-              <Tooltip title={t('Edit')}>
-                <Button variant="outlined" onClick={this.handleToggleOpenEdit.bind(this)} className={classes.iconButton} size="large" >
+              <>
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <div className={classes.popover}>
+                  {OperationsComponent && React.cloneElement(OperationsComponent, {
+                    id: stixDomainObject.id,
+                    disabled: disablePopover,
+                    handleOpenEdit: this.handleOpenEdit.bind(this),
+                  })}
+                </div>
+              </Security>
+              {/* <Tooltip title={t('Edit')}>
+               <Button
+                variant="outlined"
+                onClick={this.handleToggleOpenEdit.bind(this)}
+                className={classes.iconButton}
+                size="large"
+              >
                   <Edit fontSize="inherit"/>
                 </Button>
-              </Tooltip>
+              </Tooltip> */}
+            </>
             )
             }
-            <Tooltip title={t('Delete')}>
-              <Button variant="outlined" className={classes.iconButton} size="large" >
-                <Delete fontSize="inherit"/>
-              </Button>
-            </Tooltip>
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
               {!this.state.openEdit && (
-                <Tooltip title={t('Add Alias')}>
+                <Tooltip title={t('Create New')}>
                   <Button
                     variant="contained"
                     size="small"
@@ -321,7 +371,7 @@ class StixDomainObjectHeader extends Component {
                     {t('New')}
                   </Button>
                 </Tooltip>
-              )}
+              )} */}
               {/* {aliases.length > 5 ? (
                 <Button
                   color="primary"
@@ -356,7 +406,7 @@ class StixDomainObjectHeader extends Component {
                   )}
                 </IconButton>
               )} */}
-            </Security>
+            {/* </Security> */}
             <Slide
               direction="left"
               in={this.state.openAlias}

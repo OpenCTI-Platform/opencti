@@ -24,6 +24,7 @@ import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
 import TopMenuSearch from './TopMenuSearch';
 import TopMenuAnalysis from './TopMenuAnalysis';
+import TopMenuRisksAnalysis from './TopMenuRisksAnalysis';
 import TopMenuReport from './TopMenuReport';
 import TopMenuNote from './TopMenuNote';
 import TopMenuOpinion from './TopMenuOpinion';
@@ -38,12 +39,17 @@ import TopMenuStixCyberObservable from './TopMenuStixCyberObservable';
 import TopMenuArtifact from './TopMenuArtifact';
 import TopMenuThreats from './TopMenuThreats';
 import TopMenuAssets from './TopMenuAssets';
+import TopMenuRisk from './TopMenuRisk';
+import TopMenuRisksAssessment from './TopMenuRisksAssessment';
 import TopMenuThreatActor from './TopMenuThreatActor';
+import TopMenuTracking from './TopMenuTracking';
 import TopMenuDevice from './TopMenuDevice';
+import TopMenuOverviews from './TopMenuOverviews';
 import TopMenuIntrusionSet from './TopMenuIntrusionSet';
 import TopMenuNetwork from './TopMenuNetwork';
 import TopMenuCampaign from './TopMenuCampaign';
 import TopMenuSoftware from './TopMenuSoftware';
+import TopMenuRemediations from './TopMenuRemediations';
 import TopMenuArsenal from './TopMenuArsenal';
 import TopMenuMalware from './TopMenuMalware';
 import TopMenuTool from './TopMenuTool';
@@ -85,7 +91,7 @@ const styles = (theme) => ({
   logoContainer: {
 
     height: 64,
-    width: 255,
+    width: 290,
     marginLeft: -24,
     paddingTop: 15,
     borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
@@ -93,16 +99,21 @@ const styles = (theme) => ({
 
   },
   toolbar: {
+    paddingRight: '0',
     alignItems: 'flex-end',
-    borderBottom: '2px solid #075AD3',
   },
   logo: {
     cursor: 'pointer',
     height: 35,
   },
   menuContainer: {
+    top: 110,
     float: 'left',
-    marginLeft: 40,
+    width: '100%',
+    // marginLeft: 40,
+    paddingLeft: '24px',
+    position: 'relative',
+    borderBottom: '1px solid #384057',
   },
   barRight: {
     position: 'absolute',
@@ -234,6 +245,29 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/assets/software/') && (
             <TopMenuSoftware />
           )}
+          {(location.pathname === '/dashboard/risks-assessment'
+            || location.pathname.match('/dashboard/risks-assessment/[a-z_]+$')) && (
+            <TopMenuRisksAssessment />
+          )}
+          {location.pathname.includes('/dashboard/risks-assessment/risks/') && (
+            <TopMenuRisk />
+          )}
+          {/* {(location.pathname === '/dashboard/risks'
+            || location.pathname.match('/dashboard/risks/[a-z_]+$')) && (
+            <TopMenuRisks />
+          )}
+          {location.pathname.includes('/dashboard/risks/overviews/') && (
+            <TopMenuOverviews />
+          )}
+          {location.pathname.includes('/dashboard/risks/analysis/') && (
+            <TopMenuRisksAnalysis />
+          )}
+          {location.pathname.includes('/dashboard/risks/remediations/') && (
+            <TopMenuRemediations />
+          )}
+          {location.pathname.includes('/dashboard/risks/tracking/') && (
+            <TopMenuTracking />
+          )} */}
           {(location.pathname === '/dashboard/arsenal'
             || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && (
             <TopMenuArsenal />

@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -23,15 +24,15 @@ import IconButton from '@material-ui/core/IconButton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import AddNotes from './AddNotes';
 import MarkDownField from '../../../../components/MarkDownField';
 import { commitMutation } from '../../../../relay/environment';
-import { noteCreationMutation } from './NoteCreation';
+import NoteCreation, { noteCreationMutation } from './NoteCreation';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { dayStartDate } from '../../../../utils/Time';
+import AddNotes from './AddNotes';
 
 const styles = (theme) => ({
   paper: {
@@ -143,21 +144,19 @@ class StixCoreObjectNotesCardsContainer extends Component {
     return (
       <div style={{ marginTop: marginTop || 40 }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Notes about this entity')}
+          {t('Notes')}
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IconButton
-            color="secondary"
+          {/* <IconButton
             onClick={this.handleToggleWrite.bind(this)}
             classes={{ root: classes.createButton }}
-          >
+          > */}
             {/* <EditOutlined fontSize="small" /> */}
-            <Add fontSize="small" />
-          </IconButton>
-          <AddNotes
+            <AddNotes
             stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
             stixCoreObjectOrStixCoreRelationshipNotes={notes}
-          />
+             />
+          {/* </IconButton> */}
         </Security>
         <div className="clearfix" />
         {notes.map((noteEdge) => {
@@ -183,7 +182,8 @@ class StixCoreObjectNotesCardsContainer extends Component {
             </Typography>
           </AccordionSummary> */}
           <AccordionDetails style={{ width: '100%' }}>
-            <Formik
+            Hello There This is the section for notes and components of notes
+            {/* <Formik
               enableReinitialize={true}
               initialValues={{
                 created: dayStartDate(),
@@ -259,7 +259,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
                   </Grid>
                 </Form>
               )}
-            </Formik>
+            </Formik> */}
           </AccordionDetails>
         </Accordion>
         {/* <Accordion

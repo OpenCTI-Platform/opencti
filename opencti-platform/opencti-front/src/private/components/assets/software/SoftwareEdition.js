@@ -43,6 +43,20 @@ export const softwareEditionQuery = graphql`
   }
 `;
 
+export const softwareEditionDarkLightQuery = graphql`
+  query SoftwareEditionContainerDarkLightQuery($id: ID!) {
+    softwareAsset(id: $id) {
+      id
+      standard_id
+      name
+      asset_id
+      description
+      vendor_name
+      version
+    }
+  }
+`;
+
 class SoftwareEdition extends Component {
   constructor(props) {
     super(props);

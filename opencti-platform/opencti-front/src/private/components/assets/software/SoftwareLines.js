@@ -21,7 +21,13 @@ class SoftwareLines extends Component {
 
   render() {
     const {
-      initialLoading, dataColumns, relay, onLabelClick,
+      relay,
+      selectAll,
+      dataColumns,
+      onLabelClick,
+      initialLoading,
+      onToggleEntity,
+      selectedElements,
     } = this.props;
     return (
       <ListLinesContent
@@ -29,17 +35,20 @@ class SoftwareLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['software', 'edges'], this.props.data)}
+        dataList={pathOr([], ['softwareAssetList', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['software', 'pageInfo', 'globalCount'],
+          ['softwareAssetList', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         LineComponent={<SoftwareLine />}
         DummyLineComponent={<SoftwareLineDummy />}
+        selectAll={selectAll}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
+        selectedElements={selectedElements}
         onLabelClick={onLabelClick.bind(this)}
+        onToggleEntity={onToggleEntity.bind(this)}
       />
     );
   }
@@ -74,6 +83,29 @@ export const softwareLinesQuery = graphql`
         orderMode: $orderMode
         filters: $filters
       )
+  }
+`;
+
+export const softwareLinesdarkLightRootQuery = graphql`
+  query SoftwareLinesDarkLightQuery {
+    softwareAssetList {
+      edges {
+        node {
+          id
+          asset_type
+          name
+          asset_id
+          created
+          modified
+          vendor_name
+          version
+          patch_level
+          cpe_identifier
+          software_identifier
+          labels
+        }
+      }
+    }
   }
 `;
 

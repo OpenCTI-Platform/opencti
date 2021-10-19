@@ -230,12 +230,14 @@ class AddExternalReferences extends Component {
                     </InputAdornment>
                   ),
                 }}/>
-                <Button style={{ marginLeft: '10px', marginRight: '10px' }} onClick={this.handleClose.bind(this)} variant="outlined" >{t('Cancel')}</Button>
-                <Button variant="contained" color="primary">{t('Add')}</Button>
+                <div style={{ float: 'right', marginLeft: '40px' }}>
+                  <Button style={{ marginLeft: '10px', marginRight: '10px' }} onClick={this.handleClose.bind(this)} variant="outlined" >{t('Cancel')}</Button>
+                  <Button variant="contained" color="primary">{t('Add')}</Button>
+                </div>
               </CardActions>
           </div>
           <Collapse sx={{ maxWidth: '500px', borderRadius: 0 }} style={{ backgroundColor: 'transparent' }} in={this.state.expanded} timeout="auto" unmountOnExit>
-            <div>
+            <div style={{ background: 'white', width: '70%' }}>
               <QueryRenderer
                 query={addExternalReferencesLinesQuery}
                 variables={{

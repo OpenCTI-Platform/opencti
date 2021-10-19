@@ -33,6 +33,7 @@ import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
 import StixCyberObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
 import { truncate } from '../../utils/String';
+import TopBar from '../../private/components/nav/TopBar';
 
 const styles = (theme) => ({
   container: {
@@ -40,7 +41,7 @@ const styles = (theme) => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    padding: '0 0 50px 0',
+    padding: '50px 0 50px 0',
   },
   containerNoPadding: {
     transition: theme.transitions.create('padding', {
@@ -60,8 +61,8 @@ const styles = (theme) => ({
   toolBar: {
     marginLeft: -25,
     marginRight: -25,
-    marginTop: -28,
-    height: '4rem',
+    marginTop: -20,
+    height: '64px',
     color: theme.palette.header.text,
     boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
   },
@@ -88,7 +89,7 @@ const styles = (theme) => ({
   },
   item: {
     paddingLeft: 10,
-    textTransform: 'uppercase',
+    // textTransform: 'uppercase',
   },
   sortIcon: {
     position: 'absolute',
@@ -102,7 +103,8 @@ const styles = (theme) => ({
   },
   sortableHeaderItem: {
     float: 'left',
-    fontSize: 12,
+    paddingLeft: 10,
+    fontSize: 16,
     fontWeight: '700',
     cursor: 'pointer',
   },
@@ -167,6 +169,7 @@ class ListLines extends Component {
     const {
       t,
       classes,
+      disablePopover,
       handleSearch,
       handleChangeView,
       disableCards,
@@ -174,6 +177,8 @@ class ListLines extends Component {
       handleAddFilter,
       handleRemoveFilter,
       handleToggleExports,
+      handleDeleteElements,
+      selectedElements,
       handleToggleSelectAll,
       selectAll,
       openExports,
@@ -190,11 +195,15 @@ class ListLines extends Component {
       exportContext,
       numberOfElements,
       availableFilterKeys,
+      handleDeviceCreation,
       noHeaders,
       iconExtension,
       searchVariant,
+      OperationsComponent,
+      CreateItemComponent,
       message,
     } = this.props;
+    console.log('selectedElementsDartLight', Object.entries(selectedElements || {}));
     let className = classes.container;
     if (noBottomPadding) {
       className = classes.containerWithoutPadding;
@@ -279,19 +288,31 @@ class ListLines extends Component {
           <div className={classes.views}>
             <div style={{ float: 'right' }}>
               {typeof handleChangeView === 'function' && (
+                OperationsComponent && (
+                  <div className={classes.iconButton} style={{ display: 'inline-block' }}>
+                    {React.cloneElement(OperationsComponent, {
+                      id: Object.entries(selectedElements || {}).length !== 0
+                        && Object.entries(selectedElements)[0][0],
+                      isAllselected: selectAll,
+                    })}
+                  </div>
+                )
+              )}
+              {/* {typeof handleChangeView === 'function' && (
                 <Tooltip title={t('Delete')}>
                   <Button
                     variant="contained"
                     className={classes.iconButton}
                     size="large"
                     color="primary"
-                    disabled={true}
+                    // disabled={!selectAll}
+                    onClick={ () => handleDeleteElements()}
                   >
                     <Delete fontSize="inherit"/>
                   </Button>
                 </Tooltip>
-              )}
-              {typeof handleChangeView === 'function' && (
+              )} */}
+              {/* {typeof handleChangeView === 'function' && (
                 <Tooltip title={t('Edit')}>
                   <Button
                     variant="contained"
@@ -303,19 +324,23 @@ class ListLines extends Component {
                     <Edit fontSize="inherit"/>
                   </Button>
                 </Tooltip>
-              )}
+              )} */}
               {typeof handleChangeView === 'function' && (
                 <Tooltip title={t('Create New')}>
                   <Button
                     variant="contained"
                     size="small"
                     startIcon={<AddCircleOutline />}
+                    onClick={handleDeviceCreation.bind(this)}
                     color='primary'
                     style={{ marginLeft: 15 }}
                   >
                     {t('New')}
                   </Button>
                 </Tooltip>
+                // <div style={{ display: 'inline-block' }}>
+                //   {React.cloneElement(CreateItemComponent, { paginationOptions })}
+                // </div>
               )}
               {/* {typeof handleChangeView === 'function' && enableDuplicates && (
                 <Tooltip title={t('Detect duplicates')}>
@@ -352,6 +377,7 @@ class ListLines extends Component {
             </div>
           </div>
         </div>
+        <TopBar />
         <div className={className}>
           <div className="clearfix" />
           {message && (
@@ -376,7 +402,7 @@ class ListLines extends Component {
             {!noHeaders ? (
               <ListItem
                 classes={{ root: classes.item }}
-                divider={false}
+                divider={true}
                 style={{ paddingTop: 0 }}
               >
                 <ListItemIcon
@@ -470,6 +496,8 @@ class ListLines extends Component {
 ListLines.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
+  selectedElements: PropTypes.object,
+  disablePopover: PropTypes.bool,
   children: PropTypes.object,
   handleSearch: PropTypes.func,
   handleSort: PropTypes.func,

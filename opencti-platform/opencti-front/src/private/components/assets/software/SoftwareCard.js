@@ -7,12 +7,16 @@ import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
+import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
+import Checkbox from '@material-ui/core/Checkbox';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
 import IconButton from '@material-ui/core/IconButton';
 import { StarBorderOutlined } from '@material-ui/icons';
+import AppleIcon from '@material-ui/icons/Apple';
 import Skeleton from '@material-ui/lab/Skeleton';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -26,14 +30,14 @@ import {
 const styles = (theme) => ({
   card: {
     width: '100%',
-    height: 170,
-    borderRadius: 6,
+    height: '319px',
+    borderRadius: 9,
   },
   cardDummy: {
     width: '100%',
-    height: 170,
+    height: '319px',
     color: theme.palette.grey[700],
-    borderRadius: 6,
+    borderRadius: 9,
   },
   avatar: {
     backgroundColor: theme.palette.primary.main,
@@ -51,16 +55,19 @@ const styles = (theme) => ({
     height: '100%',
   },
   header: {
-    height: 55,
-    paddingBottom: 0,
-    marginBottom: 0,
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: '13px',
+  },
+  body: {
+    marginBottom: '13px',
   },
   content: {
     width: '100%',
-    paddingTop: 0,
+    padding: '24px',
   },
   description: {
-    height: 70,
+    height: 170,
     overflow: 'hidden',
   },
   objectLabel: {
@@ -93,7 +100,15 @@ const styles = (theme) => ({
 class SoftwareCardComponent extends Component {
   render() {
     const {
-      t, fsd, classes, node, bookmarksIds, onLabelClick,
+      t,
+      fsd,
+      node,
+      classes,
+      selectAll,
+      bookmarksIds,
+      onLabelClick,
+      onToggleEntity,
+      selectedElements,
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
@@ -102,7 +117,7 @@ class SoftwareCardComponent extends Component {
           component={Link}
           to={`/dashboard/assets/software/${node.id}`}
         >
-          <CardHeader
+          {/* <CardHeader
             classes={{ root: classes.header }}
             avatar={
               <Avatar className={classes.avatar}>{node.name.charAt(0)}</Avatar>
@@ -123,9 +138,9 @@ class SoftwareCardComponent extends Component {
                 <StarBorderOutlined />
               </IconButton>
             }
-          />
+          /> */}
           <CardContent className={classes.content}>
-            <div className={classes.description}>
+            {/* <div className={classes.description}>
               <Markdown
                 remarkPlugins={[remarkGfm, remarkParse]}
                 parserOptions={{ commonmark: true }}
@@ -140,6 +155,130 @@ class SoftwareCardComponent extends Component {
                 labels={node.objectLabel}
                 onClick={onLabelClick.bind(this)}
               />
+            </div> */}
+            <Grid item={true} className={classes.header}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Type')}
+                </Typography>
+                <div className="clearfix" />
+                <AppleIcon size='small' />
+              </div>
+              <div style={{ marginRight: 'auto', marginLeft: '12px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                    {t('Name')}
+                </Typography>
+                <div className="clearfix" />
+                <Typography variant="h2">
+                    {/* {t('KK-HWELL-011')} */}
+                    {t(node.name)}
+                </Typography>
+              </div>
+              <div>
+                <Checkbox
+                  size="small"
+                  onClick={onToggleEntity.bind(this, node)}
+                  checked={selectAll || node.id in (selectedElements || {})}
+                  disableRipple={true}
+                />
+              </div>
+            </Grid>
+            <Grid xs={12} container={true} >
+              <Grid item={true} xs={6} className={classes.body}>
+                <Typography
+                 variant="h3"
+                 color="textSecondary"
+                 gutterBottom ={true}>
+                  {t('Asset ID')}
+                </Typography>
+                <Typography>
+                    {/* {t('KK-HWELL-011')} */}
+                    {t(node.asset_id)}
+                </Typography>
+                <div className="clearfix" />
+                <Typography
+                 variant="h3"
+                 color="textSecondary"
+                 style={{ marginTop: '13px' }}
+                 gutterBottom={true}
+                >
+                  {t('Version')}
+                </Typography>
+                <Typography>
+                  {/* {t('Lorem Ipsum')} */}
+                  {t(node.version)}
+                </Typography>
+                <div className="clearfix" />
+                <Typography
+                 variant="h3"
+                 color="textSecondary"
+                 style={{ marginTop: '13px' }}
+                 gutterBottom={true}
+                >
+                  {t('CPE ID')}
+                </Typography>
+                <Typography>
+                  {/* {t('Lorem Ipsum')} */}
+                  {t(node.cpe_identifier)}
+                </Typography>
+              </Grid>
+              <Grid xs={6} item={true} className={classes.body}>
+                <Typography
+                 variant="h3"
+                 color="textSecondary"
+                 gutterBottom ={true}>
+                  {t('Vendor')}
+                </Typography>
+                <Typography>
+                    {t(node.vendor_name)}
+                </Typography>
+                <div className="clearfix" />
+                <Typography
+                 variant="h3"
+                 color="textSecondary"
+                 style={{ marginTop: '13px' }}
+                 gutterBottom={true}
+                >
+                  {t('Patch Level')}
+                </Typography>
+                <Typography>
+                  {/* {t('Lorem Ipsum')} */}
+                  {t(node.patch_level)}
+                </Typography>
+                <div className="clearfix" />
+                <Typography
+                 variant="h3"
+                 color="textSecondary"
+                 style={{ marginTop: '13px' }}
+                 gutterBottom={true}
+                >
+                  {t('SWID')}
+                </Typography>
+                <Typography>
+                  {/* {t('Lorem Ipsum')} */}
+                  {t(node.software_identifier)}
+                </Typography>
+              </Grid>
+            </Grid>
+            <div className={classes.objectLabel}>
+              <Typography
+               variant="h3"
+               color="textSecondary"
+               gutterBottom ={true}>
+                {t('Label')}
+              </Typography>
+              {/* <StixCoreObjectLabels
+                labels={node.objectLabel}
+                onClick={onLabelClick.bind(this)}
+              /> */}
             </div>
           </CardContent>
         </CardActionArea>

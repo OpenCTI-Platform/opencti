@@ -51,10 +51,10 @@ class NetworkCards extends Component {
               loadMore={relay.loadMore.bind(this)}
               hasMore={relay.hasMore.bind(this)}
               isLoading={relay.isLoading.bind(this)}
-              dataList={pathOr([], ['network', 'edges'], this.props.data)}
+              dataList={pathOr([], ['networkAssetList', 'edges'], this.props.data)}
               globalCount={pathOr(
                 nbOfCardsToLoad,
-                ['network', 'pageInfo', 'globalCount'],
+                ['networkAssetList', 'pageInfo', 'globalCount'],
                 this.props.data,
               )}
               CardComponent={<NetworkCard />}
@@ -96,6 +96,34 @@ export const networkCardsQuery = graphql`
         orderMode: $orderMode
         filters: $filters
       )
+  }
+`;
+
+export const networkCardsdarkLightRootQuery = graphql`
+  query NetworkCardsDarkLightQuery {
+    networkAssetList {
+      edges {
+        node {
+          id
+          name
+          labels
+          asset_id
+          network_id
+          network_address_range {
+            ending_ip_address{
+              ... on IpV4Address {
+                ip_address_value
+              }
+            }
+            starting_ip_address{
+              ... on IpV4Address {
+                ip_address_value
+              }
+            }
+          }
+        }
+      }
+    }
   }
 `;
 

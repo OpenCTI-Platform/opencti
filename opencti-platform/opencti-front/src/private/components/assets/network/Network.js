@@ -9,6 +9,7 @@ import inject18n from '../../../../components/i18n';
 import NetworkDetails from './NetworkDetails';
 import NetworkEdition from './NetworkEdition';
 import NetworkPopover from './NetworkPopover';
+import NetworkOperations from './NetworkOperations';
 import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
@@ -29,12 +30,14 @@ const styles = () => ({
 
 class NetworkComponent extends Component {
   render() {
-    const { classes, network } = this.props;
+    const { classes, network, history } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
           stixDomainObject={network}
+          history={history}
           PopoverComponent={<NetworkPopover />}
+          OperationsComponent={<NetworkOperations />}
         />
         <Grid
           container={true}
@@ -48,7 +51,7 @@ class NetworkComponent extends Component {
             <NetworkDetails network={network} />
           </Grid>
         </Grid>
-        <Grid
+        {/* <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
@@ -65,7 +68,7 @@ class NetworkComponent extends Component {
               stixCoreObjectOrStixCoreRelationshipId={network.id}
             />
           </Grid>
-        </Grid>
+        </Grid> */}
         <Grid
           container={true}
           spacing={3}
@@ -73,9 +76,9 @@ class NetworkComponent extends Component {
           style={{ marginTop: 25 }}
         >
           <Grid item={true} xs={6}>
-            <StixCoreObjectExternalReferences
+            {/* <StixCoreObjectExternalReferences
               stixCoreObjectId={network.id}
-            />
+            /> */}
           </Grid>
           <Grid item={true} xs={6}>
             <StixCoreObjectLatestHistory stixCoreObjectId={network.id} />

@@ -9,6 +9,7 @@ import inject18n from '../../../../components/i18n';
 import SoftwareDetails from './SoftwareDetails';
 import SoftwareEdition from './SoftwareEdition';
 import SoftwarePopover from './SoftwarePopover';
+import SoftwareOperations from './SoftwareOperations';
 import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
@@ -29,12 +30,14 @@ const styles = () => ({
 
 class SoftwareComponent extends Component {
   render() {
-    const { classes, software } = this.props;
+    const { classes, software, history } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
           stixDomainObject={software}
+          history={history}
           PopoverComponent={<SoftwarePopover />}
+          OperationsComponent={<SoftwareOperations />}
         />
         <Grid
           container={true}
@@ -48,7 +51,7 @@ class SoftwareComponent extends Component {
             <SoftwareDetails software={software} />
           </Grid>
         </Grid>
-        <Grid
+        {/* <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
@@ -57,7 +60,7 @@ class SoftwareComponent extends Component {
           <Grid item={true} xs={6}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={software.id}
-              stixObjectOrStixRelationshipLink={`/dashboard/assets/software/${software.id}/knowledge`}
+          stixObjectOrStixRelationshipLink={`/dashboard/assets/software/${software.id}/knowledge`}
             />
           </Grid>
           <Grid item={true} xs={6}>
@@ -65,7 +68,7 @@ class SoftwareComponent extends Component {
               stixCoreObjectOrStixCoreRelationshipId={software.id}
             />
           </Grid>
-        </Grid>
+        </Grid> */}
         <Grid
           container={true}
           spacing={3}
@@ -73,7 +76,7 @@ class SoftwareComponent extends Component {
           style={{ marginTop: 25 }}
         >
           <Grid item={true} xs={6}>
-            <StixCoreObjectExternalReferences stixCoreObjectId={software.id} />
+            {/* <StixCoreObjectExternalReferences stixCoreObjectId={software.id} /> */}
           </Grid>
           <Grid item={true} xs={6}>
             <StixCoreObjectLatestHistory stixCoreObjectId={software.id} />

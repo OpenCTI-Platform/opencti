@@ -13,8 +13,9 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
-import DeviceEditionOverview from './DeviceEditionOverview';
-import DeviceEditionDetails from './DeviceEditionDetails';
+import DeviceCreationOverview from './DeviceCreationOverview';
+import DeviceCreationDetails from './DeviceCreationDetails';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({
   header: {
@@ -34,7 +35,7 @@ const styles = (theme) => ({
     right: 20,
   },
   container: {
-    padding: '10px 20px 20px 20px',
+    margin: 0,
   },
   appBar: {
     width: '100%',
@@ -51,7 +52,7 @@ const styles = (theme) => ({
   },
 });
 
-class DeviceEditionContainer extends Component {
+class DeviceCreationContainer extends Component {
   constructor(props) {
     super(props);
     this.state = { currentTab: 0 };
@@ -65,8 +66,7 @@ class DeviceEditionContainer extends Component {
     const {
       t, classes, handleClose, device,
     } = this.props;
-    console.log('DeviceEditionPropsData', this.props);
-    const { editContext } = device;
+    // const { editContext } = device;
     return (
       <div>
         {/* <div className={classes.header}>
@@ -84,28 +84,29 @@ class DeviceEditionContainer extends Component {
           <div className="clearfix" />
         </div> */}
         <div className={classes.container}>
-          <Grid
+          <StixDomainObjectHeader/>
+          {/* <Grid
             container={true}
             spacing={3}
             classes={{ container: classes.gridContainer }}
           >
             <Grid item={true} xs={6}>
-              <DeviceEditionOverview
-                device={device}
+              <DeviceCreationOverview
+                // device={this.props.device}
                 // enableReferences={this.props.enableReferences}
                 // context={editContext}
                 handleClose={handleClose.bind(this)}
               />
             </Grid>
             <Grid item={true} xs={6}>
-              <DeviceEditionDetails
-                device={this.props.device}
-                enableReferences={this.props.enableReferences}
-                context={editContext}
+              <DeviceCreationDetails
+                // device={this.props.device}
+                // enableReferences={this.props.enableReferences}
+                // context={editContext}
                 handleClose={handleClose.bind(this)}
               />
             </Grid>
-          </Grid>
+          </Grid> */}
           {/* <AppBar position="static" elevation={0} className={classes.appBar}>
             <Tabs
               value={this.state.currentTab}
@@ -116,7 +117,7 @@ class DeviceEditionContainer extends Component {
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
-            <DeviceEditionOverview
+            <DeviceCreationOverview
               device={this.props.device}
               enableReferences={this.props.enableReferences}
               context={editContext}
@@ -124,7 +125,7 @@ class DeviceEditionContainer extends Component {
             />
           )}
           {this.state.currentTab === 1 && (
-            <DeviceEditionDetails
+            <DeviceCreationDetails
               device={this.props.device}
               enableReferences={this.props.enableReferences}
               context={editContext}
@@ -137,7 +138,7 @@ class DeviceEditionContainer extends Component {
   }
 }
 
-DeviceEditionContainer.propTypes = {
+DeviceCreationContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   device: PropTypes.object,
@@ -146,14 +147,14 @@ DeviceEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const DeviceEditionFragment = createFragmentContainer(
-  DeviceEditionContainer,
+const DeviceCreationFragment = createFragmentContainer(
+  DeviceCreationContainer,
   {
     device: graphql`
-      fragment DeviceEditionContainer_device on ThreatActor {
+      fragment DeviceCreationContainer_device on ThreatActor {
         id
-        ...DeviceEditionOverview_device
-        ...DeviceEditionDetails_device
+        ...DeviceCreationOverview_device
+        ...DeviceCreationDetails_device
         editContext {
           name
           focusOn
@@ -166,4 +167,4 @@ const DeviceEditionFragment = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(DeviceEditionFragment);
+)(DeviceCreationFragment);

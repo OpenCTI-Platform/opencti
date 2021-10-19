@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
+import { QueryRenderer as QR } from 'react-relay';
+import QueryRendererDarkLight from '../../../relay/environmentDarkLight';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -13,11 +15,14 @@ import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
 import SoftwareCards, {
   softwareCardsQuery,
+  softwareCardsdarkLightRootQuery,
 } from './software/SoftwareCards';
 import SoftwareLines, {
   softwareLinesQuery,
+  softwareLinesdarkLightRootQuery,
 } from './software/SoftwareLines';
 import SoftwareCreation from './software/SoftwareCreation';
+import SoftwareOperations from './software/SoftwareOperations';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 
@@ -37,6 +42,9 @@ class Software extends Component {
       filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
+      selectedElements: null,
+      selectAll: false,
+      openDeviceCreation: false,
     };
   }
 
@@ -63,6 +71,38 @@ class Software extends Component {
 
   handleToggleExports() {
     this.setState({ openExports: !this.state.openExports });
+  }
+
+  handleToggleSelectAll() {
+    this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
+  }
+
+  handleDeviceCreation() {
+    console.log('Device Created successfully');
+    this.setState({ openDeviceCreation: true });
+  }
+
+  handleToggleSelectEntity(entity, event) {
+    event.stopPropagation();
+    event.preventDefault();
+    const { selectedElements } = this.state;
+    if (entity.id in (selectedElements || {})) {
+      const newSelectedElements = R.omit([entity.id], selectedElements);
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    } else {
+      const newSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        selectedElements || {},
+      );
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    }
   }
 
   handleAddFilter(key, id, value, event = null) {
@@ -108,11 +148,17 @@ class Software extends Component {
     const {
       sortBy,
       orderAsc,
+      selectAll,
       searchTerm,
       filters,
       openExports,
+      selectedElements,
       numberOfElements,
     } = this.state;
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original;
+    }
     const dataColumns = {
       name: {
         label: 'Name',
@@ -135,6 +181,11 @@ class Software extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
+        handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        selectedElements={selectedElements}
+        selectAll={selectAll}
+        CreateItemComponent={<SoftwareCreation />}
+        OperationsComponent={<SoftwareOperations />}
         openExports={openExports}
         exportEntityType="Software"
         keyword={searchTerm}
@@ -149,7 +200,7 @@ class Software extends Component {
           'createdBy',
         ]}
       >
-        <QueryRenderer
+        {/* <QueryRenderer
           query={softwareCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
@@ -161,6 +212,25 @@ class Software extends Component {
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
+        /> */}
+        <QR
+          environment={QueryRendererDarkLight}
+          query={softwareCardsdarkLightRootQuery}
+          render={({ error, props }) => {
+            console.log(`DarkLightSoftwareCards Error ${error} OR Props ${JSON.stringify(props)}`);
+            return (
+              <SoftwareCards
+                data={props}
+                selectAll={selectAll}
+                paginationOptions={paginationOptions}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            );
+          }}
         />
       </ListCards>
     );
@@ -169,32 +239,64 @@ class Software extends Component {
   renderLines(paginationOptions) {
     const {
       sortBy,
-      orderAsc,
-      searchTerm,
       filters,
+      orderAsc,
+      selectAll,
+      searchTerm,
       openExports,
+      selectedElements,
       numberOfElements,
+      openDeviceCreation,
     } = this.state;
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original;
+    }
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '35%',
+        width: '10%',
+        isSortable: true,
+      },
+      type: {
+        label: 'Type',
+        width: '5%',
+        isSortable: true,
+      },
+      assetId: {
+        label: 'Asset ID',
+        width: '10%',
+        isSortable: true,
+      },
+      vendorName: {
+        label: 'Vendor',
+        width: '10%',
+        isSortable: true,
+      },
+      version: {
+        label: 'Version',
+        width: '10%',
+        isSortable: true,
+      },
+      patchLevel: {
+        label: 'Patch Level',
+        width: '10%',
+        isSortable: true,
+      },
+      cpeId: {
+        label: 'CPE ID',
+        width: '10%',
+        isSortable: true,
+      },
+      swId: {
+        label: 'SWID',
+        width: '10%',
         isSortable: true,
       },
       objectLabel: {
         label: 'Labels',
         width: '25%',
         isSortable: false,
-      },
-      created: {
-        label: 'Creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      modified: {
-        label: 'Modification date',
-        width: '15%',
-        isSortable: true,
       },
     };
     return (
@@ -208,6 +310,12 @@ class Software extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
+        handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleDeviceCreation={this.handleDeviceCreation.bind(this)}
+        selectedElements={selectedElements}
+        selectAll={selectAll}
+        CreateItemComponent={<SoftwareCreation />}
+        OperationsComponent={<SoftwareOperations />}
         openExports={openExports}
         exportEntityType="Software"
         keyword={searchTerm}
@@ -222,7 +330,7 @@ class Software extends Component {
           'createdBy',
         ]}
       >
-        <QueryRenderer
+        {/* <QueryRenderer
           query={softwareLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
@@ -235,6 +343,26 @@ class Software extends Component {
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
+        /> */}
+        <QR
+          environment={QueryRendererDarkLight}
+          query={softwareLinesdarkLightRootQuery}
+          render={({ error, props }) => {
+            console.log(`DarkLightSoftwareLines Error ${error} OR Props ${JSON.stringify(props)}`);
+            return (
+              <SoftwareLines
+                data={props}
+                selectAll={selectAll}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                paginationOptions={paginationOptions}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            );
+          }}
         />
       </ListLines>
     );
@@ -256,7 +384,7 @@ class Software extends Component {
         {view === 'cards' ? this.renderCards(paginationOptions) : ''}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <SoftwareCreation paginationOptions={paginationOptions} />
+          {/* <SoftwareCreation paginationOptions={paginationOptions} /> */}
         </Security>
       </div>
     );

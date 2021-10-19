@@ -7,12 +7,15 @@ import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
+import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
+import Checkbox from '@material-ui/core/Checkbox';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
 import IconButton from '@material-ui/core/IconButton';
-import { StarBorderOutlined } from '@material-ui/icons';
+import { StarBorderOutlined, Router } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -26,14 +29,14 @@ import {
 const styles = (theme) => ({
   card: {
     width: '100%',
-    height: 170,
-    borderRadius: 6,
+    height: '319px',
+    borderRadius: 9,
   },
   cardDummy: {
     width: '100%',
-    height: 170,
+    height: '319px',
     color: theme.palette.grey[700],
-    borderRadius: 6,
+    borderRadius: 9,
   },
   avatar: {
     backgroundColor: theme.palette.primary.main,
@@ -51,16 +54,19 @@ const styles = (theme) => ({
     height: '100%',
   },
   header: {
-    height: 55,
-    paddingBottom: 0,
-    marginBottom: 0,
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: '13px',
+  },
+  body: {
+    marginBottom: '13px',
   },
   content: {
     width: '100%',
-    paddingTop: 0,
+    padding: '24px',
   },
   description: {
-    height: 70,
+    height: 170,
     overflow: 'hidden',
   },
   objectLabel: {
@@ -102,7 +108,7 @@ class NetworkCardComponent extends Component {
           component={Link}
           to={`/dashboard/assets/network/${node.id}`}
         >
-          <CardHeader
+          {/* <CardHeader
             classes={{ root: classes.header }}
             avatar={
               <Avatar className={classes.avatar}>{node.name.charAt(0)}</Avatar>
@@ -123,9 +129,9 @@ class NetworkCardComponent extends Component {
                 <StarBorderOutlined />
               </IconButton>
             }
-          />
+          /> */}
           <CardContent className={classes.content}>
-            <div className={classes.description}>
+            {/* <div className={classes.description}>
               <Markdown
                 remarkPlugins={[remarkGfm, remarkParse]}
                 parserOptions={{ commonmark: true }}
@@ -140,6 +146,106 @@ class NetworkCardComponent extends Component {
                 labels={node.objectLabel}
                 onClick={onLabelClick.bind(this)}
               />
+            </div> */}
+            <Grid item={true} className={classes.header}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Type')}
+                </Typography>
+                <Router size='large' />
+              </div>
+              <div style={{ marginRight: 'auto', marginLeft: '12px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                    {t('Network Name')}
+                </Typography>
+                <Typography>
+                    {/* {t('KK-HWELL-011')} */}
+                    {t(node.name)}
+                </Typography>
+              </div>
+              <div>
+                <Checkbox
+                  size="small"
+                  style={{}}
+                  onClick={
+                  bookmarksIds.includes(node.id)
+                    ? deleteBookMark.bind(this, node.id, 'Threat-Actor')
+                    : addBookmark.bind(this, node.id, 'Threat-Actor')
+                }
+                color={bookmarksIds.includes(node.id) ? 'secondary' : 'primary'}
+                />
+              </div>
+            </Grid>
+            <Grid xs={12} container={true} >
+              <Grid item={true} xs={6} className={classes.body}>
+                <Typography
+                 variant="h3"
+                 color="textSecondary"
+                 gutterBottom ={true}>
+                  {t('Asset ID')}
+                </Typography>
+                <Typography>
+                  {/* {t('KK-HWELL-011')} */}
+                  {t(node.asset_id)}
+                </Typography>
+                <div className="clearfix" />
+                <Typography
+                 variant="h3"
+                 color="textSecondary"
+                 style={{ marginTop: '13px' }}
+                 gutterBottom={true}
+                >
+                  {t('Network ID')}
+                </Typography>
+                <Typography>
+                  {/* {t('Lorem Ipsum')} */}
+                  {t(node.network_id)}
+                </Typography>
+              </Grid>
+              <Grid xs={6} item={true} className={classes.body}>
+                <Typography
+                 variant="h3"
+                 color="textSecondary"
+                 gutterBottom ={true}>
+                  {t('IP Address')}
+                </Typography>
+                <Typography>
+                    {t('00:50:56:A3:59:4D')}
+                </Typography>
+                <div className="clearfix" />
+                <Typography
+                 variant="h3"
+                 color="textSecondary"
+                 style={{ marginTop: '13px' }}
+                 gutterBottom={true}
+                >
+                  {t('Network Range')}
+                </Typography>
+                <Typography>
+                    {t('Lorem Ipsum')}
+                    {/* {t(node.network_id)} */}
+                </Typography>
+              </Grid>
+            </Grid>
+            <div className={classes.objectLabel}>
+              <Typography
+               variant="h3"
+               color="textSecondary"
+               gutterBottom ={true}>
+                {t('Label')}
+              </Typography>
+              {/* <StixCoreObjectLabels
+                labels={node.objectLabel}
+                onClick={onLabelClick.bind(this)}
+              /> */}
             </div>
           </CardContent>
         </CardActionArea>

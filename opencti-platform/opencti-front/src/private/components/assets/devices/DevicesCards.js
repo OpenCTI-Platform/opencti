@@ -23,7 +23,7 @@ class DevicesCards extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'threatActors',
+      'computingDeviceAssetList',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -51,10 +51,10 @@ class DevicesCards extends Component {
               loadMore={relay.loadMore.bind(this)}
               hasMore={relay.hasMore.bind(this)}
               isLoading={relay.isLoading.bind(this)}
-              dataList={pathOr([], ['threatActors', 'edges'], this.props.data)}
+              dataList={pathOr([], ['computingDeviceAssetList', 'edges'], this.props.data)}
               globalCount={pathOr(
                 nbOfCardsToLoad,
-                ['threatActors', 'pageInfo', 'globalCount'],
+                ['computingDeviceAssetList', 'pageInfo', 'globalCount'],
                 this.props.data,
               )}
               CardComponent={<DeviceCard />}
@@ -98,6 +98,25 @@ export const devicesCardsQuery = graphql`
         orderMode: $orderMode
         filters: $filters
       )
+  }
+`;
+
+export const devicesCardsdarkLightRootQuery = graphql`
+  query DevicesCardsDarkLightQuery {
+    computingDeviceAssetList {
+      edges {
+        node {
+          id
+          name
+          installed_operating_system {
+            name
+          }
+          asset_id
+          fqdn
+          network_id
+        }
+      }
+    }
   }
 `;
 

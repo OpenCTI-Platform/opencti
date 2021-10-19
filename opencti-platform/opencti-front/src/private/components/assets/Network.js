@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
+import { QueryRenderer as QR } from 'react-relay';
+import QueryRendererDarkLight from '../../../relay/environmentDarkLight';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -13,11 +15,14 @@ import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
 import NetworkCards, {
   networkCardsQuery,
+  networkCardsdarkLightRootQuery,
 } from './network/NetworkCards';
 import NetworkLines, {
   networkLinesQuery,
+  networkLinesdarkLightRootQuery,
 } from './network/NetworkLines';
 import NetworkCreation from './network/NetworkCreation';
+import NetworkOperations from './network/NetworkOperations';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 
@@ -37,6 +42,9 @@ class Network extends Component {
       filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
+      selectedElements: null,
+      selectAll: false,
+      openDeviceCreation: false,
     };
   }
 
@@ -63,6 +71,38 @@ class Network extends Component {
 
   handleToggleExports() {
     this.setState({ openExports: !this.state.openExports });
+  }
+
+  handleToggleSelectAll() {
+    this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
+  }
+
+  handleDeviceCreation() {
+    console.log('Device Created successfully');
+    this.setState({ openDeviceCreation: true });
+  }
+
+  handleToggleSelectEntity(entity, event) {
+    event.stopPropagation();
+    event.preventDefault();
+    const { selectedElements } = this.state;
+    if (entity.id in (selectedElements || {})) {
+      const newSelectedElements = R.omit([entity.id], selectedElements);
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    } else {
+      const newSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        selectedElements || {},
+      );
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    }
   }
 
   handleAddFilter(key, id, value, event = null) {
@@ -111,6 +151,8 @@ class Network extends Component {
       searchTerm,
       filters,
       openExports,
+      selectAll,
+      selectedElements,
       numberOfElements,
     } = this.state;
     const dataColumns = {
@@ -135,6 +177,14 @@ class Network extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
+        OperationsComponent={<NetworkOperations />}
+        selectedElements={selectedElements}
+        selectAll={selectAll}
+        CreateItemComponent={
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <NetworkCreation />
+          </Security>
+        }
         openExports={openExports}
         exportEntityType="Network"
         keyword={searchTerm}
@@ -149,7 +199,7 @@ class Network extends Component {
           'createdBy',
         ]}
       >
-        <QueryRenderer
+        {/* <QueryRenderer
           query={networkCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
@@ -161,6 +211,22 @@ class Network extends Component {
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
+        /> */}
+        <QR
+          environment={QueryRendererDarkLight}
+          query={networkCardsdarkLightRootQuery}
+          render={({ error, props }) => {
+            console.log(`DarkLightNetworkCards Error ${error} OR Props ${JSON.stringify(props)}`);
+            return (
+              <NetworkCards
+                data={props}
+                paginationOptions={paginationOptions}
+                initialLoading={props === null}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            );
+          }}
         />
       </ListCards>
     );
@@ -169,32 +235,49 @@ class Network extends Component {
   renderLines(paginationOptions) {
     const {
       sortBy,
-      orderAsc,
-      searchTerm,
       filters,
+      orderAsc,
+      selectAll,
+      searchTerm,
       openExports,
+      selectedElements,
       numberOfElements,
+      openDeviceCreation,
     } = this.state;
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original;
+    }
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '35%',
+        width: '15%',
+        isSortable: true,
+      },
+      type: {
+        label: 'Type',
+        width: '5%',
+        isSortable: true,
+      },
+      asset_id: {
+        label: 'Asset ID',
+        width: '15%',
+        isSortable: true,
+      },
+      network_id: {
+        label: 'Network ID',
+        width: '15%',
+        isSortable: true,
+      },
+      network_range: {
+        label: 'Network Range',
+        width: '15%',
         isSortable: true,
       },
       objectLabel: {
         label: 'Labels',
         width: '25%',
         isSortable: false,
-      },
-      created: {
-        label: 'Creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      modified: {
-        label: 'Modification date',
-        width: '15%',
-        isSortable: true,
       },
     };
     return (
@@ -208,6 +291,16 @@ class Network extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
+        handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleDeviceCreation={this.handleDeviceCreation.bind(this)}
+        selectedElements={selectedElements}
+        selectAll={selectAll}
+        OperationsComponent={<NetworkOperations />}
+        CreateItemComponent={
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <NetworkCreation />
+          </Security>
+        }
         openExports={openExports}
         exportEntityType="Network"
         keyword={searchTerm}
@@ -222,7 +315,7 @@ class Network extends Component {
           'createdBy',
         ]}
       >
-        <QueryRenderer
+        {/* <QueryRenderer
           query={networkLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
@@ -235,6 +328,26 @@ class Network extends Component {
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
+        /> */}
+        <QR
+          environment={QueryRendererDarkLight}
+          query={networkLinesdarkLightRootQuery}
+          render={({ error, props }) => {
+            console.log(`DarkLightNetworkLines Error ${error} OR Props ${JSON.stringify(props)}`);
+            return (
+              <NetworkLines
+                data={props}
+                selectAll={selectAll}
+                paginationOptions={paginationOptions}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            );
+          }}
         />
       </ListLines>
     );
@@ -256,7 +369,7 @@ class Network extends Component {
         {view === 'cards' ? this.renderCards(paginationOptions) : ''}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <NetworkCreation paginationOptions={paginationOptions} />
+          {/* <NetworkCreation paginationOptions={paginationOptions} /> */}
         </Security>
       </div>
     );

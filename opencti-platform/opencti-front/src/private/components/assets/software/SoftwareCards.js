@@ -33,39 +33,49 @@ class SoftwareCards extends Component {
   }
 
   render() {
-    const { initialLoading, relay, onLabelClick } = this.props;
+    const {
+      initialLoading,
+      relay,
+      selectAll,
+      onLabelClick,
+      onToggleEntity,
+      selectedElements,
+    } = this.props;
     const { bookmarks } = this.state;
     return (
-      <QueryRenderer
-        query={stixDomainObjectBookmarksQuery}
-        variables={{ types: ['Software'] }}
-        render={({ props }) => (
-          <div>
-            <StixDomainObjectBookmarks
-              data={props}
-              onLabelClick={onLabelClick.bind(this)}
-              setBookmarkList={this.handleSetBookmarkList.bind(this)}
-            />
+    // <QueryRenderer
+    //   query={stixDomainObjectBookmarksQuery}
+    //   variables={{ types: ['Software'] }}
+    //   render={({ props }) => (
+    //     <div>
+    //       <StixDomainObjectBookmarks
+    //         data={props}
+    //         onLabelClick={onLabelClick.bind(this)}
+    //         setBookmarkList={this.handleSetBookmarkList.bind(this)}
+    //       />
             <ListCardsContent
               initialLoading={initialLoading}
               loadMore={relay.loadMore.bind(this)}
               hasMore={relay.hasMore.bind(this)}
               isLoading={relay.isLoading.bind(this)}
-              dataList={pathOr([], ['software', 'edges'], this.props.data)}
+              dataList={pathOr([], ['softwareAssetList', 'edges'], this.props.data)}
               globalCount={pathOr(
                 nbOfCardsToLoad,
-                ['software', 'pageInfo', 'globalCount'],
+                ['softwareAssetList', 'pageInfo', 'globalCount'],
                 this.props.data,
               )}
               CardComponent={<SoftwareCard />}
               DummyCardComponent={<SoftwareCardDummy />}
+              selectAll={selectAll}
               nbOfCardsToLoad={nbOfCardsToLoad}
+              selectedElements={selectedElements}
               onLabelClick={onLabelClick.bind(this)}
+              onToggleEntity={onToggleEntity.bind(this)}
               bookmarkList={bookmarks}
             />
-          </div>
-        )}
-      />
+    //     </div>
+    //   )}
+    // />
     );
   }
 }
@@ -96,6 +106,29 @@ export const softwareCardsQuery = graphql`
         orderMode: $orderMode
         filters: $filters
       )
+  }
+`;
+
+export const softwareCardsdarkLightRootQuery = graphql`
+  query SoftwareCardsDarkLightQuery {
+    softwareAssetList {
+      edges {
+        node {
+          id
+          asset_type
+          name
+          asset_id
+          created
+          modified
+          vendor_name
+          version
+          patch_level
+          cpe_identifier
+          software_identifier
+          labels
+        }
+      }
+    }
   }
 `;
 

@@ -6,8 +6,9 @@ import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@material-ui/core/Tooltip';
 import Fab from '@material-ui/core/Fab';
-import { Add, Close } from '@material-ui/icons';
+import { Add, Close, AddCircleOutline } from '@material-ui/icons';
 import {
   compose, pluck, evolve, path,
 } from 'ramda';
@@ -136,14 +137,26 @@ class NetworkCreation extends Component {
     const { t, classes } = this.props;
     return (
       <div>
-        <Fab
+        {/* <Fab
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
         >
           <Add />
-        </Fab>
+        </Fab> */}
+        <Tooltip title={t('Create New')}>
+          <Button
+            variant="contained"
+            size="small"
+            onClick={this.handleOpen.bind(this)}
+            startIcon={<AddCircleOutline />}
+            color='primary'
+            style={{ marginLeft: 15 }}
+          >
+            {t('New')}
+          </Button>
+        </Tooltip>
         <Drawer
           open={this.state.open}
           anchor="right"

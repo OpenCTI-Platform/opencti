@@ -37,9 +37,9 @@ const styles = (theme) => ({
   },
   cardDummy: {
     width: '100%',
-    height: '100%',
+    height: '319px',
     color: theme.palette.grey[700],
-    borderRadius: 6,
+    borderRadius: 9,
   },
   avatar: {
     backgroundColor: theme.palette.primary.main,
@@ -151,19 +151,25 @@ class DeviceCardComponent extends Component {
             <Grid item={true} className={classes.header}>
               <div>
                 <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                    >
-                      {t('Type')}
-                    </Typography>
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Type')}
+                </Typography>
                 <ComputerIcon size='small' />
               </div>
               <div style={{ marginRight: 'auto', marginLeft: '12px' }}>
-                <Typography variant="h3" gutterBottom ={true}>
-                    {t('Name')}
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Name')}
                 </Typography>
                 <Typography>
-                    {t('KK-HWELL-011')}
+                  {/* {t('KK-HWELL-011')} */}
+                  {t(node.name)}
                 </Typography>
               </div>
               <div>
@@ -181,57 +187,83 @@ class DeviceCardComponent extends Component {
             </Grid>
             <Grid xs={12} container={true} >
               <Grid item={true} xs={6} className={classes.body}>
-                <Typography variant="h3" gutterBottom ={true}>
+                <Typography
+                 variant="h3"
+                 color="textSecondary"
+                 gutterBottom ={true}>
                   {t('Asset ID')}
                 </Typography>
                 <Typography>
-                    {t('KK-HWELL-011')}
+                  {/* {t('KK-HWELL-011')} */}
+                  {t(node.asset_id)}
                 </Typography>
                 <div className="clearfix" />
-                <Typography variant="h3" style={{ marginTop: '13px' }} gutterBottom ={true}>
+                <Typography
+                 variant="h3"
+                 color="textSecondary"
+                 style={{ marginTop: '13px' }}
+                 gutterBottom={true}
+                >
                   {t('FQDN')}
                 </Typography>
                 <Typography>
-                    {t('Lorem Ipsum')}
+                  {/* {t('Lorem Ipsum')} */}
+                  {t(node.fqdn)}
                 </Typography>
               </Grid>
               <Grid xs={6} item={true} className={classes.body}>
-                      <Typography variant="h3" gutterBottom ={true}>
-                        {t('IP Address')}
-                      </Typography>
-                      <Typography>
-                          {t('00:50:56:A3:59:4D')}
-                      </Typography>
-                  <div className="clearfix" />
-                        <Typography variant="h3" style={{ marginTop: '13px' }} gutterBottom ={true}>
-                          {t('Network ID')}
-                        </Typography>
-                        <Typography>
-                            {t('Lorem Ipsum')}
-                        </Typography>
+                <Typography
+                 variant="h3"
+                 color="textSecondary"
+                 gutterBottom ={true}>
+                  {t('IP Address')}
+                </Typography>
+                <Typography>
+                  {t('00:50:56:A3:59:4D')}
+                </Typography>
+                <div className="clearfix" />
+                <Typography
+                 variant="h3"
+                 color="textSecondary"
+                 style={{ marginTop: '13px' }}
+                 gutterBottom={true}
+                >
+                  {t('Network ID')}
+                </Typography>
+                <Typography>
+                    {/* {t('Lorem Ipsum')} */}
+                    {t(node.network_id)}
+                </Typography>
               </Grid>
               <Grid>
+                <div>
+                  <Typography
+                   variant="h3"
+                   color="textSecondary"
+                   gutterBottom ={true}>
+                    {t('Operating System')}
+                  </Typography>
                   <div>
-                        <Typography variant="h3" gutterBottom ={true}>
-                          {t('Operating System')}
-                        </Typography>
-                        <div >
  {/* <Avatar style={{ float: 'left' }} className={classes.avatar}>{node.name.charAt(0)}</Avatar> */}
-                          <Typography>
-                              {t('Microsoft Windows Server 2016')}
-                          </Typography>
-                        </div>
+                    <Typography>
+                      {/* {t('Microsoft Windows Server 2016')} */}
+                      {t(node.installed_operating_system.name)}
+                    </Typography>
                   </div>
+                </div>
               </Grid>
             </Grid>
             <div className={classes.objectLabel}>
-              <Typography variant="h3" gutterBottom ={true}>
+              <Typography
+               variant="h3"
+               color="textSecondary"
+               gutterBottom ={true}>
                 {t('Label')}
               </Typography>
-              <StixCoreObjectLabels
+              {/* <StixCoreObjectLabels
                 labels={node.objectLabel}
                 onClick={onLabelClick.bind(this)}
-              />
+              /> */}
             </div>
           </CardContent>
         </CardActionArea>

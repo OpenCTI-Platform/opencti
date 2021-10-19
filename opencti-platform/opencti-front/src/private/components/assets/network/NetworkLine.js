@@ -6,6 +6,8 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
+import Checkbox from '@material-ui/core/Checkbox';
+import RouterIcon from '@material-ui/icons/Router';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
@@ -47,7 +49,14 @@ const styles = (theme) => ({
 class NetworkLineComponent extends Component {
   render() {
     const {
-      fd, classes, node, dataColumns, onLabelClick,
+      fd,
+      node,
+      classes,
+      selectAll,
+      dataColumns,
+      onLabelClick,
+      onToggleEntity,
+      selectedElements,
     } = this.props;
     return (
       <ListItem
@@ -57,7 +66,68 @@ class NetworkLineComponent extends Component {
         component={Link}
         to={`/dashboard/assets/network/${node.id}`}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 50 }}
+          onClick={onToggleEntity.bind(this, node)}
+        >
+          <Checkbox
+            edge="start"
+            checked={selectAll || node.id in (selectedElements || {})}
+            disableRipple={true}
+          />
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {/* KK-HWELL-011 */}
+                {node.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.type.width }}
+              >
+                <RouterIcon />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.asset_id.width }}
+              >
+                {/* Lorem Ipsum Lorem Ipsum */}
+                {node.asset_id}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.network_id.width }}
+              >
+                {node.network_id}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.network_range.width }}
+              >
+                {/* {fd(node.modified)} */}
+                Lorem Ipsum Lorem Ipsum
+                {/* {node.network_range} */}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectLabel.width }}
+              >
+                {/* <StixCoreObjectLabels
+                  variant="inList"
+                  labels={node.objectLabel}
+                  onClick={onLabelClick.bind(this)}
+                /> */}
+              </div>
+            </div>
+          }
+        />
+        {/* <ListItemIcon classes={{ root: classes.itemIcon }}>
           <DiamondOutline />
         </ListItemIcon>
         <ListItemText
@@ -96,7 +166,7 @@ class NetworkLineComponent extends Component {
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <KeyboardArrowRight />
-        </ListItemIcon>
+        </ListItemIcon> */}
       </ListItem>
     );
   }
@@ -171,34 +241,56 @@ class NetworkLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.type.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.asset_id.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.network_id.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.network_range.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
                 <Skeleton
                   animation="wave"
                   variant="rect"
                   width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width={140}
                   height="100%"
                 />
               </div>

@@ -10,6 +10,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
 import DeviceIcon from '@material-ui/icons/Devices';
+import WindowsIcon from '@material-ui/icons/LaptopWindows';
 import Skeleton from '@material-ui/lab/Skeleton';
 import { KeyboardArrowRight, PublicOutlined } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
@@ -52,11 +53,12 @@ class DeviceLineComponent extends Component {
       classes,
       node,
       selectAll,
-      selectedElements,
       dataColumns,
       onLabelClick,
       onToggleEntity,
+      selectedElements,
     } = this.props;
+    console.log('DarkLightnodeLineDevices', node);
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -86,6 +88,7 @@ class DeviceLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
+                {/* KK-HWELL-011 */}
                 {node.name}
               </div>
               <div
@@ -96,9 +99,10 @@ class DeviceLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.id.width }}
+                style={{ width: dataColumns.assetId.width }}
               >
-                Lorem Ipsum Lorem Ipsum
+                {/* Lorem Ipsum Lorem Ipsum */}
+                {node.asset_id}
               </div>
               <div
                 className={classes.bodyItem}
@@ -108,25 +112,35 @@ class DeviceLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
+                style={{ width: dataColumns.fqdn.width }}
               >
-                {fd(node.created)}
+                {/* {fd(node.created)} */}
+                {/* Lorem Ipsum Lorem Ipsum */}
+                {node.fqdn}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
+                style={{ width: dataColumns.os.width }}
               >
-                {fd(node.modified)}
+                <WindowsIcon />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.networkId.width }}
+              >
+                {/* {fd(node.modified)} */}
+                {/* Lorem Ipsum Lorem Ipsum */}
+                {node.network_id}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
-                <StixCoreObjectLabels
+                {/* <StixCoreObjectLabels
                   variant="inList"
                   labels={node.objectLabel}
                   onClick={onLabelClick.bind(this)}
-                />
+                /> */}
               </div>
             </div>
           }
@@ -208,34 +222,78 @@ class DeviceLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.type.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.assetId.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.ipAddress.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.fqdn.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.os.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.networkId.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
                 <Skeleton
                   animation="wave"
                   variant="rect"
                   width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width={140}
                   height="100%"
                 />
               </div>

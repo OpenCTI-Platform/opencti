@@ -4,6 +4,8 @@ import {
   Route, Redirect, withRouter, Switch,
 } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
+import { QueryRenderer as QR } from 'react-relay';
+import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import {
   QueryRenderer,
   requestSubscription,
@@ -56,6 +58,20 @@ const softwareQuery = graphql`
   }
 `;
 
+const softwareDarkLightQuery = graphql`
+  query RootSoftwareDarkLightQuery($id: ID!) {
+    softwareAsset(id: $id) {
+      id
+      standard_id
+      name
+      asset_id
+      description
+      vendor_name
+      version
+    }
+  }
+`;
+
 class RootSoftware extends Component {
   constructor(props) {
     super(props);
@@ -102,7 +118,32 @@ class RootSoftware extends Component {
             ]}
           />
         </Route>
-        <QueryRenderer
+        <QR
+          environment={QueryRendererDarkLight}
+          query={softwareDarkLightQuery}
+          variables={{ id: softwareId }}
+          render={({ error, props }) => {
+            console.log(`softwareDarkLightQuery ${JSON.stringify(props)} OR Error: ${error}`);
+            if (props) {
+              if (props.softwareAsset) {
+                return (
+                  <Switch>
+                    <Route
+                      exact
+                      path="/dashboard/assets/software/:softwareId"
+                      render={(routeProps) => (
+                        <Software {...routeProps} software={props.softwareAsset} />
+                      )}
+                    />
+                  </Switch>
+                );
+              }
+              return <ErrorNotFound />;
+            }
+            return <Loader />;
+          }}
+        />
+        {/* <QueryRenderer
           query={softwareQuery}
           variables={{ id: softwareId }}
           render={({ props }) => {
@@ -166,7 +207,7 @@ class RootSoftware extends Component {
                           <StixDomainObjectIndicators
                             {...routeProps}
                             stixDomainObjectId={softwareId}
-                            stixDomainObjectLink={`/dashboard/assets/software/${softwareId}/indicators`}
+                        stixDomainObjectLink={`/dashboard/assets/software/${softwareId}/indicators`}
                           />
                         </React.Fragment>
                       )}
@@ -223,7 +264,7 @@ class RootSoftware extends Component {
             }
             return <Loader />;
           }}
-        />
+        /> */}
       </div>
     );
   }

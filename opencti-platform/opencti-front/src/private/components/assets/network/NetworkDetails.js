@@ -84,7 +84,7 @@ class NetworkDetailsComponent extends Component {
               )}
             </Grid>
             <Grid item={true} xs={6}>
-              <NetworkLocations network={network} />
+              {/* <NetworkLocations network={network} /> */}
               <Typography
                 variant="h3"
                 gutterBottom={true}

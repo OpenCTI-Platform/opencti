@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos } from '@material-ui/icons';
-import { DiamondOutline } from 'mdi-material-ui';
+import { ArrowForwardIosOutlined, PublicOutlined } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -37,45 +36,48 @@ const styles = (theme) => ({
   },
 });
 
-class TopMenuNetwork extends Component {
+class TopMenuOverviews extends Component {
   render() {
     const {
       t,
       location,
       match: {
-        params: { networkId },
+        params: { deviceId },
       },
       classes,
     } = this.props;
     return (
       <div>
-        {/* {!networkId && (
+        {!deviceId && (
           <Button
             component={Link}
-            to="/dashboard/assets/network"
+            to="/dashboard/risks/overviews"
             variant="contained"
             size="small"
             color="inherit"
             classes={{ root: classes.buttonHome }}
           >
-            <DiamondOutline className={classes.icon} fontSize="small" />
-            {t('Network')}
+            <PublicOutlined className={classes.icon} fontSize="small" />
+            {t('Overview')}
           </Button>
-        )} */}
-        {/* <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        )}
+        {/* <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
-          to={`/dashboard/assets/network/${networkId}`}
+          to={`/dashboard/risks/overviews/${deviceId}`}
           variant={
             location.pathname
-            === `/dashboard/assets/network/${networkId}`
+            === `/dashboard/risks/overviews/${deviceId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/assets/network/${networkId}`
+            === `/dashboard/risks/overviews/${deviceId}`
               ? 'secondary'
               : 'inherit'
           }
@@ -85,10 +87,10 @@ class TopMenuNetwork extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/assets/network/${networkId}/knowledge`}
+          to={`/dashboard/risks/overviews/${deviceId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/assets/network/${networkId}/knowledge`,
+              `/dashboard/risks/overviews/${deviceId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -96,7 +98,7 @@ class TopMenuNetwork extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/assets/network/${networkId}/knowledge`,
+              `/dashboard/risks/overviews/${deviceId}/knowledge`,
             )
               ? 'secondary'
               : 'inherit'
@@ -107,17 +109,17 @@ class TopMenuNetwork extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/assets/network/${networkId}/analysis`}
+          to={`/dashboard/risks/overviews/${deviceId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/assets/network/${networkId}/analysis`
+            === `/dashboard/risks/overviews/${deviceId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/assets/network/${networkId}/analysis`
+            === `/dashboard/risks/overviews/${deviceId}/analysis`
               ? 'secondary'
               : 'inherit'
           }
@@ -127,10 +129,10 @@ class TopMenuNetwork extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/assets/network/${networkId}/indicators`}
+          to={`/dashboard/risks/overviews/${deviceId}/indicators`}
           variant={
             location.pathname.includes(
-              `/dashboard/assets/network/${networkId}/indicators`,
+              `/dashboard/risks/overviews/${deviceId}/indicators`,
             )
               ? 'contained'
               : 'text'
@@ -138,7 +140,7 @@ class TopMenuNetwork extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/assets/network/${networkId}/indicators`,
+              `/dashboard/risks/overviews/${deviceId}/indicators`,
             )
               ? 'secondary'
               : 'inherit'
@@ -150,17 +152,17 @@ class TopMenuNetwork extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/assets/network/${networkId}/files`}
+            to={`/dashboard/risks/overviews/${deviceId}/files`}
             variant={
               location.pathname
-              === `/dashboard/assets/network/${networkId}/files`
+              === `/dashboard/risks/overviews/${deviceId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/assets/network/${networkId}/files`
+              === `/dashboard/risks/overviews/${deviceId}/files`
                 ? 'secondary'
                 : 'inherit'
             }
@@ -171,17 +173,17 @@ class TopMenuNetwork extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/assets/network/${networkId}/history`}
+          to={`/dashboard/risks/overviews/${deviceId}/history`}
           variant={
             location.pathname
-            === `/dashboard/assets/network/${networkId}/history`
+            === `/dashboard/risks/overviews/${deviceId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/assets/network/${networkId}/history`
+            === `/dashboard/risks/overviews/${deviceId}/history`
               ? 'secondary'
               : 'inherit'
           }
@@ -194,7 +196,7 @@ class TopMenuNetwork extends Component {
   }
 }
 
-TopMenuNetwork.propTypes = {
+TopMenuOverviews.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   match: PropTypes.object,
@@ -206,4 +208,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(TopMenuNetwork);
+)(TopMenuOverviews);

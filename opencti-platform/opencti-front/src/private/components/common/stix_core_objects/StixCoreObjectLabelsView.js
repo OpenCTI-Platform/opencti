@@ -39,11 +39,6 @@ import Security, {
 } from '../../../../utils/Security';
 import { hexToRGB } from '../../../../utils/Colors';
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
-
 const styles = () => ({
   labels: {
     margin: 0,
@@ -245,56 +240,59 @@ const StixCoreObjectLabelsView = (props) => {
         }) => (
           <Dialog
             open={openAdd}
-            TransitionComponent={Transition}
             onClose={handleCloseAdd}
             fullWidth={true}
           >
-            <DialogTitle>{t('Add new labels')}</DialogTitle>
-            <DialogContent style={{ overflowY: 'hidden' }}>
-              <Form>
-                <Field
-                  component={AutocompleteField}
-                  name="new_labels"
-                  multiple={true}
-                  textfieldprops={{
-                    label: t('Labels'),
-                    onFocus: searchLabels,
-                  }}
-                  noOptionsText={t('No available options')}
-                  options={stateLabels}
-                  onInputChange={searchLabels}
-                  openCreate={isLabelManager ? handleOpenCreate : null}
-                  renderOption={(option) => (
-                    <React.Fragment>
-                      <div
-                        className={classes.icon}
-                        style={{ color: option.color }}
-                      >
-                        <Label />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
-                    </React.Fragment>
-                  )}
-                  classes={{ clearIndicator: classes.autoCompleteIndicator }}
-                />
-              </Form>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={handleReset}
-                disabled={isSubmitting}
-                color="primary"
-              >
-                {t('Close')}
-              </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-                color="primary"
-              >
-                {t('Add')}
-              </Button>
-            </DialogActions>
+            <DialogTitle>{t('Add Labels')}</DialogTitle>
+            <div style={{ display: 'flex', padding: '20px 20px 20px 0' }}>
+                <DialogContent style={{ overflowY: 'hidden', width: '70%', paddingTop: '0' }}>
+                  <Form>
+                    <Field
+                      component={AutocompleteField}
+                      name="new_labels"
+                      multiple={true}
+                      textfieldprops={{
+                        label: t('Labels'),
+                        onFocus: searchLabels,
+                      }}
+                      noOptionsText={t('No available options')}
+                      options={stateLabels}
+                      onInputChange={searchLabels}
+                      openCreate={isLabelManager ? handleOpenCreate : null}
+                      renderOption={(option) => (
+                        <React.Fragment>
+                          <div
+                            className={classes.icon}
+                            style={{ color: option.color }}
+                          >
+                            <Label />
+                          </div>
+                          <div className={classes.text}>{option.label}</div>
+                        </React.Fragment>
+                      )}
+                      classes={{ clearIndicator: classes.autoCompleteIndicator }}
+                    />
+                  </Form>
+                </DialogContent>
+                <DialogActions style={{ width: '30%', padding: '0' }}>
+                  <Button
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    color="primary"
+                    variant= 'outlined'
+                  >
+                    {t('Close')}
+                  </Button>
+                  <Button
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    color="primary"
+                    variant="contained"
+                  >
+                    {t('Add')}
+                  </Button>
+                </DialogActions>
+            </div>
             <LabelCreation
               contextual={true}
               open={openCreate}

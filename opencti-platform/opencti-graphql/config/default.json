@@ -62,7 +62,7 @@
     "interval": 300000
   },
   "subscription_scheduler": {
-    "enabled": true,
+    "enabled": false,
     "lock_key": "subscription_manager_lock",
     "interval": 10000
   },
@@ -117,7 +117,7 @@
   },
   "providers": {
     "local": {
-      "strategy": "LocalStrategy"
+      "strategy": "LocalStorage"
     }
   }
 }

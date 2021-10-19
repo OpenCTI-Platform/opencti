@@ -43,6 +43,20 @@ export const networkEditionQuery = graphql`
   }
 `;
 
+export const networkEditionDarkLightQuery = graphql`
+  query NetworkEditionContainerDarkLightQuery($id: ID!) {
+    networkAsset(id: $id) {
+      id
+      standard_id
+      name
+      asset_id
+      description
+      vendor_name
+      version
+    }
+  }
+`;
+
 class NetworkEdition extends Component {
   constructor(props) {
     super(props);

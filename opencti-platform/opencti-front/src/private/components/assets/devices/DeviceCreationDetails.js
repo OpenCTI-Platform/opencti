@@ -26,6 +26,18 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
+  drawerPaper: {
+    minHeight: '100vh',
+    width: '50%',
+    position: 'fixed',
+    overflow: 'hidden',
+    backgroundColor: theme.palette.navAlt.background,
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    padding: '30px 30px 30px 30px',
+  },
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -33,25 +45,35 @@ const styles = (theme) => ({
     padding: '24px 24px 32px 24px',
     borderRadius: 6,
   },
+  createButton: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+  },
+  importButton: {
+    position: 'absolute',
+    top: 30,
+    right: 30,
+  },
 });
 
 const deviceMutationFieldPatch = graphql`
-  mutation DeviceEditionDetailsFieldPatchMutation(
+  mutation DeviceCreationDetailsFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
     $commitMessage: String
   ) {
     threatActorEdit(id: $id) {
       fieldPatch(input: $input, commitMessage: $commitMessage) {
-        ...DeviceEditionDetails_device
+        ...DeviceCreationDetails_device
         ...Device_device
       }
     }
   }
 `;
 
-const deviceEditionDetailsFocus = graphql`
-  mutation DeviceEditionDetailsFocusMutation(
+const deviceCreationDetailsFocus = graphql`
+  mutation DeviceCreationDetailsFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
@@ -78,10 +100,10 @@ const deviceValidation = (t) => Yup.object().shape({
   goals: Yup.string().nullable(),
 });
 
-class DeviceEditionDetailsComponent extends Component {
+class DeviceCreationDetailsComponent extends Component {
   handleChangeFocus(name) {
     commitMutation({
-      mutation: deviceEditionDetailsFocus,
+      mutation: deviceCreationDetailsFocus,
       variables: {
         id: this.props.device.id,
         input: {
@@ -123,7 +145,7 @@ class DeviceEditionDetailsComponent extends Component {
       },
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        // this.props.handleClose();
       },
     });
   }
@@ -149,47 +171,77 @@ class DeviceEditionDetailsComponent extends Component {
     }
   }
 
+  onReset() {
+    this.handleClose();
+  }
+
   render() {
     const {
       t, classes, device, context, enableReferences,
     } = this.props;
-    const initialValues = R.pipe(
-      R.assoc('first_seen', dateFormat(device.first_seen)),
-      R.assoc('last_seen', dateFormat(device.last_seen)),
-      R.assoc(
-        'secondary_motivations',
-        device.secondary_motivations
-          ? device.secondary_motivations
-          : [],
-      ),
-      R.assoc(
-        'personal_motivations',
-        device.personal_motivations ? device.personal_motivations : [],
-      ),
-      R.assoc(
-        'goals',
-        R.join('\n', device.goals ? device.goals : []),
-      ),
-      R.pick([
-        'first_seen',
-        'last_seen',
-        'sophistication',
-        'resource_level',
-        'primary_motivation',
-        'secondary_motivations',
-        'personal_motivations',
-        'goals',
-      ]),
-    )(device);
+    // const initialValues = R.pipe(
+    //   R.assoc('first_seen', dateFormat(device.first_seen)),
+    //   R.assoc('last_seen', dateFormat(device.last_seen)),
+    //   R.assoc(
+    //     'secondary_motivations',
+    //     device.secondary_motivations
+    //       ? device.secondary_motivations
+    //       : [],
+    //   ),
+    //   R.assoc(
+    //     'personal_motivations',
+    //     device.personal_motivations ? device.personal_motivations : [],
+    //   ),
+    //   R.assoc(
+    //     'goals',
+    //     R.join('\n', device.goals ? device.goals : []),
+    //   ),
+    //   R.pick([
+    //     'first_seen',
+    //     'last_seen',
+    //     'sophistication',
+    //     'resource_level',
+    //     'primary_motivation',
+    //     'secondary_motivations',
+    //     'personal_motivations',
+    //     'goals',
+    //   ]),
+    // )(device);
     return (
       <div>
         <Formik
-            enableReinitialize={true}
-            initialValues={initialValues}
-            validationSchema={deviceValidation(t)}
-            onSubmit={this.onSubmit.bind(this)}
+          initialValues={{
+            installed_operating_system: '',
+            motherboard_id: '',
+            ports: [],
+            asset_type: [],
+            installation_id: '',
+            description: '',
+            connected_to_network: {},
+            bios_id: '',
+            is_virtual: false,
+            is_publicly_accessible: false,
+            fqdn: '',
+            installed_hardware: {},
+            model: '',
+            mac_address: '',
+            baseline_configuration_name: '',
+            uri: '',
+            is_scanned: false,
+            hostname: '',
+            default_gateway: '',
+          }}
+          validationSchema={deviceValidation(t)}
+          onSubmit={this.onSubmit.bind(this)}
+          onReset={this.onReset.bind(this)}
         >
-          {({ submitForm, isSubmitting, validateForm }) => (
+        {({
+          submitForm,
+          handleReset,
+          isSubmitting,
+          setFieldValue,
+          values,
+        }) => (
             <>
             <div style={{ height: '100%' }}>
               <Typography variant="h4" gutterBottom={true}>
@@ -210,9 +262,9 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
                           <Tooltip title={t('Installed Operating System')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
-                          <AddIcon fontSize="small" color="primary" />
+                          <AddIcon fontSize="small" color="disabled" />
                         </div>
                         <Field
                           component={TextField}
@@ -220,12 +272,6 @@ class DeviceEditionDetailsComponent extends Component {
                           name="installed_operating_system"
                           size= 'small'
                           fullWidth={true}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="installed_operating_system"
-                          //   />
-                          // }
                         />
                       </div>
                       <div>
@@ -239,9 +285,9 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '15px 0 0 5px' }}>
                           <Tooltip title={t('Installed Software')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
-                          <AddIcon fontSize="small" color="primary" style={{ marginTop: 2 }} />
+                          <AddIcon fontSize="small" color="disabled" style={{ marginTop: 2 }} />
                         </div>
                         <Field
                           component={SelectField}
@@ -251,12 +297,6 @@ class DeviceEditionDetailsComponent extends Component {
                           size= 'small'
                           fullWidth={true}
                           containerstyle={{ width: '100%' }}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="installed_software"
-                          //   />
-                          // }
                         />
                       </div>
                       <div>
@@ -271,7 +311,7 @@ class DeviceEditionDetailsComponent extends Component {
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                           <Tooltip
                             title={t('Motherboard ID')}>
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <Field
@@ -282,7 +322,6 @@ class DeviceEditionDetailsComponent extends Component {
                           fullWidth={true}
                           // helperText={
                           //   <SubscriptionFocus
-                          //   context={context}
                           //   fieldName="motherboard_id"
                           //   />
                           // }
@@ -299,9 +338,9 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '12px 0 0 5px' }}>
                           <Tooltip title={t('Ports')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
-                          <AddIcon fontSize="small" color="primary" style={{ marginTop: 2 }} />
+                          <AddIcon fontSize="small" color="disabled" style={{ marginTop: 2 }} />
                         </div>
                         <div className="clearfix" />
                         <Field
@@ -312,12 +351,6 @@ class DeviceEditionDetailsComponent extends Component {
                           size= 'small'
                           fullWidth={true}
                           containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="ports"
-                          //   />
-                          // }
                         />
                         <Field
                           component={SelectField}
@@ -327,42 +360,6 @@ class DeviceEditionDetailsComponent extends Component {
                           size= 'small'
                           fullWidth={true}
                           containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="ports"
-                          //   />
-                          // }
-                        />
-                        <Field
-                          component={SelectField}
-                          style={{ height: '38.09px' }}
-                          variant= 'outlined'
-                          name="ports"
-                          size= 'small'
-                          fullWidth={true}
-                          containerstyle={{ width: '50%' }}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="ports"
-                          //   />
-                          // }
-                        />
-                        <Field
-                          component={SelectField}
-                          style={{ height: '38.09px' }}
-                          variant= 'outlined'
-                          name="ports"
-                          size= 'small'
-                          fullWidth={true}
-                          containerstyle={{ width: '50%' }}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="ports"
-                          //   />
-                          // }
                         />
                       </div>
                       <div>
@@ -376,7 +373,7 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                           <Tooltip title={t('Installation ID')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <Field
@@ -385,12 +382,6 @@ class DeviceEditionDetailsComponent extends Component {
                           name="installation_id"
                           size= 'small'
                           fullWidth={true}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="installation_id"
-                          //   />
-                          // }
                         />
                       </div>
                       <div>
@@ -404,18 +395,17 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                           <Tooltip title={t('Connect To Network')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <Field
                           component={TextField}
-                          name="connect_to_network"
+                          name="connected_to_network"
                           size= 'small'
                           variant= 'outlined'
                           fullWidth={true}
                           // helperText={
                           //   <SubscriptionFocus
-                          //   context={context}
                           //   fieldName="connect_to_network"
                           //   />
                           // }
@@ -432,18 +422,17 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                           <Tooltip title={t('NetBIOS Name')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <Field
                           component={TextField}
                           variant= 'outlined'
-                          name="netbios_name"
+                          name="bios_id"
                           size= 'small'
                           fullWidth={true}
                           // helperText={
                           //   <SubscriptionFocus
-                          //   context={context}
                           //   fieldName="netbios_name"
                           //   />
                           // }
@@ -460,7 +449,7 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                           <Tooltip title={t('Virtual')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
@@ -481,7 +470,7 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                           <Tooltip title={t('Publicity Accessible')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
@@ -498,11 +487,11 @@ class DeviceEditionDetailsComponent extends Component {
                           gutterBottom={true}
                           style={{ float: 'left', marginTop: 20 }}
                         >
-                          {t('Outlined')}
+                          {t('FQDN')}
                         </Typography>
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                           <Tooltip title={t('Outlined')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <Field
@@ -511,12 +500,6 @@ class DeviceEditionDetailsComponent extends Component {
                           name="fqdn"
                           size= 'small'
                           fullWidth={true}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="fqdn"
-                          //   />
-                          // }
                         />
                       </div>
                     </Grid>
@@ -532,9 +515,9 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
                           <Tooltip title={t('Installed Hardware')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
-                          <AddIcon fontSize="small" color="primary" />
+                          <AddIcon fontSize="small" color="disabled" />
                         </div>
                         <div className="clearfix" />
                         <Field
@@ -545,12 +528,6 @@ class DeviceEditionDetailsComponent extends Component {
                           size= 'small'
                           fullWidth={true}
                           containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="installed_hardware"
-                          //   />
-                          // }
                         />
                         <Field
                           component={SelectField}
@@ -560,12 +537,6 @@ class DeviceEditionDetailsComponent extends Component {
                           size= 'small'
                           fullWidth={true}
                           containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="installed_hardware"
-                          //   />
-                          // }
                         />
                         <Field
                           component={SelectField}
@@ -575,12 +546,6 @@ class DeviceEditionDetailsComponent extends Component {
                           size= 'small'
                           fullWidth={true}
                           containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="installed_hardware"
-                          //   />
-                          // }
                         />
                       </div>
                       <div>
@@ -594,7 +559,7 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                           <Tooltip title={t('Description')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <Field
@@ -603,12 +568,6 @@ class DeviceEditionDetailsComponent extends Component {
                           name="description"
                           size= 'small'
                           fullWidth={true}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="description"
-                          //   />
-                          // }
                         />
                       </div>
                       <div>
@@ -622,7 +581,7 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                           <Tooltip title={t('Model')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <Field
@@ -631,12 +590,6 @@ class DeviceEditionDetailsComponent extends Component {
                           name="model"
                           size= 'small'
                           fullWidth={true}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="model"
-                          //   />
-                          // }
                         />
                       </div>
                       <div>
@@ -649,12 +602,8 @@ class DeviceEditionDetailsComponent extends Component {
                           {t('MAC Address')}
                         </Typography>
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                          <Tooltip
-                            title={t(
-                              'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                            )}
-                          >
-                            <Information fontSize="inherit"color="disabled" />
+                          <Tooltip title={t('MAC Address')}>
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <Field
@@ -663,12 +612,6 @@ class DeviceEditionDetailsComponent extends Component {
                           name="mac_address"
                           size= 'small'
                           fullWidth={true}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="mac_addres"
-                          //   />
-                          // }
                         />
                       </div>
                       <div>
@@ -682,7 +625,7 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                           <Tooltip title={t('Baseline Configuration Name')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <Field
@@ -691,12 +634,6 @@ class DeviceEditionDetailsComponent extends Component {
                           name="baseline_configuration_name"
                           size= 'small'
                           fullWidth={true}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="baseline_configuration_name"
-                          //   />
-                          // }
                         />
                       </div>
                       <div>
@@ -710,7 +647,7 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                           <Tooltip title={t('URI')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <Field
@@ -719,12 +656,6 @@ class DeviceEditionDetailsComponent extends Component {
                           name="uri"
                           size= 'small'
                           fullWidth={true}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="uri"
-                          //   />
-                          // }
                         />
                       </div>
                       <div>
@@ -738,7 +669,7 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                           <Tooltip title={t('BIOS ID')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <Field
@@ -747,12 +678,6 @@ class DeviceEditionDetailsComponent extends Component {
                           name="bios_id"
                           size= 'small'
                           fullWidth={true}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="bios_id"
-                          //   />
-                          // }
                         />
                       </div>
                       <div>
@@ -766,7 +691,7 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                           <Tooltip title={t('Scanned')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
@@ -787,21 +712,15 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                           <Tooltip title={t('Host Name')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <Field
                           component={TextField}
                           variant= 'outlined'
-                          name="host_name"
+                          name="hostname"
                           size= 'small'
                           fullWidth={true}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="host_name"
-                          //   />
-                          // }
                         />
                       </div>
                       <div>
@@ -815,7 +734,7 @@ class DeviceEditionDetailsComponent extends Component {
                         </Typography>
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                           <Tooltip title={t('Default Gateway')} >
-                            <Information fontSize="inherit"color="disabled" />
+                            <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <Field
@@ -824,12 +743,6 @@ class DeviceEditionDetailsComponent extends Component {
                           name="default_gateway"
                           size= 'small'
                           fullWidth={true}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="default_gateway"
-                          //   />
-                          // }
                         />
                       </div>
                     </Grid>
@@ -844,7 +757,6 @@ class DeviceEditionDetailsComponent extends Component {
                 <Grid style={{ marginBottom: '80px' }}>
                   <Typography
                     variant="h3"
-                    color="textSecondary"
                     gutterBottom={true}
                     style={{ float: 'left' }}
                   >
@@ -853,7 +765,7 @@ class DeviceEditionDetailsComponent extends Component {
                   <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                     <Tooltip title={t('Installed Operating System')} >
                       <Information fontSize="small" color="primary" />
- <Information fontSize="inherit"color="disabled" />                     </Tooltip>
+                    </Tooltip>
                     <AddIcon fontSize="small" color="primary" />
                   </div>
                   <Field
@@ -917,7 +829,7 @@ class DeviceEditionDetailsComponent extends Component {
             </div>
             </div> */}
            </>
-          )}
+        )}
         </Formik>
         {/* <Formik
           enableReinitialize={true}
@@ -1075,7 +987,7 @@ class DeviceEditionDetailsComponent extends Component {
   }
 }
 
-DeviceEditionDetailsComponent.propTypes = {
+DeviceCreationDetailsComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -1085,11 +997,11 @@ DeviceEditionDetailsComponent.propTypes = {
   handleClose: PropTypes.func,
 };
 
-const DeviceEditionDetails = createFragmentContainer(
-  DeviceEditionDetailsComponent,
+const DeviceCreationDetails = createFragmentContainer(
+  DeviceCreationDetailsComponent,
   {
     device: graphql`
-      fragment DeviceEditionDetails_device on ThreatActor {
+      fragment DeviceCreationDetails_device on ThreatActor {
         id
         first_seen
         last_seen
@@ -1107,4 +1019,4 @@ const DeviceEditionDetails = createFragmentContainer(
 export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(DeviceEditionDetails);
+)(DeviceCreationDetails);

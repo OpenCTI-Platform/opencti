@@ -4,6 +4,8 @@ import {
   Route, Redirect, withRouter, Switch,
 } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
+import { QueryRenderer as QR } from 'react-relay';
+import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import {
   QueryRenderer,
   requestSubscription,
@@ -56,6 +58,20 @@ const networkQuery = graphql`
   }
 `;
 
+const networkDarkLightQuery = graphql`
+  query RootNetworkDarkLightQuery($networkAssetId: ID!) {
+    networkAsset(id: $networkAssetId) {
+      id
+      standard_id
+      name
+      asset_id
+      description
+      vendor_name
+      version
+    }
+  }
+`;
+
 class RootNetwork extends Component {
   constructor(props) {
     super(props);
@@ -104,7 +120,35 @@ class RootNetwork extends Component {
             ]}
           />
         </Route>
-        <QueryRenderer
+        <QR
+          environment={QueryRendererDarkLight}
+          query={networkDarkLightQuery}
+          variables={{ networkAssetId: networkId }}
+          render={({ error, props }) => {
+            console.log(`networkDarkLightQuery ${JSON.stringify(props)} OR Error: ${error}`);
+            if (props) {
+              if (props.networkAsset) {
+                return (
+                  <Switch>
+                    <Route
+                      exact
+                      path="/dashboard/assets/network/:networkId"
+                      render={(routeProps) => (
+                        <Network
+                          {...routeProps}
+                          network={props.networkAsset}
+                        />
+                      )}
+                    />
+                </Switch>
+                );
+              }
+              return <ErrorNotFound />;
+            }
+            return <Loader />;
+          }}
+        />
+        {/* <QueryRenderer
           query={networkQuery}
           variables={{ id: networkId }}
           render={({ props }) => {
@@ -171,7 +215,7 @@ class RootNetwork extends Component {
                           <StixDomainObjectIndicators
                             {...routeProps}
                             stixDomainObjectId={networkId}
-                            stixDomainObjectLink={`/dashboard/assets/network/${networkId}/indicators`}
+                        stixDomainObjectLink={`/dashboard/assets/network/${networkId}/indicators`}
                           />
                         </React.Fragment>
                       )}
@@ -228,7 +272,7 @@ class RootNetwork extends Component {
             }
             return <Loader />;
           }}
-        />
+        /> */}
       </div>
     );
   }

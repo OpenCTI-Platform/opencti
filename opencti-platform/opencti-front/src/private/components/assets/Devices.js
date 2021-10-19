@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
+import { QueryRenderer as QR } from 'react-relay';
 import { QueryRenderer } from '../../../relay/environment';
+import QueryRendererDarkLight from '../../../relay/environmentDarkLight';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
@@ -13,13 +15,16 @@ import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
 import DevicesCards, {
   devicesCardsQuery,
+  devicesCardsdarkLightRootQuery,
 } from './devices/DevicesCards';
 import DevicesLines, {
   devicesLinesQuery,
+  devicesLinesdarkLightRootQuery,
 } from './devices/DevicesLines';
 import DeviceCreation from './devices/DeviceCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
+import DeviceOperations from './devices/DeviceOperations';
 
 class Devices extends Component {
   constructor(props) {
@@ -27,7 +32,7 @@ class Devices extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-threat_actors',
+      'view-devices',
     );
     this.state = {
       sortBy: R.propOr('name', 'sortBy', params),
@@ -39,6 +44,7 @@ class Devices extends Component {
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
       selectAll: false,
+      openDeviceCreation: false,
     };
   }
 
@@ -46,7 +52,7 @@ class Devices extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-threat_actors',
+      'view-devices',
       this.state,
     );
   }
@@ -73,6 +79,15 @@ class Devices extends Component {
 
   handleClearSelectedElements() {
     this.setState({ selectAll: false, selectedElements: null });
+  }
+
+  handleDeleteElements() {
+    console.log('deleted successfully', this.state.selectedElements);
+  }
+
+  handleDeviceCreation() {
+    console.log('Device Created successfully');
+    this.setState({ openDeviceCreation: true });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -171,6 +186,10 @@ class Devices extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
+        selectedElements={selectedElements}
+        selectAll={selectAll}
+        CreateItemComponent={<DeviceCreation />}
+        OperationsComponent={<DeviceOperations />}
         openExports={openExports}
         exportEntityType="Device"
         keyword={searchTerm}
@@ -185,7 +204,7 @@ class Devices extends Component {
           'createdBy',
         ]}
       >
-        <QueryRenderer
+        {/* <QueryRenderer
           query={devicesCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
@@ -198,6 +217,23 @@ class Devices extends Component {
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
+        /> */}
+        <QR
+          environment={QueryRendererDarkLight}
+          query={devicesCardsdarkLightRootQuery}
+          render={({ error, props }) => {
+            console.log(`DarkLightDevicesCards Error ${error} OR Props ${JSON.stringify(props)}`);
+            return (
+              <DevicesCards
+                data={props}
+                extra={props}
+                paginationOptions={paginationOptions}
+                initialLoading={props === null}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            );
+          }}
         />
       </ListCards>
     );
@@ -206,11 +242,11 @@ class Devices extends Component {
   renderLines(paginationOptions) {
     const {
       sortBy,
-      orderAsc,
-      searchTerm,
       filters,
-      openExports,
+      orderAsc,
       selectAll,
+      searchTerm,
+      openExports,
       selectedElements,
       numberOfElements,
     } = this.state;
@@ -221,36 +257,41 @@ class Devices extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '15%',
+        width: '12%',
         isSortable: true,
       },
       type: {
         label: 'Type',
-        width: '5%',
+        width: '8%',
         isSortable: true,
       },
-      id: {
+      assetId: {
         label: 'Asset ID',
-        width: '15%',
+        width: '12%',
         isSortable: true,
       },
       ipAddress: {
         label: 'IP Address',
-        width: '15%',
+        width: '12%',
         isSortable: true,
       },
-      created: {
-        label: 'Creation date',
-        width: '15%',
+      fqdn: {
+        label: 'FQDN',
+        width: '12%',
         isSortable: true,
       },
-      modified: {
-        label: 'Modification date',
-        width: '15%',
+      os: {
+        label: 'OS',
+        width: '8%',
+        isSortable: true,
+      },
+      networkId: {
+        label: 'Network ID',
+        width: '12%',
         isSortable: true,
       },
       objectLabel: {
-        label: 'Labels',
+        label: 'Label',
         width: '20%',
         isSortable: false,
       },
@@ -266,8 +307,13 @@ class Devices extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
-        openExports={openExports}
+        handleDeleteElements={this.handleDeleteElements.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleDeviceCreation={this.handleDeviceCreation.bind(this)}
+        selectedElements={selectedElements}
+        CreateItemComponent={<DeviceCreation />}
+        OperationsComponent={<DeviceOperations />}
+        openExports={openExports}
         selectAll={selectAll}
         exportEntityType="Device"
         keyword={searchTerm}
@@ -282,7 +328,7 @@ class Devices extends Component {
           'createdBy',
         ]}
       >
-        <QueryRenderer
+        {/* <QueryRenderer
           query={devicesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
@@ -298,6 +344,26 @@ class Devices extends Component {
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
+        /> */}
+        <QR
+          environment={QueryRendererDarkLight}
+          query={devicesLinesdarkLightRootQuery}
+          render={({ error, props }) => {
+            console.log(`DarkLight Error ${error} OR Props ${JSON.stringify(props)}`);
+            return (
+              <DevicesLines
+                data={props}
+                selectAll={selectAll}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                paginationOptions={paginationOptions}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            );
+          }}
         />
       </ListLines>
     );
@@ -305,7 +371,12 @@ class Devices extends Component {
 
   render() {
     const {
-      view, sortBy, orderAsc, searchTerm, filters,
+      view,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      openDeviceCreation,
     } = this.state;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
@@ -316,11 +387,11 @@ class Devices extends Component {
     };
     return (
       <div>
-        {view === 'cards' ? this.renderCards(paginationOptions) : ''}
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        {view === 'cards' && !openDeviceCreation ? this.renderCards(paginationOptions) : ''}
+        {view === 'lines' && !openDeviceCreation ? this.renderLines(paginationOptions) : ''}
+        {openDeviceCreation && <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <DeviceCreation paginationOptions={paginationOptions} />
-        </Security>
+        </Security>}
       </div>
     );
   }

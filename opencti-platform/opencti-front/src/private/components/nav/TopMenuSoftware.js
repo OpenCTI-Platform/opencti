@@ -49,7 +49,7 @@ class TopMenuSoftware extends Component {
     } = this.props;
     return (
       <div>
-        {!softwareId && (
+        {/* {!softwareId && (
           <Button
             component={Link}
             to="/dashboard/assets/software"
@@ -61,7 +61,7 @@ class TopMenuSoftware extends Component {
             <ChessKnight className={classes.icon} fontSize="small" />
             {t('Software')}
           </Button>
-        )}
+        )} */}
         {/* <ArrowForwardIosOutlined
           color="inherit"
           classes={{ root: classes.arrow }}

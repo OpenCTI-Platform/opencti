@@ -21,7 +21,13 @@ class NetworkLines extends Component {
 
   render() {
     const {
-      initialLoading, dataColumns, relay, onLabelClick,
+      relay,
+      selectAll,
+      dataColumns,
+      onLabelClick,
+      initialLoading,
+      onToggleEntity,
+      selectedElements,
     } = this.props;
     return (
       <ListLinesContent
@@ -29,17 +35,20 @@ class NetworkLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['network', 'edges'], this.props.data)}
+        dataList={pathOr([], ['networkAssetList', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['network', 'pageInfo', 'globalCount'],
+          ['networkAssetList', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         LineComponent={<NetworkLine />}
         DummyLineComponent={<NetworkLineDummy />}
         dataColumns={dataColumns}
+        selectAll={selectAll}
         nbOfRowsToLoad={nbOfRowsToLoad}
+        selectedElements={selectedElements}
         onLabelClick={onLabelClick.bind(this)}
+        onToggleEntity={onToggleEntity.bind(this)}
       />
     );
   }
@@ -76,6 +85,34 @@ export const networkLinesQuery = graphql`
         orderMode: $orderMode
         filters: $filters
       )
+  }
+`;
+
+export const networkLinesdarkLightRootQuery = graphql`
+  query NetworkLinesDarkLightQuery {
+    networkAssetList {
+      edges {
+        node {
+          id
+          name
+          labels
+          asset_id
+          network_id
+          network_address_range {
+            ending_ip_address{
+              ... on IpV4Address {
+                ip_address_value
+              }
+            }
+            starting_ip_address{
+              ... on IpV4Address {
+                ip_address_value
+              }
+            }
+          }
+        }
+      }
+    }
   }
 `;
 

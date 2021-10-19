@@ -49,8 +49,8 @@ const styles = (theme) => ({
   toolBar: {
     marginLeft: -25,
     marginRight: -25,
-    marginTop: -28,
-    height: '4rem',
+    marginTop: -20,
+    height: '64px',
     color: theme.palette.header.text,
     boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
   },
@@ -64,7 +64,7 @@ const styles = (theme) => ({
     padding: '10px',
   },
   cardsContainer: {
-    marginTop: 10,
+    marginTop: 50,
     paddingTop: 0,
   },
   iconButton: {
@@ -119,13 +119,17 @@ class ListCards extends Component {
       openExports,
       dataColumns,
       paginationOptions,
+      OperationsComponent,
+      selectedElements,
       keyword,
       filters,
+      selectAll,
       sortBy,
       orderAsc,
       children,
       exportEntityType,
       exportContext,
+      CreateItemComponent,
       numberOfElements,
       availableFilterKeys,
     } = this.props;
@@ -244,44 +248,32 @@ class ListCards extends Component {
           <div className={classes.views}>
             <div style={{ float: 'right' }}>
               {typeof handleChangeView === 'function' && (
-                <Tooltip title={t('Delete')}>
-                  <Button
-                    variant="contained"
-                    className={classes.iconButton}
-                    size="large"
-                    color="primary"
-                    disabled={true}
-                  >
-                    <Delete fontSize="inherit"/>
-                  </Button>
-                </Tooltip>
+                OperationsComponent && (
+                  <div className={classes.iconButton} style={{ display: 'inline-block' }}>
+                    {React.cloneElement(OperationsComponent, {
+                      id: Object.entries(selectedElements || {}).length !== 0
+                        && Object.entries(selectedElements)[0][0],
+                      isAllselected: selectAll,
+                    })}
+                  </div>
+                )
               )}
-              {typeof handleChangeView === 'function' && (
-                <Tooltip title={t('Edit')}>
-                  <Button
-                    variant="contained"
-                    className={classes.iconButton}
-                    size="large"
-                    color="primary"
-                    disabled={true}
-                  >
-                    <Edit fontSize="inherit"/>
-                  </Button>
-                </Tooltip>
-              )}
-              {typeof handleChangeView === 'function' && (
+              {/* {typeof handleChangeView === 'function' && (
                 <Tooltip title={t('Create New')}>
                   <Button
                     variant="contained"
                     size="small"
                     startIcon={<AddCircleOutline />}
-                    color='secondary'
+                    color='primary'
                     style={{ marginLeft: 15 }}
                   >
                     {t('New')}
                   </Button>
                 </Tooltip>
-              )}
+                <div style={{ display: 'inline-block' }}>
+                  {React.cloneElement(CreateItemComponent, { paginationOptions })}
+                </div>
+              )} */}
               {typeof handleChangeView === 'function' && (
                 <Tooltip title={t('Lines view')}>
                   <IconButton

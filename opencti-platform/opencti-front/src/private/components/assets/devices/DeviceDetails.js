@@ -24,7 +24,7 @@ const styles = (theme) => ({
     height: '100%',
     minHeight: '100%',
     margin: '10px 0 0 0',
-    padding: '15px',
+    padding: '24px 24px 32px 24px',
     borderRadius: 6,
   },
   link: {

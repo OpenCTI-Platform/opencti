@@ -6,6 +6,8 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
+import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import DeviceEditionContainer from './DeviceEditionContainer';
@@ -37,8 +39,20 @@ export const deviceEditionQuery = graphql`
     threatActor(id: $id) {
       ...DeviceEditionContainer_device
     }
-    settings {
-      platform_enable_reference
+  }
+`;
+
+export const deviceEditionDarkLightQuery = graphql`
+  query DeviceEditionContainerDarkLightQuery($id: ID!) {
+    computingDeviceAsset(id: $id) {
+      id
+      name
+      installed_operating_system {
+        name
+      }
+      asset_id
+      fqdn
+      network_id
     }
   }
 `;
@@ -83,7 +97,24 @@ class DeviceEdition extends Component {
           onClose={this.handleClose.bind(this)}
         > */}
         <div>
-          <QueryRenderer
+        <QR
+          environment={environmentDarkLight}
+          query={deviceEditionDarkLightQuery}
+          variables={{ id: deviceId }}
+          render={({ error, props }) => {
+            console.log(`DeviceEditionDarkLightQuery Error ${error} OR Props ${JSON.stringify(props)}`);
+            if (props) {
+              return (
+                <DeviceEditionContainer
+                  device={props.computingDeviceAsset}
+                  handleClose={this.handleClose.bind(this)}
+                />
+              );
+            }
+            return <Loader variant="inElement" />;
+          }}
+        />
+          {/* <QueryRenderer
             query={deviceEditionQuery}
             variables={{ id: deviceId }}
             render={({ props }) => {
@@ -91,16 +122,16 @@ class DeviceEdition extends Component {
                 return (
                   <DeviceEditionContainer
                     device={props.threatActor}
-                    enableReferences={props.settings.platform_enable_reference?.includes(
-                      'Device',
-                    )}
+                    // enableReferences={props.settings.platform_enable_reference?.includes(
+                    //   'Device',
+                    // )}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );
               }
               return <Loader variant="inElement" />;
             }}
-          />
+          /> */}
         {/* </Drawer> */}
         </div>
       </div>

@@ -9,6 +9,7 @@ import inject18n from '../../../../components/i18n';
 import DeviceDetails from './DeviceDetails';
 import DeviceEdition from './DeviceEdition';
 import DevicePopover from './DevicePopover';
+import DeviceOperations from './DeviceOperations';
 import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
@@ -35,15 +36,21 @@ class DeviceComponent extends Component {
     };
   }
 
+  handleToggleEdit() {
+    this.setState({ openEdit: !this.state.openEdit });
+  }
+
   render() {
-    const { classes, device } = this.props;
-    console.log('device', device);
+    const { classes, device, history } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
           openEdit={() => this.setState({ openEdit: !this.state.openEdit })}
           stixDomainObject={device}
+          history={history}
           PopoverComponent={<DevicePopover />}
+          handleToggleEdit={this.handleToggleEdit.bind(this)}
+          OperationsComponent={<DeviceOperations />}
         />
         <Grid
           container={true}
@@ -52,7 +59,10 @@ class DeviceComponent extends Component {
         >
           {this.state.openEdit ? (
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <DeviceEdition open={this.state.openEdit} deviceId={device.id} />
+                <DeviceEdition
+                  open={this.state.openEdit}
+                  deviceId={device.id}
+                />
               </Security>
           ) : (
             <>
@@ -89,11 +99,11 @@ class DeviceComponent extends Component {
           classes={{ container: classes.gridContainer }}
           style={{ marginTop: 25 }}
         >
-          <Grid item={true} xs={6}>
+          {/* <Grid item={true} xs={6}>
             <StixCoreObjectExternalReferences
               stixCoreObjectId={device.id}
             />
-          </Grid>
+          </Grid> */}
           <Grid item={true} xs={6}>
             <StixCoreObjectLatestHistory stixCoreObjectId={device.id} />
           </Grid>

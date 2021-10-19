@@ -650,6 +650,11 @@ type FileConnection {
 
 ############## Task
 enum TaskType {
+  """The task represents a planned milestone."""
+  milestone
+
+  """The task represents a specific assessment action to be performed."""
+  action
   QUERY
   LIST
   RULE
