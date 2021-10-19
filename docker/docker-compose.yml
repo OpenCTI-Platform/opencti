@@ -42,6 +42,7 @@ services:
     environment:
       - NODE_OPTIONS=--max-old-space-size=8096
       - NODE_TLS_REJECT_UNAUTHORIZED=0
+      - MOCKS=${MOCKS}
       - APP__PORT=8080
       - APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}
       - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
