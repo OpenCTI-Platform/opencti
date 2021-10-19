@@ -276,11 +276,6 @@ const LeftBar = ({ t, location, classes }) => {
           </MenuList>
         </Security>
       </Drawer>
-      <UserPreferencesModal
-        me={me}
-        isOpen={ isUserPreferencesModalOpen }
-        onClose={() => setOpenUserPreferencesModal(false)}
-      />
     </div>
   );
 };
