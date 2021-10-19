@@ -99,6 +99,7 @@ class DeviceCreation extends Component {
       classes,
       deviceId,
       open,
+      history,
     } = this.props;
     return (
       <div className={classes.container}>
@@ -118,6 +119,7 @@ class DeviceCreation extends Component {
                 startIcon={<Close />}
                 color='primary'
                 // onClick={this.handleCloseEdit.bind(this)}
+                onClick={() => history.goBack()}
                 className={classes.iconButton}
               >
                 {t('Cancel')}

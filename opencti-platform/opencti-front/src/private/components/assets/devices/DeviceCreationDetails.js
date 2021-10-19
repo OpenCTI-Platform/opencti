@@ -24,6 +24,8 @@ import { dateFormat, parse } from '../../../../utils/Time';
 import DatePickerField from '../../../../components/DatePickerField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import Ports from '../../common/form/Ports';
+import Protocols from '../../common/form/Protocols';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -343,7 +345,7 @@ class DeviceCreationDetailsComponent extends Component {
                           <AddIcon fontSize="small" color="disabled" style={{ marginTop: 2 }} />
                         </div>
                         <div className="clearfix" />
-                        <Field
+                        <Ports
                           component={SelectField}
                           style={{ height: '38.09px' }}
                           variant= 'outlined'
@@ -352,11 +354,11 @@ class DeviceCreationDetailsComponent extends Component {
                           fullWidth={true}
                           containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
                         />
-                        <Field
+                        <Protocols
                           component={SelectField}
                           style={{ height: '38.09px' }}
                           variant= 'outlined'
-                          name="ports"
+                          name="protocols"
                           size= 'small'
                           fullWidth={true}
                           containerstyle={{ width: '50%', padding: '0 0 1px 0' }}

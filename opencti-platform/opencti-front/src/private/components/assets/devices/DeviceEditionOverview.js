@@ -242,6 +242,7 @@ class DeviceEditionOverviewComponent extends Component {
       })),
     )(device);
     const initialValues = R.pipe(
+      R.assoc('description', device.description),
       R.assoc('createdBy', createdBy),
       R.assoc('killChainPhases', killChainPhases),
       R.assoc('objectMarking', objectMarking),
@@ -251,9 +252,9 @@ class DeviceEditionOverviewComponent extends Component {
       ),
       R.pick([
         'name',
+        'description',
         'threat_actor_types',
         'confidence',
-        'description',
         'createdBy',
         'killChainPhases',
         'objectMarking',
@@ -370,12 +371,15 @@ class DeviceEditionOverviewComponent extends Component {
                       <div className='scroll-bg'>
                           <div className='scroll-div'>
                             <div className='scroll-object'>
-                            {[1, 2, 3, 4].map((data, key) => (
-                              <>
-                                {t('Lorem Ipsum Lorem Ipsum')}
-                                <br></br>
-                              </>
-                            ))}
+                            <Field
+                                  component={TextField}
+                                  multiline={true}
+                                  variant='outlined'
+                                  size='small'
+                                  name="description"
+                                  fullWidth={true}
+                                  containerstyle={{ width: '100%', height: '100%' }}
+                            />
                           </div>
                         </div>
                       </div>
@@ -628,12 +632,15 @@ class DeviceEditionOverviewComponent extends Component {
                     <div className='scroll-bg'>
                         <div className='scroll-div'>
                           <div className='scroll-object'>
-                          {[1, 2, 3, 4].map((data, key) => (
-                            <>
-                              {t('Lorem Ipsum Lorem Ipsum')}
-                              <br></br>
-                            </>
-                          ))}
+                          <Field
+                                  component={TextField}
+                                  multiline={true}
+                                  variant='outlined'
+                                  size='small'
+                                  name="location"
+                                  fullWidth={true}
+                                  containerstyle={{ width: '100%', height: '100%' }}
+                          />
                         </div>
                       </div>
                     </div>
