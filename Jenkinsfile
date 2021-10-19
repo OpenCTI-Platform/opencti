@@ -11,11 +11,9 @@ node {
     }
 
     stage('Detect Version') {
-      def package = readJSON file: 'opencti-platform/opencti-front/package.json';
-      if (package['version'] != null) {
-        version = package['version'];
-      } else {
-
+      def jsPackage = readJSON file: 'opencti-platform/opencti-front/package.json';
+      if (jsPackage['version'] != null) {
+        version = jsPackage['version'];
       }
     }
 
