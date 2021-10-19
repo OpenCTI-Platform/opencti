@@ -69,6 +69,13 @@ const mocks = {
     vendor_name: 'Apple',
     version: '11.6',
   }),
+  User: () => ({
+    id: null,
+  }),
+  Settings: () => ({
+    platform_theme_dark_primary: null,
+    platform_theme_dark_secondary: null,
+  }),
 };
 
 export default mocks ;

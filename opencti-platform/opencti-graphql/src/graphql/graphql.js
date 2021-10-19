@@ -17,7 +17,7 @@ import { expandToken } from '../service/keycloak';
 // import { KeycloakContext, KeycloakTypeDefs, KeycloakSchemaDirectives } from 'keycloak-connect-graphql';
 
 // mocks
-import mocks from './mocks.js' ;
+import mockList from './mocks.js' ;
 
 
 const buildContext = (user, req, res) => {
@@ -32,6 +32,15 @@ const buildContext = (user, req, res) => {
 
 // perform the standard keycloak-connect middleware setup on our app
 // const { keycloak } = configureKeycloak(app, graphqlPath)  // Same ApolloServer initialization as before, plus the drain plugin.
+
+// check to see if mocks are disbled
+let mocks;
+if (process.env.MOCKS === '0') {
+  mocks = false;
+}
+else {
+  mocks = mockList;
+}
 
 const createApolloServer = () => {
   const cdnUrl = conf.get('app:playground_cdn_url');
