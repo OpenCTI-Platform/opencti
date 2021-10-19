@@ -64,6 +64,7 @@ const reportKnowledgeGraphCheckRelationQuery = graphql`
   query ReportKnowledgeGraphCheckRelationQuery($id: String!) {
     stixCoreRelationship(id: $id) {
       id
+      is_inferred
       reports {
         edges {
           node {
@@ -640,7 +641,10 @@ class ReportKnowledgeGraphComponent extends Component {
       })
         .toPromise()
         .then((data) => {
-          if (data.stixCoreRelationship.reports.edges.length === 1) {
+          if (
+            !data.stixCoreRelationship.is_inferred
+            && data.stixCoreRelationship.reports.edges.length === 1
+          ) {
             commitMutation({
               mutation: stixCoreRelationshipEditionDeleteMutation,
               variables: {
@@ -928,6 +932,7 @@ class ReportKnowledgeGraphComponent extends Component {
               ? theme.palette.secondary.main
               : theme.palette.primary.main)
             }
+            linkLineDash={[2, 1]}
             linkWidth={0.2}
             linkDirectionalArrowLength={3}
             linkDirectionalArrowRelPos={0.99}
@@ -1031,6 +1036,7 @@ class ReportKnowledgeGraphComponent extends Component {
               ? theme.palette.secondary.main
               : theme.palette.primary.main)
             }
+            linkLineDash={(link) => (link.inferred ? [2, 1] : null)}
             linkDirectionalArrowLength={3}
             linkDirectionalArrowRelPos={0.99}
             onNodeClick={this.handleNodeClick.bind(this)}
@@ -1154,6 +1160,7 @@ const ReportKnowledgeGraph = createFragmentContainer(
                 }
               }
               ... on StixDomainObject {
+                is_inferred
                 created
               }
               ... on AttackPattern {
@@ -1245,6 +1252,7 @@ const ReportKnowledgeGraph = createFragmentContainer(
                 stop_time
                 confidence
                 created
+                is_inferred
                 from {
                   ... on BasicObject {
                     id

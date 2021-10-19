@@ -76,9 +76,9 @@ class StixCoreRelationshipInference extends Component {
       R.assoc('inferred', true, stixCoreRelationship),
       stixCoreRelationship.from,
       stixCoreRelationship.to,
-      ...inference.explanation,
+      ...R.filter((n) => n !== null, inference.explanation),
       ...R.pipe(
-        R.filter((n) => n.from && n.to),
+        R.filter((n) => n && n.from && n.to),
         R.map((n) => [n.from, n.to]),
         R.flatten,
       )(inference.explanation),

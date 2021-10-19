@@ -36,6 +36,9 @@ import { Domain, ExpandLess, ExpandMore } from '@material-ui/icons';
 import { createRefetchContainer } from 'react-relay';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import Tooltip from '@material-ui/core/Tooltip';
+import * as R from 'ramda';
+import { AutoFix } from 'mdi-material-ui';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
@@ -376,11 +379,29 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                               years={stixCoreRelationship.years}
                             />
                             <ListItemSecondaryAction>
-                              <StixCoreRelationshipPopover
-                                stixCoreRelationshipId={stixCoreRelationship.id}
-                                paginationOptions={paginationOptions}
-                                onDelete={this.props.relay.refetch.bind(this)}
-                              />
+                              {stixCoreRelationship.is_inferred ? (
+                                <Tooltip
+                                  title={
+                                    t('Inferred knowledge based on the rule ')
+                                    + R.head(
+                                      stixCoreRelationship.x_opencti_inferences,
+                                    ).rule.name
+                                  }
+                                >
+                                  <AutoFix
+                                    fontSize="small"
+                                    style={{ marginLeft: -30 }}
+                                  />
+                                </Tooltip>
+                              ) : (
+                                <StixCoreRelationshipPopover
+                                  stixCoreRelationshipId={
+                                    stixCoreRelationship.id
+                                  }
+                                  paginationOptions={paginationOptions}
+                                  onDelete={this.props.relay.refetch.bind(this)}
+                                />
+                              )}
                             </ListItemSecondaryAction>
                           </ListItem>
                         );
@@ -519,17 +540,35 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                           years={stixCoreRelationship.years}
                                         />
                                         <ListItemSecondaryAction>
-                                          <StixCoreRelationshipPopover
-                                            stixCoreRelationshipId={
-                                              stixCoreRelationship.id
-                                            }
-                                            paginationOptions={
-                                              paginationOptions
-                                            }
-                                            onDelete={this.props.relay.refetch.bind(
-                                              this,
-                                            )}
-                                          />
+                                          {stixCoreRelationship.is_inferred ? (
+                                            <Tooltip
+                                              title={
+                                                t(
+                                                  'Inferred knowledge based on the rule ',
+                                                )
+                                                + R.head(
+                                                  stixCoreRelationship.x_opencti_inferences,
+                                                ).rule.name
+                                              }
+                                            >
+                                              <AutoFix
+                                                fontSize="small"
+                                                style={{ marginLeft: -30 }}
+                                              />
+                                            </Tooltip>
+                                          ) : (
+                                            <StixCoreRelationshipPopover
+                                              stixCoreRelationshipId={
+                                                stixCoreRelationship.id
+                                              }
+                                              paginationOptions={
+                                                paginationOptions
+                                              }
+                                              onDelete={this.props.relay.refetch.bind(
+                                                this,
+                                              )}
+                                            />
+                                          )}
                                         </ListItemSecondaryAction>
                                       </ListItem>
                                     );
@@ -600,6 +639,13 @@ const StixDomainObjectVictimologySectorsSectorLines = createRefetchContainer(
               description
               start_time
               stop_time
+              is_inferred
+              x_opencti_inferences {
+                rule {
+                  id
+                  name
+                }
+              }
               to {
                 ... on BasicObject {
                   id

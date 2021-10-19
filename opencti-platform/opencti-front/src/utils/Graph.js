@@ -582,7 +582,7 @@ export const buildGraphData = (objects, graphData, t) => {
       }`,
       source_id: n.from.id,
       target_id: n.to.id,
-      inferred: n.inferred,
+      inferred: n.is_inferred,
       defaultDate: jsDate(defaultDate(n)),
     })),
   )(objects);
@@ -595,6 +595,7 @@ export const buildGraphData = (objects, graphData, t) => {
         parent_types: n.parent_types,
         entity_type: n.entity_type,
         relationship_type: n.relationship_type,
+        inferred: n.is_inferred,
         source: n.from.id,
         target: n.id,
         label: '',

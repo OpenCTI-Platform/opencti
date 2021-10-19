@@ -62,6 +62,7 @@ const multipleAttributes = [
   // stix cyber observable
   ...MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
 ];
+export const noReferenceAttributes = ['x_opencti_graph_data'];
 export const runtimeAttributes = ['observable_value', 'createdBy', 'objectMarking'];
 export const statsDateAttributes = [
   'created_at',

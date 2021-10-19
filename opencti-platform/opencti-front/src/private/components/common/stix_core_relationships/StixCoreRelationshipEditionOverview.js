@@ -190,85 +190,88 @@ const StixCoreRelationshipEditionContainer = ({
     };
   });
   const handleChangeKillChainPhases = (name, values) => {
-    const currentKillChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-      })),
-    )(stixCoreRelationship);
-
-    const added = difference(values, currentKillChainPhases);
-    const removed = difference(currentKillChainPhases, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: stixCoreRelationshipMutationRelationAdd,
-        variables: {
-          id: stixCoreRelationship.id,
-          input: {
-            toId: head(added).value,
+    if (!enableReferences) {
+      const currentKillChainPhases = pipe(
+        pathOr([], ['killChainPhases', 'edges']),
+        map((n) => ({
+          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+          value: n.node.id,
+        })),
+      )(stixCoreRelationship);
+      const added = difference(values, currentKillChainPhases);
+      const removed = difference(currentKillChainPhases, values);
+      if (added.length > 0) {
+        commitMutation({
+          mutation: stixCoreRelationshipMutationRelationAdd,
+          variables: {
+            id: stixCoreRelationship.id,
+            input: {
+              toId: head(added).value,
+              relationship_type: 'kill-chain-phase',
+            },
+          },
+        });
+      }
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: stixCoreRelationshipMutationRelationDelete,
+          variables: {
+            id: stixCoreRelationship.id,
+            toId: head(removed).value,
             relationship_type: 'kill-chain-phase',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: stixCoreRelationshipMutationRelationDelete,
-        variables: {
-          id: stixCoreRelationship.id,
-          toId: head(removed).value,
-          relationship_type: 'kill-chain-phase',
-        },
-      });
+        });
+      }
     }
   };
   const handleChangeobjectMarking = (name, values) => {
-    const currentobjectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(stixCoreRelationship);
-
-    const added = difference(values, currentobjectMarking);
-    const removed = difference(currentobjectMarking, values);
-
-    if (added.length > 0) {
+    if (!enableReferences) {
+      const currentobjectMarking = pipe(
+        pathOr([], ['objectMarking', 'edges']),
+        map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(stixCoreRelationship);
+      const added = difference(values, currentobjectMarking);
+      const removed = difference(currentobjectMarking, values);
+      if (added.length > 0) {
+        commitMutation({
+          mutation: stixCoreRelationshipMutationRelationAdd,
+          variables: {
+            id: stixCoreRelationship.id,
+            input: {
+              toId: head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: stixCoreRelationshipMutationRelationDelete,
+          variables: {
+            id: stixCoreRelationship.id,
+            toId: head(removed).value,
+            relationship_type: 'object-marking',
+          },
+        });
+      }
+    }
+  };
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
-        mutation: stixCoreRelationshipMutationRelationAdd,
+        mutation: stixCoreRelationshipMutationFieldPatch,
         variables: {
           id: stixCoreRelationship.id,
           input: {
-            toId: head(added).value,
-            relationship_type: 'object-marking',
+            key: 'createdBy',
+            value: value.value || '',
           },
         },
       });
     }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: stixCoreRelationshipMutationRelationDelete,
-        variables: {
-          id: stixCoreRelationship.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
-    }
-  };
-  const handleChangeCreatedBy = (name, value) => {
-    commitMutation({
-      mutation: stixCoreRelationshipMutationFieldPatch,
-      variables: {
-        id: stixCoreRelationship.id,
-        input: { key: 'createdBy', value: value.value || '' },
-      },
-    });
   };
   const handleChangeFocus = (name) => {
     commitMutation({
@@ -282,18 +285,23 @@ const StixCoreRelationshipEditionContainer = ({
     });
   };
   const handleSubmitField = (name, value) => {
-    stixCoreRelationshipValidation(t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: stixCoreRelationshipMutationFieldPatch,
-          variables: {
-            id: stixCoreRelationship.id,
-            input: { key: name, value: value || '' },
-          },
-        });
-      })
-      .catch(() => false);
+    if (!enableReferences) {
+      stixCoreRelationshipValidation(t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: stixCoreRelationshipMutationFieldPatch,
+            variables: {
+              id: stixCoreRelationship.id,
+              input: {
+                key: name,
+                value: value || '',
+              },
+            },
+          });
+        })
+        .catch(() => false);
+    }
   };
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -304,6 +312,7 @@ const StixCoreRelationshipEditionContainer = ({
       R.assoc('status_id', values.status_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -548,6 +557,7 @@ const StixCoreRelationshipEditionFragment = createFragmentContainer(
         stop_time
         description
         relationship_type
+        is_inferred
         createdBy {
           ... on Identity {
             id

@@ -159,6 +159,13 @@ const StixDomainObjectVictimologyRegionsSectorLines = createRefetchContainer(
               description
               start_time
               stop_time
+              is_inferred
+              x_opencti_inferences {
+                rule {
+                  id
+                  name
+                }
+              }
               to {
                 ... on BasicObject {
                   id

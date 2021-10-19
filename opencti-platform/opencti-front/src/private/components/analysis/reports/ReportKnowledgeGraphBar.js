@@ -257,6 +257,8 @@ class ReportKnowledgeGraphBar extends Component {
     const viewEnabled = (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
     let viewLink = null;
+    const isInferred = R.filter((n) => n.inferred, selectedNodes).length > 0
+      || R.filter((n) => n.inferred, selectedLinks).length > 0;
     if (viewEnabled) {
       if (numberOfSelectedNodes === 1) {
         if (selectedNodes[0].relationship_type) {
@@ -277,10 +279,13 @@ class ReportKnowledgeGraphBar extends Component {
         }/knowledge/relations/${selectedLinks[0].id}`;
       }
     }
-    const editionEnabled = (numberOfSelectedNodes === 1
+    const editionEnabled = (!isInferred
+        && numberOfSelectedNodes === 1
         && numberOfSelectedLinks === 0
         && !selectedNodes[0].isObservable)
-      || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
+      || (!isInferred
+        && numberOfSelectedNodes === 0
+        && numberOfSelectedLinks === 1);
     const fromSelectedTypes = numberOfSelectedNodes >= 2
       ? R.uniq(R.map((n) => n.entity_type, R.init(selectedNodes)))
       : [];

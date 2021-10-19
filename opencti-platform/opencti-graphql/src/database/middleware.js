@@ -150,6 +150,7 @@ import {
   isMultipleAttribute,
   isNumericAttribute,
   isUpdatedAtObject,
+  noReferenceAttributes,
   numericAttributes,
   statsDateAttributes,
 } from '../schema/fieldDataAdapter';
@@ -1643,18 +1644,19 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
   const enforceReferences = conf.get('app:enforce_references');
+  const keys = R.map((t) => t.key, attributes);
   if (
     enforceReferences &&
     (enforceReferences.includes(instance.entity_type) ||
       (enforceReferences.includes('stix-core-relationship') && isStixCoreRelationship(instance.entity_type)))
   ) {
-    if (isEmptyField(opts.references)) {
+    const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
+    if (!isNoReferenceKey && isEmptyField(opts.references)) {
       throw FunctionalError('You must provide at least one external reference to update');
     }
   }
   const participantIds = getInstanceIds(instance).filter((e) => !locks.includes(e));
   // 01. Check if updating alias lead to entity conflict
-  const keys = R.map((t) => t.key, attributes);
   if (isStixObjectAliased(instance.entity_type)) {
     // If user ask for aliases modification, we need to check if it not already belong to another entity.
     const isInputAliases = (input) => input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI;
