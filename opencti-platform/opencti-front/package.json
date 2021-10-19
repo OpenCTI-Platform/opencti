@@ -54,6 +54,7 @@
     "react-router-dom": "5.2.0",
     "react-swipeable-views": "0.14.0",
     "react-timeline-range-slider": "1.4.1",
+    "react-toastify": "^8.0.3",
     "react-virtualized": "9.22.3",
     "recharts": "2.1.2",
     "relay-runtime": "11.0.2",
