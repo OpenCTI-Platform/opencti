@@ -165,7 +165,7 @@ class StixCoreRelationshipsHorizontalBars extends Component {
       startDate,
       endDate,
       dateAttribute,
-      limit: 8,
+      limit: 10,
     };
     return (
       <QueryRenderer
