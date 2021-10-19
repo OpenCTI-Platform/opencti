@@ -1,6 +1,6 @@
 export default (logo = null, primary = null, secondary = null) => ({
   fontFamily: 'DINNextLTPro-Light, sans-serif',
-  logo: logo || `${window.BASE_PATH}/static/Darklight-Logo.png`,
+  logo: logo || `${window.BASE_PATH}/static/DarkLight_Logo_blue.png`,
   palette: {
     type: 'dark',
     text: { secondary: 'rgba(255, 255, 255, 0.5)' },
