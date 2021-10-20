@@ -1,6 +1,6 @@
 const path = require('path');
 const glob = require('glob');
-const { DefinePlugin, HotModuleReplacementPlugin } = require('webpack');
+const { DefinePlugin, HotModuleReplacementPlugin, SourceMapDevToolPlugin } = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 const TerserPlugin = require('terser-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
@@ -78,7 +78,14 @@ module.exports = (env, argv) => {
         OPENCTI_BUILD_DATE: JSON.stringify(buildDate),
       }),
       new CleanWebpackPlugin(),
-      ...addIf(isDev, [new HotModuleReplacementPlugin(), new RunScriptWebpackPlugin()]),
+      ...addIf(isDev, [
+        new HotModuleReplacementPlugin(), 
+        new RunScriptWebpackPlugin({
+          // Add remote debugging capabilities while doing a `yarn start`.
+          // This argument can be changed to a `--inspect-brk` in order to wait for a debugger before running.
+          nodeArgs: ["--inspect"]
+        }), 
+      ]),
     ],
   };
 };
