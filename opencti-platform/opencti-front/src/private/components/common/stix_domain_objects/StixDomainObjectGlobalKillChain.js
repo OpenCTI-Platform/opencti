@@ -79,7 +79,8 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
         && n.node.killChainPhases
         && n.node.killChainPhases.edges.length > 0
         ? n.node.killChainPhases.edges[0].node
-        : n.node.to
+        : n.node
+            && n.node.to
             && n.node.to.killChainPhases
             && n.node.to.killChainPhases.edges.length > 0
           ? n.node.to.killChainPhases.edges[0].node

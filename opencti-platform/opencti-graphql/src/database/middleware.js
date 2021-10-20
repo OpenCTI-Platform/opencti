@@ -2176,7 +2176,7 @@ const buildRelationTimeFilter = (input) => {
   return args;
 };
 
-const upsertElementRaw = (user, instance, type, input) => {
+const upsertElementRaw = (instance, type, input) => {
   // Upsert relation
   const forceUpdate = input.update === true;
   const patchInputs = []; // Direct modified inputs (add)
@@ -2575,7 +2575,7 @@ export const createRelationRaw = async (user, input, opts = {}) => {
         return upsertRelationRule(existingRelationship, input, { ...opts, locks: participantIds });
       }
       // If not upsert the element
-      dataRel = upsertElementRaw(user, existingRelationship, relationshipType, resolvedInput);
+      dataRel = upsertElementRaw(existingRelationship, relationshipType, resolvedInput);
     } else {
       // Check cyclic reference consistency for embedded relationships before creation
       if (isStixEmbeddedRelationship(relationshipType)) {
@@ -2823,7 +2823,7 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
         return upsertEntityRule(R.head(filteredEntities), resolvedInput, { ...opts, locks: participantIds });
       }
       if (filteredEntities.length === 1) {
-        dataEntity = upsertElementRaw(user, R.head(filteredEntities), type, resolvedInput);
+        dataEntity = upsertElementRaw(R.head(filteredEntities), type, resolvedInput);
       } else {
         // If creation is not by a reference
         // We can in best effort try to merge a common stix_id
@@ -2835,7 +2835,7 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
           const sourcesEntities = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
           const sources = sourcesEntities.map((s) => s.internal_id);
           await mergeEntities(user, target.internal_id, sources, { locks: participantIds });
-          dataEntity = upsertElementRaw(user, target, type, resolvedInput);
+          dataEntity = upsertElementRaw(target, type, resolvedInput);
         } else if (existingByStandard) {
           // Sometimes multiple entities can match
           // Looking for aliasA, aliasB, find in different entities for example
@@ -2863,7 +2863,7 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
           const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
           const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), resolvedInput[key] || []);
           const inputAliases = { ...resolvedInput, [key]: filteredAliases };
-          dataEntity = upsertElementRaw(user, existingByStandard, type, inputAliases);
+          dataEntity = upsertElementRaw(existingByStandard, type, inputAliases);
         } else {
           // If not we dont know what to do, just throw an exception.
           throw UnsupportedError('Cant upsert entity. Too many entities resolved', { input, entityIds });

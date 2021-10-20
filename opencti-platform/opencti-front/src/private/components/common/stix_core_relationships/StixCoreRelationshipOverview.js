@@ -184,11 +184,13 @@ class StixCoreRelationshipContainer extends Component {
       : '';
     return (
       <div className={classes.container}>
-        <Link to={`${linkFrom}/${from.id}`}>
+        <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : ''}>
           <div
             className={classes.item}
             style={{
-              border: `2px solid ${itemColor(from.entity_type)}`,
+              border: `2px solid ${itemColor(
+                !fromRestricted ? from.entity_type : 'Unknown',
+              )}`,
               top: 10,
               left: 0,
             }}
@@ -196,20 +198,27 @@ class StixCoreRelationshipContainer extends Component {
             <div
               className={classes.itemHeader}
               style={{
-                borderBottom: `1px solid ${itemColor(from.entity_type)}`,
+                borderBottom: `1px solid ${itemColor(
+                  !fromRestricted ? from.entity_type : 'Unknown',
+                )}`,
               }}
             >
               <div className={classes.icon}>
                 <ItemIcon
-                  type={from.entity_type}
-                  color={itemColor(from.entity_type)}
+                  type={!fromRestricted ? from.entity_type : 'Unknown'}
+                  color={itemColor(
+                    !fromRestricted ? from.entity_type : 'Unknown',
+                  )}
                   size="small"
                 />
               </div>
               <div className={classes.type}>
-                {from.relationship_type
-                  ? t('Relationship')
-                  : t(`entity_${from.entity_type}`)}
+                {/* eslint-disable-next-line no-nested-ternary */}
+                {!fromRestricted
+                  ? from.relationship_type
+                    ? t('Relationship')
+                    : t(`entity_${from.entity_type}`)
+                  : t('Restricted')}
               </div>
             </div>
             <div className={classes.content}>
@@ -247,7 +256,9 @@ class StixCoreRelationshipContainer extends Component {
           <div
             className={classes.item}
             style={{
-              border: `2px solid ${itemColor(to.entity_type)}`,
+              border: `2px solid ${itemColor(
+                !toRestricted ? to.entity_type : 'Unknown',
+              )}`,
               top: 10,
               right: 0,
             }}
@@ -255,13 +266,15 @@ class StixCoreRelationshipContainer extends Component {
             <div
               className={classes.itemHeader}
               style={{
-                borderBottom: `1px solid ${itemColor(to.entity_type)}`,
+                borderBottom: `1px solid ${itemColor(
+                  !toRestricted ? to.entity_type : 'Unknown',
+                )}`,
               }}
             >
               <div className={classes.icon}>
                 <ItemIcon
-                  type={to.entity_type}
-                  color={itemColor(to.entity_type)}
+                  type={!toRestricted ? to.entity_type : 'Unknown'}
+                  color={itemColor(!toRestricted ? to.entity_type : 'Unknown')}
                   size="small"
                 />
               </div>
@@ -278,12 +291,14 @@ class StixCoreRelationshipContainer extends Component {
             </div>
             <div className={classes.content}>
               <span className={classes.name}>
-                {truncate(
-                  defaultValue(to) !== 'Unknown'
-                    ? defaultValue(to)
-                    : t(`relationship_${to.entity_type}`),
-                  50,
-                )}
+                {!toRestricted
+                  ? truncate(
+                    defaultValue(to) !== 'Unknown'
+                      ? defaultValue(to)
+                      : t(`relationship_${to.entity_type}`),
+                    50,
+                  )
+                  : t('Restricted')}
               </span>
             </div>
           </div>
