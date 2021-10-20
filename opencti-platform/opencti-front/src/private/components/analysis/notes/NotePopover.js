@@ -14,6 +14,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
+import ExpandMoreOutlined from '@material-ui/icons/ExpandMoreOutlined';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
@@ -135,6 +136,12 @@ class NotePopover extends Component {
     return (
       <div className={classes.container}>
         <IconButton
+          aria-haspopup="true"
+          style={{ marginTop: 1 }}
+        >
+          <ExpandMoreOutlined />
+        </IconButton>
+        <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           style={{ marginTop: 1 }}
@@ -145,7 +152,7 @@ class NotePopover extends Component {
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
+          style={{ marginTop: 50, textAlign: 'center' }}
         >
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}

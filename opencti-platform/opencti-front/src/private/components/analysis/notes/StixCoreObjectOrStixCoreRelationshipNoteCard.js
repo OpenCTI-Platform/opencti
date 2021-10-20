@@ -142,8 +142,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
     let authorLink = null;
     if (node.createdBy) {
       authorName = node.createdBy.name;
-      authorLink = `${resolveLink(node.createdBy.entity_type)}/${
-        node.createdBy.id
+      authorLink = `${resolveLink(node.createdBy.entity_type)}/${node.createdBy.id
       }`;
     }
     return (
@@ -151,7 +150,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
         <CardHeader
           style={{
             padding: '10px 10px 0 15px',
-            borderBottom: `1px solid ${theme.palette.divider}`,
+            // borderBottom: `1px solid ${theme.palette.divider}`,
           }}
           action={
             <NotePopover
@@ -180,7 +179,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
                   {t('added a note')} on {nsdt(node.created)}
                 </span>
               </div>
-              <div
+              {/* <div
                 style={{
                   float: 'left',
                   marginLeft: 20,
@@ -198,7 +197,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
                     />
                   ),
                 )}
-              </div>
+              </div> */}
               <div
                 style={{
                   float: 'right',
@@ -206,15 +205,18 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
                   textTransform: 'none',
                 }}
               >
-                <StixCoreObjectLabels
+                {/* <StixCoreObjectLabels
                   variant="inList"
                   labels={node.objectLabel}
-                />
+                /> */}
               </div>
             </div>
           }
         />
-        <CardContent>
+        <CardContent style={{
+          padding: '10px 10px 0 15px',
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}>
           <Typography
             variant="body2"
             noWrap={true}
@@ -235,13 +237,13 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
           >
             {node.content}
           </Markdown>
-          <IconButton
+          {/* <IconButton
             component={Link}
             to={`/dashboard/analysis/notes/${node.id}`}
             classes={{ root: classes.external }}
           >
             <OpenInNewOutlined fontSize="small" />
-          </IconButton>
+          </IconButton> */}
         </CardContent>
         <Dialog
           open={this.state.displayDialog}

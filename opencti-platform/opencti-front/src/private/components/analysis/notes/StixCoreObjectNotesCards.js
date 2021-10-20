@@ -140,7 +140,8 @@ class StixCoreObjectNotesCardsContainer extends Component {
       t, classes, stixCoreObjectId, marginTop, data,
     } = this.props;
     const { open } = this.state;
-    const notes = R.pathOr([], ['stixCoreObject', 'notes', 'edges'], data);
+    const notes = R.pathOr([], ['notes', 'edges'], data.note);
+    console.log('StixCoreNotesPropsData', notes);
     return (
       <div style={{ marginTop: marginTop || 40 }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -174,13 +175,13 @@ class StixCoreObjectNotesCardsContainer extends Component {
           expanded={open}
           onChange={this.handleToggleWrite.bind(this)}
         >
-          {/* <AccordionSummary expandIcon={<ExpandMoreOutlined />} style={{}}>
+          <AccordionSummary expandIcon={<ExpandMoreOutlined />} style={{}}>
             <Typography className={classes.heading}>
               <RateReviewOutlined />
               &nbsp;&nbsp;&nbsp;&nbsp;
               <span style={{ fontWeight: 500 }}>{t('Write a note')}</span>
             </Typography>
-          </AccordionSummary> */}
+          </AccordionSummary>
           <AccordionDetails style={{ width: '100%' }}>
             Hello There This is the section for notes and components of notes
             {/* <Formik
@@ -364,9 +365,32 @@ StixCoreObjectNotesCardsContainer.propTypes = {
   t: PropTypes.func,
 };
 
+// export const stixCoreObjectNotesCardsQuery = graphql`
+//   query StixCoreObjectNotesCardsQuery($count: Int!, $id: String!) {
+//     ...StixCoreObjectNotesCards_data @arguments(count: $count, id: $id)
+//   }
+// `;
+
 export const stixCoreObjectNotesCardsQuery = graphql`
-  query StixCoreObjectNotesCardsQuery($count: Int!, $id: String!) {
-    ...StixCoreObjectNotesCards_data @arguments(count: $count, id: $id)
+  query StixCoreObjectNotesCardsQuery($id: String) {
+    note(id: $id) {
+      objectMarking {
+        edges {
+          node {
+            id
+            definition
+          }
+        }
+      }
+      notes {
+        edges {
+          node {
+            id
+            ...StixCoreObjectOrStixCoreRelationshipNoteCard_node
+          }
+        }
+      }
+    }
   }
 `;
 
