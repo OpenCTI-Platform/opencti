@@ -116,7 +116,8 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
         // eslint-disable-next-line no-nested-ternary
         n && n.killChainPhases && n.killChainPhases.edges.length > 0
           ? n.killChainPhases.edges[0].node
-          : n.to
+          : n
+              && n.to
               && n.to.killChainPhases
               && n.to.killChainPhases.edges.length > 0
             ? n.to.killChainPhases.edges[0].node

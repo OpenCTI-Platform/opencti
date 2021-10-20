@@ -252,7 +252,7 @@ class StixCoreRelationshipContainer extends Component {
             </strong>
           </div>
         </div>
-        <Link to={`${linkTo}/${to.id}`}>
+        <Link to={!toRestricted ? `${linkTo}/${to.id}` : ''}>
           <div
             className={classes.item}
             style={{
