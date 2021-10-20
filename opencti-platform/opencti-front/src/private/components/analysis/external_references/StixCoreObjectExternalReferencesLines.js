@@ -247,8 +247,8 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                             </Security>
                             <Security needs={[KNOWLEDGE_KNUPDATE]}>
                               <ExternalReferencePopover
-                                id={stixCoreObjectId}
-                                externalReferenceId={externalReference.id}
+                                id={externalReference.id}
+                                entityId={stixCoreObjectId}
                                 handleRemove={this.handleOpenDialog.bind(
                                   this,
                                   externalReferenceEdge,

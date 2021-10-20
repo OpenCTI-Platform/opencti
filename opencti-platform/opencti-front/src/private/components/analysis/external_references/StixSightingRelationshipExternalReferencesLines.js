@@ -244,7 +244,8 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                             </Security>
                             <Security needs={[KNOWLEDGE_KNUPDATE]}>
                               <ExternalReferencePopover
-                                externalReferenceId={externalReference.id}
+                                id={externalReference.id}
+                                entityId={stixSightingRelationshipId}
                                 handleRemove={this.handleOpenDialog.bind(
                                   this,
                                   externalReferenceEdge,

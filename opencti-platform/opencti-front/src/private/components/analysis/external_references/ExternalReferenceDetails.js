@@ -8,7 +8,6 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({
   paper: {
@@ -23,7 +22,7 @@ const styles = () => ({
 class ExternalReferenceDetailsComponent extends Component {
   render() {
     const {
-      t, fldt, classes, externalReference,
+      t, classes, externalReference,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
