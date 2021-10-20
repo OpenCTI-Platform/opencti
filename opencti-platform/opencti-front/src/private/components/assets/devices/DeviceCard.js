@@ -282,33 +282,52 @@ DeviceCardComponent.propTypes = {
   onBookmarkClick: PropTypes.func,
 };
 
+// const DeviceCardFragment = createFragmentContainer(
+//   DeviceCardComponent,
+//   {
+//     node: graphql`
+//       fragment DeviceCard_node on ThreatActor {
+//         id
+//         name
+//         description
+//         created
+//         modified
+//         objectLabel {
+//           edges {
+//             node {
+//               id
+//               value
+//               color
+//             }
+//           }
+//         }
+//         objectMarking {
+//           edges {
+//             node {
+//               id
+//               definition
+//             }
+//           }
+//         }
+//       }
+//     `,
+//   },
+// );
+
 const DeviceCardFragment = createFragmentContainer(
   DeviceCardComponent,
   {
     node: graphql`
-      fragment DeviceCard_node on ThreatActor {
+      fragment DeviceCard_node on ComputingDeviceAsset {
         id
         name
-        description
-        created
-        modified
-        objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
+        installed_operating_system {
+          name
         }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition
-            }
-          }
-        }
+        asset_type
+        asset_id
+        fqdn
+        network_id
       }
     `,
   },

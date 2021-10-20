@@ -106,14 +106,7 @@ export const devicesCardsdarkLightRootQuery = graphql`
     computingDeviceAssetList {
       edges {
         node {
-          id
-          name
-          installed_operating_system {
-            name
-          }
-          asset_id
-          fqdn
-          network_id
+          ...DeviceCard_node
         }
       }
     }
@@ -146,7 +139,7 @@ export default createPaginationContainer(
               id
               name
               description
-              ...DeviceCard_node
+              # ...DeviceCard_node
             }
           }
           pageInfo {

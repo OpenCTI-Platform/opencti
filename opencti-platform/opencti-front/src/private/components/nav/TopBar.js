@@ -24,7 +24,7 @@ import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
 import TopMenuSearch from './TopMenuSearch';
 import TopMenuAnalysis from './TopMenuAnalysis';
-import TopMenuRisksAnalysis from './TopMenuRisksAnalysis';
+// import TopMenuRisksAnalysis from './TopMenuRisksAnalysis';
 import TopMenuReport from './TopMenuReport';
 import TopMenuNote from './TopMenuNote';
 import TopMenuOpinion from './TopMenuOpinion';
@@ -39,10 +39,10 @@ import TopMenuStixCyberObservable from './TopMenuStixCyberObservable';
 import TopMenuArtifact from './TopMenuArtifact';
 import TopMenuThreats from './TopMenuThreats';
 import TopMenuAssets from './TopMenuAssets';
-import TopMenuRisk from './TopMenuRisk';
-import TopMenuRisksAssessment from './TopMenuRisksAssessment';
+// import TopMenuRisk from './TopMenuRisk';
+// import TopMenuRisksAssessment from './TopMenuRisksAssessment';
 import TopMenuThreatActor from './TopMenuThreatActor';
-import TopMenuTracking from './TopMenuTracking';
+// import TopMenuTracking from './TopMenuTracking';
 import TopMenuDevice from './TopMenuDevice';
 import TopMenuOverviews from './TopMenuOverviews';
 import TopMenuIntrusionSet from './TopMenuIntrusionSet';
@@ -245,13 +245,13 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/assets/software/') && (
             <TopMenuSoftware />
           )}
-          {(location.pathname === '/dashboard/risks-assessment'
+          {/* {(location.pathname === '/dashboard/risks-assessment'
             || location.pathname.match('/dashboard/risks-assessment/[a-z_]+$')) && (
             <TopMenuRisksAssessment />
           )}
           {location.pathname.includes('/dashboard/risks-assessment/risks/') && (
             <TopMenuRisk />
-          )}
+          )} */}
           {/* {(location.pathname === '/dashboard/risks'
             || location.pathname.match('/dashboard/risks/[a-z_]+$')) && (
             <TopMenuRisks />

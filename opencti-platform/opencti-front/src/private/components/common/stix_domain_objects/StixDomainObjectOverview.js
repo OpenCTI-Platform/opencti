@@ -108,9 +108,7 @@ class StixDomainObjectOverview extends Component {
                 </Typography>
                 <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
                   <Tooltip
-                    title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                    )}
+                    title={t('ID')}
                   >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>

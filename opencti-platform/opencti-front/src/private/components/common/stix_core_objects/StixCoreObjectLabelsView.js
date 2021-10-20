@@ -22,6 +22,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
+import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import Slide from '@material-ui/core/Slide';
 import { Add, CancelOutlined } from '@material-ui/icons';
@@ -29,6 +30,7 @@ import { Label } from 'mdi-material-ui';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
+import SelectField from '../../../../components/SelectField';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import LabelCreation from '../../settings/labels/LabelCreation';
 import Security, {
@@ -203,33 +205,51 @@ const StixCoreObjectLabelsView = (props) => {
         </IconButton>
       </Security>
       <div className="clearfix" />
-      <div className={classes.objectLabel}>
-        {map(
-          (label) => (
-            <Chip
-              key={label.id}
-              variant="outlined"
-              classes={{ root: classes.label }}
-              label={label.value}
-              style={{
-                color: label.color,
-                borderColor: label.color,
-                backgroundColor: hexToRGB(label.color),
-              }}
-              onDelete={() => handleRemoveLabel(label.id)}
-              deleteIcon={
-                <CancelOutlined
-                  className={classes.deleteIcon}
-                  style={{
-                    color: label.color,
-                  }}
-                />
-              }
-            />
-          ),
-          labelsNodes,
-        )}
-      </div>
+      {labels ? (
+        <div className={classes.objectLabel}>
+          {map(
+            (label) => (
+              <Chip
+                key={label.id}
+                variant="outlined"
+                classes={{ root: classes.label }}
+                label={label.value}
+                style={{
+                  color: label.color,
+                  borderColor: label.color,
+                  backgroundColor: hexToRGB(label.color),
+                }}
+                onDelete={() => handleRemoveLabel(label.id)}
+                deleteIcon={
+                  <CancelOutlined
+                    className={classes.deleteIcon}
+                    style={{
+                      color: label.color,
+                    }}
+                  />
+                }
+              />
+            ),
+            labelsNodes,
+          )}
+        </div>
+      ) : (
+        <Field
+          component={SelectField}
+          variant='outlined'
+          size='small'
+          name="labels"
+          fullWidth={true}
+          containerstyle={{ width: '50%' }}
+        >
+          <MenuItem key="activist" value="activist">
+            {t('activist')}
+          </MenuItem>
+          <MenuItem key="competitor" value="competitor">
+            {t('competitor')}
+          </MenuItem>
+        </Field>
+      )}
       <Formik
         initialValues={{ new_labels: [] }}
         onSubmit={onSubmit}
