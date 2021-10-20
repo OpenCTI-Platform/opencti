@@ -2579,6 +2579,7 @@ enum CoursesOfActionOrdering {
   updated_at
   status_id
   objectMarking
+  x_mitre_id
 }
 enum CoursesOfActionFilter {
   name
@@ -2591,6 +2592,7 @@ enum CoursesOfActionFilter {
   labelledBy
   mitigatedBy
   status_id
+  x_mitre_id
 }
 input CoursesOfActionFiltering {
   key: CoursesOfActionFilter!
