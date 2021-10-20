@@ -106,7 +106,15 @@ export const devicesCardsdarkLightRootQuery = graphql`
     computingDeviceAssetList {
       edges {
         node {
-          ...DeviceCard_node
+          id
+          name
+          installed_operating_system {
+            name
+          }
+          asset_type
+          asset_id
+          fqdn
+          network_id
         }
       }
     }

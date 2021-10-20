@@ -296,34 +296,56 @@ SoftwareCardComponent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
-const SoftwareCardFragment = createFragmentContainer(SoftwareCardComponent, {
-  node: graphql`
-    fragment SoftwareCard_node on Campaign {
-      id
-      name
-      description
-      created
-      modified
-      objectMarking {
-        edges {
-          node {
-            id
-            definition
-          }
-        }
+// const SoftwareCardFragment = createFragmentContainer(SoftwareCardComponent, {
+//   node: graphql`
+//     fragment SoftwareCard_node on SoftwareA {
+//       id
+//       name
+//       description
+//       created
+//       modified
+//       objectMarking {
+//         edges {
+//           node {
+//             id
+//             definition
+//           }
+//         }
+//       }
+//       objectLabel {
+//         edges {
+//           node {
+//             id
+//             value
+//             color
+//           }
+//         }
+//       }
+//     }
+//   `,
+// });
+
+const SoftwareCardFragment = createFragmentContainer(
+  SoftwareCardComponent,
+  {
+    node: graphql`
+      fragment SoftwareCard_node on SoftwareAsset {
+        id
+        asset_type
+        name
+        asset_id
+        created
+        modified
+        vendor_name
+        version
+        patch_level
+        cpe_identifier
+        software_identifier
+        labels
       }
-      objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
-      }
-    }
-  `,
-});
+    `,
+  },
+);
 
 export const SoftwareCard = compose(
   inject18n,

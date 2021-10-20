@@ -32,7 +32,7 @@ class Software extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-campaigns',
+      'view-software',
     );
     this.state = {
       sortBy: R.propOr('name', 'sortBy', params),
@@ -44,7 +44,7 @@ class Software extends Component {
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
       selectAll: false,
-      openDeviceCreation: false,
+      openSoftwareCreation: false,
     };
   }
 
@@ -52,7 +52,7 @@ class Software extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-campaigns',
+      'view-software',
       this.state,
     );
   }
@@ -77,9 +77,9 @@ class Software extends Component {
     this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
   }
 
-  handleDeviceCreation() {
-    console.log('Device Created successfully');
-    this.setState({ openDeviceCreation: true });
+  handleSoftwareCreation() {
+    console.log('Software Created successfully');
+    this.setState({ openSoftwareCreation: true });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -182,6 +182,7 @@ class Software extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleNewCreation={this.handleSoftwareCreation.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
         CreateItemComponent={<SoftwareCreation />}
@@ -246,7 +247,7 @@ class Software extends Component {
       openExports,
       selectedElements,
       numberOfElements,
-      openDeviceCreation,
+      openSoftwareCreation,
     } = this.state;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
@@ -311,7 +312,7 @@ class Software extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-        handleDeviceCreation={this.handleDeviceCreation.bind(this)}
+        handleNewCreation={this.handleSoftwareCreation.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
         CreateItemComponent={<SoftwareCreation />}
@@ -370,7 +371,12 @@ class Software extends Component {
 
   render() {
     const {
-      view, sortBy, orderAsc, searchTerm, filters,
+      view,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      openSoftwareCreation,
     } = this.state;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
@@ -381,11 +387,11 @@ class Software extends Component {
     };
     return (
       <div>
-        {view === 'cards' ? this.renderCards(paginationOptions) : ''}
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          {/* <SoftwareCreation paginationOptions={paginationOptions} /> */}
-        </Security>
+        {view === 'cards' && !openSoftwareCreation ? this.renderCards(paginationOptions) : ''}
+        {view === 'lines' && !openSoftwareCreation ? this.renderLines(paginationOptions) : ''}
+        {openSoftwareCreation && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <SoftwareCreation paginationOptions={paginationOptions} history={this.props.history} />
+        </Security>}
       </div>
     );
   }

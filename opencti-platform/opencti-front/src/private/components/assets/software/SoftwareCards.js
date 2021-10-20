@@ -158,7 +158,6 @@ export default createPaginationContainer(
               id
               name
               description
-              ...SoftwareCard_node
             }
           }
           pageInfo {

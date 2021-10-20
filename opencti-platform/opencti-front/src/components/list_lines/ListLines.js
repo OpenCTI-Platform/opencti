@@ -195,7 +195,7 @@ class ListLines extends Component {
       exportContext,
       numberOfElements,
       availableFilterKeys,
-      handleDeviceCreation,
+      handleNewCreation,
       noHeaders,
       iconExtension,
       searchVariant,
@@ -331,7 +331,7 @@ class ListLines extends Component {
                     variant="contained"
                     size="small"
                     startIcon={<AddCircleOutline />}
-                    onClick={handleDeviceCreation.bind(this)}
+                    onClick={handleNewCreation.bind(this)}
                     color='primary'
                     style={{ marginLeft: 15 }}
                   >

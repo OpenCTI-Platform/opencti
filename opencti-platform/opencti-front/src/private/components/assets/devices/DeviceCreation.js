@@ -24,8 +24,8 @@ import graphql from 'babel-plugin-relay/macro';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import DeviceCreationContainer from './DeviceCreationContainer';
 import DeviceCreationOverview from './DeviceCreationOverview';
+import StixDomainObjectCreationOverview from '../../common/stix_domain_objects/StixDomainObjectCreationOverview';
 import Loader from '../../../../components/Loader';
 import DeviceCreationDetails from './DeviceCreationDetails';
 
@@ -254,7 +254,11 @@ class DeviceCreation extends Component {
                   classes={{ container: classes.gridContainer }}
                 >
                   <Grid item={true} xs={6}>
-                    <DeviceCreationOverview setFieldValue={setFieldValue} values={values} />
+                    {/* <DeviceCreationOverview setFieldValue={setFieldValue} values={values} /> */}
+                    <StixDomainObjectCreationOverview
+                      setFieldValue={setFieldValue}
+                      values={values}
+                    />
                   </Grid>
                   <Grid item={true} xs={6}>
                     <DeviceCreationDetails setFieldValue={setFieldValue} />

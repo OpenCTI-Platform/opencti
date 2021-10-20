@@ -5,12 +5,17 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
+import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
-import { BullseyeArrow, ArmFlexOutline } from 'mdi-material-ui';
+import {
+  BullseyeArrow,
+  ArmFlexOutline,
+  Information,
+} from 'mdi-material-ui';
 import ListItemText from '@material-ui/core/ListItemText';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
@@ -48,103 +53,110 @@ class NetworkDetailsComponent extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Description')}
-              </Typography>
-              <ExpandableMarkdown
-                source={network.description}
-                limit={400}
-              />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Resource level')}
-              </Typography>
-              {network.resource_level && t(network.resource_level)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Goals')}
-              </Typography>
-              {network.goals && (
-                <List>
-                  {network.goals.map((goal) => (
-                    <ListItem key={goal} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <BullseyeArrow />
-                      </ListItemIcon>
-                      <ListItemText primary={goal} />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Network Name')}
+                </Typography>
+                <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                  <Tooltip title={t('Network Name')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('device.last_seen')}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Starting Address')}
+                </Typography>
+                <div style={{ float: 'left', margin: '20px 0 0 5px' }}>
+                  <Tooltip title={t('Starting Address')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('device.last_seen')}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Starting Address')}
+                </Typography>
+                <div style={{ float: 'left', margin: '20px 0 0 5px' }}>
+                  <Tooltip title={t('Starting Address')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('device.last_seen')}
+              </div>
             </Grid>
             <Grid item={true} xs={6}>
-              {/* <NetworkLocations network={network} /> */}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('First seen')}
-              </Typography>
-              {fd(network.first_seen)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Last seen')}
-              </Typography>
-              {fd(network.last_seen)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Primary motivation')}
-              </Typography>
-              {network.primary_motivation && (
-                <List>
-                  <ListItem dense={true} divider={true}>
-                    <ListItemIcon>
-                      <ArmFlexOutline />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={t(network.primary_motivation)}
-                    />
-                  </ListItem>
-                </List>
-              )}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Secondary motivations')}
-              </Typography>
-              {network.secondary_motivations && (
-                <List>
-                  {network.secondary_motivations.map(
-                    (secondaryMotivation) => (
-                      <ListItem
-                        key={secondaryMotivation}
-                        dense={true}
-                        divider={true}
-                      >
-                        <ListItemIcon>
-                          <ArmFlexOutline />
-                        </ListItemIcon>
-                        <ListItemText primary={t(secondaryMotivation)} />
-                      </ListItem>
-                    ),
-                  )}
-                </List>
-              )}
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Network ID')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                  <Tooltip title={t('Network ID')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('device.last_seen')}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Ending Address')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Ending Address')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('device.last_seen')}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Implementation Point')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Implementation Point')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('device.last_seen')}
+              </div>
             </Grid>
           </Grid>
         </Paper>

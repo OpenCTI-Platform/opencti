@@ -46,6 +46,7 @@ class StixDomainObjectOverview extends Component {
       (n) => n !== stixDomainObject.standard_id,
       otherStixIds,
     );
+    console.log('stixDomainObjectNetwork', stixDomainObject);
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -107,9 +108,7 @@ class StixDomainObjectOverview extends Component {
                   {t('ID')}
                 </Typography>
                 <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                  <Tooltip
-                    title={t('ID')}
-                  >
+                  <Tooltip title={t('ID')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -126,11 +125,7 @@ class StixDomainObjectOverview extends Component {
                   {t('Asset ID')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                    )}
-                  >
+                  <Tooltip title={t('Asset ID')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -147,11 +142,7 @@ class StixDomainObjectOverview extends Component {
                   {t('Description')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Description',
-                    )}
-                  >
+                  <Tooltip title={t('Description')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -175,9 +166,7 @@ class StixDomainObjectOverview extends Component {
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                   <Tooltip
-                    title={t(
-                      'Version',
-                    )}
+                    title={t('Version')}
                   >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
@@ -195,16 +184,12 @@ class StixDomainObjectOverview extends Component {
                   {t('Serial Number')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Serial Number',
-                    )}
-                  >
+                  <Tooltip title={t('Serial Number')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t(stixDomainObject.serial_number)}
+                {/* {t(stixDomainObject.serial_number)} */}
                 {/* <ItemCreator creator={stixDomainObject.creator} /> */}
               </div>
               <div>
@@ -217,11 +202,7 @@ class StixDomainObjectOverview extends Component {
                   {t('Responsible Parties')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Responsible Parties',
-                    )}
-                  >
+                  <Tooltip title={t('Responsible Parties')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -240,11 +221,7 @@ class StixDomainObjectOverview extends Component {
                   {t('Label')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Label',
-                    )}
-                  >
+                  <Tooltip title={t('Label')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -337,15 +314,14 @@ class StixDomainObjectOverview extends Component {
                 </Typography>
                 <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
                   <Tooltip
-                    title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                    )}
+                    title={t('Asset Type')}
                   >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                  <Chip key={stixDomainObject.id} classes={{ root: classes.chip }} label={t(stixDomainObject.asset_type)} color="primary" />
+  {/* <Chip key={stixDomainObject.id} classes={{ root: classes.chip }}
+  label={t(stixDomainObject.asset_type)} color="primary" /> */}
                 {/* <ItemCreator creator={stixDomainObject.creator} /> */}
               </div>
               <div>
@@ -358,11 +334,7 @@ class StixDomainObjectOverview extends Component {
                   {t('Asset Tag')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                    )}
-                  >
+                  <Tooltip title={t('Asset Tag')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -379,11 +351,7 @@ class StixDomainObjectOverview extends Component {
                   {t('Location')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                    )}
-                  >
+                  <Tooltip title={t('Location')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -391,7 +359,7 @@ class StixDomainObjectOverview extends Component {
                 <div className='scroll-bg'>
                     <div className='scroll-div'>
                       <div className='scroll-object'>
-                      {stixDomainObject.locations.map((index) => [index.description]).join()}
+            {/* {stixDomainObject.locations.map((index) => [index.description]).join()} */}
                     </div>
                   </div>
                 </div>
@@ -406,11 +374,7 @@ class StixDomainObjectOverview extends Component {
                   {t('Vendor Name')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                    )}
-                  >
+                  <Tooltip title={t('Vendor Name')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -427,11 +391,7 @@ class StixDomainObjectOverview extends Component {
                   {t('Release Date')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                    )}
-                  >
+                  <Tooltip title={t('Release Date')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -448,16 +408,12 @@ class StixDomainObjectOverview extends Component {
                   {t('Operation State')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                    )}
-                  >
+                  <Tooltip title={t('Operation State')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t(stixDomainObject.operational_status)}
+                {t('stixDomainObject.operational_status')}
               </div>
               {/* <Typography
                 variant="h3"

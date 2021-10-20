@@ -99,11 +99,11 @@ class DeviceComponent extends Component {
           classes={{ container: classes.gridContainer }}
           style={{ marginTop: 25 }}
         >
-          {/* <Grid item={true} xs={6}>
-            <StixCoreObjectExternalReferences
+          <Grid item={true} xs={6}>
+            {/* <StixCoreObjectExternalReferences
               stixCoreObjectId={device.id}
-            />
-          </Grid> */}
+            /> */}
+          </Grid>
           <Grid item={true} xs={6}>
             <StixCoreObjectLatestHistory stixCoreObjectId={device.id} />
           </Grid>

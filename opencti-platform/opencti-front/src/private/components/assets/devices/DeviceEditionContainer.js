@@ -100,7 +100,7 @@ class DeviceEditionContainer extends Component {
             <Grid item={true} xs={6}>
               <DeviceEditionDetails
                 device={this.props.device}
-                enableReferences={this.props.enableReferences}
+                // enableReferences={this.props.enableReferences}
                 context={editContext}
                 handleClose={handleClose.bind(this)}
               />

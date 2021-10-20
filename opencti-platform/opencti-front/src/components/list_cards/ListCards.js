@@ -129,6 +129,7 @@ class ListCards extends Component {
       children,
       exportEntityType,
       exportContext,
+      handleNewCreation,
       CreateItemComponent,
       numberOfElements,
       availableFilterKeys,
@@ -258,22 +259,23 @@ class ListCards extends Component {
                   </div>
                 )
               )}
-              {/* {typeof handleChangeView === 'function' && (
+              {typeof handleChangeView === 'function' && (
                 <Tooltip title={t('Create New')}>
                   <Button
                     variant="contained"
                     size="small"
                     startIcon={<AddCircleOutline />}
+                    onClick={handleNewCreation.bind(this)}
                     color='primary'
                     style={{ marginLeft: 15 }}
                   >
                     {t('New')}
                   </Button>
                 </Tooltip>
-                <div style={{ display: 'inline-block' }}>
-                  {React.cloneElement(CreateItemComponent, { paginationOptions })}
-                </div>
-              )} */}
+                // <div style={{ display: 'inline-block' }}>
+                //   {React.cloneElement(CreateItemComponent, { paginationOptions })}
+                // </div>
+              )}
               {typeof handleChangeView === 'function' && (
                 <Tooltip title={t('Lines view')}>
                   <IconButton

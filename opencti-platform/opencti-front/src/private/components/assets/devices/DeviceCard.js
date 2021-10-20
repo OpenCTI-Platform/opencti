@@ -99,6 +99,7 @@ class DeviceCardComponent extends Component {
     const {
       t, fsd, classes, node, bookmarksIds, onLabelClick,
     } = this.props;
+    console.log('DeviceCardComponent', node);
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
@@ -169,7 +170,7 @@ class DeviceCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('KK-HWELL-011')} */}
-                  {t(node.name)}
+                  {/* {t(node.name)} */}
                 </Typography>
               </div>
               <div>

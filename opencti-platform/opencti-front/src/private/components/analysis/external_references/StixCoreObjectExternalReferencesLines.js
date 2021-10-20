@@ -428,7 +428,7 @@ StixCoreObjectExternalReferencesLinesContainer.propTypes = {
 // `;
 
 export const stixCoreObjectExternalReferencesLinesQuery = graphql`
-  query StixCoreObjectExternalReferencesLinesQuery($count: Int!, $id: String!) {
+  query StixCoreObjectExternalReferencesLinesQuery($id: String!) {
     externalReference(id: $id) {
       id
       source_name

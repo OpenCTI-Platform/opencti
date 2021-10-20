@@ -32,7 +32,7 @@ class Network extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-intrusion_sets',
+      'view-network',
     );
     this.state = {
       sortBy: R.propOr('name', 'sortBy', params),
@@ -44,7 +44,7 @@ class Network extends Component {
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
       selectAll: false,
-      openDeviceCreation: false,
+      openNetworkCreation: false,
     };
   }
 
@@ -52,7 +52,7 @@ class Network extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-intrusion_sets',
+      'view-network',
       this.state,
     );
   }
@@ -77,9 +77,9 @@ class Network extends Component {
     this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
   }
 
-  handleDeviceCreation() {
-    console.log('Device Created successfully');
-    this.setState({ openDeviceCreation: true });
+  handleNetworkCreation() {
+    console.log('Network Created successfully');
+    this.setState({ openNetworkCreation: true });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -177,14 +177,11 @@ class Network extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
+        handleNewCreation={this.handleNetworkCreation.bind(this)}
         OperationsComponent={<NetworkOperations />}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <NetworkCreation />
-          </Security>
-        }
+        CreateItemComponent={<NetworkCreation />}
         openExports={openExports}
         exportEntityType="Network"
         keyword={searchTerm}
@@ -242,7 +239,7 @@ class Network extends Component {
       openExports,
       selectedElements,
       numberOfElements,
-      openDeviceCreation,
+      openNetworkCreation,
     } = this.state;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
@@ -292,7 +289,7 @@ class Network extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-        handleDeviceCreation={this.handleDeviceCreation.bind(this)}
+        handleNewCreation={this.handleNetworkCreation.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
         OperationsComponent={<NetworkOperations />}
@@ -355,7 +352,12 @@ class Network extends Component {
 
   render() {
     const {
-      view, sortBy, orderAsc, searchTerm, filters,
+      view,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      openNetworkCreation,
     } = this.state;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
@@ -366,11 +368,11 @@ class Network extends Component {
     };
     return (
       <div>
-        {view === 'cards' ? this.renderCards(paginationOptions) : ''}
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          {/* <NetworkCreation paginationOptions={paginationOptions} /> */}
-        </Security>
+        {view === 'cards' && !openNetworkCreation ? this.renderCards(paginationOptions) : ''}
+        {view === 'lines' && !openNetworkCreation ? this.renderLines(paginationOptions) : ''}
+        {openNetworkCreation && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <NetworkCreation paginationOptions={paginationOptions} history={this.props.history} />
+        </Security>}
       </div>
     );
   }

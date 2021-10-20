@@ -186,6 +186,7 @@ class Devices extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
+        handleNewCreation={this.handleDeviceCreation.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
         CreateItemComponent={<DeviceCreation />}
@@ -309,7 +310,7 @@ class Devices extends Component {
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleDeleteElements={this.handleDeleteElements.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-        handleDeviceCreation={this.handleDeviceCreation.bind(this)}
+        handleNewCreation={this.handleDeviceCreation.bind(this)}
         selectedElements={selectedElements}
         CreateItemComponent={<DeviceCreation />}
         OperationsComponent={<DeviceOperations />}

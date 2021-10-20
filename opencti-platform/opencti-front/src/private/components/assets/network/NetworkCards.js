@@ -153,7 +153,7 @@ export default createPaginationContainer(
               id
               name
               description
-              ...NetworkCard_node
+              # ...NetworkCard_node
             }
           }
           pageInfo {

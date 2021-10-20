@@ -263,33 +263,53 @@ NetworkCardComponent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
+// const NetworkCardFragment = createFragmentContainer(
+//   NetworkCardComponent,
+//   {
+//     node: graphql`
+//       fragment NetworkCard_node on IntrusionSet {
+//         id
+//         name
+//         description
+//         created
+//         modified
+//         objectMarking {
+//           edges {
+//             node {
+//               id
+//               definition
+//             }
+//           }
+//         }
+//         objectLabel {
+//           edges {
+//             node {
+//               id
+//               value
+//               color
+//             }
+//           }
+//         }
+//       }
+//     `,
+//   },
+// );
+
 const NetworkCardFragment = createFragmentContainer(
   NetworkCardComponent,
   {
     node: graphql`
-      fragment NetworkCard_node on IntrusionSet {
+      fragment NetworkCard_node on NetworkAsset {
         id
         name
+        asset_type
+        asset_id
+        asset_tag
         description
-        created
-        modified
-        objectMarking {
-          edges {
-            node {
-              id
-              definition
-            }
-          }
-        }
-        objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
-        }
+        version
+        vendor_name
+        release_date
+        network_id
       }
     `,
   },

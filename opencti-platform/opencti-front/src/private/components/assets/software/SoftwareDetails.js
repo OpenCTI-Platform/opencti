@@ -5,7 +5,9 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Markdown from 'react-markdown';
 import { withStyles } from '@material-ui/core/styles';
+import Tooltip from '@material-ui/core/Tooltip';
 import Paper from '@material-ui/core/Paper';
+import { Information } from 'mdi-material-ui';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import remarkGfm from 'remark-gfm';
@@ -36,38 +38,111 @@ class SoftwareDetailsComponent extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Description')}
-              </Typography>
-              <ExpandableMarkdown source={software.description} limit={400} />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Objective')}
-              </Typography>
-              <Markdown
-                remarkPlugins={[remarkGfm, remarkParse]}
-                parserOptions={{ commonmark: true }}
-                className="markdown"
-              >
-                {software.objective}
-              </Markdown>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Software Identifier')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                  <Tooltip title={t('Software Identifier')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('device.last_seen')}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('License Key')}
+                </Typography>
+                <div style={{ float: 'left', margin: '15px 0 0 5px' }}>
+                  <Tooltip title={t('License Key')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('device.last_seen')}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('CPE Identifier')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip
+                    title={t('CPE Identifier')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('device.last_seen')}
+              </div>
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('First seen')}
-              </Typography>
-              {fld(software.first_seen)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Last seen')}
-              </Typography>
-              {fld(software.last_seen)}
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Patch Level')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                  <Tooltip title={t('Patch Level')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('device.last_seen')}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Installation ID')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Installation ID')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('device.last_seen')}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Implementation Point')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Implementation Point')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('device.last_seen')}
+              </div>
             </Grid>
           </Grid>
         </Paper>

@@ -1,34 +1,70 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as Yup from 'yup';
+import * as R from 'ramda';
+import { compose } from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
+import Grid from '@material-ui/core/Grid';
 import Drawer from '@material-ui/core/Drawer';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
 import Fab from '@material-ui/core/Fab';
-import { Add, Close, AddCircleOutline } from '@material-ui/icons';
 import {
-  compose, pluck, evolve, path,
-} from 'ramda';
-import * as Yup from 'yup';
+  Add,
+  Edit,
+  Close,
+  Delete,
+  ArrowBack,
+  AddCircleOutline,
+  CheckCircleOutline,
+} from '@material-ui/icons';
+import Typography from '@material-ui/core/Typography';
+import Tooltip from '@material-ui/core/Tooltip';
+import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
-import TextField from '../../../../components/TextField';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkDownField from '../../../../components/MarkDownField';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import { insertNode } from '../../../../utils/Store';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectCreationOverview from '../../common/stix_domain_objects/StixDomainObjectCreationOverview';
+import Loader from '../../../../components/Loader';
+import NetworkCreationDetails from './NetworkCreationDetails';
 
 const styles = (theme) => ({
+  container: {
+    margin: 0,
+  },
+  header: {
+    margin: '-25px',
+    padding: '24px',
+    height: '64px',
+    backgroundColor: '#1F2842',
+  },
+  gridContainer: {
+    marginBottom: 20,
+  },
+  iconButton: {
+    float: 'left',
+    minWidth: '0px',
+    marginRight: 15,
+    padding: '8px 16px 8px 8px',
+  },
+  title: {
+    float: 'left',
+    textTransform: 'uppercase',
+  },
+  rightContainer: {
+    float: 'right',
+    marginTop: '-5px',
+  },
+  editButton: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
+    overflow: 'auto',
     backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
@@ -36,97 +72,82 @@ const styles = (theme) => ({
     }),
     padding: 0,
   },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
 });
 
-const networkMutation = graphql`
-  mutation NetworkCreationMutation($input: IntrusionSetAddInput!) {
-    intrusionSetAdd(input: $input) {
+const networkCreationMutation = graphql`
+  mutation NetworkCreationMutation($input: NetworkAssetAddInput) {
+    createNetworkAsset(input: $input) {
       ...NetworkCard_node
     }
   }
 `;
 
-const networkValidation = (t) => Yup.object().shape({
+const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  confidence: Yup.number(),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
+  asset_type: Yup.array().required(t('This field is required')),
+  implementation_point: Yup.string().required(t('This field is required')),
+  operational_status: Yup.string().required(t('This field is required')),
+  first_seen: Yup.date()
+    .nullable()
+    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+  last_seen: Yup.date()
+    .nullable()
+    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+  sophistication: Yup.string().nullable(),
+  resource_level: Yup.string().nullable(),
+  primary_motivation: Yup.string().nullable(),
+  secondary_motivations: Yup.array().nullable(),
+  personal_motivations: Yup.array().nullable(),
+  goals: Yup.string().nullable(),
 });
 
 class NetworkCreation extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false };
+    this.state = {
+      open: false,
+      onSubmit: false,
+    };
   }
 
   handleOpen() {
     this.setState({ open: true });
   }
 
+  onSubmit(values, { setSubmitting, resetForm }) {
+    console.log('Network Created Successfully! InputData: ', values);
+    // const finalValues = pipe(
+    //   assoc('createdBy', values.createdBy?.value),
+    //   assoc('objectMarking', pluck('value', values.objectMarking)),
+    //   assoc('objectLabel', pluck('value', values.objectLabel)),
+    // )(values);
+    // commitMutation({
+    //   mutation: deviceCreationOverviewMutation,
+    //   variables: {
+    //     input: values,
+    //   },
+    //   // updater: (store) => insertNode(
+    //   //   store,
+    //   //   'Pagination_threatActors',
+    //   //   this.props.paginationOptions,
+    //   //   'threatActorAdd',
+    //   // ),
+    //   setSubmitting,
+    //   onCompleted: () => {
+    //     setSubmitting(false);
+    //     resetForm();
+    //     this.handleClose();
+    //   },
+    // });
+    this.setState({ onSubmit: true });
+  }
+
   handleClose() {
     this.setState({ open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
-    const adaptedValues = evolve(
-      {
-        createdBy: path(['value']),
-        objectMarking: pluck('value'),
-        objectLabel: pluck('value'),
-      },
-      values,
-    );
-    commitMutation({
-      mutation: networkMutation,
-      variables: {
-        input: adaptedValues,
-      },
-      updater: (store) => insertNode(
-        store,
-        'Pagination_intrusionSets',
-        this.props.paginationOptions,
-        'intrusionSetAdd',
-      ),
-      setSubmitting,
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        this.handleClose();
-      },
-    });
+  handleSubmit() {
+    this.setState({ onSubmit: true });
   }
 
   onReset() {
@@ -134,140 +155,163 @@ class NetworkCreation extends Component {
   }
 
   render() {
-    const { t, classes } = this.props;
+    const {
+      t,
+      classes,
+      deviceId,
+      open,
+      history,
+    } = this.props;
     return (
-      <div>
-        {/* <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
+      <div className={classes.container}>
+        <Formik
+          initialValues={{
+            name: '',
+            asset_id: '',
+            version: '',
+            serial_number: '',
+            asset_tag: '',
+            location: '',
+            vendor_name: '',
+            release_date: '',
+            description: '',
+            operational_status: '',
+            createdBy: '',
+            objectMarking: [],
+            Labels: [],
+            installed_operating_system: '',
+            motherboard_id: '',
+            ports: [],
+            asset_type: [],
+            installation_id: '',
+            connected_to_network: {},
+            bios_id: '',
+            is_virtual: false,
+            is_publicly_accessible: false,
+            fqdn: '',
+            installed_hardware: {},
+            model: '',
+            mac_address: '',
+            baseline_configuration_name: '',
+            uri: '',
+            is_scanned: false,
+            hostname: '',
+            default_gateway: '',
+          }}
+          validationSchema={deviceValidation(t)}
+          onSubmit={this.onSubmit.bind(this)}
+          onReset={this.onReset.bind(this)}
         >
-          <Add />
-        </Fab> */}
-        <Tooltip title={t('Create New')}>
-          <Button
-            variant="contained"
-            size="small"
-            onClick={this.handleOpen.bind(this)}
-            startIcon={<AddCircleOutline />}
-            color='primary'
-            style={{ marginLeft: 15 }}
-          >
-            {t('New')}
-          </Button>
-        </Tooltip>
-        <Drawer
-          open={this.state.open}
-          anchor="right"
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-            >
-              <Close fontSize="small" />
-            </IconButton>
-            <Typography variant="h6">{t('Create an network')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <Formik
-              initialValues={{
-                name: '',
-                confidence: 15,
-                description: '',
-                createdBy: '',
-                objectMarking: [],
-                objectLabel: [],
-              }}
-              validationSchema={networkValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
-            >
-              {({
-                submitForm,
-                handleReset,
-                isSubmitting,
-                setFieldValue,
-                values,
-              }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    component={TextField}
-                    name="name"
-                    label={t('Name')}
-                    fullWidth={true}
-                    detectDuplicate={[
-                      'Device',
-                      'Network',
-                      'Software',
-                      'Malware',
-                    ]}
-                  />
-                  <ConfidenceField
-                    name="confidence"
-                    label={t('Confidence')}
-                    fullWidth={true}
-                    containerstyle={{ width: '100%', marginTop: 20 }}
-                  />
-                  <Field
-                    component={MarkDownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                  />
-                  <div className={classes.buttons}>
+          {({
+            submitForm,
+            handleReset,
+            isSubmitting,
+            setFieldValue,
+            values,
+          }) => (
+            <>
+              <div className={classes.header}>
+                <Typography
+                  variant="h1"
+                  gutterBottom={true}
+                  classes={{ root: classes.title }}
+                >
+                  {t('New Asset')}
+                </Typography>
+                <div className={classes.rightContainer}>
+                  <Tooltip title={t('Cancel')}>
                     <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
+                      variant="outlined"
+                      size="small"
+                      startIcon={<Close />}
+                      color='primary'
+                      // onClick={handleReset}
+                      onClick={() => history.goBack()}
+                      className={classes.iconButton}
                     >
                       {t('Cancel')}
                     </Button>
+                  </Tooltip>
+                  <Tooltip title={t('Create')}>
                     <Button
                       variant="contained"
                       color="primary"
+                      startIcon={<CheckCircleOutline />}
                       onClick={submitForm}
                       disabled={isSubmitting}
-                      classes={{ root: classes.button }}
+                      classes={{ root: classes.iconButton }}
                     >
-                      {t('Create')}
+                      {t('Done')}
                     </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </Drawer>
+                  </Tooltip>
+                </div>
+              </div>
+              <Form>
+                <Grid
+                  container={true}
+                  spacing={3}
+                  classes={{ container: classes.gridContainer }}
+                >
+                  <Grid item={true} xs={6}>
+                    <StixDomainObjectCreationOverview
+                      setFieldValue={setFieldValue}
+                      values={values}
+                    />
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <NetworkCreationDetails setFieldValue={setFieldValue} />
+                  </Grid>
+                </Grid>
+                {/* <Grid
+                  container={true}
+                  spacing={3}
+                  classes={{ container: classes.gridContainer }}
+                  style={{ marginTop: 25 }}
+                >
+                  <Grid item={true} xs={6}>
+                    <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+                      stixObjectOrStixRelationshipId={device.id}
+              stixObjectOrStixRelationshipLink={`/dashboard/assets/devices/${device.id}/knowledge`}
+                    />
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <StixCoreObjectOrStixCoreRelationshipLastReports
+                      stixCoreObjectOrStixCoreRelationshipId={device.id}
+                    />
+                  </Grid>
+                </Grid> */}
+                {/* <Grid
+                  container={true}
+                  spacing={3}
+                  classes={{ container: classes.gridContainer }}
+                  style={{ marginTop: 25 }}
+                > */}
+                {/* <Grid item={true} xs={6}>
+                    <StixCoreObjectExternalReferences
+                      stixCoreObjectId={device.id}
+                    />
+                  </Grid> */}
+                {/* <Grid item={true} xs={6}>
+                    <StixCoreObjectLatestHistory stixCoreObjectId={device.id} />
+                  </Grid>
+                </Grid>
+                <StixCoreObjectOrStixCoreRelationshipNotes
+                  stixCoreObjectOrStixCoreRelationshipId={device.id}
+                /> */}
+                {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <DeviceEdition deviceId={device.id} />
+                </Security> */}
+              </Form>
+            </>
+          )}
+        </Formik>
       </div>
     );
   }
 }
 
 NetworkCreation.propTypes = {
-  paginationOptions: PropTypes.object,
+  deviceId: PropTypes.string,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

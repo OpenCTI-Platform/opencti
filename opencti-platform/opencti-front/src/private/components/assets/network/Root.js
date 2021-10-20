@@ -62,11 +62,21 @@ const networkDarkLightQuery = graphql`
   query RootNetworkDarkLightQuery($networkAssetId: ID!) {
     networkAsset(id: $networkAssetId) {
       id
-      standard_id
+      asset_tag
+      asset_type
+      operational_status
+      asset_id
+      locations {
+        description
+      }
       name
       asset_id
+      serial_number
+      labels
       description
+      release_date
       vendor_name
+      operational_status
       version
     }
   }

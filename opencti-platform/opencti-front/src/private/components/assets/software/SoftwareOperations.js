@@ -197,18 +197,6 @@ class SoftwareOperations extends Component {
             </Button>
           </Tooltip>
         </Security>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <Tooltip title={t('Create New')}>
-            <Button
-              variant="contained"
-              size="small"
-              startIcon={<AddCircleOutline />}
-              color='primary'
-            >
-              {t('New')}
-            </Button>
-          </Tooltip>
-        </Security>
         <Dialog
           open={this.state.displayDelete}
           keepMounted={true}
