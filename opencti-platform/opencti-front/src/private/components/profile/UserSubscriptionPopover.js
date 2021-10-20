@@ -119,13 +119,16 @@ class UserSubscriptionPopover extends Component {
   }
 
   render() {
-    const { classes, t, userSubscriptionId } = this.props;
+    const {
+      classes, t, userSubscriptionId, disabled,
+    } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           style={{ marginTop: 1 }}
+          disabled={disabled}
         >
           <MoreVert />
         </IconButton>
@@ -199,6 +202,7 @@ class UserSubscriptionPopover extends Component {
 
 UserSubscriptionPopover.propTypes = {
   userId: PropTypes.string,
+  disabled: PropTypes.bool,
   userSubscriptionId: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,

@@ -40,7 +40,7 @@ class Profile extends Component {
               const subscriptionStatus = R.head(
                 R.filter(
                   (n) => n.id === 'SUBSCRIPTION_MANAGER',
-                  R.pathOr([], ['settings', 'platform_modules'], props.settings),
+                  R.pathOr([], ['settings', 'platform_modules'], props),
                 ),
               )?.enable;
               return (

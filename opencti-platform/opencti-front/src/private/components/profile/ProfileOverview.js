@@ -126,7 +126,6 @@ const ProfileOverviewComponent = (props) => {
       },
     });
   };
-
   return (
     <div>
       <Grid container={true} spacing={3}>
@@ -270,6 +269,7 @@ const ProfileOverviewComponent = (props) => {
                             userId={me.id}
                             userSubscriptionId={userSubscription.id}
                             paginationOptions={null}
+                            disabled={!subscriptionStatus}
                           />
                         </ListItemSecondaryAction>
                       </ListItem>
