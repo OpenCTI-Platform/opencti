@@ -1,4 +1,5 @@
 import { assoc } from 'ramda';
+import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -7,14 +8,16 @@ import {
   deleteRelationsByFromAndTo,
   internalLoadById,
   listEntities,
+  listThings,
   loadById,
+  paginateAllThings,
   updateAttribute,
 } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
-import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
-import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
+import { ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
+import { isStixMetaRelationship, RELATION_EXTERNAL_REFERENCE } from '../schema/stixMetaRelationship';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
@@ -26,6 +29,19 @@ export const findById = (user, externalReferenceId) => {
 
 export const findAll = (user, args) => {
   return listEntities(user, [ENTITY_TYPE_EXTERNAL_REFERENCE], args);
+};
+
+export const references = async (user, externalReferenceId, args) => {
+  const key = buildRefRelationKey(RELATION_EXTERNAL_REFERENCE);
+  let types = ['Stix-Core-Object', 'stix-core-relationship'];
+  if (args.types) {
+    types = args.types;
+  }
+  const filters = [{ key, values: [externalReferenceId] }, ...(args.filters || [])];
+  if (args.all) {
+    return paginateAllThings(user, types, R.assoc('filters', filters, args));
+  }
+  return listThings(user, types, R.assoc('filters', filters, args));
 };
 
 export const externalReferenceAskEnrichment = async (user, externalReferenceId, connectorId) => {

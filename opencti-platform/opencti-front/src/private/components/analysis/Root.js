@@ -9,6 +9,7 @@ import RootNote from './notes/Root';
 import Opinions from './Opinions';
 import RootOpinion from './opinions/Root';
 import ExternalReferences from './ExternalReferences';
+import RootExternalReference from './external_references/Root';
 
 class Root extends Component {
   render() {
@@ -53,6 +54,12 @@ class Root extends Component {
           exact
           path="/dashboard/analysis/external_references"
           component={ExternalReferences}
+        />
+        <BoundaryRoute
+          path="/dashboard/analysis/external_references/:externalReferenceId"
+          render={(routeProps) => (
+            <RootExternalReference {...routeProps} me={me} />
+          )}
         />
       </Switch>
     );

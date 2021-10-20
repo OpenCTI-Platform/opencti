@@ -92,7 +92,17 @@ const FileExportViewerBase = ({
                 ))}
               </List>
             ) : (
-              <div style={{ padding: 10 }}>{t('No file for the moment')}</div>
+              <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                <span
+                  style={{
+                    display: 'table-cell',
+                    verticalAlign: 'middle',
+                    textAlign: 'center',
+                  }}
+                >
+                  {t('No file for the moment')}
+                </span>
+              </div>
             )}
           </Paper>
         </div>

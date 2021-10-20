@@ -1324,6 +1324,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   url: String
   hash: String
   external_id: String
+  references: StixObjectOrStixRelationshipConnection
   # Technical
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection

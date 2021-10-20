@@ -7,17 +7,20 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVertOutlined, LanguageOutlined } from '@material-ui/icons';
+import {
+  LanguageOutlined,
+  KeyboardArrowRightOutlined,
+} from '@material-ui/icons';
 import { compose } from 'ramda';
 import Skeleton from '@material-ui/lab/Skeleton';
+import { Link } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
-import ExternalReferencePopover from './ExternalReferencePopover';
 
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
-    cursor: 'default',
+    cursor: 'pointer',
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -56,10 +59,16 @@ const styles = (theme) => ({
 class ExternalReferenceLineComponent extends Component {
   render() {
     const {
-      fd, classes, dataColumns, node, paginationOptions,
+      fd, classes, dataColumns, node,
     } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        button={true}
+        component={Link}
+        to={`/dashboard/analysis/external_references/${node.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <LanguageOutlined />
         </ListItemIcon>
@@ -94,10 +103,7 @@ class ExternalReferenceLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <ExternalReferencePopover
-            externalReferenceId={node.id}
-            paginationOptions={paginationOptions}
-          />
+          <KeyboardArrowRightOutlined />
         </ListItemSecondaryAction>
       </ListItem>
     );
@@ -192,7 +198,7 @@ class ExternalReferenceLineDummyComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined />
+          <KeyboardArrowRightOutlined />
         </ListItemSecondaryAction>
       </ListItem>
     );

@@ -1,6 +1,7 @@
 import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
+  references,
   addExternalReference,
   externalReferenceAddRelation,
   externalReferenceCleanContext,
@@ -30,6 +31,7 @@ const externalReferenceResolvers = {
     usedBy: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
   },
   ExternalReference: {
+    references: (container, args, { user }) => references(user, container.id, args),
     editContext: (externalReference) => fetchEditContext(externalReference.id),
     jobs: (externalReference, args, { user }) => worksForSource(user, externalReference.id, args),
     connectors: (externalReference, { onlyAlive = false }, { user }) =>
