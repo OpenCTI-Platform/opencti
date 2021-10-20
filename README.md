@@ -49,8 +49,8 @@ All you need to install the OpenCTI platform can be found in the [official docum
 ### Founders
 
 <p align="left">
-  <a href="https://www.hassine.fr" alt="Samuel Hassine"><img src="https://www.luatix.org/wp-content/uploads/2020/04/samuel.png" width="80" /></a>
-  <a href="https://medium.com/@julien.richard" alt="Julien Richard"><img src="https://www.luatix.org/wp-content/uploads/2020/11/julien.png" width="80" /></a>
+  <a href="https://medium.com/@samuel.hassine" alt="Samuel Hassine"><img src="https://www.luatix.org/wp-content/uploads/2021/10/sam-circle-1.png" width="80" /></a>
+  <a href="https://medium.com/@julien.richard" alt="Julien Richard"><img src="https://www.luatix.org/wp-content/uploads/2021/10/julien.png" width="80" /></a>
   <a href="https://www.ssi.gouv.fr" alt="ANSSI"><img src="https://www.luatix.org/wp-content/uploads/2020/04/Anssi.png" width="80" /></a>
 </p>
 
@@ -62,6 +62,8 @@ All you need to install the OpenCTI platform can be found in the [official docum
   <a href="https://www.tanium.com" alt="Tanium"><img src="https://www.luatix.org/wp-content/uploads/2021/01/tanium.png" width="80" /></a>
   <a href="https://www1.nyc.gov/site/cyber/index.page" alt="New York City Cyber Command"><img src="https://www.luatix.org/wp-content/uploads/2020/11/nyc.png" width="80" /></a>
   <a href="https://www.gatewatcher.com" alt="Gatewatcher"><img src="https://www.luatix.org/wp-content/uploads/2021/03/gatewatcher.png" width="80" /></a>
+  <a href="https://www.deepwatch.com" alt="deepwatch"><img src="https://www.luatix.org/wp-content/uploads/2021/10/deepwatch.png" width="80" /></a>
+  <a href="https://www.aisi.fr" alt="AISI"><img src="https://www.luatix.org/wp-content/uploads/2021/10/aisi.png" width="80" /></a>
 </p>
 
 ### Advisory board
