@@ -390,7 +390,7 @@ class Devices extends Component {
         {view === 'cards' && !openDeviceCreation ? this.renderCards(paginationOptions) : ''}
         {view === 'lines' && !openDeviceCreation ? this.renderLines(paginationOptions) : ''}
         {openDeviceCreation && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <DeviceCreation paginationOptions={paginationOptions} />
+          <DeviceCreation paginationOptions={paginationOptions} history={this.props.history} />
         </Security>}
       </div>
     );

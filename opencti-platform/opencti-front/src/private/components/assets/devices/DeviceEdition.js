@@ -53,6 +53,17 @@ export const deviceEditionDarkLightQuery = graphql`
       asset_id
       fqdn
       network_id
+      description
+      locations {
+        description
+      }
+      version
+      vendor_name
+      asset_tag
+      asset_type
+      serial_number
+      release_date
+      operational_status
     }
   }
 `;

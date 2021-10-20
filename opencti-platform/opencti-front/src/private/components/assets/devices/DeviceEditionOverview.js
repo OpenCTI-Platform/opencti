@@ -14,11 +14,13 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Cancel from '@material-ui/icons/Cancel';
 import Button from '@material-ui/core/Button';
 import MenuItem from '@material-ui/core/MenuItem';
+import AssetTaglist from '../../common/form/AssetTaglist';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
+import AssetType from '../../common/form/AssetType';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
@@ -221,6 +223,7 @@ class DeviceEditionOverviewComponent extends Component {
       context,
       enableReferences,
     } = this.props;
+    console.log('fetched device ', device);
     const createdBy = R.pathOr(null, ['createdBy', 'name'], device) === null
       ? ''
       : {
@@ -241,22 +244,33 @@ class DeviceEditionOverviewComponent extends Component {
         value: n.node.id,
       })),
     )(device);
+
     const initialValues = R.pipe(
-      R.assoc('createdBy', createdBy),
-      R.assoc('killChainPhases', killChainPhases),
-      R.assoc('objectMarking', objectMarking),
-      R.assoc(
-        'threat_actor_types',
-        device.threat_actor_types ? device.threat_actor_types : [],
-      ),
+      R.assoc('id', device.id),
+      R.assoc('asset_id', device.asset_id),
+      R.assoc('description', device.description),
+      R.assoc('name', device.name),
+      R.assoc('asset_tag', device.asset_tag),
+      R.assoc('asset_type', device.asset_type),
+      R.assoc('location', device.locations.map((index) => [index.description]).join('\n')),
+      R.assoc('version', device.version),
+      R.assoc('vendor_name', device.vendor_name),
+      R.assoc('serial_number', device.serial_number),
+      R.assoc('release_date', device.release_date),
+      R.assoc('operational_status', device.operational_status),
       R.pick([
+        'id',
+        'asset_id',
         'name',
-        'threat_actor_types',
-        'confidence',
         'description',
-        'createdBy',
-        'killChainPhases',
-        'objectMarking',
+        'asset_tag',
+        'asset_type',
+        'location',
+        'version',
+        'vendor_name',
+        'serial_number',
+        'release_date',
+        'operational_status',
       ]),
     )(device);
     return (
@@ -301,9 +315,6 @@ class DeviceEditionOverviewComponent extends Component {
                         containerstyle={{ width: '100%' }}
                         onFocus={this.handleChangeFocus.bind(this)}
                         onSubmit={this.handleSubmitField.bind(this)}
-                        // helperText={
-                        //   <SubscriptionFocus fieldName="name" />
-                        // }
                       />
                     </div>
                     <div>
@@ -324,14 +335,11 @@ class DeviceEditionOverviewComponent extends Component {
                         component={TextField}
                         variant= 'outlined'
                         size= 'small'
-                        name="assetId"
+                        name="asset_id"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
                         onFocus={this.handleChangeFocus.bind(this)}
                         onSubmit={this.handleSubmitField.bind(this)}
-                        // helperText={
-                        //   <SubscriptionFocus context={context} fieldName="name" />
-                        // }
                       />
                     </div>
                     {/* <div>
@@ -370,12 +378,15 @@ class DeviceEditionOverviewComponent extends Component {
                       <div className='scroll-bg'>
                           <div className='scroll-div'>
                             <div className='scroll-object'>
-                            {[1, 2, 3, 4].map((data, key) => (
-                              <>
-                                {t('Lorem Ipsum Lorem Ipsum')}
-                                <br></br>
-                              </>
-                            ))}
+                            <Field
+                                  component={TextField}
+                                  multiline={true}
+                                  variant='outlined'
+                                  size='small'
+                                  name="description"
+                                  fullWidth={true}
+                                  containerstyle={{ width: '100%', height: '100%' }}
+                            />
                           </div>
                         </div>
                       </div>
@@ -406,9 +417,6 @@ class DeviceEditionOverviewComponent extends Component {
                         name="version"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
-                        // helperText={
-                        //   <SubscriptionFocus context={context} fieldName="name" />
-                        // }
                       />
                     </div>
                     <div>
@@ -434,12 +442,9 @@ class DeviceEditionOverviewComponent extends Component {
                         component={TextField}
                         variant= 'outlined'
                         size= 'small'
-                        name="serialNumber"
+                        name="serial_number"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
-                        // helperText={
-                        //   <SubscriptionFocus context={context} fieldName="name" />
-                        // }
                       />
                     </div>
                     <div>
@@ -563,21 +568,17 @@ class DeviceEditionOverviewComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                    <Field
-                      component={SelectField}
-                      variant= 'outlined'
-                      name="assetType"
-                      size= 'small'
-                      fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '100%' }}
-                      // helperText={
-                      //   <SubscriptionFocus
-                      //   context={context}
-                      //   fieldName="AssetType"
-                      //   />
-                      // }
-                    />
+                    <AssetType
+                            component={SelectField}
+                            variant='outlined'
+                            name="asset_type"
+                            size='small'
+                            fullWidth={true}
+                            style={{ height: '38.09px' }}
+                            containerstyle={{ width: '100%' }}
+                            helperText={t('Select Asset Type')}
+                          >
+                    </AssetType>
                   </div>
                   <div>
                     <Typography
@@ -594,21 +595,16 @@ class DeviceEditionOverviewComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                    <Field
-                      component={SelectField}
-                      variant= 'outlined'
-                      name="assetTag"
-                      size= 'small'
-                      fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '100%' }}
-                      // helperText={
-                      //   <SubscriptionFocus
-                      //   context={context}
-                      //   fieldName="AssetType"
-                      //   />
-                      // }
-                    />
+                    <AssetTaglist
+                              component={SelectField}
+                              variant='outlined'
+                              name="asset_tag"
+                              size='small'
+                              fullWidth={true}
+                              style={{ height: '38.09px' }}
+                              containerstyle={{ width: '100%' }}
+                            >
+                    </AssetTaglist>
                   </div>
                   <div>
                     <Typography
@@ -628,12 +624,15 @@ class DeviceEditionOverviewComponent extends Component {
                     <div className='scroll-bg'>
                         <div className='scroll-div'>
                           <div className='scroll-object'>
-                          {[1, 2, 3, 4].map((data, key) => (
-                            <>
-                              {t('Lorem Ipsum Lorem Ipsum')}
-                              <br></br>
-                            </>
-                          ))}
+                          <Field
+                                  component={TextField}
+                                  multiline={true}
+                                  variant='outlined'
+                                  size='small'
+                                  name="location"
+                                  fullWidth={true}
+                                  containerstyle={{ width: '100%', height: '100%' }}
+                          />
                         </div>
                       </div>
                     </div>
@@ -654,19 +653,13 @@ class DeviceEditionOverviewComponent extends Component {
                     </div>
                     <div className="clearfix" />
                     <Field
-                      component={SelectField}
+                      component={TextField}
                       variant= 'outlined'
-                      name="vendorName"
+                      name="vendor_name"
                       size= 'small'
                       fullWidth={true}
                       style={{ height: '38.09px' }}
                       containerstyle={{ width: '100%' }}
-                      // helperText={
-                      //   <SubscriptionFocus
-                      //   context={context}
-                      //   fieldName="vendorName"
-                      //   />
-                      // }
                     />
                   </div>
                   <div>
@@ -685,9 +678,9 @@ class DeviceEditionOverviewComponent extends Component {
                     </div>
                     <div className="clearfix" />
                     <Field
-                      component={SelectField}
+                      component={TextField}
                       variant= 'outlined'
-                      name="releaseDate"
+                      name="release_date"
                       size= 'small'
                       fullWidth={true}
                       style={{ height: '38.09px' }}
@@ -707,7 +700,7 @@ class DeviceEditionOverviewComponent extends Component {
                       gutterBottom={true}
                       style={{ float: 'left', marginTop: 20 }}
                     >
-                      {t('Operation State')}
+                      {t('Operational State')}
                     </Typography>
                     <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                       <Tooltip title={t('Operation State')}>
@@ -716,19 +709,13 @@ class DeviceEditionOverviewComponent extends Component {
                     </div>
                     <div className="clearfix" />
                     <Field
-                      component={SelectField}
+                      component={TextField}
                       variant= 'outlined'
-                      name="operationState"
+                      name="operational_status"
                       size= 'small'
                       fullWidth={true}
                       style={{ height: '38.09px' }}
                       containerstyle={{ width: '100%' }}
-                      // helperText={
-                      //   <SubscriptionFocus
-                      //   context={context}
-                      //   fieldName="OperationState"
-                      //   />
-                      // }
                     />
                   </div>
                   </Grid>

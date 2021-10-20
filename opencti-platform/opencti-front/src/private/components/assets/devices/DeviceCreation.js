@@ -161,6 +161,7 @@ class DeviceCreation extends Component {
       classes,
       deviceId,
       open,
+      history,
     } = this.props;
     return (
       <div className={classes.container}>
@@ -201,7 +202,7 @@ class DeviceCreation extends Component {
           validationSchema={deviceValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onReset.bind(this)}
-         >
+        >
           {({
             submitForm,
             handleReset,
@@ -222,10 +223,12 @@ class DeviceCreation extends Component {
                   <Tooltip title={t('Cancel')}>
                     <Button
                       variant="outlined"
+                      size="small"
                       startIcon={<Close />}
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.iconButton }}
+                      color='primary'
+                      // onClick={handleReset}
+                      onClick={() => history.goBack()}
+                      className={classes.iconButton}
                     >
                       {t('Cancel')}
                     </Button>
@@ -251,10 +254,10 @@ class DeviceCreation extends Component {
                   classes={{ container: classes.gridContainer }}
                 >
                   <Grid item={true} xs={6}>
-                    <DeviceCreationOverview setFieldValue={setFieldValue} values={values}/>
+                    <DeviceCreationOverview setFieldValue={setFieldValue} values={values} />
                   </Grid>
                   <Grid item={true} xs={6}>
-                    <DeviceCreationDetails setFieldValue={setFieldValue}/>
+                    <DeviceCreationDetails setFieldValue={setFieldValue} />
                   </Grid>
                 </Grid>
                 {/* <Grid
@@ -281,12 +284,12 @@ class DeviceCreation extends Component {
                   classes={{ container: classes.gridContainer }}
                   style={{ marginTop: 25 }}
                 > */}
-                  {/* <Grid item={true} xs={6}>
+                {/* <Grid item={true} xs={6}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={device.id}
                     />
                   </Grid> */}
-                  {/* <Grid item={true} xs={6}>
+                {/* <Grid item={true} xs={6}>
                     <StixCoreObjectLatestHistory stixCoreObjectId={device.id} />
                   </Grid>
                 </Grid>

@@ -24,6 +24,8 @@ import { dateFormat, parse } from '../../../../utils/Time';
 import DatePickerField from '../../../../components/DatePickerField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+// import Ports from '../../common/form/Ports';
+// import Protocols from '../../common/form/Protocols';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -133,9 +135,9 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <Field
                     component={TextField}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="installed_operating_system"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
                   />
                 </div>
@@ -157,9 +159,9 @@ class DeviceCreationDetailsComponent extends Component {
                   <Field
                     component={SelectField}
                     style={{ height: '38.09px' }}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="installed_software"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
                     containerstyle={{ width: '100%' }}
                   />
@@ -181,15 +183,15 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <Field
                     component={TextField}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="motherboard_id"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   fieldName="motherboard_id"
-                    //   />
-                    // }
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   fieldName="motherboard_id"
+                  //   />
+                  // }
                   />
                 </div>
                 <div>
@@ -208,24 +210,24 @@ class DeviceCreationDetailsComponent extends Component {
                     <AddIcon fontSize="small" color="disabled" style={{ marginTop: 2 }} />
                   </div>
                   <div className="clearfix" />
-                  <Field
+                  {/* <Ports
                     component={SelectField}
                     style={{ height: '38.09px' }}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="ports"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
                     containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  />
-                  <Field
+                  /> */}
+                  {/* <Protocols
                     component={SelectField}
                     style={{ height: '38.09px' }}
-                    variant= 'outlined'
-                    name="ports"
-                    size= 'small'
+                    variant='outlined'
+                    name="protocols"
+                    size='small'
                     fullWidth={true}
                     containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  />
+                  /> */}
                 </div>
                 <div>
                   <Typography
@@ -243,9 +245,9 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <Field
                     component={TextField}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="installation_id"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
                   />
                 </div>
@@ -266,14 +268,14 @@ class DeviceCreationDetailsComponent extends Component {
                   <Field
                     component={TextField}
                     name="connected_to_network"
-                    size= 'small'
-                    variant= 'outlined'
+                    size='small'
+                    variant='outlined'
                     fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   fieldName="connect_to_network"
-                    //   />
-                    // }
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   fieldName="connect_to_network"
+                  //   />
+                  // }
                   />
                 </div>
                 <div>
@@ -292,15 +294,15 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <Field
                     component={TextField}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="bios_id"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   fieldName="netbios_name"
-                    //   />
-                    // }
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   fieldName="netbios_name"
+                  //   />
+                  // }
                   />
                 </div>
                 <div>
@@ -319,9 +321,9 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <div className="clearfix" />
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <Typography>No</Typography>
-                      <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
-                      <Typography>Yes</Typography>
+                    <Typography>No</Typography>
+                    <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                    <Typography>Yes</Typography>
                   </div>
                 </div>
                 <div>
@@ -340,9 +342,9 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <div className="clearfix" />
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <Typography>No</Typography>
-                      <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
-                      <Typography>Yes</Typography>
+                    <Typography>No</Typography>
+                    <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                    <Typography>Yes</Typography>
                   </div>
                 </div>
                 <div>
@@ -361,9 +363,9 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <Field
                     component={TextField}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="fqdn"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
                   />
                 </div>
@@ -388,27 +390,27 @@ class DeviceCreationDetailsComponent extends Component {
                   <Field
                     component={SelectField}
                     style={{ height: '38.09px' }}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="installed_hardware"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
                     containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                   />
                   <Field
                     component={SelectField}
                     style={{ height: '38.09px' }}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="installed_hardware"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
                     containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                   />
                   <Field
                     component={SelectField}
                     style={{ height: '38.09px' }}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="installed_hardware"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
                     containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                   />
@@ -429,9 +431,9 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <Field
                     component={TextField}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="description"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
                   />
                 </div>
@@ -451,9 +453,9 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <Field
                     component={TextField}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="model"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
                   />
                 </div>
@@ -473,9 +475,9 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <Field
                     component={TextField}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="mac_address"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
                   />
                 </div>
@@ -495,9 +497,9 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <Field
                     component={TextField}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="baseline_configuration_name"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
                   />
                 </div>
@@ -517,9 +519,9 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <Field
                     component={TextField}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="uri"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
                   />
                 </div>
@@ -539,9 +541,9 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <Field
                     component={TextField}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="bios_id"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
                   />
                 </div>
@@ -561,9 +563,9 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <div className="clearfix" />
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <Typography>No</Typography>
-                      <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
-                      <Typography>Yes</Typography>
+                    <Typography>No</Typography>
+                    <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                    <Typography>Yes</Typography>
                   </div>
                 </div>
                 <div>
@@ -582,9 +584,9 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <Field
                     component={TextField}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="hostname"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
                   />
                 </div>
@@ -604,9 +606,9 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <Field
                     component={TextField}
-                    variant= 'outlined'
+                    variant='outlined'
                     name="default_gateway"
-                    size= 'small'
+                    size='small'
                     fullWidth={true}
                   />
                 </div>

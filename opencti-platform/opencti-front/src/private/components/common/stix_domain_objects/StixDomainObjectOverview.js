@@ -114,7 +114,7 @@ class StixDomainObjectOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t(stixDomainObject.standard_id)}
+                {t(stixDomainObject.id)}
               </div>
               <div>
                 <Typography
@@ -135,7 +135,7 @@ class StixDomainObjectOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('Lorem Ipsum Lorem Ipsum')}
+                {t(stixDomainObject.asset_id)}
               </div>
               <div>
                 <Typography
@@ -159,12 +159,7 @@ class StixDomainObjectOverview extends Component {
                 <div className='scroll-bg'>
                     <div className='scroll-div'>
                       <div className='scroll-object'>
-                      {[1, 2, 3, 4, 5, 6, 7, 8].map((data, key) => (
-                        <>
-                          {t('Lorem Ipsum Lorem Ipsum')}
-                          <br></br>
-                        </>
-                      ))}
+                        {t(stixDomainObject.description)}
                     </div>
                   </div>
                 </div>
@@ -188,7 +183,7 @@ class StixDomainObjectOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('2.0')}
+                {t(stixDomainObject.version)}
               </div>
               <div>
                 <Typography
@@ -209,7 +204,7 @@ class StixDomainObjectOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('Lorem Ipsum Lorem Ipsum')}
+                {t(stixDomainObject.serial_number)}
                 {/* <ItemCreator creator={stixDomainObject.creator} /> */}
               </div>
               <div>
@@ -350,7 +345,7 @@ class StixDomainObjectOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                  <Chip key={stixDomainObject.id} classes={{ root: classes.chip }} label={t('Physical Device')} color="primary" />
+                  <Chip key={stixDomainObject.id} classes={{ root: classes.chip }} label={t(stixDomainObject.asset_type)} color="primary" />
                 {/* <ItemCreator creator={stixDomainObject.creator} /> */}
               </div>
               <div>
@@ -396,12 +391,7 @@ class StixDomainObjectOverview extends Component {
                 <div className='scroll-bg'>
                     <div className='scroll-div'>
                       <div className='scroll-object'>
-                      {[1, 2, 3, 4, 5, 6, 7, 8].map((data, key) => (
-                        <>
-                          {t('Lorem Ipsum Lorem Ipsum')}
-                          <br></br>
-                        </>
-                      ))}
+                      {stixDomainObject.locations.map((index) => [index.description]).join()}
                     </div>
                   </div>
                 </div>
@@ -425,7 +415,7 @@ class StixDomainObjectOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('Lorem Ipsum Lorem Ipsum')}
+                {t(stixDomainObject.vendor_name)}
               </div>
               <div>
                 <Typography
@@ -446,7 +436,7 @@ class StixDomainObjectOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {fldt(stixDomainObject.created)}
+                {fldt(stixDomainObject.release_date)}
               </div>
               <div>
                 <Typography
@@ -467,7 +457,7 @@ class StixDomainObjectOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('Under Major Modification')}
+                {t(stixDomainObject.operational_status)}
               </div>
               {/* <Typography
                 variant="h3"
