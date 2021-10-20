@@ -64,6 +64,7 @@ export const deviceEditionDarkLightQuery = graphql`
       serial_number
       release_date
       operational_status
+      ...DeviceEditionDetails_device
     }
   }
 `;

@@ -78,6 +78,7 @@ const networkDarkLightQuery = graphql`
       vendor_name
       operational_status
       version
+      ...NetworkDetails_network
     }
   }
 `;

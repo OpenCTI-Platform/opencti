@@ -145,7 +145,6 @@ const Network = createFragmentContainer(NetworkComponent, {
       }
       name
       aliases
-      ...NetworkDetails_network
     }
   `,
 });

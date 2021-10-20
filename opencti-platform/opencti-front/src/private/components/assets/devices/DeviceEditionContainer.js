@@ -153,7 +153,6 @@ const DeviceEditionFragment = createFragmentContainer(
       fragment DeviceEditionContainer_device on ThreatActor {
         id
         ...DeviceEditionOverview_device
-        ...DeviceEditionDetails_device
         editContext {
           name
           focusOn

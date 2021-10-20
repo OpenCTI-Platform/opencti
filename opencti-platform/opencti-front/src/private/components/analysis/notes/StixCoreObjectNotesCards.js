@@ -141,7 +141,6 @@ class StixCoreObjectNotesCardsContainer extends Component {
     } = this.props;
     const { open } = this.state;
     const notes = R.pathOr([], ['notes', 'edges'], data.note);
-    console.log('StixCoreNotesPropsData', notes);
     return (
       <div style={{ marginTop: marginTop || 40 }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -170,7 +169,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
             />
           );
         })}
-        <Accordion
+        {/* <Accordion
           style={{ margin: `${notes.length > 0 ? '30' : '5'}px 0 30px 0` }}
           expanded={open}
           onChange={this.handleToggleWrite.bind(this)}
@@ -183,7 +182,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
             </Typography>
           </AccordionSummary>
           <AccordionDetails style={{ width: '100%' }}>
-            Hello There This is the section for notes and components of notes
+            Hello There This is the section for notes and components of notes */}
             {/* <Formik
               enableReinitialize={true}
               initialValues={{
@@ -261,8 +260,8 @@ class StixCoreObjectNotesCardsContainer extends Component {
                 </Form>
               )}
             </Formik> */}
-          </AccordionDetails>
-        </Accordion>
+          {/* </AccordionDetails>
+        </Accordion> */}
         {/* <Accordion
           style={{ margin: `${notes.length > 0 ? '30' : '5'}px 0 30px 0` }}
           expanded={open}

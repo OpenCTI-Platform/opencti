@@ -9,6 +9,8 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import List from '@material-ui/core/List';
+import { Formik, Form, Field } from 'formik';
+import Switch from '@material-ui/core/Switch';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import {
@@ -45,6 +47,7 @@ class NetworkDetailsComponent extends Component {
     const {
       t, classes, network, fd,
     } = this.props;
+    console.log('this is a network', network);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -68,7 +71,7 @@ class NetworkDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('device.last_seen')}
+                {t(network.network_name)}
               </div>
               <div>
                 <Typography
@@ -94,7 +97,7 @@ class NetworkDetailsComponent extends Component {
                   gutterBottom={true}
                   style={{ float: 'left', marginTop: 20 }}
                 >
-                  {t('Starting Address')}
+                  {t('Scanned')}
                 </Typography>
                 <div style={{ float: 'left', margin: '20px 0 0 5px' }}>
                   <Tooltip title={t('Starting Address')} >
@@ -102,7 +105,7 @@ class NetworkDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('device.last_seen')}
+                <Switch defaultChecked={false} inputProps={{ 'aria-label': 'ant design' }} />
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -121,7 +124,7 @@ class NetworkDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('device.last_seen')}
+                {t(network.network_id)}
               </div>
               <div>
                 <Typography
@@ -138,7 +141,7 @@ class NetworkDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('device.last_seen')}
+                {t('test')}
               </div>
               <div>
                 <Typography
@@ -155,7 +158,7 @@ class NetworkDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('device.last_seen')}
+                {t(network.implementation_point)}
               </div>
             </Grid>
           </Grid>
@@ -172,20 +175,45 @@ NetworkDetailsComponent.propTypes = {
   fd: PropTypes.func,
 };
 
+// const NetworkDetails = createFragmentContainer(
+//   NetworkDetailsComponent,
+//   {
+//     network: graphql`
+//       fragment NetworkDetails_network on IntrusionSet {
+//         id
+//         first_seen
+//         last_seen
+//         description
+//         resource_level
+//         primary_motivation
+//         secondary_motivations
+//         goals
+//         ...NetworkLocations_network
+//       }
+//     `,
+//   },
+// );
+
 const NetworkDetails = createFragmentContainer(
   NetworkDetailsComponent,
   {
     network: graphql`
-      fragment NetworkDetails_network on IntrusionSet {
-        id
-        first_seen
-        last_seen
-        description
-        resource_level
-        primary_motivation
-        secondary_motivations
-        goals
-        ...NetworkLocations_network
+      fragment NetworkDetails_network on NetworkAsset {
+        network_name
+        network_id
+        implementation_point
+        network_address_range {
+          ending_ip_address{
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+          starting_ip_address{
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+        }
       }
     `,
   },

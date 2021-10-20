@@ -53,7 +53,7 @@ class SoftwareDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('device.last_seen')}
+                {t(software.software_identifier)}
               </div>
               <div>
                 <Typography
@@ -70,7 +70,7 @@ class SoftwareDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('device.last_seen')}
+                {t(software.license_key)}
               </div>
               <div>
                 <Typography
@@ -88,7 +88,7 @@ class SoftwareDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('device.last_seen')}
+                {t(software.cpe_identifier)}
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -107,7 +107,7 @@ class SoftwareDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('device.last_seen')}
+                {t(software.patch_level)}
               </div>
               <div>
                 <Typography
@@ -124,7 +124,7 @@ class SoftwareDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('device.last_seen')}
+                {t(software.installation_id)}
               </div>
               <div>
                 <Typography
@@ -141,7 +141,7 @@ class SoftwareDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('device.last_seen')}
+                {t(software.implementation_point)}
               </div>
             </Grid>
           </Grid>
@@ -158,14 +158,27 @@ SoftwareDetailsComponent.propTypes = {
   fld: PropTypes.func,
 };
 
+// const SoftwareDetails = createFragmentContainer(SoftwareDetailsComponent, {
+//   software: graphql`
+//     fragment SoftwareDetails_software on Campaign {
+//       id
+//       description
+//       first_seen
+//       last_seen
+//       objective
+//     }
+//   `,
+// });
+
 const SoftwareDetails = createFragmentContainer(SoftwareDetailsComponent, {
   software: graphql`
-    fragment SoftwareDetails_software on Campaign {
-      id
-      description
-      first_seen
-      last_seen
-      objective
+    fragment SoftwareDetails_software on SoftwareAsset {
+      software_identifier
+      license_key
+      cpe_identifier
+      patch_level
+      installation_id
+      implementation_point
     }
   `,
 });

@@ -32,13 +32,13 @@ class AssetType extends Component {
         style={style}
         helperText={helperText}
       >
-        <MenuItem key="physical-devices" value="activist">
+        <MenuItem key="physical-devices" value="physical-devices">
            {t('Physical Devices')}
         </MenuItem>
-        <MenuItem key="network" value="competitor">
+        <MenuItem key="network" value="network">
             {t('Network')}
         </MenuItem>
-        <MenuItem key="software" value="crime-syndicate">
+        <MenuItem key="software" value="software">
             {t('software')}
         </MenuItem>
       </Field>

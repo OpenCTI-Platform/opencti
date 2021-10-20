@@ -43,7 +43,6 @@ const deviceMutationFieldPatch = graphql`
   ) {
     threatActorEdit(id: $id) {
       fieldPatch(input: $input, commitMessage: $commitMessage) {
-        ...DeviceEditionDetails_device
         ...Device_device
       }
     }
@@ -153,32 +152,37 @@ class DeviceEditionDetailsComponent extends Component {
     const {
       t, classes, device, context, enableReferences,
     } = this.props;
+    console.log('device edition ', device);
     const initialValues = R.pipe(
-      R.assoc('first_seen', dateFormat(device.first_seen)),
-      R.assoc('last_seen', dateFormat(device.last_seen)),
-      R.assoc(
-        'secondary_motivations',
-        device.secondary_motivations
-          ? device.secondary_motivations
-          : [],
-      ),
-      R.assoc(
-        'personal_motivations',
-        device.personal_motivations ? device.personal_motivations : [],
-      ),
-      R.assoc(
-        'goals',
-        R.join('\n', device.goals ? device.goals : []),
-      ),
+      R.assoc('installation_id', device.installation_id || ''),
+      R.assoc('bios_id', device.bios_id || ''),
+      R.assoc('connected_to_network', device.connected_to_network.name || ''),
+      R.assoc('netbios_name', device.netbios_name || ''),
+      R.assoc('baseline_configuration_name', device.baseline_configuration_name || ''),
+      R.assoc('mac_address', (device.mac_address || []).join()),
+      R.assoc('model', device.model || ''),
+      R.assoc('hostname', device.hostname || ''),
+      R.assoc('default_gateway', device.default_gateway || ''),
+      R.assoc('motherboard_id', device.motherboard_id || ''),
+      R.assoc('is_scanned', device.is_scanned || ''),
+      R.assoc('is_virtual', device.is_virtual || ''),
+      R.assoc('is_publicly_accessible', device.is_publicly_accessible || ''),
+      R.assoc('uri', device.uri || ''),
       R.pick([
-        'first_seen',
-        'last_seen',
-        'sophistication',
-        'resource_level',
-        'primary_motivation',
-        'secondary_motivations',
-        'personal_motivations',
-        'goals',
+        'installation_id',
+        'connected_to_network',
+        'bios_id',
+        'netbios_name',
+        'baseline_configuration_name',
+        'mac_address',
+        'model',
+        'hostname',
+        'default_gateway',
+        'motherboard_id',
+        'is_scanned',
+        'is_virtual',
+        'is_publicly_accessible',
+        'uri',
       ]),
     )(device);
     return (
@@ -385,12 +389,6 @@ class DeviceEditionDetailsComponent extends Component {
                           name="installation_id"
                           size= 'small'
                           fullWidth={true}
-                          // helperText={
-                          //   <SubscriptionFocus
-                          //   context={context}
-                          //   fieldName="installation_id"
-                          //   />
-                          // }
                         />
                       </div>
                       <div>
@@ -400,7 +398,7 @@ class DeviceEditionDetailsComponent extends Component {
                           gutterBottom={true}
                           style={{ float: 'left', marginTop: 20 }}
                         >
-                          {t('Connect To Network')}
+                          {t('Connected To Network')}
                         </Typography>
                         <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                           <Tooltip title={t('Connect To Network')} >
@@ -409,7 +407,7 @@ class DeviceEditionDetailsComponent extends Component {
                         </div>
                         <Field
                           component={TextField}
-                          name="connect_to_network"
+                          name="connected_to_network"
                           size= 'small'
                           variant= 'outlined'
                           fullWidth={true}
@@ -466,7 +464,12 @@ class DeviceEditionDetailsComponent extends Component {
                         <div className="clearfix" />
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             <Typography>No</Typography>
-                            <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                            <Field
+                              component={Switch}
+                              name="is_virtual"
+                              defaultChecked={device.is_virtual}
+                              inputProps={{ 'aria-label': 'ant design' }}
+                            />
                             <Typography>Yes</Typography>
                         </div>
                       </div>
@@ -487,7 +490,12 @@ class DeviceEditionDetailsComponent extends Component {
                         <div className="clearfix" />
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             <Typography>No</Typography>
-                            <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                            <Field
+                              component={Switch}
+                              name="is_publicly_accessible"
+                              defaultChecked={device.is_publicly_accessible}
+                              inputProps={{ 'aria-label': 'ant design' }}
+                            />
                             <Typography>Yes</Typography>
                         </div>
                       </div>
@@ -772,7 +780,12 @@ class DeviceEditionDetailsComponent extends Component {
                         <div className="clearfix" />
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             <Typography>No</Typography>
-                            <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                            <Field
+                              component={Switch}
+                              name="is_scanned"
+                              defaultChecked={device.is_scanned}
+                              inputProps={{ 'aria-label': 'ant design' }}
+                            />
                             <Typography>Yes</Typography>
                         </div>
                       </div>
@@ -793,7 +806,7 @@ class DeviceEditionDetailsComponent extends Component {
                         <Field
                           component={TextField}
                           variant= 'outlined'
-                          name="host_name"
+                          name="hostname"
                           size= 'small'
                           fullWidth={true}
                           // helperText={
@@ -1089,16 +1102,35 @@ const DeviceEditionDetails = createFragmentContainer(
   DeviceEditionDetailsComponent,
   {
     device: graphql`
-      fragment DeviceEditionDetails_device on ThreatActor {
-        id
-        first_seen
-        last_seen
-        sophistication
-        resource_level
-        primary_motivation
-        secondary_motivations
-        personal_motivations
-        goals
+      fragment DeviceEditionDetails_device on ComputingDeviceAsset {
+        installed_software {
+          name
+        }
+        connected_to_network {
+          name
+        }
+        installed_operating_system {
+          name
+        }
+        uri
+        model
+        mac_address
+        fqdn
+        network_id
+        baseline_configuration_name
+        bios_id
+        is_scanned
+        hostname
+        default_gateway
+        motherboard_id
+        installation_id
+        netbios_name
+        is_virtual
+        is_publicly_accessible
+        installed_hardware {
+          name
+          uri
+        }
       }
     `,
   },

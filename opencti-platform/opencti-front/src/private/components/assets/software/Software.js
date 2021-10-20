@@ -143,7 +143,6 @@ const Software = createFragmentContainer(SoftwareComponent, {
       }
       name
       aliases
-      ...SoftwareDetails_software
     }
   `,
 });
