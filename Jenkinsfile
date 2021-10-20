@@ -1,23 +1,23 @@
 node {
   try {
-    def registry = "docker.darklight.ai";
-    def product = "opencti"
+    String registry = 'docker.darklight.ai'
+    String product = 'opencti'
     def branch = "${env.BRANCH_NAME}"
     def version = "${env.BUILD_NUMBER}"
-    def versionsToKeep = 3;
+    int versionsToKeep = 3
 
-    if (branch != "master" || branch != "main") {
-      product += '-' + branch;
+    if (branch != 'master' || branch != 'main') {
+      product += '-' + branch
     }
 
     stage('Detect Version') {
       def jsPackage = readJSON file: 'opencti-platform/opencti-front/package.json';
       if (jsPackage['version'] != null) {
-        version = jsPackage['version'];
+        version = jsPackage['version']
       }
     }
 
-    def image = "${registry}/${product}";
+    String image = "${registry}/${product}"
     def app;
 
     ws("${env.WS_FOLDER}/docker/${product}/${branch}/") {
@@ -27,13 +27,13 @@ node {
 
       stage('Build') {
         dir('opencti-platform/') {
-          app = docker.build("${image}", "--no-cache .")
+          app = docker.build("${image}", '--no-cache .')
         }
       }
 
-      docker.withRegistry("https://${registry}", "docker-registry-credentials") {
+      docker.withRegistry("https://${registry}", 'docker-registry-credentials') {
         stage('Push') {
-          app.push("latest")
+          app.push('latest')
           app.push("${version}")
         }
 
@@ -47,19 +47,19 @@ node {
             def sortedTags = []
             for (String tag in tags) {
               if (tag.isInteger()) {
-                sortedTags.add(tag as Integer);
+                sortedTags.add(tag as Integer)
               } else {
                 echo "[Warning] Found tag that is not an integer: ${tag}"
               }
             }
-            sortedTags = sortedTags.sort();
+            sortedTags = sortedTags.sort()
 
             // Remove the number of tags we want to keep, use the rest to remove the images from the registry
             if (sortedTags.size() > versionsToKeep) {
               for (int i in 1..versionsToKeep) {
                 sortedTags.pop()
               }
-              
+
               for (Integer tag in sortedTags) {
                 // Pulling the image to deprecate to get the sha/digest, removed afterwards
                 def digest = sh(returnStdout: true, script: "docker pull ${registry}/${product}:${tag} | grep \"Digest: \" | awk \'{print \$2}\'")
@@ -75,7 +75,7 @@ node {
           }
         }
       }
-      
+
       stage('Clean Local Docker Resources') {
         /**
           --filter "until 336h": Don't consider Docker resources unless they are at least 2 weeks old (336 hours)
@@ -86,14 +86,14 @@ node {
     }
 
     office365ConnectorSend (
-      status: "Completed",
-      color: "00FF00",
+      status: 'Completed',
+      color: '00FF00',
       webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
-      message: "New images built and pushed!",
-      factDefinitions: [[name: "OpenCTI", template: "docker pull ${image}"]]
+      message: 'New images built and pushed!',
+      factDefinitions: [[name: 'OpenCTI', template: "docker pull ${image}"]]
     )
   } catch(Exception ex) {
-    office365ConnectorSend status: "Failed", webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}"
-    throw ex;
+    office365ConnectorSend status: 'Failed', webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}"
+    throw ex
   }
 }
