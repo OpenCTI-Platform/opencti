@@ -65,6 +65,8 @@ const typeDefs = gql`
   }
 
   extend type Mutation {
+    deleteAsset(id:ID!): ID
+    deleteAssets(id:[ID]!): [ID]
     createAssetLocation(input: AssetLocationAddInput): AssetLocation
     deleteAssetLocation(id: ID!): String!
     editAssetLocation(id: ID!, input: [EditInput]!, commitMessage: String): AssetLocation
