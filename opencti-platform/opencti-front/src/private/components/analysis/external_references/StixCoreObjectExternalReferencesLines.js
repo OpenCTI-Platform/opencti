@@ -420,10 +420,47 @@ StixCoreObjectExternalReferencesLinesContainer.propTypes = {
   relay: PropTypes.object,
 };
 
+// export const stixCoreObjectExternalReferencesLinesQuery = graphql`
+//   query StixCoreObjectExternalReferencesLinesQuery($count: Int!, $id: String!) {
+//     ...StixCoreObjectExternalReferencesLines_data
+//       @arguments(count: $count, id: $id)
+//   }
+// `;
+
 export const stixCoreObjectExternalReferencesLinesQuery = graphql`
   query StixCoreObjectExternalReferencesLinesQuery($count: Int!, $id: String!) {
-    ...StixCoreObjectExternalReferencesLines_data
-      @arguments(count: $count, id: $id)
+    externalReference(id: $id) {
+      id
+      source_name
+      description
+      url
+      hash
+      external_id
+      jobs(first: 100) {
+        id
+        timestamp
+        connector {
+          id
+          name
+        }
+        messages {
+          timestamp
+          message
+        }
+        errors {
+          timestamp
+          message
+        }
+        status
+      }
+      connectors(onlyAlive: false) {
+        id
+        connector_type
+        name
+        active
+        updated_at
+      }
+    }
   }
 `;
 
