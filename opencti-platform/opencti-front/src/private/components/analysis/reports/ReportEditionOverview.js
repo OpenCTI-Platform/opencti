@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { dateFormat } from '../../../../utils/Time';
+import { dateFormat, parse } from '../../../../utils/Time';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -127,6 +127,7 @@ class ReportEditionOverviewComponent extends Component {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
+      R.assoc('published', parse(values.published).format()),
       R.assoc('status_id', values.status_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
