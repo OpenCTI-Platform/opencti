@@ -214,7 +214,7 @@ class NetworkCreation extends Component {
             network_name: 'test_net',
             // Labels: [],
             // ports: [],
-            asset_type: 'software',
+            asset_type: 'network',
             // installation_id: '',
             // fqdn: '',
             // is_scanned: false,

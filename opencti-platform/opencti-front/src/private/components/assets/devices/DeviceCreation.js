@@ -206,7 +206,7 @@ class DeviceCreation extends Component {
             ipv4_address: [],
             ipv6_address: [],
             ports: [],
-            asset_type: 'software',
+            asset_type: 'physical-devices',
             mac_address: [],
           }}
           validationSchema={deviceValidation(t)}
@@ -236,7 +236,7 @@ class DeviceCreation extends Component {
                       size="small"
                       startIcon={<Close />}
                       color='primary'
-                      onClick={handleReset}
+                      onClick={() => history.goBack()}
                       className={classes.iconButton}
                     >
                       {t('Cancel')}
