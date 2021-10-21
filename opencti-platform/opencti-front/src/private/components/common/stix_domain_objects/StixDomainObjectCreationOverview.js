@@ -375,37 +375,6 @@ class StixDomainObjectCreationOverviewComponent extends Component {
                     gutterBottom={true}
                     style={{ float: 'left', marginTop: 20 }}
                   >
-                    {t('Location')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Location')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <div className='scroll-bg'>
-                    <div className='scroll-div'>
-                      <div className='scroll-object'>
-                        <Field
-                          component={TextField}
-                          multiline={true}
-                          variant='outlined'
-                          size='small'
-                          name="location"
-                          fullWidth={true}
-                          containerstyle={{ width: '100%', height: '100%' }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
                     {t('Vendor Name')}
                   </Typography>
                   <div style={{ float: 'left', margin: '21px 0 0 5px' }}>

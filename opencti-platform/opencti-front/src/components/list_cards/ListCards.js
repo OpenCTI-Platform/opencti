@@ -268,7 +268,7 @@ class ListCards extends Component {
                     startIcon={<AddCircleOutline />}
                     onClick={handleNewCreation.bind(this)}
                     color='primary'
-                    style={{ marginLeft: 15 }}
+                    style={{ marginLeft: 15, marginTop: -30 }}
                   >
                     {t('New')}
                   </Button>
@@ -282,6 +282,7 @@ class ListCards extends Component {
                   <IconButton
                     color="primary"
                     onClick={handleChangeView.bind(this, 'lines')}
+                    style={{ marginTop: -30 }}
                   >
                     <FormatListBulleted />
                   </IconButton>

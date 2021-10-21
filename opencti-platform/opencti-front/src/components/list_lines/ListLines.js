@@ -333,7 +333,7 @@ class ListLines extends Component {
                     startIcon={<AddCircleOutline />}
                     onClick={handleNewCreation.bind(this)}
                     color='primary'
-                    style={{ marginLeft: 15 }}
+                    style={{ marginLeft: 15, marginTop: -30 }}
                   >
                     {t('New')}
                   </Button>
@@ -369,6 +369,7 @@ class ListLines extends Component {
                   <IconButton
                     color="primary"
                     onClick={handleChangeView.bind(this, 'cards')}
+                    style={{ marginTop: -30 }}
                   >
                     <AppsOutlined />
                   </IconButton>

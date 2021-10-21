@@ -45,6 +45,7 @@ class DeviceDetailsComponent extends Component {
     const {
       t, classes, device, fd,
     } = this.props;
+    console.log('deviceDetailsData', device);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -263,6 +264,40 @@ class DeviceDetailsComponent extends Component {
                 <div className="clearfix" />
                 {device.fqdn && t(device.fqdn)}
               </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('IPv4 Address')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('ipv4_address')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('192.168.43.129')}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('IPv6 Address')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('ipv6_address')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('192.168.43.129')}
+              </div>
             </Grid>
             <Grid item={true} xs={6}>
               <div>
@@ -310,21 +345,15 @@ class DeviceDetailsComponent extends Component {
                   {t('Location')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Location')} >
+                  <Tooltip title={t('Location')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                  <div className='scroll-bg'>
+                <div className='scroll-bg'>
                     <div className='scroll-div'>
                       <div className='scroll-object'>
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map((data, key) => (
-                          <>
-                            {t('Lorem Ipsum Lorem Ipsum')}
-                            <br></br>
-                          </>
-                        ))}
-                      <br></br>
+                        {device.locations.map((index) => [index.description]).join()}
                     </div>
                   </div>
                 </div>
@@ -539,6 +568,11 @@ const DeviceDetails = createFragmentContainer(
         }
         installed_operating_system {
           name
+        }
+        locations {
+          city
+          country
+          description
         }
         uri
         model
