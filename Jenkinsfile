@@ -17,12 +17,12 @@ node {
         checkout scm
       }
 
-      stage('Detect Version') {
-        def jsPackage = readJSON file: 'opencti-platform/opencti-front/package.json';
-        if (jsPackage['version'] != null) {
-          version = jsPackage['version']
-        }
-      }
+      // stage('Detect Version') {
+      //   def jsPackage = readJSON file: 'opencti-platform/opencti-front/package.json';
+      //   if (jsPackage['version'] != null) {
+      //     version = jsPackage['version']
+      //   }
+      // }
 
       stage('Build') {
         dir('opencti-platform/') {
