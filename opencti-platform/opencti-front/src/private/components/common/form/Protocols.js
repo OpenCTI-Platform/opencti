@@ -41,7 +41,7 @@ class Protocols extends Component {
 
     return (
       <div>
-        <QR
+        {/* <QR
           environment={QueryRendererDarkLight}
           query={protocolsListQuery}
           render={({ error, props }) => {
@@ -76,7 +76,7 @@ class Protocols extends Component {
             }
             return <></>;
           }}
-        />
+        /> */}
       </div>
     );
   }

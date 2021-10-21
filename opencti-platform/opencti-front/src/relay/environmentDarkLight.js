@@ -8,7 +8,7 @@ import {
 const store = new Store(new RecordSource());
 
 const network = Network.create((operation, variables) => (
-  fetch('http://localhost:4000/graphql', {
+  fetch('http://192.168.43.129:4000/graphql', {
     method: 'POST',
     headers: {
       Accept: 'application/json',

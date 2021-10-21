@@ -218,8 +218,8 @@ class DeviceCreationDetailsComponent extends Component {
                     size='small'
                     fullWidth={true}
                     containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  /> */}
-                  {/* <Protocols
+                  />
+                  <Protocols
                     component={SelectField}
                     style={{ height: '38.09px' }}
                     variant='outlined'
@@ -433,24 +433,6 @@ class DeviceCreationDetailsComponent extends Component {
                     <AddIcon fontSize="small" color="disabled" />
                   </div>
                   <div className="clearfix" />
-                  <Field
-                    component={SelectField}
-                    style={{ height: '38.09px' }}
-                    variant='outlined'
-                    name="installed_hardware"
-                    size='small'
-                    fullWidth={true}
-                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                  />
-                  <Field
-                    component={SelectField}
-                    style={{ height: '38.09px' }}
-                    variant='outlined'
-                    name="installed_hardware"
-                    size='small'
-                    fullWidth={true}
-                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                  />
                   <Field
                     component={SelectField}
                     style={{ height: '38.09px' }}
