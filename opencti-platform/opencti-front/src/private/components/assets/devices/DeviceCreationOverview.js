@@ -333,6 +333,7 @@ class DeviceCreationOverviewComponent extends Component {
                     component={SelectField}
                     variant='outlined'
                     name="asset_type"
+                    disabled={true}
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px' }}

@@ -28,6 +28,7 @@ class AssetType extends Component {
         fullWidth={true}
         containerstyle={containerstyle}
         variant={variant}
+        disabled={disabled || false}
         size={size}
         style={style}
         helperText={helperText}
@@ -39,7 +40,7 @@ class AssetType extends Component {
             {t('Network')}
         </MenuItem>
         <MenuItem key="software" value="software">
-            {t('software')}
+            {t('Software')}
         </MenuItem>
       </Field>
     );
