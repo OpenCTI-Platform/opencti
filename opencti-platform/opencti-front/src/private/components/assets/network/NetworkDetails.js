@@ -47,6 +47,9 @@ class NetworkDetailsComponent extends Component {
     const {
       t, classes, network, fd,
     } = this.props;
+    const ntadr = network.network_address_range;
+    const startingAddress = ntadr.starting_ip_address && ntadr.starting_ip_address.ip_address_value;
+    const endingAddress = ntadr.ending_ip_address && ntadr.ending_ip_address.ip_address_value;
     console.log('this is a network', network);
     return (
       <div style={{ height: '100%' }}>
@@ -88,7 +91,7 @@ class NetworkDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('device.last_seen')}
+                  { startingAddress }
               </div>
               <div>
                 <Typography
@@ -141,7 +144,7 @@ class NetworkDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('test')}
+                { endingAddress }
               </div>
               <div>
                 <Typography

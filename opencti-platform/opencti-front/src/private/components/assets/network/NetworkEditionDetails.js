@@ -260,7 +260,12 @@ class NetworkEditionDetailsComponent extends Component {
                   <div className="clearfix" />
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Typography>No</Typography>
-                    <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                    <Field
+                      component={Switch}
+                      name="is_scanned"
+                      defaultChecked={network.is_scanned}
+                      containerstyle={{ marginTop: 20 }}
+                    />
                     <Typography>Yes</Typography>
                   </div>
                 </div>
@@ -330,7 +335,7 @@ class NetworkEditionDetailsComponent extends Component {
                   <Field
                     component={TextField}
                     variant='outlined'
-                    name="model"
+                    name="implementation_point"
                     size='small'
                     fullWidth={true}
                   />

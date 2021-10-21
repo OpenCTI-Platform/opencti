@@ -135,6 +135,12 @@ class NetworkEditionContainer extends Component {
       R.assoc('serial_number', network.serial_number),
       R.assoc('release_date', network.release_date),
       R.assoc('operational_status', network.operational_status),
+      R.assoc('network_name', network.network_name),
+      R.assoc('network_id', network.network_id),
+      R.assoc('is_scanned', network.is_scanned),
+      R.assoc('implementation_point', network.implementation_point),
+      R.assoc('starting_address', network.network_address_range.starting_ip_address && network.network_address_range.starting_ip_address.ip_address_value),
+      R.assoc('ending_address', network.network_address_range.ending_ip_address && network.network_address_range.ending_ip_address.ip_address_value),
       R.pick([
         'id',
         'asset_id',
@@ -148,6 +154,11 @@ class NetworkEditionContainer extends Component {
         'serial_number',
         'release_date',
         'operational_status',
+        'network_name',
+        'is_scanned',
+        'network_id',
+        'implementation_point',
+        'starting_address',
       ]),
     )(network);
     return (
