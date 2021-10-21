@@ -51,7 +51,6 @@ export const deviceEditionDarkLightQuery = graphql`
         name
       }
       asset_id
-      fqdn
       network_id
       description
       locations {
@@ -64,7 +63,30 @@ export const deviceEditionDarkLightQuery = graphql`
       serial_number
       release_date
       operational_status
-      ...DeviceEditionDetails_device
+      installed_software {
+        name
+      }
+      connected_to_network {
+        name
+      }
+      uri
+      model
+      mac_address
+      fqdn
+      baseline_configuration_name
+      bios_id
+      is_scanned
+      hostname
+      default_gateway
+      motherboard_id
+      installation_id
+      netbios_name
+      is_virtual
+      is_publicly_accessible
+      installed_hardware {
+        name
+        uri
+      }
     }
   }
 `;
