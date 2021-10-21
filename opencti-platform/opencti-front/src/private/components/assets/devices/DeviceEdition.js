@@ -113,7 +113,12 @@ class DeviceEdition extends Component {
   }
 
   render() {
-    const { classes, deviceId, open } = this.props;
+    const {
+      classes,
+      deviceId,
+      open,
+      history,
+    } = this.props;
     return (
       <div>
         {/* <Fab
@@ -144,6 +149,7 @@ class DeviceEdition extends Component {
                   // enableReferences={props.settings.platform_enable_reference?.includes(
                     //   'Device',
                     // )}
+                  history={history}
                   handleClose={this.handleClose.bind(this)}
                 />
               );

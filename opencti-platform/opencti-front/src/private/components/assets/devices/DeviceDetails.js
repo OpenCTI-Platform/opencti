@@ -67,6 +67,7 @@ class DeviceDetailsComponent extends Component {
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
+                <div className="clearfix" />
                 <Link
                   component="button"
                   variant="body2"

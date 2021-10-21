@@ -43,39 +43,32 @@ class NetworkComponent extends Component {
   render() {
     const { classes, network, history } = this.props;
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          openEdit={() => this.setState({ openEdit: !this.state.openEdit })}
-          stixDomainObject={network}
-          history={history}
-          PopoverComponent={<NetworkPopover />}
-          handleToggleEdit={this.handleToggleEdit.bind(this)}
-          OperationsComponent={<NetworkOperations />}
-        />
-          <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-        >
-          {this.state.openEdit ? (
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <NetworkEdition
-                  open={this.state.openEdit}
-                  networkId={network.id}
-                />
-              </Security>
-          ) : (
-            <>
-              <Grid item={true} xs={6}>
-                <StixDomainObjectOverview stixDomainObject={network} />
-              </Grid>
-              <Grid item={true} xs={6}>
-                <NetworkDetails network={network} />
-              </Grid>
-            </>
-          )}
-        </Grid>
-        {/* <Grid
+      <>
+        {!this.state.openEdit ? (
+          <div className={classes.container}>
+            <StixDomainObjectHeader
+              openEdit={() => this.setState({ openEdit: !this.state.openEdit })}
+              stixDomainObject={network}
+              history={history}
+              PopoverComponent={<NetworkPopover />}
+              handleToggleEdit={this.handleToggleEdit.bind(this)}
+              OperationsComponent={<NetworkOperations />}
+            />
+            <Grid
+              container={true}
+              spacing={3}
+              classes={{ container: classes.gridContainer }}
+            >
+              <>
+                <Grid item={true} xs={6}>
+                  <StixDomainObjectOverview stixDomainObject={network} />
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <NetworkDetails network={network} />
+                </Grid>
+              </>
+            </Grid>
+            {/* <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
@@ -93,28 +86,38 @@ class NetworkComponent extends Component {
             />
           </Grid>
         </Grid> */}
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
-            {/* <StixCoreObjectExternalReferences
+            <Grid
+              container={true}
+              spacing={3}
+              classes={{ container: classes.gridContainer }}
+              style={{ marginTop: 25 }}
+            >
+              <Grid item={true} xs={6}>
+                {/* <StixCoreObjectExternalReferences
               stixCoreObjectId={network.id}
             /> */}
-          </Grid>
-          <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory stixCoreObjectId={network.id} />
-          </Grid>
-        </Grid>
-        <StixCoreObjectOrStixCoreRelationshipNotes
-          stixCoreObjectOrStixCoreRelationshipId={network.id}
-        />
-        {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <StixCoreObjectLatestHistory stixCoreObjectId={network.id} />
+              </Grid>
+            </Grid>
+            <StixCoreObjectOrStixCoreRelationshipNotes
+              stixCoreObjectOrStixCoreRelationshipId={network.id}
+            />
+            {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <NetworkEdition networkId={network.id} />
         </Security> */}
-      </div>
+          </div>
+        ) : (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <NetworkEdition
+              open={this.state.openEdit}
+              networkId={network.id}
+              history={history}
+            />
+          </Security>
+        )}
+      </>
     );
   }
 }

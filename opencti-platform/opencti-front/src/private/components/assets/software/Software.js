@@ -43,39 +43,30 @@ class SoftwareComponent extends Component {
   render() {
     const { classes, software, history } = this.props;
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          openEdit={() => this.setState({ openEdit: !this.state.openEdit })}
-          stixDomainObject={software}
-          history={history}
-          PopoverComponent={<SoftwarePopover />}
-          handleToggleEdit={this.handleToggleEdit.bind(this)}
-          OperationsComponent={<SoftwareOperations />}
-        />
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-        >
-          {this.state.openEdit ? (
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <SoftwareEdition
-                open={this.state.openEdit}
-                softwareId={software.id}
-              />
-            </Security>
-          ) : (
-            <>
+      <>
+        {!this.state.openEdit ? (
+          <div className={classes.container}>
+            <StixDomainObjectHeader
+              openEdit={() => this.setState({ openEdit: !this.state.openEdit })}
+              stixDomainObject={software}
+              history={history}
+              PopoverComponent={<SoftwarePopover />}
+              handleToggleEdit={this.handleToggleEdit.bind(this)}
+              OperationsComponent={<SoftwareOperations />}
+            />
+            <Grid
+              container={true}
+              spacing={3}
+              classes={{ container: classes.gridContainer }}
+            >
               <Grid item={true} xs={6}>
                 <StixDomainObjectOverview stixDomainObject={software} />
               </Grid>
               <Grid item={true} xs={6}>
                 <SoftwareDetails software={software} />
               </Grid>
-            </>
-          )}
-        </Grid>
-        {/* <Grid
+            </Grid>
+            {/* <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
@@ -93,26 +84,36 @@ class SoftwareComponent extends Component {
             />
           </Grid>
         </Grid> */}
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
-            {/* <StixCoreObjectExternalReferences stixCoreObjectId={software.id} /> */}
-          </Grid>
-          <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory stixCoreObjectId={software.id} />
-          </Grid>
-        </Grid>
-        <StixCoreObjectOrStixCoreRelationshipNotes
-          stixCoreObjectOrStixCoreRelationshipId={software.id}
-        />
-        {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <Grid
+              container={true}
+              spacing={3}
+              classes={{ container: classes.gridContainer }}
+              style={{ marginTop: 25 }}
+            >
+              <Grid item={true} xs={6}>
+                {/* <StixCoreObjectExternalReferences stixCoreObjectId={software.id} /> */}
+              </Grid>
+              <Grid item={true} xs={6}>
+                <StixCoreObjectLatestHistory stixCoreObjectId={software.id} />
+              </Grid>
+            </Grid>
+            <StixCoreObjectOrStixCoreRelationshipNotes
+              stixCoreObjectOrStixCoreRelationshipId={software.id}
+            />
+            {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <SoftwareEdition softwareId={software.id} />
         </Security> */}
-      </div>
+          </div>
+        ) : (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <SoftwareEdition
+              open={this.state.openEdit}
+              softwareId={software.id}
+              history={history}
+            />
+          </Security>
+        )}
+      </>
     );
   }
 }

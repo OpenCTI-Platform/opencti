@@ -92,21 +92,21 @@ const softwareCreationMutation = graphql`
 
 const softwareValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  asset_type: Yup.array().required(t('This field is required')),
-  implementation_point: Yup.string().required(t('This field is required')),
-  operational_status: Yup.string().required(t('This field is required')),
-  first_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  last_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  sophistication: Yup.string().nullable(),
-  resource_level: Yup.string().nullable(),
-  primary_motivation: Yup.string().nullable(),
-  secondary_motivations: Yup.array().nullable(),
-  personal_motivations: Yup.array().nullable(),
-  goals: Yup.string().nullable(),
+  // asset_type: Yup.array().required(t('This field is required')),
+  // implementation_point: Yup.string().required(t('This field is required')),
+  // operational_status: Yup.string().required(t('This field is required')),
+  // first_seen: Yup.date()
+  //   .nullable()
+  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
+  // last_seen: Yup.date()
+  //   .nullable()
+  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
+  // sophistication: Yup.string().nullable(),
+  // resource_level: Yup.string().nullable(),
+  // primary_motivation: Yup.string().nullable(),
+  // secondary_motivations: Yup.array().nullable(),
+  // personal_motivations: Yup.array().nullable(),
+  // goals: Yup.string().nullable(),
 });
 
 class SoftwareCreation extends Component {

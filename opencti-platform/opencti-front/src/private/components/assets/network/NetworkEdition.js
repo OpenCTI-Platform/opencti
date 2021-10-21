@@ -127,7 +127,7 @@ class NetworkEdition extends Component {
   }
 
   render() {
-    const { classes, networkId } = this.props;
+    const { classes, networkId, history } = this.props;
     return (
       <div>
         <QR
@@ -143,6 +143,7 @@ class NetworkEdition extends Component {
                     // enableReferences={props.settings.platform_enable_reference?.includes(
                     //   'Network',
                     // )}
+                    history={history}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

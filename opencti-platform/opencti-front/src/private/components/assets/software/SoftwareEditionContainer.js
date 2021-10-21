@@ -4,62 +4,91 @@ import graphql from 'babel-plugin-relay/macro';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { Formik, Form, Field } from 'formik';
-import { createFragmentContainer } from 'react-relay';
+// import { createFragmentContainer } from 'react-relay';
 import { compose } from 'ramda';
 import Grid from '@material-ui/core/Grid';
+import Tooltip from '@material-ui/core/Tooltip';
+import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
-import { Close } from '@material-ui/icons';
+import { Close, CheckCircleOutline } from '@material-ui/icons';
+import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
+import TextField from '../../../../components/TextField';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import SoftwareEditionOverview from './SoftwareEditionOverview';
 import SoftwareEditionDetails from './SoftwareEditionDetails';
 import StixDomainObjectAssetEditionOverview from '../../common/stix_domain_objects/StixDomainObjectAssetEditionOverview';
 
 const styles = (theme) => ({
+  container: {
+    margin: 0,
+  },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
-    padding: '20px 20px 20px 60px',
+    margin: '-25px',
+    padding: '24px',
+    height: '64px',
+    backgroundColor: '#1F2842',
   },
   gridContainer: {
     marginBottom: 20,
   },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  appBar: {
-    width: '100%',
-    zIndex: theme.zIndex.drawer + 1,
-    backgroundColor: theme.palette.navAlt.background,
-    color: theme.palette.text.primary,
-    borderBottom: '1px solid #5c5c5c',
+  iconButton: {
+    float: 'left',
+    minWidth: '0px',
+    marginRight: 15,
+    marginTop: -35,
+    padding: '8px 16px 8px 8px',
   },
   title: {
-    float: 'left',
+    textTransform: 'uppercase',
+  },
+  rightContainer: {
+    float: 'right',
+    marginTop: '-5px',
+  },
+  editButton: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+  },
+  drawerPaper: {
+    minHeight: '100vh',
+    width: '50%',
+    position: 'fixed',
+    overflow: 'auto',
+    backgroundColor: theme.palette.navAlt.background,
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    padding: 0,
   },
 });
 
+const softwareEditionMutation = graphql`
+  mutation SoftwareEditionContainerMutation(
+    $id: ID!,
+    $input: [EditInput]!
+  ) {
+    editSoftwareAsset(id: $id, input: $input) {
+      name
+      asset_type
+      vendor_name
+    }
+  }
+`;
+
 const softwareValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  asset_type: Yup.array().required(t('This field is required')),
-  implementation_point: Yup.string().required(t('This field is required')),
-  operational_status: Yup.string().required(t('This field is required')),
+  asset_type: Yup.string().required(t('This field is required')),
+  // implementation_point: Yup.string().required(t('This field is required')),
+  // operational_status: Yup.string().required(t('This field is required')),
 });
 
 class SoftwareEditionContainer extends Component {
@@ -76,8 +105,8 @@ class SoftwareEditionContainer extends Component {
     this.setState({ currentTab: value });
   }
 
-  handleClose() {
-    this.setState({ open: false });
+  handleOpen() {
+    this.setState({ open: true });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -87,6 +116,31 @@ class SoftwareEditionContainer extends Component {
     //   assoc('objectMarking', pluck('value', values.objectMarking)),
     //   assoc('objectLabel', pluck('value', values.objectLabel)),
     // )(values);
+    CM(environmentDarkLight, {
+      mutation: softwareEditionMutation,
+      // const adaptedValues = evolve(
+      //   {
+      //     published: () => parse(values.published).format(),
+      //     createdBy: path(['value']),
+      //     objectMarking: pluck('value'),
+      //     objectLabel: pluck('value'),
+      //   },
+      //   values,
+      // );
+      variables: {
+        id: this.props.software.id,
+        input: [{ key: 'name', value: 'Hello' }],
+      },
+      setSubmitting,
+      onCompleted: (data) => {
+        setSubmitting(false);
+        resetForm();
+        this.handleClose();
+        console.log('SoftwareEditionDarkLightMutationData', data);
+        this.props.history.push('/dashboard/assets/software');
+      },
+      onError: (err) => console.log('SoftwareEditionDarkLightMutationError', err),
+    });
     // commitMutation({
     //   mutation: deviceCreationOverviewMutation,
     //   variables: {
@@ -105,6 +159,14 @@ class SoftwareEditionContainer extends Component {
     //     this.handleClose();
     //   },
     // });
+    this.setState({ onSubmit: true });
+  }
+
+  handleClose() {
+    this.setState({ open: false });
+  }
+
+  handleSubmit() {
     this.setState({ onSubmit: true });
   }
 
@@ -159,26 +221,71 @@ class SoftwareEditionContainer extends Component {
       ]),
     )(software);
     return (
-      <div>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
+      <div className={classes.container}>
+        <Formik
+          initialValues={initialValues}
+          validationSchema={softwareValidation(t)}
+          onSubmit={this.onSubmit.bind(this)}
+          onReset={this.onReset.bind(this)}
         >
-          <Formik
-            initialValues={initialValues}
-            validationSchema={softwareValidation(t)}
-            onSubmit={this.onSubmit.bind(this)}
-            onReset={this.onReset.bind(this)}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <>
+          {({
+            submitForm,
+            handleReset,
+            isSubmitting,
+            setFieldValue,
+            values,
+          }) => (
+            <>
+              <div className={classes.header}>
+                <div>
+                  <Typography
+                    variant="h2"
+                    gutterBottom={true}
+                    classes={{ root: classes.title }}
+                    style={{ float: 'left', marginTop: 10, marginRight: 5 }}
+                  >
+                    {t('Edit: ')}
+                  </Typography>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="name"
+                    size='small'
+                    containerstyle={{ width: '50%' }}
+                  />
+                </div>
+                <div className={classes.rightContainer}>
+                  <Tooltip title={t('Cancel')}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<Close />}
+                      color='primary'
+                      onClick={() => this.props.history.goBack()}
+                      className={classes.iconButton}
+                    >
+                      {t('Cancel')}
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title={t('Create')}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<CheckCircleOutline />}
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.iconButton }}
+                    >
+                      {t('Done')}
+                    </Button>
+                  </Tooltip>
+                </div>
+              </div>
+              <Grid
+                container={true}
+                spacing={3}
+                classes={{ container: classes.gridContainer }}
+              >
                 <Grid item={true} xs={6}>
                   {/* <SoftwareEditionOverview
                 software={software}
@@ -201,10 +308,10 @@ class SoftwareEditionContainer extends Component {
                     handleClose={handleClose.bind(this)}
                   />
                 </Grid>
-              </>
-            )}
-          </Formik>
-        </Grid>
+              </Grid>
+            </>
+          )}
+        </Formik>
         {/* <div className={classes.header}>
           <IconButton
             aria-label="Close"
@@ -246,7 +353,7 @@ class SoftwareEditionContainer extends Component {
             />
           )}
         </div> */}
-      </div>
+      </div >
     );
   }
 }

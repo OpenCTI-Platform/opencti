@@ -94,7 +94,11 @@ class SoftwareEdition extends Component {
   }
 
   render() {
-    const { classes, softwareId } = this.props;
+    const {
+      classes,
+      softwareId,
+      history,
+    } = this.props;
     return (
       <div>
         {/* <Fab
@@ -124,6 +128,7 @@ class SoftwareEdition extends Component {
                     // enableReferences={props.settings.platform_enable_reference?.includes(
                     //   'Software',
                     // )}
+                    history={history}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

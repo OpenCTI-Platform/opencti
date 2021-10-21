@@ -43,78 +43,80 @@ class DeviceComponent extends Component {
   render() {
     const { classes, device, history } = this.props;
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          openEdit={() => this.setState({ openEdit: !this.state.openEdit })}
-          stixDomainObject={device}
-          history={history}
-          PopoverComponent={<DevicePopover />}
-          handleToggleEdit={this.handleToggleEdit.bind(this)}
-          OperationsComponent={<DeviceOperations />}
-        />
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-        >
-          {this.state.openEdit ? (
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <DeviceEdition
-                  open={this.state.openEdit}
-                  deviceId={device.id}
-                />
-              </Security>
-          ) : (
-            <>
+      <>
+        {!this.state.openEdit ? (
+          <div className={classes.container}>
+            <StixDomainObjectHeader
+              openEdit={() => this.setState({ openEdit: !this.state.openEdit })}
+              stixDomainObject={device}
+              history={history}
+              PopoverComponent={<DevicePopover />}
+              handleToggleEdit={this.handleToggleEdit.bind(this)}
+              OperationsComponent={<DeviceOperations />}
+            />
+            <Grid
+              container={true}
+              spacing={3}
+              classes={{ container: classes.gridContainer }}
+            >
               <Grid item={true} xs={6}>
                 <StixDomainObjectOverview stixDomainObject={device} />
               </Grid>
               <Grid item={true} xs={6}>
                 <DeviceDetails device={device} />
               </Grid>
-            </>
-          )}
-        </Grid>
-        {/* <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
-            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-              stixObjectOrStixRelationshipId={device.id}
-              stixObjectOrStixRelationshipLink={`/dashboard/assets/devices/${device.id}/knowledge`}
-            />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <StixCoreObjectOrStixCoreRelationshipLastReports
+            </Grid>
+            {/* <Grid
+                container={true}
+                spacing={3}
+                classes={{ container: classes.gridContainer }}
+                style={{ marginTop: 25 }}
+              >
+                <Grid item={true} xs={6}>
+                  <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+                    stixObjectOrStixRelationshipId={device.id}
+            stixObjectOrStixRelationshipLink={`/dashboard/assets/devices/${device.id}/knowledge`}
+                  />
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <StixCoreObjectOrStixCoreRelationshipLastReports
+                    stixCoreObjectOrStixCoreRelationshipId={device.id}
+                  />
+                </Grid>
+              </Grid> */}
+            <Grid
+              container={true}
+              spacing={3}
+              classes={{ container: classes.gridContainer }}
+              style={{ marginTop: 25 }}
+            >
+              <Grid item={true} xs={6}>
+                <StixCoreObjectExternalReferences
+                  stixCoreObjectId={device.id}
+                />
+              </Grid>
+              <Grid item={true} xs={6}>
+                <StixCoreObjectLatestHistory stixCoreObjectId={device.id} />
+              </Grid>
+            </Grid>
+            <StixCoreObjectOrStixCoreRelationshipNotes
               stixCoreObjectOrStixCoreRelationshipId={device.id}
             />
-          </Grid>
-        </Grid> */}
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
-            {/* <StixCoreObjectExternalReferences
-              stixCoreObjectId={device.id}
-            /> */}
-          </Grid>
-          <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory stixCoreObjectId={device.id} />
-          </Grid>
-        </Grid>
-        <StixCoreObjectOrStixCoreRelationshipNotes
-          stixCoreObjectOrStixCoreRelationshipId={device.id}
-        />
-        {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <DeviceEdition deviceId={device.id} />
-        </Security> */}
-      </div>
+            {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <DeviceEdition deviceId={device.id} />
+              </Security> */}
+          </div>
+        ) : (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <DeviceEdition
+              open={this.state.openEdit}
+              deviceId={device.id}
+              history={history}
+            />
+          </Security>
+        )}
+
+      </>
     );
   }
 }
