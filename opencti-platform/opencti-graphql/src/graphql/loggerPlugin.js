@@ -44,15 +44,16 @@ export default {
         if (!isCallError && !perfLog) {
           return;
         }
-        const size = Buffer.byteLength(JSON.stringify(context.request.variables));
+        const contextVariables = context.request.variables || {}
+        const size = Buffer.byteLength(JSON.stringify(contextVariables));
         const isWrite = context.operation && context.operation.operation === 'mutation';
         const contextUser = context.context.user;
         const origin = contextUser ? contextUser.origin : undefined;
-        const [variables] = await tryResolveKeyPromises(context.request.variables);
+        const [variables] = await tryResolveKeyPromises(contextVariables);
         // Compute inner relations
         let innerRelationCount = 0;
         if (isWrite) {
-          const { input } = context.request.variables;
+          const { input } = contextVariables;
           if (input) {
             if (!isNil(input.createdBy) && !isEmpty(input.createdBy)) innerRelationCount += 1;
             if (!isNil(input.markingDefinitions)) innerRelationCount += innerCompute(input.markingDefinitions);
