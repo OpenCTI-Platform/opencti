@@ -62,12 +62,23 @@ const softwareDarkLightQuery = graphql`
   query RootSoftwareDarkLightQuery($id: ID!) {
     softwareAsset(id: $id) {
       id
-      standard_id
       name
       asset_id
+      labels
       description
-      vendor_name
+      locations {
+        city
+        country
+        description
+      }
       version
+      vendor_name
+      asset_tag
+      asset_type
+      serial_number
+      release_date
+      operational_status
+      ...SoftwareDetails_software
     }
   }
 `;

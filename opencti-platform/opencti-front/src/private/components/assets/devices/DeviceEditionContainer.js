@@ -131,7 +131,7 @@ class DeviceEditionContainer extends Component {
     const {
       t, classes, handleClose, device,
     } = this.props;
-    console.log('DeviceEditionPropsData', this.props.device);
+    console.log('DeviceEditionPropsData', device);
     const initialValues = R.pipe(
       R.assoc('id', device.id),
       R.assoc('asset_id', device.asset_id),
@@ -145,6 +145,20 @@ class DeviceEditionContainer extends Component {
       R.assoc('serial_number', device.serial_number),
       R.assoc('release_date', device.release_date),
       R.assoc('operational_status', device.operational_status),
+      R.assoc('installation_id', device.installation_id || ''),
+      R.assoc('bios_id', device.bios_id || ''),
+      // R.assoc('connected_to_network', device.connected_to_network.name || ''),
+      R.assoc('netbios_name', device.netbios_name || ''),
+      R.assoc('baseline_configuration_name', device.baseline_configuration_name || ''),
+      R.assoc('mac_address', (device.mac_address || []).join()),
+      R.assoc('model', device.model || ''),
+      R.assoc('hostname', device.hostname || ''),
+      R.assoc('default_gateway', device.default_gateway || ''),
+      R.assoc('motherboard_id', device.motherboard_id || ''),
+      R.assoc('is_scanned', device.is_scanned || ''),
+      R.assoc('is_virtual', device.is_virtual || ''),
+      R.assoc('is_publicly_accessible', device.is_publicly_accessible || ''),
+      R.assoc('uri', device.uri || ''),
       R.pick([
         'id',
         'asset_id',
@@ -158,6 +172,20 @@ class DeviceEditionContainer extends Component {
         'serial_number',
         'release_date',
         'operational_status',
+        'installation_id',
+        'connected_to_network',
+        'bios_id',
+        'netbios_name',
+        'baseline_configuration_name',
+        'mac_address',
+        'model',
+        'hostname',
+        'default_gateway',
+        'motherboard_id',
+        'is_scanned',
+        'is_virtual',
+        'is_publicly_accessible',
+        'uri',
       ]),
     )(device);
     const { editContext } = device;

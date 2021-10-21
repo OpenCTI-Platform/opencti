@@ -169,7 +169,6 @@ const Device = createFragmentContainer(DeviceComponent, {
       }
       name
       aliases
-      ...DeviceDetails_device
     }
   `,
 });

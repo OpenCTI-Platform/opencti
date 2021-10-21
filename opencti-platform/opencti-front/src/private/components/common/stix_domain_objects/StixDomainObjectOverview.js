@@ -189,7 +189,7 @@ class StixDomainObjectOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {/* {t(stixDomainObject.serial_number)} */}
+                {t(stixDomainObject.serial_number)}
                 {/* <ItemCreator creator={stixDomainObject.creator} /> */}
               </div>
               <div>
@@ -320,6 +320,7 @@ class StixDomainObjectOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
+                {t(stixDomainObject.asset_type)}
   {/* <Chip key={stixDomainObject.id} classes={{ root: classes.chip }}
   label={t(stixDomainObject.asset_type)} color="primary" /> */}
                 {/* <ItemCreator creator={stixDomainObject.creator} /> */}
@@ -339,7 +340,7 @@ class StixDomainObjectOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('Lorem Ipsum Lorem Ipsum')}
+                {t(stixDomainObject.asset_tag)}
               </div>
               <div>
                 <Typography
@@ -359,7 +360,7 @@ class StixDomainObjectOverview extends Component {
                 <div className='scroll-bg'>
                     <div className='scroll-div'>
                       <div className='scroll-object'>
-            {/* {stixDomainObject.locations.map((index) => [index.description]).join()} */}
+                        {stixDomainObject.locations.map((index) => [index.description]).join()}
                     </div>
                   </div>
                 </div>
@@ -413,7 +414,7 @@ class StixDomainObjectOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('stixDomainObject.operational_status')}
+                {t(stixDomainObject.operational_status)}
               </div>
               {/* <Typography
                 variant="h3"

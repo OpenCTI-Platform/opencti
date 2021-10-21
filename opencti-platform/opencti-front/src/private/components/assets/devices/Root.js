@@ -63,14 +63,12 @@ const deviceDarkLightQuery = graphql`
     computingDeviceAsset(id: $computingDeviceAssetId) {
       id
       name
-      installed_operating_system {
-        name
-      }
       asset_id
-      fqdn
-      network_id
+      labels
       description
       locations {
+        city
+        country
         description
       }
       version
@@ -80,6 +78,7 @@ const deviceDarkLightQuery = graphql`
       serial_number
       release_date
       operational_status
+      ...DeviceDetails_device  
     }
   }
 `;

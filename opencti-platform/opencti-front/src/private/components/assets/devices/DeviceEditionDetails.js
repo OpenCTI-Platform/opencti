@@ -88,643 +88,652 @@ class DeviceEditionDetailsComponent extends Component {
           </Typography>
           <Paper classes={{ root: classes.paper }} elevation={2}>
             {/* <Form> */}
-              <Grid container={true} spacing={3}>
-                <Grid item={true} xs={6}>
-                  <div style={{ marginBottom: '119px' }}>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left' }}
-                    >
-                      {t('Installed Operating System')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
-                      <Tooltip title={t('Installed Operating System')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                      <AddIcon fontSize="small" color="primary" />
-                    </div>
-                    <Field
-                      component={TextField}
-                      variant='outlined'
-                      name="installed_operating_system"
-                      size='small'
-                      fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="installed_operating_system"
-                    //   />
-                    // }
-                    />
+            <Grid container={true} spacing={3}>
+              <Grid item={true} xs={6}>
+                <div style={{ marginBottom: '119px' }}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left' }}
+                  >
+                    {t('Installed Operating System')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                    <Tooltip title={t('Installed Operating System')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                    <AddIcon fontSize="small" color="primary" />
                   </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('Installed Software')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '15px 0 0 5px' }}>
-                      <Tooltip title={t('Installed Software')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                      <AddIcon fontSize="small" color="primary" style={{ marginTop: 2 }} />
-                    </div>
-                    <Field
-                      component={SelectField}
-                      style={{ height: '38.09px' }}
-                      variant='outlined'
-                      name="installed_software"
-                      size='small'
-                      fullWidth={true}
-                      containerstyle={{ width: '100%' }}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="installed_software"
-                    //   />
-                    // }
-                    />
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="installed_operating_system"
+                    size='small'
+                    fullWidth={true}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="installed_operating_system"
+                  //   />
+                  // }
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Installed Software')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '15px 0 0 5px' }}>
+                    <Tooltip title={t('Installed Software')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                    <AddIcon fontSize="small" color="primary" style={{ marginTop: 2 }} />
                   </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('Motherboard ID')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip
-                        title={t('Motherboard ID')}>
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <Field
-                      component={TextField}
-                      variant='outlined'
-                      name="motherboard_id"
-                      size='small'
-                      fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="motherboard_id"
-                    //   />
-                    // }
-                    />
+                  <Field
+                    component={SelectField}
+                    style={{ height: '38.09px' }}
+                    variant='outlined'
+                    name="installed_software"
+                    size='small'
+                    fullWidth={true}
+                    containerstyle={{ width: '100%' }}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="installed_software"
+                  //   />
+                  // }
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Motherboard ID')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip
+                      title={t('Motherboard ID')}>
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
                   </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('Ports')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '12px 0 0 5px' }}>
-                      <Tooltip title={t('Ports')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                      <AddIcon fontSize="small" color="primary" style={{ marginTop: 2 }} />
-                    </div>
-                    <div className="clearfix" />
-                    <Field
-                      component={SelectField}
-                      style={{ height: '38.09px' }}
-                      variant='outlined'
-                      name="ports"
-                      size='small'
-                      fullWidth={true}
-                      containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="ports"
-                    //   />
-                    // }
-                    />
-                    <Field
-                      component={SelectField}
-                      style={{ height: '38.09px' }}
-                      variant='outlined'
-                      name="ports"
-                      size='small'
-                      fullWidth={true}
-                      containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="ports"
-                    //   />
-                    // }
-                    />
-                    <Field
-                      component={SelectField}
-                      style={{ height: '38.09px' }}
-                      variant='outlined'
-                      name="ports"
-                      size='small'
-                      fullWidth={true}
-                      containerstyle={{ width: '50%' }}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="ports"
-                    //   />
-                    // }
-                    />
-                    <Field
-                      component={SelectField}
-                      style={{ height: '38.09px' }}
-                      variant='outlined'
-                      name="ports"
-                      size='small'
-                      fullWidth={true}
-                      containerstyle={{ width: '50%' }}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="ports"
-                    //   />
-                    // }
-                    />
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="motherboard_id"
+                    size='small'
+                    fullWidth={true}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="motherboard_id"
+                  //   />
+                  // }
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Ports')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '12px 0 0 5px' }}>
+                    <Tooltip title={t('Ports')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                    <AddIcon fontSize="small" color="primary" style={{ marginTop: 2 }} />
                   </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('Installation ID')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip title={t('Installation ID')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
+                  <div className="clearfix" />
+                  <Field
+                    component={SelectField}
+                    style={{ height: '38.09px' }}
+                    variant='outlined'
+                    name="ports"
+                    size='small'
+                    fullWidth={true}
+                    containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="ports"
+                  //   />
+                  // }
+                  />
+                  <Field
+                    component={SelectField}
+                    style={{ height: '38.09px' }}
+                    variant='outlined'
+                    name="ports"
+                    size='small'
+                    fullWidth={true}
+                    containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="ports"
+                  //   />
+                  // }
+                  />
+                  <Field
+                    component={SelectField}
+                    style={{ height: '38.09px' }}
+                    variant='outlined'
+                    name="ports"
+                    size='small'
+                    fullWidth={true}
+                    containerstyle={{ width: '50%' }}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="ports"
+                  //   />
+                  // }
+                  />
+                  <Field
+                    component={SelectField}
+                    style={{ height: '38.09px' }}
+                    variant='outlined'
+                    name="ports"
+                    size='small'
+                    fullWidth={true}
+                    containerstyle={{ width: '50%' }}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="ports"
+                  //   />
+                  // }
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Installation ID')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Installation ID')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="installation_id"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Connected To Network')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Connect To Network')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    name="connected_to_network"
+                    size='small'
+                    variant='outlined'
+                    fullWidth={true}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="connect_to_network"
+                  //   />
+                  // }
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('NetBIOS Name')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('NetBIOS Name')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="netbios_name"
+                    size='small'
+                    fullWidth={true}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="netbios_name"
+                  //   />
+                  // }
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Virtual')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Virtual')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography>No</Typography>
                     <Field
-                      component={TextField}
-                      variant='outlined'
-                      name="installation_id"
-                      size='small'
-                      fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="installation_id"
-                    //   />
-                    // }
+                      component={Switch}
+                      name="is_virtual"
+                      defaultChecked={device.is_virtual}
+                      inputProps={{ 'aria-label': 'ant design' }}
                     />
+                    <Typography>Yes</Typography>
                   </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('Connect To Network')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip title={t('Connect To Network')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Publicity Accessible')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Publicity Accessible')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography>No</Typography>
                     <Field
-                      component={TextField}
-                      name="connect_to_network"
-                      size='small'
-                      variant='outlined'
-                      fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="connect_to_network"
-                    //   />
-                    // }
+                      component={Switch}
+                      name="is_publicly_accessible"
+                      defaultChecked={device.is_publicly_accessible}
+                      inputProps={{ 'aria-label': 'ant design' }}
                     />
+                    <Typography>Yes</Typography>
                   </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('NetBIOS Name')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip title={t('NetBIOS Name')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <Field
-                      component={TextField}
-                      variant='outlined'
-                      name="netbios_name"
-                      size='small'
-                      fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="netbios_name"
-                    //   />
-                    // }
-                    />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Outlined')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Outlined')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
                   </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('Virtual')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip title={t('Virtual')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <div className="clearfix" />
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <Typography>No</Typography>
-                      <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
-                      <Typography>Yes</Typography>
-                    </div>
-                  </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('Publicity Accessible')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip title={t('Publicity Accessible')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <div className="clearfix" />
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <Typography>No</Typography>
-                      <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
-                      <Typography>Yes</Typography>
-                    </div>
-                  </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('Outlined')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip title={t('Outlined')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <Field
-                      component={TextField}
-                      variant='outlined'
-                      name="fqdn"
-                      size='small'
-                      fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="fqdn"
-                    //   />
-                    // }
-                    />
-                  </div>
-                </Grid>
-                <Grid item={true} xs={6}>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left' }}
-                    >
-                      {t('Installed Hardware')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
-                      <Tooltip title={t('Installed Hardware')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                      <AddIcon fontSize="small" color="primary" />
-                    </div>
-                    <div className="clearfix" />
-                    <Field
-                      component={SelectField}
-                      style={{ height: '38.09px' }}
-                      variant='outlined'
-                      name="installed_hardware"
-                      size='small'
-                      fullWidth={true}
-                      containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="installed_hardware"
-                    //   />
-                    // }
-                    />
-                    <Field
-                      component={SelectField}
-                      style={{ height: '38.09px' }}
-                      variant='outlined'
-                      name="installed_hardware"
-                      size='small'
-                      fullWidth={true}
-                      containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="installed_hardware"
-                    //   />
-                    // }
-                    />
-                    <Field
-                      component={SelectField}
-                      style={{ height: '38.09px' }}
-                      variant='outlined'
-                      name="installed_hardware"
-                      size='small'
-                      fullWidth={true}
-                      containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="installed_hardware"
-                    //   />
-                    // }
-                    />
-                  </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('Description')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip title={t('Description')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <Field
-                      component={TextField}
-                      variant='outlined'
-                      name="description"
-                      size='small'
-                      fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="description"
-                    //   />
-                    // }
-                    />
-                  </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('Model')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip title={t('Model')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <Field
-                      component={TextField}
-                      variant='outlined'
-                      name="model"
-                      size='small'
-                      fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="model"
-                    //   />
-                    // }
-                    />
-                  </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('MAC Address')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip
-                        title={t(
-                          'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                        )}
-                      >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <Field
-                      component={TextField}
-                      variant='outlined'
-                      name="mac_address"
-                      size='small'
-                      fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="mac_addres"
-                    //   />
-                    // }
-                    />
-                  </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('Baseline Configuration Name')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip title={t('Baseline Configuration Name')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <Field
-                      component={TextField}
-                      variant='outlined'
-                      name="baseline_configuration_name"
-                      size='small'
-                      fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="baseline_configuration_name"
-                    //   />
-                    // }
-                    />
-                  </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('URI')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip title={t('URI')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <Field
-                      component={TextField}
-                      variant='outlined'
-                      name="uri"
-                      size='small'
-                      fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="uri"
-                    //   />
-                    // }
-                    />
-                  </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('BIOS ID')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip title={t('BIOS ID')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <Field
-                      component={TextField}
-                      variant='outlined'
-                      name="bios_id"
-                      size='small'
-                      fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="bios_id"
-                    //   />
-                    // }
-                    />
-                  </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('Scanned')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip title={t('Scanned')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <div className="clearfix" />
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <Typography>No</Typography>
-                      <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
-                      <Typography>Yes</Typography>
-                    </div>
-                  </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('Host Name')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip title={t('Host Name')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <Field
-                      component={TextField}
-                      variant='outlined'
-                      name="host_name"
-                      size='small'
-                      fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="host_name"
-                    //   />
-                    // }
-                    />
-                  </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('Default Gateway')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip title={t('Default Gateway')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <Field
-                      component={TextField}
-                      variant='outlined'
-                      name="default_gateway"
-                      size='small'
-                      fullWidth={true}
-                    // helperText={
-                    //   <SubscriptionFocus
-                    //   context={context}
-                    //   fieldName="default_gateway"
-                    //   />
-                    // }
-                    />
-                  </div>
-                </Grid>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="fqdn"
+                    size='small'
+                    fullWidth={true}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="fqdn"
+                  //   />
+                  // }
+                  />
+                </div>
               </Grid>
+              <Grid item={true} xs={6}>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left' }}
+                  >
+                    {t('Installed Hardware')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                    <Tooltip title={t('Installed Hardware')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                    <AddIcon fontSize="small" color="primary" />
+                  </div>
+                  <div className="clearfix" />
+                  <Field
+                    component={SelectField}
+                    style={{ height: '38.09px' }}
+                    variant='outlined'
+                    name="installed_hardware"
+                    size='small'
+                    fullWidth={true}
+                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="installed_hardware"
+                  //   />
+                  // }
+                  />
+                  <Field
+                    component={SelectField}
+                    style={{ height: '38.09px' }}
+                    variant='outlined'
+                    name="installed_hardware"
+                    size='small'
+                    fullWidth={true}
+                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="installed_hardware"
+                  //   />
+                  // }
+                  />
+                  <Field
+                    component={SelectField}
+                    style={{ height: '38.09px' }}
+                    variant='outlined'
+                    name="installed_hardware"
+                    size='small'
+                    fullWidth={true}
+                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="installed_hardware"
+                  //   />
+                  // }
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Description')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Description')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="description"
+                    size='small'
+                    fullWidth={true}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="description"
+                  //   />
+                  // }
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Model')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Model')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="model"
+                    size='small'
+                    fullWidth={true}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="model"
+                  //   />
+                  // }
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('MAC Address')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip
+                      title={t(
+                        'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                      )}
+                    >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="mac_address"
+                    size='small'
+                    fullWidth={true}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="mac_addres"
+                  //   />
+                  // }
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Baseline Configuration Name')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Baseline Configuration Name')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="baseline_configuration_name"
+                    size='small'
+                    fullWidth={true}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="baseline_configuration_name"
+                  //   />
+                  // }
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('URI')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('URI')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="uri"
+                    size='small'
+                    fullWidth={true}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="uri"
+                  //   />
+                  // }
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('BIOS ID')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('BIOS ID')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="bios_id"
+                    size='small'
+                    fullWidth={true}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="bios_id"
+                  //   />
+                  // }
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Scanned')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Scanned')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography>No</Typography>
+                    <Field
+                      component={Switch}
+                      name="is_scanned"
+                      defaultChecked={device.is_scanned}
+                      inputProps={{ 'aria-label': 'ant design' }}
+                    />
+                    <Typography>Yes</Typography>
+                  </div>
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Host Name')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Host Name')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="hostname"
+                    size='small'
+                    fullWidth={true}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="host_name"
+                  //   />
+                  // }
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Default Gateway')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Default Gateway')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="default_gateway"
+                    size='small'
+                    fullWidth={true}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   context={context}
+                  //   fieldName="default_gateway"
+                  //   />
+                  // }
+                  />
+                </div>
+              </Grid>
+            </Grid>
             {/* </Form> */}
           </Paper>
         </div>
@@ -997,10 +1006,20 @@ const DeviceEditionDetails = createFragmentContainer(
   {
     device: graphql`
       fragment DeviceEditionDetails_device on ComputingDeviceAsset {
-        id
+        installed_software {
+          name
+        }
+        connected_to_network {
+          name
+        }
+        installed_operating_system {
+          name
+        }
         uri
         model
         mac_address
+        fqdn
+        network_id
         baseline_configuration_name
         bios_id
         is_scanned
@@ -1011,19 +1030,6 @@ const DeviceEditionDetails = createFragmentContainer(
         netbios_name
         is_virtual
         is_publicly_accessible
-        fqdn
-        installed_software {
-          name
-        }
-        connected_to_network {
-          name
-        }
-        installed_operating_system {
-          name
-        }
-        connected_to_network {
-          name
-        }
         installed_hardware {
           name
           uri
