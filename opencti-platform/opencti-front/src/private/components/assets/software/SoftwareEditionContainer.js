@@ -131,6 +131,12 @@ class SoftwareEditionContainer extends Component {
       R.assoc('serial_number', software.serial_number),
       R.assoc('release_date', software.release_date),
       R.assoc('operational_status', software.operational_status),
+      R.assoc('software_identifier', software.software_identifier),
+      R.assoc('patch_level', software.patch_level),
+      R.assoc('license_key', software.license_key),
+      R.assoc('cpe_identifier', software.cpe_identifier),
+      R.assoc('installation_id', software.installation_id),
+      R.assoc('implementation_point', software.implementation_point),
       R.pick([
         'id',
         'asset_id',
@@ -144,6 +150,12 @@ class SoftwareEditionContainer extends Component {
         'serial_number',
         'release_date',
         'operational_status',
+        'software_identifier',
+        'patch_level',
+        'license_key',
+        'cpe_identifier',
+        'installation_id',
+        'implementation_point',
       ]),
     )(software);
     return (
@@ -254,7 +266,6 @@ const SoftwareEditionFragment = createFragmentContainer(
       fragment SoftwareEditionContainer_software on Campaign {
         id
         ...SoftwareEditionOverview_software
-        ...SoftwareEditionDetails_software
         editContext {
           name
           focusOn
