@@ -25,6 +25,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import { IconButton } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
+import DatePickerField from '../../../../components/DatePickerField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
@@ -438,10 +439,13 @@ class StixDomainObjectCreationOverviewComponent extends Component {
                   </div>
                   <div className="clearfix" />
                   <Field
-                    component={TextField}
+                    component={DatePickerField}
                     variant='outlined'
                     name="release_date"
                     size='small'
+                    invalidDateMessage={t(
+                      'The value must be a date (YYYY-MM-DD)',
+                    )}
                     fullWidth={true}
                     style={{ height: '38.09px' }}
                     containerstyle={{ width: '100%' }}

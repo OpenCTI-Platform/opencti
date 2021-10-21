@@ -86,7 +86,6 @@ class Devices extends Component {
   }
 
   handleDeviceCreation() {
-    console.log('Device Created successfully');
     this.setState({ openDeviceCreation: true });
   }
 

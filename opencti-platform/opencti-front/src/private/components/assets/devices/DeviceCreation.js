@@ -21,6 +21,9 @@ import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
+import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
+import { dayStartDate, parse } from '../../../../utils/Time';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -79,27 +82,34 @@ const deviceCreationMutation = graphql`
   mutation DeviceCreationMutation($input: ComputingDeviceAssetAddInput) {
     addComputingDeviceAsset (input: $input) {
       ...DeviceCard_node
+      ...DeviceDetails_device
+      operational_status
+      serial_number
+      release_date
+      description
+      version
+      name
     }
   }
 `;
 
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  asset_type: Yup.array().required(t('This field is required')),
-  implementation_point: Yup.string().required(t('This field is required')),
-  operational_status: Yup.string().required(t('This field is required')),
-  first_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  last_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  sophistication: Yup.string().nullable(),
-  resource_level: Yup.string().nullable(),
-  primary_motivation: Yup.string().nullable(),
-  secondary_motivations: Yup.array().nullable(),
-  personal_motivations: Yup.array().nullable(),
-  goals: Yup.string().nullable(),
+  // asset_type: Yup.array().required(t('This field is required')),
+  // implementation_point: Yup.string().required(t('This field is required')),
+  // operational_status: Yup.string().required(t('This field is required')),
+  // first_seen: Yup.date()
+  //   .nullable()
+  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
+  // last_seen: Yup.date()
+  //   .nullable()
+  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
+  // sophistication: Yup.string().nullable(),
+  // resource_level: Yup.string().nullable(),
+  // primary_motivation: Yup.string().nullable(),
+  // secondary_motivations: Yup.array().nullable(),
+  // personal_motivations: Yup.array().nullable(),
+  // goals: Yup.string().nullable(),
 });
 
 class DeviceCreation extends Component {
@@ -122,17 +132,41 @@ class DeviceCreation extends Component {
     //   assoc('objectMarking', pluck('value', values.objectMarking)),
     //   assoc('objectLabel', pluck('value', values.objectLabel)),
     // )(values);
+    CM(environmentDarkLight, {
+      mutation: deviceCreationMutation,
+      // const adaptedValues = evolve(
+      //   {
+      //     published: () => parse(values.published).format(),
+      //     createdBy: path(['value']),
+      //     objectMarking: pluck('value'),
+      //     objectLabel: pluck('value'),
+      //   },
+      //   values,
+      // );
+      variables: {
+        input: values,
+      },
+      setSubmitting,
+      onCompleted: (data) => {
+        setSubmitting(false);
+        resetForm();
+        this.handleClose();
+        console.log('DeviceCreationDarkLightMutationData', data);
+        this.props.history.push('/dashboard/assets/devices');
+      },
+      onError: (err) => console.log('DeviceCreationDarkLightMutationError', err),
+    });
     // commitMutation({
-    //   mutation: deviceCreationOverviewMutation,
+    //   mutation: deviceCreationMutation,
     //   variables: {
     //     input: values,
     //   },
-    //   // updater: (store) => insertNode(
-    //   //   store,
-    //   //   'Pagination_threatActors',
-    //   //   this.props.paginationOptions,
-    //   //   'threatActorAdd',
-    //   // ),
+    // //   // updater: (store) => insertNode(
+    // //   //   store,
+    // //   //   'Pagination_threatActors',
+    // //   //   this.props.paginationOptions,
+    // //   //   'threatActorAdd',
+    // //   // ),
     //   setSubmitting,
     //   onCompleted: () => {
     //     setSubmitting(false);
@@ -140,7 +174,6 @@ class DeviceCreation extends Component {
     //     this.handleClose();
     //   },
     // });
-    this.setState({ onSubmit: true });
   }
 
   handleClose() {
@@ -167,37 +200,14 @@ class DeviceCreation extends Component {
       <div className={classes.container}>
         <Formik
           initialValues={{
-            name: '',
-            asset_id: '',
-            version: '',
-            serial_number: '',
-            asset_tag: '',
-            location: '',
-            vendor_name: '',
-            release_date: '',
-            description: '',
-            operational_status: '',
-            createdBy: '',
-            objectMarking: [],
-            Labels: [],
-            installed_operating_system: '',
-            motherboard_id: '',
+            name: 'Hello World',
+            operational_status: 'other',
+            implementation_point: 'external',
+            ipv4_address: [],
+            ipv6_address: [],
             ports: [],
-            asset_type: [],
-            installation_id: '',
-            connected_to_network: {},
-            bios_id: '',
-            is_virtual: false,
-            is_publicly_accessible: false,
-            fqdn: '',
-            installed_hardware: {},
-            model: '',
-            mac_address: '',
-            baseline_configuration_name: '',
-            uri: '',
-            is_scanned: false,
-            hostname: '',
-            default_gateway: '',
+            asset_type: 'software',
+            mac_address: [],
           }}
           validationSchema={deviceValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
@@ -226,8 +236,7 @@ class DeviceCreation extends Component {
                       size="small"
                       startIcon={<Close />}
                       color='primary'
-                      // onClick={handleReset}
-                      onClick={() => history.goBack()}
+                      onClick={handleReset}
                       className={classes.iconButton}
                     >
                       {t('Cancel')}

@@ -21,6 +21,8 @@ import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
+import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -78,6 +80,12 @@ const softwareCreationMutation = graphql`
   mutation SoftwareCreationMutation($input: SoftwareAssetAddInput) {
     createSoftwareAsset (input: $input) {
       ...SoftwareCard_node
+      operational_status
+      serial_number
+      release_date
+      description
+      version
+      name
     }
   }
 `;
@@ -121,6 +129,30 @@ class SoftwareCreation extends Component {
     //   assoc('objectMarking', pluck('value', values.objectMarking)),
     //   assoc('objectLabel', pluck('value', values.objectLabel)),
     // )(values);
+    CM(environmentDarkLight, {
+      mutation: softwareCreationMutation,
+      // const adaptedValues = evolve(
+      //   {
+      //     published: () => parse(values.published).format(),
+      //     createdBy: path(['value']),
+      //     objectMarking: pluck('value'),
+      //     objectLabel: pluck('value'),
+      //   },
+      //   values,
+      // );
+      variables: {
+        input: values,
+      },
+      setSubmitting,
+      onCompleted: (data) => {
+        setSubmitting(false);
+        resetForm();
+        this.handleClose();
+        console.log('SoftwareCreationDarkLightMutationData', data);
+        this.props.history.push('/dashboard/assets/software');
+      },
+      onError: (err) => console.log('SoftwareCreationDarkLightMutationError', err),
+    });
     // commitMutation({
     //   mutation: softwareCreationOverviewMutation,
     //   variables: {
@@ -166,37 +198,20 @@ class SoftwareCreation extends Component {
       <div className={classes.container}>
         <Formik
           initialValues={{
-            name: '',
-            asset_id: '',
-            version: '',
-            serial_number: '',
-            asset_tag: '',
-            location: '',
-            vendor_name: '',
-            release_date: '',
-            description: '',
-            operational_status: '',
-            createdBy: '',
-            objectMarking: [],
-            Labels: [],
-            installed_operating_system: '',
-            motherboard_id: '',
-            ports: [],
-            asset_type: [],
-            installation_id: '',
-            connected_to_network: {},
-            bios_id: '',
-            is_virtual: false,
-            is_publicly_accessible: false,
-            fqdn: '',
-            installed_hardware: {},
-            model: '',
-            mac_address: '',
-            baseline_configuration_name: '',
-            uri: '',
-            is_scanned: false,
-            hostname: '',
-            default_gateway: '',
+            name: 'Hello World',
+            // asset_id: '',
+            // version: '',
+            // serial_number: '',
+            // asset_tag: '',
+            // location: '',
+            // vendor_name: '',
+            // release_date: '',
+            // description: '',
+            operational_status: 'other',
+            implementation_point: 'external',
+            // Labels: [],
+            // ports: [],
+            asset_type: 'software',
           }}
           validationSchema={softwareValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
