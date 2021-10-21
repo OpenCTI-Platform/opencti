@@ -167,6 +167,7 @@ class SoftwareOperations extends Component {
       classes,
       t,
       id,
+      handleOpenEdit,
       isAllselected,
     } = this.props;
     return (
@@ -174,7 +175,7 @@ class SoftwareOperations extends Component {
         <Tooltip title={t('Edit')}>
           <Button
             variant="contained"
-            onClick={this.handleOpenEdit.bind(this)}
+            onClick={handleOpenEdit}
             className={classes.iconButton}
             disabled={Boolean(!id)}
             color="primary"

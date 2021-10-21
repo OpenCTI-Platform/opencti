@@ -29,14 +29,27 @@ const styles = () => ({
 });
 
 class SoftwareComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      openEdit: false,
+    };
+  }
+
+  handleToggleEdit() {
+    this.setState({ openEdit: !this.state.openEdit });
+  }
+
   render() {
     const { classes, software, history } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          openEdit={() => this.setState({ openEdit: !this.state.openEdit })}
           stixDomainObject={software}
           history={history}
           PopoverComponent={<SoftwarePopover />}
+          handleToggleEdit={this.handleToggleEdit.bind(this)}
           OperationsComponent={<SoftwareOperations />}
         />
         <Grid
@@ -44,12 +57,23 @@ class SoftwareComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6}>
-            <StixDomainObjectOverview stixDomainObject={software} />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <SoftwareDetails software={software} />
-          </Grid>
+          {this.state.openEdit ? (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <SoftwareEdition
+                open={this.state.openEdit}
+                softwareId={software.id}
+              />
+            </Security>
+          ) : (
+            <>
+              <Grid item={true} xs={6}>
+                <StixDomainObjectOverview stixDomainObject={software} />
+              </Grid>
+              <Grid item={true} xs={6}>
+                <SoftwareDetails software={software} />
+              </Grid>
+            </>
+          )}
         </Grid>
         {/* <Grid
           container={true}
@@ -85,9 +109,9 @@ class SoftwareComponent extends Component {
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={software.id}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <SoftwareEdition softwareId={software.id} />
-        </Security>
+        </Security> */}
       </div>
     );
   }

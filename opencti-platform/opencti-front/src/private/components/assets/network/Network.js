@@ -29,27 +29,51 @@ const styles = () => ({
 });
 
 class NetworkComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      openEdit: false,
+    };
+  }
+
+  handleToggleEdit() {
+    this.setState({ openEdit: !this.state.openEdit });
+  }
+
   render() {
     const { classes, network, history } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          openEdit={() => this.setState({ openEdit: !this.state.openEdit })}
           stixDomainObject={network}
           history={history}
           PopoverComponent={<NetworkPopover />}
+          handleToggleEdit={this.handleToggleEdit.bind(this)}
           OperationsComponent={<NetworkOperations />}
         />
-        <Grid
+          <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6}>
-            <StixDomainObjectOverview stixDomainObject={network} />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <NetworkDetails network={network} />
-          </Grid>
+          {this.state.openEdit ? (
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <NetworkEdition
+                  open={this.state.openEdit}
+                  networkId={network.id}
+                />
+              </Security>
+          ) : (
+            <>
+              <Grid item={true} xs={6}>
+                <StixDomainObjectOverview stixDomainObject={network} />
+              </Grid>
+              <Grid item={true} xs={6}>
+                <NetworkDetails network={network} />
+              </Grid>
+            </>
+          )}
         </Grid>
         {/* <Grid
           container={true}
@@ -87,9 +111,9 @@ class NetworkComponent extends Component {
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={network.id}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <NetworkEdition networkId={network.id} />
-        </Security>
+        </Security> */}
       </div>
     );
   }

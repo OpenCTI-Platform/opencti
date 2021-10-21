@@ -6,6 +6,8 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
+import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import SoftwareEditionContainer from './SoftwareEditionContainer';
@@ -47,12 +49,19 @@ export const softwareEditionDarkLightQuery = graphql`
   query SoftwareEditionContainerDarkLightQuery($id: ID!) {
     softwareAsset(id: $id) {
       id
-      standard_id
       name
       asset_id
       description
-      vendor_name
+      locations {
+        description
+      }
       version
+      vendor_name
+      asset_tag
+      asset_type
+      serial_number
+      release_date
+      operational_status
     }
   }
 `;
@@ -82,7 +91,7 @@ class SoftwareEdition extends Component {
     const { classes, softwareId } = this.props;
     return (
       <div>
-        <Fab
+        {/* <Fab
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
@@ -95,8 +104,28 @@ class SoftwareEdition extends Component {
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
-        >
-          <QueryRenderer
+        > */}
+          <QR
+            environment={environmentDarkLight}
+            query={softwareEditionDarkLightQuery}
+            variables={{ id: softwareId }}
+            render={({ props }) => {
+              console.log(`SoftwareEditionDarkLightQuery OR Props ${JSON.stringify(props)}`);
+              if (props) {
+                return (
+                  <SoftwareEditionContainer
+                    software={props.softwareAsset}
+                    // enableReferences={props.settings.platform_enable_reference?.includes(
+                    //   'Software',
+                    // )}
+                    handleClose={this.handleClose.bind(this)}
+                  />
+                );
+              }
+              return <Loader variant="inElement" />;
+            }}
+          />
+          {/* <QueryRenderer
             query={softwareEditionQuery}
             variables={{ id: softwareId }}
             render={({ props }) => {
@@ -113,8 +142,8 @@ class SoftwareEdition extends Component {
               }
               return <Loader variant="inElement" />;
             }}
-          />
-        </Drawer>
+          /> */}
+        {/* </Drawer> */}
       </div>
     );
   }

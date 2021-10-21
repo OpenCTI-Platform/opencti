@@ -64,6 +64,7 @@ export const deviceEditionDarkLightQuery = graphql`
       serial_number
       release_date
       operational_status
+      ...DeviceEditionDetails_device
     }
   }
 `;
@@ -118,6 +119,9 @@ class DeviceEdition extends Component {
               return (
                 <DeviceEditionContainer
                   device={props.computingDeviceAsset}
+                  // enableReferences={props.settings.platform_enable_reference?.includes(
+                    //   'Device',
+                    // )}
                   handleClose={this.handleClose.bind(this)}
                 />
               );

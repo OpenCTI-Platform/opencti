@@ -8,6 +8,13 @@ import {
 } from 'ramda';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
+import Switch from '@material-ui/core/Switch';
+import Paper from '@material-ui/core/Paper';
+import { Information } from 'mdi-material-ui';
+import Tooltip from '@material-ui/core/Tooltip';
 import inject18n from '../../../../components/i18n';
 import DatePickerField from '../../../../components/DatePickerField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -17,6 +24,26 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import TextField from '../../../../components/TextField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+
+const styles = (theme) => ({
+  paper: {
+    height: '100%',
+    minHeight: '100%',
+    margin: '10px 0 0 0',
+    padding: '24px 24px 32px 24px',
+    borderRadius: 6,
+  },
+  createButton: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+  },
+  importButton: {
+    position: 'absolute',
+    top: 30,
+    right: 30,
+  },
+});
 
 const networkMutationFieldPatch = graphql`
   mutation NetworkEditionDetailsFieldPatchMutation(
@@ -132,37 +159,187 @@ class NetworkEditionDetailsComponent extends Component {
 
   render() {
     const {
-      t, network, context, enableReferences,
+      t, classes, network, context, enableReferences,
     } = this.props;
-    const initialValues = pipe(
-      assoc('first_seen', dateFormat(network.first_seen)),
-      assoc('last_seen', dateFormat(network.last_seen)),
-      assoc(
-        'secondary_motivations',
-        network.secondary_motivations
-          ? network.secondary_motivations
-          : [],
-      ),
-      assoc('goals', join('\n', network.goals ? network.goals : [])),
-      pick([
-        'first_seen',
-        'last_seen',
-        'resource_level',
-        'primary_motivation',
-        'secondary_motivations',
-        'goals',
-      ]),
-    )(network);
+    // const initialValues = pipe(
+    //   assoc('first_seen', dateFormat(network.first_seen)),
+    //   assoc('last_seen', dateFormat(network.last_seen)),
+    //   assoc(
+    //     'secondary_motivations',
+    //     network.secondary_motivations
+    //       ? network.secondary_motivations
+    //       : [],
+    //   ),
+    //   assoc('goals', join('\n', network.goals ? network.goals : [])),
+    //   pick([
+    //     'first_seen',
+    //     'last_seen',
+    //     'resource_level',
+    //     'primary_motivation',
+    //     'secondary_motivations',
+    //     'goals',
+    //   ]),
+    // )(network);
     return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={networkValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
-      >
-        {({ submitForm, isSubmitting, validateForm }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
+      <>
+        {/* // <Formik
+      //   enableReinitialize={true}
+      //   initialValues={initialValues}
+      //   validationSchema={networkValidation(t)}
+      //   onSubmit={this.onSubmit.bind(this)}
+      // >
+      //   {({ submitForm, isSubmitting, validateForm }) => (
+      //     <Form style={{ margin: '20px 0 20px 0' }}> */}
+        <div style={{ height: '100%' }}>
+          <Typography variant="h4" gutterBottom={true}>
+            {t('Details')}
+          </Typography>
+          <Paper classes={{ root: classes.paper }} elevation={2}>
+            <Grid container={true} spacing={3}>
+              <Grid item={true} xs={6}>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left' }}
+                  >
+                    {t('Network Name')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                    <Tooltip title={t('Network Name')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="network_name"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Starting Address')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '20px 0 0 5px' }}>
+                    <Tooltip title={t('Starting Address')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    style={{ height: '38.09px' }}
+                    variant='outlined'
+                    name="starting_address"
+                    size='small'
+                    fullWidth={true}
+                    containerstyle={{ width: '100%' }}
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Scanned')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Scanned')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography>No</Typography>
+                    <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                    <Typography>Yes</Typography>
+                  </div>
+                </div>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left' }}
+                  >
+                    {t('Network ID')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                    <Tooltip title={t('Network ID')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <Field
+                    component={TextField}
+                    style={{ height: '38.09px' }}
+                    variant='outlined'
+                    name="network_id"
+                    size='small'
+                    fullWidth={true}
+                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Ending Address')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Ending Address')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="ending_address"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Implementation Point')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Implementation Point')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="model"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </div>
+              </Grid>
+            </Grid>
+          </Paper>
+        </div>
+        {/* <Field
               component={DatePickerField}
               name="first_seen"
               label={t('First seen')}
@@ -170,9 +347,9 @@ class NetworkEditionDetailsComponent extends Component {
               fullWidth={true}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="first_seen" />
-              }
+              // helperText={
+              //   <SubscriptionFocus context={context} fieldName="first_seen" />
+              // }
             />
             <Field
               component={DatePickerField}
@@ -183,9 +360,9 @@ class NetworkEditionDetailsComponent extends Component {
               style={{ marginTop: 20 }}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="last_seen" />
-              }
+              // helperText={
+              //   <SubscriptionFocus context={context} fieldName="last_seen" />
+              // }
             />
             <OpenVocabField
               label={t('Resource level')}
@@ -230,9 +407,9 @@ class NetworkEditionDetailsComponent extends Component {
               style={{ marginTop: 20 }}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="goals" />
-              }
+              // helperText={
+              //   <SubscriptionFocus context={context} fieldName="goals" />
+              // }
             />
             {enableReferences && (
               <CommitMessage
@@ -240,10 +417,11 @@ class NetworkEditionDetailsComponent extends Component {
                 disabled={isSubmitting}
                 validateForm={validateForm}
               />
-            )}
-          </Form>
+            )} */}
+        {/* </Form>
         )}
-      </Formik>
+      </Formik> */}
+      </>
     );
   }
 }
@@ -271,4 +449,7 @@ const NetworkEditionDetails = createFragmentContainer(
   },
 );
 
-export default compose(inject18n)(NetworkEditionDetails);
+export default compose(
+  inject18n,
+  withStyles(styles, { withTheme: true }),
+)(NetworkEditionDetails);

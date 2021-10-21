@@ -272,9 +272,9 @@ class NetworkEditionOverviewComponent extends Component {
               fullWidth={true}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
-              }
+              // helperText={
+              //   <SubscriptionFocus context={context} fieldName="name" />
+              // }
             />
             <ConfidenceField
               name="confidence"
@@ -296,28 +296,28 @@ class NetworkEditionOverviewComponent extends Component {
               style={{ marginTop: 20 }}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
-              }
+              // helperText={
+              //   <SubscriptionFocus context={context} fieldName="description" />
+              // }
             />
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
-              }
+              // helpertext={
+              //   <SubscriptionFocus context={context} fieldName="createdBy" />
+              // }
               onChange={this.handleChangeCreatedBy.bind(this)}
             />
             <ObjectMarkingField
               name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
-              }
+              // helpertext={
+              //   <SubscriptionFocus
+              //     context={context}
+              //     fieldname="objectMarking"
+              //   />
+              // }
               onChange={this.handleChangeObjectMarking.bind(this)}
             />
             {enableReferences && (

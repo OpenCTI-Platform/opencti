@@ -6,6 +6,12 @@ import { Form, Formik, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
+import Switch from '@material-ui/core/Switch';
+import Paper from '@material-ui/core/Paper';
+import { Information } from 'mdi-material-ui';
+import Tooltip from '@material-ui/core/Tooltip';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import DatePickerField from '../../../../components/DatePickerField';
@@ -16,17 +22,12 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
+  paper: {
+    height: '100%',
+    minHeight: '100%',
+    margin: '10px 0 0 0',
+    padding: '24px 24px 32px 24px',
+    borderRadius: 6,
   },
   createButton: {
     position: 'fixed',
@@ -140,24 +141,185 @@ class SoftwareEditionDetailsComponent extends Component {
 
   render() {
     const {
-      t, software, context, enableReferences,
+      t,
+      classes,
+      software,
+      context,
+      enableReferences,
     } = this.props;
-    const initialValues = R.pipe(
-      R.assoc('first_seen', dateFormat(software.first_seen)),
-      R.assoc('last_seen', dateFormat(software.last_seen)),
-      R.pick(['first_seen', 'last_seen', 'objective']),
-    )(software);
+    // const initialValues = R.pipe(
+    //   R.assoc('first_seen', dateFormat(software.first_seen)),
+    //   R.assoc('last_seen', dateFormat(software.last_seen)),
+    //   R.pick(['first_seen', 'last_seen', 'objective']),
+    // )(software);
 
     return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={softwareValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
-      >
-        {({ submitForm, isSubmitting, validateForm }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
+      <>
+        {/* // <Formik
+      //   enableReinitialize={true}
+      //   initialValues={initialValues}
+      //   validationSchema={softwareValidation(t)}
+      //   onSubmit={this.onSubmit.bind(this)}
+      // >
+      //   {({ submitForm, isSubmitting, validateForm }) => (
+      //     <Form style={{ margin: '20px 0 20px 0' }}> */}
+        <div style={{ height: '100%' }}>
+          <Typography variant="h4" gutterBottom={true}>
+            {t('Details')}
+          </Typography>
+          <Paper classes={{ root: classes.paper }} elevation={2}>
+            <Grid container={true} spacing={3}>
+              <Grid item={true} xs={6}>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left' }}
+                  >
+                    {t('Software Identifier')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                    <Tooltip title={t('Software Identifier')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="software_identifier"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('License Key')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '15px 0 0 5px' }}>
+                    <Tooltip title={t('License Key')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    style={{ height: '38.09px' }}
+                    variant='outlined'
+                    name="license_key"
+                    size='small'
+                    fullWidth={true}
+                    containerstyle={{ width: '100%' }}
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('CPE Identifier')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip
+                      title={t('CPE Identifier')}>
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="motherboard_id"
+                    size='small'
+                    fullWidth={true}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //   fieldName="motherboard_id"
+                  //   />
+                  // }
+                  />
+                </div>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left' }}
+                  >
+                    {t('Patch Level')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                    <Tooltip title={t('Patch Level')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <Field
+                    component={TextField}
+                    style={{ height: '38.09px' }}
+                    variant='outlined'
+                    name="patch_level"
+                    size='small'
+                    fullWidth={true}
+                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Installation ID')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Installation ID')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="installation_id"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Implementation Point')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Implementation Point')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="implementation_point"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </div>
+              </Grid>
+            </Grid>
+          </Paper>
+        </div>
+        {/* <Field
               component={DatePickerField}
               name="first_seen"
               label={t('First seen')}
@@ -202,10 +364,11 @@ class SoftwareEditionDetailsComponent extends Component {
                 disabled={isSubmitting}
                 validateForm={validateForm}
               />
-            )}
-          </Form>
+            )} */}
+        {/* </Form>
         )}
-      </Formik>
+      </Formik> */}
+      </>
     );
   }
 }

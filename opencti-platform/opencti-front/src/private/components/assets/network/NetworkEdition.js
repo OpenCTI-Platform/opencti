@@ -6,6 +6,8 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
+import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import NetworkEditionContainer from './NetworkEditionContainer';
@@ -43,16 +45,47 @@ export const networkEditionQuery = graphql`
   }
 `;
 
+// export const networkEditionDarkLightQuery = graphql`
+//   query NetworkEditionContainerDarkLightQuery($id: ID!) {
+//     networkAsset(id: $id) {
+//       id
+//       name
+//       asset_id
+//       fqdn
+//       network_id
+//       description
+//       locations {
+//         description
+//       }
+//       version
+//       vendor_name
+//       asset_tag
+//       asset_type
+//       serial_number
+//       release_date
+//       operational_status
+//     }
+//   }
+// `;
+
 export const networkEditionDarkLightQuery = graphql`
   query NetworkEditionContainerDarkLightQuery($id: ID!) {
     networkAsset(id: $id) {
       id
-      standard_id
       name
       asset_id
+      network_id
       description
-      vendor_name
+      locations {
+        description
+      }
       version
+      vendor_name
+      asset_tag
+      asset_type
+      serial_number
+      release_date
+      operational_status
     }
   }
 `;
@@ -82,7 +115,27 @@ class NetworkEdition extends Component {
     const { classes, networkId } = this.props;
     return (
       <div>
-        <Fab
+        <QR
+            environment={environmentDarkLight}
+            query={networkEditionDarkLightQuery}
+            variables={{ id: networkId }}
+            render={({ props }) => {
+              console.log(`NetworkEditionDarkLightQuery Props ${JSON.stringify(props)}`);
+              if (props) {
+                return (
+                  <NetworkEditionContainer
+                    network={props.networkAsset}
+                    // enableReferences={props.settings.platform_enable_reference?.includes(
+                    //   'Network',
+                    // )}
+                    handleClose={this.handleClose.bind(this)}
+                  />
+                );
+              }
+              return <Loader variant="inElement" />;
+            }}
+          />
+        {/* <Fab
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
@@ -114,7 +167,7 @@ class NetworkEdition extends Component {
               return <Loader variant="inElement" />;
             }}
           />
-        </Drawer>
+        </Drawer> */}
       </div>
     );
   }
