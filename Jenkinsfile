@@ -30,6 +30,12 @@ node {
         }
       }
 
+      stage('Export Docker Image to Artifact') {
+        sh "docker save ${image}:${version} | gzip > ${product}-${version}.tar.gz"
+        archiveArtifacts artifacts: "${product}-${version}.tar.gz", followSymlinks: false
+        sh "rm ${product}-${version}.tar.gz"
+      }
+
       docker.withRegistry("https://${registry}", 'docker-registry-credentials') {
         stage('Push') {
           app.push('latest')
@@ -43,7 +49,7 @@ node {
             def tags = json.tags.minus(["latest"])
 
             // Now sort the tags
-            int[] sortedTags = []
+            def sortedTags = []
             for (String tag in tags) {
               if (tag.isInteger()) {
                 sortedTags.add(tag as Integer)
