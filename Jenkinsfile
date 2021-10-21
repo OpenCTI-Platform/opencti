@@ -5,24 +5,23 @@ node {
     def branch = "${env.BRANCH_NAME}"
     def version = "${env.BUILD_NUMBER}"
     int versionsToKeep = 3
+    def app;
 
     if (branch != 'master' || branch != 'main') {
       product += '-' + branch
     }
-
-    stage('Detect Version') {
-      def jsPackage = readJSON file: 'opencti-platform/opencti-front/package.json';
-      if (jsPackage['version'] != null) {
-        version = jsPackage['version']
-      }
-    }
-
     String image = "${registry}/${product}"
-    def app;
 
     ws("${env.WS_FOLDER}/docker/${product}/${branch}/") {
       stage('Clone Repository') {
         checkout scm
+      }
+
+      stage('Detect Version') {
+        def jsPackage = readJSON file: 'opencti-platform/opencti-front/package.json';
+        if (jsPackage['version'] != null) {
+          version = jsPackage['version']
+        }
       }
 
       stage('Build') {
@@ -44,7 +43,7 @@ node {
             def tags = json.tags.minus(["latest"])
 
             // Now sort the tags
-            def sortedTags = []
+            int[] sortedTags = []
             for (String tag in tags) {
               if (tag.isInteger()) {
                 sortedTags.add(tag as Integer)
@@ -81,7 +80,7 @@ node {
           --filter "until 336h": Don't consider Docker resources unless they are at least 2 weeks old (336 hours)
           -f: force prune, needed to avoid prompting the user
         **/
-        sh(returnStdout: false, script: "docker system prune --filter \"until=336h\" -f")
+        sh(returnStdout: false, script: 'docker system prune --filter "until=336h" -f')
       }
     }
 
