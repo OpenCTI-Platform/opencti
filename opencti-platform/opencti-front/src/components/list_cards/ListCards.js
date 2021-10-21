@@ -29,6 +29,7 @@ import StixDomainObjectsExports from '../../private/components/common/stix_domai
 import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
 import { truncate } from '../../utils/String';
+import TopBarMenu from '../../private/components/nav/TopBarMenu';
 
 const styles = (theme) => ({
   container: {
@@ -304,6 +305,7 @@ class ListCards extends Component {
           </div>
         </div>
         <div className="clearfix" />
+        <TopBarMenu />
         <div className={classes.cardsContainer}>{children}</div>
         {typeof handleToggleExports === 'function' ? (
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>

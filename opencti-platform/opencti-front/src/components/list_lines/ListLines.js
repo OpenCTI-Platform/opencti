@@ -33,7 +33,7 @@ import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
 import StixCyberObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
 import { truncate } from '../../utils/String';
-import TopBar from '../../private/components/nav/TopBar';
+import TopBarMenu from '../../private/components/nav/TopBarMenu';
 
 const styles = (theme) => ({
   container: {
@@ -41,7 +41,7 @@ const styles = (theme) => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    padding: '50px 0 50px 0',
+    padding: '0 0 50px 0',
   },
   containerNoPadding: {
     transition: theme.transitions.create('padding', {
@@ -235,10 +235,10 @@ class ListLines extends Component {
               />
             )}
             {numberOfElements && (
-                <div style={{ float: 'left', padding: '5px' }}>
-                  {t('Count:')}{' '}
-                  <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>
-                </div>
+              <div style={{ float: 'left', padding: '5px' }}>
+                {t('Count:')}{' '}
+                <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>
+              </div>
             )}
             {(!availableFilterKeys || availableFilterKeys.length === 0)
               && !noHeaders && <div style={{ height: 38 }}> &nbsp; </div>}
@@ -377,9 +377,9 @@ class ListLines extends Component {
             </div>
           </div>
         </div>
-        <TopBar />
         <div className={className}>
           <div className="clearfix" />
+          <TopBarMenu />
           {message && (
             <div style={{ width: '100%' }}>
               <Alert

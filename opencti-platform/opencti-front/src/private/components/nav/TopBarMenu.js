@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
@@ -88,16 +89,6 @@ const styles = (theme) => ({
   flex: {
     flexGrow: 1,
   },
-  logoContainer: {
-
-    height: 64,
-    width: 290,
-    marginLeft: -24,
-    paddingTop: 15,
-    borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-    backgroundColor: theme.palette.background.nav,
-
-  },
   toolbar: {
     paddingRight: '0',
     alignItems: 'flex-end',
@@ -108,17 +99,13 @@ const styles = (theme) => ({
   },
   menuContainer: {
     float: 'left',
-    marginLeft: 40,
+    width: '100%',
+    marginBottom: '20px',
+    marginLeft: -20,
+    paddingLeft: '20px',
+    position: 'relative',
+    borderBottom: '1px solid #384057',
   },
-  // menuContainer: {
-  //   top: 110,
-  //   float: 'left',
-  //   width: '100%',
-  //   // marginLeft: 40,
-  //   paddingLeft: '24px',
-  //   position: 'relative',
-  //   borderBottom: '1px solid #384057',
-  // },
   barRight: {
     position: 'absolute',
     right: 5,
@@ -128,17 +115,17 @@ const styles = (theme) => ({
 });
 
 const logoutMutation = graphql`
-  mutation TopBarLogoutMutation {
+  mutation TopBarMenuLogoutMutation {
     logout
   }
 `;
 
-const TopBar = ({
+const TopBarMenu = ({
   t, classes, location, history, keyword, theme,
 }) => {
   const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
   const breadCrumbPaths = location.pathname.substr(1).split('/');
-  let linkPath = '';
+  //   let linkPath = '';
   const handleOpenMenu = (event) => {
     event.preventDefault();
     setMenuOpen({ open: true, anchorEl: event.currentTarget });
@@ -162,18 +149,13 @@ const TopBar = ({
     }
   };
   return (
-    <AppBar
-      position="fixed"
-      className={classes.appBar}
-      elevation={1}
-      style={{ backgroundColor: theme.palette.header.background }}
-    >
-      <Toolbar className={classes.toolbar}>
-        <div className={classes.logoContainer}>
-          <Link to="/dashboard">
-            <img src={theme.logo} alt="logo" className={classes.logo} />
-          </Link>
-        </div>
+    <div
+    position="relative"
+    className={classes.appBar}
+    elevation={1}
+    style={{ backgroundColor: theme.palette.header.background }}
+  >
+    <Toolbar className={classes.toolbar}>
         <div className={classes.menuContainer}>
           {(location.pathname === '/dashboard'
             || location.pathname === '/dashboard/import') && <TopMenuDashboard />}
@@ -331,25 +313,12 @@ const TopBar = ({
           ) && <TopMenuWorkspacesInvestigations />}
           {location.pathname === '/dashboard/profile' ? <TopMenuProfile /> : ''}
         </div>
-        <div className={classes.barRight}>
-          <Breadcrumbs aria-label="breadcrumb">
-            { breadCrumbPaths.map((path, key) => {
-              linkPath = `${linkPath}/${path}`;
-              console.log('linkPath', linkPath);
-              return (<>
-                <Link key={key} underline="hover" color="#000" to={linkPath}>
-                { capitalize(path) }
-                </Link>
-              </>);
-            }) }
-          </Breadcrumbs>
-        </div>
-      </Toolbar>
-    </AppBar>
+    </Toolbar>
+  </div>
   );
 };
 
-TopBar.propTypes = {
+TopBarMenu.propTypes = {
   keyword: PropTypes.string,
   theme: PropTypes.object,
   classes: PropTypes.object,
@@ -363,4 +332,4 @@ export default compose(
   withRouter,
   withTheme,
   withStyles(styles),
-)(TopBar);
+)(TopBarMenu);
