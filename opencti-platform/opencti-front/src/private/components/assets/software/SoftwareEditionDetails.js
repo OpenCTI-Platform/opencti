@@ -49,7 +49,6 @@ const softwareMutationFieldPatch = graphql`
   ) {
     campaignEdit(id: $id) {
       fieldPatch(input: $input, commitMessage: $commitMessage) {
-        ...SoftwareEditionDetails_software
         ...Software_software
       }
     }
@@ -234,7 +233,7 @@ class SoftwareEditionDetailsComponent extends Component {
                   <Field
                     component={TextField}
                     variant='outlined'
-                    name="motherboard_id"
+                    name="cpe_identifier"
                     size='small'
                     fullWidth={true}
                   // helperText={
@@ -381,15 +380,31 @@ SoftwareEditionDetailsComponent.propTypes = {
   context: PropTypes.array,
 };
 
+// const SoftwareEditionDetails = createFragmentContainer(
+//   SoftwareEditionDetailsComponent,
+//   {
+//     software: graphql`
+//       fragment SoftwareEditionDetails_software on Campaign {
+//         id
+//         first_seen
+//         last_seen
+//         objective
+//       }
+//     `,
+//   },
+// );
+
 const SoftwareEditionDetails = createFragmentContainer(
   SoftwareEditionDetailsComponent,
   {
     software: graphql`
-      fragment SoftwareEditionDetails_software on Campaign {
-        id
-        first_seen
-        last_seen
-        objective
+      fragment SoftwareEditionDetails_software on SoftwareAsset {
+        software_identifier
+        license_key
+        cpe_identifier
+        patch_level
+        installation_id
+        implementation_point
       }
     `,
   },

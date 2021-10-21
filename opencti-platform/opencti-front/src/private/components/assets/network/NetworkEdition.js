@@ -86,6 +86,21 @@ export const networkEditionDarkLightQuery = graphql`
       serial_number
       release_date
       operational_status
+      network_name
+      network_id
+      implementation_point
+      network_address_range {
+        ending_ip_address{
+          ... on IpV4Address {
+            ip_address_value
+          }
+        }
+        starting_ip_address{
+          ... on IpV4Address {
+            ip_address_value
+          }
+        }
+      }
     }
   }
 `;

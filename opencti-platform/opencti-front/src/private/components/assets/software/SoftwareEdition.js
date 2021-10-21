@@ -62,6 +62,12 @@ export const softwareEditionDarkLightQuery = graphql`
       serial_number
       release_date
       operational_status
+      software_identifier
+      license_key
+      cpe_identifier
+      patch_level
+      installation_id
+      implementation_point
     }
   }
 `;
