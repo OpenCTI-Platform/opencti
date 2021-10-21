@@ -14,6 +14,7 @@ import {
 import { compose, pathOr } from 'ramda';
 import Checkbox from '@material-ui/core/Checkbox';
 import Skeleton from '@material-ui/lab/Skeleton';
+import Tooltip from '@material-ui/core/Tooltip';
 import inject18n from '../../../../components/i18n';
 import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -86,12 +87,14 @@ class ReportLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {node.name}
-              </div>
+              <Tooltip title={node.name}>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.name.width }}
+                >
+                  {node.name}
+                </div>
+              </Tooltip>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}

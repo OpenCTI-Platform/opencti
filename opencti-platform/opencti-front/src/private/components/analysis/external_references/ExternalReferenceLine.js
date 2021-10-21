@@ -14,6 +14,7 @@ import {
 import { compose } from 'ramda';
 import Skeleton from '@material-ui/lab/Skeleton';
 import { Link } from 'react-router-dom';
+import Tooltip from '@material-ui/core/Tooltip';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
@@ -87,12 +88,14 @@ class ExternalReferenceLineComponent extends Component {
               >
                 {node.external_id}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.url.width }}
-              >
-                {node.url}
-              </div>
+              <Tooltip title={node.url}>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.url.width }}
+                >
+                  {node.url}
+                </div>
+              </Tooltip>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created.width }}

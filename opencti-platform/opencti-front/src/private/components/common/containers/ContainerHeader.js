@@ -67,22 +67,32 @@ class ContainerHeaderComponent extends Component {
     } = this.props;
     return (
       <div>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          classes={{ root: classes.title }}
-        >
-          {truncate(
+        <Tooltip
+          title={
             container.name
-              || container.attribute_abstract
-              || container.content
-              || container.opinion
-              || `${fd(container.first_observed)} - ${fd(
-                container.last_observed,
-              )}`,
-            80,
-          )}
-        </Typography>
+            || container.attribute_abstract
+            || container.content
+            || container.opinion
+            || `${fd(container.first_observed)} - ${fd(container.last_observed)}`
+          }
+        >
+          <Typography
+            variant="h1"
+            gutterBottom={true}
+            classes={{ root: classes.title }}
+          >
+            {truncate(
+              container.name
+                || container.attribute_abstract
+                || container.content
+                || container.opinion
+                || `${fd(container.first_observed)} - ${fd(
+                  container.last_observed,
+                )}`,
+              80,
+            )}
+          </Typography>
+        </Tooltip>
         {variant !== 'noMarking' && (
           <div className={classes.marking}>
             {pathOr([], ['objectMarking', 'edges'], container).map(
