@@ -48,7 +48,7 @@ const Index = (me) => {
   const classes = useStyles();
   return (
     <div className={classes.root}>
-      {/* <TopBar /> */}
+      <TopBar />
       <LeftBar />
       <Message />
       <main className={classes.content} style={{ paddingRight: 24 }}>

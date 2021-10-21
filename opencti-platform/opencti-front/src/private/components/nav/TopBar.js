@@ -91,16 +91,12 @@ const styles = (theme) => ({
   logoContainer: {
 
     height: 64,
-    width: 290,
+    width: 255,
     marginLeft: -24,
     paddingTop: 15,
     borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
     backgroundColor: theme.palette.background.nav,
 
-  },
-  toolbar: {
-    paddingRight: '0',
-    alignItems: 'flex-end',
   },
   logo: {
     cursor: 'pointer',
@@ -110,20 +106,32 @@ const styles = (theme) => ({
     float: 'left',
     marginLeft: 40,
   },
-  // menuContainer: {
-  //   top: 110,
-  //   float: 'left',
-  //   width: '100%',
-  //   // marginLeft: 40,
-  //   paddingLeft: '24px',
-  //   position: 'relative',
-  //   borderBottom: '1px solid #384057',
-  // },
   barRight: {
     position: 'absolute',
     right: 5,
-    alignItems: 'flex-end',
+    verticalAlign: 'middle',
     height: '100%',
+  },
+  barContainer: {
+    display: 'table-cell',
+    float: 'left',
+    paddingTop: 10,
+  },
+  divider: {
+    display: 'table-cell',
+    float: 'left',
+    height: '100%',
+    margin: '0 5px 0 5px',
+  },
+  searchContainer: {
+    display: 'table-cell',
+    float: 'left',
+    marginRight: 5,
+    paddingTop: 9,
+  },
+  button: {
+    display: 'table-cell',
+    float: 'left',
   },
 });
 
@@ -175,7 +183,7 @@ const TopBar = ({
           </Link>
         </div>
         <div className={classes.menuContainer}>
-          {(location.pathname === '/dashboard'
+          {/* {(location.pathname === '/dashboard'
             || location.pathname === '/dashboard/import') && <TopMenuDashboard />}
           {location.pathname.includes('/dashboard/search') && <TopMenuSearch />}
           {(location.pathname === '/dashboard/analysis'
@@ -249,14 +257,14 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/assets/software/') && (
             <TopMenuSoftware />
           )}
-          {/* {(location.pathname === '/dashboard/risks-assessment'
+          {(location.pathname === '/dashboard/risks-assessment'
             || location.pathname.match('/dashboard/risks-assessment/[a-z_]+$')) && (
             <TopMenuRisksAssessment />
           )}
           {location.pathname.includes('/dashboard/risks-assessment/risks/') && (
             <TopMenuRisk />
-          )} */}
-          {/* {(location.pathname === '/dashboard/risks'
+          )}
+          {(location.pathname === '/dashboard/risks'
             || location.pathname.match('/dashboard/risks/[a-z_]+$')) && (
             <TopMenuRisks />
           )}
@@ -271,7 +279,7 @@ const TopBar = ({
           )}
           {location.pathname.includes('/dashboard/risks/tracking/') && (
             <TopMenuTracking />
-          )} */}
+          )}
           {(location.pathname === '/dashboard/arsenal'
             || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && (
             <TopMenuArsenal />
@@ -329,7 +337,7 @@ const TopBar = ({
           {location.pathname.includes(
             '/dashboard/workspaces/investigations',
           ) && <TopMenuWorkspacesInvestigations />}
-          {location.pathname === '/dashboard/profile' ? <TopMenuProfile /> : ''}
+          {location.pathname === '/dashboard/profile' ? <TopMenuProfile /> : ''} */}
         </div>
         <div className={classes.barRight}>
           <Breadcrumbs aria-label="breadcrumb">
