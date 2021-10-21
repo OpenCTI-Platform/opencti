@@ -28,6 +28,7 @@ const styles = () => ({
 class ExportButtons extends Component {
   constructor(props) {
     super(props);
+    this.adjust = props.adjust;
     commitLocalUpdate((store) => {
       const me = store.getRoot().getLinkedRecord('me');
       const exporting = me.getValue('exporting') || false;
@@ -48,7 +49,7 @@ class ExportButtons extends Component {
   }
 
   exportImage(domElementId, name, theme, background) {
-    // this.setState({ exporting: true });
+    this.setState({ exporting: true });
     this.handleCloseImage();
     const { theme: currentTheme, pixelRatio = 1 } = this.props;
     let timeout = 4000;
@@ -57,15 +58,15 @@ class ExportButtons extends Component {
       commitLocalUpdate((store) => {
         const me = store.getRoot().getLinkedRecord('me');
         me.setValue(theme, 'theme');
-        // me.setValue(true, 'exporting');
+        me.setValue(true, 'exporting');
       });
     }
     setTimeout(() => {
       const container = document.getElementById(domElementId);
       const { offsetWidth, offsetHeight } = container;
-      if (this.props.adjust) {
+      if (theme === currentTheme.palette.type && this.adjust) {
         container.setAttribute('style', 'width:3840px; height:2160px');
-        this.props.adjust(true);
+        this.adjust(true);
       }
       setTimeout(() => {
         exportImage(
@@ -80,6 +81,7 @@ class ExportButtons extends Component {
               : themeDark().palette.background.default
             : null,
           pixelRatio,
+          this.adjust,
         ).then(() => {
           if (theme !== currentTheme.palette.type) {
             commitLocalUpdate((store) => {
@@ -103,7 +105,7 @@ class ExportButtons extends Component {
     this.setState({ anchorElPdf: null });
   }
 
-  exportPdf(domElementId, name, theme, background, adjust = null) {
+  exportPdf(domElementId, name, theme, background) {
     this.setState({ exporting: true });
     this.handleClosePdf();
     const { theme: currentTheme, pixelRatio = 1 } = this.props;
@@ -127,7 +129,7 @@ class ExportButtons extends Component {
             : themeDark().palette.background.default
           : null,
         pixelRatio,
-        adjust,
+        this.adjust,
       ).then(() => {
         if (theme !== currentTheme.palette.type) {
           commitLocalUpdate((store) => {
@@ -145,7 +147,7 @@ class ExportButtons extends Component {
   render() {
     const { anchorElImage, anchorElPdf, exporting } = this.state;
     const {
-      classes, t, domElementId, name, csvData, adjust,
+      classes, t, domElementId, name, csvData,
     } = this.props;
     return (
       <div className={classes.exportButtons}>
@@ -171,7 +173,6 @@ class ExportButtons extends Component {
               name,
               'dark',
               true,
-              adjust,
             )}
           >
             {t('Dark (with background)')}
@@ -183,7 +184,6 @@ class ExportButtons extends Component {
               name,
               'dark',
               false,
-              adjust,
             )}
           >
             {t('Dark (without background)')}
@@ -195,7 +195,6 @@ class ExportButtons extends Component {
               name,
               'light',
               true,
-              adjust,
             )}
           >
             {t('Light (with background)')}
@@ -207,7 +206,6 @@ class ExportButtons extends Component {
               name,
               'light',
               false,
-              adjust,
             )}
           >
             {t('Light (without background)')}
@@ -235,7 +233,6 @@ class ExportButtons extends Component {
               name,
               'dark',
               true,
-              adjust,
             )}
           >
             {t('Dark')}
@@ -247,7 +244,6 @@ class ExportButtons extends Component {
               name,
               'light',
               true,
-              adjust,
             )}
           >
             {t('Light')}
