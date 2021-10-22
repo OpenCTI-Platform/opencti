@@ -7,7 +7,7 @@ node {
     int versionsToKeep = 3
     def app;
 
-    if (branch != 'master' || branch != 'main') {
+    if (branch != 'master' && branch != 'main') {
       product += '-' + branch
     }
     String image = "${registry}/${product}"
