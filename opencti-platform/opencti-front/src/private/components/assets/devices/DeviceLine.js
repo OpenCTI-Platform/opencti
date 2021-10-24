@@ -166,28 +166,29 @@ const DeviceLineFragment = createFragmentContainer(
   DeviceLineComponent,
   {
     node: graphql`
-      fragment DeviceLine_node on ThreatActor {
+      fragment DeviceLine_node on ComputingDeviceAsset {
         id
         name
         created
         modified
-        objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition
-            }
-          }
-        }
+        # objectLabel {
+        #   edges {
+        #     node {
+        #       id
+        #       value
+        #       color
+        #     }
+        #   }
+        # }
+        labels
+        # objectMarking {
+        #   edges {
+        #     node {
+        #       id
+        #       definition
+        #     }
+        #   }
+        # }
       }
     `,
   },

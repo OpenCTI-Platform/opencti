@@ -14,7 +14,7 @@ class DevicesLines extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'threatActors',
+      'computingDeviceAssetList',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -38,7 +38,7 @@ class DevicesLines extends Component {
         dataList={pathOr([], ['computingDeviceAssetList', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['threatActors', 'pageInfo', 'globalCount'],
+          ['computingDeviceAssetList', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         LineComponent={<DeviceLine />}
@@ -71,16 +71,16 @@ export const devicesLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: ThreatActorsOrdering
+    $orderedBy: ComputingDeviceAssetOrdering
     $orderMode: OrderingMode
-    $filters: [ThreatActorsFiltering]
+    $filters: [ComputingDeviceAssetFiltering]
   ) {
     ...DevicesLines_data
       @arguments(
         search: $search
         count: $count
         cursor: $cursor
-        orderBy: $orderBy
+        orderedBy: $orderedBy
         orderMode: $orderMode
         filters: $filters
       )
@@ -123,18 +123,19 @@ export default createPaginationContainer(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        orderBy: { type: "ThreatActorsOrdering", defaultValue: name }
+        orderedBy: { type: "ComputingDeviceAssetOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[ThreatActorsFiltering]" }
+        filters: { type: "[ComputingDeviceAssetFiltering]" }
       ) {
-        threatActors(
+        computingDeviceAssetList(
           search: $search
           first: $count
-          after: $cursor
-          orderBy: $orderBy
+          # after: $cursor
+          offset: $count
+          orderedBy: $orderedBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_threatActors") {
+        ) @connection(key: "Pagination_computingDeviceAssetList") {
           edges {
             node {
               id
@@ -155,7 +156,8 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.threatActors;
+      console.log('forward', props.data);
+      return props.data && props.data.computingDeviceAssetList;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -168,7 +170,7 @@ export default createPaginationContainer(
         search: fragmentVariables.search,
         count,
         cursor,
-        orderBy: fragmentVariables.orderBy,
+        orderedBy: fragmentVariables.orderedBy,
         orderMode: fragmentVariables.orderMode,
         filters: fragmentVariables.filters,
       };
