@@ -11,6 +11,9 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Button from '@material-ui/core/Button';
 import Avatar from '@material-ui/core/Avatar';
@@ -171,7 +174,9 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
     } = this.props;
     const { expanded } = this.state;
     console.log('externalReferencesEdges', data);
-    const externalReferencesEdges = data.stixCoreObject.externalReferences.edges;
+    // const externalReferencesEdges = data.stixCoreObject.externalReferences.edges;
+    const externalReferencesEdges = [data.externalReference];
+    console.log('externalReferencesEdgesData', externalReferencesEdges);
     const expandable = externalReferencesEdges.length > 7;
     return (
       <div style={{ height: '100%' }}>
@@ -185,7 +190,8 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
           <AddExternalReferences
             stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
             stixCoreObjectOrStixCoreRelationshipReferences={
-              data.stixCoreObject.externalReferences.edges
+              // data.stixCoreObject.externalReferences.edges
+              data.externalReference
             }
           />
         </Security>
@@ -193,9 +199,11 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {externalReferencesEdges.length > 0 ? (
             <List style={{ marginBottom: 0 }}>
-              {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
+              {/* {R.take(expanded ? 200 : 7, externalReferencesEdges) */}
+              {externalReferencesEdges.map(
                 (externalReferenceEdge) => {
-                  const externalReference = externalReferenceEdge.node;
+                  const externalReference = externalReferenceEdge;
+                  console.log('externalReferenceData', externalReference);
                   const externalReferenceId = externalReference.external_id
                     ? `(${externalReference.external_id})`
                     : '';
@@ -233,7 +241,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                             secondary={truncate(externalReferenceSecondary, 90)}
                           />
                           <ListItemSecondaryAction>
-                            <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                            {/* <Security needs={[KNOWLEDGE_KNUPLOAD]}>
                               <FileUploader
                                 entityId={externalReference.id}
                                 onUploadSuccess={() => this.props.relay.refetchConnection(200)
@@ -245,7 +253,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                               <ExternalReferenceEnrichment
                                 externalReferenceId={externalReference.id}
                               />
-                            </Security>
+                            </Security> */}
                             <Security needs={[KNOWLEDGE_KNUPDATE]}>
                               <ExternalReferencePopover
                                 externalReferenceId={externalReference.id}
@@ -257,7 +265,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                             </Security>
                           </ListItemSecondaryAction>
                         </ListItem>
-                        {externalReference.importFiles.edges.length > 0 && (
+                        {/* {externalReference.importFiles.edges.length > 0 && (
                           <List>
                             {externalReference.importFiles.edges.map((file) => (
                               <FileLine
@@ -269,18 +277,18 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                               />
                             ))}
                           </List>
-                        )}
+                        )} */}
                       </div>
                     );
                   }
                   return (
                     <div key={externalReference.id}>
                       <ListItem dense={true} divider={true} button={false}>
-                        <ListItemIcon>
+                        {/* <ListItemIcon>
                           <Avatar classes={{ root: classes.avatar }}>
                             {externalReference.source_name.substring(0, 1)}
                           </Avatar>
-                        </ListItemIcon>
+                        </ListItemIcon> */}
                         <ListItemText
                           primary={`${externalReference.source_name} ${externalReferenceId}`}
                           secondary={truncate(
@@ -289,14 +297,14 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                           )}
                         />
                         <ListItemSecondaryAction>
-                          <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                          {/* <Security needs={[KNOWLEDGE_KNUPLOAD]}>
                             <FileUploader
                               entityId={externalReference.id}
                               onUploadSuccess={() => this.props.relay.refetchConnection(200)
                               }
                               color="inherit"
                             />
-                          </Security>
+                          </Security> */}
                           <Security needs={[KNOWLEDGE_KNUPDATE]}>
                             <ExternalReferencePopover
                               externalReferenceId={externalReference.id}
@@ -308,7 +316,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                           </Security>
                         </ListItemSecondaryAction>
                       </ListItem>
-                      {externalReference.importFiles.edges.length > 0 && (
+                      {/* {externalReference.importFiles.edges.length > 0 && (
                         <List>
                           {externalReference.importFiles.edges.map((file) => (
                             <FileLine
@@ -320,7 +328,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                             />
                           ))}
                         </List>
-                      )}
+                      )} */}
                     </div>
                   );
                 },
