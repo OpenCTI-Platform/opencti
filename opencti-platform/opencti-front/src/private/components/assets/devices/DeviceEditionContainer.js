@@ -125,6 +125,8 @@ class DeviceEditionContainer extends Component {
     //   assoc('objectMarking', pluck('value', values.objectMarking)),
     //   assoc('objectLabel', pluck('value', values.objectLabel)),
     // )(values);
+    const pair = Object.keys(values).map((key) => [{ key, value: values[key] }]);
+    console.log('pairpair', pair);
     CM(environmentDarkLight, {
       mutation: deviceEditionMutation,
       // const adaptedValues = evolve(
@@ -138,7 +140,17 @@ class DeviceEditionContainer extends Component {
       // );
       variables: {
         id: this.props.device.id,
-        input: [{ key: 'name', value: 'Hello' }],
+        input: [
+          { key: 'name', value: 'Hello' },
+          { key: 'asset_id', value: values.asset_id },
+          { key: 'asset_tag', value: values.asset_tag },
+          { key: 'description', value: values.description },
+          { key: 'version', value: values.version },
+          { key: 'vendor_name', value: values.vendor_name },
+          { key: 'serial_number', value: values.serial_number },
+          { key: 'release_date', value: values.release_date },
+          { key: 'operational_status', value: values.operational_status },
+        ],
       },
       setSubmitting,
       onCompleted: (data) => {

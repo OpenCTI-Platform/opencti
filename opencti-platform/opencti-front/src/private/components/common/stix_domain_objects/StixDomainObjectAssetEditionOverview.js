@@ -293,51 +293,6 @@ class StixDomainObjectAssetEditionOverviewComponent extends Component {
                 //   />
                 // }
                 />
-                <Field
-                  component={SelectField}
-                  variant='outlined'
-                  name="ports"
-                  size='small'
-                  fullWidth={true}
-                  style={{ height: '38.09px' }}
-                  containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                // helperText={
-                //   <SubscriptionFocus
-                //   context={context}
-                //   fieldName="ports"
-                //   />
-                // }
-                />
-                <Field
-                  component={SelectField}
-                  variant='outlined'
-                  name="ports"
-                  size='small'
-                  fullWidth={true}
-                  style={{ height: '38.09px' }}
-                  containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                // helperText={
-                //   <SubscriptionFocus
-                //   context={context}
-                //   fieldName="ports"
-                //   />
-                // }
-                />
-                <Field
-                  component={SelectField}
-                  variant='outlined'
-                  name="ports"
-                  size='small'
-                  fullWidth={true}
-                  style={{ height: '38.09px' }}
-                  containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                // helperText={
-                //   <SubscriptionFocus
-                //   context={context}
-                //   fieldName="ports"
-                //   />
-                // }
-                />
               </div>
               <div>
                 <Typography
@@ -385,6 +340,7 @@ class StixDomainObjectAssetEditionOverviewComponent extends Component {
                   variant='outlined'
                   name="asset_type"
                   size='small'
+                  disabled={true}
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%' }}

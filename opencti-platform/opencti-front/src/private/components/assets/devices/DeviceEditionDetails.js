@@ -393,7 +393,7 @@ class DeviceEditionDetailsComponent extends Component {
                     gutterBottom={true}
                     style={{ float: 'left', marginTop: 20 }}
                   >
-                    {t('Outlined')}
+                    {t('FQDN')}
                   </Typography>
                   <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                     <Tooltip title={t('Outlined')} >
@@ -478,36 +478,6 @@ class DeviceEditionDetailsComponent extends Component {
                     <AddIcon fontSize="small" color="primary" />
                   </div>
                   <div className="clearfix" />
-                  <Field
-                    component={SelectField}
-                    style={{ height: '38.09px' }}
-                    variant='outlined'
-                    name="installed_hardware"
-                    size='small'
-                    fullWidth={true}
-                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="installed_hardware"
-                  //   />
-                  // }
-                  />
-                  <Field
-                    component={SelectField}
-                    style={{ height: '38.09px' }}
-                    variant='outlined'
-                    name="installed_hardware"
-                    size='small'
-                    fullWidth={true}
-                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="installed_hardware"
-                  //   />
-                  // }
-                  />
                   <Field
                     component={SelectField}
                     style={{ height: '38.09px' }}

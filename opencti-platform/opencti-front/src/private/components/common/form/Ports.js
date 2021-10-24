@@ -41,7 +41,7 @@ class Ports extends Component {
 
     return (
       <div>
-        <QR
+        {/* <QR
           environment={QueryRendererDarkLight}
           query={portsQuery}
           render={({ error, props }) => {
@@ -74,7 +74,7 @@ class Ports extends Component {
             }
             return <></>;
           }}
-        />
+        /> */}
       </div>
     );
   }
