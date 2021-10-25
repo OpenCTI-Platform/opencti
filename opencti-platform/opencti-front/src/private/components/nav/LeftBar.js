@@ -4,6 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { assoc, compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Toolbar from '@material-ui/core/Toolbar';
+import graphql from 'babel-plugin-relay/macro';
 import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -41,7 +42,6 @@ import Security, {
   UserContext,
   granted,
 } from '../../../utils/Security';
-import UserPreferencesModal from './UserPreferencesModal';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -50,7 +50,8 @@ const styles = (theme) => ({
     backgroundColor: theme.palette.background.nav,
   },
   menuList: {
-    height: '100%',
+    marginTop: 20,
+    marginBottom: 20,
   },
   lastItem: {
     bottom: 0,
@@ -80,13 +81,10 @@ const styles = (theme) => ({
   },
 });
 
-const LeftBar = ({ t, location, classes }) => {
-  const [
-    open,
-    setOpen,
-    isUserPreferencesModalOpen,
-    setOpenUserPreferencesModal,
-  ] = useState({ activities: true, knowledge: true, isUserPreferencesModalOpen: false });
+const LeftBar = ({
+  t, location, history, classes,
+}) => {
+  const [open, setOpen] = useState({ activities: true, knowledge: true });
   const toggle = (key) => setOpen(assoc(key, !open[key], open));
   const { me } = useContext(UserContext);
   let toData;
@@ -97,186 +95,166 @@ const LeftBar = ({ t, location, classes }) => {
   } else {
     toData = '/dashboard/data/taxii';
   }
+
   return (
-    <div>
-      <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
-        <Toolbar />
-        <MenuList component="nav">
+    <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
+      <Toolbar />
+      <MenuList component="nav"classes={{ root: classes.menuList }}>
+        {/* <MenuItem
+          component={Link}
+          to="/dashboard"
+          selected={location.pathname === '/dashboard'}
+          dense={false}
+          classes={{ root: classes.menuItem }}
+        >
+          <ListItemIcon style={{ minWidth: 35 }}>
+            <DashboardOutlined />
+          </ListItemIcon>
+          <ListItemText primary={t('Dashboard')} />
+        </MenuItem> */}
+        <Security needs={[KNOWLEDGE]}>
           <MenuItem
-            component={Link}
-            to="/dashboard"
-            selected={location.pathname === '/dashboard'}
             dense={false}
             classes={{ root: classes.menuItem }}
+            onClick={() => toggle('activities')}
           >
             <ListItemIcon style={{ minWidth: 35 }}>
-              <DashboardOutlined />
+              <Brain />
             </ListItemIcon>
-            <ListItemText primary={t('Dashboard')} />
+            <ListItemText primary={t('Defender HQ')} />
           </MenuItem>
-          <Security needs={[KNOWLEDGE]}>
-            <MenuItem
-              dense={false}
-              classes={{ root: classes.menuItem }}
-              onClick={() => toggle('activities')}
-            >
-              <ListItemIcon style={{ minWidth: 35 }}>
-                <Brain />
-              </ListItemIcon>
-              <ListItemText primary={t('Defender HQ')} />
-              {open.activities ? <ExpandLess /> : <ExpandMore />}
-            </MenuItem>
-            <Collapse in={open.activities}>
-              <MenuList component="nav" disablePadding={true}>
-                <MenuItem
-                  component={Link}
-                  to="/dashboard/analysis"
-                  selected={location.pathname.includes('/dashboard/analysis')}
-                  dense={false}
-                  classes={{ root: classes.menuItemNested }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <FiberManualRecordIcon style={{ fontSize: '0.55rem' }}/>
-                  </ListItemIcon>
-                  <ListItemText primary={t('Assests')} />
-                </MenuItem>
-                <MenuItem
-                  component={Link}
-                  to="/dashboard/events"
-                  selected={location.pathname.includes('/dashboard/events')}
-                  dense={false}
-                  classes={{ root: classes.menuItemNested }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
-                  </ListItemIcon>
-                  <ListItemText primary={t('Information Systems')} />
-                </MenuItem>
-              </MenuList>
-            </Collapse>
-            <MenuItem
-              dense={false}
-              classes={{ root: classes.menuItem }}
-              onClick={() => toggle('knowledge')}
-            >
-              <ListItemIcon style={{ minWidth: 35 }}>
-                <GlobeModel />
-              </ListItemIcon>
-              <ListItemText primary={t('Activities')} />
-              {open.knowledge ? <ExpandLess /> : <ExpandMore />}
-            </MenuItem>
-            <Collapse in={open.knowledge}>
-              <MenuList component="nav" disablePadding={true}>
-                <MenuItem
-                  component={Link}
-                  to="/dashboard/threats"
-                  selected={location.pathname.includes('/dashboard/threats')}
-                  dense={false}
-                  classes={{ root: classes.menuItemNested }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
-                  </ListItemIcon>
-                  <ListItemText primary={t('Threats Assessment')} />
-                </MenuItem>
-                <MenuItem
-                  component={Link}
-                  to="/dashboard/vsac"
-                  selected={location.pathname.includes('/dashboard/vsac')}
-                  dense={false}
-                  classes={{ root: classes.menuItemNested }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
-                  </ListItemIcon>
-                  <ListItemText primary={t('Vulnerability Assessment')} />
-                </MenuItem>
-                <MenuItem
-                  component={Link}
-                  to="/dashboard/entities"
-                  selected={location.pathname.includes('/dashboard/entities')}
-                  dense={false}
-                  classes={{ root: classes.menuItemNested }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
-                  </ListItemIcon>
-                  <ListItemText primary={t('Risk Assessment')} />
-                </MenuItem>
-              </MenuList>
-            </Collapse>
-          </Security>
-        </MenuList>
-        <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
-          <Divider />
-          <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
-            <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
+            <MenuList component="nav" disablePadding={true}>
               <MenuItem
                 component={Link}
-                to={toData}
-                selected={location.pathname.includes('/dashboard/data')}
+                to="/dashboard/analysis"
+                selected={location.pathname.includes('/dashboard/analysis')}
                 dense={false}
-                classes={{ root: classes.menuItem }}
+                classes={{ root: classes.menuItemNested }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <Database />
+                  <FiberManualRecordIcon style={{ fontSize: '0.55rem' }}/>
                 </ListItemIcon>
-                <ListItemText primary={t('Data Source')} />
+                <ListItemText primary={t('Assests')} />
               </MenuItem>
               <MenuItem
                 component={Link}
-                to={toData}
-                // selected={location.pathname.includes('/dashboard/duane')}
+                to="/dashboard/events"
+                selected={location.pathname.includes('/dashboard/events')}
                 dense={false}
-                classes={{ root: classes.menuItem }}
+                classes={{ root: classes.menuItemNested }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <PersonIcon />
+                  <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
-                <ListItemText primary={t(`${me.name}`)} />
+                <ListItemText primary={t('Information Systems')} />
+              </MenuItem>
+            </MenuList>
+          <MenuItem
+            dense={false}
+            classes={{ root: classes.menuItem }}
+            onClick={() => toggle('knowledge')}
+          >
+            <ListItemIcon style={{ minWidth: 35 }}>
+              <GlobeModel />
+            </ListItemIcon>
+            <ListItemText primary={t('Activities')} />
+          </MenuItem>
+            <MenuList component="nav" disablePadding={true}>
+              <MenuItem
+                component={Link}
+                to="/dashboard/threats"
+                selected={location.pathname.includes('/dashboard/threats')}
+                dense={false}
+                classes={{ root: classes.menuItemNested }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
+                </ListItemIcon>
+                <ListItemText primary={t('Threats Assessment')} />
               </MenuItem>
               <MenuItem
                 component={Link}
-                selected={false}
+                to="/dashboard/vsac"
+                selected={location.pathname.includes('/dashboard/vsac')}
                 dense={false}
-                classes={{ root: classes.menuItem }}
+                classes={{ root: classes.menuItemNested }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <LocationCityIcon />
+                  <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
-                <ListItemText primary={t('Dark Light')} />
+                <ListItemText primary={t('Vulnerability Assessment')} />
               </MenuItem>
               <MenuItem
                 component={Link}
-                selected={location.pathname.includes('/dashboard/data/sign')}
+                to="/dashboard/entities"
+                selected={location.pathname.includes('/dashboard/entities')}
                 dense={false}
-                classes={{ root: classes.menuItem }}
+                classes={{ root: classes.menuItemNested }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <ArrowBackIcon />
+                  <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
-                <ListItemText primary={t('Sign Out')} />
+                <ListItemText primary={t('Risk Assessment')} />
               </MenuItem>
-            </Security>
-            <Security needs={[SETTINGS]}>
-              <MenuItem
-                component={Link}
-                to="/dashboard/settings"
-                selected={location.pathname.includes('/dashboard/settings')}
-                dense={false}
-                classes={{ root: classes.menuItem }}
-                style={{ marginBottom: 50 }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <CogOutline />
-                </ListItemIcon>
-                <ListItemText primary={t('Settings')} />
-              </MenuItem>
-            </Security>
-          </MenuList>
+            </MenuList>
         </Security>
-      </Drawer>
-    </div>
+      </MenuList>
+      <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
+        <Divider />
+        <MenuList component="nav" classes={{ root: classes.menuList }}>
+            <MenuItem
+              component={Link}
+              to={toData}
+              selected={location.pathname.includes('/dashboard/data')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <Database />
+              </ListItemIcon>
+              <ListItemText primary={t('Data Source')} />
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              to="/dashboard/settings"
+              selected={location.pathname.includes('/dashboard/setings')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <CogOutline />
+              </ListItemIcon>
+              <ListItemText primary={t('Settings')} />
+            </MenuItem>
+            </MenuList>
+            <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
+            <MenuItem
+              component={Link}
+              to="dashboard/profile"
+              selected={location.pathname.includes('dashboard/profile')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <PersonIcon />
+              </ListItemIcon>
+              <ListItemText primary={t(me.name)} />
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              to={toData}
+              selected={location.pathname.includes('/dashboard/data/dark')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <LocationCityIcon />
+              </ListItemIcon>
+              <ListItemText primary={t('Dark Light')} />
+            </MenuItem>
+        </MenuList>
+      </Security>
+    </Drawer>
   );
 };
 
