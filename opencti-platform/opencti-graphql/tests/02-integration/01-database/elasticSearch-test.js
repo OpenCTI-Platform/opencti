@@ -17,7 +17,6 @@ import {
   elPaginate,
   elRebuildRelation,
   elVersion,
-  specialElasticCharsEscape,
 } from '../../../src/database/elasticSearch';
 import {
   READ_INDEX_INTERNAL_OBJECTS,
@@ -405,15 +404,6 @@ describe('Elasticsearch relation reconstruction', () => {
 });
 
 describe('Elasticsearch pagination', () => {
-  it('Pagination standard escape', async () => {
-    // +|\-*()~={}:?\\
-    let escape = specialElasticCharsEscape('Looking {for} [malware] : ~APT');
-    expect(escape).toEqual('Looking \\{for\\} \\[malware\\] \\: \\~APT');
-    escape = specialElasticCharsEscape('Looking (threat) = ?maybe');
-    expect(escape).toEqual('Looking \\(threat\\) \\= \\?maybe');
-    escape = specialElasticCharsEscape('Looking All* + Everything| - \\with');
-    expect(escape).toEqual('Looking All\\* \\+ Everything\\| \\- \\\\with');
-  });
   it('should entity paginate everything', async () => {
     const data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES);
     expect(data).not.toBeNull();
@@ -423,7 +413,7 @@ describe('Elasticsearch pagination', () => {
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
   });
   it('should entity search with trailing slash', async () => {
-    const data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { search: 'groups/G0096' });
+    const data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { search: '"groups/G0096"' });
     expect(data).not.toBeNull();
     // external-reference--d1b50d16-2c9c-45f2-8ae0-d5b554e0fbf5 | url
     // intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7 | description
@@ -462,21 +452,23 @@ describe('Elasticsearch pagination', () => {
   });
   it('should entity paginate with escaped search', async () => {
     let data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { search: '(Citation:' });
-    expect(data.edges.length).toEqual(3);
+    expect(data.edges.length).toEqual(4);
     data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { search: '[APT41]' });
-    expect(data.edges.length).toEqual(1);
+    expect(data.edges.length).toEqual(2);
     data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { search: '%5BAPT41%5D' });
-    expect(data.edges.length).toEqual(1);
+    expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate with http and https', async () => {
-    let data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { search: 'http://attack.mitre.org/groups/G0096' });
+    let data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, {
+      search: '"http://attack.mitre.org/groups/G0096"',
+    });
     expect(data.edges.length).toEqual(2);
-    data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { search: 'https://attack.mitre.org/groups/G0096' });
+    data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { search: '"https://attack.mitre.org/groups/G0096"' });
     expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate with incorrect encoding', async () => {
-    const data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { search: 'ATT%' });
-    expect(data.edges.length).toEqual(0);
+    const data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { search: '"ATT%"' });
+    expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];

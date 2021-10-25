@@ -51,7 +51,13 @@ import {
   numericOrBooleanAttributes,
 } from '../schema/fieldDataAdapter';
 import { convertEntityTypeToStixType, getParentTypes } from '../schema/schemaUtils';
-import { isStixObjectAliased } from '../schema/stixDomainObject';
+import {
+  ATTRIBUTE_ABSTRACT,
+  ATTRIBUTE_DESCRIPTION,
+  ATTRIBUTE_EXPLANATION,
+  ATTRIBUTE_NAME,
+  isStixObjectAliased,
+} from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
@@ -1252,6 +1258,113 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
 export const specialElasticCharsEscape = (query) => {
   return query.replace(/([+|\-*()~={}[\]:?\\])/g, '\\$1');
 };
+
+const BASE_SEARCH_CONNECTIONS = [
+  // Pounds for connections search
+  `connections.${ATTRIBUTE_NAME}^5`,
+  // Add all other attributes
+  `connections.*`,
+];
+const BASE_SEARCH_ATTRIBUTES = [
+  // Pounds for attributes search
+  `${ATTRIBUTE_NAME}^5`,
+  `${ATTRIBUTE_DESCRIPTION}^2`,
+  `${ATTRIBUTE_ABSTRACT}^5`,
+  `${ATTRIBUTE_EXPLANATION}^5`,
+  // Add all other attributes
+  '*',
+];
+export const elGenerateFullTextSearchShould = (search) => {
+  let decodedSearch;
+  try {
+    decodedSearch = decodeURIComponent(search).trim();
+  } catch (e) {
+    decodedSearch = search.trim();
+  }
+  let remainingSearch = decodedSearch;
+  const exactSearch = (decodedSearch.match(/"[^"]+"/g) || []) //
+    .filter((e) => isNotEmptyField(e.replace(/"/g, '').trim()));
+  for (let index = 0; index < exactSearch.length; index += 1) {
+    remainingSearch = remainingSearch.replace(exactSearch[index], '');
+  }
+  const querySearch = [];
+  const partialSearch = remainingSearch.replace(/"/g, '').trim().split(' ');
+  for (let searchIndex = 0; searchIndex < partialSearch.length; searchIndex += 1) {
+    const partialElement = partialSearch[searchIndex];
+    const cleanElement = specialElasticCharsEscape(partialElement);
+    if (isNotEmptyField(cleanElement)) {
+      querySearch.push(`${cleanElement}*`);
+    }
+  }
+  // Return the elastic search engine expected bool should terms
+  const shouldSearch = [];
+  const cleanExactSearch = exactSearch.map((e) => e.replace(/"|http?:/g, ''));
+  shouldSearch.push(
+    ...R.flatten(
+      cleanExactSearch.map((ex) => [
+        {
+          multi_match: {
+            type: 'phrase',
+            query: ex,
+            lenient: true,
+            fields: BASE_SEARCH_ATTRIBUTES,
+          },
+        },
+        {
+          nested: {
+            path: 'connections',
+            query: {
+              bool: {
+                must: [
+                  {
+                    multi_match: {
+                      type: 'phrase',
+                      query: ex,
+                      lenient: true,
+                      fields: BASE_SEARCH_CONNECTIONS,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      ])
+    )
+  );
+  shouldSearch.push(
+    ...R.flatten(
+      querySearch.map((ex) => [
+        {
+          query_string: {
+            query: ex,
+            analyze_wildcard: true,
+            fields: BASE_SEARCH_ATTRIBUTES,
+          },
+        },
+        {
+          nested: {
+            path: 'connections',
+            query: {
+              bool: {
+                must: [
+                  {
+                    query_string: {
+                      query: ex,
+                      analyze_wildcard: true,
+                      fields: BASE_SEARCH_CONNECTIONS,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      ])
+    )
+  );
+  return shouldSearch;
+};
 export const elPaginate = async (user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc' } = options;
@@ -1376,57 +1489,10 @@ export const elPaginate = async (user, indexName, options = {}) => {
     must = [...must, ...mustFilters];
   }
   if (search !== null && search.length > 0) {
-    // Try to decode before search
-    let decodedSearch;
-    try {
-      decodedSearch = decodeURIComponent(search);
-    } catch (e) {
-      decodedSearch = search;
-    }
-    const cleanSearch = specialElasticCharsEscape(decodedSearch.trim());
-    let finalSearch;
-    if (cleanSearch.startsWith('http\\://')) {
-      finalSearch = `"*${cleanSearch.replace('http\\://', '')}*"`;
-    } else if (cleanSearch.startsWith('https\\://')) {
-      finalSearch = `"*${cleanSearch.replace('https\\://', '')}*"`;
-    } else if (cleanSearch.startsWith('"') && cleanSearch.endsWith('"')) {
-      finalSearch = `${cleanSearch}`;
-    } else {
-      const splitSearch = cleanSearch.replace(/"/g, '\\"').split(/[\s/]+/);
-      finalSearch = R.pipe(
-        R.map((n) => `*${n}*`),
-        R.join(' ')
-      )(splitSearch);
-    }
+    const shouldSearch = elGenerateFullTextSearchShould(search);
     const bool = {
       bool: {
-        should: [
-          {
-            query_string: {
-              query: finalSearch,
-              analyze_wildcard: true,
-              fields: ['name^5', '*'],
-            },
-          },
-          {
-            nested: {
-              path: 'connections',
-              query: {
-                bool: {
-                  must: [
-                    {
-                      query_string: {
-                        query: finalSearch,
-                        analyze_wildcard: true,
-                        fields: ['connections.name^5', 'connections.*'],
-                      },
-                    },
-                  ],
-                },
-              },
-            },
-          },
-        ],
+        should: shouldSearch,
         minimum_should_match: 1,
       },
     };

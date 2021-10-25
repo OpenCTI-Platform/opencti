@@ -202,6 +202,9 @@ describe('Entities listing', () => {
   it('should list entities with search', async () => {
     let options = { search: 'xolod' };
     let indicators = await listEntities(ADMIN_USER, ['Indicator'], options);
+    expect(indicators.edges.length).toEqual(0);
+    options = { search: 'www.xolod' };
+    indicators = await listEntities(ADMIN_USER, ['Indicator'], options);
     expect(indicators.edges.length).toEqual(1);
     options = { search: 'location' };
     indicators = await listEntities(ADMIN_USER, ['Indicator'], options);
