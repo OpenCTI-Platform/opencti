@@ -297,6 +297,7 @@ class Scans extends Component {
     };
 
     const handleClose = () => {
+      console.log("closed")
       this.setState({ vulnerabilityAnchorEl: null });
     };
 
@@ -568,7 +569,7 @@ class Scans extends Component {
                   {!loadingScans ? (
                     renderScans.map((scan, i) => {
                       return (
-                        <ListItem key={i}>
+                        <ListItem key={scan.id}>
                           <ListItemText primary={scan.scan_name} />
                           <ListItemSecondaryAction>
                             <IconButton
@@ -580,14 +581,10 @@ class Scans extends Component {
                             >
                               <MoreVertIcon />
                               <Menu
-                                id="vulnerability-simple-menu"
+                                id={"vulnerability-simple-menu-" + scan.id}
                                 anchorEl={this.state.vulnerabilityAnchorEl}
                                 open={this.state.vulnerabilityAnchorEl}
-                                onClose={() =>
-                                  this.setState({
-                                    vulnerabilityAnchorEl: false,
-                                  })
-                                }
+                                onClose={handleClose}
                               >
                                 <MenuItem
                                   onClick={() =>
