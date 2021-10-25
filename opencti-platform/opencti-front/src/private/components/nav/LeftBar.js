@@ -14,8 +14,6 @@ import Drawer from '@material-ui/core/Drawer';
 import Collapse from '@material-ui/core/Collapse';
 import {
   DashboardOutlined,
-  AssignmentOutlined,
-  LayersOutlined,
   ExpandLess,
   ExpandMore,
 } from '@material-ui/icons';
@@ -26,10 +24,6 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import {
   CogOutline,
   Database,
-  Binoculars,
-  FlaskOutline,
-  FolderTableOutline,
-  Timetable,
   Brain,
   GlobeModel,
 } from 'mdi-material-ui';

@@ -355,7 +355,7 @@ class Dashboard extends Component {
       t, n, fsd, mtd, classes, theme,
     } = this.props;
     return (
-      <div className={classes.root}>
+      <div >
         <Security
           needs={[KNOWLEDGE]}
           placeholder={t(

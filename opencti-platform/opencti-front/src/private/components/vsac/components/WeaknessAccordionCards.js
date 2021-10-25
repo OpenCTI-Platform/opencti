@@ -40,22 +40,41 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
-import BugReportIcon from '@material-ui/icons/BugReport';
+import BugReportIcon from "@material-ui/icons/BugReport";
 
 class WeaknessAccordionCards extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      weakness: this.props.weakness,
+      selectedRow: this.props.selectedRow,
+    };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.setState({ weakness: nextProps.weakness });
+    this.setState({ selectedRow: nextProps.selectedRow });
   }
 
   render() {
+    const { weakness, selectedRow } = this.state;
+
+    const handleClick = (cwe_id, name) => {
+      const params = {
+        cwe_id: cwe_id,
+      };
+
+      this.props.action(params, name);
+    };
+
     return (
       <Grid item={true} xs={12}>
         <Typography variant="h4" gutterBottom={true}>
           ...with weaknesses...
         </Typography>
-        <Paper elevation={2} style={{ marginBottom: 20 }}>
-          <TableContainer>
-            <Table size="small">
+        <Paper elevation={2} style={{ marginBottom: 20, minHeight: "300px" }}>
+          <TableContainer style={{ maxHeight: 325 }}>
+            <Table stickyHeader size="small">
               <TableHead>
                 <TableRow>
                   <TableCell>Rank</TableCell>
@@ -64,21 +83,25 @@ class WeaknessAccordionCards extends Component {
                 </TableRow>
               </TableHead>
               <TableBody>
-                <TableRow>
-                  <TableCell component="th" scope="row">
-                    2
-                  </TableCell>
-                  <TableCell>Inadequate Encryption Strength</TableCell>
-                  <TableCell align="right">4</TableCell>
-                </TableRow>
+                {weakness.length &&
+                  weakness.map((item, i) => {
+                    const rowName = "weaknessRow-" + i;
 
-                <TableRow>
-                  <TableCell component="th" scope="row">
-                    3
-                  </TableCell>
-                  <TableCell>Use of a Broken or Risky Cryptographic Algorithm</TableCell>
-                  <TableCell align="right">4</TableCell>
-                </TableRow>
+                    return (
+                      <TableRow
+                        key={rowName}
+                        selected={rowName === selectedRow}
+                        onClick={() => handleClick(item.cwe_id, rowName)}
+                        hover
+                      >
+                        <TableCell component="th" scope="row">
+                          {item.rank}
+                        </TableCell>
+                        <TableCell>{item.tooltip}</TableCell>
+                        <TableCell align="right">{item.record_count}</TableCell>
+                      </TableRow>
+                    );
+                  })}
               </TableBody>
             </Table>
           </TableContainer>

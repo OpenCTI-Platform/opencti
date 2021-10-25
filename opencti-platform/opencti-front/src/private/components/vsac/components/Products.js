@@ -44,17 +44,36 @@ import TableRow from "@material-ui/core/TableRow";
 class Products extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      software: this.props.software,
+      selectedRow: this.props.selectedRow,
+    };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.setState({ software: nextProps.software });
+    this.setState({ selectedRow: nextProps.selectedRow });
   }
 
   render() {
+    const { software, selectedRow } = this.state;
+
+    const handleClick = (cpe_id, name) => {
+      const params = {
+        cpe_id: cpe_id,
+      };
+
+      this.props.action(params, name);
+    };
+
     return (
       <Grid item={true} xs={12}>
         <Typography variant="h4" gutterBottom={true}>
           These hosts are susceptible to attack...
         </Typography>
-        <Paper elevation={2} style={{ marginBottom: 20 }}>
-          <TableContainer>
-            <Table size="small">
+        <Paper elevation={2} style={{ marginBottom: 20, minHeight: "300px" }}>
+          <TableContainer style={{ maxHeight: 325 }}>
+            <Table stickyHeader size="small">
               <TableHead>
                 <TableRow>
                   <TableCell>Rank</TableCell>
@@ -63,13 +82,24 @@ class Products extends Component {
                 </TableRow>
               </TableHead>
               <TableBody>
-                <TableRow>
-                  <TableCell component="th" scope="row">
-                    1
-                  </TableCell>
-                  <TableCell>Undetermined by Scanner</TableCell>
-                  <TableCell align="right">9</TableCell>
-                </TableRow>
+                {software.length &&
+                  software.map((item, i) => {
+                    const rowName = "productRow-" + i;
+                    return (
+                      <TableRow
+                        key={rowName}
+                        selected={rowName === selectedRow}
+                        onClick={() => handleClick(item.cpe_id, rowName)}
+                        hover
+                      >
+                        <TableCell component="th" scope="row">
+                          {item.rank}
+                        </TableCell>
+                        <TableCell>{item.cpe_id}</TableCell>
+                        <TableCell align="right">{item.record_count}</TableCell>
+                      </TableRow>
+                    );
+                  })}
               </TableBody>
             </Table>
           </TableContainer>
