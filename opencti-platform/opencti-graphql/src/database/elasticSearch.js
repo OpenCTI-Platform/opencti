@@ -50,8 +50,15 @@ import {
   isRuntimeAttribute,
   numericOrBooleanAttributes,
 } from '../schema/fieldDataAdapter';
-import { convertEntityTypeToStixType, getParentTypes } from '../schema/schemaUtils';
-import { isStixObjectAliased } from '../schema/stixDomainObject';
+import { convertEntityTypeToStixType, getParentTypes, isAnId, isStixId } from '../schema/schemaUtils';
+import {
+  ATTRIBUTE_ADDITIONAL_NAMES,
+  ATTRIBUTE_ALIASES,
+  ATTRIBUTE_ALIASES_OPENCTI,
+  ATTRIBUTE_DESCRIPTION,
+  ATTRIBUTE_NAME,
+  isStixObjectAliased,
+} from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
@@ -1250,7 +1257,67 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
 
 // region elastic common loader.
 export const specialElasticCharsEscape = (query) => {
-  return query.replace(/([+|\-*()~={}[\]:?\\])/g, '\\$1');
+  return query.replace(/([+|*()~={}[\]:?\\])/g, '\\$1');
+};
+
+const BASE_SEARCH_CONNECTIONS = [`connections.${ATTRIBUTE_NAME}^5`];
+const BASE_SEARCH_ATTRIBUTES = [
+  `${ATTRIBUTE_NAME}^5`,
+  `${ATTRIBUTE_DESCRIPTION}^2`,
+  ATTRIBUTE_ALIASES,
+  ATTRIBUTE_ALIASES_OPENCTI,
+  ATTRIBUTE_ADDITIONAL_NAMES,
+];
+export const elSearchParser = (search) => {
+  const attributeFields = BASE_SEARCH_ATTRIBUTES;
+  const connectionFields = BASE_SEARCH_CONNECTIONS;
+  // region escape input from elastic search specific chars
+  let decodedSearch;
+  try {
+    decodedSearch = decodeURIComponent(search).trim();
+  } catch (e) {
+    decodedSearch = search.trim();
+  }
+  const cleanSearch = specialElasticCharsEscape(decodedSearch.trim());
+  // endregion
+  // Split by " to handle grouping when split by whitespace
+  let remainingSearch = cleanSearch;
+  const baseSearch = (cleanSearch.match(/"[^"]+"/g) || []).filter((e) => isNotEmptyField(e.replace(/"/g, '').trim()));
+  for (let index = 0; index < baseSearch.length; index += 1) {
+    remainingSearch = remainingSearch.replace(baseSearch[index], '');
+  }
+  const searchElements = remainingSearch.trim().split(' ');
+  for (let searchIndex = 0; searchIndex < searchElements.length; searchIndex += 1) {
+    const searchElement = searchElements[searchIndex];
+    const cleanElement = searchElement.replace(/"/g, '').trim();
+    if (isNotEmptyField(cleanElement)) {
+      if (cleanElement.startsWith('http\\://')) {
+        baseSearch.push(`"*${cleanElement.replace('http\\://', '')}*"`);
+      } else if (cleanElement.startsWith('https\\://')) {
+        baseSearch.push(`"*${cleanElement.replace('https\\://', '')}*"`);
+      } else if (isAnId(cleanElement)) {
+        baseSearch.push(`"${cleanElement}"`);
+        if (isStixId(cleanElement)) {
+          attributeFields.push(ID_STANDARD);
+          attributeFields.push(IDS_STIX);
+        } else {
+          connectionFields.push(`connections.${ID_INTERNAL}`);
+          attributeFields.push(ID_INTERNAL);
+        }
+      } else if (cleanElement.includes('-')) {
+        baseSearch.push(`"*${cleanElement}*"`);
+      } else {
+        baseSearch.push(`*${cleanElement}*`);
+      }
+    }
+  }
+  // Return the elastic search engine expected search term
+  // Along with attributes to look into
+  return {
+    attributeFields: R.uniq(attributeFields),
+    connectionFields: R.uniq(connectionFields),
+    search: R.uniq(baseSearch.sort()).join(' ').trim(),
+  };
 };
 export const elPaginate = async (user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
@@ -1376,28 +1443,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
     must = [...must, ...mustFilters];
   }
   if (search !== null && search.length > 0) {
-    // Try to decode before search
-    let decodedSearch;
-    try {
-      decodedSearch = decodeURIComponent(search);
-    } catch (e) {
-      decodedSearch = search;
-    }
-    const cleanSearch = specialElasticCharsEscape(decodedSearch.trim());
-    let finalSearch;
-    if (cleanSearch.startsWith('http\\://')) {
-      finalSearch = `"*${cleanSearch.replace('http\\://', '')}*"`;
-    } else if (cleanSearch.startsWith('https\\://')) {
-      finalSearch = `"*${cleanSearch.replace('https\\://', '')}*"`;
-    } else if (cleanSearch.startsWith('"') && cleanSearch.endsWith('"')) {
-      finalSearch = `${cleanSearch}`;
-    } else {
-      const splitSearch = cleanSearch.replace(/"/g, '\\"').split(/[\s/]+/);
-      finalSearch = R.pipe(
-        R.map((n) => `*${n}*`),
-        R.join(' ')
-      )(splitSearch);
-    }
+    const { search: finalSearch, attributeFields, connectionFields } = elSearchParser(search);
     const bool = {
       bool: {
         should: [
@@ -1405,7 +1451,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
             query_string: {
               query: finalSearch,
               analyze_wildcard: true,
-              fields: ['name^5', '*'],
+              fields: attributeFields,
             },
           },
           {
@@ -1418,7 +1464,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
                       query_string: {
                         query: finalSearch,
                         analyze_wildcard: true,
-                        fields: ['connections.name^5', 'connections.*'],
+                        fields: connectionFields,
                       },
                     },
                   ],
