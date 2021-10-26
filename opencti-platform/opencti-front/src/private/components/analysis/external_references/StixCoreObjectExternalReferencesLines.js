@@ -8,12 +8,15 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import LinkIcon from '@material-ui/icons/Link';
+import Divider from '@material-ui/core/Divider';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Button from '@material-ui/core/Button';
 import Avatar from '@material-ui/core/Avatar';
@@ -48,7 +51,6 @@ const styles = (theme) => ({
     minHeight: '100%',
     margin: '-4px 0 0 0',
     padding: 0,
-    borderRadius: 6,
     position: 'relative',
   },
   avatar: {
@@ -173,11 +175,10 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
       t, classes, stixCoreObjectId, data,
     } = this.props;
     const { expanded } = this.state;
-    console.log('externalReferencesEdges', data);
-    // const externalReferencesEdges = data.stixCoreObject.externalReferences.edges;
-    const externalReferencesEdges = [data.externalReference];
-    console.log('externalReferencesEdgesData', externalReferencesEdges);
+    const externalReferencesEdges = data.stixCoreObject.externalReferences.edges;
+    // const externalReferencesEdges = [data.externalReference];
     const expandable = externalReferencesEdges.length > 7;
+    console.log('externalReferencesEdges', data);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -190,8 +191,8 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
           <AddExternalReferences
             stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
             stixCoreObjectOrStixCoreRelationshipReferences={
-              // data.stixCoreObject.externalReferences.edges
-              data.externalReference
+              data.stixCoreObject.externalReferences.edges
+              // data.externalReference
             }
           />
         </Security>
@@ -199,11 +200,10 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {externalReferencesEdges.length > 0 ? (
             <List style={{ marginBottom: 0 }}>
-              {/* {R.take(expanded ? 200 : 7, externalReferencesEdges) */}
-              {externalReferencesEdges.map(
+              {/* {externalReferencesEdges.map( */}
+              {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
                 (externalReferenceEdge) => {
-                  const externalReference = externalReferenceEdge;
-                  console.log('externalReferenceData', externalReference);
+                  const externalReference = externalReferenceEdge.node;
                   const externalReferenceId = externalReference.external_id
                     ? `(${externalReference.external_id})`
                     : '';
@@ -219,92 +219,53 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                   ) {
                     externalReferenceSecondary = externalReference.description;
                   }
-                  if (externalReference.url) {
-                    return (
-                      <div key={externalReference.id}>
-                        <ListItem
-                          dense={true}
-                          divider={true}
-                          button={true}
-                          onClick={this.handleOpenExternalLink.bind(
-                            this,
-                            externalReference.url,
-                          )}
-                        >
-                          {/* <ListItemIcon>
-                            <Avatar classes={{ root: classes.avatar }}>
-                              {externalReference.source_name.substring(0, 1)}
-                            </Avatar>
-                          </ListItemIcon> */}
-                          <ListItemText
-                            primary={`${externalReference.source_name} ${externalReferenceId}`}
-                            secondary={truncate(externalReferenceSecondary, 90)}
-                          />
-                          <ListItemSecondaryAction>
-                            {/* <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-                              <FileUploader
-                                entityId={externalReference.id}
-                                onUploadSuccess={() => this.props.relay.refetchConnection(200)
-                                }
-                                color="inherit"
-                              />
-                            </Security>
-                            <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                              <ExternalReferenceEnrichment
-                                externalReferenceId={externalReference.id}
-                              />
-                            </Security> */}
-                            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                              <ExternalReferencePopover
-                                externalReferenceId={externalReference.id}
-                                handleRemove={this.handleOpenDialog.bind(
-                                  this,
-                                  externalReferenceEdge,
-                                )}
-                              />
-                            </Security>
-                          </ListItemSecondaryAction>
-                        </ListItem>
-                        {/* {externalReference.importFiles.edges.length > 0 && (
-                          <List>
-                            {externalReference.importFiles.edges.map((file) => (
-                              <FileLine
-                                key={file.node.id}
-                                dense={true}
-                                disableImport={true}
-                                file={file.node}
-                                nested={true}
-                              />
-                            ))}
-                          </List>
-                        )} */}
-                      </div>
-                    );
-                  }
                   return (
                     <div key={externalReference.id}>
-                      <ListItem dense={true} divider={true} button={false}>
-                        {/* <ListItemIcon>
-                          <Avatar classes={{ root: classes.avatar }}>
-                            {externalReference.source_name.substring(0, 1)}
-                          </Avatar>
-                        </ListItemIcon> */}
-                        <ListItemText
-                          primary={`${externalReference.source_name} ${externalReferenceId}`}
-                          secondary={truncate(
-                            externalReference.description,
-                            120,
-                          )}
-                        />
-                        <ListItemSecondaryAction>
-                          {/* <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-                            <FileUploader
-                              entityId={externalReference.id}
-                              onUploadSuccess={() => this.props.relay.refetchConnection(200)
-                              }
-                              color="inherit"
+                      <div style={{ display: 'grid', gridTemplateColumns: '90% 10%' }}>
+                        <Accordion style={{ borderBottom: '0', boxShadow: 'none' }}>
+                          {/* <ListItem dense={true} divider={true} button={false}> */}
+                          {/* <ListItemIcon>
+                                      <Avatar classes={{ root: classes.avatar }}>
+                                        {externalReference.source_name.substring(0, 1)}
+                                      </Avatar>
+                                    </ListItemIcon> */}
+                          <AccordionSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                            sx={{ width: '100%' }}
+                          >
+                            <ListItemText
+                              primary={`${externalReference.source_name}`}
+                              secondary={truncate(
+                                externalReference.url,
+                                120,
+                              )}
                             />
-                          </Security> */}
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            <div >
+                              <Typography variant="subtitle1" gutterBottom={true}>
+                                {externalReference.description}
+                              </Typography>
+                              <Typography variant="subtitle2" style={{ display: 'flex', color: '#F9B406' }} >
+                                <LinkIcon fontSize="small" style={{ paddingRight: '5px' }} />
+                                {externalReference.external_id}
+                              </Typography>
+                            </div>
+                          </AccordionDetails>
+                          {/* </ListItem> */}
+                        </Accordion>
+                        {/* <ListItemSecondaryAction> */}
+                        {/* <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                                  <FileUploader
+                                    entityId={externalReference.id}
+                                    onUploadSuccess={() => this.props.relay.refetchConnection(200)
+                                    }
+                                    color="inherit"
+                                  />
+                                </Security> */}
+                        <div style={{ marginTop: '12px' }}>
                           <Security needs={[KNOWLEDGE_KNUPDATE]}>
                             <ExternalReferencePopover
                               externalReferenceId={externalReference.id}
@@ -314,8 +275,9 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                               )}
                             />
                           </Security>
-                        </ListItemSecondaryAction>
-                      </ListItem>
+                        </div>
+                        {/* </ListItemSecondaryAction> */}
+                      </div>
                       {/* {externalReference.importFiles.edges.length > 0 && (
                         <List>
                           {externalReference.importFiles.edges.map((file) => (
@@ -329,6 +291,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                           ))}
                         </List>
                       )} */}
+                      <Divider variant="middle" light={true} />
                     </div>
                   );
                 },
@@ -362,6 +325,68 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
             </Button>
           )}
         </Paper>
+        {/* if (externalReference.url) {
+                    return (
+                      <div key={externalReference.id}>
+                        <ListItem
+                          dense={true}
+                          divider={true}
+                          button={true}
+                          onClick={this.handleOpenExternalLink.bind(
+                            this,
+                            externalReference.url,
+                          )}
+                        >
+                          <ListItemIcon>
+                            <Avatar classes={{ root: classes.avatar }}>
+                              {externalReference.source_name.substring(0, 1)}
+                            </Avatar>
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={`${externalReference.source_name} ${externalReferenceId}`}
+                            secondary={truncate(externalReferenceSecondary, 90)}
+                          />
+                          <ListItemSecondaryAction>
+                            <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                              <FileUploader
+                                entityId={externalReference.id}
+                                onUploadSuccess={() => this.props.relay.refetchConnection(200)
+                                }
+                                color="inherit"
+                              />
+                            </Security>
+                            <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                              <ExternalReferenceEnrichment
+                                externalReferenceId={externalReference.id}
+                              />
+                            </Security>
+                            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                              <ExternalReferencePopover
+                                externalReferenceId={externalReference.id}
+                                handleRemove={this.handleOpenDialog.bind(
+                                  this,
+                                  externalReferenceEdge,
+                                )}
+                              />
+                            </Security>
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                        {externalReference.importFiles.edges.length > 0 && (
+                          <List>
+                            {externalReference.importFiles.edges.map((file) => (
+                              <FileLine
+                                key={file.node.id}
+                                dense={true}
+                                disableImport={true}
+                                file={file.node}
+                                nested={true}
+                              />
+                            ))}
+                          </List>
+                        )}
+                      </div>
+                    );
+                  } */}
         <Dialog
           open={this.state.displayDialog}
           keepMounted={true}
@@ -428,47 +453,10 @@ StixCoreObjectExternalReferencesLinesContainer.propTypes = {
   relay: PropTypes.object,
 };
 
-// export const stixCoreObjectExternalReferencesLinesQuery = graphql`
-//   query StixCoreObjectExternalReferencesLinesQuery($count: Int!, $id: String!) {
-//     ...StixCoreObjectExternalReferencesLines_data
-//       @arguments(count: $count, id: $id)
-//   }
-// `;
-
 export const stixCoreObjectExternalReferencesLinesQuery = graphql`
-  query StixCoreObjectExternalReferencesLinesQuery($id: String!) {
-    externalReference(id: $id) {
-      id
-      source_name
-      description
-      url
-      hash
-      external_id
-      jobs(first: 100) {
-        id
-        timestamp
-        connector {
-          id
-          name
-        }
-        messages {
-          timestamp
-          message
-        }
-        errors {
-          timestamp
-          message
-        }
-        status
-      }
-      connectors(onlyAlive: false) {
-        id
-        connector_type
-        name
-        active
-        updated_at
-      }
-    }
+  query StixCoreObjectExternalReferencesLinesQuery($count: Int!, $id: String!) {
+    ...StixCoreObjectExternalReferencesLines_data
+      @arguments(count: $count, id: $id)
   }
 `;
 

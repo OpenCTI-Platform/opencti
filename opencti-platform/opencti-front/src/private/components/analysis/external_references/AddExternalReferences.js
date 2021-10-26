@@ -17,6 +17,7 @@ import TextField from '@material-ui/core/TextField';
 import CardHeader from '@material-ui/core/CardHeader';
 import Checkbox from '@material-ui/core/Checkbox';
 import Collapse from '@material-ui/core/Collapse';
+import Divider from '@material-ui/core/Divider';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { ConnectionHandler } from 'relay-runtime';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -54,11 +55,6 @@ const styles = (theme) => ({
     overflow: 'hidden',
     height: '50vh',
   },
-  dialogRoot: {
-    backgroundColor: 'transparent !important',
-    borderRadius: '0 !important',
-    boxShadow: 'none !important',
-  },
   createButton: {
     float: 'left',
     marginTop: -15,
@@ -92,6 +88,16 @@ const styles = (theme) => ({
   avatar: {
     width: 24,
     height: 24,
+  },
+  collapse: {
+    width: '70%',
+    maxHeight: '344px',
+    overflowY: 'scroll',
+    background: theme.palette.background.paper,
+  },
+  dialogMain: {
+    padding: '24px',
+    background: theme.palette.background.paper,
   },
 });
 
@@ -211,9 +217,22 @@ class AddExternalReferences extends Component {
         >
           <Add fontSize="small" />
       </IconButton>
-      <div>
-        <Dialog maxWidth='md' classes={{ root: classes.dialogRoot }} open={this.state.open} onClose={this.handleClose.bind(this)} timeout="auto" unmountOnExit>
-          <div style={{ padding: '24px' }}>
+      <div classes={{ root: classes.dialogRoot }}>
+      <Dialog
+        maxWidth='md'
+        open={this.state.open}
+        onClose={this.handleClose.bind(this)}
+        timeout="auto"
+        unmountOnExit
+        PaperProps={{
+          style: {
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
+            borderRadius: '0px',
+          },
+        }}
+      >
+          <div className={ classes.dialogMain }>
             <DialogTitle style={{ padding: 10 }}>{t('Add External References')}</DialogTitle>
             {/* <CardHeader title="Add External Refrences"/> */}
               <CardActions sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -234,10 +253,11 @@ class AddExternalReferences extends Component {
                   <Button style={{ marginLeft: '10px', marginRight: '10px' }} onClick={this.handleClose.bind(this)} variant="outlined" >{t('Cancel')}</Button>
                   <Button variant="contained" color="primary">{t('Add')}</Button>
                 </div>
+                <Divider light={true} />
               </CardActions>
           </div>
-          <Collapse sx={{ maxWidth: '500px', borderRadius: 0 }} style={{ backgroundColor: 'transparent' }} in={this.state.expanded} timeout="auto" unmountOnExit>
-            <div style={{ background: 'white', width: '70%' }}>
+          <Collapse sx={{ maxWidth: '500px', borderRadius: 0 }} in={this.state.expanded} timeout="auto" unmountOnExit>
+            <div className={ classes.collapse }>
               <QueryRenderer
                 query={addExternalReferencesLinesQuery}
                 variables={{

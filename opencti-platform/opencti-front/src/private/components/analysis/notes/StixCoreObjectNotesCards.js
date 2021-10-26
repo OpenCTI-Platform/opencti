@@ -140,7 +140,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
       t, classes, stixCoreObjectId, marginTop, data,
     } = this.props;
     const { open } = this.state;
-    const notes = R.pathOr([], ['notes', 'edges'], data.note);
+    const notes = R.pathOr([], ['stixCoreObject', 'notes', 'edges'], data);
     return (
       <div style={{ marginTop: marginTop || 40 }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -364,32 +364,9 @@ StixCoreObjectNotesCardsContainer.propTypes = {
   t: PropTypes.func,
 };
 
-// export const stixCoreObjectNotesCardsQuery = graphql`
-//   query StixCoreObjectNotesCardsQuery($count: Int!, $id: String!) {
-//     ...StixCoreObjectNotesCards_data @arguments(count: $count, id: $id)
-//   }
-// `;
-
 export const stixCoreObjectNotesCardsQuery = graphql`
-  query StixCoreObjectNotesCardsQuery($id: String) {
-    note(id: $id) {
-      objectMarking {
-        edges {
-          node {
-            id
-            definition
-          }
-        }
-      }
-      notes {
-        edges {
-          node {
-            id
-            ...StixCoreObjectOrStixCoreRelationshipNoteCard_node
-          }
-        }
-      }
-    }
+  query StixCoreObjectNotesCardsQuery($count: Int!, $id: String!) {
+    ...StixCoreObjectNotesCards_data @arguments(count: $count, id: $id)
   }
 `;
 

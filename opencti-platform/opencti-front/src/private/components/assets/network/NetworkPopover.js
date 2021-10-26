@@ -40,6 +40,12 @@ const styles = (theme) => ({
     }),
     padding: 0,
   },
+  menuItem: {
+    padding: '15px 0',
+    width: '152px',
+    margin: '0 20px',
+    justifyContent: 'center',
+  },
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -124,11 +130,11 @@ class NetworkPopover extends Component {
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
-          <MenuItem onClick={this.handleOpenEdit.bind(this)}>
+          <MenuItem className={classes.menuItem} onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+            <MenuItem className={classes.menuItem} onClick={this.handleOpenDelete.bind(this)}>
               {t('Delete')}
             </MenuItem>
           </Security>

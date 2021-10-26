@@ -5,12 +5,16 @@ import { createFragmentContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
-import { OpenInNewOutlined } from '@material-ui/icons';
+import { OpenInNewOutlined, ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import { withStyles, withTheme } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
+import Collapse from '@material-ui/core/Collapse';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
+import Divider from '@material-ui/core/Divider';
+import CardActions from '@material-ui/core/CardActions';
 import Typography from '@material-ui/core/Typography';
+import LinkIcon from '@material-ui/icons/Link';
 import { ConnectionHandler } from 'relay-runtime';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -33,9 +37,8 @@ const styles = (theme) => ({
   card: {
     width: '100%',
     height: '100%',
-    marginBottom: 30,
-    borderRadius: 6,
-    padding: 0,
+    borderRadius: 0,
+    padding: '24px 24px 0 24px',
     position: 'relative',
   },
   avatar: {
@@ -81,6 +84,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
       displayDialog: false,
       noteIdToRemove: null,
       removing: false,
+      open: false,
     };
   }
 
@@ -96,6 +100,12 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
       displayDialog: false,
       removing: false,
       noteIdToRemove: null,
+    });
+  }
+
+  toggleExpand() {
+    this.setState({
+      open: !this.state.open,
     });
   }
 
@@ -160,91 +170,133 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
             />
           }
           title={
-            <div>
-              <div
-                style={{
-                  float: 'left',
-                  fontDecoration: 'none',
-                  textTransform: 'none',
-                }}
-              >
-                <strong>
-                  {authorLink ? (
-                    <Link to={authorLink}>{authorName}</Link>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div>
+                  <div
+                    style={{
+                      fontDecoration: 'none',
+                      textTransform: 'none',
+                      paddingTop: '15px',
+                    }}
+                  >
+                    <strong>
+                      {authorLink ? (
+                        <Link to={authorLink}>{authorName}</Link>
+                      ) : (
+                        t('Unknown')
+                      )}
+                    </strong>{' '}
+                    <span style={{ color: theme.palette.text.secondary }}>
+                      {t('added a note')} on {nsdt(node.created)}
+                    </span>
+                  </div>
+                  {/* <div
+                    style={{
+                      float: 'left',
+                      marginLeft: 20,
+                      fontDecoration: 'none',
+                      textTransform: 'none',
+                    }}
+                  >
+                    {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
+                      (markingDefinition) => (
+                        <ItemMarking
+                          key={markingDefinition.node.id}
+                          label={markingDefinition.node.definition}
+                          color={markingDefinition.node.x_opencti_color}
+                          variant="inList"
+                        />
+                      ),
+                    )}
+                  </div> */}
+                  <div
+                    style={{
+                      float: 'right',
+                      fontDecoration: 'none',
+                      textTransform: 'none',
+                    }}
+                  >
+                  </div>
+              </div>
+                <IconButton
+                aria-haspopup="true"
+                style={{ marginTop: 1 }}
+                onClick={this.toggleExpand.bind(this)}
+                >
+                  {this.state.open ? (
+                    <ExpandLessOutlined />
                   ) : (
-                    t('Uknown')
+                    <ExpandMoreOutlined />
                   )}
-                </strong>{' '}
-                <span style={{ color: theme.palette.text.secondary }}>
-                  {t('added a note')} on {nsdt(node.created)}
-                </span>
-              </div>
-              {/* <div
-                style={{
-                  float: 'left',
-                  marginLeft: 20,
-                  fontDecoration: 'none',
-                  textTransform: 'none',
-                }}
+                </IconButton>
+              {/* <IconButton
+                aria-haspopup="true"
+                style={{ marginTop: 1 }}
               >
-                {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
-                  (markingDefinition) => (
-                    <ItemMarking
-                      key={markingDefinition.node.id}
-                      label={markingDefinition.node.definition}
-                      color={markingDefinition.node.x_opencti_color}
-                      variant="inList"
-                    />
-                  ),
-                )}
-              </div> */}
-              <div
-                style={{
-                  float: 'right',
-                  fontDecoration: 'none',
-                  textTransform: 'none',
-                }}
-              >
-                {/* <StixCoreObjectLabels
-                  variant="inList"
-                  labels={node.objectLabel}
-                /> */}
-              </div>
+              {open ? (
+                <ExpandLessOutlined
+                classes={{ root: classes.toggleButton }}
+                onClick={() => this.toggleExpand()} />
+              ) : (
+                <ExpandLessOutlined
+                classes={{ root: classes.toggleButton }}
+                onClick={() => this.toggleExpand()} />
+              )}
+              </IconButton> */}
             </div>
           }
         />
-        <CardContent style={{
-          padding: '10px 10px 0 15px',
-          borderBottom: `1px solid ${theme.palette.divider}`,
-        }}>
-          <Typography
-            variant="body2"
-            noWrap={true}
-            style={{ margin: '0 0 10px 0', fontWeight: 500 }}
-          >
-            <Markdown
-              remarkPlugins={[remarkGfm, remarkParse]}
-              parserOptions={{ commonmark: true }}
-              className="markdown"
-            >
-              {node.attribute_abstract}
-            </Markdown>
-          </Typography>
-          <Markdown
-            remarkPlugins={[remarkGfm, remarkParse]}
-            parserOptions={{ commonmark: true }}
-            className="markdown"
-          >
-            {node.content}
-          </Markdown>
-          {/* <IconButton
-            component={Link}
-            to={`/dashboard/analysis/notes/${node.id}`}
-            classes={{ root: classes.external }}
-          >
-            <OpenInNewOutlined fontSize="small" />
-          </IconButton> */}
-        </CardContent>
+           <CardContent style={{
+             padding: '0 0 0 15px',
+             // borderBottom: `1px solid ${theme.palette.divider}`,
+           }}>
+           {
+             this.state.open
+               ? (
+                <Typography style={{ margin: '0 0 10px 0' }} align="left" variant="body2">
+                    {node.content}
+                </Typography>
+               )
+               : (
+              <Typography
+                  variant="body2"
+                  noWrap={true}
+                  style={{ margin: '0 0 10px 0', fontWeight: 500 }}
+                >
+                  <Markdown
+                    remarkPlugins={[remarkGfm, remarkParse]}
+                    parserOptions={{ commonmark: true }}
+                    className="markdown"
+                  >
+                    {node.attribute_abstract}
+                  </Markdown>
+                </Typography>
+               )
+           }
+                {/* <Markdown
+                  remarkPlugins={[remarkGfm, remarkParse]}
+                  parserOptions={{ commonmark: true }}
+                  className="markdown"
+                >
+                  {node.content}
+                </Markdown> */}
+                {/* <IconButton
+                  component={Link}
+                  to={`/dashboard/analysis/notes/${node.id}`}
+                  classes={{ root: classes.external }}
+                >
+                  <OpenInNewOutlined fontSize="small" />
+                </IconButton> */}
+            </CardContent>
+            <Collapse sx={{ width: '1100px', borderRadius: 0 }} in={this.state.open} timeout="auto" unmountOnExit>
+                <CardActions style={{ color: '#F9B406', padding: '0 20px 20px 15px' }}>
+                         <StixCoreObjectLabels
+                      variant="inList"
+                      labels={node.objectLabel}
+                    />
+                </CardActions>
+            </Collapse>
+        <Divider light={true} />
         <Dialog
           open={this.state.displayDialog}
           keepMounted={true}
