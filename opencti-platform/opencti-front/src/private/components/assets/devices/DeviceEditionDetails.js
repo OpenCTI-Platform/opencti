@@ -87,7 +87,6 @@ class DeviceEditionDetailsComponent extends Component {
             {t('Details')}
           </Typography>
           <Paper classes={{ root: classes.paper }} elevation={2}>
-            {/* <Form> */}
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={6}>
                 <div style={{ marginBottom: '119px' }}>
@@ -753,7 +752,6 @@ class DeviceEditionDetailsComponent extends Component {
                 </div>
               </Grid>
             </Grid>
-            {/* </Form> */}
           </Paper>
         </div>
         {/* <Grid item={true} xs={6}>

@@ -205,10 +205,10 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
                   textTransform: 'none',
                 }}
               >
-                {/* <StixCoreObjectLabels
+                <StixCoreObjectLabels
                   variant="inList"
                   labels={node.objectLabel}
-                /> */}
+                />
               </div>
             </div>
           }

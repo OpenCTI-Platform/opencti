@@ -22,7 +22,7 @@ import SoftwareLines, {
   softwareLinesdarkLightRootQuery,
 } from './software/SoftwareLines';
 import SoftwareCreation from './software/SoftwareCreation';
-import SoftwareOperations from './software/SoftwareOperations';
+import SoftwareDeletion from './software/SoftwareDeletion';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 
@@ -44,6 +44,7 @@ class Software extends Component {
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
       selectAll: false,
+      displayEdit: false,
       openSoftwareCreation: false,
     };
   }
@@ -80,6 +81,10 @@ class Software extends Component {
   handleSoftwareCreation() {
     console.log('Software Created successfully');
     this.setState({ openSoftwareCreation: true });
+  }
+
+  handleDisplayEdit() {
+    this.setState({ displayEdit: !this.state.displayEdit });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -183,10 +188,11 @@ class Software extends Component {
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
         handleNewCreation={this.handleSoftwareCreation.bind(this)}
+        handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
         CreateItemComponent={<SoftwareCreation />}
-        OperationsComponent={<SoftwareOperations />}
+        OperationsComponent={<SoftwareDeletion />}
         openExports={openExports}
         exportEntityType="Software"
         keyword={searchTerm}
@@ -313,10 +319,11 @@ class Software extends Component {
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
         handleNewCreation={this.handleSoftwareCreation.bind(this)}
+        handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
         CreateItemComponent={<SoftwareCreation />}
-        OperationsComponent={<SoftwareOperations />}
+        OperationsComponent={<SoftwareDeletion />}
         openExports={openExports}
         exportEntityType="Software"
         keyword={searchTerm}
@@ -385,13 +392,16 @@ class Software extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
     };
+    const { location } = this.props;
     return (
       <div>
-        {view === 'cards' && !openSoftwareCreation ? this.renderCards(paginationOptions) : ''}
-        {view === 'lines' && !openSoftwareCreation ? this.renderLines(paginationOptions) : ''}
-        {openSoftwareCreation && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <SoftwareCreation paginationOptions={paginationOptions} history={this.props.history} />
-        </Security>}
+        {view === 'cards' && (!openSoftwareCreation && !location.openNewCreation) ? this.renderCards(paginationOptions) : ''}
+        {view === 'lines' && (!openSoftwareCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
+        {(openSoftwareCreation || location.openNewCreation) && (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <SoftwareCreation paginationOptions={paginationOptions} history={this.props.history} />
+          </Security>
+        )}
       </div>
     );
   }

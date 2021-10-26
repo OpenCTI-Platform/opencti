@@ -9,18 +9,8 @@ import { withStyles } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
 import Slide from '@material-ui/core/Slide';
-import { Link } from 'react-router-dom';
-import {
-  Add,
-  Edit,
-  Close,
-  Delete,
-  ArrowBack,
-  AddCircleOutline,
-  CheckCircleOutline,
-} from '@material-ui/icons';
+import { Add, Close, Delete } from '@material-ui/icons';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -38,7 +28,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
-import Security, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 
 const Transition = React.forwardRef((props, ref) => (
@@ -47,19 +37,13 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const styles = () => ({
-  iconButton: {
-    float: 'left',
-    minWidth: '0px',
-    marginRight: 15,
-    padding: '8px 16px 8px 8px',
-  },
   title: {
     float: 'left',
     textTransform: 'uppercase',
   },
   popover: {
     float: 'left',
-    // marginTop: '-13px',
+    marginTop: '-13px',
   },
   aliases: {
     float: 'right',
@@ -147,15 +131,10 @@ class StixDomainObjectHeader extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      openEdit: false,
       openAlias: false,
       openAliases: false,
-      displayEdit: false,
-      displayDelete: false,
       openAliasesCreate: false,
     };
-    // console.log('hymn for the weekend ---->>>>>>>>>');
-    // console.log(this.props);
   }
 
   handleToggleOpenAliases() {
@@ -166,30 +145,10 @@ class StixDomainObjectHeader extends Component {
     this.setState({ openAlias: !this.state.openAlias });
   }
 
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    // this.handleClose();
-  }
-
-  handleOpenEdit() {
-    this.setState({ openEdit: !this.state.openEdit });
-    this.props.handleToggleEdit();
-  }
-
-  handleCloseEdit() {
-    this.setState({ openEdit: !this.state.openEdit });
-    this.props.handleToggleEdit();
-  }
-
   getCurrentAliases() {
     return this.props.isOpenctiAlias
       ? this.props.stixDomainObject.x_opencti_aliases
       : this.props.stixDomainObject.aliases;
-  }
-
-  handleToggleOpenEdit() {
-    this.setState({ openEdit: !this.state.openEdit });
-    this.props.openEdit();
   }
 
   onSubmitCreateAlias(element, data, { resetForm }) {
@@ -235,14 +194,11 @@ class StixDomainObjectHeader extends Component {
       t,
       classes,
       variant,
-      history,
       stixDomainObject,
       isOpenctiAlias,
       PopoverComponent,
-      OperationsComponent,
       viewAs,
       onViewAs,
-      openEdit,
       disablePopover,
     } = this.props;
     const aliases = propOr(
@@ -252,28 +208,21 @@ class StixDomainObjectHeader extends Component {
     );
     return (
       <div>
-        {stixDomainObject
-          && (<Tooltip title={t('Back')} style={{ marginTop: -5 }}>
-            <Button variant="outlined" className={classes.iconButton} size="large" onClick={() => history.goBack()}>
-              <ArrowBack fontSize="inherit"/>
-            </Button>
-          </Tooltip>)}
         <Typography
           variant="h1"
           gutterBottom={true}
           classes={{ root: classes.title }}
         >
-          {t(stixDomainObject ? stixDomainObject.name : 'New Asset')}
+          {stixDomainObject.name}
         </Typography>
-        {console.log('PopoverComponent', PopoverComponent)}
-        {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <div className={classes.popover}>
             {React.cloneElement(PopoverComponent, {
               id: stixDomainObject.id,
               disabled: disablePopover,
             })}
           </div>
-        </Security> */}
+        </Security>
         {typeof onViewAs === 'function' && (
           <div>
             <InputLabel classes={{ root: classes.viewAsFieldLabel }}>
@@ -295,11 +244,10 @@ class StixDomainObjectHeader extends Component {
             </FormControl>
           </div>
         )}
-        {/* <StixCoreObjectEnrichment stixCoreObjectId={stixDomainObject.id} /> */}
-
+        <StixCoreObjectEnrichment stixCoreObjectId={stixDomainObject.id} />
         {variant !== 'noaliases' ? (
           <div className={classes.aliases}>
-            {/* {take(5, aliases).map(
+            {take(5, aliases).map(
               (label) => label.length > 0 && (
                   <Chip
                     key={label}
@@ -308,71 +256,9 @@ class StixDomainObjectHeader extends Component {
                     onDelete={this.deleteAlias.bind(this, label)}
                   />
               ),
-            )} */}
-            {!stixDomainObject || this.state.openEdit ? (
-              <>
-                <Tooltip title={t('Cancel')}>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<Close />}
-                    color='primary'
-                    onClick={this.handleCloseEdit.bind(this)}
-                    className={classes.iconButton}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                </Tooltip>
-                <Tooltip title={t('Save')}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    startIcon={<CheckCircleOutline />}
-                    color='primary'
-                    className={classes.iconButton}
-                  >
-                    {t('Done')}
-                  </Button>
-                </Tooltip>
-              </>
-            ) : (
-              <>
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <div className={classes.popover}>
-                  {OperationsComponent && React.cloneElement(OperationsComponent, {
-                    id: stixDomainObject.id,
-                    disabled: disablePopover,
-                    handleOpenEdit: this.handleOpenEdit.bind(this),
-                  })}
-                </div>
-              </Security>
-              {/* <Tooltip title={t('Edit')}>
-               <Button
-                variant="outlined"
-                onClick={this.handleToggleOpenEdit.bind(this)}
-                className={classes.iconButton}
-                size="large"
-              >
-                  <Edit fontSize="inherit"/>
-                </Button>
-              </Tooltip> */}
-            </>
-            )
-            }
-            {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              {!this.state.openEdit && (
-                <Tooltip title={t('Create New')}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    startIcon={<AddCircleOutline />}
-                    color='primary'
-                  >
-                    {t('New')}
-                  </Button>
-                </Tooltip>
-              )} */}
-              {/* {aliases.length > 5 ? (
+            )}
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              {aliases.length > 5 ? (
                 <Button
                   color="primary"
                   aria-label="More"
@@ -392,21 +278,11 @@ class StixDomainObjectHeader extends Component {
                   {this.state.openAlias ? (
                     <Close fontSize="small" />
                   ) : (
-                    <Tooltip title={t('Add Alias')}>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        startIcon={<AddCircleOutline />}
-                        color='primary'
-                        style={{ marginTop: -5 }}
-                      >
-                        {t('New')}
-                      </Button>
-                    </Tooltip>
+                    <Add fontSize="small" />
                   )}
                 </IconButton>
-              )} */}
-            {/* </Security> */}
+              )}
+            </Security>
             <Slide
               direction="left"
               in={this.state.openAlias}

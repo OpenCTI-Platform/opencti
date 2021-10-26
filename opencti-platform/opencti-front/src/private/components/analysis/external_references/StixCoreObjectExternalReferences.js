@@ -80,11 +80,11 @@ class StixCoreObjectExternalReferences extends Component {
                         divider={true}
                         button={false}
                       >
-                        <ListItemIcon>
+                        {/* <ListItemIcon>
                           <Avatar classes={{ root: classes.avatarDisabled }}>
                             {i}
                           </Avatar>
-                        </ListItemIcon>
+                        </ListItemIcon> */}
                         <ListItemText
                           primary={
                             <Skeleton

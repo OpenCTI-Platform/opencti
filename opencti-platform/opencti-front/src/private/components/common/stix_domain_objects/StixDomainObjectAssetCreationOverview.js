@@ -307,6 +307,7 @@ class StixDomainObjectCreationOverviewComponent extends Component {
                   </div>
                   <div className="clearfix" />
                   <ObjectLabelField
+                    variant='outlined'
                     name="labels"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}

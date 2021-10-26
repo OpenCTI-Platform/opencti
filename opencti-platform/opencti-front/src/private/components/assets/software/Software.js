@@ -9,12 +9,12 @@ import inject18n from '../../../../components/i18n';
 import SoftwareDetails from './SoftwareDetails';
 import SoftwareEdition from './SoftwareEdition';
 import SoftwarePopover from './SoftwarePopover';
-import SoftwareOperations from './SoftwareOperations';
+import SoftwareDeletion from './SoftwareDeletion';
 import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectAssetHeader from '../../common/stix_domain_objects/StixDomainObjectAssetHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
+import StixDomainObjectAssetOverview from '../../common/stix_domain_objects/StixDomainObjectAssetOverview';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
@@ -32,27 +32,34 @@ class SoftwareComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      openEdit: false,
+      displayEdit: false,
     };
   }
 
-  handleToggleEdit() {
-    this.setState({ openEdit: !this.state.openEdit });
+  handleDisplayEdit() {
+    this.setState({ displayEdit: !this.state.displayEdit });
+  }
+
+  handleOpenNewCreation() {
+    this.props.history.push({
+      pathname: '/dashboard/assets/software',
+      openNewCreation: true,
+    });
   }
 
   render() {
     const { classes, software, history } = this.props;
     return (
       <>
-        {!this.state.openEdit ? (
+        {!this.state.displayEdit ? (
           <div className={classes.container}>
-            <StixDomainObjectHeader
-              openEdit={() => this.setState({ openEdit: !this.state.openEdit })}
+            <StixDomainObjectAssetHeader
               stixDomainObject={software}
               history={history}
               PopoverComponent={<SoftwarePopover />}
-              handleToggleEdit={this.handleToggleEdit.bind(this)}
-              OperationsComponent={<SoftwareOperations />}
+              handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+              handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
+              OperationsComponent={<SoftwareDeletion />}
             />
             <Grid
               container={true}
@@ -60,7 +67,7 @@ class SoftwareComponent extends Component {
               classes={{ container: classes.gridContainer }}
             >
               <Grid item={true} xs={6}>
-                <StixDomainObjectOverview stixDomainObject={software} />
+                <StixDomainObjectAssetOverview stixDomainObject={software} />
               </Grid>
               <Grid item={true} xs={6}>
                 <SoftwareDetails software={software} />
@@ -91,7 +98,7 @@ class SoftwareComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                {/* <StixCoreObjectExternalReferences stixCoreObjectId={software.id} /> */}
+                <StixCoreObjectExternalReferences stixCoreObjectId={software.id} />
               </Grid>
               <Grid item={true} xs={6}>
                 <StixCoreObjectLatestHistory stixCoreObjectId={software.id} />

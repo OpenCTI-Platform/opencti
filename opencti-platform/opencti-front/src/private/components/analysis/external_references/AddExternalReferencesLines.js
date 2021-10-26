@@ -187,18 +187,18 @@ class AddExternalReferencesLinesContainer extends Component {
       search,
       paginationOptions,
     } = this.props;
-    // const stixCoreObjectOrStixCoreRelationshipReferencesIds = map(
-    //   (n) => n.node.id,
-    //   stixCoreObjectOrStixCoreRelationshipReferences,
-    // );
+    const stixCoreObjectOrStixCoreRelationshipReferencesIds = map(
+      (n) => n.node.id,
+      stixCoreObjectOrStixCoreRelationshipReferences,
+    );
     return (
       <div>
         <List className={classes.list}>
           {data.externalReferences.edges.map((externalReferenceNode) => {
             const externalReference = externalReferenceNode.node;
-            // const alreadyAdded = stixCoreObjectOrStixCoreRelationshipReferencesIds.includes(
-            //   externalReference.id,
-            // );
+            const alreadyAdded = stixCoreObjectOrStixCoreRelationshipReferencesIds.includes(
+              externalReference.id,
+            );
             const externalReferenceId = externalReference.external_id
               ? `(${externalReference.external_id})`
               : '';
@@ -215,10 +215,10 @@ class AddExternalReferencesLinesContainer extends Component {
                 )}
               >
                 <ListItemIcon>
-                  {true ? (
-                    <Checkbox />
+                  {alreadyAdded ? (
+                    <Checkbox classes={{ root: classes.icon }} />
                   ) : (
-                    <Checkbox />
+                    <Checkbox classes={{ root: classes.icon }} />
                   )}
                 </ListItemIcon>
                 <ListItemText

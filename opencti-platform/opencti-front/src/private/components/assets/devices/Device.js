@@ -3,18 +3,21 @@ import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
+import { Redirect } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
 import DeviceDetails from './DeviceDetails';
 import DeviceEdition from './DeviceEdition';
 import DevicePopover from './DevicePopover';
-import DeviceOperations from './DeviceOperations';
+import DeviceDeletion from './DeviceDeletion';
+import DeviceCreation from './DeviceCreation';
 import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectAssetHeader from '../../common/stix_domain_objects/StixDomainObjectAssetHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
+import StixDomainObjectAssetOverview from '../../common/stix_domain_objects/StixDomainObjectAssetOverview';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
@@ -32,27 +35,34 @@ class DeviceComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      openEdit: false,
+      displayEdit: false,
     };
   }
 
-  handleToggleEdit() {
-    this.setState({ openEdit: !this.state.openEdit });
+  handleDisplayEdit() {
+    this.setState({ displayEdit: !this.state.displayEdit });
+  }
+
+  handleOpenNewCreation() {
+    this.props.history.push({
+      pathname: '/dashboard/assets/devices',
+      openNewCreation: true,
+    });
   }
 
   render() {
     const { classes, device, history } = this.props;
     return (
       <>
-        {!this.state.openEdit ? (
+        {!this.state.displayEdit ? (
           <div className={classes.container}>
-            <StixDomainObjectHeader
-              openEdit={() => this.setState({ openEdit: !this.state.openEdit })}
+            <StixDomainObjectAssetHeader
               stixDomainObject={device}
               history={history}
               PopoverComponent={<DevicePopover />}
-              handleToggleEdit={this.handleToggleEdit.bind(this)}
-              OperationsComponent={<DeviceOperations />}
+              handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+              handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
+              OperationsComponent={<DeviceDeletion />}
             />
             <Grid
               container={true}
@@ -60,7 +70,7 @@ class DeviceComponent extends Component {
               classes={{ container: classes.gridContainer }}
             >
               <Grid item={true} xs={6}>
-                <StixDomainObjectOverview stixDomainObject={device} />
+                <StixDomainObjectAssetOverview stixDomainObject={device} />
               </Grid>
               <Grid item={true} xs={6}>
                 <DeviceDetails device={device} />
@@ -91,9 +101,9 @@ class DeviceComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                {/* <StixCoreObjectExternalReferences
+                <StixCoreObjectExternalReferences
                   stixCoreObjectId={device.id}
-                /> */}
+                />
               </Grid>
               <Grid item={true} xs={6}>
                 <StixCoreObjectLatestHistory stixCoreObjectId={device.id} />
@@ -115,7 +125,6 @@ class DeviceComponent extends Component {
             />
           </Security>
         )}
-
       </>
     );
   }

@@ -19,8 +19,8 @@ import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import SoftwareEditionContainer from './SoftwareEditionContainer';
-import { softwareEditionQuery, softwareEditionDarkLightQuery } from './SoftwareEdition';
+import NetworkEditionContainer from './NetworkEditionContainer';
+import { networkEditionQuery, networkEditionDarkLightQuery } from './NetworkEdition';
 import Loader from '../../../../components/Loader';
 import Security, {
   KNOWLEDGE_KNUPDATE,
@@ -56,21 +56,21 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const SoftwareOperationsDeletionMutation = graphql`
-  mutation SoftwareOperationsDeletionMutation($id: ID!) {
+const NetworkDeletionMutation = graphql`
+  mutation NetworkDeletionMutation($id: ID!) {
     threatActorEdit(id: $id) {
       delete
     }
   }
 `;
 
-const SoftwareOperationsDeletionDarkLightMutation = graphql`
-  mutation SoftwareOperationsDeletionDarkLightMutation($id: ID!) {
-    deleteSoftwareAsset(id: $id)
-  }
+const NetworkDeletionDarkLightMutation = graphql`
+  mutation NetworkDeletionDarkLightMutation($id: ID!) {
+    deleteNetworkAsset(id: $id)
+}
 `;
 
-class SoftwareOperations extends Component {
+class NetworkDeletion extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -110,7 +110,7 @@ class SoftwareOperations extends Component {
   // submitDelete() {
   //   this.setState({ deleting: true });
   //   commitMutation({
-  //     mutation: SoftwareOperationsDeletionMutation,
+  //     mutation: NetworkDeletionMutation,
   //     variables: {
   //       id: this.props.id,
   //     },
@@ -123,7 +123,7 @@ class SoftwareOperations extends Component {
   //     onCompleted: () => {
   //       this.setState({ deleting: false });
   //       this.handleClose();
-  //       this.props.history.push('/dashboard/assets/software');
+  //       this.props.history.push('/dashboard/assets/network');
   //     },
   //   });
   // }
@@ -131,20 +131,20 @@ class SoftwareOperations extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
-      mutation: SoftwareOperationsDeletionDarkLightMutation,
+      mutation: NetworkDeletionDarkLightMutation,
       variables: {
         id: this.props.id,
       },
       onCompleted: (data) => {
         this.setState({ deleting: false });
-        console.log('SoftwareDeletionDarkLightMutationData', data);
+        console.log('NetworkDeletionDarkLightMutationData', data);
         this.handleClose();
-        this.props.history.push('/dashboard/assets/software');
+        this.props.history.push('/dashboard/assets/network');
       },
-      onError: (err) => console.log('SoftwareDeletionDarkLightMutationError', err),
+      onError: (err) => console.log('NetwrokDeletionDarkLightMutationError', err),
     });
     // commitMutation({
-    //   mutation: SoftwareOperationsDeletionDarkLightMutation,
+    //   mutation: NetworkDeletionDarkLightMutation,
     //   variables: {
     //     id: this.props.id,
     //   },
@@ -157,7 +157,7 @@ class SoftwareOperations extends Component {
     //   onCompleted: () => {
     //     this.setState({ deleting: false });
     //     this.handleClose();
-    //     this.props.history.push('/dashboard/assets/software');
+    //     this.props.history.push('/dashboard/assets/network');
     //   },
     // });
   }
@@ -167,23 +167,10 @@ class SoftwareOperations extends Component {
       classes,
       t,
       id,
-      handleOpenEdit,
       isAllselected,
     } = this.props;
     return (
       <div className={classes.container}>
-        <Tooltip title={t('Edit')}>
-          <Button
-            variant="contained"
-            onClick={handleOpenEdit}
-            className={classes.iconButton}
-            disabled={Boolean(!id)}
-            color="primary"
-            size="large"
-          >
-            <EditIcon fontSize="inherit"/>
-          </Button>
-        </Tooltip>
         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
           <Tooltip title={t('Delete')}>
           <Button
@@ -206,7 +193,7 @@ class SoftwareOperations extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this software?')}
+              {t('Do you want to delete this network?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -225,52 +212,12 @@ class SoftwareOperations extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <Drawer
-          open={this.state.displayEdit}
-          anchor="right"
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseEdit.bind(this)}
-        >
-          {/* <QueryRenderer
-            query={softwareEditionQuery}
-            variables={{ id }}
-            render={({ props }) => {
-              console.log('SoftwareEditionContainer', props);
-              if (props) {
-                return (
-                  <SoftwareEditionContainer
-                    software={props.threatActor}
-                    handleClose={this.handleCloseEdit.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          /> */}
-          <QR
-            environment={environmentDarkLight}
-            query={softwareEditionDarkLightQuery}
-            variables={{ id }}
-            render={({ error, props }) => {
-              console.log(`SoftwareEditionDarkLightQuery Error ${error} OR Props ${JSON.stringify(props)}`);
-              if (props) {
-                return (
-                  <SoftwareEditionContainer
-                    software={props.softwareAsset}
-                    handleClose={this.handleCloseEdit.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Drawer>
       </div>
     );
   }
 }
 
-SoftwareOperations.propTypes = {
+NetworkDeletion.propTypes = {
   id: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -282,4 +229,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(SoftwareOperations);
+)(NetworkDeletion);

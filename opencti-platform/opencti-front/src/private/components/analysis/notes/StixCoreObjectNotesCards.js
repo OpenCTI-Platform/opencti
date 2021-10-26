@@ -140,7 +140,8 @@ class StixCoreObjectNotesCardsContainer extends Component {
       t, classes, stixCoreObjectId, marginTop, data,
     } = this.props;
     const { open } = this.state;
-    const notes = R.pathOr([], ['notes', 'edges'], data.note);
+    const notes = R.pathOr([], ['stixCoreObject', 'notes', 'edges'], data);
+    console.log('notesData', notes);
     return (
       <div style={{ marginTop: marginTop || 40 }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -182,8 +183,8 @@ class StixCoreObjectNotesCardsContainer extends Component {
             </Typography>
           </AccordionSummary>
           <AccordionDetails style={{ width: '100%' }}>
-            Hello There This is the section for notes and components of notes */}
-            {/* <Formik
+            Hello There This is the section for notes and components of notes
+            <Formik
               enableReinitialize={true}
               initialValues={{
                 created: dayStartDate(),
@@ -259,8 +260,8 @@ class StixCoreObjectNotesCardsContainer extends Component {
                   </Grid>
                 </Form>
               )}
-            </Formik> */}
-          {/* </AccordionDetails>
+            </Formik>
+          </AccordionDetails>
         </Accordion> */}
         {/* <Accordion
           style={{ margin: `${notes.length > 0 ? '30' : '5'}px 0 30px 0` }}
@@ -364,34 +365,34 @@ StixCoreObjectNotesCardsContainer.propTypes = {
   t: PropTypes.func,
 };
 
-// export const stixCoreObjectNotesCardsQuery = graphql`
-//   query StixCoreObjectNotesCardsQuery($count: Int!, $id: String!) {
-//     ...StixCoreObjectNotesCards_data @arguments(count: $count, id: $id)
-//   }
-// `;
-
 export const stixCoreObjectNotesCardsQuery = graphql`
-  query StixCoreObjectNotesCardsQuery($id: String) {
-    note(id: $id) {
-      objectMarking {
-        edges {
-          node {
-            id
-            definition
-          }
-        }
-      }
-      notes {
-        edges {
-          node {
-            id
-            ...StixCoreObjectOrStixCoreRelationshipNoteCard_node
-          }
-        }
-      }
-    }
+  query StixCoreObjectNotesCardsQuery($count: Int!, $id: String!) {
+    ...StixCoreObjectNotesCards_data @arguments(count: $count, id: $id)
   }
 `;
+
+// export const stixCoreObjectNotesCardsQuery = graphql`
+//   query StixCoreObjectNotesCardsQuery($id: String) {
+//     note(id: $id) {
+//       objectMarking {
+//         edges {
+//           node {
+//             id
+//             definition
+//           }
+//         }
+//       }
+//       notes {
+//         edges {
+//           node {
+//             id
+//             ...StixCoreObjectOrStixCoreRelationshipNoteCard_node
+//           }
+//         }
+//       }
+//     }
+//   }
+// `;
 
 const StixCoreObjectNotesCards = createPaginationContainer(
   StixCoreObjectNotesCardsContainer,

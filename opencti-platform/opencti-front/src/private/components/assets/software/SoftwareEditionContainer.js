@@ -24,6 +24,9 @@ import { SubscriptionAvatars } from '../../../../components/Subscription';
 import SoftwareEditionOverview from './SoftwareEditionOverview';
 import SoftwareEditionDetails from './SoftwareEditionDetails';
 import StixDomainObjectAssetEditionOverview from '../../common/stix_domain_objects/StixDomainObjectAssetEditionOverview';
+import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 
 const styles = (theme) => ({
   container: {
@@ -281,78 +284,55 @@ class SoftwareEditionContainer extends Component {
                   </Tooltip>
                 </div>
               </div>
-              <Grid
-                container={true}
-                spacing={3}
-                classes={{ container: classes.gridContainer }}
-              >
-                <Grid item={true} xs={6}>
-                  {/* <SoftwareEditionOverview
+              <Form>
+                <Grid
+                  container={true}
+                  spacing={3}
+                  classes={{ container: classes.gridContainer }}
+                >
+                  <Grid item={true} xs={6}>
+                    {/* <SoftwareEditionOverview
                 software={software}
                 // enableReferences={this.props.enableReferences}
                 // context={editContext}
                 handleClose={handleClose.bind(this)}
               /> */}
-                  <StixDomainObjectAssetEditionOverview
-                    stixDomainObject={software}
-                    // enableReferences={this.props.enableReferences}
-                    // context={editContext}
-                    handleClose={handleClose.bind(this)}
-                  />
+                    <StixDomainObjectAssetEditionOverview
+                      stixDomainObject={software}
+                      // enableReferences={this.props.enableReferences}
+                      // context={editContext}
+                      handleClose={handleClose.bind(this)}
+                    />
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <SoftwareEditionDetails
+                      software={software}
+                      // enableReferences={this.props.enableReferences}
+                      // context={editContext}
+                      handleClose={handleClose.bind(this)}
+                    />
+                  </Grid>
+                </Grid>
+              </Form>
+              <Grid
+                container={true}
+                spacing={3}
+                classes={{ container: classes.gridContainer }}
+                style={{ marginTop: 25 }}
+              >
+                <Grid item={true} xs={6}>
+                  <StixCoreObjectExternalReferences stixCoreObjectId={software.id} />
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <SoftwareEditionDetails
-                    software={software}
-                    // enableReferences={this.props.enableReferences}
-                    // context={editContext}
-                    handleClose={handleClose.bind(this)}
-                  />
+                  <StixCoreObjectLatestHistory stixCoreObjectId={software.id} />
                 </Grid>
               </Grid>
+              <StixCoreObjectOrStixCoreRelationshipNotes
+                stixCoreObjectOrStixCoreRelationshipId={software.id}
+              />
             </>
           )}
         </Formik>
-        {/* <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-          >
-            <Close fontSize="small" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update a software')}
-          </Typography>
-          <SubscriptionAvatars context={editContext} />
-          <div className="clearfix" />
-        </div>
-        <div className={classes.container}>
-          <AppBar position="static" elevation={0} className={classes.appBar}>
-            <Tabs
-              value={this.state.currentTab}
-              onChange={this.handleChangeTab.bind(this)}
-            >
-              <Tab label={t('Overview')} />
-              <Tab label={t('Details')} />
-            </Tabs>
-          </AppBar>
-          {this.state.currentTab === 0 && (
-            <SoftwareEditionOverview
-              software={software}
-              enableReferences={this.props.enableReferences}
-              context={editContext}
-              handleClose={handleClose.bind(this)}
-            />
-          )}
-          {this.state.currentTab === 1 && (
-            <SoftwareEditionDetails
-              software={software}
-              enableReferences={this.props.enableReferences}
-              context={editContext}
-              handleClose={handleClose.bind(this)}
-            />
-          )}
-        </div> */}
       </div >
     );
   }

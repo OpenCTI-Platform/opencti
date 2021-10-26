@@ -174,8 +174,8 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
     } = this.props;
     const { expanded } = this.state;
     console.log('externalReferencesEdges', data);
-    // const externalReferencesEdges = data.stixCoreObject.externalReferences.edges;
-    const externalReferencesEdges = [data.externalReference];
+    const externalReferencesEdges = data.stixCoreObject.externalReferences.edges;
+    // const externalReferencesEdges = [data.externalReference];
     console.log('externalReferencesEdgesData', externalReferencesEdges);
     const expandable = externalReferencesEdges.length > 7;
     return (
@@ -190,8 +190,8 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
           <AddExternalReferences
             stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
             stixCoreObjectOrStixCoreRelationshipReferences={
-              // data.stixCoreObject.externalReferences.edges
-              data.externalReference
+              data.stixCoreObject.externalReferences.edges
+              // data.externalReference
             }
           />
         </Security>
@@ -199,10 +199,9 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {externalReferencesEdges.length > 0 ? (
             <List style={{ marginBottom: 0 }}>
-              {/* {R.take(expanded ? 200 : 7, externalReferencesEdges) */}
-              {externalReferencesEdges.map(
+              {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
                 (externalReferenceEdge) => {
-                  const externalReference = externalReferenceEdge;
+                  const externalReference = externalReferenceEdge.node;
                   console.log('externalReferenceData', externalReference);
                   const externalReferenceId = externalReference.external_id
                     ? `(${externalReference.external_id})`
@@ -428,49 +427,49 @@ StixCoreObjectExternalReferencesLinesContainer.propTypes = {
   relay: PropTypes.object,
 };
 
-// export const stixCoreObjectExternalReferencesLinesQuery = graphql`
-//   query StixCoreObjectExternalReferencesLinesQuery($count: Int!, $id: String!) {
-//     ...StixCoreObjectExternalReferencesLines_data
-//       @arguments(count: $count, id: $id)
-//   }
-// `;
-
 export const stixCoreObjectExternalReferencesLinesQuery = graphql`
-  query StixCoreObjectExternalReferencesLinesQuery($id: String!) {
-    externalReference(id: $id) {
-      id
-      source_name
-      description
-      url
-      hash
-      external_id
-      jobs(first: 100) {
-        id
-        timestamp
-        connector {
-          id
-          name
-        }
-        messages {
-          timestamp
-          message
-        }
-        errors {
-          timestamp
-          message
-        }
-        status
-      }
-      connectors(onlyAlive: false) {
-        id
-        connector_type
-        name
-        active
-        updated_at
-      }
-    }
+  query StixCoreObjectExternalReferencesLinesQuery($count: Int!, $id: String!) {
+    ...StixCoreObjectExternalReferencesLines_data
+      @arguments(count: $count, id: $id)
   }
 `;
+
+// export const stixCoreObjectExternalReferencesLinesQuery = graphql`
+//   query StixCoreObjectExternalReferencesLinesQuery($id: String!) {
+//     externalReference(id: $id) {
+//       id
+//       source_name
+//       description
+//       url
+//       hash
+//       external_id
+//       jobs(first: 100) {
+//         id
+//         timestamp
+//         connector {
+//           id
+//           name
+//         }
+//         messages {
+//           timestamp
+//           message
+//         }
+//         errors {
+//           timestamp
+//           message
+//         }
+//         status
+//       }
+//       connectors(onlyAlive: false) {
+//         id
+//         connector_type
+//         name
+//         active
+//         updated_at
+//       }
+//     }
+//   }
+// `;
 
 const StixCoreObjectExternalReferencesLines = createPaginationContainer(
   StixCoreObjectExternalReferencesLinesContainer,

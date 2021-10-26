@@ -26,7 +26,7 @@ import { FileExportOutline } from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
-import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
+import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
 import { truncate } from '../../utils/String';
 import TopBarMenu from '../../private/components/nav/TopBarMenu';
@@ -62,15 +62,17 @@ const styles = (theme) => ({
   views: {
     display: 'flex',
     float: 'right',
+    marginTop: '5px',
     padding: '10px',
   },
   cardsContainer: {
-    marginTop: 50,
+    marginTop: 10,
     paddingTop: 0,
   },
   iconButton: {
+    float: 'left',
     minWidth: '0px',
-    marginLeft: 15,
+    marginRight: 15,
     padding: '7px',
   },
   sortField: {
@@ -121,6 +123,7 @@ class ListCards extends Component {
       dataColumns,
       paginationOptions,
       OperationsComponent,
+      handleDisplayEdit,
       selectedElements,
       keyword,
       filters,
@@ -142,9 +145,9 @@ class ListCards extends Component {
         }
       >
         <div
-            className={classes.toolBar}
-            elevation={1}
-            style={{ backgroundColor: '#075AD333' }}
+          className={classes.toolBar}
+          elevation={1}
+          style={{ backgroundColor: '#075AD333' }}
         >
           <div className={classes.parameters}>
             <div style={{ float: 'left', marginRight: 20 }}>
@@ -164,10 +167,10 @@ class ListCards extends Component {
               ''
             )}
             {numberOfElements ? (
-                <div style={{ float: 'left', padding: '5px' }}>
-                  {t('Count:')}{' '}
-                  <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>
-                </div>
+              <div style={{ float: 'left', padding: '5px' }}>
+                {t('Count:')}{' '}
+                <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>
+              </div>
             ) : (
               ''
             )}
@@ -250,39 +253,46 @@ class ListCards extends Component {
           <div className={classes.views}>
             <div style={{ float: 'right' }}>
               {typeof handleChangeView === 'function' && (
-                OperationsComponent && (
-                  <div className={classes.iconButton} style={{ display: 'inline-block' }}>
-                    {React.cloneElement(OperationsComponent, {
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <Tooltip title={t('Edit')}>
+                    <Button
+                      variant="contained"
+                      onClick={handleDisplayEdit && handleDisplayEdit.bind(this)}
+                      className={classes.iconButton}
+                      disabled={Boolean(selectAll)}
+                      color="primary"
+                      size="large"
+                    >
+                      <Edit fontSize="inherit" />
+                    </Button>
+                  </Tooltip>
+                  <div style={{ display: 'inline-block' }}>
+                    {OperationsComponent && React.cloneElement(OperationsComponent, {
                       id: Object.entries(selectedElements || {}).length !== 0
                         && Object.entries(selectedElements)[0][0],
                       isAllselected: selectAll,
                     })}
                   </div>
-                )
-              )}
-              {typeof handleChangeView === 'function' && (
-                <Tooltip title={t('Create New')}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    startIcon={<AddCircleOutline />}
-                    onClick={handleNewCreation.bind(this)}
-                    color='primary'
-                    style={{ marginLeft: 15, marginTop: -30 }}
-                  >
-                    {t('New')}
-                  </Button>
-                </Tooltip>
-                // <div style={{ display: 'inline-block' }}>
-                //   {React.cloneElement(CreateItemComponent, { paginationOptions })}
-                // </div>
+                  <Tooltip title={t('Create New')}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      startIcon={<AddCircleOutline />}
+                      onClick={handleNewCreation && handleNewCreation.bind(this)}
+                      color='primary'
+                      style={{ marginTop: '-23px' }}
+                    >
+                      {t('New')}
+                    </Button>
+                  </Tooltip>
+                </Security>
               )}
               {typeof handleChangeView === 'function' && (
                 <Tooltip title={t('Lines view')}>
                   <IconButton
                     color="primary"
                     onClick={handleChangeView.bind(this, 'lines')}
-                    style={{ marginTop: -30 }}
+                    style={{ marginTop: '-23px' }}
                   >
                     <FormatListBulleted />
                   </IconButton>

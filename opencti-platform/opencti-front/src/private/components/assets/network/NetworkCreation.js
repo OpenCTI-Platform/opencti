@@ -26,8 +26,11 @@ import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixDomainObjectCreationOverview from '../../common/stix_domain_objects/StixDomainObjectCreationOverview';
+import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixDomainObjectAssetCreationOverview from '../../common/stix_domain_objects/StixDomainObjectAssetCreationOverview';
 import Loader from '../../../../components/Loader';
+import StixCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/StixCoreObjectAssetCreationExternalReferences';
 import NetworkCreationDetails from './NetworkCreationDetails';
 
 const styles = (theme) => ({
@@ -274,7 +277,7 @@ class NetworkCreation extends Component {
                   classes={{ container: classes.gridContainer }}
                 >
                   <Grid item={true} xs={6}>
-                    <StixDomainObjectCreationOverview
+                    <StixDomainObjectAssetCreationOverview
                       setFieldValue={setFieldValue}
                       values={values}
                     />
@@ -283,46 +286,24 @@ class NetworkCreation extends Component {
                     <NetworkCreationDetails setFieldValue={setFieldValue} />
                   </Grid>
                 </Grid>
-                {/* <Grid
-                  container={true}
-                  spacing={3}
-                  classes={{ container: classes.gridContainer }}
-                  style={{ marginTop: 25 }}
-                >
-                  <Grid item={true} xs={6}>
-                    <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-                      stixObjectOrStixRelationshipId={device.id}
-              stixObjectOrStixRelationshipLink={`/dashboard/assets/devices/${device.id}/knowledge`}
-                    />
-                  </Grid>
-                  <Grid item={true} xs={6}>
-                    <StixCoreObjectOrStixCoreRelationshipLastReports
-                      stixCoreObjectOrStixCoreRelationshipId={device.id}
-                    />
-                  </Grid>
-                </Grid> */}
-                {/* <Grid
-                  container={true}
-                  spacing={3}
-                  classes={{ container: classes.gridContainer }}
-                  style={{ marginTop: 25 }}
-                > */}
-                {/* <Grid item={true} xs={6}>
-                    <StixCoreObjectExternalReferences
-                      stixCoreObjectId={device.id}
-                    />
-                  </Grid> */}
-                {/* <Grid item={true} xs={6}>
-                    <StixCoreObjectLatestHistory stixCoreObjectId={device.id} />
-                  </Grid>
-                </Grid>
-                <StixCoreObjectOrStixCoreRelationshipNotes
-                  stixCoreObjectOrStixCoreRelationshipId={device.id}
-                /> */}
-                {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <DeviceEdition deviceId={device.id} />
-                </Security> */}
               </Form>
+              <Grid
+                container={true}
+                spacing={3}
+                classes={{ container: classes.gridContainer }}
+                style={{ marginTop: 25 }}
+              >
+                <Grid item={true} xs={6}>
+                  {/* <StixCoreObjectExternalReferences
+                    stixCoreObjectId={device.id}
+                  /> */}
+                  <StixCoreObjectAssetCreationExternalReferences />
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <StixCoreObjectLatestHistory />
+                </Grid>
+              </Grid>
+              <StixCoreObjectOrStixCoreRelationshipNotes />
             </>
           )}
         </Formik>
