@@ -29,6 +29,7 @@ class DevicesLines extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
+    console.log('TotalCount', this.props.data);
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -61,6 +62,7 @@ DevicesLines.propTypes = {
   data: PropTypes.object,
   relay: PropTypes.object,
   threatActors: PropTypes.object,
+  computingDeviceAssetList: PropTypes.object,
   initialLoading: PropTypes.bool,
   onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
@@ -156,7 +158,6 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      console.log('forward', props.data);
       return props.data && props.data.computingDeviceAssetList;
     },
     getFragmentVariables(prevVars, totalCount) {

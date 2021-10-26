@@ -22,7 +22,7 @@ import NetworkLines, {
   networkLinesdarkLightRootQuery,
 } from './network/NetworkLines';
 import NetworkCreation from './network/NetworkCreation';
-import NetworkOperations from './network/NetworkOperations';
+import NetworkDeletion from './network/NetworkDeletion';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 
@@ -44,6 +44,7 @@ class Network extends Component {
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
       selectAll: false,
+      displayEdit: false,
       openNetworkCreation: false,
     };
   }
@@ -80,6 +81,10 @@ class Network extends Component {
   handleNetworkCreation() {
     console.log('Network Created successfully');
     this.setState({ openNetworkCreation: true });
+  }
+
+  handleDisplayEdit() {
+    this.setState({ displayEdit: !this.state.displayEdit });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -178,7 +183,8 @@ class Network extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleNewCreation={this.handleNetworkCreation.bind(this)}
-        OperationsComponent={<NetworkOperations />}
+        handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+        OperationsComponent={<NetworkDeletion />}
         selectedElements={selectedElements}
         selectAll={selectAll}
         CreateItemComponent={<NetworkCreation />}
@@ -290,9 +296,10 @@ class Network extends Component {
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
         handleNewCreation={this.handleNetworkCreation.bind(this)}
+        handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        OperationsComponent={<NetworkOperations />}
+        OperationsComponent={<NetworkDeletion />}
         CreateItemComponent={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <NetworkCreation />
@@ -366,13 +373,16 @@ class Network extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
     };
+    const { location } = this.props;
     return (
       <div>
-        {view === 'cards' && !openNetworkCreation ? this.renderCards(paginationOptions) : ''}
-        {view === 'lines' && !openNetworkCreation ? this.renderLines(paginationOptions) : ''}
-        {openNetworkCreation && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <NetworkCreation paginationOptions={paginationOptions} history={this.props.history} />
-        </Security>}
+        {view === 'cards' && (!openNetworkCreation && !location.openNewCreation) ? this.renderCards(paginationOptions) : ''}
+        {view === 'lines' && (!openNetworkCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
+        {(openNetworkCreation || location.openNewCreation) && (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <NetworkCreation paginationOptions={paginationOptions} history={this.props.history} />
+          </Security>
+        )}
       </div>
     );
   }

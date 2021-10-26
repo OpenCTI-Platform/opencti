@@ -182,8 +182,8 @@ class StixCoreObjectNotesCardsContainer extends Component {
             </Typography>
           </AccordionSummary>
           <AccordionDetails style={{ width: '100%' }}>
-            Hello There This is the section for notes and components of notes */}
-            {/* <Formik
+            Hello There This is the section for notes and components of notes
+            <Formik
               enableReinitialize={true}
               initialValues={{
                 created: dayStartDate(),
@@ -259,8 +259,8 @@ class StixCoreObjectNotesCardsContainer extends Component {
                   </Grid>
                 </Form>
               )}
-            </Formik> */}
-          {/* </AccordionDetails>
+            </Formik>
+          </AccordionDetails>
         </Accordion> */}
         {/* <Accordion
           style={{ margin: `${notes.length > 0 ? '30' : '5'}px 0 30px 0` }}
@@ -369,6 +369,29 @@ export const stixCoreObjectNotesCardsQuery = graphql`
     ...StixCoreObjectNotesCards_data @arguments(count: $count, id: $id)
   }
 `;
+
+// export const stixCoreObjectNotesCardsQuery = graphql`
+//   query StixCoreObjectNotesCardsQuery($id: String) {
+//     note(id: $id) {
+//       objectMarking {
+//         edges {
+//           node {
+//             id
+//             definition
+//           }
+//         }
+//       }
+//       notes {
+//         edges {
+//           node {
+//             id
+//             ...StixCoreObjectOrStixCoreRelationshipNoteCard_node
+//           }
+//         }
+//       }
+//     }
+//   }
+// `;
 
 const StixCoreObjectNotesCards = createPaginationContainer(
   StixCoreObjectNotesCardsContainer,

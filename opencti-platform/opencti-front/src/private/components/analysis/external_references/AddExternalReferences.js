@@ -28,6 +28,8 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { Add, Close } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
+import { QueryRenderer as QR } from 'react-relay';
+import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
@@ -52,6 +54,7 @@ const styles = (theme) => ({
     padding: 0,
   },
   dialog: {
+    backgroundColor: 'red',
     overflow: 'hidden',
     height: '50vh',
   },
@@ -209,14 +212,14 @@ class AddExternalReferences extends Component {
     };
     return (
       <div>
-      <IconButton
+        <IconButton
           color="secondary"
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
           classes={{ root: classes.createButton }}
         >
           <Add fontSize="small" />
-      </IconButton>
+        </IconButton>
       <div classes={{ root: classes.dialogRoot }}>
       <Dialog
         maxWidth='md'
@@ -236,9 +239,9 @@ class AddExternalReferences extends Component {
             <DialogTitle style={{ padding: 10 }}>{t('Add External References')}</DialogTitle>
             {/* <CardHeader title="Add External Refrences"/> */}
               <CardActions sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <TextField style={{ width: 495 }} InputProps = {{
+                <TextField style={{ width: 495 }} InputProps={{
                   endAdornment: (
-                    <InputAdornment position = "end" >
+                    <InputAdornment position="end" >
                       <ExternalReferenceCreation
                         display={this.state.open}
                         contextual={true}
@@ -248,7 +251,7 @@ class AddExternalReferences extends Component {
                       />
                     </InputAdornment>
                   ),
-                }}/>
+                }} />
                 <div style={{ float: 'right', marginLeft: '40px' }}>
                   <Button style={{ marginLeft: '10px', marginRight: '10px' }} onClick={this.handleClose.bind(this)} variant="outlined" >{t('Cancel')}</Button>
                   <Button variant="contained" color="primary">{t('Add')}</Button>
@@ -258,98 +261,72 @@ class AddExternalReferences extends Component {
           </div>
           <Collapse sx={{ maxWidth: '500px', borderRadius: 0 }} in={this.state.expanded} timeout="auto" unmountOnExit>
             <div className={ classes.collapse }>
-              <QueryRenderer
-                query={addExternalReferencesLinesQuery}
-                variables={{
-                  search: this.state.search,
-                  count: 20,
-                }}
-                render={({ props }) => {
-                  if (props) {
+                <QR
+                  environment={QueryRendererDarkLight}
+                  query={addExternalReferencesLinesQuery}
+                  variables={{
+                    search: this.state.search,
+                    count: 20,
+                  }}
+                  render={({ props }) => {
+                    if (props) {
+                      return (
+                        <AddExternalReferencesLines
+                          stixCoreObjectOrStixCoreRelationshipId={
+                            stixCoreObjectOrStixCoreRelationshipId
+                          }
+                          stixCoreObjectOrStixCoreRelationshipReferences={
+                            stixCoreObjectOrStixCoreRelationshipReferences
+                          }
+                          data={props}
+                          paginationOptions={paginationOptions}
+                          open={this.state.open}
+                          search={this.state.search}
+                        />
+                      );
+                    }
                     return (
-                      <AddExternalReferencesLines
-                        stixCoreObjectOrStixCoreRelationshipId={
-                          stixCoreObjectOrStixCoreRelationshipId
-                        }
-                        stixCoreObjectOrStixCoreRelationshipReferences={
-                          stixCoreObjectOrStixCoreRelationshipReferences
-                        }
-                        data={props}
-                        paginationOptions={paginationOptions}
-                        open={this.state.open}
-                        search={this.state.search}
-                      />
-                    );
-                  }
-                  return (
-                    <List>
-                      {Array.from(Array(20), (e, i) => (
-                        <ListItem key={i} divider={true} button={false}>
-                          <ListItemIcon>
-                            <Skeleton
-                              animation="wave"
-                              variant="circle"
-                              width={30}
-                              height={30}
+                      <List>
+                        {Array.from(Array(20), (e, i) => (
+                          <ListItem key={i} divider={true} button={false}>
+                            <ListItemIcon>
+                              <Skeleton
+                                animation="wave"
+                                variant="circle"
+                                width={30}
+                                height={30}
+                              />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={
+                                <Skeleton
+                                  animation="wave"
+                                  variant="rect"
+                                  width="90%"
+                                  height={15}
+                                  style={{ marginBottom: 10 }}
+                                />
+                              }
+                              secondary={
+                                <Skeleton
+                                  animation="wave"
+                                  variant="rect"
+                                  width="90%"
+                                  height={15}
+                                />
+                              }
                             />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={
-                              <Skeleton
-                                animation="wave"
-                                variant="rect"
-                                width="90%"
-                                height={15}
-                                style={{ marginBottom: 10 }}
-                              />
-                            }
-                            secondary={
-                              <Skeleton
-                                animation="wave"
-                                variant="rect"
-                                width="90%"
-                                height={15}
-                              />
-                            }
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
-                  );
-                }}
-              />
-            {/* <CardContent fontSize="large" style={{ display: 'flex' }}>
-              <Checkbox />
-              <Typography style={{ marginLeft: '20px' }} >
-                Heat oil in a paella pan or a large.
-                <Typography variant="subtitle2">
-                    https://Loremipsumfasdfasdfasdolorsit.com
-                </Typography>
-              </Typography>
-            </CardContent>
-            <CardContent fontSize="large" style={{ display: 'flex' }}>
-              <Checkbox />
-              <Typography style={{ marginLeft: '20px' }} >
-                Heat oil in a paella pan or a large.
-                <Typography variant="subtitle2">
-                  https://Loremipsumdfasdfewfsdfsafolorsit.com
-                </Typography>
-              </Typography>
-            </CardContent>
-            <CardContent fontSize="large" style={{ display: 'flex' }}>
-              <Checkbox />
-              <Typography style={{ marginLeft: '20px' }} >
-                Heat oil in a paella pan or a large.
-                <Typography variant="subtitle2">
-                    https://Loremipsumdfsfawefggdsgdsfgolorsit.com
-                </Typography>
-              </Typography>
-            </CardContent> */}
-            </div>
-          </Collapse>
-        </Dialog>
-      </div>
-      {/* <Dialog
+                          </ListItem>
+                        ))}
+                      </List>
+                    );
+                  }}
+                />
+              </div>
+            </Collapse>
+          </Dialog>
+        </div>
+        {/* <Dialog
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           fullWidth={true}
@@ -461,7 +438,7 @@ class AddExternalReferences extends Component {
                 );
               }}
             /> */}
-            {/* <CardContent fontSize="large" style={{ display: 'flex' }}>
+        {/* <CardContent fontSize="large" style={{ display: 'flex' }}>
                 <Checkbox />
                 <Typography style={{ marginLeft: '20px' }} >
                     Heat oil in a paella pan or a large.
@@ -489,7 +466,7 @@ class AddExternalReferences extends Component {
                 </Typography>
               </CardContent>
               <hr /> */}
-          {/* </Collapse> */}
+        {/* </Collapse> */}
         {/* </Card> */}
         {/* <Drawer
           open={this.state.open}
@@ -588,7 +565,7 @@ class AddExternalReferences extends Component {
               }}
             />
           </DialogContent> */}
-          {/* <DialogContent classes={{ root: classes.dialog }}>
+        {/* <DialogContent classes={{ root: classes.dialog }}>
           </DialogContent>
           <DialogActions>
             <Button
@@ -606,7 +583,7 @@ class AddExternalReferences extends Component {
               {t('Create')}
             </Button>
           </DialogActions> */}
-          {/* <div className={classes.header}>
+        {/* <div className={classes.header}>
             <IconButton
               aria-label="Close"
               className={classes.closeButton}
@@ -625,9 +602,9 @@ class AddExternalReferences extends Component {
               />
             </div>
           </div> */}
-          {/* <div className={classes.container}> */}
-          {/* </div> */}
-          {/* </Dialog> */}
+        {/* <div className={classes.container}> */}
+        {/* </div> */}
+        {/* </Dialog> */}
         {/* </Drawer> */}
         {/* </Dialog> */}
       </div>

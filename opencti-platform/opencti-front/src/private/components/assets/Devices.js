@@ -24,7 +24,7 @@ import DevicesLines, {
 import DeviceCreation from './devices/DeviceCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
-import DeviceOperations from './devices/DeviceOperations';
+import DeviceDeletion from './devices/DeviceDeletion';
 
 class Devices extends Component {
   constructor(props) {
@@ -87,6 +87,13 @@ class Devices extends Component {
 
   handleDeviceCreation() {
     this.setState({ openDeviceCreation: true });
+  }
+
+  handleDisplayEdit() {
+    this.props.history.push({
+      pathname: `/dashboard/assets/devices/${'id'}`,
+      state: { openNewCreation: true },
+    });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -186,10 +193,11 @@ class Devices extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleNewCreation={this.handleDeviceCreation.bind(this)}
+        handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
         CreateItemComponent={<DeviceCreation />}
-        OperationsComponent={<DeviceOperations />}
+        OperationsComponent={<DeviceDeletion />}
         openExports={openExports}
         exportEntityType="Device"
         keyword={searchTerm}
@@ -310,9 +318,10 @@ class Devices extends Component {
         handleDeleteElements={this.handleDeleteElements.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
         handleNewCreation={this.handleDeviceCreation.bind(this)}
+        handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         CreateItemComponent={<DeviceCreation />}
-        OperationsComponent={<DeviceOperations />}
+        OperationsComponent={<DeviceDeletion />}
         openExports={openExports}
         selectAll={selectAll}
         exportEntityType="Device"
@@ -385,13 +394,16 @@ class Devices extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
     };
+    const { location } = this.props;
     return (
       <div>
-        {view === 'cards' && !openDeviceCreation ? this.renderCards(paginationOptions) : ''}
-        {view === 'lines' && !openDeviceCreation ? this.renderLines(paginationOptions) : ''}
-        {openDeviceCreation && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <DeviceCreation paginationOptions={paginationOptions} history={this.props.history} />
-        </Security>}
+        {view === 'cards' && (!openDeviceCreation && !location.openNewCreation) ? this.renderCards(paginationOptions) : ''}
+        {view === 'lines' && (!openDeviceCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
+        {((openDeviceCreation || location.openNewCreation) && (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <DeviceCreation paginationOptions={paginationOptions} history={this.props.history} />
+            </Security>
+        ))}
       </div>
     );
   }

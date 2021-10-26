@@ -20,6 +20,9 @@ import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } fr
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
+import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import DeviceEditionOverview from './DeviceEditionOverview';
 import DeviceEditionDetails from './DeviceEditionDetails';
@@ -57,18 +60,6 @@ const styles = (theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 });
 
@@ -325,17 +316,11 @@ class DeviceEditionContainer extends Component {
                   classes={{ container: classes.gridContainer }}
                 >
                   <Grid item={true} xs={6}>
-                    {/* <DeviceEditionOverview
-                device={device}
-                // enableReferences={this.props.enableReferences}
-                // context={editContext}
-                handleClose={handleClose.bind(this)}
-              /> */}
                     <StixDomainObjectAssetEditionOverview
                       stixDomainObject={device}
-                      // enableReferences={this.props.enableReferences}
-                      // context={editContext}
-                      handleClose={handleClose.bind(this)}
+                    // enableReferences={this.props.enableReferences}
+                    // context={editContext}
+                    // handleClose={handleClose.bind(this)}
                     />
                   </Grid>
                   <Grid item={true} xs={6}>
@@ -348,31 +333,24 @@ class DeviceEditionContainer extends Component {
                   </Grid>
                 </Grid>
               </Form>
-              {/* <AppBar position="static" elevation={0} className={classes.appBar}>
-            <Tabs
-              value={this.state.currentTab}
-              onChange={this.handleChangeTab.bind(this)}
-            >
-              <Tab label={t('Overview')} />
-              <Tab label={t('Details')} />
-            </Tabs>
-          </AppBar>
-          {this.state.currentTab === 0 && (
-            <DeviceEditionOverview
-              device={this.props.device}
-              enableReferences={this.props.enableReferences}
-              context={editContext}
-              handleClose={handleClose.bind(this)}
-            />
-          )}
-          {this.state.currentTab === 1 && (
-            <DeviceEditionDetails
-              device={this.props.device}
-              enableReferences={this.props.enableReferences}
-              context={editContext}
-              handleClose={handleClose.bind(this)}
-            />
-          )} */}
+              <Grid
+                container={true}
+                spacing={3}
+                classes={{ container: classes.gridContainer }}
+                style={{ marginTop: 25 }}
+              >
+                <Grid item={true} xs={6}>
+                  <StixCoreObjectExternalReferences
+                    stixCoreObjectId={device.id}
+                  />
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <StixCoreObjectLatestHistory stixCoreObjectId={device.id} />
+                </Grid>
+              </Grid>
+              <StixCoreObjectOrStixCoreRelationshipNotes
+                stixCoreObjectOrStixCoreRelationshipId={device.id}
+              />
             </>
           )}
         </Formik>

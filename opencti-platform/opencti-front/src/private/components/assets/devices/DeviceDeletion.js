@@ -57,21 +57,21 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const DeviceOperationsDeletionMutation = graphql`
-  mutation DeviceOperationsDeletionMutation($id: ID!) {
+const DeviceDeletionMutation = graphql`
+  mutation DeviceDeletionMutation($id: ID!) {
     threatActorEdit(id: $id) {
       delete
     }
   }
 `;
 
-const DeviceOperationsDeletionDarkLightMutation = graphql`
-  mutation DeviceOperationsDeletionDarkLightMutation($id: ID!) {
+const DeviceDeletionDarkLightMutation = graphql`
+  mutation DeviceDeletionDarkLightMutation($id: ID!) {
   deleteComputingDeviceAsset(id: $id)
 }
 `;
 
-class DeviceOperations extends Component {
+class DeviceDeletion extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -111,7 +111,7 @@ class DeviceOperations extends Component {
   // submitDelete() {
   //   this.setState({ deleting: true });
   //   commitMutation({
-  //     mutation: DeviceOperationsDeletionMutation,
+  //     mutation: DeviceDeletionMutation,
   //     variables: {
   //       id: this.props.id,
   //     },
@@ -132,7 +132,7 @@ class DeviceOperations extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
-      mutation: DeviceOperationsDeletionDarkLightMutation,
+      mutation: DeviceDeletionDarkLightMutation,
       variables: {
         id: this.props.id,
       },
@@ -145,7 +145,7 @@ class DeviceOperations extends Component {
       onError: (err) => console.log('DeviceDeletionDarkLightMutationError', err),
     });
     // commitMutation({
-    //   mutation: DeviceOperationsDeletionDarkLightMutation,
+    //   mutation: DeviceDeletionDarkLightMutation,
     //   variables: {
     //     id: this.props.id,
     //   },
@@ -169,34 +169,21 @@ class DeviceOperations extends Component {
       t,
       id,
       isAllselected,
-      handleOpenEdit,
     } = this.props;
     console.log('DarkLightID', Boolean(isAllselected));
     return (
       <div className={classes.container}>
-        <Tooltip title={t('Edit')}>
-          <Button
-            variant="contained"
-            onClick={handleOpenEdit}
-            className={classes.iconButton}
-            disabled={Boolean(!id)}
-            color="primary"
-            size="large"
-          >
-            <EditIcon fontSize="inherit"/>
-          </Button>
-        </Tooltip>
         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
           <Tooltip title={t('Delete')}>
-          <Button
-            variant="contained"
-            onClick={this.handleOpenDelete.bind(this)}
-            className={classes.iconButton}
-            disabled={Boolean(!id) && Boolean(!isAllselected)}
-            color="primary"
-            size="large"
-          >
-              <DeleteIcon fontSize="inherit"/>
+            <Button
+              variant="contained"
+              onClick={this.handleOpenDelete.bind(this)}
+              className={classes.iconButton}
+              disabled={Boolean(!id) && Boolean(!isAllselected)}
+              color="primary"
+              size="large"
+            >
+              <DeleteIcon fontSize="inherit" />
             </Button>
           </Tooltip>
         </Security>
@@ -227,54 +214,12 @@ class DeviceOperations extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        {this.state.displayEdit
-          && <div
-                open={this.state.displayEdit}
-                anchor="right"
-                classes={{ paper: classes.drawerPaper }}
-                onClose={this.handleCloseEdit.bind(this)}
-              >
-            {/* <QueryRenderer
-              query={deviceEditionQuery}
-              variables={{ id }}
-              render={({ props }) => {
-                console.log('DeviceEditionContainer', props);
-                if (props) {
-                  return (
-                    <DeviceEditionContainer
-                      device={props.threatActor}
-                      handleClose={this.handleCloseEdit.bind(this)}
-                    />
-                  );
-                }
-                return <Loader variant="inElement" />;
-              }}
-            /> */}
-            <QR
-              environment={environmentDarkLight}
-              query={deviceEditionDarkLightQuery}
-              variables={{ id }}
-              render={({ error, props }) => {
-                console.log(`DeviceEditionDarkLightQuery Error ${error} OR Props ${JSON.stringify(props)}`);
-                if (props) {
-                  return (
-                    <DeviceEditionContainer
-                      device={props.computingDeviceAsset}
-                      handleClose={this.handleCloseEdit.bind(this)}
-                    />
-                  );
-                }
-                return <Loader variant="inElement" />;
-              }}
-            />
-          </div>
-        }
       </div>
     );
   }
 }
 
-DeviceOperations.propTypes = {
+DeviceDeletion.propTypes = {
   id: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -286,4 +231,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(DeviceOperations);
+)(DeviceDeletion);

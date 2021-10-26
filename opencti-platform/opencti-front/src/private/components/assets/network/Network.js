@@ -9,12 +9,12 @@ import inject18n from '../../../../components/i18n';
 import NetworkDetails from './NetworkDetails';
 import NetworkEdition from './NetworkEdition';
 import NetworkPopover from './NetworkPopover';
-import NetworkOperations from './NetworkOperations';
+import NetworkDeletion from './NetworkDeletion';
 import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectAssetHeader from '../../common/stix_domain_objects/StixDomainObjectAssetHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
+import StixDomainObjectAssetOverview from '../../common/stix_domain_objects/StixDomainObjectAssetOverview';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
@@ -32,27 +32,34 @@ class NetworkComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      openEdit: false,
+      displayEdit: false,
     };
   }
 
-  handleToggleEdit() {
-    this.setState({ openEdit: !this.state.openEdit });
+  handleDisplayEdit() {
+    this.setState({ displayEdit: !this.state.displayEdit });
+  }
+
+  handleOpenNewCreation() {
+    this.props.history.push({
+      pathname: '/dashboard/assets/network',
+      openNewCreation: true,
+    });
   }
 
   render() {
     const { classes, network, history } = this.props;
     return (
       <>
-        {!this.state.openEdit ? (
+        {!this.state.displayEdit ? (
           <div className={classes.container}>
-            <StixDomainObjectHeader
-              openEdit={() => this.setState({ openEdit: !this.state.openEdit })}
+            <StixDomainObjectAssetHeader
               stixDomainObject={network}
               history={history}
               PopoverComponent={<NetworkPopover />}
-              handleToggleEdit={this.handleToggleEdit.bind(this)}
-              OperationsComponent={<NetworkOperations />}
+              handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+              handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
+              OperationsComponent={<NetworkDeletion />}
             />
             <Grid
               container={true}
@@ -61,7 +68,7 @@ class NetworkComponent extends Component {
             >
               <>
                 <Grid item={true} xs={6}>
-                  <StixDomainObjectOverview stixDomainObject={network} />
+                  <StixDomainObjectAssetOverview stixDomainObject={network} />
                 </Grid>
                 <Grid item={true} xs={6}>
                   <NetworkDetails network={network} />

@@ -34,7 +34,7 @@ class AssetType extends Component {
         helperText={helperText}
       >
         <MenuItem key="physical-devices" value="physical-devices">
-           {t('Physical Devices')}
+           {t('Physical Device')}
         </MenuItem>
         <MenuItem key="network" value="network">
             {t('Network')}
