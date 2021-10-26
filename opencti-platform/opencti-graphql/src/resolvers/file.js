@@ -1,4 +1,4 @@
-import { deleteFile, filesListing } from '../database/minio';
+import { deleteFile, filesListing } from '../database/s3';
 import { askJobImport, uploadImport } from '../domain/file';
 import { worksForSource } from '../domain/work';
 

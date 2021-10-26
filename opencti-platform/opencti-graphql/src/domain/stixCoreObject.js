@@ -45,7 +45,7 @@ import { isStixRelationship } from '../schema/stixRelationship';
 import { connectorsForExport } from './connector';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { createWork } from './work';
-import { pushToConnector } from '../database/rabbitmq';
+import { pushToConnector } from '../database/amqp';
 import { now } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 

@@ -192,7 +192,7 @@ type OverviewMetrics {
   queue_totals: QueueTotals
   message_stats: MessagesStats
 }
-type RabbitMQMetrics {
+type AMQPMetrics {
   consumers: String
   queues: [QueueMetrics]
   overview: OverviewMetrics
@@ -932,6 +932,7 @@ type User implements BasicObject & InternalObject {
   language: String
   external: Boolean
   dashboard: String
+  access_token: String
   roles: [Role]!
   capabilities: [Capability]!
   groups: GroupConnection
@@ -1043,7 +1044,7 @@ input RegisterConnectorInput {
   auto: Boolean
   only_contextual: Boolean
 }
-type RabbitMQConnection {
+type AMQPConnection {
   host: String!
   use_ssl: Boolean!
   ca: [String]
@@ -1052,7 +1053,7 @@ type RabbitMQConnection {
   pass: String!
 }
 type ConnectorConfig {
-  connection: RabbitMQConnection!
+  connection: AMQPConnection!
   listen: String!
   listen_exchange: String!
   push: String!
@@ -8316,7 +8317,7 @@ type Query {
   platform_theme: String
   about: AppInfo @auth(for: [SETTINGS])
   logsWorkerConfig: LogsWorkerConfig @auth(for: [MODULES])
-  rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: [MODULES])
+  amqpMetrics(prefix: String): AMQPMetrics @auth(for: [MODULES])
   elasticSearchMetrics: ElasticSearchMetrics @auth(for: [MODULES])
   logs(
     first: Int

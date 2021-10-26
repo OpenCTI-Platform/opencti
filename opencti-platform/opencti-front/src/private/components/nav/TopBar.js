@@ -158,7 +158,10 @@ const TopBar = ({
     commitMutation({
       mutation: logoutMutation,
       variables: {},
-      onCompleted: () => history.push('/'),
+      onCompleted: () => {
+        history.push('/');
+        localStorage.removeItem('token');
+      },
     });
   };
   const handleSearch = (searchKeyword) => {

@@ -26,7 +26,7 @@ import {
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { filesListing } from '../database/minio';
+import { filesListing } from '../database/s3';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions } from '../schema/stixDomainObject';
 

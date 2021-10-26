@@ -25,7 +25,7 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from './rabbitmq';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from './amqp';
 import conf from '../config/conf';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';

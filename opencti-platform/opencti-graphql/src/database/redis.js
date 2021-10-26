@@ -17,7 +17,7 @@ import {
 } from './utils';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './amqp';
 import { buildStixData, updateInputsToPatch } from './stix';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { now, utcDate } from '../utils/format';

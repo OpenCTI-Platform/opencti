@@ -27,7 +27,7 @@ import {
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { stixCoreRelationships } from '../domain/stixCoreObject';
-import { filesListing } from '../database/minio';
+import { filesListing } from '../database/s3';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { complexAttributeToApiFormat } from '../schema/fieldDataAdapter';
 import { stixCyberObservableOptions } from '../schema/stixCyberObservable';

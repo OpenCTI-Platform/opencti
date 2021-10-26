@@ -231,7 +231,7 @@ class ConnectorsStatusComponent extends Component {
     const {
       classes, t, n, nsdt, data,
     } = this.props;
-    const { queues } = data.rabbitMQMetrics;
+    const { queues } = data.amqpMetrics;
     const connectors = map(
       (i) => assoc(
         'messages',
@@ -421,22 +421,22 @@ const ConnectorsStatus = createRefetchContainer(
             push_exchange
           }
         }
-        rabbitMQMetrics {
-          queues {
-            name
-            messages
-            messages_ready
-            messages_unacknowledged
-            consumers
-            idle_since
-            message_stats {
-              ack
-              ack_details {
-                rate
-              }
-            }
-          }
-        }
+        # amqpMetrics {
+        #   queues {
+        #     name
+        #     messages
+        #     messages_ready
+        #     messages_unacknowledged
+        #     consumers
+        #     idle_since
+        #     message_stats {
+        #       ack
+        #       ack_details {
+        #         rate
+        #       }
+        #     }
+        #   }
+        # }
       }
     `,
   },

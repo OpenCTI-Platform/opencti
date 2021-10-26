@@ -4,3 +4,6 @@
 .mypy_cache
 .venv
 venv
+**/.env
+docker/graphql/node_modules
+.vscode

@@ -1,14 +1,43 @@
-import { GraphQLDateTime } from 'graphql-iso-date';
-import { mergeResolvers } from 'merge-graphql-schemas';
+//import { mergeResolvers } from 'merge-graphql-schemas';
+import { mergeResolvers } from '@graphql-tools/merge';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { constraintDirective } from 'graphql-constraint-directive';
+import {
+  GraphQLDateTime,
+  EmailAddressTypeDefinition,
+  EmailAddressResolver,
+  IPv4Definition,
+  IPv4Resolver,
+  IPv6Definition,
+  IPv6Resolver,
+  LatitudeDefinition,
+  LatitudeResolver,
+  LongitudeDefinition,
+  LongitudeResolver,
+  MACDefinition,
+  MACResolver,
+  PhoneNumberTypeDefinition,
+  PhoneNumberResolver,
+  PortDefinition,
+  PortResolver,
+  PositiveIntTypeDefinition,
+  PositiveIntResolver,
+  PostalCodeTypeDefinition,
+  PostalCodeResolver,
+  URLTypeDefinition,
+  URLResolver,
+  VoidTypeDefinition,
+  VoidResolver,
+} from 'graphql-scalars';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
 import attributeResolvers from '../resolvers/attribute';
 import workspaceResolvers from '../resolvers/workspace';
 import subTypeResolvers from '../resolvers/subType';
 import labelResolvers from '../resolvers/label';
-import rabbitmqMetricsResolvers from '../resolvers/rabbitmqMetrics';
+import amqpMetricsResolvers from '../resolvers/amqpMetrics';
 import elasticSearchMetricsResolvers from '../resolvers/elasticSearchMetrics';
 import internalObjectResolvers from '../resolvers/internalObject';
 import stixObjectOrStixRelationshipResolvers from '../resolvers/stixObjectOrStixRelationship';
@@ -52,10 +81,9 @@ import observedDataResolvers from '../resolvers/observedData';
 import opinionResolvers from '../resolvers/opinion';
 import indicatorResolvers from '../resolvers/indicator';
 import incidentResolvers from '../resolvers/incident';
-import AuthDirectives, { AUTH_DIRECTIVE } from './authDirective';
+import { authDirectiveV2 } from './authDirective';
 import connectorResolvers from '../resolvers/connector';
 import fileResolvers from '../resolvers/file';
-import typeDefs from '../../config/schema/opencti.graphql';
 import organizationOrIndividualResolvers from '../resolvers/organizationOrIndividual';
 import taxiiResolvers from '../resolvers/taxii';
 import taskResolvers from '../resolvers/task';
@@ -65,9 +93,28 @@ import statusResolvers from '../resolvers/status';
 import ruleResolvers from '../resolvers/rule';
 import stixResolvers from '../resolvers/stix';
 
+// Cyio Extensions to support merged graphQL schema
+import typeDefs from '../cyio/schema/typeDefs';
+
+const {authDirectiveTransformer } = authDirectiveV2();
+
 const createSchema = () => {
+  const openctiTypeDefs = readFileSync(resolve('./config/schema/opencti.graphql'), 'utf8');
+
   const globalResolvers = {
     DateTime: GraphQLDateTime,
+    EmailAddress: EmailAddressResolver,
+    IPv4: IPv4Resolver,
+    IPv6: IPv6Resolver,
+    Latitude: LatitudeResolver,
+    Longitude: LongitudeResolver,
+    MAC: MACResolver,
+    PhoneNumber: PhoneNumberResolver,
+    Port: PortResolver,
+    PositiveInt: PositiveIntResolver,
+    PostalCode: PostalCodeResolver,
+    URL: URLResolver,
+    Void: VoidResolver,
   };
 
   const resolvers = mergeResolvers([
@@ -78,7 +125,7 @@ const createSchema = () => {
     userSubscriptionResolvers,
     statusResolvers,
     logResolvers,
-    rabbitmqMetricsResolvers,
+    amqpMetricsResolvers,
     elasticSearchMetricsResolvers,
     attributeResolvers,
     workspaceResolvers,
@@ -154,15 +201,30 @@ const createSchema = () => {
     stixObjectOrStixRelationshipResolvers,
   ]);
 
-  return makeExecutableSchema({
-    typeDefs,
+  let schema = makeExecutableSchema({
+    typeDefs: [
+      typeDefs,
+      openctiTypeDefs,
+      // DateTimeTypeDefinition,
+      EmailAddressTypeDefinition,
+      IPv4Definition,
+      IPv6Definition,
+      LatitudeDefinition,
+      LongitudeDefinition,
+      MACDefinition,
+      PhoneNumberTypeDefinition,
+      PortDefinition,
+      PositiveIntTypeDefinition,
+      PostalCodeTypeDefinition,
+      URLTypeDefinition,
+      VoidTypeDefinition,
+    ],
     resolvers,
-    schemaDirectives: {
-      [AUTH_DIRECTIVE]: AuthDirectives,
-    },
     schemaTransforms: [constraintDirective()],
     inheritResolversFromInterfaces: true,
   });
+  schema = authDirectiveTransformer(schema);
+  return schema;
 };
 
 export default createSchema;
