@@ -17,7 +17,6 @@ import {
   elPaginate,
   elRebuildRelation,
   elVersion,
-  specialElasticCharsEscape,
 } from '../../../src/database/elasticSearch';
 import {
   READ_INDEX_INTERNAL_OBJECTS,
@@ -405,15 +404,6 @@ describe('Elasticsearch relation reconstruction', () => {
 });
 
 describe('Elasticsearch pagination', () => {
-  it('Pagination standard escape', async () => {
-    // +|\-*()~={}:?\\
-    let escape = specialElasticCharsEscape('Looking {for} [malware] : ~APT');
-    expect(escape).toEqual('Looking \\{for\\} \\[malware\\] \\: \\~APT');
-    escape = specialElasticCharsEscape('Looking (threat) = ?maybe');
-    expect(escape).toEqual('Looking \\(threat\\) \\= \\?maybe');
-    escape = specialElasticCharsEscape('Looking All* + Everything| - \\with');
-    expect(escape).toEqual('Looking All\\* \\+ Everything\\| \\- \\\\with');
-  });
   it('should entity paginate everything', async () => {
     const data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES);
     expect(data).not.toBeNull();

@@ -1,4 +1,4 @@
-import { elSearchParser } from '../../../src/database/elasticSearch';
+import { elSearchParser, specialElasticCharsEscape } from '../../../src/database/elasticSearch';
 
 const parse = (search) => {
   const { search: field, attributeFields, connectionFields } = elSearchParser(search);
@@ -6,6 +6,16 @@ const parse = (search) => {
   expect(connectionFields.length).toBeGreaterThanOrEqual(1);
   return field;
 };
+
+test('should string correctly escaped', async () => {
+  // +|\-*()~={}:?\\
+  let escape = specialElasticCharsEscape('Looking {for} [malware] : ~APT');
+  expect(escape).toEqual('Looking \\{for\\} \\[malware\\] \\: \\~APT');
+  escape = specialElasticCharsEscape('Looking (threat) = ?maybe');
+  expect(escape).toEqual('Looking \\(threat\\) \\= \\?maybe');
+  escape = specialElasticCharsEscape('Looking All* + Everything| - \\with');
+  expect(escape).toEqual('Looking All\\* \\+ Everything\\| - \\\\with');
+});
 
 test('should search parsing correctly generated', () => {
   // URL TESTING
@@ -16,6 +26,8 @@ test('should search parsing correctly generated', () => {
   // GENERIC TESTING
   expect(parse('        """""coucou"  ')) //
     .toBe('"coucou"');
+  expect(parse(' first- - test - after')) //
+    .toBe('"*-*" "*first-*" *after* *test*');
   expect(parse('        "test search        fs       ')) //
     .toBe('*fs* *search* *test*');
   expect(parse('test test search "please my" "bad')) //
