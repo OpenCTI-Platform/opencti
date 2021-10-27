@@ -1,0 +1,70 @@
+  extend type Query {
+    data(id: ID!): DataAsset
+    dataList(
+      first: Int
+      offset: Int
+      orderedBy: DatumOrdering
+      orderMode: OrderingMode
+      filters: [DatumFiltering]
+      filterMode: FilterMode
+      search: String
+    ): DataConnection
+  }
+  
+#####  Data 
+##
+  "An abstract interface that defines identifying information about an instance of data."
+  interface DataAsset {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # CoreObject
+    created: DateTime!
+    modified: DateTime!
+    labels: [String]
+    # Asset
+    asset_id: String
+    name: String!
+    description: String
+    locations: [AssetLocation]
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
+    # Data
+  }
+
+  # Pagination Types
+  type DataConnection {
+    pageInfo: PageInfo!
+    edges: [DataEdge]
+  }
+  type DataEdge {
+    cursor: String!
+    node: DataAsset!
+  }
+  # Filtering Types
+  input DatumFiltering {
+    key: DatumFilter!
+    values: [String]!
+    operator: String
+    filterMode: FilterMode
+  }
+  enum DatumOrdering {
+    created
+    modified
+    labels
+    asset_id
+    name
+  }
+  enum DatumFilter {
+    created
+    modified
+    labels
+    asset_id
+  }
+

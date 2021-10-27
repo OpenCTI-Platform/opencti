@@ -1,35 +1,59 @@
-import { toSparql } from 'sparqlalgebrajs';
-import { Converter } from 'graphql-to-sparql';
+// import { toSparql } from 'sparqlalgebrajs';
+// import { Converter } from 'graphql-to-sparql';
 import { Converter as TreeConverter } from 'sparqljson-to-tree';
 
 const assetCommonResolvers = {
   Query: {
-    asset(parent, args, context, info) {
-      // JSON-LD naming context that maps GraphQL names to RDF resources
-      const nameContext = {
-
-      };
-      
-      // retrieve GraphQL query the args argument
-      const query = context.req.body['query'];
-
-      // TODO: build the following code inside of a DataSource function
-      // results = context.dataSources.Stardog.queryById( dbName, query, nameContext );
-
-      // translate the GraphQL query into Sparql algebra
-      const singularizeVariables = {};
-      const algebra = await new Converter().graphqlToSparqlAlgebra( query, nameContext, { singularizeVariables } );
-
-      // translate SPARQL algebra to SPARQL Query
-      const sparql = toSparql(algebra);
-
-      // issue SPARQL query to knowledge base
-      const response = context.datasource.Stardog.queryById( dbName, sparql);
-
-      const jsonResult = new TreeConverter().sparqlJsonResultsToTree(response, { singularizeVariables });
-
+    asset: (_, args, context, info) => {
+      const dbName = context.dbName;
+      var sparqlQuery = getSparqlQuery('BY-ID', args.id);
+      context.dataSources.Stardog.queryById( dbName, sparqlQuery, singularizeSchema )
+      .then (function (response) {
+        console.log( response[0] );
+        return( assetReducer( response[0]) );
+      }).catch ( function (error) {
+        console.log(error);
+      });
     },
-    assetList(parent, args, context, info) {}
+    assetList: (_, args, context, info) => {
+      var sparqlQuery = getSparqlQuery('BY-ALL', args.id);
+      const response = context.dataSources.Stardog.filteredQuery( 
+        context.dbName, 
+        sparqlQuery,
+        singularizeSchema,
+        args.first,       // limit
+        args.offset,      // offset
+        args.filter,      // filter
+      );
+      return Array.isArray( response )
+        ? response.map( asset => assetReducer( asset ))
+        : [];
+    },
+    itAsset: ( _, args, context, info) => {
+      const dbName = context.dbName;
+      var sparqlQuery = getSparqlQuery('BY-ID', args.id);
+      context.dataSources.Stardog.queryById( dbName, sparqlQuery, singularizeSchema )
+      .then (function (response) {
+        console.log( response[0] );
+        return( itAssetReducer( response[0]) );
+      }).catch ( function (error) {
+        console.log(error);
+      });
+    },
+    itAssetList: ( _, args, context, info ) => {
+      var sparqlQuery = getSparqlQuery('BY-ALL', args.id);
+      const response = context.dataSources.Stardog.filteredQuery( 
+        context.dbName, 
+        sparqlQuery,
+        singularizeSchema,
+        args.first,       // limit
+        args.offset,      // offset
+        args.filter,      // filter
+      );
+      return Array.isArray( response )
+        ? response.map( itAsset => itAssetReducer( itAsset ))
+        : [];
+    },
   },
   Mutation: {
 
@@ -63,6 +87,60 @@ const assetCommonResolvers = {
     voip_handset: 'voip-handset',
     voip_router: 'voip-router',
   },
+  Asset: {
+    locations: ( parent, ) => {
+    },
+    external_references: ( parent, ) => {
+    },
+    notes: ( parent, ) => {
+    }
+  },
+  AssetLocation: {
+
+  },
+
 };
-  
+
+function assetReducer( asset ) {
+  return {
+    id: asset.id,
+    created: asset.created || null,
+    modified: asset.modified || null,
+    labels: asset.labels || null,
+    name: asset.name || null,
+    description: asset.description || null,
+    asset_id: asset.asset_id || null,
+    //
+    //  *** how to get list ***
+    //
+    // locations
+    // external_references
+    // notes
+  }
+}
+
+function itAssetReducer( asset ) {
+  return {
+    id: asset.id,
+    created: asset.created || null,
+    modified: asset.modified || null,
+    labels: asset.labels || null,
+    name: asset.name || null,
+    description: asset.description || null,
+    asset_id: asset.asset_id || null,
+    asset_type: asset.asset_type || null,
+    asset_tag: asset.tag || null,
+    serial_number: asset.serial_number || null,
+    vendor_name: asset.vendor_name || null,
+    version: asset.version || null,
+    release_date: asset.release_date || null,
+    //
+    //  *** how to get list ***
+    //
+    // locations
+    // external_references
+    // notes
+  }
+}
+
 export default assetCommonResolvers;
