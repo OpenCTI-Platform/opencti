@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { createPaginationContainer } from 'react-relay';
+// import { createPaginationContainer } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -27,6 +27,8 @@ import DialogActions from '@material-ui/core/DialogActions';
 import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
 import { interval } from 'rxjs';
+import { QueryRenderer as QR, commitMutation as CM, createPaginationContainer } from 'react-relay';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
@@ -148,26 +150,40 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
   }
 
   removeExternalReference(externalReferenceEdge) {
-    commitMutation({
+    CM(environmentDarkLight, {
       mutation: externalReferenceMutationRelationDelete,
       variables: {
         id: externalReferenceEdge.node.id,
         fromId: this.props.stixCoreObjectId,
         relationship_type: 'external-reference',
       },
-      updater: (store) => {
-        const entity = store.get(this.props.stixCoreObjectId);
-        const conn = ConnectionHandler.getConnection(
-          entity,
-          'Pagination_externalReferences',
-        );
-        ConnectionHandler.deleteNode(conn, externalReferenceEdge.node.id);
-      },
-      onCompleted: () => {
+      onCompleted: (data) => {
+        console.log('ExtRefRemoveDarkLightMutationData', data);
         this.setState({ removing: false });
         this.handleCloseDialog();
       },
+      onError: (err) => console.log('ExtRefRemoveDarkLightMutationError', err),
     });
+    // commitMutation({
+    //   mutation: externalReferenceMutationRelationDelete,
+    //   variables: {
+    //     id: externalReferenceEdge.node.id,
+    //     fromId: this.props.stixCoreObjectId,
+    //     relationship_type: 'external-reference',
+    //   },
+    //   updater: (store) => {
+    //     const entity = store.get(this.props.stixCoreObjectId);
+    //     const conn = ConnectionHandler.getConnection(
+    //       entity,
+    //       'Pagination_externalReferences',
+    //     );
+    //     ConnectionHandler.deleteNode(conn, externalReferenceEdge.node.id);
+    //   },
+    //   onCompleted: () => {
+    //     this.setState({ removing: false });
+    //     this.handleCloseDialog();
+    //   },
+    // });
   }
 
   render() {

@@ -110,6 +110,8 @@ class SoftwareCardComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
+    console.log('sdasfasfasfafData', node);
+    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
@@ -275,10 +277,10 @@ class SoftwareCardComponent extends Component {
                gutterBottom ={true}>
                 {t('Label')}
               </Typography>
-              {/* <StixCoreObjectLabels
-                labels={node.objectLabel}
+              <StixCoreObjectLabels
+                labels={objectLabel}
                 onClick={onLabelClick.bind(this)}
-              /> */}
+              />
             </div>
           </CardContent>
         </CardActionArea>
@@ -334,8 +336,6 @@ const SoftwareCardFragment = createFragmentContainer(
         asset_type
         name
         asset_id
-        created
-        modified
         vendor_name
         version
         patch_level

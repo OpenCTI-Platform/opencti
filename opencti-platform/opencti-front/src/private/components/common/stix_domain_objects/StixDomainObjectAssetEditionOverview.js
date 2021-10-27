@@ -41,6 +41,7 @@ import {
 } from '../../../../components/Subscription';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
+import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -95,6 +96,7 @@ class StixDomainObjectAssetEditionOverviewComponent extends Component {
       enableReferences,
     } = this.props;
     const { editContext } = stixDomainObject;
+    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     console.log('fetched data ', stixDomainObject);
     return (
       <div style={{ height: '100%' }}>
@@ -150,8 +152,8 @@ class StixDomainObjectAssetEditionOverviewComponent extends Component {
                   name="asset_id"
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
-                  // onFocus={this.handleChangeFocus.bind(this)}
-                  // onSubmit={this.handleSubmitField.bind(this)}
+                // onFocus={this.handleChangeFocus.bind(this)}
+                // onSubmit={this.handleSubmitField.bind(this)}
                 />
               </div>
               {/* <div>
@@ -294,30 +296,10 @@ class StixDomainObjectAssetEditionOverviewComponent extends Component {
                 // }
                 />
               </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Label')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Label',
-                    )}
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {/* <StixCoreObjectLabelsView
-                        labels={device.objectLabel}
-                        marginTop={20}
-                      /> */}
-              </div>
+              <StixCoreObjectLabelsView
+                labels={objectLabel}
+                marginTop={20}
+              />
             </Grid>
             <Grid item={true} xs={6}>
               <div>

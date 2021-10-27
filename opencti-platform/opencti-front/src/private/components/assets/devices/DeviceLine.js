@@ -58,6 +58,7 @@ class DeviceLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
+    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     console.log('DarkLightnodeLineDevices', node);
     return (
       <ListItem
@@ -136,11 +137,11 @@ class DeviceLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
-                {/* <StixCoreObjectLabels
+                <StixCoreObjectLabels
                   variant="inList"
-                  labels={node.objectLabel}
+                  labels={objectLabel}
                   onClick={onLabelClick.bind(this)}
-                /> */}
+                />
               </div>
             </div>
           }
@@ -171,6 +172,17 @@ const DeviceLineFragment = createFragmentContainer(
         name
         created
         modified
+        asset_id
+        fqdn
+        network_id
+        ip_address {
+          ... on IpV4Address {
+            ip_address_value
+          }
+          # ... on IpV6Address {
+          #   ip_address_value
+          # }
+        }
         # objectLabel {
         #   edges {
         #     node {

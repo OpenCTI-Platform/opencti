@@ -15,7 +15,7 @@ import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
 import DevicesCards, {
   devicesCardsQuery,
-  devicesCardsdarkLightRootQuery,
+  // devicesCardsdarkLightRootQuery,
 } from './devices/DevicesCards';
 import DevicesLines, {
   devicesLinesQuery,
@@ -34,6 +34,7 @@ class Devices extends Component {
       props.location,
       'view-devices',
     );
+    console.log('sdassfasfasparams', params);
     this.state = {
       sortBy: R.propOr('name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
@@ -205,6 +206,7 @@ class Devices extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'asset_type',
           'labelledBy',
           'markedBy',
           'created_start_date',
@@ -228,7 +230,8 @@ class Devices extends Component {
         /> */}
         <QR
           environment={QueryRendererDarkLight}
-          query={devicesCardsdarkLightRootQuery}
+          query={devicesCardsQuery}
+          variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
             console.log(`DarkLightDevicesCards Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
@@ -356,7 +359,8 @@ class Devices extends Component {
         /> */}
         <QR
           environment={QueryRendererDarkLight}
-          query={devicesLinesdarkLightRootQuery}
+          query={devicesLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
             console.log(`DarkLight Error ${error} OR Props ${JSON.stringify(props)}`);
             return (

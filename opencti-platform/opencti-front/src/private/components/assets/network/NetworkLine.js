@@ -58,6 +58,7 @@ class NetworkLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
+    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -85,7 +86,7 @@ class NetworkLineComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 {/* KK-HWELL-011 */}
-                {node.name}
+                {node.network_name}
               </div>
               <div
                 className={classes.bodyItem}
@@ -118,11 +119,11 @@ class NetworkLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
-                {/* <StixCoreObjectLabels
+                <StixCoreObjectLabels
                   variant="inList"
-                  labels={node.objectLabel}
+                  labels={objectLabel}
                   onClick={onLabelClick.bind(this)}
-                /> */}
+                />
               </div>
             </div>
           }
@@ -185,28 +186,44 @@ const NetworkLineFragment = createFragmentContainer(
   NetworkLineComponent,
   {
     node: graphql`
-      fragment NetworkLine_node on IntrusionSet {
+      fragment NetworkLine_node on NetworkAsset {
         id
-        name
-        created
-        modified
-        objectMarking {
-          edges {
-            node {
-              id
-              definition
+        asset_id
+        asset_type
+        network_name
+        network_id
+        network_address_range {
+          ending_ip_address{
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+          starting_ip_address{
+            ... on IpV4Address {
+              ip_address_value
             }
           }
         }
-        objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
-        }
+        labels
+        # created
+        # modified
+        # objectMarking {
+        #   edges {
+        #     node {
+        #       id
+        #       definition
+        #     }
+        #   }
+        # }
+        # objectLabel {
+        #   edges {
+        #     node {
+        #       id
+        #       value
+        #       color
+        #     }
+        #   }
+        # }
       }
     `,
   },

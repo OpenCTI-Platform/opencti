@@ -15,11 +15,11 @@ import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
 import NetworkCards, {
   networkCardsQuery,
-  networkCardsdarkLightRootQuery,
+  // networkCardsdarkLightRootQuery,
 } from './network/NetworkCards';
 import NetworkLines, {
   networkLinesQuery,
-  networkLinesdarkLightRootQuery,
+  // networkLinesdarkLightRootQuery,
 } from './network/NetworkLines';
 import NetworkCreation from './network/NetworkCreation';
 import NetworkDeletion from './network/NetworkDeletion';
@@ -217,7 +217,8 @@ class Network extends Component {
         /> */}
         <QR
           environment={QueryRendererDarkLight}
-          query={networkCardsdarkLightRootQuery}
+          query={networkCardsQuery}
+          variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
             console.log(`DarkLightNetworkCards Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
@@ -335,7 +336,8 @@ class Network extends Component {
         /> */}
         <QR
           environment={QueryRendererDarkLight}
-          query={networkLinesdarkLightRootQuery}
+          query={networkLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
             console.log(`DarkLightNetworkLines Error ${error} OR Props ${JSON.stringify(props)}`);
             return (

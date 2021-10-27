@@ -15,11 +15,11 @@ import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
 import SoftwareCards, {
   softwareCardsQuery,
-  softwareCardsdarkLightRootQuery,
+  // softwareCardsdarkLightRootQuery,
 } from './software/SoftwareCards';
 import SoftwareLines, {
   softwareLinesQuery,
-  softwareLinesdarkLightRootQuery,
+  // softwareLinesdarkLightRootQuery,
 } from './software/SoftwareLines';
 import SoftwareCreation from './software/SoftwareCreation';
 import SoftwareDeletion from './software/SoftwareDeletion';
@@ -222,7 +222,8 @@ class Software extends Component {
         /> */}
         <QR
           environment={QueryRendererDarkLight}
-          query={softwareCardsdarkLightRootQuery}
+          query={softwareCardsQuery}
+          variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
             console.log(`DarkLightSoftwareCards Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
@@ -354,7 +355,8 @@ class Software extends Component {
         /> */}
         <QR
           environment={QueryRendererDarkLight}
-          query={softwareLinesdarkLightRootQuery}
+          query={softwareLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
             console.log(`DarkLightSoftwareLines Error ${error} OR Props ${JSON.stringify(props)}`);
             return (

@@ -99,6 +99,7 @@ class DeviceCardComponent extends Component {
     const {
       t, fsd, classes, node, bookmarksIds, onLabelClick,
     } = this.props;
+    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     console.log('DeviceCardComponent', node);
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
@@ -170,18 +171,18 @@ class DeviceCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('KK-HWELL-011')} */}
-                  {/* {t(node.name)} */}
+                  {t(node.name)}
                 </Typography>
               </div>
               <div>
                 <Checkbox
                   size="small"
                   style={{}}
-                  onClick={
-                  bookmarksIds.includes(node.id)
-                    ? deleteBookMark.bind(this, node.id, 'Threat-Actor')
-                    : addBookmark.bind(this, node.id, 'Threat-Actor')
-                }
+                //   onClick={
+                //   bookmarksIds.includes(node.id)
+                //     ? deleteBookMark.bind(this, node.id, 'Threat-Actor')
+                //     : addBookmark.bind(this, node.id, 'Threat-Actor')
+                // }
                 color={bookmarksIds.includes(node.id) ? 'secondary' : 'primary'}
                 />
               </div>
@@ -195,7 +196,7 @@ class DeviceCardComponent extends Component {
                   {t('Asset ID')}
                 </Typography>
                 <Typography>
-                  {/* {t('KK-HWELL-011')} */}
+                  {t('KK-HWELL-011')}
                   {t(node.asset_id)}
                 </Typography>
                 <div className="clearfix" />
@@ -261,10 +262,10 @@ class DeviceCardComponent extends Component {
                gutterBottom ={true}>
                 {t('Label')}
               </Typography>
-              {/* <StixCoreObjectLabels
-                labels={node.objectLabel}
+              <StixCoreObjectLabels
+                labels={objectLabel}
                 onClick={onLabelClick.bind(this)}
-              /> */}
+              />
             </div>
           </CardContent>
         </CardActionArea>
@@ -283,38 +284,6 @@ DeviceCardComponent.propTypes = {
   onBookmarkClick: PropTypes.func,
 };
 
-// const DeviceCardFragment = createFragmentContainer(
-//   DeviceCardComponent,
-//   {
-//     node: graphql`
-//       fragment DeviceCard_node on ThreatActor {
-//         id
-//         name
-//         description
-//         created
-//         modified
-//         objectLabel {
-//           edges {
-//             node {
-//               id
-//               value
-//               color
-//             }
-//           }
-//         }
-//         objectMarking {
-//           edges {
-//             node {
-//               id
-//               definition
-//             }
-//           }
-//         }
-//       }
-//     `,
-//   },
-// );
-
 const DeviceCardFragment = createFragmentContainer(
   DeviceCardComponent,
   {
@@ -322,17 +291,58 @@ const DeviceCardFragment = createFragmentContainer(
       fragment DeviceCard_node on ComputingDeviceAsset {
         id
         name
+        asset_id
         installed_operating_system {
           name
         }
         asset_type
-        asset_id
         fqdn
+        labels
         network_id
+        # description
+        # created
+        # modified
+        # objectLabel {
+        #   edges {
+        #     node {
+        #       id
+        #       value
+        #       color
+        #     }
+        #   }
+        # }
+        # objectMarking {
+        #   edges {
+        #     node {
+        #       id
+        #       definition
+        #     }
+        #   }
+        # }
       }
     `,
   },
 );
+
+// const DeviceCardFragment = createFragmentContainer(
+//   DeviceCardComponent,
+//   {
+//     node: graphql`
+//       fragment DeviceCard_node on ComputingDeviceAsset {
+//         id
+//         name
+//         asset_id
+//         installed_operating_system {
+//           name
+//         }
+//         asset_type
+//         fqdn
+//         labels
+//         network_id
+//       }
+//     `,
+//   },
+// );
 
 export const DeviceCard = compose(
   inject18n,

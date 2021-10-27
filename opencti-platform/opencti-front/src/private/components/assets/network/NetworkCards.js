@@ -23,7 +23,7 @@ class NetworkCards extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'network',
+      'networkAssetList',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -36,16 +36,16 @@ class NetworkCards extends Component {
     const { initialLoading, relay, onLabelClick } = this.props;
     const { bookmarks } = this.state;
     return (
-      <QueryRenderer
-        query={stixDomainObjectBookmarksQuery}
-        variables={{ types: ['Network'] }}
-        render={({ props }) => (
-          <div>
-            <StixDomainObjectBookmarks
-              data={props}
-              onLabelClick={onLabelClick.bind(this)}
-              setBookmarkList={this.handleSetBookmarkList.bind(this)}
-            />
+    // <QueryRenderer
+    //   query={stixDomainObjectBookmarksQuery}
+    //   variables={{ types: ['Network'] }}
+    //   render={({ props }) => (
+    //     <div>
+    //       <StixDomainObjectBookmarks
+    //         data={props}
+    //         onLabelClick={onLabelClick.bind(this)}
+    //         setBookmarkList={this.handleSetBookmarkList.bind(this)}
+    //       />
             <ListCardsContent
               initialLoading={initialLoading}
               loadMore={relay.loadMore.bind(this)}
@@ -63,9 +63,9 @@ class NetworkCards extends Component {
               onLabelClick={onLabelClick.bind(this)}
               bookmarkList={bookmarks}
             />
-          </div>
-        )}
-      />
+    //     </div>
+    //   )}
+    // />
     );
   }
 }
@@ -83,49 +83,49 @@ export const networkCardsQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: IntrusionSetsOrdering
+    $orderedBy: NetworkAssetOrdering
     $orderMode: OrderingMode
-    $filters: [IntrusionSetsFiltering]
+    $filters: [NetworkAssetFiltering]
   ) {
     ...NetworkCards_data
       @arguments(
         search: $search
         count: $count
         cursor: $cursor
-        orderBy: $orderBy
+        orderedBy: $orderedBy
         orderMode: $orderMode
         filters: $filters
       )
   }
 `;
 
-export const networkCardsdarkLightRootQuery = graphql`
-  query NetworkCardsDarkLightQuery {
-    networkAssetList {
-      edges {
-        node {
-          id
-          name
-          labels
-          asset_id
-          network_id
-          network_address_range {
-            ending_ip_address{
-              ... on IpV4Address {
-                ip_address_value
-              }
-            }
-            starting_ip_address{
-              ... on IpV4Address {
-                ip_address_value
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
+// export const networkCardsdarkLightRootQuery = graphql`
+//   query NetworkCardsDarkLightQuery {
+//     networkAssetList {
+//       edges {
+//         node {
+//           id
+//           name
+//           labels
+//           asset_id
+//           network_id
+//           network_address_range {
+//             ending_ip_address{
+//               ... on IpV4Address {
+//                 ip_address_value
+//               }
+//             }
+//             starting_ip_address{
+//               ... on IpV4Address {
+//                 ip_address_value
+//               }
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+// `;
 
 export default createPaginationContainer(
   NetworkCards,
@@ -136,24 +136,24 @@ export default createPaginationContainer(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        orderBy: { type: "IntrusionSetsOrdering", defaultValue: name }
+        orderedBy: { type: "NetworkAssetOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[IntrusionSetsFiltering]" }
+        filters: { type: "[NetworkAssetFiltering]" }
       ) {
-        intrusionSets(
+        networkAssetList(
           search: $search
           first: $count
-          after: $cursor
-          orderBy: $orderBy
+          # after: $cursor
+          orderedBy: $orderedBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_intrusionSets") {
+        ) @connection(key: "Pagination_networkAssetList") {
           edges {
             node {
               id
               name
               description
-              # ...NetworkCard_node
+              ...NetworkCard_node
             }
           }
           pageInfo {
@@ -168,7 +168,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.network;
+      return props.data && props.data.networkAssetList;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -181,7 +181,7 @@ export default createPaginationContainer(
         search: fragmentVariables.search,
         count,
         cursor,
-        orderBy: fragmentVariables.orderBy,
+        orderedBy: fragmentVariables.orderedBy,
         orderMode: fragmentVariables.orderMode,
         filters: fragmentVariables.filters,
       };

@@ -41,6 +41,7 @@ class StixDomainObjectOverview extends Component {
     const {
       t, fldt, classes, stixDomainObject, withoutMarking, withPattern,
     } = this.props;
+    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
     const stixIds = R.filter(
       (n) => n !== stixDomainObject.standard_id,
@@ -226,10 +227,10 @@ class StixDomainObjectOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {/* <StixCoreObjectLabels
-                  labels={stixDomainObject.objectLabel}
+                <StixCoreObjectLabels
+                  labels={objectLabel}
                   marginTop={20}
-                /> */}
+                />
               </div>
               {/* {withPattern && (
                 <div>

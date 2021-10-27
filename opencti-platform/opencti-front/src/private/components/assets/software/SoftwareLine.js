@@ -58,6 +58,7 @@ class SoftwareLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
+    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -140,11 +141,11 @@ class SoftwareLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
-                {/* <StixCoreObjectLabels
+                <StixCoreObjectLabels
                   variant="inList"
-                  labels={node.objectLabel}
+                  labels={objectLabel}
                   onClick={onLabelClick.bind(this)}
-                /> */}
+                />
               </div>
             </div>
           }
@@ -205,28 +206,36 @@ SoftwareLineComponent.propTypes = {
 
 const SoftwareLineFragment = createFragmentContainer(SoftwareLineComponent, {
   node: graphql`
-    fragment SoftwareLine_node on Campaign {
+    fragment SoftwareLine_node on SoftwareAsset {
       id
       name
-      created
-      modified
-      objectMarking {
-        edges {
-          node {
-            id
-            definition
-          }
-        }
-      }
-      objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
-      }
+      labels
+      asset_type
+      asset_id
+      vendor_name
+      version
+      patch_level
+      cpe_identifier
+      software_identifier
+      # created
+      # modified
+      # objectMarking {
+      #   edges {
+      #     node {
+      #       id
+      #       definition
+      #     }
+      #   }
+      # }
+      # objectLabel {
+      #   edges {
+      #     node {
+      #       id
+      #       value
+      #       color
+      #     }
+      #   }
+      # }
     }
   `,
 });

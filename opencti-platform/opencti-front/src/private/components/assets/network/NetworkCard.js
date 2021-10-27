@@ -101,6 +101,7 @@ class NetworkCardComponent extends Component {
     const {
       t, fsd, classes, node, bookmarksIds, onLabelClick,
     } = this.props;
+    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
@@ -168,19 +169,19 @@ class NetworkCardComponent extends Component {
                 </Typography>
                 <Typography>
                     {/* {t('KK-HWELL-011')} */}
-                    {t(node.name)}
+                    {t(node.network_name)}
                 </Typography>
               </div>
               <div>
                 <Checkbox
                   size="small"
                   style={{}}
-                  onClick={
-                  bookmarksIds.includes(node.id)
-                    ? deleteBookMark.bind(this, node.id, 'Threat-Actor')
-                    : addBookmark.bind(this, node.id, 'Threat-Actor')
-                }
-                color={bookmarksIds.includes(node.id) ? 'secondary' : 'primary'}
+                //   onClick={
+                //   bookmarksIds.includes(node.id)
+                //     ? deleteBookMark.bind(this, node.id, 'Threat-Actor')
+                //     : addBookmark.bind(this, node.id, 'Threat-Actor')
+                // }
+                // color={bookmarksIds.includes(node.id) ? 'secondary' : 'primary'}
                 />
               </div>
             </Grid>
@@ -242,10 +243,10 @@ class NetworkCardComponent extends Component {
                gutterBottom ={true}>
                 {t('Label')}
               </Typography>
-              {/* <StixCoreObjectLabels
-                labels={node.objectLabel}
+              <StixCoreObjectLabels
+                labels={objectLabel}
                 onClick={onLabelClick.bind(this)}
-              /> */}
+              />
             </div>
           </CardContent>
         </CardActionArea>
@@ -301,15 +302,11 @@ const NetworkCardFragment = createFragmentContainer(
     node: graphql`
       fragment NetworkCard_node on NetworkAsset {
         id
-        name
+        network_name
         asset_type
         asset_id
-        asset_tag
-        description
-        version
-        vendor_name
-        release_date
         network_id
+        labels
       }
     `,
   },

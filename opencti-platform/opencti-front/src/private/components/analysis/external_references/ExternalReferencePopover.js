@@ -16,6 +16,8 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
+import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import ExternalReferenceEdition from './ExternalReferenceEdition';
@@ -109,27 +111,39 @@ class ExternalReferencePopover extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    commitMutation({
+    CM(environmentDarkLight, {
       mutation: externalReferencePopoverDeletionMutation,
       variables: {
         id: this.props.externalReferenceId,
       },
-      updater: (store) => {
-        const container = store.getRoot();
-        const payload = store.getRootField('externalReferenceEdit');
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_externalReferences',
-          this.props.paginationOptions,
-        );
-        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
-      },
-      onCompleted: () => {
+      onCompleted: (data) => {
+        console.log('ExtRefDeletionDarkLightMutationData', data);
         this.setState({ deleting: false });
         this.handleCloseDelete();
       },
+      onError: (err) => console.log('ExtRefDeletionDarkLightMutationError', err),
     });
+    // commitMutation({
+    //   mutation: externalReferencePopoverDeletionMutation,
+    //   variables: {
+    //     id: this.props.externalReferenceId,
+    //   },
+    //   updater: (store) => {
+    //     const container = store.getRoot();
+    //     const payload = store.getRootField('externalReferenceEdit');
+    //     const userProxy = store.get(container.getDataID());
+    //     const conn = ConnectionHandler.getConnection(
+    //       userProxy,
+    //       'Pagination_externalReferences',
+    //       this.props.paginationOptions,
+    //     );
+    //     ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
+    //   },
+    //   onCompleted: () => {
+    //     this.setState({ deleting: false });
+    //     this.handleCloseDelete();
+    //   },
+    // });
   }
 
   render() {
@@ -179,7 +193,8 @@ class ExternalReferencePopover extends Component {
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseUpdate.bind(this)}
         >
-          <QueryRenderer
+          <QR
+            environment={environmentDarkLight}
             query={externalReferenceEditionQuery}
             variables={{ id: externalReferenceId }}
             render={({ props }) => {
@@ -195,6 +210,22 @@ class ExternalReferencePopover extends Component {
               return <Loader variant="inElement" />;
             }}
           />
+          {/* <QueryRenderer
+            query={externalReferenceEditionQuery}
+            variables={{ id: externalReferenceId }}
+            render={({ props }) => {
+              if (props) {
+                // Done
+                return (
+                  <ExternalReferenceEdition
+                    externalReference={props.externalReference}
+                    handleClose={this.handleCloseUpdate.bind(this)}
+                  />
+                );
+              }
+              return <Loader variant="inElement" />;
+            }}
+          /> */}
         </Drawer>
         <Dialog
           open={this.state.displayDelete}
