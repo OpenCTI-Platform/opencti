@@ -20,7 +20,7 @@ const rootPrivateQuery = graphql`
       theme
       user_email
       theme
-      # access_token
+      access_token
       capabilities {
         name
       }
