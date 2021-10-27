@@ -35,15 +35,59 @@ services:
       - amqpdata:/var/lib/rabbitmq
     restart: unless-stopped
 
-  # opencti-front:
-  #   image: docker.darklight.ai/opencti-front
-  #   build: ../opencti-platform/opencti-front
-  #   container_name: opencti-front
+  opencti-front:
+    image: docker.darklight.ai/opencti-front
+    build: 
+      context: ../opencti-platform
+      dockerfile: opencti-front/Dockerfile
+    container_name: opencti-front
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=8096
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+      - MOCKS=${MOCKS}
+      - APP__PORT=8080
+      - APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}
+      - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
+      - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - APP__APP_LOGS__LOGS_LEVEL=error
+      - REACT_APP_GRAPHQL_HOST=https://graphql.darklight.ai:9000
+      # - APP__HTTPS_CERT__KEY=/opt/opencti/certs/darklight.key
+      # - APP__HTTPS_CERT__CRT=/opt/opencti/certs/darklight.crt
+      - REDIS__HOSTNAME=redis
+      - REDIS__PORT=6379
+      - ELASTICSEARCH__URL=http://elasticsearch:9200
+      - RABBITMQ__HOSTNAME=rabbitmq
+      - RABBITMQ__PORT=5672
+      - RABBITMQ__PORT_MANAGEMENT=15672
+      - RABBITMQ__MANAGEMENT_SSL=false
+      - RABBITMQ__USERNAME=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ__PASSWORD=${RABBITMQ_DEFAULT_PASS}
+      - SMTP__HOSTNAME=${SMTP_HOSTNAME}
+      - SMTP__PORT=25
+      - PROVIDERS__LOCAL__STRATEGY=LocalStrategy
+      - SUBSCRIPTION_SCHEDULER__ENABLED=false
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+      - elasticsearch
+      - rabbitmq
+      - opencti-graphql
+    restart: unless-stopped
+    # volumes:
+    #   - ./default.json:/opt/opencti/config/default.json
+    #   - ./darklight.crt:/opt/opencti/certs/darklight.crt
+    #   - ./darklight.key:/opt/opencti/certs/darklight.key
+  
+  # opencti-graphql:
+  #   image: docker.darklight.ai/opencti-graphql
+  #   build: ../opencti-platform/opencti-graphql
+  #   container_name: opencti-graphql
   #   environment:
   #     - NODE_OPTIONS=--max-old-space-size=8096
   #     - NODE_TLS_REJECT_UNAUTHORIZED=0
   #     - MOCKS=${MOCKS}
-  #     - APP__PORT=8080
+  #     - APP__PORT=9000
   #     - APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}
   #     - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
   #     - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -64,54 +108,12 @@ services:
   #     - PROVIDERS__LOCAL__STRATEGY=LocalStrategy
   #     - SUBSCRIPTION_SCHEDULER__ENABLED=false
   #   ports:
-  #     - "8080:8080"
+  #     - "9000:9000"
   #   depends_on:
   #     - redis
   #     - elasticsearch
   #     - rabbitmq
-  #     - opencti-graphql
   #   restart: unless-stopped
-  #   # volumes:
-  #   #   - ./default.json:/opt/opencti/config/default.json
-  #   #   - ./darklight.crt:/opt/opencti/certs/darklight.crt
-  #   #   - ./darklight.key:/opt/opencti/certs/darklight.key
-  
-  opencti-graphql:
-    image: docker.darklight.ai/opencti-graphql
-    build: ../opencti-platform/opencti-graphql
-    container_name: opencti-graphql
-    environment:
-      - NODE_OPTIONS=--max-old-space-size=8096
-      - NODE_TLS_REJECT_UNAUTHORIZED=0
-      - MOCKS=${MOCKS}
-      - APP__PORT=9000
-      - APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}
-      - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
-      - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN}
-      - APP__APP_LOGS__LOGS_LEVEL=error
-      # - REACT_APP_GRAPHQL_HOST=
-      # - APP__HTTPS_CERT__KEY=/opt/opencti/certs/darklight.key
-      # - APP__HTTPS_CERT__CRT=/opt/opencti/certs/darklight.crt
-      - REDIS__HOSTNAME=redis
-      - REDIS__PORT=6379
-      - ELASTICSEARCH__URL=http://elasticsearch:9200
-      - RABBITMQ__HOSTNAME=rabbitmq
-      - RABBITMQ__PORT=5672
-      - RABBITMQ__PORT_MANAGEMENT=15672
-      - RABBITMQ__MANAGEMENT_SSL=false
-      - RABBITMQ__USERNAME=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ__PASSWORD=${RABBITMQ_DEFAULT_PASS}
-      - SMTP__HOSTNAME=${SMTP_HOSTNAME}
-      - SMTP__PORT=25
-      - PROVIDERS__LOCAL__STRATEGY=LocalStrategy
-      - SUBSCRIPTION_SCHEDULER__ENABLED=false
-    ports:
-      - "9000:9000"
-    depends_on:
-      - redis
-      - elasticsearch
-      - rabbitmq
-    restart: unless-stopped
 
 volumes:
   esdata:
