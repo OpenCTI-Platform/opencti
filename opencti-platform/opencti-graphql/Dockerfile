@@ -33,8 +33,8 @@ RUN set -ex; \
     ln -sf python3 /usr/bin/python;
 WORKDIR /opt/opencti
 COPY ./src/python/requirements.txt ./src/python/requirements.txt
-RUN pip3 install --no-cache-dir --requirement ./src/python/requirements.txt
-RUN pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
+# RUN pip3 install --no-cache-dir --requirement ./src/python/requirements.txt
+# RUN pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
 RUN apk del git python3-dev gcc musl-dev
 COPY --from=graphql-deps-builder /opt/opencti-build/opencti-graphql/node_modules ./node_modules
 COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/build ./build
@@ -42,7 +42,7 @@ COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/build ./build
 COPY ./src ./src
 COPY ./config ./config
 COPY ./script ./script
-ENV PYTHONUNBUFFERED=1
+# ENV PYTHONUNBUFFERED=1
 ENV NODE_OPTIONS=--max_old_space_size=8192
 ENV NODE_ENV=production
 
