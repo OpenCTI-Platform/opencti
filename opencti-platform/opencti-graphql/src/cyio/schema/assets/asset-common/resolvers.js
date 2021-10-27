@@ -122,24 +122,23 @@ function assetReducer( asset ) {
 function itAssetReducer( asset ) {
   return {
     id: asset.id,
-    created: asset.created || null,
-    modified: asset.modified || null,
-    labels: asset.labels || null,
-    name: asset.name || null,
-    description: asset.description || null,
-    asset_id: asset.asset_id || null,
-    asset_type: asset.asset_type || null,
-    asset_tag: asset.tag || null,
-    serial_number: asset.serial_number || null,
-    vendor_name: asset.vendor_name || null,
-    version: asset.version || null,
-    release_date: asset.release_date || null,
-    //
-    //  *** how to get list ***
-    //
-    // locations
-    // external_references
-    // notes
+    ...(asset.created && {created: asset.created}),
+    ...(asset.modified && {modified: asset.modified}),
+    ...(asset.labels && {labels: asset.labels}),
+    ...(asset.name && { name: asset.name} ),
+    ...(asset.description && { description: asset.description}),
+    ...(asset.asset_id && { asset_id: asset.asset_id}),
+    ...(asset.asset_type && {asset_type: asset.asset_type}),
+    ...(asset.asset_tag && {asset_tag: asset.asset_tag}) ,
+    ...(asset.serial_number && {serial_number: asset.serial_number}),
+    ...(asset.vendor_name && {vendor_name: asset.vendor_name}),
+    ...(asset.version && {version: asset.version}),
+    ...(asset.release_date && {release_date: asset.release_date}),
+    // Hints
+    ...(asset.iri && {parent_iri: asset.iri}),
+    ...(asset.locations && {locations_iri: asset.locations}),
+    ...(asset.external_references && {ext_ref_iri: asset.external_references}),
+    ...(asset.notes && {notes_iri: asset.notes}),
   }
 }
 

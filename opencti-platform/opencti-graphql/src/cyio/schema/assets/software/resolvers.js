@@ -6,7 +6,6 @@ import { getSparqlQuery } from './sparql-query.js';
 const softwareResolvers = {
   Query: {
     softwareAssetList: async ( _, args, context, info ) => {
-      console.log('*** Resolver: In softwareAssetList')
       var sparqlQuery = getSparqlQuery('BY-ALL', args.id);
       const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
@@ -41,7 +40,6 @@ const softwareResolvers = {
       }
     },
     softwareAsset: async ( _, args, context, info ) => {
-      console.log('*** Resolver: In softwareAsset')
       const dbName = context.dbName;
       var sparqlQuery = getSparqlQuery('BY-ID', args.id);
       const response = await context.dataSources.Stardog.queryById( dbName, sparqlQuery, singularizeSchema, )
@@ -69,26 +67,29 @@ const softwareResolvers = {
 function softwareAssetReducer( asset ) {
   return {
     id: asset.id,
-    name: asset.name || null,
-    description: asset.description || null,
-    asset_id: asset.asset_id || null,
-    asset_type: asset.asset_type || null,
-    asset_tag: asset.tag || null,
-    serial_number: asset.serial_number || null,
-    vendor_name: asset.vendor_name || null,
-    version: asset.version || null,
-    release_date: asset.release_date || null,
-    function: asset.function || null,
-    cpe_identifier: asset.cpe_identifier || null,
-    software_identifier: asset.software_identifier || null,
-    patch_level: asset.patch_level || null,
-    installation_id: asset.installation_id || null,
-    license_key: asset.license_key || null,
+    ...(asset.created && {created: asset.created}),
+    ...(asset.modified && {modified: asset.modified}),
+    ...(asset.labels && {labels: asset.labels}),
+    ...(asset.name && { name: asset.name} ),
+    ...(asset.description && { description: asset.description}),
+    ...(asset.asset_id && { asset_id: asset.asset_id}),
+    ...(asset.asset_type && {asset_type: asset.asset_type}),
+    ...(asset.asset_tag && {asset_tag: asset.asset_tag}) ,
+    ...(asset.serial_number && {serial_number: asset.serial_number}),
+    ...(asset.vendor_name && {vendor_name: asset.vendor_name}),
+    ...(asset.version && {version: asset.version}),
+    ...(asset.release_date && {release_date: asset.release_date}),
+    ...(asset.function && {function: asset.function}),
+    ...(asset.cpe_identifier && {cpe_identifier: asset.cpe_identifier}),
+    ...(asset.software_identifier && {software_identifier: asset.software_identifier}),
+    ...(asset.patch_level && {patch_level: asset.patch_level}),
+    ...(asset.installation_id && {installation_id: asset.installation_id}),
+    ...(asset.license_key && {license_key: asset.license_key}),
     // Hints
-    parent_iri: asset.iri,
-    locations_iri: asset.locations || null,
-    ext_ref_iri: asset.external_references || null,
-    notes_iri: asset.notes || null,
+    ...(asset.iri && {parent_iri: asset.iri}),
+    ...(asset.locations && {locations_iri: asset.locations}),
+    ...(asset.external_references && {ext_ref_iri: asset.external_references}),
+    ...(asset.notes && {notes_iri: asset.notes}),
   }
 }
   
