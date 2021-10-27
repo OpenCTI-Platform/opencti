@@ -15,6 +15,8 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
+import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -33,15 +35,18 @@ const styles = (theme) => ({
     }),
     padding: 0,
   },
+  dialogRoot: {
+    padding: '24px',
+  },
   createButton: {
     position: 'fixed',
     bottom: 30,
     right: 30,
   },
   createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
+    // position: 'fixed',
+    // bottom: 30,
+    // right: 30,
     zIndex: 3000,
   },
   buttons: {
@@ -109,27 +114,50 @@ class ExternalReferenceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    commitMutation({
+    CM(environmentDarkLight, {
       mutation: externalReferenceCreationMutation,
       variables: {
         input: values,
       },
-      updater: (store) => insertNode(
-        store,
-        'Pagination_externalReferences',
-        this.props.paginationOptions,
-        'externalReferenceAdd',
-      ),
+      // updater: (store) => insertNode(
+      //   store,
+      //   'Pagination_externalReferences',
+      //   this.props.paginationOptions,
+      //   'externalReferenceAdd',
+      // ),
       setSubmitting,
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
         this.handleClose();
+        console.log('ExternalReferenceCreationMutationResp', response);
         if (this.props.onCreate) {
           this.props.onCreate(response.externalReferenceAdd, true);
         }
       },
+      onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
     });
+    // commitMutation({
+    //   mutation: externalReferenceCreationMutation,
+    //   variables: {
+    //     input: values,
+    //   },
+    //   updater: (store) => insertNode(
+    //     store,
+    //     'Pagination_externalReferences',
+    //     this.props.paginationOptions,
+    //     'externalReferenceAdd',
+    //   ),
+    //   setSubmitting,
+    //   onCompleted: (response) => {
+    //     setSubmitting(false);
+    //     resetForm();
+    //     this.handleClose();
+    //     if (this.props.onCreate) {
+    //       this.props.onCreate(response.externalReferenceAdd, true);
+    //     }
+    //   },
+    // });
   }
 
   onResetClassic() {
@@ -247,15 +275,19 @@ class ExternalReferenceCreation extends Component {
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
+        <IconButton
+          color="inherit"
           aria-label="Add"
-          className={classes.createButtonContextual}
+          edge="end"
+          onClick={this.handleOpen.bind(this)}
         >
-          <Add />
-        </Fab>
-        <Dialog open={this.state.open} onClose={this.handleClose.bind(this)}>
+          <Add fontSize="small" />
+        </IconButton>
+        <Dialog
+          open={this.state.open}
+          classes={{ root: classes.dialogRoot }}
+          onClose={this.handleClose.bind(this)}
+        >
           <Formik
             enableReinitialize={true}
             initialValues={{
@@ -302,11 +334,16 @@ class ExternalReferenceCreation extends Component {
                     style={{ marginTop: 20 }}
                   />
                 </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
+                <DialogActions style={{ float: 'left', marginLeft: '15px' }}>
+                  <Button
+                    variant="outlined"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                  >
                     {t('Cancel')}
                   </Button>
                   <Button
+                    variant="contained"
                     color="primary"
                     onClick={submitForm}
                     disabled={isSubmitting}

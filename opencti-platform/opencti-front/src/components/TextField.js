@@ -13,6 +13,7 @@ const TextField = (props) => {
     onFocus,
     onSubmit,
     detectDuplicate,
+    multiline,
   } = props;
   const internalOnChange = React.useCallback(
     (event) => {
@@ -60,6 +61,7 @@ const TextField = (props) => {
       onChange={internalOnChange}
       onFocus={internalOnFocus}
       onBlur={internalOnBlur}
+      multiline={multiline}
     />
   );
 };

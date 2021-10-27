@@ -8,6 +8,12 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import LinkIcon from '@material-ui/icons/Link';
+import Divider from '@material-ui/core/Divider';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -45,7 +51,6 @@ const styles = (theme) => ({
     minHeight: '100%',
     margin: '-4px 0 0 0',
     padding: 0,
-    borderRadius: 6,
     position: 'relative',
   },
   avatar: {
@@ -171,7 +176,9 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
     } = this.props;
     const { expanded } = this.state;
     const externalReferencesEdges = data.stixCoreObject.externalReferences.edges;
+    // const externalReferencesEdges = [data.externalReference];
     const expandable = externalReferencesEdges.length > 7;
+    console.log('externalReferencesEdges', data);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -185,6 +192,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
             stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
             stixCoreObjectOrStixCoreRelationshipReferences={
               data.stixCoreObject.externalReferences.edges
+              // data.externalReference
             }
           />
         </Security>
@@ -192,6 +200,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {externalReferencesEdges.length > 0 ? (
             <List style={{ marginBottom: 0 }}>
+              {/* {externalReferencesEdges.map( */}
               {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
                 (externalReferenceEdge) => {
                   const externalReference = externalReferenceEdge.node;
@@ -210,7 +219,113 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                   ) {
                     externalReferenceSecondary = externalReference.description;
                   }
-                  if (externalReference.url) {
+                  return (
+                    <div key={externalReference.id}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '90% 10%' }}>
+                        <Accordion style={{ borderBottom: '0', boxShadow: 'none' }}>
+                          {/* <ListItem dense={true} divider={true} button={false}> */}
+                          {/* <ListItemIcon>
+                                      <Avatar classes={{ root: classes.avatar }}>
+                                        {externalReference.source_name.substring(0, 1)}
+                                      </Avatar>
+                                    </ListItemIcon> */}
+                          <AccordionSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                            sx={{ width: '100%' }}
+                          >
+                            <ListItemText
+                              primary={`${externalReference.source_name}`}
+                              secondary={truncate(
+                                externalReference.url,
+                                120,
+                              )}
+                            />
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            <div >
+                              <Typography variant="subtitle1" gutterBottom={true}>
+                                {externalReference.description}
+                              </Typography>
+                              <Typography variant="subtitle2" style={{ display: 'flex', color: '#F9B406' }} >
+                                <LinkIcon fontSize="small" style={{ paddingRight: '5px' }} />
+                                {externalReference.external_id}
+                              </Typography>
+                            </div>
+                          </AccordionDetails>
+                          {/* </ListItem> */}
+                        </Accordion>
+                        {/* <ListItemSecondaryAction> */}
+                        {/* <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                                  <FileUploader
+                                    entityId={externalReference.id}
+                                    onUploadSuccess={() => this.props.relay.refetchConnection(200)
+                                    }
+                                    color="inherit"
+                                  />
+                                </Security> */}
+                        <div style={{ marginTop: '12px' }}>
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <ExternalReferencePopover
+                              externalReferenceId={externalReference.id}
+                              handleRemove={this.handleOpenDialog.bind(
+                                this,
+                                externalReferenceEdge,
+                              )}
+                            />
+                          </Security>
+                        </div>
+                        {/* </ListItemSecondaryAction> */}
+                      </div>
+                      {/* {externalReference.importFiles.edges.length > 0 && (
+                        <List>
+                          {externalReference.importFiles.edges.map((file) => (
+                            <FileLine
+                              key={file.node.id}
+                              dense={true}
+                              disableImport={true}
+                              file={file.node}
+                              nested={true}
+                            />
+                          ))}
+                        </List>
+                      )} */}
+                      <Divider variant="middle" light={true} />
+                    </div>
+                  );
+                },
+              )}
+            </List>
+          ) : (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {t('No entities of this type has been found.')}
+              </span>
+            </div>
+          )}
+          {expandable && (
+            <Button
+              variant="contained"
+              size="small"
+              onClick={this.handleToggleExpand.bind(this)}
+              classes={{ root: classes.buttonExpand }}
+            >
+              {expanded ? (
+                <ExpandLessOutlined fontSize="small" />
+              ) : (
+                <ExpandMoreOutlined fontSize="small" />
+              )}
+            </Button>
+          )}
+        </Paper>
+        {/* if (externalReference.url) {
                     return (
                       <div key={externalReference.id}>
                         <ListItem
@@ -271,88 +386,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                         )}
                       </div>
                     );
-                  }
-                  return (
-                    <div key={externalReference.id}>
-                      <ListItem dense={true} divider={true} button={false}>
-                        <ListItemIcon>
-                          <Avatar classes={{ root: classes.avatar }}>
-                            {externalReference.source_name.substring(0, 1)}
-                          </Avatar>
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={`${externalReference.source_name} ${externalReferenceId}`}
-                          secondary={truncate(
-                            externalReference.description,
-                            120,
-                          )}
-                        />
-                        <ListItemSecondaryAction>
-                          <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-                            <FileUploader
-                              entityId={externalReference.id}
-                              onUploadSuccess={() => this.props.relay.refetchConnection(200)
-                              }
-                              color="inherit"
-                            />
-                          </Security>
-                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                            <ExternalReferencePopover
-                              externalReferenceId={externalReference.id}
-                              handleRemove={this.handleOpenDialog.bind(
-                                this,
-                                externalReferenceEdge,
-                              )}
-                            />
-                          </Security>
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                      {externalReference.importFiles.edges.length > 0 && (
-                        <List>
-                          {externalReference.importFiles.edges.map((file) => (
-                            <FileLine
-                              key={file.node.id}
-                              dense={true}
-                              disableImport={true}
-                              file={file.node}
-                              nested={true}
-                            />
-                          ))}
-                        </List>
-                      )}
-                    </div>
-                  );
-                },
-              )}
-            </List>
-          ) : (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                {t('No entities of this type has been found.')}
-              </span>
-            </div>
-          )}
-          {expandable && (
-            <Button
-              variant="contained"
-              size="small"
-              onClick={this.handleToggleExpand.bind(this)}
-              classes={{ root: classes.buttonExpand }}
-            >
-              {expanded ? (
-                <ExpandLessOutlined fontSize="small" />
-              ) : (
-                <ExpandMoreOutlined fontSize="small" />
-              )}
-            </Button>
-          )}
-        </Paper>
+                  } */}
         <Dialog
           open={this.state.displayDialog}
           keepMounted={true}
@@ -425,6 +459,43 @@ export const stixCoreObjectExternalReferencesLinesQuery = graphql`
       @arguments(count: $count, id: $id)
   }
 `;
+
+// export const stixCoreObjectExternalReferencesLinesQuery = graphql`
+//   query StixCoreObjectExternalReferencesLinesQuery($id: String!) {
+//     externalReference(id: $id) {
+//       id
+//       source_name
+//       description
+//       url
+//       hash
+//       external_id
+//       jobs(first: 100) {
+//         id
+//         timestamp
+//         connector {
+//           id
+//           name
+//         }
+//         messages {
+//           timestamp
+//           message
+//         }
+//         errors {
+//           timestamp
+//           message
+//         }
+//         status
+//       }
+//       connectors(onlyAlive: false) {
+//         id
+//         connector_type
+//         name
+//         active
+//         updated_at
+//       }
+//     }
+//   }
+// `;
 
 const StixCoreObjectExternalReferencesLines = createPaginationContainer(
   StixCoreObjectExternalReferencesLinesContainer,

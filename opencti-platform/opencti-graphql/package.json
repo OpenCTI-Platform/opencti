@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "start": "webpack --mode development",
-    "start-mac": "export NODE_TLS_REJECT_UNAUTHORIZED=0 && webpack --mode development",
+    "start-mac": "export NODE_TLS_REJECT_UNAUTHORIZED=0 && export MOCKS=0 && webpack --mode development",
     "clean:relations": "babel-node ./script/script-clean-relations.js",
     "install:python": "pip3 install -r src/python/requirements.txt",
     "build:api": "webpack --mode production",

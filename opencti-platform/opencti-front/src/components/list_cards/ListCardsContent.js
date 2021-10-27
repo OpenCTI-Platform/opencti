@@ -12,7 +12,7 @@ import {
 } from 'react-virtualized';
 import inject18n from '../i18n';
 
-const numberOfCardsPerLine = 4;
+const numberOfCardsPerLine = 3;
 
 const styles = () => ({
   windowScrollerWrapper: {
@@ -49,6 +49,16 @@ class ListCardsContent extends Component {
       this.props.bookmarkList || [],
       prevProps.bookmarkList || [],
     );
+    let selection = false;
+    if (
+      Object.keys(this.props.selectedElements || {}).length
+      !== Object.keys(prevProps.selectedElements || {}).length
+    ) {
+      selection = true;
+    }
+    if (this.props.selectAll !== prevProps.selectAll) {
+      selection = true;
+    }
     if (diff.length > 0 || diffBookmark.length > 0) {
       this.gridRef.forceUpdate();
     }
@@ -107,8 +117,11 @@ class ListCardsContent extends Component {
     const {
       classes,
       dataList,
+      selectAll,
       bookmarkList,
       CardComponent,
+      onToggleEntity,
+      selectedElements,
       DummyCardComponent,
       initialLoading,
       onLabelClick,
@@ -136,8 +149,11 @@ class ListCardsContent extends Component {
       <div className={className} key={key} style={style}>
         {React.cloneElement(CardComponent, {
           node,
+          selectAll,
           bookmarksIds,
           onLabelClick,
+          onToggleEntity,
+          selectedElements,
         })}
       </div>
     );
@@ -193,7 +209,7 @@ class ListCardsContent extends Component {
                               onScroll={onChildScroll}
                               columnWidth={columnWidth}
                               columnCount={numberOfCardsPerLine}
-                              rowHeight={rowHeight || 195}
+                              rowHeight={rowHeight || 345}
                               overscanColumnCount={numberOfCardsPerLine}
                               overscanRowCount={2}
                               rowCount={rowCount}
@@ -229,8 +245,11 @@ ListCardsContent.propTypes = {
   bookmarkList: PropTypes.array,
   globalCount: PropTypes.number,
   CardComponent: PropTypes.object,
+  onToggleEntity: PropTypes.func,
   DummyCardComponent: PropTypes.object,
+  selectedElements: PropTypes.object,
   nbOfCardsToLoad: PropTypes.number,
+  selectAll: PropTypes.bool,
   width: PropTypes.number,
   rowHeight: PropTypes.number,
   onLabelClick: PropTypes.func,

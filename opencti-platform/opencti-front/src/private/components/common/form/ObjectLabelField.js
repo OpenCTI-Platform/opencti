@@ -65,7 +65,14 @@ class ObjectLabelField extends Component {
 
   render() {
     const {
-      t, name, style, classes, setFieldValue, values, helpertext,
+      t,
+      name,
+      style,
+      classes,
+      setFieldValue,
+      values,
+      variant,
+      helpertext,
     } = this.props;
     return (
       <div>
@@ -73,6 +80,7 @@ class ObjectLabelField extends Component {
           component={AutocompleteField}
           style={style}
           name={name}
+          variant={variant}
           multiple={true}
           textfieldprops={{
             label: t('Labels'),
