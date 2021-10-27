@@ -11,6 +11,11 @@ import Grid from '@material-ui/core/Grid';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import AppBar from '@material-ui/core/AppBar';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import Slide from '@material-ui/core/Slide';
+import DialogActions from '@material-ui/core/DialogActions';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
@@ -33,8 +38,8 @@ const styles = (theme) => ({
     margin: 0,
   },
   header: {
-    margin: '-25px',
-    padding: '24px',
+    margin: '-25px -25px 30px -25px',
+    padding: '15px',
     height: '64px',
     backgroundColor: '#1F2842',
   },
@@ -60,6 +65,13 @@ const styles = (theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
+  },
+  buttonPopover: {
+    textTransform: 'capitalize',
+  },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
   },
 });
 
@@ -94,18 +106,30 @@ const deviceValidation = (t) => Yup.object().shape({
   // personal_motivations: Yup.array().nullable(),
   // goals: Yup.string().nullable(),
 });
-
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 class DeviceEditionContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
       open: false,
       onSubmit: false,
+      displayCancel: false,
     };
   }
 
   handleOpen() {
     this.setState({ open: true });
+  }
+
+  handleCancelButton() {
+    this.setState({ displayCancel: false });
+  }
+
+  handleOpenCancelButton() {
+    this.setState({ displayCancel: true });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -289,7 +313,8 @@ class DeviceEditionContainer extends Component {
                       size="small"
                       startIcon={<Close />}
                       color='primary'
-                      onClick={() => this.props.history.goBack()}
+                      // onClick={() => this.props.history.goBack()}
+                      onClick={this.handleOpenCancelButton.bind(this)}
                       className={classes.iconButton}
                     >
                       {t('Cancel')}
@@ -309,6 +334,47 @@ class DeviceEditionContainer extends Component {
                   </Tooltip>
                 </div>
               </div>
+              <Dialog
+                open={this.state.displayCancel}
+                TransitionComponent={Transition}
+                onClose={this.handleCancelButton.bind(this)}
+              >
+                  <DialogContent>
+                    <Typography style={{
+                      fontSize: '18px',
+                      lineHeight: '24px',
+                      color: 'white',
+                    }} >
+                      {t('Are you sure you’d like to cancel?')}
+                    </Typography>
+                    <DialogContentText>
+                      {t('Your progress will not be saved')}
+                    </DialogContentText>
+                  </DialogContent>
+                <DialogActions className={ classes.dialogActions }>
+                  <Button
+                    // onClick={this.handleCloseDelete.bind(this)}
+                    // disabled={this.state.deleting}
+                    onClick={this.handleCancelButton.bind(this)}
+                    classes={{ root: classes.buttonPopover }}
+                    variant="outlined"
+                    size="small"
+                  >
+                    {t('Go Back')}
+                  </Button>
+                  <Button
+                    // onClick={this.submitDelete.bind(this)}
+                    // disabled={this.state.deleting}
+                    onClick={() => this.props.history.goBack()}
+                    color="primary"
+                    classes={{ root: classes.buttonPopover }}
+                    variant="contained"
+                    size="small"
+                  >
+                    {t('Yes Cancel')}
+                  </Button>
+                </DialogActions>
+              </Dialog>
               <Form>
                 <Grid
                   container={true}

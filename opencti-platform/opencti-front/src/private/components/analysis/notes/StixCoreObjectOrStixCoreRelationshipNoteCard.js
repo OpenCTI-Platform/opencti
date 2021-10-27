@@ -296,7 +296,6 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
                     />
                 </CardActions>
             </Collapse>
-        <Divider light={true} />
         <Dialog
           open={this.state.displayDialog}
           keepMounted={true}
@@ -324,6 +323,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
             </Button>
           </DialogActions>
         </Dialog>
+        <Divider light={true} />
       </Card>
     );
   }

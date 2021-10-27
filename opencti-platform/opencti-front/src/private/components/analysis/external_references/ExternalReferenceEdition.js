@@ -6,6 +6,8 @@ import { Form, Formik, Field } from 'formik';
 import { compose, pick } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
@@ -23,9 +25,9 @@ import {
 
 const styles = (theme) => ({
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
-    padding: '20px 20px 20px 60px',
+    // backgroundColor: theme.palette.navAlt.backgroundHeader,
+    // color: theme.palette.navAlt.backgroundHeaderText,
+    padding: '15px 0 0 20px',
   },
   closeButton: {
     position: 'absolute',
@@ -39,7 +41,7 @@ const styles = (theme) => ({
     right: 20,
   },
   container: {
-    padding: '10px 20px 20px 20px',
+    padding: '0 20px 20px 20px',
   },
   appBar: {
     width: '100%',
@@ -50,6 +52,9 @@ const styles = (theme) => ({
   },
   title: {
     float: 'left',
+  },
+  buttonPopover: {
+    textTransform: 'capitalize',
   },
 });
 
@@ -146,17 +151,17 @@ class ExternalReferenceEditionContainer extends Component {
     return (
       <div>
         <div className={classes.header}>
-          <IconButton
+          {/* <IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
           >
             <Close fontSize="small" />
-          </IconButton>
+          </IconButton> */}
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update an external reference')}
+            {t('External Reference')}
           </Typography>
-          <SubscriptionAvatars context={editContext} />
+          {/* <SubscriptionAvatars context={editContext} /> */}
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
@@ -211,7 +216,7 @@ class ExternalReferenceEditionContainer extends Component {
                 <Field
                   component={MarkDownField}
                   name="description"
-                  label={t('Description')}
+                  // label={t('Description')}
                   fullWidth={true}
                   multiline={true}
                   rows={4}
@@ -225,6 +230,32 @@ class ExternalReferenceEditionContainer extends Component {
                     />
                   }
                 />
+                <div style={{
+                  float: 'left',
+                  margin: '20px 0 30px 0',
+                }}>
+                  <Button
+                    variant="outlined"
+                    onClick={handleClose.bind(this)}
+                    // onClick={handleReset}
+                    // disabled={isSubmitting}
+                    style={{ marginRight: '15px' }}
+                    size="small"
+                    classes={{ root: classes.buttonPopover }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    // onClick={submitForm}
+                    // disabled={isSubmitting}
+                    size="small"
+                    classes={{ root: classes.buttonPopover }}
+                  >
+                    {t('Update')}
+                  </Button>
+                </div>
               </Form>
             )}
           </Formik>

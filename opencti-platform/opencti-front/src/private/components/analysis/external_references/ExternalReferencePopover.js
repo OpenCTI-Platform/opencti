@@ -16,6 +16,8 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
+import { QueryRenderer as QR } from 'react-relay';
+import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import ExternalReferenceEdition from './ExternalReferenceEdition';
@@ -26,11 +28,10 @@ const styles = (theme) => ({
     margin: 0,
   },
   drawerPaper: {
-    minHeight: '100vh',
     width: '50%',
     position: 'fixed',
     overflow: 'auto',
-    backgroundColor: theme.palette.navAlt.background,
+    backgroundColor: theme.palette.background.paper,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -46,6 +47,9 @@ const styles = (theme) => ({
   dialogActions: {
     justifyContent: 'flex-start',
     padding: '10px 0 20px 22px',
+  },
+  buttonPopover: {
+    textTransform: 'capitalize',
   },
 });
 
@@ -173,14 +177,15 @@ class ExternalReferencePopover extends Component {
             {t('Delete')}
           </MenuItem>
         </Menu>
-        <Drawer
+        <Dialog
           open={this.state.displayUpdate}
-          anchor="right"
+          keepMounted={true}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseUpdate.bind(this)}
         >
-          <QueryRenderer
-            query={externalReferenceEditionQuery}
+          <QR
+          environment={QueryRendererDarkLight}
+          query={externalReferenceEditionQuery}
             variables={{ id: externalReferenceId }}
             render={({ props }) => {
               if (props) {
@@ -195,7 +200,7 @@ class ExternalReferencePopover extends Component {
               return <Loader variant="inElement" />;
             }}
           />
-        </Drawer>
+        </Dialog>
         <Dialog
           open={this.state.displayDelete}
           keepMounted={true}
@@ -207,7 +212,6 @@ class ExternalReferencePopover extends Component {
                 fontSize: '18px',
                 lineHeight: '24px',
                 color: 'white',
-                fontFamily: 'DINNextLTPro',
               }} >
                 {t('Are you sure you’d like to delete this item?')}
               </Typography>
@@ -219,15 +223,19 @@ class ExternalReferencePopover extends Component {
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
+              classes={{ root: classes.buttonPopover }}
               variant="outlined"
+              size="small"
             >
               {t('Cancel')}
             </Button>
             <Button
               onClick={this.submitDelete.bind(this)}
-              color="primary"
+              color="secondary"
               disabled={this.state.deleting}
+              classes={{ root: classes.buttonPopover }}
               variant="contained"
+              size="small"
             >
               {t('Delete')}
             </Button>
