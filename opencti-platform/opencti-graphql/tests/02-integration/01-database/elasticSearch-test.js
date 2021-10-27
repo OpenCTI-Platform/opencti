@@ -468,7 +468,7 @@ describe('Elasticsearch pagination', () => {
   });
   it('should entity paginate with incorrect encoding', async () => {
     const data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { search: '"ATT%"' });
-    expect(data.edges.length).toEqual(0);
+    expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];
