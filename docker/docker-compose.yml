@@ -48,6 +48,7 @@ services:
       - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
       - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN}
       - APP__APP_LOGS__LOGS_LEVEL=error
+      # - REACT_APP_GRAPHQL_HOST=
       # - APP__HTTPS_CERT__KEY=/opt/opencti/certs/darklight.key
       # - APP__HTTPS_CERT__CRT=/opt/opencti/certs/darklight.crt
       - REDIS__HOSTNAME=redis

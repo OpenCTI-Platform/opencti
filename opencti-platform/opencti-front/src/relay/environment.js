@@ -49,12 +49,13 @@ export class ApplicationError extends Error {
 const isEmptyPath = isNil(window.BASE_PATH) || isEmpty(window.BASE_PATH);
 const contextPath = isEmptyPath || window.BASE_PATH === '/' ? '' : window.BASE_PATH;
 export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
-
 // Subscription
 const loc = window.location;
+const host = process.env.REACT_APP_GRAPHQL_HOST || loc.host;
+// eslint-disable-next-line no-console
 const isSecure = loc.protocol === 'https:' ? 's' : '';
 const subscriptionClient = new SubscriptionClient(
-  `ws${isSecure}://${loc.host}${APP_BASE_PATH}/graphql`,
+  `ws${isSecure}://${host}${APP_BASE_PATH}/graphql`,
   {
     reconnect: true,
   },
