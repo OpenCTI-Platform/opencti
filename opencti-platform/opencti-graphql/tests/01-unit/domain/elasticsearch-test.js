@@ -22,7 +22,7 @@ test('should string correctly escaped', async () => {
   escape = specialElasticCharsEscape('Looking (threat) = ?maybe');
   expect(escape).toEqual('Looking \\(threat\\) \\= \\?maybe');
   escape = specialElasticCharsEscape('Looking All* + Everything| - \\with');
-  expect(escape).toEqual('Looking All\\* \\+ Everything\\| - \\\\with');
+  expect(escape).toEqual('Looking All\\* \\+ Everything\\| \\- \\\\with');
 });
 
 test('should search parsing correctly generated', () => {
