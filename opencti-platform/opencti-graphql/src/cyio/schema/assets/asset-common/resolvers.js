@@ -6,7 +6,7 @@ const assetCommonResolvers = {
   Query: {
     asset: (_, args, context, info) => {
       const dbName = context.dbName;
-      var sparqlQuery = getSparqlQuery('BY-ID', args.id);
+      var sparqlQuery = getSelectSparqlQuery('BY-ID', args.id);
       context.dataSources.Stardog.queryById( dbName, sparqlQuery, singularizeSchema )
       .then (function (response) {
         console.log( response[0] );
@@ -16,7 +16,7 @@ const assetCommonResolvers = {
       });
     },
     assetList: (_, args, context, info) => {
-      var sparqlQuery = getSparqlQuery('BY-ALL', args.id);
+      var sparqlQuery = getSelectSparqlQuery('BY-ALL', args.id);
       const response = context.dataSources.Stardog.filteredQuery( 
         context.dbName, 
         sparqlQuery,
@@ -31,7 +31,7 @@ const assetCommonResolvers = {
     },
     itAsset: ( _, args, context, info) => {
       const dbName = context.dbName;
-      var sparqlQuery = getSparqlQuery('BY-ID', args.id);
+      var sparqlQuery = getSelectSparqlQuery('BY-ID', args.id);
       context.dataSources.Stardog.queryById( dbName, sparqlQuery, singularizeSchema )
       .then (function (response) {
         console.log( response[0] );
@@ -41,7 +41,7 @@ const assetCommonResolvers = {
       });
     },
     itAssetList: ( _, args, context, info ) => {
-      var sparqlQuery = getSparqlQuery('BY-ALL', args.id);
+      var sparqlQuery = getSelectSparqlQuery('BY-ALL', args.id);
       const response = context.dataSources.Stardog.filteredQuery( 
         context.dbName, 
         sparqlQuery,
