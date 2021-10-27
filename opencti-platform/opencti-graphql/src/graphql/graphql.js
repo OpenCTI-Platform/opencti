@@ -9,11 +9,13 @@ import { UnknownError, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
 import { applicationSession } from '../database/session';
+// Stardog
+import StardogKB from '../datasources/stardog.js';
+
+// import cors from "cors";
 
 // Keycloak
-import { expandToken } from '../service/keycloak';
 // import configureKeycloak from './keycloak-config.js';
-// import cors from "cors";
 // import { KeycloakContext, KeycloakTypeDefs, KeycloakSchemaDirectives } from 'keycloak-connect-graphql';
 
 // mocks
@@ -21,13 +23,16 @@ import mockList from './mocks.js' ;
 
 
 const buildContext = (user, req, res) => {
-  // const kauth = new KeycloakContext({ req }, keycloak);
-  // const dbName = req.headers['x-cyio-client'];
   const workId = req.headers['opencti-work-id'];
+  // const kauth = new KeycloakContext({ req }, keycloak);
+  let dbName = req.headers['x-cyio-client'];
+  if ( dbName === undefined )
+    dbName = 'db30f033d4-e90d-44f9-8ce0-36597ff08c93';
+
   if (user) {
-    return { req, res, user: userWithOrigin(req, user), workId };
+    return { req, res, user: userWithOrigin(req, user), workId, dbName, };
   }
-  return { req, res, user, workId };
+  return { req, res, user, workId, dbName, };
 };
 
 // perform the standard keycloak-connect middleware setup on our app
@@ -49,6 +54,9 @@ const createApolloServer = () => {
     introspection: true,
     mocks,
     mockEntireSchema: false,
+    dataSources: () => ({ 
+      Stardog: new StardogKB( )
+    }),
     playground: {
       cdnUrl,
       settings: {
@@ -60,12 +68,9 @@ const createApolloServer = () => {
       if (connection) {
         return { req, res, user: connection.context.user };
       }
+
       // Get user session from request
       const user = await authenticateUserFromRequest(req);
-      // if (user == undefined) return buildContext( user, req, res);
-      // const expandedInfo = expandToken( req.headers );
-      // const combined = { ...user, ...expandedInfo };
-      // return buildContext( combined, req, res)
       return buildContext(user, req, res);
     },
     tracing: DEV_MODE,

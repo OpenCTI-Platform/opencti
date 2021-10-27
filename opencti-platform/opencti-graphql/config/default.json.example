@@ -118,5 +118,10 @@
     "server": "",         # MUST have URL
     "client_id": "",      # MUST have value
     "client_secret": ""   # MUST have UUID
-  }
+  },
+  "stardog": [
+    "endpoint": "",   # MUST have a value
+    "username": "",   # MUST have a value
+    "password": ""    # MUST have a value
+  ]
 }
