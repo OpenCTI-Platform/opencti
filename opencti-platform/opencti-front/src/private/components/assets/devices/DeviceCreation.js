@@ -81,20 +81,20 @@ const styles = (theme) => ({
   },
 });
 
-const deviceCreationMutation = graphql`
-  mutation DeviceCreationMutation($input: ComputingDeviceAssetAddInput) {
-    addComputingDeviceAsset (input: $input) {
-      ...DeviceCard_node
-      ...DeviceDetails_device
-      operational_status
-      serial_number
-      release_date
-      description
-      version
-      name
-    }
-  }
-`;
+// const deviceCreationMutation = graphql`
+//   mutation DeviceCreationMutation($input: ComputingDeviceAssetAddInput) {
+//     addComputingDeviceAsset (input: $input) {
+//       ...DeviceCard_node
+//       ...DeviceDetails_device
+//       operational_status
+//       serial_number
+//       release_date
+//       description
+//       version
+//       name
+//     }
+//   }
+// `;
 
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
@@ -136,7 +136,7 @@ class DeviceCreation extends Component {
     //   assoc('objectLabel', pluck('value', values.objectLabel)),
     // )(values);
     CM(environmentDarkLight, {
-      mutation: deviceCreationMutation,
+      // mutation: deviceCreationMutation,
       // const adaptedValues = evolve(
       //   {
       //     published: () => parse(values.published).format(),
