@@ -17,6 +17,8 @@ import {
 import { RELATION_INDICATES } from './stixCoreRelationship';
 
 export const ATTRIBUTE_NAME = 'name';
+export const ATTRIBUTE_ABSTRACT = 'abstract';
+export const ATTRIBUTE_EXPLANATION = 'explanation';
 export const ATTRIBUTE_DESCRIPTION = 'description';
 export const ATTRIBUTE_ALIASES = 'aliases';
 export const ATTRIBUTE_ALIASES_OPENCTI = 'x_opencti_aliases';

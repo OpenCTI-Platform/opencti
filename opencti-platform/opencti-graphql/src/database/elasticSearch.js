@@ -50,12 +50,11 @@ import {
   isRuntimeAttribute,
   numericOrBooleanAttributes,
 } from '../schema/fieldDataAdapter';
-import { convertEntityTypeToStixType, getParentTypes, isAnId, isStixId } from '../schema/schemaUtils';
+import { convertEntityTypeToStixType, getParentTypes } from '../schema/schemaUtils';
 import {
-  ATTRIBUTE_ADDITIONAL_NAMES,
-  ATTRIBUTE_ALIASES,
-  ATTRIBUTE_ALIASES_OPENCTI,
+  ATTRIBUTE_ABSTRACT,
   ATTRIBUTE_DESCRIPTION,
+  ATTRIBUTE_EXPLANATION,
   ATTRIBUTE_NAME,
   isStixObjectAliased,
 } from '../schema/stixDomainObject';
@@ -1257,67 +1256,114 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
 
 // region elastic common loader.
 export const specialElasticCharsEscape = (query) => {
-  return query.replace(/([+|*()~={}[\]:?\\])/g, '\\$1');
+  return query.replace(/([+|\-*()~={}[\]:?\\])/g, '\\$1');
 };
 
-const BASE_SEARCH_CONNECTIONS = [`connections.${ATTRIBUTE_NAME}^5`];
+const BASE_SEARCH_CONNECTIONS = [
+  // Pounds for connections search
+  `connections.${ATTRIBUTE_NAME}^5`,
+  // Add all other attributes
+  `connections.*`,
+];
 const BASE_SEARCH_ATTRIBUTES = [
+  // Pounds for attributes search
   `${ATTRIBUTE_NAME}^5`,
   `${ATTRIBUTE_DESCRIPTION}^2`,
-  ATTRIBUTE_ALIASES,
-  ATTRIBUTE_ALIASES_OPENCTI,
-  ATTRIBUTE_ADDITIONAL_NAMES,
+  `${ATTRIBUTE_ABSTRACT}^5`,
+  `${ATTRIBUTE_EXPLANATION}^5`,
+  // Add all other attributes
+  '*',
 ];
-export const elSearchParser = (search) => {
-  const attributeFields = BASE_SEARCH_ATTRIBUTES;
-  const connectionFields = BASE_SEARCH_CONNECTIONS;
-  // region escape input from elastic search specific chars
+export const elGenerateFullTextSearchShould = (search) => {
   let decodedSearch;
   try {
     decodedSearch = decodeURIComponent(search).trim();
   } catch (e) {
     decodedSearch = search.trim();
   }
-  const cleanSearch = specialElasticCharsEscape(decodedSearch.trim());
-  // endregion
-  // Split by " to handle grouping when split by whitespace
-  let remainingSearch = cleanSearch;
-  const baseSearch = (cleanSearch.match(/"[^"]+"/g) || []).filter((e) => isNotEmptyField(e.replace(/"/g, '').trim()));
-  for (let index = 0; index < baseSearch.length; index += 1) {
-    remainingSearch = remainingSearch.replace(baseSearch[index], '');
+  let remainingSearch = decodedSearch;
+  const exactSearch = (decodedSearch.match(/"[^"]+"/g) || []) //
+    .filter((e) => isNotEmptyField(e.replace(/"/g, '').trim()));
+  for (let index = 0; index < exactSearch.length; index += 1) {
+    remainingSearch = remainingSearch.replace(exactSearch[index], '');
   }
-  const searchElements = remainingSearch.trim().split(' ');
-  for (let searchIndex = 0; searchIndex < searchElements.length; searchIndex += 1) {
-    const searchElement = searchElements[searchIndex];
-    const cleanElement = searchElement.replace(/"/g, '').trim();
+  const querySearch = [];
+  const partialSearch = remainingSearch.replace(/"/g, '').trim().split(' ');
+  for (let searchIndex = 0; searchIndex < partialSearch.length; searchIndex += 1) {
+    const partialElement = partialSearch[searchIndex];
+    const cleanElement = specialElasticCharsEscape(partialElement);
     if (isNotEmptyField(cleanElement)) {
-      if (cleanElement.startsWith('http\\://')) {
-        baseSearch.push(`"*${cleanElement.replace('http\\://', '')}*"`);
-      } else if (cleanElement.startsWith('https\\://')) {
-        baseSearch.push(`"*${cleanElement.replace('https\\://', '')}*"`);
-      } else if (isAnId(cleanElement)) {
-        baseSearch.push(`"${cleanElement}"`);
-        if (isStixId(cleanElement)) {
-          attributeFields.push(ID_STANDARD);
-          attributeFields.push(IDS_STIX);
-        } else {
-          connectionFields.push(`connections.${ID_INTERNAL}`);
-          attributeFields.push(ID_INTERNAL);
-        }
-      } else if (cleanElement.includes('-')) {
-        baseSearch.push(`"*${cleanElement}*"`);
-      } else {
-        baseSearch.push(`*${cleanElement}*`);
-      }
+      querySearch.push(`${cleanElement}*`);
     }
   }
-  // Return the elastic search engine expected search term
-  // Along with attributes to look into
-  return {
-    attributeFields: R.uniq(attributeFields),
-    connectionFields: R.uniq(connectionFields),
-    search: R.uniq(baseSearch.sort()).join(' ').trim(),
-  };
+  // Return the elastic search engine expected bool should terms
+  const shouldSearch = [];
+  const cleanExactSearch = exactSearch.map((e) => e.replace(/"|http?:/g, ''));
+  shouldSearch.push(
+    ...R.flatten(
+      cleanExactSearch.map((ex) => [
+        {
+          multi_match: {
+            type: 'phrase',
+            query: ex,
+            lenient: true,
+            fields: BASE_SEARCH_ATTRIBUTES,
+          },
+        },
+        {
+          nested: {
+            path: 'connections',
+            query: {
+              bool: {
+                must: [
+                  {
+                    multi_match: {
+                      type: 'phrase',
+                      query: ex,
+                      lenient: true,
+                      fields: BASE_SEARCH_CONNECTIONS,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      ])
+    )
+  );
+  shouldSearch.push(
+    ...R.flatten(
+      querySearch.map((ex) => [
+        {
+          query_string: {
+            query: ex,
+            analyze_wildcard: true,
+            fields: BASE_SEARCH_ATTRIBUTES,
+          },
+        },
+        {
+          nested: {
+            path: 'connections',
+            query: {
+              bool: {
+                must: [
+                  {
+                    query_string: {
+                      query: ex,
+                      analyze_wildcard: true,
+                      fields: BASE_SEARCH_CONNECTIONS,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      ])
+    )
+  );
+  return shouldSearch;
 };
 export const elPaginate = async (user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
@@ -1443,36 +1489,10 @@ export const elPaginate = async (user, indexName, options = {}) => {
     must = [...must, ...mustFilters];
   }
   if (search !== null && search.length > 0) {
-    const { search: finalSearch, attributeFields, connectionFields } = elSearchParser(search);
+    const shouldSearch = elGenerateFullTextSearchShould(search);
     const bool = {
       bool: {
-        should: [
-          {
-            query_string: {
-              query: finalSearch,
-              analyze_wildcard: true,
-              fields: attributeFields,
-            },
-          },
-          {
-            nested: {
-              path: 'connections',
-              query: {
-                bool: {
-                  must: [
-                    {
-                      query_string: {
-                        query: finalSearch,
-                        analyze_wildcard: true,
-                        fields: connectionFields,
-                      },
-                    },
-                  ],
-                },
-              },
-            },
-          },
-        ],
+        should: shouldSearch,
         minimum_should_match: 1,
       },
     };

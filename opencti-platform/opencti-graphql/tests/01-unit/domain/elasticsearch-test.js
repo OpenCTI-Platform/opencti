@@ -1,10 +1,18 @@
-import { elSearchParser, specialElasticCharsEscape } from '../../../src/database/elasticSearch';
+import { elGenerateFullTextSearchShould, specialElasticCharsEscape } from '../../../src/database/elasticSearch';
+import { isNotEmptyField } from '../../../src/database/utils';
 
 const parse = (search) => {
-  const { search: field, attributeFields, connectionFields } = elSearchParser(search);
-  expect(attributeFields.length).toBeGreaterThan(1);
-  expect(connectionFields.length).toBeGreaterThanOrEqual(1);
-  return field;
+  const shouldSearch = elGenerateFullTextSearchShould(search);
+  expect(shouldSearch.length).toBeGreaterThan(1);
+  const queriesString = shouldSearch
+    .map((e) => e?.query_string?.query)
+    .filter((f) => isNotEmptyField(f))
+    .join(' ');
+  const matchesString = shouldSearch
+    .map((e) => e?.multi_match?.query)
+    .filter((f) => isNotEmptyField(f))
+    .join(' ');
+  return { queriesString, matchesString };
 };
 
 test('should string correctly escaped', async () => {
@@ -19,26 +27,49 @@ test('should string correctly escaped', async () => {
 
 test('should search parsing correctly generated', () => {
   // URL TESTING
-  expect(parse('first http://localhost:4000/graphql')) //
-    .toBe('"*localhost\\:4000/graphql*" *first*');
-  expect(parse('https://localhost:4000/graphql second')) //
-    .toBe('"*localhost\\:4000/graphql*" *second*');
+  let parsed = parse('first http://localhost:4000/graphql');
+  expect(parsed.queriesString).toBe('first* http\\://localhost\\:4000/graphql*');
+  expect(parsed.matchesString).toBe('');
+
+  parsed = parse('https://localhost:4000/graphql second');
+  expect(parsed.queriesString).toBe('https\\://localhost\\:4000/graphql* second*');
+  expect(parsed.matchesString).toBe('');
+
   // GENERIC TESTING
-  expect(parse('        """""coucou"  ')) //
-    .toBe('"coucou"');
-  expect(parse(' first- - test - after')) //
-    .toBe('"*-*" "*first-*" *after* *test*');
-  expect(parse('        "test search        fs       ')) //
-    .toBe('*fs* *search* *test*');
-  expect(parse('test test search "please my" "bad')) //
-    .toBe('"please my" *bad* *search* *test*');
-  expect(parse('cool test-with')) //
-    .toBe('"*test-with*" *cool*');
-  expect(parse('test of search with $"()_"!spe")£")cif2933920ic chars')) //
-    .toBe('"\\(\\)_" "\\)£" *$!spe\\)cif2933920ic* *chars* *of* *search* *test* *with*');
+  parsed = parse('(Citation:');
+  expect(parsed.queriesString).toBe('\\(Citation\\:*');
+  expect(parsed.matchesString).toBe('');
+
+  parsed = parse('        """""coucou"  ');
+  expect(parsed.queriesString).toBe('');
+  expect(parsed.matchesString).toBe('coucou');
+
+  parsed = parse('        "test search        fs       ');
+  expect(parsed.queriesString).toBe('test* search* fs*');
+  expect(parsed.matchesString).toBe('');
+
+  parsed = parse('test test search "please my" "bad');
+  expect(parsed.queriesString).toBe('test* test* search* bad*');
+  expect(parsed.matchesString).toBe('please my');
+
+  parsed = parse('cool test-with');
+  expect(parsed.queriesString).toBe('cool* test\\-with*');
+  expect(parsed.matchesString).toBe('');
+
+  parsed = parse('test of search with $"()_"!spe")£")cif2933920ic chars');
+  expect(parsed.queriesString).toBe('test* of* search* with* $!spe\\)cif2933920ic* chars*');
+  expect(parsed.matchesString).toBe('()_ )£');
+
   // IDS TESTING
-  expect(parse('     test       d1d7344e-f38e-497b-930c-07779d81ffff')) //
-    .toBe('"d1d7344e-f38e-497b-930c-07779d81ffff" *test*');
-  expect(parse('identity--21985175-7f18-589d-a078-ad14116a0efc')) //
-    .toBe('"identity--21985175-7f18-589d-a078-ad14116a0efc"');
+  parsed = parse('     test       d1d7344e-f38e-497b-930c-07779d81ffff');
+  expect(parsed.queriesString).toBe('test* d1d7344e\\-f38e\\-497b\\-930c\\-07779d81ffff*');
+  expect(parsed.matchesString).toBe('');
+
+  parsed = parse('identity--21985175-7f18-589d-a078-ad14116a0efc');
+  expect(parsed.queriesString).toBe('identity\\-\\-21985175\\-7f18\\-589d\\-a078\\-ad14116a0efc*');
+  expect(parsed.matchesString).toBe('');
+
+  parsed = parse('"identity--21985175-7f18-589d-a078-ad14116a0efc"');
+  expect(parsed.queriesString).toBe('');
+  expect(parsed.matchesString).toBe('identity--21985175-7f18-589d-a078-ad14116a0efc');
 });
