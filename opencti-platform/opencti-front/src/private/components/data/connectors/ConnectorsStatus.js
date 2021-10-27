@@ -421,22 +421,22 @@ const ConnectorsStatus = createRefetchContainer(
             push_exchange
           }
         }
-        amqpMetrics {
-          queues {
-            name
-            messages
-            messages_ready
-            messages_unacknowledged
-            consumers
-            idle_since
-            message_stats {
-              ack
-              ack_details {
-                rate
-              }
-            }
-          }
-        }
+        # amqpMetrics {
+        #   queues {
+        #     name
+        #     messages
+        #     messages_ready
+        #     messages_unacknowledged
+        #     consumers
+        #     idle_since
+        #     message_stats {
+        #       ack
+        #       ack_details {
+        #         rate
+        #       }
+        #     }
+        #   }
+        # }
       }
     `,
   },

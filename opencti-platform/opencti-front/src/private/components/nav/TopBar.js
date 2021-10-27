@@ -11,6 +11,10 @@ import {
   ExploreOutlined,
   InsertChartOutlined,
 } from '@material-ui/icons';
+import NoteAddIcon from '@material-ui/icons/NoteAdd';
+import PublishIcon from '@material-ui/icons/Publish';
+import FindInPageIcon from '@material-ui/icons/FindInPage';
+import DashboardIcon from '@material-ui/icons/Dashboard';
 import { UploadOutline } from 'mdi-material-ui';
 import Menu from '@material-ui/core/Menu';
 import Divider from '@material-ui/core/Divider';
@@ -88,7 +92,10 @@ const styles = (theme) => ({
   },
   logo: {
     cursor: 'pointer',
-    height: 35,
+    height: 20,
+    marginTop: 10,
+    marginLeft: 10,
+
   },
   menuContainer: {
     float: 'left',
@@ -367,27 +374,38 @@ const TopBar = ({
                 </IconButton>
               </Tooltip>
             </Security>
-            <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
-              <Tooltip title={t('Data import')}>
+              <Tooltip title={t('Dashboard')}>
                 <IconButton
                   component={Link}
-                  to="/dashboard/import"
-                  variant={
-                    location.pathname === '/dashboard/import'
-                      ? 'contained'
-                      : 'text'
-                  }
-                  color={
-                    location.pathname === '/dashboard/import'
-                      ? 'secondary'
-                      : 'inherit'
-                  }
                   classes={{ root: classes.button }}
                 >
-                  <UploadOutline fontSize="default" />
+                <DashboardIcon fontSize="default" />
                 </IconButton>
               </Tooltip>
-            </Security>
+            <Tooltip title={t('Find in Page')}>
+                <IconButton
+                  component={Link}
+                  classes={{ root: classes.button }}
+                >
+                <FindInPageIcon fontSize="default" />
+                </IconButton>
+              </Tooltip>
+            <Tooltip title={t('Upload')}>
+                <IconButton
+                  component={Link}
+                  classes={{ root: classes.button }}
+                >
+                <PublishIcon fontSize="default" />
+                </IconButton>
+              </Tooltip>
+            <Tooltip title={t('Add Note')}>
+                <IconButton
+                  component={Link}
+                  classes={{ root: classes.button }}
+                >
+                <NoteAddIcon fontSize="default" />
+                </IconButton>
+              </Tooltip>
             <IconButton
               size="medium"
               classes={{ root: classes.button }}

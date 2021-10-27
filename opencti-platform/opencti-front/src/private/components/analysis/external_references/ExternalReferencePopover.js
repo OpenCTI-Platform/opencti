@@ -5,6 +5,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
 import Drawer from '@material-ui/core/Drawer';
+import Typography from '@material-ui/core/Typography';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
@@ -35,6 +36,16 @@ const styles = (theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
+  },
+  menuItem: {
+    padding: '15px 0',
+    width: '152px',
+    margin: '0 20px',
+    justifyContent: 'center',
+  },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
   },
 });
 
@@ -140,7 +151,10 @@ class ExternalReferencePopover extends Component {
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
+          <MenuItem
+          className={classes.menuItem}
+          divider={true}
+          onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
           </MenuItem>
           {handleRemove && (
@@ -149,11 +163,13 @@ class ExternalReferencePopover extends Component {
                 handleRemove();
                 this.handleClose();
               }}
+              divider={true}
+              className={classes.menuItem}
             >
-              {t('Remove from this object')}
+              {t('Remove')}
             </MenuItem>
           )}
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+          <MenuItem className={classes.menuItem} onClick={this.handleOpenDelete.bind(this)}>
             {t('Delete')}
           </MenuItem>
         </Menu>
@@ -187,14 +203,23 @@ class ExternalReferencePopover extends Component {
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this external reference?')}
-            </DialogContentText>
+              <Typography style={{
+                fontSize: '18px',
+                lineHeight: '24px',
+                color: 'white',
+                fontFamily: 'DINNextLTPro',
+              }} >
+                {t('Are you sure you’d like to delete this item?')}
+              </Typography>
+              <DialogContentText>
+                {t('This action can’t be undone')}
+              </DialogContentText>
           </DialogContent>
-          <DialogActions>
+          <DialogActions className={ classes.dialogActions }>
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
+              variant="outlined"
             >
               {t('Cancel')}
             </Button>
@@ -202,6 +227,7 @@ class ExternalReferencePopover extends Component {
               onClick={this.submitDelete.bind(this)}
               color="primary"
               disabled={this.state.deleting}
+              variant="contained"
             >
               {t('Delete')}
             </Button>

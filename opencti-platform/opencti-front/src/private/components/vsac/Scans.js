@@ -297,6 +297,7 @@ class Scans extends Component {
     };
 
     const handleClose = () => {
+      console.log("closed")
       this.setState({ vulnerabilityAnchorEl: null });
     };
 
@@ -337,6 +338,20 @@ class Scans extends Component {
     const handleDialogClose = () => {
       this.setState({ openDialog: false });
     };
+
+    const handleLinkClink = (path, data) => {
+      this.props.history.push({
+        pathname: path,
+          state: data 
+      });
+    }
+
+    const getCurrentScan = (id, scans) => {
+      const scan = scans.find((i) => i.id === id);
+      if (scan) {
+        return scan;
+      }
+    }
 
     const getScatterPlotData = (data) => {
       console.log(data);
@@ -568,7 +583,7 @@ class Scans extends Component {
                   {!loadingScans ? (
                     renderScans.map((scan, i) => {
                       return (
-                        <ListItem key={i}>
+                        <ListItem key={scan.id}>
                           <ListItemText primary={scan.scan_name} />
                           <ListItemSecondaryAction>
                             <IconButton
@@ -580,14 +595,10 @@ class Scans extends Component {
                             >
                               <MoreVertIcon />
                               <Menu
-                                id="vulnerability-simple-menu"
+                                id={"vulnerability-simple-menu-" + scan.id}
                                 anchorEl={this.state.vulnerabilityAnchorEl}
                                 open={this.state.vulnerabilityAnchorEl}
-                                onClose={() =>
-                                  this.setState({
-                                    vulnerabilityAnchorEl: false,
-                                  })
-                                }
+                                onClose={handleClose}
                               >
                                 <MenuItem
                                   onClick={() =>
@@ -677,11 +688,14 @@ class Scans extends Component {
                             }
                           >
                             <MenuItem
-                              component={Link}
-                              to="/dashboard/vsac/scans/exploreresults"
-                              selected={location.pathname.includes(
-                                "/dashboard/vsac/scans/exploreresults"
-                              )}
+                              onClick={() => 
+                                handleLinkClink('/dashboard/vsac/scans/exploreresults',
+                                { analysis: analysis,
+                                  client:
+                                    "30f033d4-e90d-44f9-8ce0-36597ff08c93",
+                                  scan: getCurrentScan(analysis.scan.id, scans)
+                                })}
+                              
                             >
                               <ListItemIcon>
                                 <ExploreIcon fontSize="small" />

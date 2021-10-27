@@ -44,6 +44,7 @@
     "react-force-graph-3d": "1.21.10",
     "react-grid-layout": "1.3.0",
     "react-hook-form": "^7.17.4",
+    "react-html-parser": "^2.0.2",
     "react-intl": "5.20.10",
     "react-leaflet": "2.8.0",
     "react-markdown": "7.0.1",
@@ -70,6 +71,7 @@
     "typeface-roboto": "1.1.13",
     "uuid": "8.3.2",
     "uuid-time": "1.0.0",
+    "webpack": "4.44.2",
     "yup": "0.32.9"
   },
   "devDependencies": {
@@ -106,7 +108,7 @@
     "storybook": "start-storybook -p 9009 -s public",
     "build-storybook": "build-storybook -s public",
     "control": "yarn audit --groups dependencies --summary",
-    "relay": "relay-compiler --watchman false --src ./src --schema ../opencti-graphql/config/schema/opencti.graphql --extensions js jsx",
+    "relay": "node ../opencti-graphql/schema_merge.js && relay-compiler --watchman false --src ./src --schema ../opencti-graphql/config/schema/compiled.graphql --extensions js jsx",
     "test": "react-scripts test --coverage --watchAll=false"
   },
   "jest": {

@@ -8,6 +8,7 @@ import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/s3';
 import { amqpIsAlive } from './database/amqp';
 import { keycloakAlive } from './service/keycloak';
+import { stardogAlive } from './service/stardog' ;
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
 import { ROLE_DEFAULT, STREAMAPI, TAXIIAPI } from './domain/user';
@@ -112,6 +113,11 @@ export const CAPABILITIES = [
 
 // Check every dependencies
 export const checkSystemDependencies = async () => {
+  if (await stardogAlive()) {
+    logApp.info('[Check] Stardog service is alive');
+  } else {
+    logApp.info('[Check] Stardog service is not available.');
+  }
   if (await keycloakAlive()) {
     logApp.info('[Check] Keycloak service is alive');
   } else {

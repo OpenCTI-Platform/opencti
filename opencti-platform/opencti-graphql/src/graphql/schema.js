@@ -92,14 +92,19 @@ import userSubscriptionResolvers from '../resolvers/userSubscription';
 import statusResolvers from '../resolvers/status';
 import ruleResolvers from '../resolvers/rule';
 import stixResolvers from '../resolvers/stix';
+// Import Cyio resolvers
+import assetCommonResolvers from '../cyio/schema/assets/asset-common/resolvers.js';
+import computingDeviceResolvers from '../cyio/schema/assets/computing-device/resolvers.js';
+import networkResolvers from '../cyio/schema/assets/network/resolvers.js';
+import softwareResolvers from '../cyio/schema/assets/software/resolvers.js';
 
 // Cyio Extensions to support merged graphQL schema
-import typeDefs from '../cyio/schema/typeDefs';
+import { loadSchemaSync } from '@graphql-tools/load';
+import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader' ;
 
 const {authDirectiveTransformer } = authDirectiveV2();
 
 const createSchema = () => {
-  const openctiTypeDefs = readFileSync(resolve('./config/schema/opencti.graphql'), 'utf8');
 
   const globalResolvers = {
     DateTime: GraphQLDateTime,
@@ -199,12 +204,22 @@ const createSchema = () => {
     // ALL
     organizationOrIndividualResolvers,
     stixObjectOrStixRelationshipResolvers,
+    // CYIO
+    assetCommonResolvers,
+    computingDeviceResolvers,
+    networkResolvers,
+    softwareResolvers,
   ]);
+
+  // load the OpenCTI and each of the Cyio GraphQL schema files
+  const typeDefs = loadSchemaSync('./**/**/*.graphql', {
+    loaders: [new GraphQLFileLoader()],
+  });
 
   let schema = makeExecutableSchema({
     typeDefs: [
       typeDefs,
-      openctiTypeDefs,
+      // openctiTypeDefs,
       // DateTimeTypeDefinition,
       EmailAddressTypeDefinition,
       IPv4Definition,

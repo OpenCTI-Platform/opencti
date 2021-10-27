@@ -12,6 +12,7 @@ import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Grid from '@material-ui/core/Grid';
 import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
@@ -31,26 +32,28 @@ import TextField from '../../../../components/TextField';
 
 const styles = (theme) => ({
   drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
+    minHeight: '452px',
+    width: '750px',
+    maxWidth: '750px',
     backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    padding: 0,
+    padding: '25px 24px 32px 24px',
   },
   createButton: {
     position: 'fixed',
     bottom: 30,
     right: 30,
   },
+  title: {
+    float: 'left',
+  },
   createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
+    marginTop: -15,
+    // bottom: 30,
+    // right: 30,
   },
   buttons: {
     marginTop: 20,
@@ -295,15 +298,24 @@ class NoteCreation extends Component {
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab
+        {/* <Fab
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Add"
           className={classes.createButtonContextual}
         >
           <Add />
-        </Fab>
-        <Dialog open={this.state.open} onClose={this.handleClose.bind(this)}>
+        </Fab> */}
+        <IconButton
+          aria-label="Add"
+          edge="end"
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          className={classes.createButtonContextual}
+        >
+          <Add fontSize="small" />
+        </IconButton>
+        <Dialog fullWidth={true} maxWidth='md' open={this.state.open} onClose={this.handleClose.bind(this)}>
           <Formik
             enableReinitialize={true}
             initialValues={{
@@ -325,62 +337,64 @@ class NoteCreation extends Component {
               setFieldValue,
               values,
             }) => (
-              <Form>
-                <DialogTitle>{t('Create a note')}</DialogTitle>
-                <DialogContent>
-                  <Field
-                    component={DatePickerField}
-                    name="created"
-                    label={t('Date')}
-                    invalidDateMessage={t(
-                      'The value must be a date (YYYY-MM-DD)',
-                    )}
-                    fullWidth={true}
-                  />
-                  <Field
-                    component={TextField}
-                    name="attribute_abstract"
-                    label={t('Abstract')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={MarkDownField}
-                    name="content"
-                    label={t('Content')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                  />
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    color="primary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
+              <Form style={{ padding: '24px' }}>
+              <div>
+               <Typography variant="h6" classes={{ root: classes.title }}>
+                  {t('New Note')}
+              </Typography>
+              </div>
+              <Grid
+                    container={true}
+                    spacing={3}
+                    classes={{ container: classes.gridContainer }}
                   >
-                    {t('Create')}
-                  </Button>
-                </DialogActions>
+                    <Grid item={true} xs={12}>
+                      <Field
+                        component={MarkDownField}
+                        name="content"
+                        fullWidth={true}
+                        multiline={true}
+                        rows="4"
+                        style={{ marginTop: 20 }}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={4}>
+                      <CreatedByField
+                        name="createdBy"
+                        style={{ marginTop: 20 }}
+                        setFieldValue={setFieldValue}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={4}>
+                      <ObjectLabelField
+                        name="objectLabel"
+                        style={{ marginTop: 20 }}
+                        setFieldValue={setFieldValue}
+                        values={values.objectLabel}
+                      />
+                    </Grid>
+                    <Grid style={{ marginLeft: 'auto' }} item={true} xs={5}>
+                      <div className={classes.buttons}>
+                        <Button
+                          variant="contained"
+                          onClick={handleReset}
+                          disabled={isSubmitting}
+                          classes={{ root: classes.button }}
+                        >
+                          {t('Cancel')}
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={submitForm}
+                          disabled={isSubmitting}
+                          classes={{ root: classes.button }}
+                        >
+                          {t('Create')}
+                        </Button>
+                      </div>
+                    </Grid>
+                  </Grid>
               </Form>
             )}
           </Formik>

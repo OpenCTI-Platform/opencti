@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
@@ -73,7 +74,7 @@ class RegionsLinesComponent extends Component {
         <List
           component="nav"
           aria-labelledby="nested-list-subheader"
-          className={classes.root}
+          
         >
           {data
             ? map((region) => {

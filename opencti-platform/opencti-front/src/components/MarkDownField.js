@@ -52,6 +52,7 @@ const MarkDownField = (props) => {
       <ReactMde
         value={field.value}
         readOnly={disabled}
+        placeholder={label}
         onChange={(value) => setFieldValue(name, value)}
         selectedTab={selectedTab}
         onTabChange={setSelectedTab}

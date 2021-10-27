@@ -48,18 +48,20 @@ class TopMenuThreatActor extends Component {
     } = this.props;
     return (
       <div>
-        <Button
+        {!threatActorId && (
+          <Button
           component={Link}
           to="/dashboard/threats/threat_actors"
           variant="contained"
           size="small"
           color="inherit"
           classes={{ root: classes.buttonHome }}
-        >
-          <PublicOutlined className={classes.icon} fontSize="small" />
-          {t('Threat actors')}
-        </Button>
-        <ArrowForwardIosOutlined
+          >
+            <PublicOutlined className={classes.icon} fontSize="small" />
+            {t('Threat actors')}
+          </Button>
+        )}
+        {/* <ArrowForwardIosOutlined
           color="inherit"
           classes={{ root: classes.arrow }}
         />
@@ -188,7 +190,7 @@ class TopMenuThreatActor extends Component {
           classes={{ root: classes.button }}
         >
           {t('History')}
-        </Button>
+        </Button> */}
       </div>
     );
   }

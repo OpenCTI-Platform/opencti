@@ -17,6 +17,7 @@ import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardActions from "@material-ui/core/CardActions";
+import CircularProgress from "@material-ui/core/CircularProgress";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import List from "@material-ui/core/List";
@@ -44,35 +45,73 @@ import TableRow from "@material-ui/core/TableRow";
 class Hosts extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      hosts: this.props.hosts,
+      selectedRow: this.props.selectedRow,
+    };
+  }
+  componentWillReceiveProps(nextProps) {
+    this.setState({ hosts: nextProps.hosts });
+    this.setState({ selectedRow: nextProps.selectedRow });
   }
 
   render() {
+    const { hosts, selectedRow } = this.state;
+
+    const handleClick = (host_ip, name) => {
+      const params = {
+        host_ip: host_ip,
+      };
+
+      this.props.action(params, name);
+      console.log(name);
+    };
+
     return (
       <Grid item={true} xs={12}>
         <Typography variant="h4" gutterBottom={true}>
           These hosts are susceptible to attack...
         </Typography>
-        <Paper elevation={2} style={{ marginBottom: 20 }}>
-          <TableContainer>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Rank</TableCell>
-                  <TableCell>Host</TableCell>
-                  <TableCell align="right">Count</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                <TableRow>
-                  <TableCell component="th" scope="row">
-                    1
-                  </TableCell>
-                  <TableCell>192.168.5.100</TableCell>
-                  <TableCell align="right">9</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
+        <Paper elevation={2} style={{ marginBottom: 20, minHeight: 300 }}>
+          {hosts ? (
+            <TableContainer style={{ maxHeight: 325 }}>
+              <Table stickyHeader size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Rank</TableCell>
+                    <TableCell>Host</TableCell>
+                    <TableCell align="right">Count</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {hosts.length &&
+                    hosts.map((host, i) => {
+                      const rowName = "hostRow-" + i;
+
+                      return (
+                        <TableRow
+                          key={rowName}
+                          selected={rowName === selectedRow}
+                          onClick={() => handleClick(host.host_ip, rowName)}
+                          hover
+                        >
+                          <TableCell component="th" scope="row">
+                            {host.rank}
+                          </TableCell>
+                          <TableCell>{host.host_ip}</TableCell>
+                          <TableCell align="right">
+                            {host.record_count}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            <CircularProgress />
+          )}
         </Paper>
       </Grid>
     );

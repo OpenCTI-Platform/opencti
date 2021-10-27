@@ -1,0 +1,210 @@
+import React, { Component } from 'react';
+import * as PropTypes from 'prop-types';
+import { withRouter, Link } from 'react-router-dom';
+import { compose } from 'ramda';
+import { withStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
+import { ArrowForwardIosOutlined } from '@material-ui/icons';
+import { ChessKnight } from 'mdi-material-ui';
+import inject18n from '../../../components/i18n';
+import Security, {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/Security';
+
+const styles = (theme) => ({
+  buttonHome: {
+    marginRight: theme.spacing(2),
+    padding: '2px 5px 2px 5px',
+    minHeight: 20,
+    textTransform: 'none',
+    color: '#666666',
+    backgroundColor: '#ffffff',
+  },
+  button: {
+    marginRight: theme.spacing(2),
+    padding: '2px 5px 2px 5px',
+    minHeight: 20,
+    minWidth: 20,
+    textTransform: 'none',
+  },
+  icon: {
+    marginRight: theme.spacing(1),
+  },
+  arrow: {
+    verticalAlign: 'middle',
+    marginRight: 10,
+  },
+});
+
+class TopMenuRemediations extends Component {
+  render() {
+    const {
+      t,
+      location,
+      match: {
+        params: { softwareId },
+      },
+      classes,
+    } = this.props;
+    return (
+      <div>
+        {!softwareId && (
+          <Button
+            component={Link}
+            to="/dashboard/risks/remediations"
+            variant="contained"
+            size="small"
+            color="inherit"
+            classes={{ root: classes.buttonHome }}
+          >
+            <ChessKnight className={classes.icon} fontSize="small" />
+            {t('Remediation')}
+          </Button>
+        )}
+        {/* <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
+        <Button
+          component={Link}
+          to={`/dashboard/risks/remediations/${softwareId}`}
+          variant={
+            location.pathname === `/dashboard/risks/remediations/${softwareId}`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === `/dashboard/risks/remediations/${softwareId}`
+              ? 'secondary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Overview')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/risks/remediations/${softwareId}/knowledge`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/risks/remediations/${softwareId}/knowledge`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/risks/remediations/${softwareId}/knowledge`,
+            )
+              ? 'secondary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/risks/remediations/${softwareId}/analysis`}
+          variant={
+            location.pathname
+            === `/dashboard/risks/remediations/${softwareId}/analysis`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/risks/remediations/${softwareId}/analysis`
+              ? 'secondary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Analysis')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/risks/remediations/${softwareId}/indicators`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/risks/remediations/${softwareId}/indicators`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/risks/remediations/${softwareId}/indicators`,
+            )
+              ? 'secondary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Indicators')}
+        </Button>
+        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
+          <Button
+            component={Link}
+            to={`/dashboard/risks/remediations/${softwareId}/files`}
+            variant={
+              location.pathname
+              === `/dashboard/risks/remediations/${softwareId}/files`
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname
+              === `/dashboard/risks/remediations/${softwareId}/files`
+                ? 'secondary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Files')}
+          </Button>
+        </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/risks/remediations/${softwareId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/risks/remediations/${softwareId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/risks/remediations/${softwareId}/history`
+              ? 'secondary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button> */}
+      </div>
+    );
+  }
+}
+
+TopMenuRemediations.propTypes = {
+  classes: PropTypes.object,
+  location: PropTypes.object,
+  match: PropTypes.object,
+  t: PropTypes.func,
+  history: PropTypes.object,
+};
+
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(TopMenuRemediations);
