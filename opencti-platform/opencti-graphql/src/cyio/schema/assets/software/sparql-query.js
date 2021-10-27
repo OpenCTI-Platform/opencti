@@ -1,3 +1,5 @@
+import {v4 as uuid4} from 'uuid';
+
 const selectQueryForm = `
 SELECT ?iri ?id ?object_type 
   ?asset_id ?name ?description ?locations ?responsible_party 
@@ -9,19 +11,30 @@ WHERE {
 `;
 
 const byIdClause = `?iri <http://darklight.ai/ns/common#id> "{id}" .`;
+const predicateList = {
+   'id': (id) => `?iri <http://darklight.ai/ns/common#id> "${id}" .`,
+   'asset_id' : (asset_id) => `?iri <http://scap.nist.gov/ns/asset-identification#asset_id> "${asset_id}" .`,
+   'name' : (name) => `?iri <http://scap.nist.gov/ns/asset-identification#name> "${name}" .`,
+   'description' : (description) => `?iri <http://scap.nist.gov/ns/asset-identification#description> "${description}" .`,
+   'locations' : (locations) => `?iri <http://scap.nist.gov/ns/asset-identification#locations> "${locations}" .`,
+   // 'responsible_party' : (responsibly_part) => '#?iri <http://scap.nist.gov/ns/asset-identification#responsible_parties> ' + (responsibly_part || '?responsible_party') + ' .',
+   'asset_type' : (asset_type) => `?iri <http://scap.nist.gov/ns/asset-identification#asset_type> "${asset_type}" .`,
+   'asset_tag' : (asset_tag) => `?iri <http://scap.nist.gov/ns/asset-identification#asset_tag> "${asset_tag}" .`,
+   'serial_number': (serial_number) => `?iri <http://scap.nist.gov/ns/asset-identification#serial_number> "${serial_number}" .`,
+}
 
 const predicates = `
-    OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_id> ?asset_id } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#name> ?name } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#description> ?description } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#locations> ?locations } .
-    # OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#responsible_parties> ?responsible_party } .
+    ?iri <http://darklight.ai/ns/common#id> ?id .
     # ItAsset
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_type> ?asset_type } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_tag> ?asset_tag } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#serial_number> ?serial_number } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_id> ?asset_id }.
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#name> ?name }.
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#description> ?description }.
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#locations> ?locations }.
+    # OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#responsible_parties> ?responsible_parties }.
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_type> ?asset_type }.
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_tag> ?asset_tag }.
     OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#vendor_name> ?vendor_name }.
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#serial_number> ?serial_number }.
     OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#version> ?version } .
     OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#release_date> ?release_date } .
     # Software - OperatingSystem - ApplicationSoftware
@@ -43,15 +56,43 @@ const predicates = `
   }
 `;
 
-export function getSparqlQuery(queryMode, id, filter, ) {
+export const insertQuery = (propValues) => {
+  const id = uuid4();
+  const predicates = Object.entries(propValues)
+    .filter((propPair) => predicateList.hasOwnProperty(propPair[0]))
+    .map((propPair) => `${predicateList[propPair[0]].call(null, propPair[1])}`)
+    .join('\n    ');
+  const iri = `http://scap.nist.gov/ns/asset-identification#Software-${id}`;
+  const query = `
+  INSERT {
+    ?iri a <http://scap.nist.gov/ns/asset-identification#Software> .
+    ?iri <http://darklight.ai/ns/common#id> "${id}".
+    ${predicates}
+  } WHERE {
+    BIND(IRI(${iri}) as ?iri).
+  }
+  `;
+  return {id, query}
+};
+
+  export const QueryMode = {
+    BY_ALL: 'BY_ALL',
+    BY_ID: 'BY_ID'
+  }
+
+export function getSelectSparqlQuery(queryMode, id, filter, ) {
 	let byId = '';
-	if ( queryMode === 'BY-ID') {
-		byId = byIdClause.replace("{id}", id);
-	}
+  switch(queryMode){
+    case QueryMode.BY_ID:
+      byId = byIdClause.replace("{id}", id);
+      break;
+    case QueryMode.BY_ALL:
+      break;
+    default:
+      throw new Error(`Unsupported query mode '${queryMode}'`)
+  }
 
 	let filterStr = ''
-	var sparqlQuery = selectQueryForm + byId + predicates + inventoryConstraint + filterStr + '}'
-
-	return sparqlQuery ;
-};
+  return selectQueryForm + byId + predicates + inventoryConstraint + filterStr + '}' ;
+}
 

@@ -1,13 +1,12 @@
 import { responsePathAsArray } from 'graphql';
 import { assetSingularizeSchema as singularizeSchema } from '../asset-mappings.js';
-import { getSparqlQuery } from './sparql-query.js';
-
+import { getSelectSparqlQuery, insertQuery, QueryMode } from './sparql-query.js';
+import {ApolloError} from "apollo-errors";
 
 const softwareResolvers = {
   Query: {
     softwareAssetList: async ( _, args, context, info ) => {
-      console.log('*** Resolver: In softwareAssetList')
-      var sparqlQuery = getSparqlQuery('BY-ALL', args.id);
+      let sparqlQuery = getSelectSparqlQuery(QueryMode.BY_ALL, args.id);
       const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
         sparqlQuery,
@@ -41,16 +40,20 @@ const softwareResolvers = {
       }
     },
     softwareAsset: async ( _, args, context, info ) => {
-      console.log('*** Resolver: In softwareAsset')
       const dbName = context.dbName;
-      var sparqlQuery = getSparqlQuery('BY-ID', args.id);
+      const sparqlQuery = getSelectSparqlQuery(QueryMode.BY_ID, args.id);
       const response = await context.dataSources.Stardog.queryById( dbName, sparqlQuery, singularizeSchema, )
-      console.log( response[0] );
+      if(response === undefined) return null;
       return( softwareAssetReducer( response[0]) );
     }
   },
   Mutation: {
-    createSoftwareAsset: ( parent, args, context, info ) => {
+    createSoftwareAsset: ( parent, {input}, context, info ) => {
+      const dbName = context.dbName;
+      const {id, query} = insertQuery(input);
+      console.log(id + ' ' + query);
+      input.id = id;
+      return input;
     },
     deleteSoftwareAsset: ( parent, args, context, info ) => {
     },
@@ -69,6 +72,12 @@ const softwareResolvers = {
 function softwareAssetReducer( asset ) {
   return {
     id: asset.id,
+    standard_id: asset.standard_id || null,
+    entity_type: asset.entity_type || null,
+    parent_types: asset.parent_types || null,
+    created: asset.created || null,
+    modified: asset.modified || null,
+    labels: asset.labels || null,
     name: asset.name || null,
     description: asset.description || null,
     asset_id: asset.asset_id || null,
