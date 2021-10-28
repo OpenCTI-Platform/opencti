@@ -72,7 +72,6 @@ services:
       - redis
       - elasticsearch
       - rabbitmq
-      - opencti-graphql
     restart: unless-stopped
     # volumes:
     #   - ./default.json:/opt/opencti/config/default.json
