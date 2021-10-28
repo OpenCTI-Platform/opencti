@@ -4,7 +4,9 @@
 .mypy_cache
 .venv
 venv
-**/.env
-docker/graphql/node_modules
+.env
+node_modules
 .vscode
 opencti-platform/opencti-graphql/config/schema/compiled.graphql
+*.crt
+*.key
