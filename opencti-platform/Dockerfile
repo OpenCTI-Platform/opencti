@@ -2,33 +2,30 @@ FROM node:16.6.0-alpine3.14 AS base
 
 
 FROM base AS graphql-deps-builder
-
 WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
 RUN yarn install --frozen-lockfile --production && yarn cache clean --all
 
 
 FROM base AS graphql-builder
-
 WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
 RUN yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
 RUN yarn run webpack --mode production
+RUN yarn schema-compile
 
 
 FROM base AS front-builder
-
 WORKDIR /opt/opencti-build/opencti-front
 COPY opencti-front/package.json opencti-front/yarn.lock ./
 RUN yarn install
 COPY opencti-front /opt/opencti-build/opencti-front
-COPY opencti-graphql/config/schema/opencti.graphql /opt/opencti-build/opencti-graphql/config/schema/opencti.graphql
+COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/config/schema/compiled.graphql /opt/opencti-build/opencti-graphql/config/schema/compiled.graphql
 RUN yarn relay && yarn generate
 
 
 FROM base AS app
-
 RUN set -ex; \
     apk add --no-cache git tini gcc musl-dev python3 python3-dev postfix postfix-pcre; \
     python3 -m ensurepip; \
