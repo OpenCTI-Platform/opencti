@@ -4,36 +4,37 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 const onError = function (err, req, res) {
   console.log("Something went wrong... Ignoring");
 };
+const host = process.env.REACT_APP_GRAPHQL_HOST || 'http://localhost:4000'
 
 module.exports = function (app) {
   app.use(
     createProxyMiddleware("/graphql", {
-      target: "http://localhost:4000",
+      target: host,
       ws: true,
       onError,
     })
   );
   app.use(
     createProxyMiddleware("/taxii2", {
-      target: "http://localhost:4000",
+      target: host,
       onError,
     })
   );
   app.use(
     createProxyMiddleware("/stream", {
-      target: "http://localhost:4000",
+      target: host,
       onError,
     })
   );
   app.use(
     createProxyMiddleware("/storage", {
-      target: "http://localhost:4000",
+      target: host,
       onError,
     })
   );
   app.use(
     createProxyMiddleware("/auth/**", {
-      target: "http://localhost:4000",
+      target: host,
       onError,
     })
   );
