@@ -75,7 +75,11 @@ class NoteEditionContainer extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <NoteEditionOverview note={this.props.note} context={editContext} />
+          <NoteEditionOverview
+            note={this.props.note}
+            context={editContext}
+            handleClose={handleClose.bind(this)}
+          />
         </div>
       </div>
     );

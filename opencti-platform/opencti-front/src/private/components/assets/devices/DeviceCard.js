@@ -97,7 +97,15 @@ const styles = (theme) => ({
 class DeviceCardComponent extends Component {
   render() {
     const {
-      t, fsd, classes, node, bookmarksIds, onLabelClick,
+      t,
+      fsd,
+      classes,
+      node,
+      selectAll,
+      onToggleEntity,
+      bookmarksIds,
+      onLabelClick,
+      selectedElements,
     } = this.props;
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     console.log('DeviceCardComponent', node);
@@ -176,14 +184,10 @@ class DeviceCardComponent extends Component {
               </div>
               <div>
                 <Checkbox
-                  size="small"
-                  style={{}}
-                //   onClick={
-                //   bookmarksIds.includes(node.id)
-                //     ? deleteBookMark.bind(this, node.id, 'Threat-Actor')
-                //     : addBookmark.bind(this, node.id, 'Threat-Actor')
-                // }
-                color={bookmarksIds.includes(node.id) ? 'secondary' : 'primary'}
+                  disableRipple={true}
+                  onClick={onToggleEntity.bind(this, node)}
+                  checked={selectAll || node.id in (selectedElements || {})}
+                  color='primary'
                 />
               </div>
             </Grid>

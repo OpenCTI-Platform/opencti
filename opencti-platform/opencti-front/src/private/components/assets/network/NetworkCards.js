@@ -33,7 +33,14 @@ class NetworkCards extends Component {
   }
 
   render() {
-    const { initialLoading, relay, onLabelClick } = this.props;
+    const {
+      initialLoading,
+      relay,
+      selectAll,
+      onLabelClick,
+      onToggleEntity,
+      selectedElements,
+    } = this.props;
     const { bookmarks } = this.state;
     return (
     // <QueryRenderer
@@ -59,8 +66,11 @@ class NetworkCards extends Component {
               )}
               CardComponent={<NetworkCard />}
               DummyCardComponent={<NetworkCardDummy />}
+              selectAll={selectAll}
               nbOfCardsToLoad={nbOfCardsToLoad}
+              selectedElements={selectedElements}
               onLabelClick={onLabelClick.bind(this)}
+              onToggleEntity={onToggleEntity.bind(this)}
               bookmarkList={bookmarks}
             />
     //     </div>

@@ -4,6 +4,13 @@ import {
   RecordSource,
   Store,
 } from 'relay-runtime';
+import {
+  commitLocalUpdate as CLU,
+  commitMutation as CM,
+  QueryRenderer as QR,
+  requestSubscription as RS,
+  fetchQuery as FQ,
+} from 'react-relay';
 
 const store = new Store(new RecordSource());
 
@@ -29,6 +36,8 @@ const environment = new Environment({
 });
 
 export default environment;
+
+export const fetchDarklightQuery = (query, args) => FQ(environment, query, args);
 
 // import {
 //   Environment, RecordSource, Store, Observable,

@@ -48,10 +48,15 @@ class NetworkComponent extends Component {
   }
 
   render() {
-    const { classes, network, history } = this.props;
+    const {
+      classes,
+      network,
+      history,
+      location,
+    } = this.props;
     return (
       <>
-        {!this.state.displayEdit ? (
+        {!this.state.displayEdit && !location.openEdit ? (
           <div className={classes.container}>
             <StixDomainObjectAssetHeader
               stixDomainObject={network}
@@ -75,24 +80,6 @@ class NetworkComponent extends Component {
                 </Grid>
               </>
             </Grid>
-            {/* <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
-            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-              stixObjectOrStixRelationshipId={network.id}
-              stixObjectOrStixRelationshipLink={`/dashboard/assets/network/${network.id}/knowledge`}
-            />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <StixCoreObjectOrStixCoreRelationshipLastReports
-              stixCoreObjectOrStixCoreRelationshipId={network.id}
-            />
-          </Grid>
-        </Grid> */}
             <Grid
               container={true}
               spacing={3}

@@ -44,7 +44,6 @@ class Network extends Component {
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
       selectAll: false,
-      displayEdit: false,
       openNetworkCreation: false,
     };
   }
@@ -83,8 +82,12 @@ class Network extends Component {
     this.setState({ openNetworkCreation: true });
   }
 
-  handleDisplayEdit() {
-    this.setState({ displayEdit: !this.state.displayEdit });
+  handleDisplayEdit(selectedElements) {
+    const networkId = Object.entries(selectedElements)[0][1].id;
+    this.props.history.push({
+      pathname: `/dashboard/assets/network/${networkId}`,
+      openEdit: true,
+    });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -224,9 +227,12 @@ class Network extends Component {
             return (
               <NetworkCards
                 data={props}
+                selectAll={selectAll}
                 paginationOptions={paginationOptions}
                 initialLoading={props === null}
+                selectedElements={selectedElements}
                 onLabelClick={this.handleAddFilter.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
               />
             );

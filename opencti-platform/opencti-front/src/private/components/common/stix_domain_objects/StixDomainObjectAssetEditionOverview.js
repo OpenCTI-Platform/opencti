@@ -299,6 +299,7 @@ class StixDomainObjectAssetEditionOverviewComponent extends Component {
               <StixCoreObjectLabelsView
                 labels={objectLabel}
                 marginTop={20}
+                id={stixDomainObject.id}
               />
             </Grid>
             <Grid item={true} xs={6}>

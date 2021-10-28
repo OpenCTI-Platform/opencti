@@ -48,10 +48,15 @@ class SoftwareComponent extends Component {
   }
 
   render() {
-    const { classes, software, history } = this.props;
+    const {
+      classes,
+      software,
+      history,
+      location,
+    } = this.props;
     return (
       <>
-        {!this.state.displayEdit ? (
+        {!this.state.displayEdit && !location.openEdit ? (
           <div className={classes.container}>
             <StixDomainObjectAssetHeader
               stixDomainObject={software}
@@ -73,24 +78,6 @@ class SoftwareComponent extends Component {
                 <SoftwareDetails software={software} />
               </Grid>
             </Grid>
-            {/* <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
-            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-              stixObjectOrStixRelationshipId={software.id}
-          stixObjectOrStixRelationshipLink={`/dashboard/assets/software/${software.id}/knowledge`}
-            />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <StixCoreObjectOrStixCoreRelationshipLastReports
-              stixCoreObjectOrStixCoreRelationshipId={software.id}
-            />
-          </Grid>
-        </Grid> */}
             <Grid
               container={true}
               spacing={3}

@@ -295,12 +295,9 @@ class ListLines extends Component {
                   <Tooltip title={t('Edit')}>
                     <Button
                       variant="contained"
-                      onClick={handleDisplayEdit && handleDisplayEdit.bind(this)}
+                      onClick={handleDisplayEdit && handleDisplayEdit.bind(this, selectedElements)}
                       className={classes.iconButton}
-                      disabled={
-                        Boolean(!selectedElements
-                          || Object.entries(selectedElements || {}).length < 2)
-                      }
+                      disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)}
                       color="primary"
                       size="large"
                     >

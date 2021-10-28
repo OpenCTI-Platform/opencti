@@ -257,9 +257,9 @@ class ListCards extends Component {
                   <Tooltip title={t('Edit')}>
                     <Button
                       variant="contained"
-                      onClick={handleDisplayEdit && handleDisplayEdit.bind(this)}
+                      onClick={handleDisplayEdit && handleDisplayEdit.bind(this, selectedElements)}
                       className={classes.iconButton}
-                      disabled={Boolean(selectAll)}
+                      disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)}
                       color="primary"
                       size="large"
                     >

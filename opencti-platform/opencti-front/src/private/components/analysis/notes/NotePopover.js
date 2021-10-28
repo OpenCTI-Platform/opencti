@@ -18,9 +18,9 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import ExpandMoreOutlined from '@material-ui/icons/ExpandMoreOutlined';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
-import { QueryRenderer as QR } from 'react-relay';
+import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
-import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
 import NoteEditionContainer from './NoteEditionContainer';
@@ -103,22 +103,13 @@ class NotePopover extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    commitMutation({
+    CM(environmentDarkLight, {
       mutation: NotePopoverDeletionMutation,
       variables: {
         id: this.props.id,
       },
-      updater: (store) => {
-        if (this.props.entityId) {
-          const entity = store.get(this.props.entityId);
-          const conn = ConnectionHandler.getConnection(
-            entity,
-            'Pagination_notes',
-          );
-          ConnectionHandler.deleteNode(conn, this.props.id);
-        }
-      },
-      onCompleted: () => {
+      onCompleted: (data) => {
+        console.log('NoteDeletionDarkLightMutationData', data);
         this.setState({ deleting: false });
         this.handleClose();
         if (this.props.handleOpenRemove) {
@@ -127,7 +118,33 @@ class NotePopover extends Component {
           this.props.history.push('/dashboard/analysis/notes');
         }
       },
+      onError: (err) => console.log('NoteDeletionDarkLightMutationError', err),
     });
+    // commitMutation({
+    //   mutation: NotePopoverDeletionMutation,
+    //   variables: {
+    //     id: this.props.id,
+    //   },
+    //   updater: (store) => {
+    //     if (this.props.entityId) {
+    //       const entity = store.get(this.props.entityId);
+    //       const conn = ConnectionHandler.getConnection(
+    //         entity,
+    //         'Pagination_notes',
+    //       );
+    //       ConnectionHandler.deleteNode(conn, this.props.id);
+    //     }
+    //   },
+    //   onCompleted: () => {
+    //     this.setState({ deleting: false });
+    //     this.handleClose();
+    //     if (this.props.handleOpenRemove) {
+    //       this.handleCloseDelete();
+    //     } else {
+    //       this.props.history.push('/dashboard/analysis/notes');
+    //     }
+    //   },
+    // });
   }
 
   handleOpenEdit() {
@@ -237,7 +254,7 @@ class NotePopover extends Component {
           onClose={this.handleCloseEdit.bind(this)}
         >
           <QR
-            environment={QueryRendererDarkLight}
+            environment={environmentDarkLight}
             query={noteEditionQuery}
             variables={{ id }}
             render={({ props }) => {

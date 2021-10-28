@@ -22,12 +22,14 @@ import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { identityCreationIdentitiesSearchQuery } from '../identities/IdentityCreation';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
+import { itAssetListQuery } from '../../settings/ItAssetListQuery';
 import { attributesSearchQuery } from '../../settings/AttributesQuery';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import { stixDomainObjectsLinesSearchQuery } from '../stix_domain_objects/StixDomainObjectsLines';
 import { statusFieldStatusesSearchQuery } from '../form/StatusField';
+import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 
 const styles = (theme) => ({
   filters: {
@@ -88,7 +90,8 @@ const uniqFilters = [
 ];
 export const isUniqFilter = (key) => uniqFilters.includes(key)
   || key.endsWith('start_date')
-  || key.endsWith('end_date');
+  || key.endsWith('end_date')
+  || key.endsWith('date');
 
 class Filters extends Component {
   constructor(props) {
@@ -123,6 +126,56 @@ class Filters extends Component {
       });
     }
     switch (filterKey) {
+      case 'assetTypeBy':
+        fetchDarklightQuery(itAssetListQuery)
+          .toPromise()
+          .then((data) => {
+            console.log('sadasdaafafasfaf', data);
+            const assetTypeByEntities = R.pipe(
+              R.pathOr([], ['itAssetList', 'edges']),
+              R.map((n) => ({
+                label: n.node.asset_type,
+                value: n.node.asset_type,
+                type: n.node.asset_type,
+              })),
+            )(data);
+            console.log('sadasdaafafasfafsadafaf', assetTypeByEntities);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                assetTypeBy: R.union(
+                  assetTypeByEntities,
+                  this.state.entities.assetTypeById,
+                ),
+              },
+            });
+          });
+        break;
+      case 'operation_status':
+        fetchDarklightQuery(itAssetListQuery)
+          .toPromise()
+          .then((data) => {
+            console.log('sadasdaafafasfaf', data);
+            const operationStatusEntities = R.pipe(
+              R.pathOr([], ['itAssetList', 'edges']),
+              R.map((n) => ({
+                label: n.node.operational_status,
+                value: n.node.operational_status,
+                // type: n.node.asset_type,
+              })),
+            )(data);
+            console.log('sadasdaafafasfafsadafaf', operationStatusEntities);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                operationStatus: R.union(
+                  operationStatusEntities,
+                  this.state.entities.operationStatus,
+                ),
+              },
+            });
+          });
+        break;
       case 'toSightingId':
         fetchQuery(identityCreationIdentitiesSearchQuery, {
           types: ['Identity'],
@@ -254,6 +307,7 @@ class Filters extends Component {
                 color: n.node.color,
               })),
             )(data);
+            console.log('sadasdaafafasfafsadafafLabels', labelledByEntities);
             this.setState({
               entities: {
                 ...this.state.entities,
@@ -704,6 +758,7 @@ class Filters extends Component {
           if (
             filterKey.endsWith('start_date')
             || filterKey.endsWith('end_date')
+            || filterKey.endsWith('date')
           ) {
             return (
               <Grid key={filterKey} item={true} xs={6}>
@@ -889,8 +944,7 @@ class Filters extends Component {
     this.handleCloseFilters();
     const urlParams = { filters: JSON.stringify(this.state.filters) };
     this.props.history.push(
-      `/dashboard/search${
-        this.state.keyword.length > 0 ? `/${this.state.keyword}` : ''
+      `/dashboard/search${this.state.keyword.length > 0 ? `/${this.state.keyword}` : ''
       }?${new URLSearchParams(urlParams).toString()}`,
     );
   }

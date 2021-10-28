@@ -90,10 +90,11 @@ class Devices extends Component {
     this.setState({ openDeviceCreation: true });
   }
 
-  handleDisplayEdit() {
+  handleDisplayEdit(selectedElements) {
+    const deviceId = Object.entries(selectedElements)[0][1].id;
     this.props.history.push({
-      pathname: `/dashboard/assets/devices/${'id'}`,
-      state: { openNewCreation: true },
+      pathname: `/dashboard/assets/devices/${deviceId}`,
+      openEdit: true,
     });
   }
 
@@ -206,12 +207,16 @@ class Devices extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'asset_type',
+          'assetTypeBy',
           'labelledBy',
-          'markedBy',
-          'created_start_date',
-          'created_end_date',
-          'createdBy',
+          'release_date',
+          // 'markedBy',
+          // 'created_start_date',
+          'operation_status',
+          'operation_System',
+          // 'created_end_date',
+          // 'createdBy',
+          'labelledBy',
         ]}
       >
         {/* <QueryRenderer
@@ -238,10 +243,13 @@ class Devices extends Component {
               <DevicesCards
                 data={props}
                 extra={props}
+                selectAll={selectAll}
                 paginationOptions={paginationOptions}
                 initialLoading={props === null}
+                selectedElements={selectedElements}
                 onLabelClick={this.handleAddFilter.bind(this)}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
               />
             );
           }}
@@ -333,11 +341,16 @@ class Devices extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'assetTypeBy',
           'labelledBy',
-          'markedBy',
-          'created_start_date',
-          'created_end_date',
-          'createdBy',
+          'release_date',
+          // 'markedBy',
+          // 'created_start_date',
+          'operation_status',
+          'operation_System',
+          // 'created_end_date',
+          // 'createdBy',
+          'labelledBy',
         ]}
       >
         {/* <QueryRenderer

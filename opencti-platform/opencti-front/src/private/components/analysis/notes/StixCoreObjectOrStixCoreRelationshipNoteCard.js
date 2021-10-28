@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr, take } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
+// import { createFragmentContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
@@ -25,6 +25,8 @@ import Slide from '@material-ui/core/Slide';
 import IconButton from '@material-ui/core/IconButton';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -115,28 +117,42 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
   }
 
   removeNote(noteId) {
-    commitMutation({
+    CM(environmentDarkLight, {
       mutation: noteMutationRelationDelete,
       variables: {
         id: noteId,
         toId: this.props.stixCoreObjectOrStixCoreRelationshipId,
         relationship_type: 'object',
       },
-      updater: (store) => {
-        const entity = store.get(
-          this.props.stixCoreObjectOrStixCoreRelationshipId,
-        );
-        const conn = ConnectionHandler.getConnection(
-          entity,
-          'Pagination_notes',
-        );
-        ConnectionHandler.deleteNode(conn, noteId);
-      },
-      onCompleted: () => {
+      onCompleted: (response) => {
         this.setState({ removing: false });
         this.handleCloseDialog();
+        console.log('NoteRemoveDarkLightMutationresponse', response);
       },
+      onError: (err) => console.log('NoteRemoveDarkLightMutationError', err),
     });
+    // commitMutation({
+    //   mutation: noteMutationRelationDelete,
+    //   variables: {
+    //     id: noteId,
+    //     toId: this.props.stixCoreObjectOrStixCoreRelationshipId,
+    //     relationship_type: 'object',
+    //   },
+    //   updater: (store) => {
+    //     const entity = store.get(
+    //       this.props.stixCoreObjectOrStixCoreRelationshipId,
+    //     );
+    //     const conn = ConnectionHandler.getConnection(
+    //       entity,
+    //       'Pagination_notes',
+    //     );
+    //     ConnectionHandler.deleteNode(conn, noteId);
+    //   },
+    //   onCompleted: () => {
+    //     this.setState({ removing: false });
+    //     this.handleCloseDialog();
+    //   },
+    // });
   }
 
   render() {

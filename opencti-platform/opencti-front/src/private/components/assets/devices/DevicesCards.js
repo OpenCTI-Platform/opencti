@@ -33,7 +33,14 @@ class DevicesCards extends Component {
   }
 
   render() {
-    const { initialLoading, relay, onLabelClick } = this.props;
+    const {
+      initialLoading,
+      relay,
+      selectAll,
+      onLabelClick,
+      onToggleEntity,
+      selectedElements,
+    } = this.props;
     const { bookmarks } = this.state;
     return (
     // <QueryRenderer
@@ -60,7 +67,10 @@ class DevicesCards extends Component {
               CardComponent={<DeviceCard />}
               DummyCardComponent={<DeviceCardDummy />}
               nbOfCardsToLoad={nbOfCardsToLoad}
+              selectAll={selectAll}
+              selectedElements={selectedElements}
               onLabelClick={onLabelClick.bind(this)}
+              onToggleEntity={onToggleEntity.bind(this)}
               bookmarkList={bookmarks}
             />
     //     </div>

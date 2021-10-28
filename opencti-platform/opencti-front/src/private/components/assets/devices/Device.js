@@ -51,10 +51,15 @@ class DeviceComponent extends Component {
   }
 
   render() {
-    const { classes, device, history } = this.props;
+    const {
+      classes,
+      device,
+      history,
+      location,
+    } = this.props;
     return (
       <>
-        {!this.state.displayEdit ? (
+        {!this.state.displayEdit && !location.openEdit ? (
           <div className={classes.container}>
             <StixDomainObjectAssetHeader
               stixDomainObject={device}
@@ -76,24 +81,6 @@ class DeviceComponent extends Component {
                 <DeviceDetails device={device} />
               </Grid>
             </Grid>
-            {/* <Grid
-                container={true}
-                spacing={3}
-                classes={{ container: classes.gridContainer }}
-                style={{ marginTop: 25 }}
-              >
-                <Grid item={true} xs={6}>
-                  <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-                    stixObjectOrStixRelationshipId={device.id}
-            stixObjectOrStixRelationshipLink={`/dashboard/assets/devices/${device.id}/knowledge`}
-                  />
-                </Grid>
-                <Grid item={true} xs={6}>
-                  <StixCoreObjectOrStixCoreRelationshipLastReports
-                    stixCoreObjectOrStixCoreRelationshipId={device.id}
-                  />
-                </Grid>
-              </Grid> */}
             <Grid
               container={true}
               spacing={3}

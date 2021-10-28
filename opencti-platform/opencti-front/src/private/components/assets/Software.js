@@ -44,7 +44,6 @@ class Software extends Component {
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
       selectAll: false,
-      displayEdit: false,
       openSoftwareCreation: false,
     };
   }
@@ -83,8 +82,12 @@ class Software extends Component {
     this.setState({ openSoftwareCreation: true });
   }
 
-  handleDisplayEdit() {
-    this.setState({ displayEdit: !this.state.displayEdit });
+  handleDisplayEdit(selectedElements) {
+    const softwareId = Object.entries(selectedElements)[0][1].id;
+    this.props.history.push({
+      pathname: `/dashboard/assets/software/${softwareId}`,
+      openEdit: true,
+    });
   }
 
   handleToggleSelectEntity(entity, event) {

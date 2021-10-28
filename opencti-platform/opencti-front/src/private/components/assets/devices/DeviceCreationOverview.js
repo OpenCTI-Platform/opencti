@@ -39,7 +39,6 @@ import AssetType from '../../common/form/AssetType';
 // import Ports from '../../common/form/Ports';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 
 const styles = (theme) => ({
   drawerPaper: {

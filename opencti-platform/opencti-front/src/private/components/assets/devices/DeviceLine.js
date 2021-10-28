@@ -78,6 +78,7 @@ class DeviceLineComponent extends Component {
         >
           <Checkbox
             edge="start"
+            color='primary'
             checked={selectAll || node.id in (selectedElements || {})}
             disableRipple={true}
           />

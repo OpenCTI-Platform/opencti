@@ -186,7 +186,7 @@ class SoftwareCardComponent extends Component {
               </div>
               <div>
                 <Checkbox
-                  size="small"
+                  color='primary'
                   onClick={onToggleEntity.bind(this, node)}
                   checked={selectAll || node.id in (selectedElements || {})}
                   disableRipple={true}

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { commitMutation as CM, createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
@@ -16,6 +16,7 @@ import {
 } from 'ramda';
 import * as Yup from 'yup';
 import Button from '@material-ui/core/Button';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -111,10 +112,10 @@ const noteMutationRelationDelete = graphql`
 const noteValidation = (t) => Yup.object().shape({
   attribute_abstract: Yup.string(),
   content: Yup.string().required(t('This field is required')),
-  created: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
-  confidence: Yup.number(),
+  // created: Yup.date()
+  //   .typeError(t('The value must be a date (YYYY-MM-DD)'))
+  //   .required(t('This field is required')),
+  // confidence: Yup.number(),
 });
 
 class NoteEditionOverviewComponent extends Component {
@@ -142,53 +143,79 @@ class NoteEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedBy(name, value) {
-    commitMutation({
+  onSubmit(values, { setSubmitting, resetForm }) {
+    console.log('asdasdasdadValues', values);
+    CM(environmentDarkLight, {
       mutation: noteMutationFieldPatch,
       variables: {
         id: this.props.note.id,
-        input: { key: 'createdBy', value: value.value || '' },
+        input: [
+          { key: 'content', value: values.content },
+          // { key: 'description', value: values.description },
+        ],
       },
+      setSubmitting,
+      onCompleted: (response) => {
+        setSubmitting(false);
+        resetForm();
+        console.log('NoteEditionDarkLightMutationresponse', response);
+        this.props.handleClose();
+      },
+      onError: (err) => console.log('NoteEditionDarkLightMutationError', err),
     });
   }
 
-  handleChangeObjectMarking(name, values) {
-    const { note } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(note);
-
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: noteMutationRelationAdd,
-        variables: {
-          id: this.props.note.id,
-          input: {
-            toId: head(added).value,
-            relationship_type: 'object-marking',
-          },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: noteMutationRelationDelete,
-        variables: {
-          id: this.props.note.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
-    }
+  onReset() {
+    this.props.handleClose();
   }
+
+  // handleChangeCreatedBy(name, value) {
+  //   commitMutation({
+  //     mutation: noteMutationFieldPatch,
+  //     variables: {
+  //       id: this.props.note.id,
+  //       input: { key: 'createdBy', value: value.value || '' },
+  //     },
+  //   });
+  // }
+
+  // handleChangeObjectMarking(name, values) {
+  //   const { note } = this.props;
+  //   const currentMarkingDefinitions = pipe(
+  //     pathOr([], ['objectMarking', 'edges']),
+  //     map((n) => ({
+  //       label: n.node.definition,
+  //       value: n.node.id,
+  //     })),
+  //   )(note);
+
+  //   const added = difference(values, currentMarkingDefinitions);
+  //   const removed = difference(currentMarkingDefinitions, values);
+
+  //   if (added.length > 0) {
+  //     commitMutation({
+  //       mutation: noteMutationRelationAdd,
+  //       variables: {
+  //         id: this.props.note.id,
+  //         input: {
+  //           toId: head(added).value,
+  //           relationship_type: 'object-marking',
+  //         },
+  //       },
+  //     });
+  //   }
+
+  //   if (removed.length > 0) {
+  //     commitMutation({
+  //       mutation: noteMutationRelationDelete,
+  //       variables: {
+  //         id: this.props.note.id,
+  //         toId: head(removed).value,
+  //         relationship_type: 'object-marking',
+  //       },
+  //     });
+  //   }
+  // }
 
   render() {
     const {
@@ -224,11 +251,18 @@ class NoteEditionOverviewComponent extends Component {
     )(note);
     return (
       <Formik
-        enableReinitialize={true}
+        // enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={noteValidation(t)}
+        onSubmit={this.onSubmit.bind(this)}
+        onReset={this.onReset.bind(this)}
       >
-        {({ setFieldValue }) => (
+        {({
+          submitForm,
+          handleReset,
+          setFieldValue,
+          isSubmitting,
+        }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
               {/* <Field
@@ -266,14 +300,15 @@ class NoteEditionOverviewComponent extends Component {
                 multiline={true}
                 rows="4"
                 style={{ marginTop: 20 }}
-                onFocus={this.handleChangeFocus.bind(this)}
-                onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus context={context} fieldName="content" />
-                }
+                // onFocus={this.handleChangeFocus.bind(this)}
+                // onSubmit={this.handleSubmitField.bind(this)}
+                // helperText={
+                //   <SubscriptionFocus context={context} fieldName="content" />
+                // }
               />
               <StixCoreObjectLabelsView
                 labels={note.objectLabel}
+                id={note.id}
                 marginTop={20}
               />
               <div style={{
@@ -281,8 +316,8 @@ class NoteEditionOverviewComponent extends Component {
                 margin: '10px 0 30px 0',
               }}>
                 <Button
-                  // onClick={this.handleCloseDialog.bind(this)}
-                  // disabled={this.state.removing}
+                  onClick={handleReset}
+                  disabled={isSubmitting}
                   variant="outlined"
                   size="small"
                   classes={{ root: classes.buttonPopover }}
@@ -290,15 +325,15 @@ class NoteEditionOverviewComponent extends Component {
                   {t('Cancel')}
                 </Button>
                 <Button
-                  // onClick={this.handleRemoval.bind(this)}
+                  onClick={submitForm}
                   color="primary"
-                  // disabled={this.state.removing}
+                  disabled={isSubmitting}
                   variant="contained"
                   size="small"
                   style={{ marginLeft: '15px' }}
                   classes={{ root: classes.buttonPopover }}
                 >
-                  {t('Delete')}
+                  {t('Update')}
                 </Button>
               </div>
               {/* <ConfidenceField
