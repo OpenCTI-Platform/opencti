@@ -29,7 +29,7 @@ const styles = (theme) => ({
     right: 20,
   },
   container: {
-    padding: '0 20px 20px 20px',
+    padding: '10px 20px 20px 20px',
   },
   appBar: {
     width: '100%',

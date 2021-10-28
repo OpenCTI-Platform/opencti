@@ -37,10 +37,10 @@ import DeviceCreationDetails from './DeviceCreationDetails';
 
 const styles = (theme) => ({
   container: {
-    margin: 0,
+    marginBottom: 0,
   },
   header: {
-    margin: '-25px',
+    margin: '-25px -25px 20px -25px',
     padding: '24px',
     height: '64px',
     backgroundColor: '#1F2842',
@@ -60,7 +60,7 @@ const styles = (theme) => ({
   },
   rightContainer: {
     float: 'right',
-    marginTop: '-5px',
+    marginTop: '-10px',
   },
   editButton: {
     position: 'fixed',

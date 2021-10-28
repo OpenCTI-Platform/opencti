@@ -159,7 +159,7 @@ class NotePopover extends Component {
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 5 }}
+          style={{ marginTop: -2 }}
         >
           <MoreVert />
         </IconButton>

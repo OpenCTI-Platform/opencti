@@ -232,6 +232,7 @@ class AddExternalReferences extends Component {
             backgroundColor: 'transparent',
             boxShadow: 'none',
             borderRadius: '0px',
+            overflowY: 'hidden',
           },
         }}
       >

@@ -448,17 +448,17 @@ class DeviceCreationDetailsComponent extends Component {
                     variant="h3"
                     color="textSecondary"
                     gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
+                    style={{ float: 'left', marginTop: 15 }}
                   >
                     {t('Location')}
                   </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
                     <Tooltip title={t('Location')}>
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
                   <div className="clearfix" />
-                  <div className='scroll-bg'>
+                  {/* <div className='scroll-bg'>
                     <div className='scroll-div'>
                       <div className='scroll-object'>
                         <Field
@@ -472,7 +472,15 @@ class DeviceCreationDetailsComponent extends Component {
                         />
                       </div>
                     </div>
-                  </div>
+                  </div> */}
+                  <Field
+                  component={TextField}
+                  name="Description"
+                  fullWidth={true}
+                  multiline={true}
+                  rows="3"
+                  variant='outlined'
+                  />
                 </div>
                 <div>
                   <Typography
