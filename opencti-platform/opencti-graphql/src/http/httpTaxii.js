@@ -30,7 +30,7 @@ const userHaveAccess = (user) => {
 const extractUser = async (req, res) => {
   res.setHeader('content-type', TAXII_VERSION);
   // noinspection UnnecessaryLocalVariableJS
-  const user = await authenticateUserFromRequest(req);
+  const user = await authenticateUserFromRequest(req, res);
   if (!user) {
     res.setHeader('WWW-Authenticate', 'Basic, Bearer');
     throw AuthRequired();

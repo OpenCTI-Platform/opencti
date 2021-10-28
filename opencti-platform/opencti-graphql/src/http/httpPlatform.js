@@ -132,7 +132,7 @@ const createApp = async (apolloServer) => {
   // -- File download
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res, next) => {
     try {
-      const auth = await authenticateUserFromRequest(req);
+      const auth = await authenticateUserFromRequest(req, res);
       if (!auth) res.sendStatus(403);
       const { file } = req.params;
       const stream = await downloadFile(file);
@@ -147,7 +147,7 @@ const createApp = async (apolloServer) => {
   // -- File view
   app.get(`${basePath}/storage/view/:file(*)`, async (req, res, next) => {
     try {
-      const auth = await authenticateUserFromRequest(req);
+      const auth = await authenticateUserFromRequest(req, res);
       if (!auth) res.sendStatus(403);
       const { file } = req.params;
       const data = await loadFile(auth, file);
@@ -168,7 +168,7 @@ const createApp = async (apolloServer) => {
   // -- Pdf view
   app.get(`${basePath}/storage/html/:file(*)`, async (req, res, next) => {
     try {
-      const auth = await authenticateUserFromRequest(req);
+      const auth = await authenticateUserFromRequest(req, res);
       if (!auth) res.sendStatus(403);
       const { file } = req.params;
       const data = await loadFile(auth, file);

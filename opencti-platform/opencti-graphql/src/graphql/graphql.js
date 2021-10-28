@@ -34,7 +34,7 @@ const createApolloServer = () => {
         return { req, res, user: connection.context.user };
       }
       // Get user session from request
-      const user = await authenticateUserFromRequest(req);
+      const user = await authenticateUserFromRequest(req, res);
       // Return the context
       return buildContext(user, req, res);
     },

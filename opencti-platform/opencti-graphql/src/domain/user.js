@@ -75,11 +75,19 @@ const extractTokenFromBearer = (authorization) => {
   return isBearer ? authorization.substring(BEARER.length) : null;
 };
 
-const extractTokenFromBasicAuth = async (authorization) => {
+const extractInfoFromBasicAuth = (authorization) => {
   const isBasic = authorization && authorization.startsWith(BASIC);
   if (isBasic) {
     const b64auth = authorization.substring(BASIC.length);
     const [username, password] = Buffer.from(b64auth, 'base64').toString().split(':');
+    return { username, password };
+  }
+  return {};
+};
+
+const extractTokenFromBasicAuth = async (authorization) => {
+  const { username, password } = extractInfoFromBasicAuth(authorization);
+  if (username && password) {
     // eslint-disable-next-line no-use-before-define
     const { api_token: tokenUUID } = await login(username, password);
     return tokenUUID;
@@ -502,17 +510,25 @@ export const login = async (email, password) => {
 
 export const logout = async (user, req, res) => {
   await delUserContext(user);
-  res.clearCookie(OPENCTI_SESSION);
-  req.session.destroy();
-  logAudit.info(user, LOGOUT_ACTION);
-  return user.id;
+  return new Promise((resolve, reject) => {
+    res.clearCookie(OPENCTI_SESSION);
+    // req.session.destroy();
+    req.session.regenerate((err) => {
+      if (err) {
+        reject(err);
+      }
+      logAudit.info(user, LOGOUT_ACTION);
+      resolve(user.id);
+    });
+  });
 };
 
 const buildSessionUser = (user) => {
   return {
     id: user.id,
-    api_token: user.api_token,
     session_creation: now(),
+    session_password: user.password,
+    api_token: user.api_token,
     internal_id: user.internal_id,
     user_email: user.user_email,
     name: user.name,
@@ -536,8 +552,7 @@ const buildCompleteUser = async (client) => {
   if (!client) return undefined;
   const capabilities = await getCapabilities(client.id);
   const marking = await getUserAndGlobalMarkings(client.id, capabilities);
-  const user = { ...client, capabilities, allowed_marking: marking.user, all_marking: marking.all };
-  return buildSessionUser(user);
+  return { ...client, capabilities, allowed_marking: marking.user, all_marking: marking.all };
 };
 
 export const resolveUserById = async (id) => {
@@ -559,26 +574,54 @@ export const userRenewToken = async (user, userId) => {
   return loadById(user, userId, ENTITY_TYPE_USER);
 };
 
-export const authenticateUser = async (req, user, provider) => {
+export const authenticateUser = async (req, user, provider, token = '') => {
   // Build the user session with only required fields
-  const sessionUser = await buildCompleteUser(user);
+  const completeUser = await buildCompleteUser(user);
   logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider });
-  req.session.user = sessionUser;
-  return sessionUser;
+  req.session.user = buildSessionUser(completeUser);
+  req.session.session_provider = { provider, token };
+  return completeUser;
 };
 
-export const authenticateUserFromRequest = async (req) => {
+const AUTH_BEARER = 'Bearer';
+const AUTH_BASIC = 'BasicAuth';
+export const authenticateUserFromRequest = async (req, res) => {
   const auth = req?.session?.user;
   if (auth) {
-    // User already identified
+    // User already identified, we need to enforce the session validity
+    const { provider, token } = req.session.session_provider;
+    // For bearer, validate that the bearer is the same than the session
+    if (provider === AUTH_BEARER) {
+      const currentToken = extractTokenFromBearer(req?.headers.authorization);
+      if (currentToken !== token) {
+        // Session doesnt match, kill the current session and try to re auth
+        await logout(auth, req, res);
+        return authenticateUserFromRequest(req, res);
+      }
+    }
+    // For basic auth, validate that user and password match the session
+    if (provider === AUTH_BASIC) {
+      const { username, password } = await extractInfoFromBasicAuth(req?.headers.authorization);
+      const sameUsername = username === auth.user_email;
+      const sessionPassword = auth.session_password;
+      const passwordCompare = isNotEmptyField(password) && isNotEmptyField(sessionPassword);
+      const samePassword = passwordCompare && bcrypt.compareSync(password, sessionPassword);
+      if (!sameUsername || !samePassword) {
+        // Session doesnt match, kill the current session and try to re auth
+        await logout(auth, req, res);
+        return authenticateUserFromRequest(req, res);
+      }
+    }
+    // Other providers doesnt need specific validation, session management is enough
+    // If everything ok, return the authenticated user.
     return auth;
   }
   // If user not identified, try to extract token from bearer
-  let loginProvider = 'Bearer';
+  let loginProvider = AUTH_BEARER;
   let tokenUUID = extractTokenFromBearer(req?.headers.authorization);
   // If no bearer specified, try with basic auth
   if (!tokenUUID) {
-    loginProvider = 'BasicAuth';
+    loginProvider = AUTH_BASIC;
     tokenUUID = await extractTokenFromBasicAuth(req?.headers.authorization);
   }
   // Get user from the token if found
@@ -586,13 +629,14 @@ export const authenticateUserFromRequest = async (req) => {
     try {
       const user = await resolveUserByToken(tokenUUID);
       if (req && user) {
-        await authenticateUser(req, user, loginProvider);
+        await authenticateUser(req, user, loginProvider, tokenUUID);
       }
       return user;
     } catch (err) {
       logApp.error(`[OPENCTI] Authentication error ${tokenUUID}`, { error: err });
     }
   }
+  // No auth, return undefined
   return undefined;
 };
 

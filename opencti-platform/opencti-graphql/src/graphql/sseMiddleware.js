@@ -88,7 +88,7 @@ const createHeartbeatProcessor = () => {
 
 const authenticate = async (req, res, next) => {
   try {
-    const auth = await authenticateUserFromRequest(req);
+    const auth = await authenticateUserFromRequest(req, res);
     if (auth) {
       req.userId = auth.id;
       req.capabilities = auth.capabilities;
