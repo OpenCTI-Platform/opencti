@@ -215,7 +215,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {externalReferencesEdges.length > 0 ? (
-            <List style={{ marginBottom: 0 }}>
+            <List style={{ marginBottom: 0, padding: '12px' }}>
               {/* {externalReferencesEdges.map( */}
               {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
                 (externalReferenceEdge) => {

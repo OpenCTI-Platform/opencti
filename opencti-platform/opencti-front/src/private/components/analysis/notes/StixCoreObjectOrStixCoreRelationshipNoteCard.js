@@ -40,7 +40,7 @@ const styles = (theme) => ({
     width: '100%',
     height: '100%',
     borderRadius: 0,
-    padding: '24px 24px 0 24px',
+    padding: '24px 24px 12px 24px',
     position: 'relative',
   },
   avatar: {
@@ -175,7 +175,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
       <Card classes={{ root: classes.card }} raised={false}>
         <CardHeader
           style={{
-            padding: '10px 10px 0 15px',
+            padding: '0px 10px 0 15px',
             // borderBottom: `1px solid ${theme.palette.divider}`,
           }}
           action={
@@ -192,7 +192,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
                     style={{
                       fontDecoration: 'none',
                       textTransform: 'none',
-                      paddingTop: '15px',
+                      paddingTop: '3px',
                     }}
                   >
                     <strong>
@@ -236,7 +236,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
               </div>
                 <IconButton
                 aria-haspopup="true"
-                style={{ marginTop: 1 }}
+                style={{ marginTop: '-6px' }}
                 onClick={this.toggleExpand.bind(this)}
                 >
                   {this.state.open ? (

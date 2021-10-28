@@ -55,6 +55,112 @@ class StixDomainObjectOverview extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('ID')}
+                </Typography>
+                <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
+                  <Tooltip title={t('ID')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t(stixDomainObject.id)}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Asset ID')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Asset ID')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t(stixDomainObject.asset_id)}
+              </div>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Asset Type')}
+                </Typography>
+                <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
+                  <Tooltip
+                    title={t('Asset Type')}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t(stixDomainObject.asset_type)}
+                {/* <Chip key={stixDomainObject.id} classes={{ root: classes.chip }}
+                label={t(stixDomainObject.asset_type)} color="primary" /> */}
+                {/* <ItemCreator creator={stixDomainObject.creator} /> */}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Asset Tag')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Asset Tag')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t(stixDomainObject.asset_tag)}
+              </div>
+            </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
+                <Grid item={true} xs={12}>
+                    <div>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ float: 'left', marginTop: 20 }}
+                    >
+                      {t('Description')}
+                    </Typography>
+                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                      <Tooltip title={t('Description')}>
+                        <Information fontSize="inherit" color="disabled" />
+                      </Tooltip>
+                    </div>
+                    <div className="clearfix" />
+                    <div className='scroll-bg'>
+                        <div className='scroll-div'>
+                          <div className='scroll-object'>
+                            {t(stixDomainObject.description)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
             {/* <Grid item={true} xs={12}>
               <Typography
                 variant="h3"
@@ -99,63 +205,6 @@ class StixDomainObjectOverview extends Component {
               </pre>
             </Grid> */}
             <Grid item={true} xs={6}>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t('ID')}
-                </Typography>
-                <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                  <Tooltip title={t('ID')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {t(stixDomainObject.id)}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Asset ID')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Asset ID')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {t(stixDomainObject.asset_id)}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Description')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Description')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <div className='scroll-bg'>
-                    <div className='scroll-div'>
-                      <div className='scroll-object'>
-                        {t(stixDomainObject.description)}
-                    </div>
-                  </div>
-                </div>
-              </div>
               <div>
                 <Typography
                   variant="h3"
@@ -304,45 +353,6 @@ class StixDomainObjectOverview extends Component {
               {fldt(stixDomainObject.modified)} */}
             </Grid>
             <Grid item={true} xs={6}>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t('Asset Type')}
-                </Typography>
-                <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                  <Tooltip
-                    title={t('Asset Type')}
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {t(stixDomainObject.asset_type)}
-  {/* <Chip key={stixDomainObject.id} classes={{ root: classes.chip }}
-  label={t(stixDomainObject.asset_type)} color="primary" /> */}
-                {/* <ItemCreator creator={stixDomainObject.creator} /> */}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Asset Tag')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Asset Tag')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {t(stixDomainObject.asset_tag)}
-              </div>
               <div>
                 <Typography
                   variant="h3"

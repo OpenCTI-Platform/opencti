@@ -89,7 +89,7 @@ class DeviceEditionDetailsComponent extends Component {
           <Paper classes={{ root: classes.paper }} elevation={2}>
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={6}>
-                <div style={{ marginBottom: '119px' }}>
+                <div style={{ marginBottom: '122px' }}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
@@ -98,7 +98,7 @@ class DeviceEditionDetailsComponent extends Component {
                   >
                     {t('Installed Operating System')}
                   </Typography>
-                  <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                  <div style={{ float: 'left', margin: '-7px 0 4px 5px' }}>
                     <Tooltip title={t('Installed Operating System')} >
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
@@ -127,7 +127,7 @@ class DeviceEditionDetailsComponent extends Component {
                   >
                     {t('Installed Software')}
                   </Typography>
-                  <div style={{ float: 'left', margin: '15px 0 0 5px' }}>
+                  <div style={{ float: 'left', margin: '13px 0 0 5px' }}>
                     <Tooltip title={t('Installed Software')} >
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
@@ -154,11 +154,11 @@ class DeviceEditionDetailsComponent extends Component {
                     variant="h3"
                     color="textSecondary"
                     gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
+                    style={{ float: 'left', marginTop: 18 }}
                   >
                     {t('Motherboard ID')}
                   </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <div style={{ float: 'left', margin: '19px 0 0 5px' }}>
                     <Tooltip
                       title={t('Motherboard ID')}>
                       <Information fontSize="inherit" color="disabled" />
@@ -470,7 +470,7 @@ class DeviceEditionDetailsComponent extends Component {
                   >
                     {t('Installed Hardware')}
                   </Typography>
-                  <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                  <div style={{ float: 'left', margin: '-3px 0 0 5px' }}>
                     <Tooltip title={t('Installed Hardware')} >
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
@@ -498,17 +498,17 @@ class DeviceEditionDetailsComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: 'left', marginTop: 15 }}
                 >
                   {t('Location')}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
                   <Tooltip title={t('Location')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <div className='scroll-bg'>
+                {/* <div className='scroll-bg'>
                   <div className='scroll-div'>
                     <div className='scroll-object'>
                       <Field
@@ -522,7 +522,15 @@ class DeviceEditionDetailsComponent extends Component {
                       />
                     </div>
                   </div>
-                </div>
+                </div> */}
+                <Field
+                  component={TextField}
+                  name="Description"
+                  fullWidth={true}
+                  multiline={true}
+                  rows="3"
+                  variant='outlined'
+                  />
               </div>
                 <div>
                   <Typography
@@ -589,11 +597,11 @@ class DeviceEditionDetailsComponent extends Component {
                     variant="h3"
                     color="textSecondary"
                     gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
+                    style={{ float: 'left', marginTop: 19 }}
                   >
                     {t('Baseline Configuration Name')}
                   </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <div style={{ float: 'left', margin: '20px 0 0 5px' }}>
                     <Tooltip title={t('Baseline Configuration Name')} >
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>

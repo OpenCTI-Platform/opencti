@@ -100,40 +100,14 @@ class StixDomainObjectCreationOverviewComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={12}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t('Name')}
-                </Typography>
-                <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                  <Tooltip title={t('Installed Operating System')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <Field
-                  component={TextField}
-                  variant='outlined'
-                  size='small'
-                  name="name"
-                  fullWidth={true}
-                  containerstyle={{ width: '100%' }}
-                  // onFocus={this.handleChangeFocus.bind(this)}
-                  // onSubmit={this.handleSubmitField.bind(this)}
-                />
-              </Grid>
-              <Grid item={true} xs={6}>
-                <div>
+                <Grid item={true} xs={12}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
                     gutterBottom={true}
                     style={{ float: 'left' }}
                   >
-                    {t('ID')}
+                    {t('Name')}
                   </Typography>
                   <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
                     <Tooltip title={t('Installed Operating System')} >
@@ -144,38 +118,124 @@ class StixDomainObjectCreationOverviewComponent extends Component {
                     component={TextField}
                     variant='outlined'
                     size='small'
-                    name="id"
+                    name="name"
                     fullWidth={true}
                     containerstyle={{ width: '100%' }}
-                  // helperText={
-                  //   <SubscriptionFocus fieldName="name" />
-                  // }
+                    // onFocus={this.handleChangeFocus.bind(this)}
+                    // onSubmit={this.handleSubmitField.bind(this)}
                   />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 17 }}
-                  >
-                    {t('Asset ID')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '17px 0 0 5px' }}>
-                    <Tooltip title={t('Installed Software')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
+                </Grid>
+            </Grid>
+            <Grid container={true} spacing={3}>
+                <Grid item={true} xs={6}>
+                  <div>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ float: 'left' }}
+                    >
+                      {t('ID')}
+                    </Typography>
+                    <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                      <Tooltip title={t('Installed Operating System')} >
+                        <Information fontSize="inherit" color="disabled" />
+                      </Tooltip>
+                    </div>
+                    <Field
+                      component={TextField}
+                      variant='outlined'
+                      size='small'
+                      name="id"
+                      fullWidth={true}
+                      containerstyle={{ width: '100%' }}
+                    // helperText={
+                    //   <SubscriptionFocus fieldName="name" />
+                    // }
+                    />
                   </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    size='small'
-                    name="asset_id"
-                    fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                  />
-                </div>
-                <div>
+                  <div>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ float: 'left', marginTop: 17 }}
+                    >
+                      {t('Asset ID')}
+                    </Typography>
+                    <div style={{ float: 'left', margin: '17px 0 0 5px' }}>
+                      <Tooltip title={t('Installed Software')} >
+                        <Information fontSize="inherit" color="disabled" />
+                      </Tooltip>
+                    </div>
+                    <Field
+                      component={TextField}
+                      variant='outlined'
+                      size='small'
+                      name="asset_id"
+                      fullWidth={true}
+                      containerstyle={{ width: '100%' }}
+                    />
+                  </div>
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <div>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ float: 'left' }}
+                    >
+                      {t('Asset Type')}
+                    </Typography>
+                    <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
+                      <Tooltip title={t('Asset Type')}>
+                        <Information fontSize="inherit" color="disabled" />
+                      </Tooltip>
+                    </div>
+                    <div className="clearfix" />
+                    <AssetType
+                      component={SelectField}
+                      variant='outlined'
+                      name="asset_type"
+                      size='small'
+                      disabled={true}
+                      fullWidth={true}
+                      style={{ height: '38.09px' }}
+                      containerstyle={{ width: '100%' }}
+                      helperText={t('Select Asset Type')}
+                    />
+                  </div>
+                  <div>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ float: 'left', marginTop: 20 }}
+                    >
+                      {t('Asset Tag')}
+                    </Typography>
+                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                      <Tooltip title={t('Asset Tag')}>
+                        <Information fontSize="inherit" color="disabled" />
+                      </Tooltip>
+                    </div>
+                    <div className="clearfix" />
+                    <AssetTaglist
+                      component={SelectField}
+                      variant='outlined'
+                      name="asset_tag"
+                      size='small'
+                      fullWidth={true}
+                      style={{ height: '38.09px' }}
+                      containerstyle={{ width: '100%' }}
+                    >
+                    </AssetTaglist>
+                  </div>
+                </Grid>
+            </Grid>
+            <Grid container={true} spacing={3}>
+              <Grid item={true} xs={12}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
@@ -189,25 +249,17 @@ class StixDomainObjectCreationOverviewComponent extends Component {
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
-                  {/* <div className="clearfix" />
-                      <textarea className="scrollbar-customize" rows="3" cols="24" /> */}
-                  <div className="clearfix" />
-                  <div className='scroll-bg'>
-                    <div className='scroll-div'>
-                      <div className='scroll-object'>
-                        <Field
-                          component={TextField}
-                          multiline={true}
-                          name="description"
-                          variant='outlined'
-                          size='small'
-                          fullWidth={true}
-                          containerstyle={{ width: '100%', height: '100%' }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                 <div className="clearfix" />
+                  <Field
+                  component={TextField}
+                  name="Description"
+                  fullWidth={true}
+                  multiline={true}
+                  rows="4"
+                  variant='outlined'
+                  />
+              </Grid>
+              <Grid item={true} xs={6}>
                 <div style={{ marginTop: '6px' }}>
                   <Typography
                     variant="h3"
@@ -315,59 +367,6 @@ class StixDomainObjectCreationOverviewComponent extends Component {
                 </div>
               </Grid>
               <Grid item={true} xs={6}>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left' }}
-                  >
-                    {t('Asset Type')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                    <Tooltip title={t('Asset Type')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <AssetType
-                    component={SelectField}
-                    variant='outlined'
-                    name="asset_type"
-                    size='small'
-                    disabled={true}
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '100%' }}
-                    helperText={t('Select Asset Type')}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Asset Tag')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Asset Tag')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <AssetTaglist
-                    component={SelectField}
-                    variant='outlined'
-                    name="asset_tag"
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '100%' }}
-                  >
-                  </AssetTaglist>
-                </div>
                 <div>
                   <Typography
                     variant="h3"
