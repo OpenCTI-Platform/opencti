@@ -13,6 +13,7 @@ COPY ./package.json ./yarn.lock ./
 RUN yarn install
 COPY . /opt/opencti-build/opencti-graphql
 RUN yarn run webpack --mode production
+RUN yarn schema-compile
 
 
 # FROM base AS front-builder
@@ -20,19 +21,20 @@ RUN yarn run webpack --mode production
 # COPY opencti-front/package.json opencti-front/yarn.lock ./
 # RUN yarn install
 # COPY opencti-front /opt/opencti-build/opencti-front
-# COPY opencti-graphql/config/schema/opencti.graphql /opt/opencti-build/opencti-graphql/config/schema/opencti.graphql
+# COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/config/schema/compiled.graphql /opt/opencti-build/opencti-graphql/config/schema/compiled.graphql
 # RUN yarn relay && yarn generate
 
 
 FROM base AS app
 RUN set -ex; \
-    apk add --no-cache git tini gcc musl-dev python3 python3-dev postfix postfix-pcre; \
-    python3 -m ensurepip; \
-    rm -rv /usr/lib/python*/ensurepip; \
-    pip3 install --no-cache-dir --upgrade pip setuptools wheel; \
-    ln -sf python3 /usr/bin/python;
+    apk add --no-cache tini postfix postfix-pcre;
+    # apk add --no-cache git tini gcc musl-dev python3 python3-dev postfix postfix-pcre; \
+    # python3 -m ensurepip; \
+    # rm -rv /usr/lib/python*/ensurepip; \
+    # pip3 install --no-cache-dir --upgrade pip setuptools wheel; \
+    # ln -sf python3 /usr/bin/python;
 WORKDIR /opt/opencti
-COPY ./src/python/requirements.txt ./src/python/requirements.txt
+# COPY ./src/python/requirements.txt ./src/python/requirements.txt
 # RUN pip3 install --no-cache-dir --requirement ./src/python/requirements.txt
 # RUN pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
 RUN apk del git python3-dev gcc musl-dev
