@@ -77,7 +77,8 @@ services:
     restart: unless-stopped
     volumes:
       - ./default.json:/opt/opencti/config/default.json
-    profile: opencti
+    profiles:
+      - opencti
 
   opencti-front:
     image: docker.darklight.ai/opencti-front
@@ -109,7 +110,8 @@ services:
       - ./default.json:/opt/opencti/config/default.json
       - ./darklight.crt:/opt/opencti/certs/darklight.crt
       - ./darklight.key:/opt/opencti/certs/darklight.key
-    profile: frontend
+    profiles:
+      - frontend
   
   opencti-graphql:
     image: docker.darklight.ai/opencti-graphql
@@ -150,7 +152,8 @@ services:
       - ./default.json:/opt/opencti/config/default.json
       - ./darklight.crt:/opt/opencti/certs/darklight.crt
       - ./darklight.key:/opt/opencti/certs/darklight.key
-    profile: backend
+    profiles:
+      - backend
 
 volumes:
   esdata:
