@@ -15,9 +15,11 @@ import {
   head,
 } from 'ramda';
 import * as Yup from 'yup';
+import Button from '@material-ui/core/Button';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
+import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -47,6 +49,9 @@ const styles = (theme) => ({
     position: 'absolute',
     top: 30,
     right: 30,
+  },
+  buttonPopover: {
+    textTransform: 'capitalize',
   },
 });
 
@@ -186,7 +191,12 @@ class NoteEditionOverviewComponent extends Component {
   }
 
   render() {
-    const { t, note, context } = this.props;
+    const {
+      t,
+      note,
+      classes,
+      context,
+    } = this.props;
     const createdBy = pathOr(null, ['createdBy', 'name'], note) === null
       ? ''
       : {
@@ -221,7 +231,7 @@ class NoteEditionOverviewComponent extends Component {
         {({ setFieldValue }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
+              {/* <Field
                 component={DatePickerField}
                 name="created"
                 label={t('Date')}
@@ -247,11 +257,11 @@ class NoteEditionOverviewComponent extends Component {
                     fieldName="attribute_abstract"
                   />
                 }
-              />
+              /> */}
               <Field
                 component={MarkDownField}
                 name="content"
-                label={t('Content')}
+                // label={t('Content')}
                 fullWidth={true}
                 multiline={true}
                 rows="4"
@@ -262,7 +272,36 @@ class NoteEditionOverviewComponent extends Component {
                   <SubscriptionFocus context={context} fieldName="content" />
                 }
               />
-              <ConfidenceField
+              <StixCoreObjectLabelsView
+                labels={note.objectLabel}
+                marginTop={20}
+              />
+              <div style={{
+                float: 'right',
+                margin: '10px 0 30px 0',
+              }}>
+                <Button
+                  // onClick={this.handleCloseDialog.bind(this)}
+                  // disabled={this.state.removing}
+                  variant="outlined"
+                  size="small"
+                  classes={{ root: classes.buttonPopover }}
+                >
+                  {t('Cancel')}
+                </Button>
+                <Button
+                  // onClick={this.handleRemoval.bind(this)}
+                  color="primary"
+                  // disabled={this.state.removing}
+                  variant="contained"
+                  size="small"
+                  style={{ marginLeft: '15px' }}
+                  classes={{ root: classes.buttonPopover }}
+                >
+                  {t('Delete')}
+                </Button>
+              </div>
+              {/* <ConfidenceField
                 name="confidence"
                 onFocus={this.handleChangeFocus.bind(this)}
                 onChange={this.handleSubmitField.bind(this)}
@@ -291,7 +330,7 @@ class NoteEditionOverviewComponent extends Component {
                   />
                 }
                 onChange={this.handleChangeObjectMarking.bind(this)}
-              />
+              /> */}
             </Form>
           </div>
         )}
@@ -322,6 +361,15 @@ const NoteEditionOverview = createFragmentContainer(
             id
             name
             entity_type
+          }
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
+            }
           }
         }
         objectMarking {

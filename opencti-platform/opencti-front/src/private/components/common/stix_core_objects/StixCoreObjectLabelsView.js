@@ -26,7 +26,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import Slide from '@material-ui/core/Slide';
 import { Add, CancelOutlined } from '@material-ui/icons';
-import { Label } from 'mdi-material-ui';
+import Tooltip from '@material-ui/core/Tooltip';
+import { Label, Information } from 'mdi-material-ui';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
@@ -194,12 +195,22 @@ const StixCoreObjectLabelsView = (props) => {
       <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
         {t('Labels')}
       </Typography>
+      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+        <Tooltip
+          title={t(
+            'Label',
+          )}
+        >
+          <Information fontSize="inherit" color="disabled" />
+        </Tooltip>
+      </div>
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <IconButton
           color="secondary"
           aria-label="Label"
+          size="small"
           onClick={handleOpenAdd}
-          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+          style={{ float: 'left', margin: '-8px 0 0 -2px' }}
         >
           <Add fontSize="small" />
         </IconButton>
