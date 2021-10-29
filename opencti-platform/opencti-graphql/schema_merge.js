@@ -4,7 +4,7 @@ const mergeTypeDefs = require("@graphql-tools/merge").mergeTypeDefs;
 const print = require('graphql').print;
 const fs = require('fs');
 
-const files = loadFilesSync(join(__dirname, '**/*.graphql'))
+const files = loadFilesSync(join(__dirname, '**/*.graphql'));
 const mergedTypeDefs = mergeTypeDefs(files);
 const printed = print(mergedTypeDefs);
-fs.writeFileSync(join(__dirname,'config/schema/compiled.graphql'), printed);
+fs.writeFileSync(join(__dirname, 'config/schema/compiled.graphql'), printed);
