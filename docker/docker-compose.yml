@@ -115,9 +115,7 @@ services:
   
   opencti-graphql:
     image: docker.darklight.ai/opencti-graphql
-    build: 
-      context: ../opencti-platform
-      dockerfile: opencti-graphql/Dockerfile
+    build: ../opencti-platform/opencti-graphql
     container_name: opencti-graphql
     environment:
       - NODE_OPTIONS=--max-old-space-size=8096
