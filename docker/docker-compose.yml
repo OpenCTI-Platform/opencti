@@ -126,8 +126,8 @@ services:
       - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
       - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN}
       - APP__APP_LOGS__LOGS_LEVEL=error
-      - APP__HTTPS_CERT__KEY=/opt/opencti/certs/darklight.key
-      - APP__HTTPS_CERT__CRT=/opt/opencti/certs/darklight.crt
+      # - APP__HTTPS_CERT__KEY=/opt/opencti/certs/darklight.key
+      # - APP__HTTPS_CERT__CRT=/opt/opencti/certs/darklight.crt
       - REDIS__HOSTNAME=redis
       - REDIS__PORT=6379
       - ELASTICSEARCH__URL=http://elasticsearch:9200
@@ -148,10 +148,10 @@ services:
       - elasticsearch
       - rabbitmq
     restart: unless-stopped
-    volumes:
-      - ./default.json:/opt/opencti/config/default.json
-      - ./darklight.crt:/opt/opencti/certs/darklight.crt
-      - ./darklight.key:/opt/opencti/certs/darklight.key
+#     volumes:
+# #      - ./default.json:/opt/opencti/config/default.json
+#       - ./darklight.crt:/opt/opencti/certs/darklight.crt
+#       - ./darklight.key:/opt/opencti/certs/darklight.key
     profiles:
       - backend
 

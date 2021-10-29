@@ -45,37 +45,6 @@ const mocks = {
     external_id: 'aurora-r4-owner',
     url: 'https://downloads.dell.com/manuals/all-products/esuprt_desktop/esuprt_alienware_dsk/alienware-aurora-r4_owner%27s%20manual_en-us.pdf'
   }),
-  ComputingDevice: () => ({
-    id: 'computing-device--204d01a8-4866-4144-b7ff-a6ba40127a2d',
-    asset_id: 'darklight-2021-125',
-    asset_type: 'compute_device',
-    asset_tag: 'MM249847',
-    name: 'Paul Patrick Personal Macbook Pro',
-    description: 'Macbook Pro (16-inch 2019)',
-    serial_number: 'C02D20NFMD6T',
-    mac_address: ['14:b1:c8:01:9c:11'],
-    vendor_name: 'Apple',
-    implementation_point: 'external',
-    operational_status: 'operational',
-    function: 'Developer laptop',
-    network_id: '192.168.1.255'
-  }),
-  OperatingSystem: () => ({
-    id: 'software--29da67b2-b7eb-4c1a-9458-348669b77a0e',
-    asset_type: 'operating_system',
-    asset_id: 'darklight-2021-100',
-    name: 'MacOS 11.6 (20G165)',
-    description: 'MacOS',
-    vendor_name: 'Apple',
-    version: '11.6',
-  }),
-  User: () => ({
-    id: null,
-  }),
-  Settings: () => ({
-    platform_theme_dark_primary: null,
-    platform_theme_dark_secondary: null,
-  }),
 };
 
 export default mocks ;

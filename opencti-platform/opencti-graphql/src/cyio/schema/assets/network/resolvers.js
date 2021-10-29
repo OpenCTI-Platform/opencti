@@ -1,10 +1,11 @@
 import { assetSingularizeSchema as singularizeSchema } from '../asset-mappings.js';
-import { getSparqlQuery } from './sparql-query.js';
+import { getSparqlQuery, getReducer } from './sparql-query.js';
 
 const networkResolvers = {
   Query: {
     networkAssetList: async ( _, args, context, info ) => {
-      var sparqlQuery = getSparqlQuery('BY-ALL', args.id);
+      var sparqlQuery = getSparqlQuery('NETWORK', );
+      var reducer = getReducer('NETWORK')
       const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
         sparqlQuery,
@@ -12,36 +13,42 @@ const networkResolvers = {
         args.first,       // limit
         args.offset,      // offset
         args.filter );    // filter
-        if (Array.isArray(response) && response.length > 0) {
-          // build array of edges
-          const edges = [];
-          for (let asset of response) {
-            let edge = {
-              cursor: asset.iri,
-              node: networkAssetReducer( asset ),
-            }
-            edges.push( edge )
+      if (Array.isArray(response) && response.length > 0) {
+        // build array of edges
+        const edges = [];
+        for (let asset of response) {
+          let edge = {
+            cursor: asset.iri,
+            node: reducer(asset ),
+            // node: networkAssetReducer( asset ),
           }
-          return {
-            pageInfo: {
-              startCursor: response[0].iri,
-              endCursor: response[response.length -1 ].iri,
-              hasNextPage: false,
-              hasPreviousPage: false,
-              globalCount: response.length,
-            },
-            edges: edges,
-          }
-        } else {
-          return [];
+          edges.push( edge )
         }
-      },
+        return {
+          pageInfo: {
+            startCursor: response[0].iri,
+            endCursor: response[response.length -1 ].iri,
+            hasNextPage: false,
+            hasPreviousPage: false,
+            globalCount: response.length,
+          },
+          edges: edges,
+        }
+      } else {
+        return [];
+      }
+    },
     networkAsset: async (_, args, context, info ) => {
-      const dbName = context.dbName;
-      var sparqlQuery = getSparqlQuery('BY-ID', args.id);
-      const response = await context.dataSources.Stardog.queryById( dbName, sparqlQuery, singularizeSchema )
-        console.log( response[0] );
-        return( networkAssetReducer( response[0]) );
+      var sparqlQuery = getSparqlQuery('NETWORK', args.id, );
+      var reducer = getReducer('NETWORK')
+      const response = await context.dataSources.Stardog.queryById( 
+        context.dbName, 
+        sparqlQuery, 
+        singularizeSchema 
+      )
+      console.log( response[0] );
+      return( reducer( response[0]) );
+      // return( networkAssetReducer( response[0]) );
     }
   },
   Mutation: {
@@ -54,33 +61,36 @@ const networkResolvers = {
   },
   // Map enum GraphQL values to data model required values
   NetworkAsset: {
-    network_address_range: (parent, args, context, info ) => {
-
+    network_address_range: async (parent, args, context,  ) => {
+      let item = parent.netaddr_range_iri;
+      var sparqlQuery = getSparqlQuery('NETADDR-RANGE', item);
+      var reducer = getReducer('NETADDR-RANGE');
+      const response = await context.dataSources.Stardog.queryById( 
+        context.dbName, 
+        sparqlQuery, 
+        singularizeSchema 
+      )
+      if (response && response.length > 0) {
+        // console.log( response[0] );
+        // let results = ipAddrRangeReducer( response[0] )    TODO: revert when data is passed as objects, instead of string
+        let results = reducer( response[0] )
+        return {
+          id: results.id,
+          starting_ip_address: {
+            id: "1243",
+            ...(results.entity_type && {entity_type: results.entity_type}),
+            ip_address_value: results.start_addr_iri
+          },
+          ending_ip_address: {
+            id: "4556",
+            ...(results.entity_type && {entity_type: results.entity_type}),
+            ip_address_value: results.ending_addr_iri
+          }
+        }
+        return results
+      }
     }
   }
 };
-  
-function networkAssetReducer( asset ) {
-  return {
-    id: asset.id,
-    name: asset.name || null,
-    description: asset.description || null,
-    asset_id: asset.asset_id || null,
-    asset_type: asset.asset_type || null,
-    asset_tag: asset.tag || null,
-    serial_number: asset.serial_number || null,
-    vendor_name: asset.vendor_name || null,
-    version: asset.version || null,
-    release_date: asset.release_date || null,
-    network_id: asset.network_id || null,
-    network_name: asset.network_name || null,
-    // Hints
-    parent_iri: asset.iri,
-    locations_iri: asset.locations || null,
-    ext_ref_iri: asset.external_references || null,
-    notes_iri: asset.notes || null,
-    netaddr_range: asset.network_address_range || null,
-  }
-}
 
 export default networkResolvers;
