@@ -298,7 +298,7 @@ class Scans extends Component {
 
     const handleClose = () => {
       console.log("closed")
-      this.setState({ vulnerabilityAnchorEl: null });
+      this.setState({ vulnerabilityAnchorEl: false });
     };
 
     const handleSortByClick = (event) => {
@@ -588,13 +588,11 @@ class Scans extends Component {
                           <ListItemSecondaryAction>
                             <IconButton
                               edge="end"
-                              aria-label="more"
-                              aria-controls="long-menu"
-                              aria-haspopup="true"
                               onClick={handleClick}
                             >
                               <MoreVertIcon />
-                              <Menu
+                            </IconButton>
+                            <Menu
                                 id={"vulnerability-simple-menu-" + scan.id}
                                 anchorEl={this.state.vulnerabilityAnchorEl}
                                 open={this.state.vulnerabilityAnchorEl}
@@ -629,7 +627,6 @@ class Scans extends Component {
                                   Delete
                                 </MenuItem>
                               </Menu>
-                            </IconButton>
                           </ListItemSecondaryAction>
                         </ListItem>
                       );
