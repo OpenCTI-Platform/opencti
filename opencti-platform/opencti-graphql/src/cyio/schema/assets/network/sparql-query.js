@@ -1,17 +1,64 @@
-const selectQueryForm = `
-SELECT ?iri ?id
+export function getSparqlQuery(type, id, filter, ) {
+  var sparqlQuery;
+  let re = /{iri}/g;  // using regex with 'g' switch to replace all instances of a marker
+  switch( type ) {
+    case 'NETADDR-RANGE':
+      sparqlQuery = ipAddrRange.replace(re, id);
+      break;
+    case 'NETWORK':
+      let byId = '';
+      let filterStr = '';
+      if (id !== undefined) {
+        byId = byIdClause.replace("{id}", id);
+      }
+      // sparqlQuery = selectQueryForm + byId + predicates + inventoryConstraint + filterStr + '}';
+      sparqlQuery = selectClause + 
+          typeConstraint + 
+          byId + 
+          predicates + 
+          inventoryConstraint + 
+          filterStr + '}';
+      break;
+    default:
+      throw new Error(`Unsupported query type ' ${type}'`)
+  }
+  console.log(`[INFO] Query = ${sparqlQuery}`)
+  return sparqlQuery ;
+}
+
+export function getReducer( type ) {
+  var reducer ;
+  switch( type ) {
+    case 'NETWORK':
+      reducer = networkAssetReducer ;
+      break ;
+    case 'NETADDR-RANGE':
+      reducer = ipAddrRangeReducer;
+      break
+    default:
+      throw new Error(`Unsupported reducer type ' ${type}'`)
+  }
+  return reducer ;
+}
+
+
+const selectClause = `
+SELECT DISTINCT ?iri ?rdf_type ?id
   ?asset_id ?name ?description ?locations ?responsible_party 
   ?asset_type ?asset_tag ?serial_number ?vendor_name ?version ?release_date
   ?network_id ?network_name ?network_address_range 
-FROM <tag:stardog:api:context:local>
+FROM <tag:stardog:api:context:named>
 WHERE {
-    ?iri a <http://scap.nist.gov/ns/asset-identification#Network> .
 `;
 
+const bindIRIClause = `\tBIND(<{iri}> AS ?iri)\n`;
+const typeConstraint = `?iri a <http://scap.nist.gov/ns/asset-identification#Network> .`;
 const byIdClause = `?iri <http://darklight.ai/ns/common#id> "{id}" .`;
 
 const predicates = `
-OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id } .
+?iri <http://darklight.ai/ns/common#id> ?id .
+?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type .
+# OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id } .
 OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_id> ?asset_id } .
 OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#name> ?name } .
 OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#description> ?description } .
@@ -40,14 +87,54 @@ const inventoryConstraint = `
     }
 ` ;
 
-export function getSparqlQuery(queryMode, id, filter, ) {
-	let byId = '';
-	if ( queryMode === 'BY-ID') {
-		byId = byIdClause.replace("{id}", id);
-	}
+const ipAddrRange = `SELECT DISTINCT ?rdf_type ?id ?object_type ?starting_ip_address ?ending_ip_address 
+FROM <tag:stardog:api:context:named>
+WHERE {
+    <{iri}> a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> ;
+        <http://darklight.ai/ns/common#id> ?id  ;
+        <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type  ;
+        <http://scap.nist.gov/ns/asset-identification#starting_ip_address> ?starting_ip_address ;
+        <http://scap.nist.gov/ns/asset-identification#ending_ip_address> ?ending_ip_address .
+    OPTIONAL { <{iri}> <http://darklight.ai/ns/common#object_type> ?object_type } .
+}`;
 
-	let filterStr = ''
-	var sparqlQuery = selectQueryForm + byId + predicates + inventoryConstraint + filterStr + '}'
+function networkAssetReducer( item ) {
+  return {
+    id: item.id,
+    ...(item.created && {created: item.created}),
+    ...(item.modified && {modified: item.modified}),
+    ...(item.labels && {labels: item.labels}),
+    ...(item.name && {name: item.name}),
+    ...(item.description && { description: item.description}),
+    ...(item.asset_id && { asset_id: item.asset_id}),
+    ...(item.asset_type && {asset_type: item.asset_type}),
+    ...(item.asset_tag && {asset_tag: item.asset_tag}) ,
+    ...(item.serial_number && {serial_number: item.serial_number}),
+    ...(item.vendor_name && {vendor_name: item.vendor_name}),
+    ...(item.version && {version: item.version}),
+    ...(item.release_date && {release_date: item.release_date}),
+    ...(item.network_id && {network_id: item.network_id}),
+    ...(item.network_name && {network_name: item.network_name}),
+    // Hints
+    ...(item.iri && {parent_iri: item.iri}),
+    ...(item.locations && {locations_iri: item.locations}),
+    ...(item.external_references && {ext_ref_iri: item.external_references}),
+    ...(item.notes && {notes_iri: item.notes}),
+    ...(item.network_address_range && {netaddr_range_iri: item.network_address_range}),
+  }
+}
 
-	return sparqlQuery ;
-};
+function ipAddrRangeReducer ( item ) {
+  if ( typeof item.starting_ip_address == 'string' ) {
+    var entity_type = 'IpV4Address';
+    console.log(`[DATA-ERROR] value does not comply with spec: starting_ip_address is string not object`);
+  }
+  return {
+    id: item.id,
+    ...(entity_type && {entity_type: entity_type}),
+    ...(item.iri &&{parent_iri: item.iri}),
+    // Hints
+    ...(item.starting_ip_address && {start_addr_iri: item.starting_ip_address}),
+    ...(item.ending_ip_address && {ending_addr_iri: item.ending_ip_address}),
+  }
+}

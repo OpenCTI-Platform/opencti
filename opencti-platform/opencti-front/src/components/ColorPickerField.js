@@ -6,7 +6,9 @@ import Popover from '@material-ui/core/Popover';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import { useField } from 'formik';
 import { fieldToTextField } from 'formik-material-ui';
-import { ColorLens } from '@material-ui/icons';
+import Box from '@material-ui/core/Box';
+import CardContent from '@material-ui/core/CardContent';
+import { ColorLens, Add } from '@material-ui/icons';
 
 const ColorPickerField = (props) => {
   const anchorEl = React.createRef();
@@ -56,8 +58,44 @@ const ColorPickerField = (props) => {
   };
 
   return (
-    <div>
-      <MuiTextField
+    <div style={{ borderBottom: '1px solid grey', margin: '20px 0' }}>
+      <CardContent
+       {...fieldToTextField(props)}
+        ref={anchorEl}
+        onChange={internalOnChange}
+        onFocus={internalOnFocus}
+        onBlur={internalOnBlur}
+        style={{ display: 'flex', padding: '0px' }}
+      >
+              <Box sx={{
+                width: 40,
+                height: 40,
+                bgcolor: 'primary.main',
+                borderRadius: '50%',
+              }}
+              style={{ marginRight: '8px', cursor: 'pointer' }}
+                />
+              <Box sx={{
+                width: 40,
+                height: 40,
+                bgcolor: 'primary.dark',
+                borderRadius: '50%',
+              }}
+               style={{ marginRight: '8px', cursor: 'pointer' }}
+                />
+              <Box sx={{
+                width: 40,
+                height: 40,
+                bgcolor: 'secondary.main',
+                borderRadius: '50%',
+              }}
+              style={{ marginRight: '8px', cursor: 'pointer' }}
+                />
+              <IconButton aria-label="open" onClick={() => setOpen(true)}>
+                <Add />
+              </IconButton>
+      </CardContent>
+      {/* <MuiTextField
         {...fieldToTextField(props)}
         ref={anchorEl}
         onChange={internalOnChange}
@@ -65,24 +103,33 @@ const ColorPickerField = (props) => {
         onBlur={internalOnBlur}
         InputProps={{
           endAdornment: (
-            <InputAdornment position="end">
+            <InputAdornment>
               <IconButton aria-label="open" onClick={() => setOpen(true)}>
-                <ColorLens />
+                <Add />
               </IconButton>
             </InputAdornment>
           ),
+          startAdornment: (
+            <InputAdornment>
+                <IconButton>
+                    <Box
+                    sx={{
+                      width: 30,
+                      height: 30,
+                      bgcolor: 'primary.main',
+                    }}
+                    style={{ borderRadius: '50%' }}/>
+                </IconButton>
+            </InputAdornment>
+          ),
         }}
-      />
+      /> */}
       <Popover
         open={open}
         anchorEl={anchorEl.current}
         onClose={() => setOpen(false)}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'center',
-        }}
-        transformOrigin={{
-          vertical: 'top',
           horizontal: 'center',
         }}
       >

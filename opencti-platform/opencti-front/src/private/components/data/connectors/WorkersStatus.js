@@ -189,22 +189,22 @@ const WorkersStatus = createRefetchContainer(
             total
           }
         }
-        amqpMetrics {
-          consumers
-          overview {
-            queue_totals {
-              messages
-              messages_ready
-              messages_unacknowledged
-            }
-            message_stats {
-              ack
-              ack_details {
-                rate
-              }
-            }
-          }
-        }
+        # amqpMetrics {
+        #   consumers
+        #   overview {
+        #     queue_totals {
+        #       messages
+        #       messages_ready
+        #       messages_unacknowledged
+        #     }
+        #     message_stats {
+        #       ack
+        #       ack_details {
+        #         rate
+        #       }
+        #     }
+        #   }
+        # }
       }
     `,
   },

@@ -28,9 +28,13 @@ const softwareResolvers = {
         for (let asset of response) {
           let edge = {
             cursor: asset.iri,
-            node: softwareAssetReducer( asset ),
+            node: reducer( asset ),
           }
-          edges.push( edge )
+          if (edge.node.name === undefined) {
+            console.log(edge)
+          } else {
+            edges.push( edge )
+          }
         }
         return {
           pageInfo: {

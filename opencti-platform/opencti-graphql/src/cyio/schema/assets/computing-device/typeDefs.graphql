@@ -52,8 +52,8 @@
     # HardwareAsset
     cpe_identifier: String
     installation_id: String
-    installed_hardware: [ComputingDeviceAsset!]!
-    installed_operating_system: OperatingSystemAsset!
+    installed_hardware: [ComputingDeviceAsset]
+    installed_operating_system: OperatingSystemAsset
     model: String
     motherboard_id: String
     baseline_configuration_name: String
@@ -68,7 +68,8 @@
     installed_software: [SoftwareAsset]
     ipv4_address: [IpV4Address]
     ipv6_address: [IpV6Address]
-    mac_address: [MAC!]!
+#    mac_address: [MACAddress]     this is what it should be because MAC address are objects
+    mac_address: [MAC]
     network_id: String
     vlan_id: String
     uri: URL
@@ -113,8 +114,8 @@
     # HardwareAsset
     cpe_identifier: String
     installation_id: String
-    installed_hardware: [ComputingDeviceAsset!]!
-    installed_operating_system: OperatingSystemAsset!
+    installed_hardware: [ComputingDeviceAsset]
+    installed_operating_system: OperatingSystemAsset
     model: String
     motherboard_id: String
     baseline_configuration_name: String
@@ -126,10 +127,11 @@
     fqdn: String
     hostname: String
     netbios_name: String
-    installed_software: [SoftwareAsset!]!
+    installed_software: [SoftwareAsset]
     ipv4_address: [IpV4Address]
     ipv6_address: [IpV6Address]
-    mac_address: [MAC!]!
+#    mac_address: [MACAddress]     this is what it should be because MAC address are objects
+    mac_address: [MAC]
     vlan_id: String
     uri: String
     ports: [PortInfo!]!
@@ -173,8 +175,8 @@
     # HardwareAsset
     cpe_identifier: String
     installation_id: String
-    installed_hardware: [ComputingDeviceAsset!]!
-    installed_operating_system: OperatingSystemAsset!
+    installed_hardware: [ComputingDeviceAsset]
+    installed_operating_system: OperatingSystemAsset
     model: String
     motherboard_id: String
     baseline_configuration_name: String
@@ -186,10 +188,11 @@
     fqdn: String
     hostname: String
     netbios_name: String
-    installed_software: [SoftwareAsset!]!
+    installed_software: [SoftwareAsset]
     ipv4_address: [IpV4Address]
     ipv6_address: [IpV6Address]
-    mac_address: [MAC!]!
+#    mac_address: [MACAddress]     this is what it should be because MAC address are objects
+    mac_address: [MAC]
     vlan_id: String
     uri: String
     ports: [PortInfo!]!
@@ -228,9 +231,10 @@
     fqdn: String
     hostname: String
     netbios_name: String
-    ipv4_address: [IpV4AddressAddInput]!
-    ipv6_address: [IpV6AddressAddInput]!
-    mac_address: [MAC!]!
+    ipv4_address: [IpV4AddressAddInput]
+    ipv6_address: [IpV6AddressAddInput]
+#    mac_address: [MACAddressAddInput]     this is what it should be because MAC address are objects
+    mac_address: [MAC]
     network_id: String
     vlan_id: String
     uri: URL

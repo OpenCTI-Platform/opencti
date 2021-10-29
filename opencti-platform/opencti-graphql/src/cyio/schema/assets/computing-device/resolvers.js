@@ -1,10 +1,13 @@
 import { assetSingularizeSchema as singularizeSchema } from '../asset-mappings.js';
-import { getSparqlQuery } from './sparql-query.js';
+import { getSparqlQuery, getReducer } from './sparql-query.js';
+import { getSparqlQuery as getSoftwareQuery, 
+         getReducer as getSoftwareReducer } from '../software/sparql-query.js';
 
 const computingDeviceResolvers = {
   Query: {
     computingDeviceAssetList: async ( _, args, context, info  ) => { 
-      var sparqlQuery = getSparqlQuery('BY-ALL', args.id);
+      var sparqlQuery = getSparqlQuery('COMPUTING-DEVICE', );
+      var reducer = getReducer('COMPUTING-DEVICE');
       const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
         sparqlQuery,
@@ -19,7 +22,7 @@ const computingDeviceResolvers = {
         for (let asset of response) {
           let edge = {
             cursor: asset.iri,
-            node: computingDeviceAssetReducer( asset ),
+            node: reducer( asset ),
           }
           edges.push( edge )
         }
@@ -38,11 +41,15 @@ const computingDeviceResolvers = {
       }
     },
     computingDeviceAsset: async ( _, args, context, info ) => {
-      const dbName = context.dbName;
-      var sparqlQuery = getSparqlQuery('BY-ID', args.id);
-      const response = await context.dataSources.Stardog.queryById( dbName, sparqlQuery, singularizeSchema )
-        console.log( response[0] );
-        return( computingDeviceAssetReducer( response[0]) );
+      var sparqlQuery = getSparqlQuery('COMPUTING-DEVICE', args.id);
+      var reducer = getReducer('COMPUTING-DEVICE');
+      const response = await context.dataSources.Stardog.queryById( 
+        context.dbName, 
+        sparqlQuery, 
+        singularizeSchema 
+      )
+      // console.log( response[0] );
+      return( reducer( response[0]) );
     },
   },
   Mutation: {
@@ -54,53 +61,187 @@ const computingDeviceResolvers = {
     },
   },
   // Map enum GraphQL values to data model required values
+
+  // field-level query
+  ComputingDeviceAsset: {
+    // installed_hardware: async ( parent, args, context, ) => {
+    //   let iriArray = parent.installed_hw_iri;
+    // },
+    installed_software: async ( parent, args, context, ) => {
+      let iriArray = parent.installed_sw_iri;
+      var reducer = getSoftwareReducer('SOFTWARE-IRI');
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const results = [];
+        for (let item of iriArray) {
+          // check if this is an IPv4 object
+          if (!item.includes('Software')) {
+            continue;
+          }
+
+          // query for the IP address based on its IRI
+          var sparqlQuery = getSoftwareQuery('SOFTWARE-IRI', item);
+          const response = await context.dataSources.Stardog.queryById( 
+            context.dbName, 
+            sparqlQuery, 
+            singularizeSchema 
+          )
+          if (response && response.length > 0) {
+            // console.log( response[0] );
+            results.push(reducer( response[0] ))
+          }
+        }
+
+      return results;
+      } else {
+        return [];
+      }
+    },
+    installed_operating_system: async ( parent, args, context, ) => {
+      var iri = parent.installed_os_iri
+      if (Array.isArray( iri ) ) {
+        console.log(`[DATA-ERROR] value does not comply with spec: ${parent.installed_os_iri}`);
+        if (iri.length > 0) {
+          iri = parent.installed_os_iri[0]
+        }
+      } else {
+        iri = parent.installed_os_iri;
+      }
+      var sparqlQuery = getSoftwareQuery('OS-IRI', iri);
+      var reducer = getSoftwareReducer('OS-IRI');
+      const response = await context.dataSources.Stardog.queryById( 
+        context.dbName, 
+        sparqlQuery, 
+        singularizeSchema 
+      )
+      if (response && response.length > 0) {
+        // console.log( response[0] );
+        let results = reducer(response[0])
+        return results
+      }
+    },
+    ipv4_address: async ( parent, args, context, ) => {
+      let iriArray = parent.ip_addr_iri;
+      var reducer = getReducer('IPV4-ADDR');
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const results = [];
+        for (let ipAddr of iriArray) {
+          // check if this is an IPv4 object
+          if (!ipAddr.includes('IpV4Address')) {
+            continue;
+          }
+
+          // query for the IP address based on its IRI
+          var sparqlQuery = getSparqlQuery('IPV4-ADDR', ipAddr);
+          const response = await context.dataSources.Stardog.queryById( 
+            context.dbName, 
+            sparqlQuery, 
+            singularizeSchema 
+          )
+          if (response && response.length > 0) {
+            // console.log( response[0] );
+            results.push(reducer( response[0] ))
+          }
+        }
+
+      return results;
+      } else {
+        return [];
+      }
+    },
+    ipv6_address: async ( parent, args, context, ) => {
+      let iriArray = parent.ip_addr_iri;
+      var reducer = getReducer('IPV6-ADDR');
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const results = [];
+        for (let ipAddr of iriArray) {
+          // check if this is an IPv6 object
+          if (!ipAddr.includes('IpV6Address')) {
+            continue;
+          }
+
+          // query for the IP address based on its IRI
+          var sparqlQuery = getSparqlQuery('IPV6-ADDR', ipAddr);
+          const response = await context.dataSources.Stardog.queryById( 
+            context.dbName, 
+            sparqlQuery, 
+            singularizeSchema 
+          )
+          if (response.length > 0 ) {
+            // console.log( response[0] );
+            results.push(reducer( response[0] ))
+          }
+        }
+
+        return results;
+        } else {
+          return [];
+        }
+    },
+    mac_address: async ( parent, args, context,) => {
+      let iriArray = parent.mac_addr_iri;
+      var reducer = getReducer('MAC-ADDR');
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const results = [];
+        const value_array = [];
+        for (let addr of iriArray) {
+          // check if this is an MAC address object
+          if (!addr.includes('MACAddress')) {
+            continue;
+          }
+
+          // query for the MAC address based on its IRI
+          var sparqlQuery = getSparqlQuery('MAC-ADDR', addr);
+          const response = await context.dataSources.Stardog.queryById( 
+            context.dbName, 
+            sparqlQuery, 
+            singularizeSchema 
+          )
+          if (response.length > 0) {
+            // console.log( response[0] );
+            results.push(reducer( response[0] ) )      // TODO: revent back when data is returned as objects, not strings
+            // Support for returning MAC address as a string, not a node
+            value_array.push( reducer(response[0]).mac_address_value )
+          }
+        }
+
+        // console.log(`value array: ${value_array}`)
+        return value_array
+        // return results;      TODO:  revert back when data is returned as objects, not strings
+        } else {
+          return [];
+        }
+    },
+    ports: async ( parent, args, context, ) => {
+      let iriArray = parent.ip_addr_iri;
+      var reducer = getReducer('PORT-INFO');
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const results = [];
+        for (let ipAddr of iriArray) {
+          // check if this is an IPv4 object
+          if (!ipAddr.includes('Port')) {
+            continue;
+          }
+
+          // query for the IP address based on its IRI
+          var sparqlQuery = getSparqlQuery('PORT-INFO', ipAddr);
+          const response = await context.dataSources.Stardog.queryById( 
+            context.dbName, 
+            sparqlQuery, 
+            singularizeSchema 
+          )
+          if (response && response.length > 0) {
+            // console.log( response[0] );
+            results.push(reducer( response[0] ))
+          }
+        }
+
+      return results;
+      } else {
+        return [];
+      }
+    },
+  }
 };
 
-function computingDeviceAssetReducer( asset ) {
-  return {
-    id: asset.id,
-    ...(asset.created && {created: asset.created}),
-    ...(asset.modified && {modified: asset.modified}),
-    ...(asset.labels && {labels: asset.labels}),
-    ...(asset.name && { name: asset.name} ),
-    ...(asset.description && { description: asset.description}),
-    ...(asset.asset_id && { asset_id: asset.asset_id}),
-    ...(asset.asset_type && {asset_type: asset.asset_type}),
-    ...(asset.asset_tag && {asset_tag: asset.asset_tag}) ,
-    ...(asset.serial_number && {serial_number: asset.serial_number}),
-    ...(asset.vendor_name && {vendor_name: asset.vendor_name}),
-    ...(asset.version && {version: asset.version}),
-    ...(asset.release_date && {release_date: asset.release_date}),
-    ...(asset.function && {function: asset.function}),
-    ...(asset.cpe_identifier && {cpe_identifier: asset.cpe_identifier}),
-    ...(asset.installation_id && {installation_id: asset.installation_id}),
-    ...(asset.model && {model: asset.model}),
-    ...(asset.motherboard_id && {motherboard_id: asset.motherboard_id}),
-    ...(asset.bios_id && {bios_id: asset.bios_id}),
-    ...(asset.network_id && {network_id: asset.network_id}),
-    ...(asset.vlan_id && {vlan_id: asset.vlan_id}),
-    ...(asset.default_gateway && {default_gateway: asset.default_gateway}),
-    ...(asset.fqdn && {fqdn: asset.fqdn}),
-    ...(asset.hostname && {hostname: asset.hostname}),
-    ...(asset.netbios_name && {netbios_name: asset.netbios_name}),
-    ...(asset.uri && {uri: asset.uri}),
-    ...(asset.baseline_configuration_name && {baseline_configuration_name: asset.baseline_configuration_name}),
-    ...(asset.is_publicly_accessible && {is_publicly_accessible: asset.is_publicly_accessible}),
-    ...(asset.is_scanned && {is_scanned: asset.is_scanned}),
-    ...(asset.is_virtual && {is_virtual: asset.is_virtual}),
-    // Hints
-    ...(asset.iri && {parent_iri: asset.iri}),
-    ...(asset.locations && {locations_iri: asset.locations}),
-    ...(asset.external_references && {ext_ref_iri: asset.external_references}),
-    ...(asset.notes && {notes_iri: asset.notes}),
-    ...(asset.installed_hardware && {installed_hw_iri: asset.installed_hardware}),
-    ...(asset.installed_operating_system && {installed_os_iri: asset.installed_operating_system}),
-    ...(asset.installed_software && {installed_sw_iri: asset.installed_software}),
-    ...(asset.ip_address && {ip_addr_iri: asset.ip_address}),
-    ...(asset.mac_address && {mac_addr_iri: asset.mac_address}),
-    ...(asset.ports && {ports_iri: asset.ports}),
-    ...(asset.connected_to_network && {conn_network_iri: asset.connected_to_network}),
-  }
-}
 
 export default computingDeviceResolvers;

@@ -4,6 +4,7 @@ import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles/index';
 import Menu from '@material-ui/core/Menu';
+import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
@@ -14,6 +15,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
+import ExpandMoreOutlined from '@material-ui/icons/ExpandMoreOutlined';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
@@ -40,6 +42,16 @@ const styles = (theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
+  },
+  menuItem: {
+    padding: '15px 0',
+    width: '152px',
+    margin: '0 20px',
+    justifyContent: 'center',
+  },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
   },
 });
 
@@ -134,10 +146,16 @@ class NotePopover extends Component {
     } = this.props;
     return (
       <div className={classes.container}>
+        {/* <IconButton
+          aria-haspopup="true"
+          style={{ marginTop: 1 }}
+        >
+          <ExpandMoreOutlined />
+        </IconButton> */}
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 1 }}
+          style={{ marginTop: 5 }}
         >
           <MoreVert />
         </IconButton>
@@ -145,18 +163,26 @@ class NotePopover extends Component {
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
+          style={{ marginTop: 50, textAlign: 'center' }}
         >
-          <MenuItem onClick={this.handleOpenEdit.bind(this)}>
+          <MenuItem
+          divider={true}
+          className={classes.menuItem}
+          onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
           {handleOpenRemove && (
-            <MenuItem onClick={this.handleOpenRemove.bind(this, id)}>
-              {t('Remove from this entity')}
+            <MenuItem
+            divider={true}
+            className={classes.menuItem}
+            onClick={this.handleOpenRemove.bind(this, id)}>
+              {t('Remove')}
             </MenuItem>
           )}
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+            <MenuItem
+            className={classes.menuItem}
+            onClick={this.handleOpenDelete.bind(this)}>
               {t('Delete')}
             </MenuItem>
           </Security>
@@ -166,15 +192,24 @@ class NotePopover extends Component {
           TransitionComponent={Transition}
           onClose={this.handleCloseDelete.bind(this)}
         >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this note?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
+            <DialogContent>
+              <Typography style={{
+                fontSize: '18px',
+                lineHeight: '24px',
+                color: 'white',
+                fontFamily: 'DINNextLTPro',
+              }} >
+                {t('Are you sure you’d like to delete this item?')}
+              </Typography>
+              <DialogContentText>
+                {t('This action can’t be undone')}
+              </DialogContentText>
+            </DialogContent>
+          <DialogActions className={ classes.dialogActions }>
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
+              variant="outlined"
             >
               {t('Cancel')}
             </Button>
@@ -182,6 +217,7 @@ class NotePopover extends Component {
               onClick={this.submitDelete.bind(this)}
               color="primary"
               disabled={this.state.deleting}
+              variant="contained"
             >
               {t('Delete')}
             </Button>

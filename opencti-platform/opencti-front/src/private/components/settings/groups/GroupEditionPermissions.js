@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
@@ -104,7 +105,7 @@ class GroupEditionPermissionsComponent extends Component {
                 map((n) => n.node),
               )(props);
               return (
-                <List className={classes.root}>
+                <List >
                   {markingDefinitions.map((markingDefinition) => {
                     const groupMarkingDefinition = find(
                       propEq('id', markingDefinition.id),

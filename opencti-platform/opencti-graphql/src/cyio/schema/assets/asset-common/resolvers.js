@@ -1,59 +1,97 @@
-// import { toSparql } from 'sparqlalgebrajs';
-// import { Converter } from 'graphql-to-sparql';
-import { Converter as TreeConverter } from 'sparqljson-to-tree';
+import { assetSingularizeSchema as singularizeSchema } from '../asset-mappings.js';
+import { getSparqlQuery } from './sparql-query.js';
 
 const assetCommonResolvers = {
   Query: {
-    asset: (_, args, context, info) => {
-      const dbName = context.dbName;
-      var sparqlQuery = getSelectSparqlQuery('BY-ID', args.id);
-      context.dataSources.Stardog.queryById( dbName, sparqlQuery, singularizeSchema )
-      .then (function (response) {
-        console.log( response[0] );
-        return( assetReducer( response[0]) );
-      }).catch ( function (error) {
-        console.log(error);
-      });
-    },
-    assetList: (_, args, context, info) => {
-      var sparqlQuery = getSelectSparqlQuery('BY-ALL', args.id);
-      const response = context.dataSources.Stardog.filteredQuery( 
+    assetList: async ( _, args, context, info  ) => { 
+      var sparqlQuery = getSparqlQuery('BY-ALL', args.id);
+      const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
         sparqlQuery,
         singularizeSchema,
         args.first,       // limit
         args.offset,      // offset
-        args.filter,      // filter
-      );
-      return Array.isArray( response )
-        ? response.map( asset => assetReducer( asset ))
-        : [];
+        args.filter       // filter
+      )
+      if (Array.isArray(response) && response.length > 0) {
+        // build array of edges
+        const edges = [];
+        for (let asset of response) {
+          let edge = {
+            cursor: asset.iri,
+            node: itAssetReducer( asset ),
+          }
+          edges.push( edge )
+        }
+        return {
+          pageInfo: {
+            startCursor: response[0].iri,
+            endCursor: response[response.length -1 ].iri,
+            hasNextPage: false,
+            hasPreviousPage: false,
+            globalCount: response.length,
+          },
+          edges: edges,
+        }
+      } else {
+        return [];
+      }
     },
-    itAsset: ( _, args, context, info) => {
-      const dbName = context.dbName;
-      var sparqlQuery = getSelectSparqlQuery('BY-ID', args.id);
-      context.dataSources.Stardog.queryById( dbName, sparqlQuery, singularizeSchema )
-      .then (function (response) {
-        console.log( response[0] );
-        return( itAssetReducer( response[0]) );
-      }).catch ( function (error) {
-        console.log(error);
-      });
+    asset: async ( _, args, context, info ) => {
+      var sparqlQuery = getSparqlQuery('BY-ID', args.id);
+      const response = await context.dataSources.Stardog.queryById( 
+          context.dbName, 
+          sparqlQuery, 
+          singularizeSchema 
+      )
+      console.log( response[0] );
+      return( itAssetReducer( response[0]) );
     },
-    itAssetList: ( _, args, context, info ) => {
-      var sparqlQuery = getSelectSparqlQuery('BY-ALL', args.id);
-      const response = context.dataSources.Stardog.filteredQuery( 
+    itAssetList: async ( _, args, context, info  ) => { 
+      var sparqlQuery = getSparqlQuery('BY-ALL', args.id);
+      const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
         sparqlQuery,
         singularizeSchema,
         args.first,       // limit
         args.offset,      // offset
-        args.filter,      // filter
-      );
-      return Array.isArray( response )
-        ? response.map( itAsset => itAssetReducer( itAsset ))
-        : [];
+        args.filter       // filter
+      )
+      if (Array.isArray(response) && response.length > 0) {
+        // build array of edges
+        const edges = [];
+        for (let asset of response) {
+          let edge = {
+            cursor: asset.iri,
+            node: itAssetReducer( asset ),
+          }
+          edges.push( edge )
+        }
+        return {
+          pageInfo: {
+            startCursor: response[0].iri,
+            endCursor: response[response.length -1 ].iri,
+            hasNextPage: false,
+            hasPreviousPage: false,
+            globalCount: response.length,
+          },
+          edges: edges,
+        }
+      } else {
+        return [];
+      }
     },
+    itAsset: async ( _, args, context, info ) => {
+      var sparqlQuery = getSparqlQuery('BY-ID', args.id);
+      const response = await context.dataSources.Stardog.queryById( 
+          context.dbName, 
+          sparqlQuery, 
+          singularizeSchema 
+      )
+      console.log( response[0] );
+      return( itAssetReducer( response[0]) );
+    },
+
   },
   Mutation: {
 
@@ -93,31 +131,16 @@ const assetCommonResolvers = {
     external_references: ( parent, ) => {
     },
     notes: ( parent, ) => {
-    }
+    },
   },
   AssetLocation: {
-
   },
-
+  IpAddress: {
+    __resolveType: (ipAddress ) => {
+      return ipAddress.entity_type
+    },
+  },
 };
-
-function assetReducer( asset ) {
-  return {
-    id: asset.id,
-    created: asset.created || null,
-    modified: asset.modified || null,
-    labels: asset.labels || null,
-    name: asset.name || null,
-    description: asset.description || null,
-    asset_id: asset.asset_id || null,
-    //
-    //  *** how to get list ***
-    //
-    // locations
-    // external_references
-    // notes
-  }
-}
 
 function itAssetReducer( asset ) {
   return {
