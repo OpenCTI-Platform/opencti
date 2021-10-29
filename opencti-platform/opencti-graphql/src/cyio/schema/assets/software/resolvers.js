@@ -1,6 +1,13 @@
 import { responsePathAsArray } from 'graphql';
 import { assetSingularizeSchema as singularizeSchema } from '../asset-mappings.js';
-import { getSelectSparqlQuery, insertQuery, QueryMode } from './sparql-query.js';
+import {
+  getSelectSparqlQuery,
+  insertQuery,
+  addToInventoryQuery,
+  deleteQuery,
+  removeFromInventoryQuery,
+  QueryMode
+} from './sparql-query.js';
 import {ApolloError} from "apollo-errors";
 
 const softwareResolvers = {
@@ -44,18 +51,27 @@ const softwareResolvers = {
       const sparqlQuery = getSelectSparqlQuery(QueryMode.BY_ID, args.id);
       const response = await context.dataSources.Stardog.queryById( dbName, sparqlQuery, singularizeSchema, )
       if(response === undefined) return null;
-      return( softwareAssetReducer( response[0]) );
+      const first = response[0];
+      if(first === undefined) return null;
+      return( softwareAssetReducer( first) );
     }
   },
   Mutation: {
-    createSoftwareAsset: ( parent, {input}, context, info ) => {
+    createSoftwareAsset: async ( _, {input}, context ) => {
       const dbName = context.dbName;
-      const {id, query} = insertQuery(input);
-      console.log(id + ' ' + query);
-      input.id = id;
-      return input;
+      const {iri, id, query} = insertQuery(input);
+      await context.dataSources.Stardog.create(dbName, query);
+      const connectQuery = addToInventoryQuery(iri);
+      await context.dataSources.Stardog.create(dbName, connectQuery);
+      return {...input, id};
     },
-    deleteSoftwareAsset: ( parent, args, context, info ) => {
+    deleteSoftwareAsset: async ( _, {id}, context ) => {
+      const dbName = context.dbName;
+      const relationshipQuery = removeFromInventoryQuery(id);
+      await context.dataSources.Stardog.delete(dbName, relationshipQuery);
+      const query = deleteQuery(id);
+      await context.dataSources.Stardog.delete(dbName, query);
+      return id;
     },
     editSoftwareAsset: ( parent, args, context, info ) => {
     },

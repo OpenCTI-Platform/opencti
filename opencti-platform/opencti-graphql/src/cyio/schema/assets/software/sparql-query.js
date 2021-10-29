@@ -10,17 +10,26 @@ WHERE {
     ?iri a <http://scap.nist.gov/ns/asset-identification#Software> .
 `;
 
-const byIdClause = `?iri <http://darklight.ai/ns/common#id> "{id}" .`;
+const byIdClause = (id) => `?iri <http://darklight.ai/ns/common#id> "${id}" .`;
 const predicateList = {
-   'id': (id) => `?iri <http://darklight.ai/ns/common#id> "${id}" .`,
-   'asset_id' : (asset_id) => `?iri <http://scap.nist.gov/ns/asset-identification#asset_id> "${asset_id}" .`,
-   'name' : (name) => `?iri <http://scap.nist.gov/ns/asset-identification#name> "${name}" .`,
-   'description' : (description) => `?iri <http://scap.nist.gov/ns/asset-identification#description> "${description}" .`,
-   'locations' : (locations) => `?iri <http://scap.nist.gov/ns/asset-identification#locations> "${locations}" .`,
+   'id': (iri ,id) => `${iri} <http://darklight.ai/ns/common#id> "${id}" .`,
+   'asset_id' : (iri, asset_id) => `${iri} <http://scap.nist.gov/ns/asset-identification#asset_id> "${asset_id}" .`,
+   'name' : (iri, name) => `${iri} <http://scap.nist.gov/ns/asset-identification#name> "${name}" .`,
+   'description' : (iri, description) => `${iri} <http://scap.nist.gov/ns/asset-identification#description> "${description}" .`,
+   'locations' : (iri, locations) => `${iri} <http://scap.nist.gov/ns/asset-identification#locations> "${locations}" .`,
    // 'responsible_party' : (responsibly_part) => '#?iri <http://scap.nist.gov/ns/asset-identification#responsible_parties> ' + (responsibly_part || '?responsible_party') + ' .',
-   'asset_type' : (asset_type) => `?iri <http://scap.nist.gov/ns/asset-identification#asset_type> "${asset_type}" .`,
-   'asset_tag' : (asset_tag) => `?iri <http://scap.nist.gov/ns/asset-identification#asset_tag> "${asset_tag}" .`,
-   'serial_number': (serial_number) => `?iri <http://scap.nist.gov/ns/asset-identification#serial_number> "${serial_number}" .`,
+   'asset_type' : (iri, asset_type) => `${iri} <http://scap.nist.gov/ns/asset-identification#asset_type> "${asset_type}" .`,
+   'asset_tag' : (iri, asset_tag) => `${iri} <http://scap.nist.gov/ns/asset-identification#asset_tag> "${asset_tag}" .`,
+   'serial_number': (iri, serial_number) => `${iri} <http://scap.nist.gov/ns/asset-identification#serial_number> "${serial_number}" .`,
+   'vendor_name': (iri, vendor_name) => `${iri} <http://scap.nist.gov/ns/asset-identification#vendor_name> "${vendor_name}" .`,
+   'version': (iri, version) => `${iri} <http://scap.nist.gov/ns/asset-identification#version> "${version}" .`,
+   'release_date': (iri, release_date) => `${iri} <http://scap.nist.gov/ns/asset-identification#release_date> "${release_date}"^^xsd:datetime .` ,
+   'function': (iri, $function) => `${iri} <http://scap.nist.gov/ns/asset-identification#function> "${$function}" .`,
+   'cpe_identifier': (iri, cpe_identifier) => `${iri} <http://scap.nist.gov/ns/asset-identification#cpe_identifier> "${cpe_identifier}" .`,
+   'software_identifier': (iri, software_identifier) => `${iri} <http://scap.nist.gov/ns/asset-identification#software_identifier> "${software_identifier}" .`,
+   'patch': (iri, patch) => `${iri} <http://scap.nist.gov/ns/asset-identification#patch_level> "${patch}" .`,
+   'installation_id': (iri, installation_id) => `${iri} <http://scap.nist.gov/ns/asset-identification#installation_id> "${installation_id}" . `,
+   'license_key': (iri, license_key) => `${iri} <http://scap.nist.gov/ns/asset-identification#license_key> "${license_key}" .`
 }
 
 const predicates = `
@@ -42,7 +51,7 @@ const predicates = `
     OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#cpe_identifier> ?cpe_identifier } .
     OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#software_identifier> ?software_identifier } .
     OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#patch_level> ?patch } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#installation_id> ?installation_id }
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#installation_id> ?installation_id } .
     OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#license_key> ?license_key } .
     `;
     
@@ -58,33 +67,77 @@ const predicates = `
 
 export const insertQuery = (propValues) => {
   const id = uuid4();
+  const iri = `<http://scap.nist.gov/ns/asset-identification#Software-${id}>`;
   const predicates = Object.entries(propValues)
     .filter((propPair) => predicateList.hasOwnProperty(propPair[0]))
-    .map((propPair) => `${predicateList[propPair[0]].call(null, propPair[1])}`)
+    .map((propPair) => `${predicateList[propPair[0]].call(null, iri, propPair[1])}`)
     .join('\n    ');
-  const iri = `http://scap.nist.gov/ns/asset-identification#Software-${id}`;
   const query = `
-  INSERT {
-    ?iri a <http://scap.nist.gov/ns/asset-identification#Software> .
-    ?iri <http://darklight.ai/ns/common#id> "${id}".
-    ${predicates}
-  } WHERE {
-    BIND(IRI(${iri}) as ?iri).
+  INSERT DATA {
+    GRAPH ${iri} {
+      ${iri} a <http://scap.nist.gov/ns/asset-identification#Software> .
+      ${iri} <http://darklight.ai/ns/common#id> "${id}".
+      ${predicates}
+    }
   }
   `;
-  return {id, query}
+  return {iri, id, query}
 };
 
-  export const QueryMode = {
-    BY_ALL: 'BY_ALL',
-    BY_ID: 'BY_ID'
+export const deleteQuery = (id) => {
+  return `
+  DELETE {
+    GRAPH ?g{
+      ?iri ?p ?o
+    }
+  } WHERE {
+    GRAPH ?g{
+      ?iri a <http://scap.nist.gov/ns/asset-identification#Software> .
+      ?iri <http://darklight.ai/ns/common#id> "${id}". 
+      ?iri ?p ?o
+    }
   }
+  `
+}
+
+export const removeFromInventoryQuery = (id) => {
+  return `
+  DELETE {
+    GRAPH ?g {
+      ?inv <http://csrc.nist.gov/ns/oscal/common#assets> <http://scap.nist.gov/ns/asset-identification#Software-${id}> .
+    }
+  } WHERE {
+    GRAPH ?g {
+      ?inv a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> .
+    }
+  }
+  `
+}
+
+export const QueryMode = {
+  BY_ALL: 'BY_ALL',
+  BY_ID: 'BY_ID'
+}
+
+export const addToInventoryQuery = (softwareIri) => {
+  return `
+  INSERT {
+    GRAPH ?g {
+      ?inv <http://csrc.nist.gov/ns/oscal/common#assets> ${softwareIri}
+    } 
+  } WHERE {
+    GRAPH ?g {
+      ?inv a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> 
+    }
+  }
+  `
+}
 
 export function getSelectSparqlQuery(queryMode, id, filter, ) {
 	let byId = '';
   switch(queryMode){
     case QueryMode.BY_ID:
-      byId = byIdClause.replace("{id}", id);
+      byId = byIdClause(id);
       break;
     case QueryMode.BY_ALL:
       break;
