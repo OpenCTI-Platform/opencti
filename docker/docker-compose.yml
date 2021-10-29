@@ -96,8 +96,8 @@ services:
       - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN}
       - APP__APP_LOGS__LOGS_LEVEL=error
       - REACT_APP_GRAPHQL_HOST=${GRAPHQL_HOST}
-      - APP__HTTPS_CERT__KEY=/opt/opencti/certs/darklight.key
-      - APP__HTTPS_CERT__CRT=/opt/opencti/certs/darklight.crt
+      # - APP__HTTPS_CERT__KEY=/opt/opencti/certs/darklight.key
+      # - APP__HTTPS_CERT__CRT=/opt/opencti/certs/darklight.crt
       - RABBITMQ__USERNAME=${RABBITMQ_DEFAULT_USER}
       - RABBITMQ__PASSWORD=${RABBITMQ_DEFAULT_PASS}
       - SMTP__HOSTNAME=${SMTP_HOSTNAME}
@@ -108,8 +108,8 @@ services:
     restart: unless-stopped
     volumes:
       - ./default.json:/opt/opencti/config/default.json
-      - ./darklight.crt:/opt/opencti/certs/darklight.crt
-      - ./darklight.key:/opt/opencti/certs/darklight.key
+      # - ./darklight.crt:/opt/opencti/certs/darklight.crt
+      # - ./darklight.key:/opt/opencti/certs/darklight.key
     profiles:
       - frontend
   
@@ -152,6 +152,7 @@ services:
 # #      - ./default.json:/opt/opencti/config/default.json
 #       - ./darklight.crt:/opt/opencti/certs/darklight.crt
 #       - ./darklight.key:/opt/opencti/certs/darklight.key
+
     profiles:
       - backend
 
