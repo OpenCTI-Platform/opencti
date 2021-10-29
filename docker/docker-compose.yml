@@ -148,10 +148,11 @@ services:
       - elasticsearch
       - rabbitmq
     restart: unless-stopped
-    volumes:
-      - ./default.json:/opt/opencti/config/default.json
-      # - ./darklight.crt:/opt/opencti/certs/darklight.crt
-      # - ./darklight.key:/opt/opencti/certs/darklight.key
+#     volumes:
+# #      - ./default.json:/opt/opencti/config/default.json
+#       - ./darklight.crt:/opt/opencti/certs/darklight.crt
+#       - ./darklight.key:/opt/opencti/certs/darklight.key
+
     profiles:
       - backend
 

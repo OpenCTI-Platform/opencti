@@ -491,6 +491,26 @@
       ip_address_value: IPv6!
   }
 
+  type MACAddress implements BasicObject {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # MAC Address
+    mac_address_value: MAC!
+    is_virtual: Boolean
+  }
+
+  input MACAddressAddInput {
+    mac_address_value: MAC!
+    is_virtual: Boolean!
+  }
+
   "Defines identifying information about a network port."
   type PortInfo {
       port_number: Port

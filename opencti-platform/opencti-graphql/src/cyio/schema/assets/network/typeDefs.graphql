@@ -71,8 +71,8 @@
     vendor_name: String
     version: String
     release_date: DateTime
-    implementation_point: ImplementationPoint!
-    operational_status: OperationalStatus!
+    implementation_point: ImplementationPoint
+    operational_status: OperationalStatus
     # NetworkAsset
     network_id: String!
     network_name: String!
