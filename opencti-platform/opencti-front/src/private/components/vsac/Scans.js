@@ -867,6 +867,12 @@ class Scans extends Component {
                         variant="contained"
                         color="primary"
                         startIcon={<CloudUploadIcon />}
+                        onClick={() => 
+                          handleLinkClink('/dashboard/vsac/scans/exploreresults',
+                          { analysis: analysis,
+                            client: "30f033d4-e90d-44f9-8ce0-36597ff08c93",
+                            scan: getCurrentScan(analysis.scan.id, scans)
+                          })}
                       >
                         Explore Results
                       </Button>
