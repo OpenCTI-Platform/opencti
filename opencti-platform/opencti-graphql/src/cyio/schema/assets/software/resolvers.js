@@ -6,7 +6,7 @@ import {
   addToInventoryQuery,
   deleteQuery,
   removeFromInventoryQuery,
-  QueryMode
+  QueryMode, updateSoftwareQuery
 } from './sparql-query.js';
 import {ApolloError} from "apollo-errors";
 
@@ -46,7 +46,7 @@ const softwareResolvers = {
         return [];
       }
     },
-    softwareAsset: async ( _, args, context, info ) => {
+    softwareAsset: async ( _, args, context ) => {
       const dbName = context.dbName;
       const sparqlQuery = getSelectSparqlQuery(QueryMode.BY_ID, args.id);
       const response = await context.dataSources.Stardog.queryById( dbName, sparqlQuery, singularizeSchema, )
@@ -73,7 +73,11 @@ const softwareResolvers = {
       await context.dataSources.Stardog.delete(dbName, query);
       return id;
     },
-    editSoftwareAsset: ( parent, args, context, info ) => {
+    editSoftwareAsset: async ( _, {id, input}, context) => {
+      const dbName = context.dbName;
+      const updateQuery = updateSoftwareQuery(id, input)
+      await context.dataSources.Stardog.edit(dbName, updateQuery);
+      return {id};
     },
   },
   // Map enum GraphQL values to data model required values

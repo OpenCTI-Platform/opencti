@@ -99,8 +99,9 @@ export default class Stardog extends DataSource {
   async edit( dbName, sparqlQuery ) {
     return query.execute( this.conn, dbName, sparqlQuery, 'text/turtle', {
       reasoning: false,
-    }).then(( {body }) => {
-      return(body.results.bindings);
+    }).catch((err) => {
+      console.log(err)
+      throw err;
     });
   }
 }
