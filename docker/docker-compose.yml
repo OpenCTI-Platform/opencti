@@ -90,7 +90,7 @@ services:
       - NODE_OPTIONS=--max-old-space-size=8096
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       - MOCKS=${MOCKS}
-      - APP__PORT=443
+      - APP__PORT=8080
       - APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}
       - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
       - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -104,7 +104,7 @@ services:
       - SMTP__PORT=25
       - SUBSCRIPTION_SCHEDULER__ENABLED=false
     ports:
-      - "443:443"
+      - "8080:8080"
     restart: unless-stopped
     volumes:
       - ./default.json:/opt/opencti/config/default.json
@@ -115,13 +115,15 @@ services:
   
   opencti-graphql:
     image: docker.darklight.ai/opencti-graphql
-    build: ../opencti-platform/opencti-graphql
+    build: 
+      context: ../opencti-platform
+      dockerfile: opencti-graphql/Dockerfile
     container_name: opencti-graphql
     environment:
       - NODE_OPTIONS=--max-old-space-size=8096
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       - MOCKS=${MOCKS}
-      - APP__PORT=443
+      - APP__PORT=9000
       - APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}
       - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
       - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -142,7 +144,7 @@ services:
       - PROVIDERS__LOCAL__STRATEGY=LocalStrategy
       - SUBSCRIPTION_SCHEDULER__ENABLED=false
     ports:
-      - "443:443"
+      - "9000:9000"
     depends_on:
       - redis
       - elasticsearch
