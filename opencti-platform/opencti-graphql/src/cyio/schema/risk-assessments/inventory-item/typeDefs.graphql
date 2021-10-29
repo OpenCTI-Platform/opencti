@@ -134,11 +134,11 @@
     "Identifies whether the asset is virtualized"
     is_virtual: Boolean
     "Indicates the Internet Protocol v4 Addresses of the asset"
-    ipv4_address: [IpV4AddressAddInput!]
+    ipv4_address: [IpV4AddressAddInput]
     "Indicates the Internet Protocol v4 Addresses of the asset"
-    ipv6_address: [IpV6AddressAddInput!]
+    ipv6_address: [IpV6AddressAddInput]
     "Indicates the media access control (MAC) address for the asset."
-    mac_address: [MACAddressAddInput!]
+    mac_address: [MAC]
     "Indicates the full-qualified domain name (FQDN) of the asset."
     fqdn: String
     "Indicates the NetBIOS name for the asset."
