@@ -177,9 +177,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -342,12 +342,12 @@
     "Identifies the specified date that the task must occur on or after."
     start_date: DateTime!
     "identifies the specific date that the task must occur on or before."
-    end_date: DateTime
+    end_date: DateTime!
   }
 
   input DateRangeTimingAddInput {
     "Identifies the specified date that the task must occur on or after."
-    start_date: DateTime!
+    start_date: DateTime
     "identifies the specific date that the task must occur on or before."
     end_date: DateTime
   }
@@ -493,9 +493,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -521,7 +521,7 @@
     "Identifies a human-readable description of of what was done regarding the risk."
     description: String!
     "Identifies the start date and time of the event."
-    event_start: DateTime!
+    event_start: DateTime
     "Identifies the end date and time of the event. If the event is a point in time, the start and end will be the same date and time."
     event_end: DateTime
     "Used to indicate who created a log entry in what role."
@@ -544,7 +544,7 @@
     "Identifies a human-readable description of of what was done regarding the risk."
     description: String!
     "Identifies the start date and time of the event."
-    event_start: DateTime!
+    event_start: DateTime
     "Identifies the end date and time of the event. If the event is a point in time, the start and end will be the same date and time."
     event_end: DateTime
     "Used to indicate the person created a log entry in what role."
@@ -602,9 +602,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -646,9 +646,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -682,7 +682,7 @@
     "Identifies relevant evidence collected as part of this observation."
     relevant_evidence: [Evidence]
     "Identifies a Date/time stamp identifying when the finding information was collected."
-    collected: DateTime!
+    collected: DateTime
     "Identifies Date/time identifying when the finding information is out-of-date and no longer valid. Typically used with continuous assessment scenarios."
     expires: DateTime
   }
@@ -732,11 +732,11 @@
   "Defines identifying information about an Event Timing that occur on a specific date."
   type OnDateTiming {
     "Identifies the date that the task must occur on."
-    on_date: DateTime!
+    on_date: DateTime
   }
 
   input OnDateTimingAddInput {
-    on_date: DateTime!
+    on_date: DateTime
   }
 
 ## Origin
@@ -810,9 +810,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -915,9 +915,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -1000,9 +1000,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -1212,9 +1212,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject

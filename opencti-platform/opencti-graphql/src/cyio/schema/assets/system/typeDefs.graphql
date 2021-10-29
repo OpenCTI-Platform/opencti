@@ -10,8 +10,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime!
-    modified: DateTime!
+    created: DateTime
+    modified: DateTime
     labels: [String]
     # Asset
     asset_id: String
@@ -52,8 +52,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime!
-    modified: DateTime!
+    created: DateTime
+    modified: DateTime
     labels: [String]
     # Asset
     asset_id: String
@@ -94,8 +94,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime!
-    modified: DateTime!
+    created: DateTime
+    modified: DateTime
     labels: [String]
     # Asset
     asset_id: String
@@ -136,8 +136,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime!
-    modified: DateTime!
+    created: DateTime
+    modified: DateTime
     labels: [String]
     # Asset
     asset_id: String
@@ -178,8 +178,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime!
-    modified: DateTime!
+    created: DateTime
+    modified: DateTime
     labels: [String]
     # Asset
     asset_id: String

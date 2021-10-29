@@ -39,9 +39,9 @@
   "Identifies the identifying information about a lifecycle object"
   interface LifecycleObject {
     "Identities the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Identifies the date and time at which the object was last modified."
-    modified: DateTime!
+    modified: DateTime
   }
 
   "Defines the identifying information about a Core object"
@@ -101,11 +101,11 @@
     parent_types: [String]!
     # LifecycleObject
     "Identities the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Identifies the date and time at which the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     # CyioExternalReference
-    source_name: String!
+    source_name: String
     description: String
     url: URL
     hashes: [HashInfo]
@@ -174,8 +174,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime!
-    modified: DateTime!
+    created: DateTime
+    modified: DateTime
     labels: [String]
     external_references( first: Int ): CyioExternalReferenceConnection
     # CyioNote
@@ -234,8 +234,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime!
-    modified: DateTime!
+    created: DateTime
+    modified: DateTime
     labels: [String]
     external_references( first: Int ): CyioExternalReferenceConnection
     notes( first: Int ): CyioNoteConnection
@@ -263,8 +263,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime!
-    modified: DateTime!
+    created: DateTime
+    modified: DateTime
     labels: [String]
     external_references( first: Int ): CyioExternalReferenceConnection
     notes( first: Int ): CyioNoteConnection
