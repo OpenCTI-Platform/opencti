@@ -12,30 +12,35 @@ module.exports = function (app) {
       target: host,
       ws: true,
       onError,
+      secure: false,
     })
   );
   app.use(
     createProxyMiddleware("/taxii2", {
       target: host,
       onError,
+      secure: false,
     })
   );
   app.use(
     createProxyMiddleware("/stream", {
       target: host,
       onError,
+      secure: false,
     })
   );
   app.use(
     createProxyMiddleware("/storage", {
       target: host,
       onError,
+      secure: false,
     })
   );
   app.use(
     createProxyMiddleware("/auth/**", {
       target: host,
       onError,
+      secure: false,
     })
   );
 };
