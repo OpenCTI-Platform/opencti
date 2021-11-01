@@ -102,7 +102,7 @@
   },
   "scripts": {
     "start": "yarn relay && react-scripts start",
-    "generate": "cross-env GENERATE_SOURCEMAP=false PUBLIC_URL=%BASE_PATH% react-scripts build",
+    "generate": "cross-env GENERATE_SOURCEMAP=false PUBLIC_URL=%BASE_PATH% REACT_APP_API_URL=https://api-staging.darklight.ai react-scripts build",
     "build": "yarn relay && yarn generate && node src/setupBuild.js",
     "lint": "eslint .",
     "storybook": "start-storybook -p 9009 -s public",
