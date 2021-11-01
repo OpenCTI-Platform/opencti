@@ -191,21 +191,14 @@ class DeviceCreationOverviewComponent extends Component {
                   {/* <div className="clearfix" />
                       <textarea className="scrollbar-customize" rows="3" cols="24" /> */}
                   <div className="clearfix" />
-                  <div className='scroll-bg'>
-                    <div className='scroll-div'>
-                      <div className='scroll-object'>
-                        <Field
-                          component={TextField}
-                          multiline={true}
-                          name="description"
-                          variant='outlined'
-                          size='small'
-                          fullWidth={true}
-                          containerstyle={{ width: '100%', height: '100%' }}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  <Field
+                  component={TextField}
+                  name="Description"
+                  fullWidth={true}
+                  multiline={true}
+                  rows="3"
+                  variant='outlined'
+                  />
                 </div>
                 <div style={{ marginTop: '6px' }}>
                   <Typography
@@ -381,21 +374,14 @@ class DeviceCreationOverviewComponent extends Component {
                     </Tooltip>
                   </div>
                   <div className="clearfix" />
-                  <div className='scroll-bg'>
-                    <div className='scroll-div'>
-                      <div className='scroll-object'>
-                        <Field
-                          component={TextField}
-                          multiline={true}
-                          variant='outlined'
-                          size='small'
-                          name="location"
-                          fullWidth={true}
-                          containerstyle={{ width: '100%', height: '100%' }}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  <Field
+                  component={TextField}
+                  name="Location"
+                  fullWidth={true}
+                  multiline={true}
+                  rows="3"
+                  variant='outlined'
+                  />
                 </div>
                 <div>
                   <Typography

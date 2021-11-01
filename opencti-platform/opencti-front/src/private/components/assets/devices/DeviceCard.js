@@ -34,6 +34,8 @@ const styles = (theme) => ({
     width: '100%',
     height: '319px',
     borderRadius: 9,
+    // background: theme.palette.navAlt.background,
+
   },
   cardDummy: {
     width: '100%',

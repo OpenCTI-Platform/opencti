@@ -17,7 +17,6 @@ import { BullseyeArrow, ArmFlexOutline, Information } from 'mdi-material-ui';
 import ListItemText from '@material-ui/core/ListItemText';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
-import '../../../../resources/css/customScrollbar.css';
 
 const styles = (theme) => ({
   paper: {
@@ -32,11 +31,32 @@ const styles = (theme) => ({
     font: 'DIN Next LT Pro',
   },
   chip: {
-    color: '#FFFFFF',
+    color: theme.palette.header.text,
     height: 25,
     fontSize: 12,
     margin: '0 7px 7px 0',
-    backgroundColor: 'rgba(6,16,45,255)',
+    backgroundColor: theme.palette.header.background,
+  },
+  scrollBg: {
+    background: theme.palette.header.background,
+    width: '100%',
+    color: 'white',
+    padding: '10px 5px 10px 15px',
+    borderRadius: '5px',
+    lineHeight: '20px',
+  },
+  scrollDiv: {
+    width: '100%',
+    background: theme.palette.header.background,
+    height: '78px',
+    overflow: 'hidden',
+    overflowY: 'scroll',
+  },
+  scrollObj: {
+    color: theme.palette.header.text,
+    fontFamily: 'sans-serif',
+    padding: '0px',
+    textAlign: 'left',
   },
 });
 
@@ -350,9 +370,9 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <div className='scroll-bg'>
-                    <div className='scroll-div'>
-                      <div className='scroll-object'>
+                <div className={classes.scrollBg}>
+                    <div className={classes.scrollDiv}>
+                      <div className={classes.scrollObj}>
                         {device.locations.map((index) => [index.description]).join()}
                     </div>
                   </div>

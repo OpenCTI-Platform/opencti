@@ -38,7 +38,7 @@ const styles = (theme) => ({
     margin: 0,
   },
   header: {
-    margin: '-25px -25px 30px -25px',
+    margin: '-25px -24px 30px -24px',
     padding: '15px',
     height: '64px',
     backgroundColor: '#1F2842',
