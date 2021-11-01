@@ -25,6 +25,8 @@ import {
   addBookmark,
   deleteBookMark,
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
+import ItemIcon from '../../../../components/ItemIcon';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   card: {
@@ -99,8 +101,18 @@ const styles = (theme) => ({
 class NetworkCardComponent extends Component {
   render() {
     const {
-      t, fsd, classes, node, bookmarksIds, onLabelClick,
+      t,
+      fsd,
+      classes,
+      node,
+      selectAll,
+      onToggleEntity,
+      bookmarksIds,
+      onLabelClick,
+      selectedElements,
     } = this.props;
+    console.log('sdsaasfasfaf', node);
+    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
@@ -156,7 +168,7 @@ class NetworkCardComponent extends Component {
                 >
                   {t('Type')}
                 </Typography>
-                <Router size='large' />
+                {node.asset_type && <ItemIcon type={node.asset_type} />}
               </div>
               <div style={{ marginRight: 'auto', marginLeft: '12px' }}>
                 <Typography
@@ -168,19 +180,15 @@ class NetworkCardComponent extends Component {
                 </Typography>
                 <Typography>
                     {/* {t('KK-HWELL-011')} */}
-                    {t(node.name)}
+                    {node.network_name && t(node.network_name)}
                 </Typography>
               </div>
               <div>
                 <Checkbox
-                  size="small"
-                  style={{}}
-                  onClick={
-                  bookmarksIds.includes(node.id)
-                    ? deleteBookMark.bind(this, node.id, 'Threat-Actor')
-                    : addBookmark.bind(this, node.id, 'Threat-Actor')
-                }
-                color={bookmarksIds.includes(node.id) ? 'secondary' : 'primary'}
+                  color='primary'
+                  disableRipple={true}
+                  onClick={onToggleEntity.bind(this, node)}
+                  checked={selectAll || node.id in (selectedElements || {})}
                 />
               </div>
             </Grid>
@@ -194,7 +202,7 @@ class NetworkCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('KK-HWELL-011')} */}
-                  {t(node.asset_id)}
+                  {node.asset_id && truncate(t(node.asset_id), 25)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -207,7 +215,7 @@ class NetworkCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('Lorem Ipsum')} */}
-                  {t(node.network_id)}
+                  {node.network_id && t(node.network_id)}
                 </Typography>
               </Grid>
               <Grid xs={6} item={true} className={classes.body}>
@@ -215,10 +223,10 @@ class NetworkCardComponent extends Component {
                  variant="h3"
                  color="textSecondary"
                  gutterBottom ={true}>
-                  {t('IP Address')}
+                  {t('Network ID')}
                 </Typography>
                 <Typography>
-                    {t('00:50:56:A3:59:4D')}
+                  {node.network_id && t(node.network_id)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -230,8 +238,8 @@ class NetworkCardComponent extends Component {
                   {t('Network Range')}
                 </Typography>
                 <Typography>
-                    {t('Lorem Ipsum')}
-                    {/* {t(node.network_id)} */}
+                    {/* {t('Lorem Ipsum')} */}
+                    {node.network_id && t(node.network_id)}
                 </Typography>
               </Grid>
             </Grid>
@@ -242,10 +250,10 @@ class NetworkCardComponent extends Component {
                gutterBottom ={true}>
                 {t('Label')}
               </Typography>
-              {/* <StixCoreObjectLabels
-                labels={node.objectLabel}
+              <StixCoreObjectLabels
+                labels={objectLabel}
                 onClick={onLabelClick.bind(this)}
-              /> */}
+              />
             </div>
           </CardContent>
         </CardActionArea>
@@ -301,15 +309,14 @@ const NetworkCardFragment = createFragmentContainer(
     node: graphql`
       fragment NetworkCard_node on NetworkAsset {
         id
-        name
+        network_name
         asset_type
         asset_id
-        asset_tag
-        description
-        version
-        vendor_name
-        release_date
         network_id
+        labels
+        # ipv4_address{
+        #   ip_address_value
+        # }
       }
     `,
   },

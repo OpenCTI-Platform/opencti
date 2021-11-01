@@ -322,7 +322,7 @@ class DeviceCreationDetailsComponent extends Component {
                   <div className="clearfix" />
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Typography>No</Typography>
-                    <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                    <Switch color='primary' defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
                     <Typography>Yes</Typography>
                   </div>
                 </div>
@@ -343,7 +343,7 @@ class DeviceCreationDetailsComponent extends Component {
                   <div className="clearfix" />
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Typography>No</Typography>
-                    <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                    <Switch color='primary' defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
                     <Typography>Yes</Typography>
                   </div>
                 </div>
@@ -448,31 +448,24 @@ class DeviceCreationDetailsComponent extends Component {
                     variant="h3"
                     color="textSecondary"
                     gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
+                    style={{ float: 'left', marginTop: 15 }}
                   >
                     {t('Location')}
                   </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
                     <Tooltip title={t('Location')}>
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
                   <div className="clearfix" />
-                  <div className='scroll-bg'>
-                    <div className='scroll-div'>
-                      <div className='scroll-object'>
-                        <Field
-                          component={TextField}
-                          multiline={true}
-                          variant='outlined'
-                          size='small'
-                          name="location"
-                          fullWidth={true}
-                          containerstyle={{ width: '100%', height: '100%' }}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  <Field
+                  component={TextField}
+                  name="Description"
+                  fullWidth={true}
+                  multiline={true}
+                  rows="3"
+                  variant='outlined'
+                  />
                 </div>
                 <div>
                   <Typography
@@ -601,7 +594,7 @@ class DeviceCreationDetailsComponent extends Component {
                   <div className="clearfix" />
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Typography>No</Typography>
-                    <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                    <Switch color='primary' defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
                     <Typography>Yes</Typography>
                   </div>
                 </div>

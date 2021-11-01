@@ -26,6 +26,8 @@ import {
   addBookmark,
   deleteBookMark,
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
+import ItemIcon from '../../../../components/ItemIcon';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   card: {
@@ -110,6 +112,8 @@ class SoftwareCardComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
+    console.log('sdasfasfasfafData', node);
+    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
@@ -166,7 +170,8 @@ class SoftwareCardComponent extends Component {
                   {t('Type')}
                 </Typography>
                 <div className="clearfix" />
-                <AppleIcon size='small' />
+                {/* <AppleIcon size='small' /> */}
+                {node.asset_type && <ItemIcon type={node.asset_type} />}
               </div>
               <div style={{ marginRight: 'auto', marginLeft: '12px' }}>
                 <Typography
@@ -179,12 +184,12 @@ class SoftwareCardComponent extends Component {
                 <div className="clearfix" />
                 <Typography variant="h2">
                     {/* {t('KK-HWELL-011')} */}
-                    {t(node.name)}
+                    {node.name && t(node.name)}
                 </Typography>
               </div>
               <div>
                 <Checkbox
-                  size="small"
+                  color='primary'
                   onClick={onToggleEntity.bind(this, node)}
                   checked={selectAll || node.id in (selectedElements || {})}
                   disableRipple={true}
@@ -201,7 +206,7 @@ class SoftwareCardComponent extends Component {
                 </Typography>
                 <Typography>
                     {/* {t('KK-HWELL-011')} */}
-                    {t(node.asset_id)}
+                    {node.asset_id && truncate(t(node.asset_id), 25)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -214,7 +219,7 @@ class SoftwareCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('Lorem Ipsum')} */}
-                  {t(node.version)}
+                  {node.version && t(node.version)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -227,7 +232,7 @@ class SoftwareCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('Lorem Ipsum')} */}
-                  {t(node.cpe_identifier)}
+                  {node.cpe_identifier && truncate(t(node.cpe_identifier), 25)}
                 </Typography>
               </Grid>
               <Grid xs={6} item={true} className={classes.body}>
@@ -238,7 +243,7 @@ class SoftwareCardComponent extends Component {
                   {t('Vendor')}
                 </Typography>
                 <Typography>
-                    {t(node.vendor_name)}
+                    {node.vendor_name && t(node.vendor_name)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -251,7 +256,7 @@ class SoftwareCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('Lorem Ipsum')} */}
-                  {t(node.patch_level)}
+                  {node.patch_level && t(node.patch_level)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -264,7 +269,7 @@ class SoftwareCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('Lorem Ipsum')} */}
-                  {t(node.software_identifier)}
+                  {node.software_identifier && t(node.software_identifier)}
                 </Typography>
               </Grid>
             </Grid>
@@ -275,10 +280,10 @@ class SoftwareCardComponent extends Component {
                gutterBottom ={true}>
                 {t('Label')}
               </Typography>
-              {/* <StixCoreObjectLabels
-                labels={node.objectLabel}
+              <StixCoreObjectLabels
+                labels={objectLabel}
                 onClick={onLabelClick.bind(this)}
-              /> */}
+              />
             </div>
           </CardContent>
         </CardActionArea>
@@ -334,8 +339,6 @@ const SoftwareCardFragment = createFragmentContainer(
         asset_type
         name
         asset_id
-        created
-        modified
         vendor_name
         version
         patch_level

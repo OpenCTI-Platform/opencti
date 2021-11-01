@@ -14,7 +14,7 @@ class SoftwareLines extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'software',
+      'softwareAssetList',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -70,44 +70,44 @@ export const softwareLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: CampaignsOrdering
+    $orderedBy: SoftwareAssetOrdering
     $orderMode: OrderingMode
-    $filters: [CampaignsFiltering]
+    $filters: [SoftwareAssetFiltering]
   ) {
     ...SoftwareLines_data
       @arguments(
         search: $search
         count: $count
         cursor: $cursor
-        orderBy: $orderBy
+        orderedBy: $orderedBy
         orderMode: $orderMode
         filters: $filters
       )
   }
 `;
 
-export const softwareLinesdarkLightRootQuery = graphql`
-  query SoftwareLinesDarkLightQuery {
-    softwareAssetList {
-      edges {
-        node {
-          id
-          asset_type
-          name
-          asset_id
-          created
-          modified
-          vendor_name
-          version
-          patch_level
-          cpe_identifier
-          software_identifier
-          labels
-        }
-      }
-    }
-  }
-`;
+// export const softwareLinesdarkLightRootQuery = graphql`
+//   query SoftwareLinesDarkLightQuery {
+//     softwareAssetList {
+//       edges {
+//         node {
+//           id
+//           asset_type
+//           name
+//           asset_id
+//           created
+//           modified
+//           vendor_name
+//           version
+//           patch_level
+//           cpe_identifier
+//           software_identifier
+//           labels
+//         }
+//       }
+//     }
+//   }
+// `;
 
 export default createPaginationContainer(
   SoftwareLines,
@@ -118,18 +118,18 @@ export default createPaginationContainer(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        orderBy: { type: "CampaignsOrdering", defaultValue: name }
+        orderedBy: { type: "SoftwareAssetOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[CampaignsFiltering]" }
+        filters: { type: "[SoftwareAssetFiltering]" }
       ) {
-        campaigns(
+        softwareAssetList(
           search: $search
           first: $count
-          after: $cursor
-          orderBy: $orderBy
+          # after: $cursor
+          orderedBy: $orderedBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_campaigns") {
+        ) @connection(key: "Pagination_softwareAssetList") {
           edges {
             node {
               id
@@ -150,7 +150,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.software;
+      return props.data && props.data.softwareAssetList;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -163,7 +163,7 @@ export default createPaginationContainer(
         search: fragmentVariables.search,
         count,
         cursor,
-        orderBy: fragmentVariables.orderBy,
+        orderedBy: fragmentVariables.orderedBy,
         orderMode: fragmentVariables.orderMode,
         filters: fragmentVariables.filters,
       };

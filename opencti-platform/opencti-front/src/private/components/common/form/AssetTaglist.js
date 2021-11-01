@@ -57,8 +57,9 @@ class AssetTaglist extends Component {
                 >
                 {
                   props.itAssetList.edges.map((index) => (
-                    <MenuItem key={index.node.asset_tag} value={index.node.asset_tag}>
-                      {t(index.node.asset_tag)}
+                    index
+                    && <MenuItem key={index.node.asset_tag} value={index.node.asset_tag}>
+                      {index && t(index.node.asset_tag)}
                     </MenuItem>
                   ))
                 }

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { createPaginationContainer } from 'react-relay';
+// import { createPaginationContainer } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -27,6 +27,8 @@ import DialogActions from '@material-ui/core/DialogActions';
 import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
 import { interval } from 'rxjs';
+import { QueryRenderer as QR, commitMutation as CM, createPaginationContainer } from 'react-relay';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
@@ -95,6 +97,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
       externalLink: null,
       removeExternalReference: null,
       removing: false,
+      displayExternalRefID: false,
       expanded: false,
     };
   }
@@ -147,38 +150,56 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
     this.setState({ displayExternalLink: false, externalLink: null });
   }
 
+  handleToggleDetails() {
+    this.setState({ displayExternalRefID: !this.state.displayExternalRefID });
+  }
+
   removeExternalReference(externalReferenceEdge) {
-    commitMutation({
+    CM(environmentDarkLight, {
       mutation: externalReferenceMutationRelationDelete,
       variables: {
         id: externalReferenceEdge.node.id,
         fromId: this.props.stixCoreObjectId,
         relationship_type: 'external-reference',
       },
-      updater: (store) => {
-        const entity = store.get(this.props.stixCoreObjectId);
-        const conn = ConnectionHandler.getConnection(
-          entity,
-          'Pagination_externalReferences',
-        );
-        ConnectionHandler.deleteNode(conn, externalReferenceEdge.node.id);
-      },
-      onCompleted: () => {
+      onCompleted: (data) => {
+        console.log('ExtRefRemoveDarkLightMutationData', data);
         this.setState({ removing: false });
         this.handleCloseDialog();
       },
+      onError: (err) => console.log('ExtRefRemoveDarkLightMutationError', err),
     });
+    // commitMutation({
+    //   mutation: externalReferenceMutationRelationDelete,
+    //   variables: {
+    //     id: externalReferenceEdge.node.id,
+    //     fromId: this.props.stixCoreObjectId,
+    //     relationship_type: 'external-reference',
+    //   },
+    //   updater: (store) => {
+    //     const entity = store.get(this.props.stixCoreObjectId);
+    //     const conn = ConnectionHandler.getConnection(
+    //       entity,
+    //       'Pagination_externalReferences',
+    //     );
+    //     ConnectionHandler.deleteNode(conn, externalReferenceEdge.node.id);
+    //   },
+    //   onCompleted: () => {
+    //     this.setState({ removing: false });
+    //     this.handleCloseDialog();
+    //   },
+    // });
   }
 
   render() {
     const {
       t, classes, stixCoreObjectId, data,
     } = this.props;
-    const { expanded } = this.state;
-    const externalReferencesEdges = data.stixCoreObject.externalReferences.edges;
+    const { expanded, displayExternalRefID } = this.state;
+    console.log('externalReferencesEdges', data);
+    const externalReferencesEdges = data.itAsset.external_references.edges;
     // const externalReferencesEdges = [data.externalReference];
     const expandable = externalReferencesEdges.length > 7;
-    console.log('externalReferencesEdges', data);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -191,7 +212,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
           <AddExternalReferences
             stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
             stixCoreObjectOrStixCoreRelationshipReferences={
-              data.stixCoreObject.externalReferences.edges
+              data.itAsset.external_references.edges
               // data.externalReference
             }
           />
@@ -199,7 +220,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {externalReferencesEdges.length > 0 ? (
-            <List style={{ marginBottom: 0 }}>
+            <List style={{ marginBottom: 0, padding: '12px' }}>
               {/* {externalReferencesEdges.map( */}
               {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
                 (externalReferenceEdge) => {
@@ -222,7 +243,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                   return (
                     <div key={externalReference.id}>
                       <div style={{ display: 'grid', gridTemplateColumns: '90% 10%' }}>
-                        <Accordion style={{ borderBottom: '0', boxShadow: 'none' }}>
+                        <Accordion onChange={this.handleToggleDetails.bind(this)} style={{ borderBottom: '0', boxShadow: 'none' }}>
                           {/* <ListItem dense={true} divider={true} button={false}> */}
                           {/* <ListItemIcon>
                                       <Avatar classes={{ root: classes.avatar }}>
@@ -236,11 +257,10 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                             sx={{ width: '100%' }}
                           >
                             <ListItemText
-                              primary={`${externalReference.source_name}`}
-                              secondary={truncate(
-                                externalReference.url,
-                                120,
-                              )}
+                              primary={externalReference.source_name}
+                              secondary={!displayExternalRefID
+                                ? (externalReference.url && truncate(t(externalReference.url), 80))
+                                : (externalReference.id && t(externalReference.id))}
                             />
                           </AccordionSummary>
                           <AccordionDetails>
@@ -250,7 +270,10 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                               </Typography>
                               <Typography variant="subtitle2" style={{ display: 'flex', color: '#F9B406' }} >
                                 <LinkIcon fontSize="small" style={{ paddingRight: '5px' }} />
-                                {externalReference.external_id}
+                                {externalReference.url && truncate(
+                                  t(externalReference.url),
+                                  80,
+                                )}
                               </Typography>
                             </div>
                           </AccordionDetails>
@@ -454,48 +477,11 @@ StixCoreObjectExternalReferencesLinesContainer.propTypes = {
 };
 
 export const stixCoreObjectExternalReferencesLinesQuery = graphql`
-  query StixCoreObjectExternalReferencesLinesQuery($count: Int!, $id: String!) {
+  query StixCoreObjectExternalReferencesLinesQuery($count: Int!, $id: ID!) {
     ...StixCoreObjectExternalReferencesLines_data
       @arguments(count: $count, id: $id)
   }
 `;
-
-// export const stixCoreObjectExternalReferencesLinesQuery = graphql`
-//   query StixCoreObjectExternalReferencesLinesQuery($id: String!) {
-//     externalReference(id: $id) {
-//       id
-//       source_name
-//       description
-//       url
-//       hash
-//       external_id
-//       jobs(first: 100) {
-//         id
-//         timestamp
-//         connector {
-//           id
-//           name
-//         }
-//         messages {
-//           timestamp
-//           message
-//         }
-//         errors {
-//           timestamp
-//           message
-//         }
-//         status
-//       }
-//       connectors(onlyAlive: false) {
-//         id
-//         connector_type
-//         name
-//         active
-//         updated_at
-//       }
-//     }
-//   }
-// `;
 
 const StixCoreObjectExternalReferencesLines = createPaginationContainer(
   StixCoreObjectExternalReferencesLinesContainer,
@@ -504,56 +490,22 @@ const StixCoreObjectExternalReferencesLines = createPaginationContainer(
       fragment StixCoreObjectExternalReferencesLines_data on Query
       @argumentDefinitions(
         count: { type: "Int", defaultValue: 25 }
-        id: { type: "String!" }
+        id: { type: "ID!" }
       ) {
-        stixCoreObject(id: $id) {
+        itAsset(id: $id) {
           id
-          externalReferences(first: $count)
-            @connection(key: "Pagination_externalReferences") {
+          external_references(first: $count)
+            @connection(key: "Pagination_external_references") {
             edges {
               node {
                 id
                 source_name
                 description
                 url
-                hash
+                hashes {
+                  value
+                }
                 external_id
-                jobs(first: 100) {
-                  id
-                  timestamp
-                  connector {
-                    id
-                    name
-                  }
-                  messages {
-                    timestamp
-                    message
-                  }
-                  errors {
-                    timestamp
-                    message
-                  }
-                  status
-                }
-                connectors(onlyAlive: false) {
-                  id
-                  connector_type
-                  name
-                  active
-                  updated_at
-                }
-                importFiles(first: 1000) {
-                  edges {
-                    node {
-                      id
-                      lastModified
-                      ...FileLine_file
-                      metaData {
-                        mimetype
-                      }
-                    }
-                  }
-                }
               }
             }
           }
@@ -564,7 +516,8 @@ const StixCoreObjectExternalReferencesLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixCoreObject.externalReferences;
+      console.log('propsdfasfafa', props);
+      return props.data && props.data.itAsset.external_references;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -581,6 +534,91 @@ const StixCoreObjectExternalReferencesLines = createPaginationContainer(
     query: stixCoreObjectExternalReferencesLinesQuery,
   },
 );
+
+// const StixCoreObjectExternalReferencesLines = createPaginationContainer(
+//   StixCoreObjectExternalReferencesLinesContainer,
+//   {
+//     data: graphql`
+//       fragment StixCoreObjectExternalReferencesLines_data on Query
+//       @argumentDefinitions(
+//         count: { type: "Int", defaultValue: 25 }
+//         id: { type: "String!" }
+//       ) {
+//         stixCoreObject(id: $id) {
+//           id
+//           externalReferences(first: $count)
+//             @connection(key: "Pagination_externalReferences") {
+//             edges {
+//               node {
+//                 id
+//                 source_name
+//                 description
+//                 url
+//                 hash
+//                 external_id
+//                 jobs(first: 100) {
+//                   id
+//                   timestamp
+//                   connector {
+//                     id
+//                     name
+//                   }
+//                   messages {
+//                     timestamp
+//                     message
+//                   }
+//                   errors {
+//                     timestamp
+//                     message
+//                   }
+//                   status
+//                 }
+//                 connectors(onlyAlive: false) {
+//                   id
+//                   connector_type
+//                   name
+//                   active
+//                   updated_at
+//                 }
+//                 importFiles(first: 1000) {
+//                   edges {
+//                     node {
+//                       id
+//                       lastModified
+//                       ...FileLine_file
+//                       metaData {
+//                         mimetype
+//                       }
+//                     }
+//                   }
+//                 }
+//               }
+//             }
+//           }
+//         }
+//       }
+//     `,
+//   },
+//   {
+//     direction: 'forward',
+//     getConnectionFromProps(props) {
+//       return props.data && props.data.stixCoreObject.externalReferences;
+//     },
+//     getFragmentVariables(prevVars, totalCount) {
+//       return {
+//         ...prevVars,
+//         count: totalCount,
+//       };
+//     },
+//     getVariables(props, { count }, fragmentVariables) {
+//       return {
+//         count,
+//         id: fragmentVariables.id,
+//       };
+//     },
+//     query: stixCoreObjectExternalReferencesLinesQuery,
+//   },
+// );
 
 export default R.compose(
   inject18n,

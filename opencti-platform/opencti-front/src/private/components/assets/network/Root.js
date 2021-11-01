@@ -64,7 +64,6 @@ const networkDarkLightQuery = graphql`
       id
       asset_tag
       asset_type
-      operational_status
       asset_id
       locations {
         description
@@ -76,7 +75,7 @@ const networkDarkLightQuery = graphql`
       description
       release_date
       vendor_name
-      operational_status
+      # operational_status
       version
       ...NetworkDetails_network
     }

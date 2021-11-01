@@ -59,7 +59,7 @@ class ListCardsContent extends Component {
     if (this.props.selectAll !== prevProps.selectAll) {
       selection = true;
     }
-    if (diff.length > 0 || diffBookmark.length > 0) {
+    if (diff.length > 0 || diffBookmark.length > 0 || selection) {
       this.gridRef.forceUpdate();
     }
   }

@@ -62,7 +62,7 @@ export const deviceEditionDarkLightQuery = graphql`
       asset_type
       serial_number
       release_date
-      operational_status
+      # operational_status
       installed_software {
         name
       }

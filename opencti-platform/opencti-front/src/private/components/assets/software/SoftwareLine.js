@@ -15,6 +15,7 @@ import { ChessKnight } from 'mdi-material-ui';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -27,6 +28,7 @@ const styles = (theme) => ({
   bodyItem: {
     height: 20,
     fontSize: 13,
+    paddingLeft: 24,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -58,6 +60,8 @@ class SoftwareLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
+    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
+    console.log('SoftwareNode', node);
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -68,11 +72,12 @@ class SoftwareLineComponent extends Component {
       >
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
-          style={{ minWidth: 50 }}
+          style={{ minWidth: 38 }}
           onClick={onToggleEntity.bind(this, node)}
         >
           <Checkbox
             edge="start"
+            color='primary'
             checked={selectAll || node.id in (selectedElements || {})}
             disableRipple={true}
           />
@@ -85,26 +90,27 @@ class SoftwareLineComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 {/* KK-HWELL-011 */}
-                {node.name}
+                {node.name && node.name}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.type.width }}
               >
-                <AppleIcon />
+                {/* <AppleIcon /> */}
+                {node.asset_type && <ItemIcon type={node.asset_type} />}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.assetId.width }}
               >
                 {/* Lorem Ipsum Lorem Ipsum */}
-                {node.asset_id}
+                {node.asset_id && node.asset_id}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.vendorName.width }}
               >
-                {node.vendor_name}
+                {node.vendor_name && node.vendor_name}
               </div>
               <div
                 className={classes.bodyItem}
@@ -112,13 +118,13 @@ class SoftwareLineComponent extends Component {
               >
                 {/* {fd(node.created)} */}
                 {/* Lorem Ipsum Lorem Ipsum */}
-                {node.version}
+                {node.version && node.version}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.patchLevel.width }}
               >
-                {node.patch_level}
+                {node.patch_level && node.patch_level}
               </div>
               <div
                 className={classes.bodyItem}
@@ -126,7 +132,7 @@ class SoftwareLineComponent extends Component {
               >
                 {/* {fd(node.modified)} */}
                 {/* Lorem Ipsum Lorem Ipsum */}
-                {node.cpe_identifier}
+                {node.cpe_identifier && node.cpe_identifier}
               </div>
               <div
                 className={classes.bodyItem}
@@ -134,17 +140,17 @@ class SoftwareLineComponent extends Component {
               >
                 {/* {fd(node.modified)} */}
                 {/* Lorem Ipsum Lorem Ipsum */}
-                {node.software_identifier}
+                {node.software_identifier && node.software_identifier}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
-                {/* <StixCoreObjectLabels
+                <StixCoreObjectLabels
                   variant="inList"
-                  labels={node.objectLabel}
+                  labels={objectLabel}
                   onClick={onLabelClick.bind(this)}
-                /> */}
+                />
               </div>
             </div>
           }
@@ -205,28 +211,36 @@ SoftwareLineComponent.propTypes = {
 
 const SoftwareLineFragment = createFragmentContainer(SoftwareLineComponent, {
   node: graphql`
-    fragment SoftwareLine_node on Campaign {
+    fragment SoftwareLine_node on SoftwareAsset {
       id
       name
-      created
-      modified
-      objectMarking {
-        edges {
-          node {
-            id
-            definition
-          }
-        }
-      }
-      objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
-      }
+      labels
+      asset_type
+      asset_id
+      vendor_name
+      version
+      patch_level
+      cpe_identifier
+      software_identifier
+      # created
+      # modified
+      # objectMarking {
+      #   edges {
+      #     node {
+      #       id
+      #       definition
+      #     }
+      #   }
+      # }
+      # objectLabel {
+      #   edges {
+      #     node {
+      #       id
+      #       value
+      #       color
+      #     }
+      #   }
+      # }
     }
   `,
 });

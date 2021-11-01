@@ -33,19 +33,27 @@ class DevicesCards extends Component {
   }
 
   render() {
-    const { initialLoading, relay, onLabelClick } = this.props;
+    const {
+      initialLoading,
+      relay,
+      selectAll,
+      onLabelClick,
+      onToggleEntity,
+      selectedElements,
+    } = this.props;
     const { bookmarks } = this.state;
+    console.log('pathOr([]this.props.data)', this.props.data);
     return (
-      <QueryRenderer
-        query={stixDomainObjectBookmarksQuery}
-        variables={{ types: ['Device'] }}
-        render={({ props }) => (
-          <div>
-            <StixDomainObjectBookmarks
-              data={props}
-              onLabelClick={onLabelClick.bind(this)}
-              setBookmarkList={this.handleSetBookmarkList.bind(this)}
-            />
+    // <QueryRenderer
+    //   query={stixDomainObjectBookmarksQuery}
+    //   variables={{ types: ['Device'] }}
+    //   render={({ props }) => (
+    //     <div>
+    //       <StixDomainObjectBookmarks
+    //         data={props}
+    //         onLabelClick={onLabelClick.bind(this)}
+    //         setBookmarkList={this.handleSetBookmarkList.bind(this)}
+    //       />
             <ListCardsContent
               initialLoading={initialLoading}
               loadMore={relay.loadMore.bind(this)}
@@ -60,12 +68,15 @@ class DevicesCards extends Component {
               CardComponent={<DeviceCard />}
               DummyCardComponent={<DeviceCardDummy />}
               nbOfCardsToLoad={nbOfCardsToLoad}
+              selectAll={selectAll}
+              selectedElements={selectedElements}
               onLabelClick={onLabelClick.bind(this)}
+              onToggleEntity={onToggleEntity.bind(this)}
               bookmarkList={bookmarks}
             />
-          </div>
-        )}
-      />
+    //     </div>
+    //   )}
+    // />
     );
   }
 }
@@ -85,41 +96,41 @@ export const devicesCardsQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: ThreatActorsOrdering
+    $orderedBy: ComputingDeviceAssetOrdering
     $orderMode: OrderingMode
-    $filters: [ThreatActorsFiltering]
+    $filters: [ComputingDeviceAssetFiltering]
   ) {
     ...DevicesCards_data
       @arguments(
         search: $search
         count: $count
         cursor: $cursor
-        orderBy: $orderBy
+        orderedBy: $orderedBy
         orderMode: $orderMode
         filters: $filters
       )
   }
 `;
 
-export const devicesCardsdarkLightRootQuery = graphql`
-  query DevicesCardsDarkLightQuery {
-    computingDeviceAssetList {
-      edges {
-        node {
-          id
-          name
-          installed_operating_system {
-            name
-          }
-          asset_type
-          asset_id
-          fqdn
-          network_id
-        }
-      }
-    }
-  }
-`;
+// export const devicesCardsdarkLightRootQuery = graphql`
+//   query DevicesCardsDarkLightQuery {
+//     computingDeviceAssetList {
+//       edges {
+//         node {
+//           id
+//           name
+//           installed_operating_system {
+//             name
+//           }
+//           asset_type
+//           asset_id
+//           fqdn
+//           network_id
+//         }
+//       }
+//     }
+//   }
+// `;
 
 export default createPaginationContainer(
   DevicesCards,
@@ -130,24 +141,24 @@ export default createPaginationContainer(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        orderBy: { type: "ThreatActorsOrdering", defaultValue: name }
+        orderedBy: { type: "ComputingDeviceAssetOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[ThreatActorsFiltering]" }
+        filters: { type: "[ComputingDeviceAssetFiltering]" }
       ) {
-        threatActors(
+        computingDeviceAssetList(
           search: $search
           first: $count
-          after: $cursor
-          orderBy: $orderBy
+          # after: $cursor
+          orderedBy: $orderedBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_threatActors") {
+        ) @connection(key: "Pagination_computingDeviceAssetList") {
           edges {
             node {
               id
               name
               description
-              # ...DeviceCard_node
+              ...DeviceCard_node
             }
           }
           pageInfo {
@@ -162,7 +173,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.threatActors;
+      return props.data && props.data.computingDeviceAssetList;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -175,7 +186,7 @@ export default createPaginationContainer(
         search: fragmentVariables.search,
         count,
         cursor,
-        orderBy: fragmentVariables.orderBy,
+        orderedBy: fragmentVariables.orderedBy,
         orderMode: fragmentVariables.orderMode,
         filters: fragmentVariables.filters,
       };

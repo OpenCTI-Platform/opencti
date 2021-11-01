@@ -18,7 +18,9 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import ExpandMoreOutlined from '@material-ui/icons/ExpandMoreOutlined';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
+import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
 import NoteEditionContainer from './NoteEditionContainer';
@@ -32,11 +34,10 @@ const styles = (theme) => ({
     margin: 0,
   },
   drawerPaper: {
-    minHeight: '100vh',
     width: '50%',
     position: 'fixed',
     overflow: 'auto',
-    backgroundColor: theme.palette.navAlt.background,
+    backgroundColor: theme.palette.background.paper,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -52,6 +53,14 @@ const styles = (theme) => ({
   dialogActions: {
     justifyContent: 'flex-start',
     padding: '10px 0 20px 22px',
+  },
+  buttonPopover: {
+    textTransform: 'capitalize',
+  },
+  popoverDialog: {
+    fontSize: '18px',
+    lineHeight: '24px',
+    color: theme.palette.header.text,
   },
 });
 
@@ -99,22 +108,13 @@ class NotePopover extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    commitMutation({
+    CM(environmentDarkLight, {
       mutation: NotePopoverDeletionMutation,
       variables: {
         id: this.props.id,
       },
-      updater: (store) => {
-        if (this.props.entityId) {
-          const entity = store.get(this.props.entityId);
-          const conn = ConnectionHandler.getConnection(
-            entity,
-            'Pagination_notes',
-          );
-          ConnectionHandler.deleteNode(conn, this.props.id);
-        }
-      },
-      onCompleted: () => {
+      onCompleted: (data) => {
+        console.log('NoteDeletionDarkLightMutationData', data);
         this.setState({ deleting: false });
         this.handleClose();
         if (this.props.handleOpenRemove) {
@@ -123,7 +123,33 @@ class NotePopover extends Component {
           this.props.history.push('/dashboard/analysis/notes');
         }
       },
+      onError: (err) => console.log('NoteDeletionDarkLightMutationError', err),
     });
+    // commitMutation({
+    //   mutation: NotePopoverDeletionMutation,
+    //   variables: {
+    //     id: this.props.id,
+    //   },
+    //   updater: (store) => {
+    //     if (this.props.entityId) {
+    //       const entity = store.get(this.props.entityId);
+    //       const conn = ConnectionHandler.getConnection(
+    //         entity,
+    //         'Pagination_notes',
+    //       );
+    //       ConnectionHandler.deleteNode(conn, this.props.id);
+    //     }
+    //   },
+    //   onCompleted: () => {
+    //     this.setState({ deleting: false });
+    //     this.handleClose();
+    //     if (this.props.handleOpenRemove) {
+    //       this.handleCloseDelete();
+    //     } else {
+    //       this.props.history.push('/dashboard/analysis/notes');
+    //     }
+    //   },
+    // });
   }
 
   handleOpenEdit() {
@@ -155,7 +181,7 @@ class NotePopover extends Component {
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 5 }}
+          style={{ marginTop: -2 }}
         >
           <MoreVert />
         </IconButton>
@@ -193,12 +219,7 @@ class NotePopover extends Component {
           onClose={this.handleCloseDelete.bind(this)}
         >
             <DialogContent>
-              <Typography style={{
-                fontSize: '18px',
-                lineHeight: '24px',
-                color: 'white',
-                fontFamily: 'DINNextLTPro',
-              }} >
+              <Typography className={classes.popoverDialog}>
                 {t('Are you sure you’d like to delete this item?')}
               </Typography>
               <DialogContentText>
@@ -209,7 +230,9 @@ class NotePopover extends Component {
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
+              classes={{ root: classes.buttonPopover }}
               variant="outlined"
+              size="small"
             >
               {t('Cancel')}
             </Button>
@@ -217,19 +240,22 @@ class NotePopover extends Component {
               onClick={this.submitDelete.bind(this)}
               color="primary"
               disabled={this.state.deleting}
+              classes={{ root: classes.buttonPopover }}
               variant="contained"
+              size="small"
             >
               {t('Delete')}
             </Button>
           </DialogActions>
         </Dialog>
-        <Drawer
+        <Dialog
           open={this.state.displayEdit}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseEdit.bind(this)}
         >
-          <QueryRenderer
+          <QR
+            environment={environmentDarkLight}
             query={noteEditionQuery}
             variables={{ id }}
             render={({ props }) => {
@@ -244,7 +270,7 @@ class NotePopover extends Component {
               return <Loader variant="inElement" />;
             }}
           />
-        </Drawer>
+        </Dialog>
       </div>
     );
   }
