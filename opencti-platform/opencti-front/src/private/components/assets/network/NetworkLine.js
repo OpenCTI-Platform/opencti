@@ -15,6 +15,7 @@ import { DiamondOutline } from 'mdi-material-ui';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -58,6 +59,7 @@ class NetworkLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
+    console.log('asdasfewfwefa', node);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <ListItem
@@ -74,6 +76,7 @@ class NetworkLineComponent extends Component {
         >
           <Checkbox
             edge="start"
+            color='primary'
             checked={selectAll || node.id in (selectedElements || {})}
             disableRipple={true}
           />
@@ -86,34 +89,34 @@ class NetworkLineComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 {/* KK-HWELL-011 */}
-                {node.network_name}
+                {node.network_name && node.network_name}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.type.width }}
               >
-                <RouterIcon />
+                {node.asset_type && <ItemIcon type={node.asset_type}/>}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.asset_id.width }}
               >
                 {/* Lorem Ipsum Lorem Ipsum */}
-                {node.asset_id}
+                {node.asset_id && node.asset_id}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.network_id.width }}
               >
-                {node.network_id}
+                {node.network_id && node.network_id}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.network_range.width }}
               >
-                {/* {fd(node.modified)} */}
-                Lorem Ipsum Lorem Ipsum
-                {/* {node.network_range} */}
+                {node.network_address_range && `${node.network_address_range.starting_ip_address
+                && node.network_address_range.starting_ip_address.ip_address_value} - ${node.network_address_range.starting_ip_address
+                && node.network_address_range.starting_ip_address.ip_address_value}`}
               </div>
               <div
                 className={classes.bodyItem}

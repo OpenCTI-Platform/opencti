@@ -53,7 +53,7 @@ class StixCoreObjectExternalReferences extends Component {
           variables={{ id: stixCoreObjectId, count: 200 }}
           render={({ props }) => {
             if (props) {
-              console.log('StixCoreExtRefPropsData', props);
+              console.log('StixCoreExtRefPropsData', stixCoreObjectId);
               return (
                 <StixCoreObjectExternalReferencesLines
                   stixCoreObjectId={stixCoreObjectId}

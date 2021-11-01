@@ -78,7 +78,7 @@ class DeviceComponent extends Component {
                 <StixDomainObjectAssetOverview stixDomainObject={device} />
               </Grid>
               <Grid item={true} xs={6}>
-                <DeviceDetails device={device} />
+                <DeviceDetails device={device} history={history}/>
               </Grid>
             </Grid>
             <Grid

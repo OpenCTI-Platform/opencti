@@ -291,7 +291,8 @@ class ListLines extends Component {
           <div className={classes.views}>
             <div style={{ float: 'right' }}>
               {typeof handleChangeView === 'function' && (
-                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <>
                   <Tooltip title={t('Edit')}>
                     <Button
                       variant="contained"
@@ -323,7 +324,8 @@ class ListLines extends Component {
                       {t('New')}
                     </Button>
                   </Tooltip>
-                </Security>
+                </>
+                // </Security>
               )}
               {/* {typeof handleChangeView === 'function' && enableDuplicates && (
                 <Tooltip title={t('Detect duplicates')}>

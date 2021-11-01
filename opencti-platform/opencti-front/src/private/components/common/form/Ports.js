@@ -22,22 +22,22 @@ class Ports extends Component {
       disabled,
     } = this.props;
 
-    const portsQuery = graphql`
-      query PortsListQuery {
-        documentaryAssetList {
-          edges {
-            node {
-              ... on Server {
-                ports {
-                  port_number,
-                  protocols
-                }
-              }
-            }
-         }
-       }
-      }
-    `;
+    // const portsQuery = graphql`
+    //   query PortsListQuery {
+    //     documentaryAssetList {
+    //       edges {
+    //         node {
+    //           ... on Server {
+    //             ports {
+    //               port_number,
+    //               protocols
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // `;
 
     return (
       <div>

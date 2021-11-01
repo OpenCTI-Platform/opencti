@@ -164,6 +164,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
       theme,
       stixCoreObjectOrStixCoreRelationshipId,
     } = this.props;
+    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     let authorName = null;
     let authorLink = null;
     if (node.createdBy) {
@@ -203,7 +204,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
                       )}
                     </strong>{' '}
                     <span style={{ color: theme.palette.text.secondary }}>
-                      {t('added a note')} on {nsdt(node.created)}
+                      {t('added a note')} on {node.created && nsdt(node.created)}
                     </span>
                   </div>
                   {/* <div
@@ -308,7 +309,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
                 <CardActions style={{ color: '#F9B406', padding: '0 20px 20px 15px' }}>
                          <StixCoreObjectLabels
                       variant="inList"
-                      labels={node.objectLabel}
+                      labels={objectLabel}
                     />
                 </CardActions>
             </Collapse>
@@ -357,41 +358,68 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard = createFragmentContainer(
   StixCoreObjectOrStixCoreRelationshipNoteCardComponent,
   {
     node: graphql`
-      fragment StixCoreObjectOrStixCoreRelationshipNoteCard_node on Note {
+      fragment StixCoreObjectOrStixCoreRelationshipNoteCard_node on CyioNote {
         id
-        attribute_abstract
+        # attribute_abstract
         content
         created
         modified
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition
-              x_opencti_color
-            }
-          }
-        }
-        objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
-        }
+        labels
+        abstract
+        authors
+        # objectLabel {
+        #   edges {
+        #     node {
+        #       id
+        #       value
+        #       color
+        #     }
+        #   }
+        # }
       }
     `,
   },
 );
+
+// const StixCoreObjectOrStixCoreRelationshipNoteCard = createFragmentContainer(
+//   StixCoreObjectOrStixCoreRelationshipNoteCardComponent,
+//   {
+//     node: graphql`
+//       fragment StixCoreObjectOrStixCoreRelationshipNoteCard_node on Note {
+//         id
+//         attribute_abstract
+//         content
+//         created
+//         modified
+//         createdBy {
+//           ... on Identity {
+//             id
+//             name
+//             entity_type
+//           }
+//         }
+//         objectMarking {
+//           edges {
+//             node {
+//               id
+//               definition
+//               x_opencti_color
+//             }
+//           }
+//         }
+//         objectLabel {
+//           edges {
+//             node {
+//               id
+//               value
+//               color
+//             }
+//           }
+//         }
+//       }
+//     `,
+//   },
+// );
 
 export default compose(
   inject18n,

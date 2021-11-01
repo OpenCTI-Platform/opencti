@@ -8,32 +8,37 @@ const onError = function (err, req, res) {
 module.exports = function (app) {
   app.use(
     createProxyMiddleware("/graphql", {
-      target: "http://157.245.20.236:5000",
+      target: "https://graphql.darklight.ai/",
       ws: true,
+      secure: false,
       onError,
     })
   );
   app.use(
     createProxyMiddleware("/taxii2", {
-      target: "http://157.245.20.236:5000",
+      target: "https://graphql.darklight.ai/",
+      secure: false,
       onError,
     })
   );
   app.use(
     createProxyMiddleware("/stream", {
-      target: "http://157.245.20.236:5000",
+      target: "https://graphql.darklight.ai/",
+      secure: false,
       onError,
     })
   );
   app.use(
     createProxyMiddleware("/storage", {
-      target: "http://157.245.20.236:5000",
+      target: "https://graphql.darklight.ai/",
+      secure: false,
       onError,
     })
   );
   app.use(
     createProxyMiddleware("/auth/**", {
-      target: "http://157.245.20.236:5000",
+      target: "https://graphql.darklight.ai/",
+      secure: false,
       onError,
     })
   );

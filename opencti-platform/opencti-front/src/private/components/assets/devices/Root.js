@@ -59,25 +59,22 @@ const deviceQuery = graphql`
 `;
 
 const deviceDarkLightQuery = graphql`
-  query RootDeviceDarkLightQuery($computingDeviceAssetId: ID!) {
-    computingDeviceAsset(id: $computingDeviceAssetId) {
+  query RootDeviceDarkLightQuery($id: ID!) {
+    computingDeviceAsset(id: $id) {
       id
       name
       asset_id
-      labels
+      asset_type
+      asset_tag
       description
-      locations {
-        city
-        country
-        description
-      }
       version
       vendor_name
-      asset_tag
-      asset_type
       serial_number
       release_date
+      # responsible_parties
       operational_status
+      labels
+      # ...DeviceOverview_device
       ...DeviceDetails_device  
     }
   }
@@ -134,7 +131,7 @@ class RootDevice extends Component {
         <QR
           environment={QueryRendererDarkLight}
           query={deviceDarkLightQuery}
-          variables={{ computingDeviceAssetId: deviceId }}
+          variables={{ id: deviceId }}
           render={({ error, props }) => {
             console.log(`deviceDarkLightQuery ${JSON.stringify(props)} OR Error: ${error}`);
             if (props) {

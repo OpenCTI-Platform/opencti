@@ -189,22 +189,22 @@ const WorkersStatus = createRefetchContainer(
             total
           }
         }
-        rabbitMQMetrics {
-          consumers
-          overview {
-            queue_totals {
-              messages
-              messages_ready
-              messages_unacknowledged
-            }
-            message_stats {
-              ack
-              ack_details {
-                rate
-              }
-            }
-          }
-        }
+        # rabbitMQMetrics {
+        #   consumers
+        #   overview {
+        #     queue_totals {
+        #       messages
+        #       messages_ready
+        #       messages_unacknowledged
+        #     }
+        #     message_stats {
+        #       ack
+        #       ack_details {
+        #         rate
+        #       }
+        #     }
+        #   }
+        # }
       }
     `,
   },

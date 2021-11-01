@@ -25,6 +25,7 @@ import {
   addBookmark,
   deleteBookMark,
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   card: {
@@ -109,6 +110,7 @@ class NetworkCardComponent extends Component {
       onLabelClick,
       selectedElements,
     } = this.props;
+    console.log('sdsaasfasfaf', node);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
@@ -165,7 +167,7 @@ class NetworkCardComponent extends Component {
                 >
                   {t('Type')}
                 </Typography>
-                <Router size='large' />
+                {node.asset_type && <ItemIcon type={node.asset_type} />}
               </div>
               <div style={{ marginRight: 'auto', marginLeft: '12px' }}>
                 <Typography
@@ -177,7 +179,7 @@ class NetworkCardComponent extends Component {
                 </Typography>
                 <Typography>
                     {/* {t('KK-HWELL-011')} */}
-                    {t(node.network_name)}
+                    {node.network_name && t(node.network_name)}
                 </Typography>
               </div>
               <div>
@@ -199,7 +201,7 @@ class NetworkCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('KK-HWELL-011')} */}
-                  {t(node.asset_id)}
+                  {node.asset_id && t(node.asset_id)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -212,7 +214,7 @@ class NetworkCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('Lorem Ipsum')} */}
-                  {t(node.network_id)}
+                  {node.network_id && t(node.network_id)}
                 </Typography>
               </Grid>
               <Grid xs={6} item={true} className={classes.body}>
@@ -220,10 +222,10 @@ class NetworkCardComponent extends Component {
                  variant="h3"
                  color="textSecondary"
                  gutterBottom ={true}>
-                  {t('IP Address')}
+                  {t('Network ID')}
                 </Typography>
                 <Typography>
-                    {t('00:50:56:A3:59:4D')}
+                  {node.network_id && t(node.network_id)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -235,8 +237,8 @@ class NetworkCardComponent extends Component {
                   {t('Network Range')}
                 </Typography>
                 <Typography>
-                    {t('Lorem Ipsum')}
-                    {/* {t(node.network_id)} */}
+                    {/* {t('Lorem Ipsum')} */}
+                    {node.network_id && t(node.network_id)}
                 </Typography>
               </Grid>
             </Grid>
@@ -311,6 +313,9 @@ const NetworkCardFragment = createFragmentContainer(
         asset_id
         network_id
         labels
+        # ipv4_address{
+        #   ip_address_value
+        # }
       }
     `,
   },

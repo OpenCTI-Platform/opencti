@@ -210,12 +210,15 @@ class Network extends Component {
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
             <NetworkCards
-              data={props}
-              paginationOptions={paginationOptions}
-              initialLoading={props === null}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
+                data={props}
+                selectAll={selectAll}
+                paginationOptions={paginationOptions}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
           )}
         /> */}
         <QR
@@ -332,10 +335,13 @@ class Network extends Component {
           render={({ props }) => (
             <NetworkLines
               data={props}
+              selectAll={selectAll}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              selectedElements={selectedElements}
               onLabelClick={this.handleAddFilter.bind(this)}
+              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
@@ -387,9 +393,9 @@ class Network extends Component {
         {view === 'cards' && (!openNetworkCreation && !location.openNewCreation) ? this.renderCards(paginationOptions) : ''}
         {view === 'lines' && (!openNetworkCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
         {(openNetworkCreation || location.openNewCreation) && (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <NetworkCreation paginationOptions={paginationOptions} history={this.props.history} />
-          </Security>
+          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <NetworkCreation paginationOptions={paginationOptions} history={this.props.history} />
+          // </Security>
         )}
       </div>
     );

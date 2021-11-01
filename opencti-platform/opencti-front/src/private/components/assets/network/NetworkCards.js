@@ -42,6 +42,7 @@ class NetworkCards extends Component {
       selectedElements,
     } = this.props;
     const { bookmarks } = this.state;
+    console.log('asdasdasfasfasfasf', this.props.data);
     return (
     // <QueryRenderer
     //   query={stixDomainObjectBookmarksQuery}
@@ -161,7 +162,7 @@ export default createPaginationContainer(
           edges {
             node {
               id
-              name
+              # name
               description
               ...NetworkCard_node
             }

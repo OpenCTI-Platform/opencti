@@ -253,7 +253,8 @@ class ListCards extends Component {
           <div className={classes.views}>
             <div style={{ float: 'right' }}>
               {typeof handleChangeView === 'function' && (
-                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <>
                   <Tooltip title={t('Edit')}>
                     <Button
                       variant="contained"
@@ -285,7 +286,8 @@ class ListCards extends Component {
                       {t('New')}
                     </Button>
                   </Tooltip>
-                </Security>
+                </>
+                // </Security>
               )}
               {typeof handleChangeView === 'function' && (
                 <Tooltip title={t('Lines view')}>

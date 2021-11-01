@@ -22,22 +22,22 @@ class Protocols extends Component {
       disabled,
     } = this.props;
 
-    const protocolsListQuery = graphql`
-      query ProtocolsListQuery {
-        documentaryAssetList {
-          edges {
-            node {
-              ... on Server {
-                ports {
-                  port_number,
-                  protocols
-                }
-              }
-            }
-         }
-       }
-      }
-    `;
+    // const protocolsListQuery = graphql`
+    //   query ProtocolsListQuery {
+    //     documentaryAssetList {
+    //       edges {
+    //         node {
+    //           ... on Server {
+    //             ports {
+    //               port_number,
+    //               protocols
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // `;
 
     return (
       <div>

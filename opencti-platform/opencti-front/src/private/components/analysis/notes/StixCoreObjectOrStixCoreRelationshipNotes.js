@@ -61,7 +61,7 @@ class StixCoreObjectOrStixCoreRelationshipNotes extends Component {
           variables={{ id: stixCoreObjectOrStixCoreRelationshipId, count: 200 }}
           render={({ props }) => {
             if (props) {
-              console.log('StixNotesPropsData', stixCoreObjectOrStixCoreRelationshipId);
+              console.log('StixNotesPropsData', props);
               return (
                 <StixCoreObjectNotesCards
                   stixCoreObjectId={stixCoreObjectOrStixCoreRelationshipId}

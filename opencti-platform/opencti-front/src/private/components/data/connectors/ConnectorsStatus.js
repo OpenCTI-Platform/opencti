@@ -421,22 +421,22 @@ const ConnectorsStatus = createRefetchContainer(
             push_exchange
           }
         }
-        rabbitMQMetrics {
-          queues {
-            name
-            messages
-            messages_ready
-            messages_unacknowledged
-            consumers
-            idle_since
-            message_stats {
-              ack
-              ack_details {
-                rate
-              }
-            }
-          }
-        }
+        # rabbitMQMetrics {
+        #   queues {
+        #     name
+        #     messages
+        #     messages_ready
+        #     messages_unacknowledged
+        #     consumers
+        #     idle_since
+        #     message_stats {
+        #       ack
+        #       ack_details {
+        #         rate
+        #       }
+        #     }
+        #   }
+        # }
       }
     `,
   },

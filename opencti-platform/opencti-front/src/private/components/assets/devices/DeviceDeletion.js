@@ -181,7 +181,7 @@ class DeviceDeletion extends Component {
     console.log('DarkLightID', Boolean(isAllselected));
     return (
       <div className={classes.container}>
-        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+        {/* <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}> */}
           <Tooltip title={t('Delete')}>
             <Button
               variant="contained"
@@ -194,7 +194,7 @@ class DeviceDeletion extends Component {
               <DeleteIcon fontSize="inherit" />
             </Button>
           </Tooltip>
-        </Security>
+        {/* </Security> */}
         <Dialog
           open={this.state.displayDelete}
           keepMounted={true}

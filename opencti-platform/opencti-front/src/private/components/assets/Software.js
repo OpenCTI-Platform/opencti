@@ -216,9 +216,12 @@ class Software extends Component {
           render={({ props }) => (
             <SoftwareCards
               data={props}
+              selectAll={selectAll}
               paginationOptions={paginationOptions}
               initialLoading={props === null}
+              selectedElements={selectedElements}
               onLabelClick={this.handleAddFilter.bind(this)}
+              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
@@ -348,10 +351,13 @@ class Software extends Component {
           render={({ props }) => (
             <SoftwareLines
               data={props}
-              paginationOptions={paginationOptions}
+              selectAll={selectAll}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              selectedElements={selectedElements}
+              paginationOptions={paginationOptions}
               onLabelClick={this.handleAddFilter.bind(this)}
+              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
@@ -403,9 +409,9 @@ class Software extends Component {
         {view === 'cards' && (!openSoftwareCreation && !location.openNewCreation) ? this.renderCards(paginationOptions) : ''}
         {view === 'lines' && (!openSoftwareCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
         {(openSoftwareCreation || location.openNewCreation) && (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <SoftwareCreation paginationOptions={paginationOptions} history={this.props.history} />
-          </Security>
+          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <SoftwareCreation paginationOptions={paginationOptions} history={this.props.history} />
+          // </Security>
         )}
       </div>
     );

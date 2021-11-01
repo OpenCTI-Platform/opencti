@@ -29,6 +29,7 @@ class NetworkLines extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
+    console.log('NetworkListLineData', this.props.data);
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -140,7 +141,7 @@ export default createPaginationContainer(
           edges {
             node {
               id
-              name
+              # name
               description
               ...NetworkLine_node
             }

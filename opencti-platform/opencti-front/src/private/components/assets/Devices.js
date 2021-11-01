@@ -219,20 +219,6 @@ class Devices extends Component {
           'labelledBy',
         ]}
       >
-        {/* <QueryRenderer
-          query={devicesCardsQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <DevicesCards
-              data={props}
-              extra={props}
-              paginationOptions={paginationOptions}
-              initialLoading={props === null}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          )}
-        /> */}
         <QR
           environment={QueryRendererDarkLight}
           query={devicesCardsQuery}
@@ -254,6 +240,26 @@ class Devices extends Component {
             );
           }}
         />
+        {/* <QueryRenderer
+          query={devicesCardsQuery}
+          variables={{ count: 25, ...paginationOptions }}
+          render={({ error, props }) => {
+            console.log(`DarkLightDevicesCards Error ${error} OR Props ${JSON.stringify(props)}`);
+            return (
+              <DevicesCards
+                data={props}
+                extra={props}
+                selectAll={selectAll}
+                paginationOptions={paginationOptions}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+              />
+            );
+          }}
+        /> */}
       </ListCards>
     );
   }
@@ -353,23 +359,6 @@ class Devices extends Component {
           'labelledBy',
         ]}
       >
-        {/* <QueryRenderer
-          query={devicesLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <DevicesLines
-              data={props}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              selectAll={selectAll}
-              selectedElements={selectedElements}
-              initialLoading={props === null}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          )}
-        /> */}
         <QR
           environment={QueryRendererDarkLight}
           query={devicesLinesQuery}
@@ -391,6 +380,26 @@ class Devices extends Component {
             );
           }}
         />
+        {/* <QueryRenderer
+          query={devicesLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
+          render={({ error, props }) => {
+            console.log(`DarkLight Error ${error} OR Props ${JSON.stringify(props)}`);
+            return (
+              <DevicesLines
+                data={props}
+                selectAll={selectAll}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                paginationOptions={paginationOptions}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            );
+          }}
+        /> */}
       </ListLines>
     );
   }
@@ -417,9 +426,9 @@ class Devices extends Component {
         {view === 'cards' && (!openDeviceCreation && !location.openNewCreation) ? this.renderCards(paginationOptions) : ''}
         {view === 'lines' && (!openDeviceCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
         {((openDeviceCreation || location.openNewCreation) && (
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <DeviceCreation paginationOptions={paginationOptions} history={this.props.history} />
-            </Security>
+          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <DeviceCreation paginationOptions={paginationOptions} history={this.props.history} />
+          // </Security>
         ))}
       </div>
     );

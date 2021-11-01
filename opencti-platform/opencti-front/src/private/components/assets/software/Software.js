@@ -99,13 +99,13 @@ class SoftwareComponent extends Component {
         </Security> */}
           </div>
         ) : (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <SoftwareEdition
-              open={this.state.openEdit}
-              softwareId={software.id}
-              history={history}
-            />
-          </Security>
+          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <SoftwareEdition
+            open={this.state.openEdit}
+            softwareId={software.id}
+            history={history}
+          />
+          // </Security>
         )}
       </>
     );

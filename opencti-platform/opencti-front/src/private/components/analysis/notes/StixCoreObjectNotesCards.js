@@ -139,8 +139,9 @@ class StixCoreObjectNotesCardsContainer extends Component {
     const {
       t, classes, stixCoreObjectId, marginTop, data,
     } = this.props;
+    console.log('NotesCardsData', data);
     const { open } = this.state;
-    const notes = R.pathOr([], ['stixCoreObject', 'notes', 'edges'], data);
+    const notes = R.pathOr([], ['itAsset', 'notes', 'edges'], data);
     return (
       <div style={{ marginTop: marginTop || 40 }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -365,10 +366,54 @@ StixCoreObjectNotesCardsContainer.propTypes = {
 };
 
 export const stixCoreObjectNotesCardsQuery = graphql`
-  query StixCoreObjectNotesCardsQuery($count: Int!, $id: String!) {
+  query StixCoreObjectNotesCardsQuery($count: Int!, $id: ID!) {
     ...StixCoreObjectNotesCards_data @arguments(count: $count, id: $id)
   }
 `;
+
+const StixCoreObjectNotesCards = createPaginationContainer(
+  StixCoreObjectNotesCardsContainer,
+  {
+    data: graphql`
+      fragment StixCoreObjectNotesCards_data on Query
+      @argumentDefinitions(
+        count: { type: "Int", defaultValue: 25 }
+        id: { type: "ID!" }
+      ) {
+        itAsset(id: $id) {
+          id
+          notes(first: $count) @connection(key: "Pagination_notes") {
+            edges {
+              node {
+                id
+                ...StixCoreObjectOrStixCoreRelationshipNoteCard_node
+              }
+            }
+          }
+        }
+      }
+    `,
+  },
+  {
+    direction: 'forward',
+    getConnectionFromProps(props) {
+      return props.data && props.data.itAsset.notes;
+    },
+    getFragmentVariables(prevVars, totalCount) {
+      return {
+        ...prevVars,
+        count: totalCount,
+      };
+    },
+    getVariables(props, { count }, fragmentVariables) {
+      return {
+        count,
+        id: fragmentVariables.id,
+      };
+    },
+    query: stixCoreObjectNotesCardsQuery,
+  },
+);
 
 // export const stixCoreObjectNotesCardsQuery = graphql`
 //   query StixCoreObjectNotesCardsQuery($id: String) {
@@ -393,57 +438,57 @@ export const stixCoreObjectNotesCardsQuery = graphql`
 //   }
 // `;
 
-const StixCoreObjectNotesCards = createPaginationContainer(
-  StixCoreObjectNotesCardsContainer,
-  {
-    data: graphql`
-      fragment StixCoreObjectNotesCards_data on Query
-      @argumentDefinitions(
-        count: { type: "Int", defaultValue: 25 }
-        id: { type: "String!" }
-      ) {
-        stixCoreObject(id: $id) {
-          id
-          objectMarking {
-            edges {
-              node {
-                id
-                definition
-              }
-            }
-          }
-          notes(first: $count) @connection(key: "Pagination_notes") {
-            edges {
-              node {
-                id
-                ...StixCoreObjectOrStixCoreRelationshipNoteCard_node
-              }
-            }
-          }
-        }
-      }
-    `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.stixCoreObjectObject.notes;
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
-    },
-    getVariables(props, { count }, fragmentVariables) {
-      return {
-        count,
-        id: fragmentVariables.id,
-      };
-    },
-    query: stixCoreObjectNotesCardsQuery,
-  },
-);
+// const StixCoreObjectNotesCards = createPaginationContainer(
+//   StixCoreObjectNotesCardsContainer,
+//   {
+//     data: graphql`
+//       fragment StixCoreObjectNotesCards_data on Query
+//       @argumentDefinitions(
+//         count: { type: "Int", defaultValue: 25 }
+//         id: { type: "String!" }
+//       ) {
+//         stixCoreObject(id: $id) {
+//           id
+//           objectMarking {
+//             edges {
+//               node {
+//                 id
+//                 definition
+//               }
+//             }
+//           }
+//           notes(first: $count) @connection(key: "Pagination_notes") {
+//             edges {
+//               node {
+//                 id
+//                 ...StixCoreObjectOrStixCoreRelationshipNoteCard_node
+//               }
+//             }
+//           }
+//         }
+//       }
+//     `,
+//   },
+//   {
+//     direction: 'forward',
+//     getConnectionFromProps(props) {
+//       return props.data && props.data.stixCoreObjectObject.notes;
+//     },
+//     getFragmentVariables(prevVars, totalCount) {
+//       return {
+//         ...prevVars,
+//         count: totalCount,
+//       };
+//     },
+//     getVariables(props, { count }, fragmentVariables) {
+//       return {
+//         count,
+//         id: fragmentVariables.id,
+//       };
+//     },
+//     query: stixCoreObjectNotesCardsQuery,
+//   },
+// );
 
 export default R.compose(
   inject18n,

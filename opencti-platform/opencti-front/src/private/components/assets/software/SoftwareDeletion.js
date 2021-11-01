@@ -179,7 +179,7 @@ class SoftwareDeletion extends Component {
     } = this.props;
     return (
       <div className={classes.container}>
-        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+        {/* <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}> */}
           <Tooltip title={t('Delete')}>
           <Button
             variant="contained"
@@ -192,7 +192,7 @@ class SoftwareDeletion extends Component {
               <DeleteIcon fontSize="inherit"/>
             </Button>
           </Tooltip>
-        </Security>
+        {/* </Security> */}
         <Dialog
           open={this.state.displayDelete}
           keepMounted={true}

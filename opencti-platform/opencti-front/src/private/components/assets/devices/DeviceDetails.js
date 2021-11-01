@@ -35,6 +35,7 @@ const styles = (theme) => ({
     color: '#FFFFFF',
     height: 25,
     fontSize: 12,
+    padding: '14px 12px',
     margin: '0 7px 7px 0',
     backgroundColor: 'rgba(6,16,45,255)',
   },
@@ -43,7 +44,11 @@ const styles = (theme) => ({
 class DeviceDetailsComponent extends Component {
   render() {
     const {
-      t, classes, device, fd,
+      t,
+      classes,
+      device,
+      fd,
+      history,
     } = this.props;
     console.log('deviceDetailsData', device);
     return (
@@ -77,7 +82,7 @@ class DeviceDetailsComponent extends Component {
                     console.info("I'm a button.");
                   }}
                 >
-                  <Launch fontSize="inherit" style={{ marginRight: '5.5px' }}/>{device.installed_operating_system && t(device.installed_operating_system.name)}
+                  <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{device.installed_operating_system && t(device.installed_operating_system.name)}
                 </Link>
                 {/* <ExpandableMarkdown
                   source={device.description}
@@ -100,20 +105,21 @@ class DeviceDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {/* {device.sophistication && t(device.sophistication)} */}
-                {device.installed_software.map((data, key) => (
+                {device.installed_software
+                && device.installed_software.map((software, key) => (
                   <div key={key}>
-                  <div className="clearfix" />
-                  <Link
-                    key={key}
-                    component="button"
-                    variant="body2"
-                    className={classes.link}
-                    onClick={() => {
-                      console.info("I'm a button2.");
-                    }}
-                  >
-                    <Launch fontSize="inherit" style={{ marginRight: '5.5px' }}/>{t(data.name)}
-                  </Link>
+                    <div className="clearfix" />
+                    <Link
+                      key={key}
+                      component="button"
+                      variant="body2"
+                      className={classes.link}
+                      onClick={() => (
+                        software.id && history.push(`/dashboard/assets/software/${software.id}`)
+                      )}
+                    >
+                      <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{software.name && t(software.name)}
+                    </Link>
                   </div>
                 ))}
               </div>
@@ -149,8 +155,10 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {device.goals && device.goals.map((goal, key) => (
-                  <Chip key={key} classes={{ root: classes.chip }} label={t(goal)} color="primary" />
+                {device.ports.length !== 0 && device.ports.map((port, key) => (
+                  port.protocols && port.protocols.map((protocol) => (
+                    <Chip key={key} classes={{ root: classes.chip }} label={`${port.port_number && t(port.port_number)} ${protocol && t(protocol)}`} color="primary" />
+                  ))
                 ))}
               </div>
               <div>
@@ -189,11 +197,11 @@ class DeviceDetailsComponent extends Component {
                   component="button"
                   variant="body2"
                   className={classes.link}
-                  onClick={() => {
-                    console.info("I'm a button.");
-                  }}
+                  onClick={() => (
+                    device.connected_to_network.id && history.push(`/dashboard/assets/network/${device.connected_to_network.id}`)
+                  )}
                 >
-                  <Launch fontSize="inherit" style={{ marginRight: '5.5px' }}/>{t(device.connected_to_network.name)}
+                  <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{device.connected_to_network.name && t(device.connected_to_network.name)}
                 </Link>
               </div>
               <div>
@@ -228,7 +236,7 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Switch defaultChecked={device.is_virtual} size="small" />
+                <Switch color="primary" defaultChecked={device.is_virtual && device.is_virtual} size="small" />
               </div>
               <div>
                 <Typography
@@ -240,12 +248,12 @@ class DeviceDetailsComponent extends Component {
                   {t('Publicly Accessible')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('FQDN')} >
+                  <Tooltip title={t('Publicly Accessible')} >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Switch defaultChecked={device.is_publicly_accessible} size="small" />
+                <Switch color="primary" defaultChecked={device.is_publicly_accessible && device.is_publicly_accessible} size="small" />
               </div>
               <div>
                 <Typography
@@ -279,7 +287,13 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('192.168.43.129')}
+                {device.ipv4_address
+                  && device.ipv4_address.map((ipv4Address) => (
+                    <>
+                      <div className="clearfix" />
+                      {ipv4Address.ip_address_value && t(ipv4Address.ip_address_value)}
+                    </>
+                  ))}
               </div>
               <div>
                 <Typography
@@ -296,7 +310,13 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('192.168.43.129')}
+                {device.ipv6_address
+                  && device.ipv6_address.map((ipv6Address) => (
+                    <>
+                      <div className="clearfix" />
+                      {ipv6Address.ip_address_value && t(ipv6Address.ip_address_value)}
+                    </>
+                  ))}
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -315,23 +335,20 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {device.installed_hardware.map((data, key) => (
+                {device.installed_hardware && device.installed_hardware.map((data, key) => (
                   <div key={key}>
-                  <div className="clearfix" />
-                  <a href={data.uri}>
-                  <Link
-                    to={data.uri}
-                    key={key}
-                    component="button"
-                    variant="body2"
-                    className={classes.link}
-                    onClick={() => {
-                      console.info("I'm a button2.");
-                    }}
-                  >
-                    <Launch fontSize="inherit" style={{ marginRight: '5.5px' }}/>{t(data.name)}
-                  </Link>
-                  </a>
+                    <div className="clearfix" />
+                      <Link
+                        key={key}
+                        component="button"
+                        variant="body2"
+                        className={classes.link}
+                        onClick={() => (
+                          data.id && history.push(`/dashboard/assets/devices/${data.id}`)
+                        )}
+                      >
+                        <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{data.name && t(data.name)}
+                      </Link>
                   </div>
                 ))}
               </div>
@@ -351,9 +368,15 @@ class DeviceDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <div className='scroll-bg'>
-                    <div className='scroll-div'>
-                      <div className='scroll-object'>
-                        {device.locations.map((index) => [index.description]).join()}
+                  <div className='scroll-div'>
+                    <div className='scroll-object'>
+                      {device.locations.map((location, key) => (
+                        <div key={key}>
+                          {`${location.street_address && t(location.street_address)}, `}
+                          {`${location.city && t(location.city)}, `}
+                          {`${location.country && t(location.country)}, ${location.postal_code && t(location.postal_code)}`}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -373,7 +396,7 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t(device.model)}
+                {device.model && t(device.model)}
               </div>
               <div style={{ marginBottom: '15px' }}>
                 <Typography
@@ -390,10 +413,10 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {device.mac_address.map((data, key) => (
+                {device.mac_address && device.mac_address.map((macAddress, key) => (
                   <div key={key}>
-                  <div className="clearfix" />
-                    {t(data)}
+                    <div className="clearfix" />
+                    {macAddress && t(macAddress)}
                   </div>
                 ))}
               </div>
@@ -438,7 +461,7 @@ class DeviceDetailsComponent extends Component {
                     console.info("I'm a button.");
                   }}
                 >
-                  <Launch fontSize="inherit" style={{ marginRight: '5.5px' }}/>{t('Lorem Ipsum Lorem Ipsum')}
+                  <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{device.uri && t(device.uri)}
                 </Link>
                 {/* {device.primary_motivation
                   && t(device.primary_motivation)} */}
@@ -476,7 +499,7 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Switch defaultChecked={device.is_scanned} size="small" />
+                <Switch color="primary" defaultChecked={device.is_scanned && device.is_scanned} size="small" />
               </div>
               <div>
                 <Typography
@@ -514,32 +537,6 @@ class DeviceDetailsComponent extends Component {
                 {device.default_gateway
                   && t(device.default_gateway)}
               </div>
-              {/* <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Secondary motivations')}
-              </Typography>
-              {device.secondary_motivations && (
-                <List>
-                  {device.secondary_motivations.map(
-                    (secondaryMotivation) => (
-                      <ListItem
-                        key={secondaryMotivation}
-                        dense={true}
-                        divider={true}
-                      >
-                        <ListItemIcon>
-                          <ArmFlexOutline />
-                        </ListItemIcon>
-                        <ListItemText primary={secondaryMotivation} />
-                      </ListItem>
-                    ),
-                  )}
-                </List>
-              )} */}
             </Grid>
           </Grid>
         </Paper>
@@ -561,18 +558,38 @@ const DeviceDetails = createFragmentContainer(
     device: graphql`
       fragment DeviceDetails_device on ComputingDeviceAsset {
         installed_software {
+          id
           name
         }
         connected_to_network {
+          id
           name
         }
         installed_operating_system {
+          id
           name
         }
+        # ipv4_address  {
+        #   ip_address_value
+        # }
+        # ipv6_address  {
+        #   ip_address_value
+        # }
         locations {
           city
           country
           description
+        }
+        ports {
+          protocols
+          port_number
+        }
+        locations{
+          city
+          country
+          postal_code
+          street_address
+          administrative_area
         }
         uri
         model
@@ -590,6 +607,7 @@ const DeviceDetails = createFragmentContainer(
         is_virtual
         is_publicly_accessible
         installed_hardware {
+          id
           name
           uri
         }

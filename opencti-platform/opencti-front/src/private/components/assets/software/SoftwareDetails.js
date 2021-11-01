@@ -53,7 +53,7 @@ class SoftwareDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t(software.software_identifier)}
+                {software.software_identifier && t(software.software_identifier)}
               </div>
               <div>
                 <Typography
@@ -70,7 +70,7 @@ class SoftwareDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t(software.license_key)}
+                {software.license_key && t(software.license_key)}
               </div>
               <div>
                 <Typography
@@ -88,7 +88,7 @@ class SoftwareDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t(software.cpe_identifier)}
+                {software.cpe_identifier && t(software.cpe_identifier)}
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -107,7 +107,7 @@ class SoftwareDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t(software.patch_level)}
+                {software.patch_level && t(software.patch_level)}
               </div>
               <div>
                 <Typography
@@ -124,7 +124,7 @@ class SoftwareDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t(software.installation_id)}
+                {software.installation_id && t(software.installation_id)}
               </div>
               <div>
                 <Typography
@@ -141,7 +141,7 @@ class SoftwareDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t(software.implementation_point)}
+                {software.implementation_point && t(software.implementation_point)}
               </div>
             </Grid>
           </Grid>
@@ -173,6 +173,7 @@ SoftwareDetailsComponent.propTypes = {
 const SoftwareDetails = createFragmentContainer(SoftwareDetailsComponent, {
   software: graphql`
     fragment SoftwareDetails_software on SoftwareAsset {
+      id
       software_identifier
       license_key
       cpe_identifier

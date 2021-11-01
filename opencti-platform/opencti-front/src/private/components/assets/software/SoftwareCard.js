@@ -26,6 +26,8 @@ import {
   addBookmark,
   deleteBookMark,
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
+import ItemIcon from '../../../../components/ItemIcon';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   card: {
@@ -168,7 +170,8 @@ class SoftwareCardComponent extends Component {
                   {t('Type')}
                 </Typography>
                 <div className="clearfix" />
-                <AppleIcon size='small' />
+                {/* <AppleIcon size='small' /> */}
+                {node.asset_type && <ItemIcon type={node.asset_type} />}
               </div>
               <div style={{ marginRight: 'auto', marginLeft: '12px' }}>
                 <Typography
@@ -181,7 +184,7 @@ class SoftwareCardComponent extends Component {
                 <div className="clearfix" />
                 <Typography variant="h2">
                     {/* {t('KK-HWELL-011')} */}
-                    {t(node.name)}
+                    {node.name && t(node.name)}
                 </Typography>
               </div>
               <div>
@@ -203,7 +206,7 @@ class SoftwareCardComponent extends Component {
                 </Typography>
                 <Typography>
                     {/* {t('KK-HWELL-011')} */}
-                    {t(node.asset_id)}
+                    {node.asset_id && truncate(t(node.asset_id), 25)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -216,7 +219,7 @@ class SoftwareCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('Lorem Ipsum')} */}
-                  {t(node.version)}
+                  {node.version && t(node.version)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -229,7 +232,7 @@ class SoftwareCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('Lorem Ipsum')} */}
-                  {t(node.cpe_identifier)}
+                  {node.cpe_identifier && truncate(t(node.cpe_identifier), 25)}
                 </Typography>
               </Grid>
               <Grid xs={6} item={true} className={classes.body}>
@@ -240,7 +243,7 @@ class SoftwareCardComponent extends Component {
                   {t('Vendor')}
                 </Typography>
                 <Typography>
-                    {t(node.vendor_name)}
+                    {node.vendor_name && t(node.vendor_name)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -253,7 +256,7 @@ class SoftwareCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('Lorem Ipsum')} */}
-                  {t(node.patch_level)}
+                  {node.patch_level && t(node.patch_level)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -266,7 +269,7 @@ class SoftwareCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('Lorem Ipsum')} */}
-                  {t(node.software_identifier)}
+                  {node.software_identifier && t(node.software_identifier)}
                 </Typography>
               </Grid>
             </Grid>

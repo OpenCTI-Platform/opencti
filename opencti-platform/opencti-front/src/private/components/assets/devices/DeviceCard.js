@@ -28,6 +28,8 @@ import {
   addBookmark,
   deleteBookMark,
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
+import ItemIcon from '../../../../components/ItemIcon';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   card: {
@@ -167,7 +169,8 @@ class DeviceCardComponent extends Component {
                 >
                   {t('Type')}
                 </Typography>
-                <ComputerIcon size='small' />
+                {node.asset_type
+                && <ItemIcon type={node.asset_type}/>}
               </div>
               <div style={{ marginRight: 'auto', marginLeft: '12px' }}>
                 <Typography
@@ -179,7 +182,7 @@ class DeviceCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('KK-HWELL-011')} */}
-                  {t(node.name)}
+                  {node.name && t(node.name)}
                 </Typography>
               </div>
               <div>
@@ -200,8 +203,8 @@ class DeviceCardComponent extends Component {
                   {t('Asset ID')}
                 </Typography>
                 <Typography>
-                  {t('KK-HWELL-011')}
-                  {t(node.asset_id)}
+                  {/* {t('KK-HWELL-011')} */}
+                  {node.asset_id && truncate(t(node.asset_id), 25)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -214,7 +217,7 @@ class DeviceCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('Lorem Ipsum')} */}
-                  {t(node.fqdn)}
+                  {node.fqdn && truncate(t(node.fqdn), 25)}
                 </Typography>
               </Grid>
               <Grid xs={6} item={true} className={classes.body}>
@@ -225,7 +228,13 @@ class DeviceCardComponent extends Component {
                   {t('IP Address')}
                 </Typography>
                 <Typography>
-                  {t('00:50:56:A3:59:4D')}
+                  {node.ipv4_address
+                    && node.ipv4_address.map((ipv4Address) => (
+                      <>
+                        <div className="clearfix" />
+                        {ipv4Address.ip_address_value && t(ipv4Address.ip_address_value)}
+                      </>
+                    ))}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -238,7 +247,7 @@ class DeviceCardComponent extends Component {
                 </Typography>
                 <Typography>
                     {/* {t('Lorem Ipsum')} */}
-                    {t(node.network_id)}
+                    {node.network_id && t(node.network_id)}
                 </Typography>
               </Grid>
               <Grid>
@@ -246,6 +255,7 @@ class DeviceCardComponent extends Component {
                   <Typography
                    variant="h3"
                    color="textSecondary"
+                   style={{ marginTop: '-15px' }}
                    gutterBottom ={true}>
                     {t('Operating System')}
                   </Typography>
@@ -253,7 +263,8 @@ class DeviceCardComponent extends Component {
  {/* <Avatar style={{ float: 'left' }} className={classes.avatar}>{node.name.charAt(0)}</Avatar> */}
                     <Typography>
                       {/* {t('Microsoft Windows Server 2016')} */}
-                      {t(node.installed_operating_system.name)}
+                      {node.installed_operating_system.name
+                      && t(node.installed_operating_system.name)}
                     </Typography>
                   </div>
                 </div>
@@ -299,6 +310,9 @@ const DeviceCardFragment = createFragmentContainer(
         installed_operating_system {
           name
         }
+        # ipv4_address{
+        #   ip_address_value
+        # }
         asset_type
         fqdn
         labels
