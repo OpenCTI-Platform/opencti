@@ -203,6 +203,7 @@ class Scans extends Component {
       searchTerm: R.propOr("", "searchTerm", params),
       view: R.propOr("lines", "view", params),
       filters: R.propOr({}, "filters", params),
+      client_ID: localStorage.getItem('client_id'),
       openExports: false,
       numberOfElements: { number: 0, symbol: "" },
       selectedElements: null,
@@ -235,7 +236,7 @@ class Scans extends Component {
 
 
   componentDidMount() {
-    fetchAllScans("30f033d4-e90d-44f9-8ce0-36597ff08c93")
+    fetchAllScans(this.state.client_ID)
       .then((response) => {
         const scans = response.data;
 
@@ -248,13 +249,13 @@ class Scans extends Component {
         console.log(error);
       });
 
-    fetchAllAnalysis("30f033d4-e90d-44f9-8ce0-36597ff08c93")
+    fetchAllAnalysis(this.state.client_ID)
       .then((response) => {
         let analysises = response.data;
         let scatterPlotData = [];
 
         analysises.forEach(analysis =>{
-         getAnalysisSummary(analysis.id,"30f033d4-e90d-44f9-8ce0-36597ff08c93")
+         getAnalysisSummary(analysis.id,this.state.client_ID)
           .then((response) => {
             
             let scatterPlot = [];
@@ -296,17 +297,6 @@ class Scans extends Component {
       loadDialog,
       dialogParams,
     } = this.state;
-
-
-    console.log(scatterPlotData);
-    const data = [
-      { x: 100, y: 200 },
-      { x: 120, y: 100 },
-      { x: 170, y: 300 },
-      { x: 140, y: 250 },
-      { x: 150, y: 400 },
-      { x: 110, y: 280 },
-    ];
 
     const handleClick = (event) => {
       this.setState({ vulnerabilityAnchorEl: event.currentTarget });
@@ -428,7 +418,7 @@ class Scans extends Component {
     };
 
     const refreshAnalysis = () => {
-      fetchAllAnalysis("30f033d4-e90d-44f9-8ce0-36597ff08c93")
+      fetchAllAnalysis(this.state.client_ID)
         .then((response) => {
           let analysises = response.data;
           let scatterPlotData = [];
@@ -436,7 +426,7 @@ class Scans extends Component {
 
 
           analysises.forEach(analysis =>{
-         getAnalysisSummary(analysis.id,"30f033d4-e90d-44f9-8ce0-36597ff08c93")
+         getAnalysisSummary(analysis.id,this.state.client_ID)
           .then((response) => {
             
             let scatterPlot = [];
@@ -705,7 +695,7 @@ class Scans extends Component {
                                 handleLinkClink('/dashboard/vsac/scans/exploreresults',
                                 { analysis: analysis,
                                   client:
-                                    "30f033d4-e90d-44f9-8ce0-36597ff08c93",
+                                    this.state.client_ID,
                                   scan: getCurrentScan(analysis.scan.id, scans)
                                 })}
                               
@@ -745,7 +735,7 @@ class Scans extends Component {
                                   modal: "Generate Report",
                                   id: analysis.id,
                                   client:
-                                    "30f033d4-e90d-44f9-8ce0-36597ff08c93",
+                                    this.state.client_ID,
                                   scanName: analysis.scan.scan_name,
                                   success: false,
                                 })
@@ -762,7 +752,7 @@ class Scans extends Component {
                                   modal: "Export Data",
                                   id: analysis.id,
                                   client:
-                                    "30f033d4-e90d-44f9-8ce0-36597ff08c93",
+                                    this.state.client_ID,
                                   isLoading: false,
                                   success: false,
                                 })
@@ -779,7 +769,7 @@ class Scans extends Component {
                                   modal: "New Analysis",
                                   id: analysis.id,
                                   client:
-                                    "30f033d4-e90d-44f9-8ce0-36597ff08c93",
+                                    this.state.client_ID,
                                 })
                               }
                             >
@@ -794,7 +784,7 @@ class Scans extends Component {
                                   modal: "Delete Data",
                                   id: analysis.id,
                                   client:
-                                    "30f033d4-e90d-44f9-8ce0-36597ff08c93",
+                                    this.state.client_ID,
                                 })
                               }
                             >
@@ -810,7 +800,7 @@ class Scans extends Component {
                       subheader={moment(analysis.completed_date).fromNow()}
                     />
                     <CardContent>
-                      {data.length > 0 && (
+                      {scatterPlotData && (
                         <ResponsiveContainer width="100%" aspect={1}>
                           <ScatterChart
                             width={200}
@@ -885,7 +875,7 @@ class Scans extends Component {
                         onClick={() => 
                           handleLinkClink('/dashboard/vsac/scans/exploreresults',
                           { analysis: analysis,
-                            client: "30f033d4-e90d-44f9-8ce0-36597ff08c93",
+                            client: this.state.client_ID,
                             scan: getCurrentScan(analysis.scan.id, scans)
                           })}
                       >
