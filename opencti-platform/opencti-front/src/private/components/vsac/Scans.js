@@ -893,7 +893,7 @@ class Scans extends Component {
                 elevation={2}
                 style={{ height: 350 }}
               >
-                No analysises
+                No analyses
               </Paper>
             </Grid>
           )}
