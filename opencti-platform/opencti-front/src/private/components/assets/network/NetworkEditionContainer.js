@@ -33,8 +33,8 @@ const styles = (theme) => ({
     margin: 0,
   },
   header: {
-    margin: '-25px',
-    padding: '24px',
+    margin: '-25px -24px 20px -24px',
+    padding: '14px 24px 24px 24px',
     height: '64px',
     backgroundColor: '#1F2842',
   },
@@ -187,7 +187,7 @@ class NetworkEditionContainer extends Component {
       R.assoc('name', network.name),
       R.assoc('asset_tag', network.asset_tag),
       R.assoc('asset_type', network.asset_type),
-      R.assoc('location', network.locations.map((index) => [index.description]).join('\n')),
+      R.assoc('location', network.locations && network.locations.map((index) => [index.description]).join('\n')),
       R.assoc('version', network.version),
       R.assoc('vendor_name', network.vendor_name),
       R.assoc('serial_number', network.serial_number),
@@ -317,9 +317,9 @@ class NetworkEditionContainer extends Component {
                 style={{ marginTop: 25 }}
               >
                 <Grid item={true} xs={6}>
-                  <StixCoreObjectExternalReferences
+                  {/* <StixCoreObjectExternalReferences
                     stixCoreObjectId={network.id}
-                  />
+                  /> */}
                 </Grid>
                 <Grid item={true} xs={6}>
                   <StixCoreObjectLatestHistory stixCoreObjectId={network.id} />

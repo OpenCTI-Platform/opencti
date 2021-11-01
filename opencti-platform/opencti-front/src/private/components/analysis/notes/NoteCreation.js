@@ -19,6 +19,8 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
+import { commitMutation as CM, createFragmentContainer } from 'react-relay';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -134,29 +136,44 @@ class NoteCreation extends Component {
       },
       values,
     );
-    commitMutation({
+    CM(environmentDarkLight, {
       mutation: noteCreationMutation,
       variables: {
         input: adaptedValues,
       },
-      updater: (store) => {
-        const payload = store.getRootField('noteAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          this.props.paginationOptions,
-          newEdge,
-        );
-      },
       setSubmitting,
-      onCompleted: () => {
+      onCompleted: (response) => {
+        console.log('NoteCreationDarkLightMutationresponse', response);
         setSubmitting(false);
         resetForm();
         this.handleClose();
       },
+      onError: (err) => console.log('NoteCreationDarkLightMutationError', err),
     });
+    // commitMutation({
+    //   mutation: noteCreationMutation,
+    //   variables: {
+    //     input: adaptedValues,
+    //   },
+    //   updater: (store) => {
+    //     const payload = store.getRootField('noteAdd');
+    //     const newEdge = payload.setLinkedRecord(payload, 'node');
+    // Creation of the pagination container.
+    //     const container = store.getRoot();
+    //     sharedUpdater(
+    //       store,
+    //       container.getDataID(),
+    //       this.props.paginationOptions,
+    //       newEdge,
+    //     );
+    //   },
+    //   setSubmitting,
+    //   onCompleted: () => {
+    //     setSubmitting(false);
+    //     resetForm();
+    //     this.handleClose();
+    //   },
+    // });
   }
 
   onResetClassic() {
@@ -376,7 +393,7 @@ class NoteCreation extends Component {
                     <Grid style={{ marginLeft: 'auto' }} item={true} xs={5}>
                       <div className={classes.buttons}>
                         <Button
-                          variant="contained"
+                          variant="outlined"
                           onClick={handleReset}
                           disabled={isSubmitting}
                           classes={{ root: classes.button }}

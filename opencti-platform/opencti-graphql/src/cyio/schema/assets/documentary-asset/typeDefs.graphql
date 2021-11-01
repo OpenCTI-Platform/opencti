@@ -25,8 +25,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime!
-    modified: DateTime!
+    created: DateTime
+    modified: DateTime
     labels: [String]
     # Asset
     asset_id: String
@@ -36,7 +36,7 @@
     external_references( first: Int ): CyioExternalReferenceConnection
     notes( first: Int ): CyioNoteConnection
     # DocumentaryAsset
-    release_date: DateTime!
+    release_date: DateTime
   }
 
   # Pagination Types
@@ -83,8 +83,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime!
-    modified: DateTime!
+    created: DateTime
+    modified: DateTime
     labels: [String]
     external_references( first: Int ): CyioExternalReferenceConnection
     notes( first: Int ): CyioNoteConnection
@@ -94,7 +94,7 @@
     locations: [AssetLocation]!
     asset_id: String
     # DocumentaryAsset
-    release_date: DateTime!
+    release_date: DateTime
   }
 
   "Defines identifying information about an applicable plan."
@@ -109,8 +109,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime!
-    modified: DateTime!
+    created: DateTime
+    modified: DateTime
     labels: [String]
     external_references( first: Int ): CyioExternalReferenceConnection
     notes( first: Int ): CyioNoteConnection
@@ -120,7 +120,7 @@
     locations: [AssetLocation]!
     asset_id: String
     # DocumentaryAsset
-    release_date: DateTime!
+    release_date: DateTime
   }
 
   "Defines identifying information about an enforceable policy."
@@ -135,8 +135,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime!
-    modified: DateTime!
+    created: DateTime
+    modified: DateTime
     labels: [String]
     external_references( first: Int ): CyioExternalReferenceConnection
     notes( first: Int ): CyioNoteConnection
@@ -146,7 +146,7 @@
     locations: [AssetLocation]!
     asset_id: String
     # DocumentaryAsset
-    release_date: DateTime!
+    release_date: DateTime
   }
 
   "Defines identifying information about a list of steps or actions to take to achieve some end result."
@@ -161,8 +161,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime!
-    modified: DateTime!
+    created: DateTime
+    modified: DateTime
     labels: [String]
     external_references( first: Int ): CyioExternalReferenceConnection
     notes( first: Int ): CyioNoteConnection
@@ -172,7 +172,7 @@
     locations: [AssetLocation]!
     asset_id: String
     # DocumentaryAsset
-    release_date: DateTime!
+    release_date: DateTime
   }
 
   "Defines identifying information about any organizational or industry standard."
@@ -187,8 +187,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime!
-    modified: DateTime!
+    created: DateTime
+    modified: DateTime
     labels: [String]
     external_references( first: Int ): CyioExternalReferenceConnection
     notes( first: Int ): CyioNoteConnection
@@ -198,7 +198,7 @@
     locations: [AssetLocation]!
     asset_id: String
     # DocumentaryAsset
-    release_date: DateTime!
+    release_date: DateTime
   }
 
   "Defines identifying information about an external assessment performed on some other component, that has been validated by a third-party."
@@ -213,8 +213,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime!
-    modified: DateTime!
+    created: DateTime
+    modified: DateTime
     labels: [String]
     external_references( first: Int ): CyioExternalReferenceConnection
     notes( first: Int ): CyioNoteConnection
@@ -224,7 +224,7 @@
     locations: [AssetLocation]!
     asset_id: String
     # DocumentaryAsset
-    release_date: DateTime!
+    release_date: DateTime
   }
 
   union DocumentaryAssetKind = GuidanceAsset | PlanAsset | PolicyAsset |ProcedureAsset | StandardAsset | ValidationAsset

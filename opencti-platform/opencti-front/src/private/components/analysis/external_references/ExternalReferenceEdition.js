@@ -1,14 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+// import { createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
 import { compose, pick } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
+import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
@@ -23,9 +27,9 @@ import {
 
 const styles = (theme) => ({
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
-    padding: '20px 20px 20px 60px',
+    // backgroundColor: theme.palette.navAlt.backgroundHeader,
+    // color: theme.palette.navAlt.backgroundHeaderText,
+    padding: '15px 0 0 20px',
   },
   closeButton: {
     position: 'absolute',
@@ -39,7 +43,7 @@ const styles = (theme) => ({
     right: 20,
   },
   container: {
-    padding: '10px 20px 20px 20px',
+    padding: '0 20px 20px 20px',
   },
   appBar: {
     width: '100%',
@@ -50,6 +54,9 @@ const styles = (theme) => ({
   },
   title: {
     float: 'left',
+  },
+  buttonPopover: {
+    textTransform: 'capitalize',
   },
 });
 
@@ -119,19 +126,47 @@ class ExternalReferenceEditionContainer extends Component {
     });
   }
 
-  handleSubmitField(name, value) {
-    externalReferenceValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: externalReferenceMutationFieldPatch,
-          variables: {
-            id: this.props.externalReference.id,
-            input: { key: name, value: value || '' },
-          },
-        });
-      })
-      .catch(() => false);
+  onSubmit(values, { setSubmitting, resetForm }) {
+    console.log('asdasdasdadValues', values);
+    CM(environmentDarkLight, {
+      mutation: externalReferenceMutationFieldPatch,
+      variables: {
+        id: this.props.externalReference.id,
+        input: [
+          { key: 'source_name', value: values.source_name },
+          { key: 'external_id', value: values.external_id },
+          { key: 'url', value: values.url },
+          { key: 'description', value: values.description },
+        ],
+      },
+      setSubmitting,
+      onCompleted: (response) => {
+        setSubmitting(false);
+        resetForm();
+        console.log('ExtRefEditionDarkLightMutationresponse', response);
+        this.props.handleClose();
+      },
+      onError: (err) => console.log('ExtRefEditionDarkLightMutationError', err),
+    });
+  }
+
+  // handleSubmitField(name, value) {
+  //   externalReferenceValidation(this.props.t)
+  //     .validateAt(name, { [name]: value })
+  //     .then(() => {
+  //       commitMutation({
+  //         mutation: externalReferenceMutationFieldPatch,
+  //         variables: {
+  //           id: this.props.externalReference.id,
+  //           input: { key: name, value: value || '' },
+  //         },
+  //       });
+  //     })
+  //     .catch(() => false);
+  // }
+
+  onReset() {
+    this.props.handleClose();
   }
 
   render() {
@@ -146,40 +181,47 @@ class ExternalReferenceEditionContainer extends Component {
     return (
       <div>
         <div className={classes.header}>
-          <IconButton
+          {/* <IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
           >
             <Close fontSize="small" />
-          </IconButton>
+          </IconButton> */}
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update an external reference')}
+            {t('External Reference')}
           </Typography>
-          <SubscriptionAvatars context={editContext} />
+          {/* <SubscriptionAvatars context={editContext} /> */}
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
           <Formik
-            enableReinitialize={true}
+            // enableReinitialize={true}
             initialValues={initialValues}
             validationSchema={externalReferenceValidation(t)}
+            onSubmit={this.onSubmit.bind(this)}
+            onReset={this.onReset.bind(this)}
           >
-            {() => (
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+            }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
                   name="source_name"
                   label={t('Source name')}
                   fullWidth={true}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="source_name"
-                    />
-                  }
+                  // onFocus={this.handleChangeFocus.bind(this)}
+                  // onSubmit={this.handleSubmitField.bind(this)}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //     context={editContext}
+                  //     fieldName="source_name"
+                  //   />
+                  // }
                 />
                 <Field
                   component={TextField}
@@ -187,14 +229,14 @@ class ExternalReferenceEditionContainer extends Component {
                   label={t('External ID')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="external_id"
-                    />
-                  }
+                  // onFocus={this.handleChangeFocus.bind(this)}
+                  // onSubmit={this.handleSubmitField.bind(this)}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //     context={editContext}
+                  //     fieldName="external_id"
+                  //   />
+                  // }
                 />
                 <Field
                   component={TextField}
@@ -202,29 +244,54 @@ class ExternalReferenceEditionContainer extends Component {
                   label={t('URL')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus context={editContext} fieldName="url" />
-                  }
+                  // onFocus={this.handleChangeFocus.bind(this)}
+                  // onSubmit={this.handleSubmitField.bind(this)}
+                  // helperText={
+                  //   <SubscriptionFocus context={editContext} fieldName="url" />
+                  // }
                 />
                 <Field
                   component={MarkDownField}
                   name="description"
-                  label={t('Description')}
+                  // label={t('Description')}
                   fullWidth={true}
                   multiline={true}
                   rows={4}
                   style={{ marginTop: 20 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="description"
-                    />
-                  }
+                  // onFocus={this.handleChangeFocus.bind(this)}
+                  // onSubmit={this.handleSubmitField.bind(this)}
+                  // helperText={
+                  //   <SubscriptionFocus
+                  //     context={editContext}
+                  //     fieldName="description"
+                  //   />
+                  // }
                 />
+                <div style={{
+                  float: 'left',
+                  margin: '20px 0 30px 0',
+                }}>
+                  <Button
+                    variant="outlined"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    style={{ marginRight: '15px' }}
+                    size="small"
+                    classes={{ root: classes.buttonPopover }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    size="small"
+                    classes={{ root: classes.buttonPopover }}
+                  >
+                    {t('Update')}
+                  </Button>
+                </div>
               </Form>
             )}
           </Formik>

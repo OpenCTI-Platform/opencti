@@ -13,7 +13,6 @@ COPY ./package.json ./yarn.lock ./
 RUN yarn install
 COPY . /opt/opencti-build/opencti-graphql
 RUN yarn run webpack --mode production
-RUN yarn schema-compile
 
 
 # FROM base AS front-builder

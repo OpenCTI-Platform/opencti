@@ -11,6 +11,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
+import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
 import EditIcon from '@material-ui/icons/Edit';
@@ -49,6 +50,13 @@ const styles = (theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
+  },
+  buttonPopover: {
+    textTransform: 'capitalize',
+  },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
   },
 });
 
@@ -173,7 +181,7 @@ class DeviceDeletion extends Component {
     console.log('DarkLightID', Boolean(isAllselected));
     return (
       <div className={classes.container}>
-        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+        {/* <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}> */}
           <Tooltip title={t('Delete')}>
             <Button
               variant="contained"
@@ -186,22 +194,32 @@ class DeviceDeletion extends Component {
               <DeleteIcon fontSize="inherit" />
             </Button>
           </Tooltip>
-        </Security>
+        {/* </Security> */}
         <Dialog
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseDelete.bind(this)}
         >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this software?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
+            <DialogContent>
+              <Typography style={{
+                fontSize: '18px',
+                lineHeight: '24px',
+                color: 'white',
+              }} >
+                {t('Are you sure you’d like to delete this Device?')}
+              </Typography>
+              <DialogContentText>
+                {t('This action can’t be undone')}
+              </DialogContentText>
+            </DialogContent>
+          <DialogActions className={ classes.dialogActions }>
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
+              classes={{ root: classes.buttonPopover }}
+              variant="outlined"
+              size="small"
             >
               {t('Cancel')}
             </Button>
@@ -209,6 +227,9 @@ class DeviceDeletion extends Component {
               onClick={this.submitDelete.bind(this)}
               color="primary"
               disabled={this.state.deleting}
+              classes={{ root: classes.buttonPopover }}
+              variant="contained"
+              size="small"
             >
               {t('Delete')}
             </Button>

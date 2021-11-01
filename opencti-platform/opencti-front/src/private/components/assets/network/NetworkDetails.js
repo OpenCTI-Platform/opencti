@@ -74,7 +74,7 @@ class NetworkDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t(network.network_name)}
+                {network.network_name && t(network.network_name)}
               </div>
               <div>
                 <Typography
@@ -127,7 +127,7 @@ class NetworkDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t(network.network_id)}
+                {network.network_id && t(network.network_id)}
               </div>
               <div>
                 <Typography
@@ -161,7 +161,7 @@ class NetworkDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t(network.implementation_point)}
+                {network.implementation_point && t(network.implementation_point)}
               </div>
             </Grid>
           </Grid>
@@ -204,7 +204,7 @@ const NetworkDetails = createFragmentContainer(
       fragment NetworkDetails_network on NetworkAsset {
         network_name
         network_id
-        implementation_point
+        # implementation_point
         network_address_range {
           ending_ip_address{
             ... on IpV4Address {

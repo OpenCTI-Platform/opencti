@@ -16,9 +16,22 @@ import {
   FeedbackOutlined,
   LanguageOutlined,
   WifiTetheringOutlined,
+  Scanner,
   Visibility,
   PlaceOutlined,
   StorageOutlined,
+  PersonalVideo,
+  SettingsVoice,
+  Kitchen,
+  Whatshot,
+  Work,
+  Phone,
+  Devices,
+  PhoneLocked,
+  ViewColumn,
+  Wifi,
+  Storage,
+  Router,
 } from '@material-ui/icons';
 import {
   Biohazard,
@@ -65,6 +78,32 @@ const iconSelector = (type, variant, fontSize, color) => {
           role="img"
         />
       );
+    case 'physical_device':
+      return <Devices style={style} fontSize={fontSize} role="img" />;
+    case 'router':
+      return <Router style={style} fontSize={fontSize} role="img" />;
+    case 'firewall':
+      return <Whatshot style={style} fontSize={fontSize} role="img" />;
+    case 'switch':
+      return <Scanner style={style} fontSize={fontSize} role="img" />;
+    case 'storage_array':
+      return <Storage style={style} fontSize={fontSize} role="img" />;
+    case 'appliance':
+      return <Kitchen style={style} fontSize={fontSize} role="img" />;
+    case 'network_device':
+      return <Wifi style={style} fontSize={fontSize} role="img" />;
+    case 'server':
+      return <ViewColumn style={style} fontSize={fontSize} role="img" />;
+    case 'workstation':
+      return <Work style={style} fontSize={fontSize} role="img" />;
+    case 'voip_handset':
+      return <Phone style={style} fontSize={fontSize} role="img" />;
+    case 'pbx':
+      return <PhoneLocked style={style} fontSize={fontSize} role="img" />;
+    case 'compute_device':
+      return <PersonalVideo style={style} fontSize={fontSize} role="img" />;
+    case 'voip_router':
+      return <SettingsVoice style={style} fontSize={fontSize} role="img" />;
     case 'External-Reference':
       return <LanguageOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Label':

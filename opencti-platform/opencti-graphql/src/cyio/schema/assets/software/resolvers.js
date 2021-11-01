@@ -18,32 +18,54 @@ const softwareResolvers = {
         context.dbName, 
         sparqlQuery,
         singularizeSchema,
-        args.first,       // limit
-        args.offset,      // offset
+        // args.first,       // limit
+        // args.offset,      // offset
         args.filter,      // filter
       );
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
-        for (let asset of response) {
-          let edge = {
-            cursor: asset.iri,
-            node: softwareAssetReducer( asset ),
+        let limit = (args.first === undefined ? response.length : args.first) ;
+        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let assetList ;
+        if (args.orderedBy !== undefined ) {
+          assetList = response.sort(compareValues(args.orderedBy, args.orderMode ));
+        } else {
+          assetList = response;
+        }
+
+        for (let asset of assetList) {
+          // skip down past the offset
+          if ( offset ) {
+            offset--
+            continue
+          }
+
+          if ( limit ) {
+            let edge = {
+              cursor: asset.iri,
+              node: reducer( asset ),
+            }
+            if (edge.node.name === undefined) {
+              console.log(`[DATA-ERROR]required field 'name' missing ${edge}`)
+            }
+            edges.push( edge )
+            limit-- ;
           }
           edges.push( edge )
         }
         return {
           pageInfo: {
-            startCursor: response[0].iri,
-            endCursor: response[response.length -1 ].iri,
-            hasNextPage: false,
-            hasPreviousPage: false,
-            globalCount: response.length,
+            startCursor: assetList[0].iri,
+            endCursor: assetList[assetList.length -1 ].iri,
+            hasNextPage: (args.first > assetList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
+            globalCount: assetList.length,
           },
           edges: edges,
         }
       } else {
-        return [];
+        return ;
       }
     },
     softwareAsset: async ( _, args, context ) => {

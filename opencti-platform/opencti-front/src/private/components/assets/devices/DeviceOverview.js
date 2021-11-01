@@ -102,28 +102,19 @@ const DeviceOverview = createFragmentContainer(
   DeviceOverviewComponent,
   {
     device: graphql`
-      fragment DeviceOverview_device on ThreatActor {
+      fragment DeviceOverview_device on ComputingDeviceAsset {
         id
-        name
+        asset_id
+        asset_type
+        asset_tag
         description
-        created
-        modified
-        objectMarking {
-          edges {
-            node {
-              id
-              definition
-              x_opencti_color
-            }
-          }
-        }
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
+        version
+        vendor_name
+        serial_number
+        release_date
+        # responsible_parties
+        operational_status
+        labels
       }
     `,
   },

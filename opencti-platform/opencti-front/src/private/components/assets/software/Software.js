@@ -48,10 +48,15 @@ class SoftwareComponent extends Component {
   }
 
   render() {
-    const { classes, software, history } = this.props;
+    const {
+      classes,
+      software,
+      history,
+      location,
+    } = this.props;
     return (
       <>
-        {!this.state.displayEdit ? (
+        {!this.state.displayEdit && !location.openEdit ? (
           <div className={classes.container}>
             <StixDomainObjectAssetHeader
               stixDomainObject={software}
@@ -73,24 +78,6 @@ class SoftwareComponent extends Component {
                 <SoftwareDetails software={software} />
               </Grid>
             </Grid>
-            {/* <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
-            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-              stixObjectOrStixRelationshipId={software.id}
-          stixObjectOrStixRelationshipLink={`/dashboard/assets/software/${software.id}/knowledge`}
-            />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <StixCoreObjectOrStixCoreRelationshipLastReports
-              stixCoreObjectOrStixCoreRelationshipId={software.id}
-            />
-          </Grid>
-        </Grid> */}
             <Grid
               container={true}
               spacing={3}
@@ -98,7 +85,7 @@ class SoftwareComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                <StixCoreObjectExternalReferences stixCoreObjectId={software.id} />
+                {/* <StixCoreObjectExternalReferences stixCoreObjectId={software.id} /> */}
               </Grid>
               <Grid item={true} xs={6}>
                 <StixCoreObjectLatestHistory stixCoreObjectId={software.id} />
@@ -112,13 +99,13 @@ class SoftwareComponent extends Component {
         </Security> */}
           </div>
         ) : (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <SoftwareEdition
-              open={this.state.openEdit}
-              softwareId={software.id}
-              history={history}
-            />
-          </Security>
+          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <SoftwareEdition
+            open={this.state.openEdit}
+            softwareId={software.id}
+            history={history}
+          />
+          // </Security>
         )}
       </>
     );

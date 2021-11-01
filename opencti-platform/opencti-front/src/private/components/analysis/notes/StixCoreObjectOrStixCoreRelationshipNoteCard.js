@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr, take } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
+// import { createFragmentContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
@@ -25,6 +25,8 @@ import Slide from '@material-ui/core/Slide';
 import IconButton from '@material-ui/core/IconButton';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -38,7 +40,7 @@ const styles = (theme) => ({
     width: '100%',
     height: '100%',
     borderRadius: 0,
-    padding: '24px 24px 0 24px',
+    padding: '24px 24px 12px 24px',
     position: 'relative',
   },
   avatar: {
@@ -115,28 +117,42 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
   }
 
   removeNote(noteId) {
-    commitMutation({
+    CM(environmentDarkLight, {
       mutation: noteMutationRelationDelete,
       variables: {
         id: noteId,
         toId: this.props.stixCoreObjectOrStixCoreRelationshipId,
         relationship_type: 'object',
       },
-      updater: (store) => {
-        const entity = store.get(
-          this.props.stixCoreObjectOrStixCoreRelationshipId,
-        );
-        const conn = ConnectionHandler.getConnection(
-          entity,
-          'Pagination_notes',
-        );
-        ConnectionHandler.deleteNode(conn, noteId);
-      },
-      onCompleted: () => {
+      onCompleted: (response) => {
         this.setState({ removing: false });
         this.handleCloseDialog();
+        console.log('NoteRemoveDarkLightMutationresponse', response);
       },
+      onError: (err) => console.log('NoteRemoveDarkLightMutationError', err),
     });
+    // commitMutation({
+    //   mutation: noteMutationRelationDelete,
+    //   variables: {
+    //     id: noteId,
+    //     toId: this.props.stixCoreObjectOrStixCoreRelationshipId,
+    //     relationship_type: 'object',
+    //   },
+    //   updater: (store) => {
+    //     const entity = store.get(
+    //       this.props.stixCoreObjectOrStixCoreRelationshipId,
+    //     );
+    //     const conn = ConnectionHandler.getConnection(
+    //       entity,
+    //       'Pagination_notes',
+    //     );
+    //     ConnectionHandler.deleteNode(conn, noteId);
+    //   },
+    //   onCompleted: () => {
+    //     this.setState({ removing: false });
+    //     this.handleCloseDialog();
+    //   },
+    // });
   }
 
   render() {
@@ -148,6 +164,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
       theme,
       stixCoreObjectOrStixCoreRelationshipId,
     } = this.props;
+    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     let authorName = null;
     let authorLink = null;
     if (node.createdBy) {
@@ -159,7 +176,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
       <Card classes={{ root: classes.card }} raised={false}>
         <CardHeader
           style={{
-            padding: '10px 10px 0 15px',
+            padding: '0px 10px 0 15px',
             // borderBottom: `1px solid ${theme.palette.divider}`,
           }}
           action={
@@ -176,7 +193,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
                     style={{
                       fontDecoration: 'none',
                       textTransform: 'none',
-                      paddingTop: '15px',
+                      paddingTop: '3px',
                     }}
                   >
                     <strong>
@@ -185,10 +202,11 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
                       ) : (
                         t('Unknown')
                       )}
-                    </strong>{' '}
+                    </strong>
                     <span style={{ color: theme.palette.text.secondary }}>
-                      {t('added a note')} on {nsdt(node.created)}
+                      {t(' added a note on ')}
                     </span>
+                    {nsdt(node.created)}
                   </div>
                   {/* <div
                     style={{
@@ -220,7 +238,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
               </div>
                 <IconButton
                 aria-haspopup="true"
-                style={{ marginTop: 1 }}
+                style={{ marginTop: '-6px' }}
                 onClick={this.toggleExpand.bind(this)}
                 >
                   {this.state.open ? (
@@ -292,11 +310,10 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
                 <CardActions style={{ color: '#F9B406', padding: '0 20px 20px 15px' }}>
                          <StixCoreObjectLabels
                       variant="inList"
-                      labels={node.objectLabel}
+                      labels={objectLabel}
                     />
                 </CardActions>
             </Collapse>
-        <Divider light={true} />
         <Dialog
           open={this.state.displayDialog}
           keepMounted={true}
@@ -324,6 +341,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
             </Button>
           </DialogActions>
         </Dialog>
+        <Divider light={true} />
       </Card>
     );
   }
@@ -341,41 +359,68 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard = createFragmentContainer(
   StixCoreObjectOrStixCoreRelationshipNoteCardComponent,
   {
     node: graphql`
-      fragment StixCoreObjectOrStixCoreRelationshipNoteCard_node on Note {
+      fragment StixCoreObjectOrStixCoreRelationshipNoteCard_node on CyioNote {
         id
-        attribute_abstract
+        # attribute_abstract
         content
         created
         modified
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition
-              x_opencti_color
-            }
-          }
-        }
-        objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
-        }
+        labels
+        abstract
+        authors
+        # objectLabel {
+        #   edges {
+        #     node {
+        #       id
+        #       value
+        #       color
+        #     }
+        #   }
+        # }
       }
     `,
   },
 );
+
+// const StixCoreObjectOrStixCoreRelationshipNoteCard = createFragmentContainer(
+//   StixCoreObjectOrStixCoreRelationshipNoteCardComponent,
+//   {
+//     node: graphql`
+//       fragment StixCoreObjectOrStixCoreRelationshipNoteCard_node on Note {
+//         id
+//         attribute_abstract
+//         content
+//         created
+//         modified
+//         createdBy {
+//           ... on Identity {
+//             id
+//             name
+//             entity_type
+//           }
+//         }
+//         objectMarking {
+//           edges {
+//             node {
+//               id
+//               definition
+//               x_opencti_color
+//             }
+//           }
+//         }
+//         objectLabel {
+//           edges {
+//             node {
+//               id
+//               value
+//               color
+//             }
+//           }
+//         }
+//       }
+//     `,
+//   },
+// );
 
 export default compose(
   inject18n,

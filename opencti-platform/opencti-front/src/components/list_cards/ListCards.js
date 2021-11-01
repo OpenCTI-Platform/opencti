@@ -48,8 +48,8 @@ const styles = (theme) => ({
     margin: '0 300px 0 -10px',
   },
   toolBar: {
-    marginLeft: -25,
-    marginRight: -25,
+    marginLeft: -24,
+    marginRight: -24,
     marginTop: -20,
     height: '64px',
     color: theme.palette.header.text,
@@ -253,13 +253,14 @@ class ListCards extends Component {
           <div className={classes.views}>
             <div style={{ float: 'right' }}>
               {typeof handleChangeView === 'function' && (
-                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <>
                   <Tooltip title={t('Edit')}>
                     <Button
                       variant="contained"
-                      onClick={handleDisplayEdit && handleDisplayEdit.bind(this)}
+                      onClick={handleDisplayEdit && handleDisplayEdit.bind(this, selectedElements)}
                       className={classes.iconButton}
-                      disabled={Boolean(selectAll)}
+                      disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)}
                       color="primary"
                       size="large"
                     >
@@ -285,7 +286,8 @@ class ListCards extends Component {
                       {t('New')}
                     </Button>
                   </Tooltip>
-                </Security>
+                </>
+                // </Security>
               )}
               {typeof handleChangeView === 'function' && (
                 <Tooltip title={t('Lines view')}>

@@ -45,7 +45,7 @@ Transition.displayName = 'TransitionSlide';
 
 const styles = () => ({
   header: {
-    margin: '-25px',
+    margin: '-25px -24px 20px -24px',
     padding: '24px',
     height: '64px',
     backgroundColor: '#1F2842',
@@ -121,7 +121,7 @@ class StixDomainObjectAssetHeader extends Component {
           {stixDomainObject.name}
         </Typography>
         <div className={classes.aliases}>
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
             <Tooltip title={t('Edit')}>
               <Button
                 variant="contained"
@@ -152,7 +152,7 @@ class StixDomainObjectAssetHeader extends Component {
                 {t('New')}
               </Button>
             </Tooltip>
-          </Security>
+          {/* </Security> */}
         </div>
       </div>
     );

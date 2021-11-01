@@ -199,9 +199,9 @@
     parent_types: [String]!
     # LifecycleObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     # CoreObject
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
@@ -226,7 +226,7 @@
     "Identifies the date and time the document was published."
     published: DateTime
     "Identifies the date and time the document as last modified."
-    last_modified: DateTime!
+    last_modified: DateTime
     "Identifies the current version of the document."
     version: String!
     "Identifies the OSCAL model version the document was authored against."
@@ -260,9 +260,9 @@
     parent_types: [String]!
     # LifecycleObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     # OscalObject
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
@@ -295,9 +295,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -389,9 +389,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -503,9 +503,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -592,9 +592,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -710,9 +710,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -806,9 +806,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -918,9 +918,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -999,9 +999,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -1087,9 +1087,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject

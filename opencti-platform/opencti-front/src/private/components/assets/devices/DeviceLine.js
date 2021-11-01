@@ -15,6 +15,7 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import { KeyboardArrowRight, PublicOutlined } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -27,6 +28,7 @@ const styles = (theme) => ({
   bodyItem: {
     height: 20,
     fontSize: 13,
+    paddingLeft: 24,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -58,6 +60,7 @@ class DeviceLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
+    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     console.log('DarkLightnodeLineDevices', node);
     return (
       <ListItem
@@ -72,11 +75,12 @@ class DeviceLineComponent extends Component {
         </ListItemIcon> */}
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
-          style={{ minWidth: 50 }}
+          style={{ minWidth: 38 }}
           onClick={onToggleEntity.bind(this, node)}
         >
           <Checkbox
             edge="start"
+            color='primary'
             checked={selectAll || node.id in (selectedElements || {})}
             disableRipple={true}
           />
@@ -89,26 +93,33 @@ class DeviceLineComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 {/* KK-HWELL-011 */}
-                {node.name}
+                {node.name && node.name}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.type.width }}
               >
-                <DeviceIcon />
+                {node.asset_type
+                && <ItemIcon type={node.asset_type}/>}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.assetId.width }}
               >
                 {/* Lorem Ipsum Lorem Ipsum */}
-                {node.asset_id}
+                {node.asset_id && node.asset_id}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.ipAddress.width }}
               >
-                192.168.43.201
+                {node.ipv4_address
+                  && node.ipv4_address.map((ipv4Address) => (
+                    <>
+                      <div className="clearfix" />
+                      {ipv4Address.ip_address_value && ipv4Address.ip_address_value}
+                    </>
+                  ))}
               </div>
               <div
                 className={classes.bodyItem}
@@ -116,13 +127,15 @@ class DeviceLineComponent extends Component {
               >
                 {/* {fd(node.created)} */}
                 {/* Lorem Ipsum Lorem Ipsum */}
-                {node.fqdn}
+                {node.fqdn && node.fqdn}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.os.width }}
               >
-                <WindowsIcon />
+                {/* <WindowsIcon /> */}
+                {node.installed_operating_system && node.installed_operating_system.name
+                && <ItemIcon type={node.installed_operating_system.name}/>}
               </div>
               <div
                 className={classes.bodyItem}
@@ -130,17 +143,17 @@ class DeviceLineComponent extends Component {
               >
                 {/* {fd(node.modified)} */}
                 {/* Lorem Ipsum Lorem Ipsum */}
-                {node.network_id}
+                {node.network_id && node.network_id}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
-                {/* <StixCoreObjectLabels
+                <StixCoreObjectLabels
                   variant="inList"
-                  labels={node.objectLabel}
+                  labels={objectLabel}
                   onClick={onLabelClick.bind(this)}
-                /> */}
+                />
               </div>
             </div>
           }
@@ -169,8 +182,16 @@ const DeviceLineFragment = createFragmentContainer(
       fragment DeviceLine_node on ComputingDeviceAsset {
         id
         name
-        created
-        modified
+        asset_id
+        asset_type
+        ipv4_address{
+          ip_address_value
+        }
+        installed_operating_system{
+          name
+        }
+        fqdn
+        network_id
         # objectLabel {
         #   edges {
         #     node {
@@ -227,9 +248,9 @@ class DeviceLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
-                  width={140}
-                  height="100%"
+                  variant="circle"
+                  width={30}
+                  height={30}
                 />
               </div>
               <div
@@ -269,12 +290,7 @@ class DeviceLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.os.width }}
               >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width={140}
-                  height="100%"
-                />
+               <Skeleton animation="wave" variant="circle" width={30} height={30} />
               </div>
               <div
                 className={classes.bodyItem}
@@ -284,7 +300,7 @@ class DeviceLineDummyComponent extends Component {
                   animation="wave"
                   variant="rect"
                   width={140}
-                  height="100%"
+                  height='100%'
                 />
               </div>
               <div
@@ -301,9 +317,9 @@ class DeviceLineDummyComponent extends Component {
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        {/* <ListItemIcon classes={{ root: classes.goIcon }}>
           <KeyboardArrowRight />
-        </ListItemIcon>
+        </ListItemIcon> */}
       </ListItem>
     );
   }

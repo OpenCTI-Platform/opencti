@@ -37,13 +37,13 @@ import DeviceCreationDetails from './DeviceCreationDetails';
 
 const styles = (theme) => ({
   container: {
-    margin: 0,
+    marginBottom: 0,
   },
   header: {
-    margin: '-25px',
-    padding: '24px',
+    margin: '-25px -24px 20px -24px',
+    padding: '23px 24px 24px 24px',
     height: '64px',
-    backgroundColor: '#1F2842',
+    backgroundColor: theme.palette.background.paper,
   },
   gridContainer: {
     marginBottom: 20,
@@ -60,7 +60,7 @@ const styles = (theme) => ({
   },
   rightContainer: {
     float: 'right',
-    marginTop: '-5px',
+    marginTop: '-10px',
   },
   editButton: {
     position: 'fixed',
@@ -81,20 +81,20 @@ const styles = (theme) => ({
   },
 });
 
-// const deviceCreationMutation = graphql`
-//   mutation DeviceCreationMutation($input: ComputingDeviceAssetAddInput) {
-//     addComputingDeviceAsset (input: $input) {
-//       ...DeviceCard_node
-//       ...DeviceDetails_device
-//       operational_status
-//       serial_number
-//       release_date
-//       description
-//       version
-//       name
-//     }
-//   }
-// `;
+const deviceCreationMutation = graphql`
+  mutation DeviceCreationMutation($input: ComputingDeviceAssetAddInput) {
+    createComputingDeviceAsset (input: $input) {
+      ...DeviceCard_node
+      ...DeviceDetails_device
+      operational_status
+      serial_number
+      release_date
+      description
+      version
+      name
+    }
+  }
+`;
 
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),

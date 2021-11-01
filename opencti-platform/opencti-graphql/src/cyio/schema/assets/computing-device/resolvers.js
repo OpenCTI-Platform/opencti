@@ -2,6 +2,7 @@ import { assetSingularizeSchema as singularizeSchema } from '../asset-mappings.j
 import { getSparqlQuery, getReducer } from './sparql-query.js';
 import { getSparqlQuery as getSoftwareQuery, 
          getReducer as getSoftwareReducer } from '../software/sparql-query.js';
+import { compareValues } from '../../utils.js';
 
 const computingDeviceResolvers = {
   Query: {
@@ -12,32 +13,52 @@ const computingDeviceResolvers = {
         context.dbName, 
         sparqlQuery,
         singularizeSchema,
-        args.first,       // limit
-        args.offset,      // offset
+        // args.first,       // limit
+        // args.offset,      // offset
         args.filter       // filter
       )
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
-        for (let asset of response) {
-          let edge = {
-            cursor: asset.iri,
-            node: reducer( asset ),
+        let limit = (args.first === undefined ? response.length : args.first) ;
+        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let assetList ;
+        if (args.orderedBy !== undefined ) {
+          assetList = response.sort(compareValues(args.orderedBy, args.orderMode ));
+        } else {
+          assetList = response;
+        }
+
+        // for each asset in the result set
+        for (let asset of assetList) {
+          // skip down past the offset
+          if ( offset ) {
+            offset--
+            continue
           }
-          edges.push( edge )
+
+          // if haven't reached limit to be returned
+          if ( limit ) {
+            let edge = {
+              cursor: asset.iri,
+              node: reducer( asset ),
+            }
+            edges.push( edge )
+            limit-- ;
+          }
         }
         return {
           pageInfo: {
-            startCursor: response[0].iri,
-            endCursor: response[response.length -1 ].iri,
-            hasNextPage: false,
-            hasPreviousPage: false,
-            globalCount: response.length,
+            startCursor: assetList[0].iri,
+            endCursor: assetList[assetList.length -1 ].iri,
+            hasNextPage: (args.first > assetList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
+            globalCount: assetList.length,
           },
           edges: edges,
         }
       } else {
-        return [];
+        return;
       }
     },
     computingDeviceAsset: async ( _, args, context, info ) => {

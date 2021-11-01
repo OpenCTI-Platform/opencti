@@ -35,9 +35,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime!
+    created: DateTime
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime!
+    modified: DateTime
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -79,11 +79,11 @@
     "Identifies whether the asset is virtualized"
     is_virtual: Boolean
     "Indicates the Internet Protocol v4 Addresses of the asset"
-    ipv4_address: [IpV4Address!]
+    ipv4_address: [IpV4Address]
     "Indicates the Internet Protocol v4 Addresses of the asset"
-    ipv6_address: [IpV6Address!]
+    ipv6_address: [IpV6Address]
     "Indicates the media access control (MAC) address for the asset."
-    mac_address: [MAC!]
+    mac_address: [MAC]
     "Indicates the full-qualified domain name (FQDN) of the asset."
     fqdn: String
     "Indicates the NetBIOS name for the asset."
@@ -134,11 +134,11 @@
     "Identifies whether the asset is virtualized"
     is_virtual: Boolean
     "Indicates the Internet Protocol v4 Addresses of the asset"
-    ipv4_address: [IpV4AddressAddInput!]
+    ipv4_address: [IpV4AddressAddInput]
     "Indicates the Internet Protocol v4 Addresses of the asset"
-    ipv6_address: [IpV6AddressAddInput!]
+    ipv6_address: [IpV6AddressAddInput]
     "Indicates the media access control (MAC) address for the asset."
-    mac_address: [MAC!]
+    mac_address: [MAC]
     "Indicates the full-qualified domain name (FQDN) of the asset."
     fqdn: String
     "Indicates the NetBIOS name for the asset."

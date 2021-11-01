@@ -31,8 +31,6 @@ export const getInformationPageData = (clientID) => {
   }
 };
 
-//console.log(getInformationPageData('30f033d4-e90d-44f9-8ce0-36597ff08c93'));
-
 export const getCVEProductList = (cve_id, clientID) => {
   try {
     const headers = {
