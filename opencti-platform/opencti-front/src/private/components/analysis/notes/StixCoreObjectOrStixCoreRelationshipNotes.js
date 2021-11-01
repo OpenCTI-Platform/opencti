@@ -77,7 +77,7 @@ class StixCoreObjectOrStixCoreRelationshipNotes extends Component {
                   gutterBottom={true}
                   style={{ float: 'left' }}
                 >
-                  {t('Notes about this entity')}
+                  {t('Notes')}
                 </Typography>
               </div>
             );

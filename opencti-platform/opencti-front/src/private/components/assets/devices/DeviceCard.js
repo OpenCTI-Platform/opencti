@@ -257,7 +257,6 @@ class DeviceCardComponent extends Component {
                   <Typography
                    variant="h3"
                    color="textSecondary"
-                   style={{ marginTop: '-15px' }}
                    gutterBottom ={true}>
                     {t('Operating System')}
                   </Typography>
@@ -265,7 +264,7 @@ class DeviceCardComponent extends Component {
  {/* <Avatar style={{ float: 'left' }} className={classes.avatar}>{node.name.charAt(0)}</Avatar> */}
                     <Typography>
                       {/* {t('Microsoft Windows Server 2016')} */}
-                      {node.installed_operating_system.name
+                      {node.installed_operating_system && node.installed_operating_system.name
                       && t(node.installed_operating_system.name)}
                     </Typography>
                   </div>
@@ -309,12 +308,12 @@ const DeviceCardFragment = createFragmentContainer(
         id
         name
         asset_id
+        ipv4_address{
+          ip_address_value
+        }
         installed_operating_system {
           name
         }
-        # ipv4_address{
-        #   ip_address_value
-        # }
         asset_type
         fqdn
         labels

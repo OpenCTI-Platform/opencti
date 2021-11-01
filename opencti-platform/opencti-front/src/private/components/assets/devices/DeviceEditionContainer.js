@@ -222,7 +222,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('name', device.name),
       R.assoc('asset_tag', device.asset_tag),
       R.assoc('asset_type', device.asset_type),
-      R.assoc('location', device.locations.map((index) => [index.description]).join('\n')),
+      R.assoc('location', device.locations && device.locations.map((index) => [index.description]).join('\n')),
       R.assoc('version', device.version),
       R.assoc('vendor_name', device.vendor_name),
       R.assoc('serial_number', device.serial_number),
@@ -406,9 +406,9 @@ class DeviceEditionContainer extends Component {
                 style={{ marginTop: 25 }}
               >
                 <Grid item={true} xs={6}>
-                  <StixCoreObjectExternalReferences
+                  {/* <StixCoreObjectExternalReferences
                     stixCoreObjectId={device.id}
-                  />
+                  /> */}
                 </Grid>
                 <Grid item={true} xs={6}>
                   <StixCoreObjectLatestHistory stixCoreObjectId={device.id} />

@@ -72,7 +72,7 @@ const deviceDarkLightQuery = graphql`
       serial_number
       release_date
       # responsible_parties
-      operational_status
+      # operational_status
       labels
       # ...DeviceOverview_device
       ...DeviceDetails_device  

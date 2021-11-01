@@ -28,6 +28,7 @@ const styles = (theme) => ({
   bodyItem: {
     height: 20,
     fontSize: 13,
+    paddingLeft: 24,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -71,7 +72,7 @@ class SoftwareLineComponent extends Component {
       >
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
-          style={{ minWidth: 50 }}
+          style={{ minWidth: 38 }}
           onClick={onToggleEntity.bind(this, node)}
         >
           <Checkbox

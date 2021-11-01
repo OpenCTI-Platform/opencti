@@ -204,7 +204,7 @@ const StixCoreObjectLabelsView = (props) => {
           <Information fontSize="inherit" color="disabled" />
         </Tooltip>
       </div>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
         <IconButton
           color="secondary"
           aria-label="Label"
@@ -214,7 +214,7 @@ const StixCoreObjectLabelsView = (props) => {
         >
           <Add fontSize="small" />
         </IconButton>
-      </Security>
+      {/* </Security> */}
       <div className="clearfix" />
       {labels ? (
         <div className={classes.objectLabel}>

@@ -87,9 +87,9 @@ class NetworkComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                <StixCoreObjectExternalReferences
+                {/* <StixCoreObjectExternalReferences
               stixCoreObjectId={network.id}
-            />
+            /> */}
               </Grid>
               <Grid item={true} xs={6}>
                 <StixCoreObjectLatestHistory stixCoreObjectId={network.id} />
@@ -103,13 +103,13 @@ class NetworkComponent extends Component {
         </Security> */}
           </div>
         ) : (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <NetworkEdition
-              open={this.state.openEdit}
-              networkId={network.id}
-              history={history}
-            />
-          </Security>
+          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <NetworkEdition
+            open={this.state.openEdit}
+            networkId={network.id}
+            history={history}
+          />
+          // </Security>
         )}
       </>
     );

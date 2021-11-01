@@ -221,7 +221,7 @@ class DeviceDetailsComponent extends Component {
                     device.connected_to_network.id && history.push(`/dashboard/assets/network/${device.connected_to_network.id}`)
                   )}
                 >
-                  <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{device.connected_to_network.name && t(device.connected_to_network.name)}
+                  <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{device.connected_to_network && device.connected_to_network.name && t(device.connected_to_network.name)}
                 </Link>
               </div>
               <div>
@@ -390,7 +390,7 @@ class DeviceDetailsComponent extends Component {
                 <div className={classes.scrollBg}>
                     <div className={classes.scrollDiv}>
                       <div className={classes.scrollObj}>
-                        {device.locations.map((location, key) => (
+                        {device.locations && device.locations.map((location, key) => (
                           <div key={key}>
                             {`${location.street_address && t(location.street_address)}, `}
                             {`${location.city && t(location.city)}, `}
@@ -589,12 +589,12 @@ const DeviceDetails = createFragmentContainer(
           id
           name
         }
-        # ipv4_address  {
-        #   ip_address_value
-        # }
-        # ipv6_address  {
-        #   ip_address_value
-        # }
+        ipv4_address  {
+          ip_address_value
+        }
+        ipv6_address  {
+          ip_address_value
+        }
         locations {
           city
           country
@@ -615,7 +615,6 @@ const DeviceDetails = createFragmentContainer(
         model
         mac_address
         fqdn
-        network_id
         baseline_configuration_name
         bios_id
         is_scanned

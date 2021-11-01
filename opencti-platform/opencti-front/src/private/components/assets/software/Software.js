@@ -85,7 +85,7 @@ class SoftwareComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                <StixCoreObjectExternalReferences stixCoreObjectId={software.id} />
+                {/* <StixCoreObjectExternalReferences stixCoreObjectId={software.id} /> */}
               </Grid>
               <Grid item={true} xs={6}>
                 <StixCoreObjectLatestHistory stixCoreObjectId={software.id} />

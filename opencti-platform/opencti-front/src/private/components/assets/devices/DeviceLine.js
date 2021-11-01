@@ -28,6 +28,7 @@ const styles = (theme) => ({
   bodyItem: {
     height: 20,
     fontSize: 13,
+    paddingLeft: 24,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -74,7 +75,7 @@ class DeviceLineComponent extends Component {
         </ListItemIcon> */}
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
-          style={{ minWidth: 50 }}
+          style={{ minWidth: 38 }}
           onClick={onToggleEntity.bind(this, node)}
         >
           <Checkbox
@@ -132,9 +133,9 @@ class DeviceLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.os.width }}
               >
-                <WindowsIcon />
-                {/* {node.installed_operating_system.name
-                && <ItemIcon type={node.installed_operating_system.name}/>} */}
+                {/* <WindowsIcon /> */}
+                {node.installed_operating_system && node.installed_operating_system.name
+                && <ItemIcon type={node.installed_operating_system.name}/>}
               </div>
               <div
                 className={classes.bodyItem}
@@ -183,22 +184,14 @@ const DeviceLineFragment = createFragmentContainer(
         name
         asset_id
         asset_type
-        # ipv4_address{
-        #   ip_address_value
-        # }
+        ipv4_address{
+          ip_address_value
+        }
         installed_operating_system{
           name
         }
         fqdn
         network_id
-        # ip_address {
-        #   ... on IpV4Address {
-        #     ip_address_value
-        #   }
-          # ... on IpV6Address {
-          #   ip_address_value
-          # }
-        # }
         # objectLabel {
         #   edges {
         #     node {
@@ -297,12 +290,7 @@ class DeviceLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.os.width }}
               >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width={140}
-                  height="100%"
-                />
+               <Skeleton animation="wave" variant="circle" width={30} height={30} />
               </div>
               <div
                 className={classes.bodyItem}
@@ -312,7 +300,7 @@ class DeviceLineDummyComponent extends Component {
                   animation="wave"
                   variant="rect"
                   width={140}
-                  height="100%"
+                  height='100%'
                 />
               </div>
               <div
@@ -329,9 +317,9 @@ class DeviceLineDummyComponent extends Component {
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        {/* <ListItemIcon classes={{ root: classes.goIcon }}>
           <KeyboardArrowRight />
-        </ListItemIcon>
+        </ListItemIcon> */}
       </ListItem>
     );
   }

@@ -288,7 +288,7 @@ class Devices extends Component {
       type: {
         label: 'Type',
         width: '8%',
-        isSortable: true,
+        isSortable: false,
       },
       assetId: {
         label: 'Asset ID',
@@ -308,7 +308,7 @@ class Devices extends Component {
       os: {
         label: 'OS',
         width: '8%',
-        isSortable: true,
+        isSortable: false,
       },
       networkId: {
         label: 'Network ID',

@@ -100,12 +100,13 @@ const styles = (theme) => ({
   },
   headerItem: {
     float: 'left',
-    fontSize: 12,
+    paddingLeft: 25,
+    fontSize: 16,
     fontWeight: '700',
   },
   sortableHeaderItem: {
     float: 'left',
-    paddingLeft: 10,
+    paddingLeft: 24,
     fontSize: 16,
     fontWeight: '700',
     cursor: 'pointer',

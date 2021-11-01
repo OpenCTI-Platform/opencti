@@ -45,9 +45,9 @@ class StixCoreObjectHistoryLinesComponent extends Component {
                 textAlign: 'center',
               }}
             >
-              {isRelationLog
+              {/* {isRelationLog
                 ? t('No relations history about this entity.')
-                : t('No history about this entity.')}
+                : t('No history about this entity.')} */}
             </span>
           </div>
         )}

@@ -190,7 +190,7 @@ class SoftwareEditionContainer extends Component {
       R.assoc('name', software.name),
       R.assoc('asset_tag', software.asset_tag),
       R.assoc('asset_type', software.asset_type),
-      R.assoc('location', software.locations.map((index) => [index.description]).join('\n')),
+      R.assoc('location', software.locations && software.locations.map((index) => [index.description]).join('\n')),
       R.assoc('version', software.version),
       R.assoc('vendor_name', software.vendor_name),
       R.assoc('serial_number', software.serial_number),
@@ -321,7 +321,7 @@ class SoftwareEditionContainer extends Component {
                 style={{ marginTop: 25 }}
               >
                 <Grid item={true} xs={6}>
-                  <StixCoreObjectExternalReferences stixCoreObjectId={software.id} />
+                  {/* <StixCoreObjectExternalReferences stixCoreObjectId={software.id} /> */}
                 </Grid>
                 <Grid item={true} xs={6}>
                   <StixCoreObjectLatestHistory stixCoreObjectId={software.id} />

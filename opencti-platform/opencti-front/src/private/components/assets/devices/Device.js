@@ -88,9 +88,9 @@ class DeviceComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                <StixCoreObjectExternalReferences
+                {/* <StixCoreObjectExternalReferences
                   stixCoreObjectId={device.id}
-                />
+                /> */}
               </Grid>
               <Grid item={true} xs={6}>
                 <StixCoreObjectLatestHistory stixCoreObjectId={device.id} />
@@ -104,13 +104,13 @@ class DeviceComponent extends Component {
               </Security> */}
           </div>
         ) : (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <DeviceEdition
-              open={this.state.openEdit}
-              deviceId={device.id}
-              history={history}
-            />
-          </Security>
+          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <DeviceEdition
+            open={this.state.openEdit}
+            deviceId={device.id}
+            history={history}
+          />
+          // </Security>
         )}
       </>
     );

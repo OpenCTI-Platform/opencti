@@ -322,7 +322,7 @@ class DeviceCreationDetailsComponent extends Component {
                   <div className="clearfix" />
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Typography>No</Typography>
-                    <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                    <Switch color='primary' defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
                     <Typography>Yes</Typography>
                   </div>
                 </div>
@@ -343,7 +343,7 @@ class DeviceCreationDetailsComponent extends Component {
                   <div className="clearfix" />
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Typography>No</Typography>
-                    <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                    <Switch color='primary' defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
                     <Typography>Yes</Typography>
                   </div>
                 </div>
@@ -594,7 +594,7 @@ class DeviceCreationDetailsComponent extends Component {
                   <div className="clearfix" />
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Typography>No</Typography>
-                    <Switch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                    <Switch color='primary' defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
                     <Typography>Yes</Typography>
                   </div>
                 </div>

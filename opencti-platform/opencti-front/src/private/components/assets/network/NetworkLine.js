@@ -28,6 +28,7 @@ const styles = (theme) => ({
   bodyItem: {
     height: 20,
     fontSize: 13,
+    paddingLeft: 24,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -71,7 +72,7 @@ class NetworkLineComponent extends Component {
       >
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
-          style={{ minWidth: 50 }}
+          style={{ minWidth: 38 }}
           onClick={onToggleEntity.bind(this, node)}
         >
           <Checkbox
@@ -89,7 +90,7 @@ class NetworkLineComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 {/* KK-HWELL-011 */}
-                {node.network_name && node.network_name}
+                {node.name && node.name}
               </div>
               <div
                 className={classes.bodyItem}
@@ -191,6 +192,7 @@ const NetworkLineFragment = createFragmentContainer(
     node: graphql`
       fragment NetworkLine_node on NetworkAsset {
         id
+        name
         asset_id
         asset_type
         network_name

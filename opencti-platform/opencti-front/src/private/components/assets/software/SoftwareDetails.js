@@ -30,6 +30,7 @@ class SoftwareDetailsComponent extends Component {
     const {
       fld, t, classes, software,
     } = this.props;
+    console.log('software details data', software);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -179,7 +180,7 @@ const SoftwareDetails = createFragmentContainer(SoftwareDetailsComponent, {
       cpe_identifier
       patch_level
       installation_id
-      implementation_point
+      # implementation_point
     }
   `,
 });

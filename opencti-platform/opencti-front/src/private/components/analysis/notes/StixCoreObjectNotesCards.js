@@ -147,7 +147,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Notes')}
         </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
           {/* <IconButton
             onClick={this.handleToggleWrite.bind(this)}
             classes={{ root: classes.createButton }}
@@ -158,7 +158,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
             stixCoreObjectOrStixCoreRelationshipNotes={notes}
              />
           {/* </IconButton> */}
-        </Security>
+        {/* </Security> */}
         <div className="clearfix" />
         {notes.map((noteEdge) => {
           const note = noteEdge.node;

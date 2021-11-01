@@ -121,7 +121,7 @@ class StixDomainObjectAssetHeader extends Component {
           {stixDomainObject.name}
         </Typography>
         <div className={classes.aliases}>
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
             <Tooltip title={t('Edit')}>
               <Button
                 variant="contained"
@@ -152,7 +152,7 @@ class StixDomainObjectAssetHeader extends Component {
                 {t('New')}
               </Button>
             </Tooltip>
-          </Security>
+          {/* </Security> */}
         </div>
       </div>
     );

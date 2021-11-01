@@ -104,7 +104,7 @@
     "storybook": "start-storybook -p 9009 -s public",
     "build-storybook": "build-storybook -s public",
     "control": "yarn audit --groups dependencies --summary",
-    "relay": "relay-compiler --watchman false --src ./src --schema ../opencti-graphql/config/schema/darklightSchema.graphql --extensions js jsx",
+    "relay": "relay-compiler --watchman false --src ./src --schema ../opencti-graphql/config/schema/newOpenctiDarklightSchema.graphql --extensions js jsx",
     "test": "react-scripts test --coverage --watchAll=false"
   },
   "jest": {

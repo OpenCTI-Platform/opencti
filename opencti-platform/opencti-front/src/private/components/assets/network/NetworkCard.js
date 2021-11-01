@@ -26,6 +26,7 @@ import {
   deleteBookMark,
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
 import ItemIcon from '../../../../components/ItemIcon';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   card: {
@@ -201,7 +202,7 @@ class NetworkCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('KK-HWELL-011')} */}
-                  {node.asset_id && t(node.asset_id)}
+                  {node.asset_id && truncate(t(node.asset_id), 25)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography

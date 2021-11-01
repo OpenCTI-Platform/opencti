@@ -141,7 +141,7 @@ export default createPaginationContainer(
           edges {
             node {
               id
-              # name
+              name
               description
               ...NetworkLine_node
             }
