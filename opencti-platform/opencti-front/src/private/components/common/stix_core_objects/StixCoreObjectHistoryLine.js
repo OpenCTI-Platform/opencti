@@ -57,6 +57,7 @@ const styles = (theme) => ({
   content: {
     height: 50,
     width: 'auto',
+    margin: '0px 10px',
     overflow: 'hidden',
   },
   tooltip: {
@@ -67,8 +68,9 @@ const styles = (theme) => ({
   paper: {
     width: '100%',
     height: '100%',
-    backgroundColor: theme.palette.background.line,
+    // backgroundColor: theme.palette.background.line,
     padding: '17px 15px 15px 15px',
+    borderBottom: '1px solid grey',
   },
   description: {
     height: '100%',
@@ -80,6 +82,9 @@ const styles = (theme) => ({
     float: 'right',
     textAlign: 'right',
     width: 180,
+  },
+  span: {
+    color: theme.palette.text.secondary,
   },
 });
 
@@ -240,9 +245,10 @@ class StixCoreObjectHistoryLineComponent extends Component {
     const {
       nsdt, classes, node, isRelation, t,
     } = this.props;
+    console.log('node content', node);
     return (
       <div className={classes.container}>
-        <div className={classes.avatar}>
+        {/* <div className={classes.avatar}>
           <Badge
             color="secondary"
             overlap="circle"
@@ -256,10 +262,12 @@ class StixCoreObjectHistoryLineComponent extends Component {
               node.context_data.commit,
             )}
           </Badge>
-        </div>
+        </div> */}
         <div className={classes.content}>
           <Paper classes={{ root: classes.paper }}>
-            <div className={classes.date}>{nsdt(node.timestamp)}</div>
+            <div className={classes.date}>
+              {nsdt(node.timestamp)}
+            </div>
             <Tooltip
               classes={{ tooltip: classes.tooltip }}
               title={
@@ -273,13 +281,18 @@ class StixCoreObjectHistoryLineComponent extends Component {
               }
             >
               <div className={classes.description}>
-                <Markdown
+                {/* <Markdown
                   remarkPlugins={[remarkGfm, remarkParse]}
                   parserOptions={{ commonmark: true }}
                   className="markdown"
                 >
                   {`\`${node.user.name}\` ${node.context_data.message}`}
-                </Markdown>
+                </Markdown> */}
+                {node.user.name}
+                <span className={classes.span}> adds </span>
+                {node.context_data.message}
+                <span className={classes.span}> in </span>
+                {node.context_data.message}
               </div>
             </Tooltip>
           </Paper>

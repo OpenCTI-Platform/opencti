@@ -15,11 +15,11 @@ import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
 import NetworkCards, {
   networkCardsQuery,
-  networkCardsdarkLightRootQuery,
+  // networkCardsdarkLightRootQuery,
 } from './network/NetworkCards';
 import NetworkLines, {
   networkLinesQuery,
-  networkLinesdarkLightRootQuery,
+  // networkLinesdarkLightRootQuery,
 } from './network/NetworkLines';
 import NetworkCreation from './network/NetworkCreation';
 import NetworkDeletion from './network/NetworkDeletion';
@@ -44,7 +44,6 @@ class Network extends Component {
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
       selectAll: false,
-      displayEdit: false,
       openNetworkCreation: false,
     };
   }
@@ -83,8 +82,12 @@ class Network extends Component {
     this.setState({ openNetworkCreation: true });
   }
 
-  handleDisplayEdit() {
-    this.setState({ displayEdit: !this.state.displayEdit });
+  handleDisplayEdit(selectedElements) {
+    const networkId = Object.entries(selectedElements)[0][1].id;
+    this.props.history.push({
+      pathname: `/dashboard/assets/network/${networkId}`,
+      openEdit: true,
+    });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -207,25 +210,32 @@ class Network extends Component {
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
             <NetworkCards
-              data={props}
-              paginationOptions={paginationOptions}
-              initialLoading={props === null}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
+                data={props}
+                selectAll={selectAll}
+                paginationOptions={paginationOptions}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
           )}
         /> */}
         <QR
           environment={QueryRendererDarkLight}
-          query={networkCardsdarkLightRootQuery}
+          query={networkCardsQuery}
+          variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
             console.log(`DarkLightNetworkCards Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
               <NetworkCards
                 data={props}
+                selectAll={selectAll}
                 paginationOptions={paginationOptions}
                 initialLoading={props === null}
+                selectedElements={selectedElements}
                 onLabelClick={this.handleAddFilter.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
               />
             );
@@ -325,17 +335,21 @@ class Network extends Component {
           render={({ props }) => (
             <NetworkLines
               data={props}
+              selectAll={selectAll}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              selectedElements={selectedElements}
               onLabelClick={this.handleAddFilter.bind(this)}
+              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         /> */}
         <QR
           environment={QueryRendererDarkLight}
-          query={networkLinesdarkLightRootQuery}
+          query={networkLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
             console.log(`DarkLightNetworkLines Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
@@ -379,9 +393,9 @@ class Network extends Component {
         {view === 'cards' && (!openNetworkCreation && !location.openNewCreation) ? this.renderCards(paginationOptions) : ''}
         {view === 'lines' && (!openNetworkCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
         {(openNetworkCreation || location.openNewCreation) && (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <NetworkCreation paginationOptions={paginationOptions} history={this.props.history} />
-          </Security>
+          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <NetworkCreation paginationOptions={paginationOptions} history={this.props.history} />
+          // </Security>
         )}
       </div>
     );

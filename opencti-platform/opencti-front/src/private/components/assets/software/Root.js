@@ -77,7 +77,7 @@ const softwareDarkLightQuery = graphql`
       asset_type
       serial_number
       release_date
-      operational_status
+      # operational_status
       ...SoftwareDetails_software
     }
   }

@@ -15,7 +15,7 @@ import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
 import DevicesCards, {
   devicesCardsQuery,
-  devicesCardsdarkLightRootQuery,
+  // devicesCardsdarkLightRootQuery,
 } from './devices/DevicesCards';
 import DevicesLines, {
   devicesLinesQuery,
@@ -34,6 +34,7 @@ class Devices extends Component {
       props.location,
       'view-devices',
     );
+    console.log('sdassfasfasparams', params);
     this.state = {
       sortBy: R.propOr('name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
@@ -89,10 +90,11 @@ class Devices extends Component {
     this.setState({ openDeviceCreation: true });
   }
 
-  handleDisplayEdit() {
+  handleDisplayEdit(selectedElements) {
+    const deviceId = Object.entries(selectedElements)[0][1].id;
     this.props.history.push({
-      pathname: `/dashboard/assets/devices/${'id'}`,
-      state: { openNewCreation: true },
+      pathname: `/dashboard/assets/devices/${deviceId}`,
+      openEdit: true,
     });
   }
 
@@ -205,44 +207,59 @@ class Devices extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'assetTypeBy',
           'labelledBy',
-          'markedBy',
-          'created_start_date',
-          'created_end_date',
-          'createdBy',
+          'release_date',
+          // 'markedBy',
+          // 'created_start_date',
+          'operation_status',
+          'operation_System',
+          // 'created_end_date',
+          // 'createdBy',
+          'labelledBy',
         ]}
       >
-        {/* <QueryRenderer
-          query={devicesCardsQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <DevicesCards
-              data={props}
-              extra={props}
-              paginationOptions={paginationOptions}
-              initialLoading={props === null}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          )}
-        /> */}
         <QR
           environment={QueryRendererDarkLight}
-          query={devicesCardsdarkLightRootQuery}
+          query={devicesCardsQuery}
+          variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
             console.log(`DarkLightDevicesCards Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
               <DevicesCards
                 data={props}
                 extra={props}
+                selectAll={selectAll}
                 paginationOptions={paginationOptions}
                 initialLoading={props === null}
+                selectedElements={selectedElements}
                 onLabelClick={this.handleAddFilter.bind(this)}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
               />
             );
           }}
         />
+        {/* <QueryRenderer
+          query={devicesCardsQuery}
+          variables={{ count: 25, ...paginationOptions }}
+          render={({ error, props }) => {
+            console.log(`DarkLightDevicesCards Error ${error} OR Props ${JSON.stringify(props)}`);
+            return (
+              <DevicesCards
+                data={props}
+                extra={props}
+                selectAll={selectAll}
+                paginationOptions={paginationOptions}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+              />
+            );
+          }}
+        /> */}
       </ListCards>
     );
   }
@@ -271,7 +288,7 @@ class Devices extends Component {
       type: {
         label: 'Type',
         width: '8%',
-        isSortable: true,
+        isSortable: false,
       },
       assetId: {
         label: 'Asset ID',
@@ -291,7 +308,7 @@ class Devices extends Component {
       os: {
         label: 'OS',
         width: '8%',
-        isSortable: true,
+        isSortable: false,
       },
       networkId: {
         label: 'Network ID',
@@ -330,33 +347,22 @@ class Devices extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'assetTypeBy',
           'labelledBy',
-          'markedBy',
-          'created_start_date',
-          'created_end_date',
-          'createdBy',
+          'release_date',
+          // 'markedBy',
+          // 'created_start_date',
+          'operation_status',
+          'operation_System',
+          // 'created_end_date',
+          // 'createdBy',
+          'labelledBy',
         ]}
       >
-        {/* <QueryRenderer
-          query={devicesLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <DevicesLines
-              data={props}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              selectAll={selectAll}
-              selectedElements={selectedElements}
-              initialLoading={props === null}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          )}
-        /> */}
         <QR
           environment={QueryRendererDarkLight}
-          query={devicesLinesdarkLightRootQuery}
+          query={devicesLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
             console.log(`DarkLight Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
@@ -374,6 +380,26 @@ class Devices extends Component {
             );
           }}
         />
+        {/* <QueryRenderer
+          query={devicesLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
+          render={({ error, props }) => {
+            console.log(`DarkLight Error ${error} OR Props ${JSON.stringify(props)}`);
+            return (
+              <DevicesLines
+                data={props}
+                selectAll={selectAll}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                paginationOptions={paginationOptions}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            );
+          }}
+        /> */}
       </ListLines>
     );
   }
@@ -400,9 +426,9 @@ class Devices extends Component {
         {view === 'cards' && (!openDeviceCreation && !location.openNewCreation) ? this.renderCards(paginationOptions) : ''}
         {view === 'lines' && (!openDeviceCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
         {((openDeviceCreation || location.openNewCreation) && (
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <DeviceCreation paginationOptions={paginationOptions} history={this.props.history} />
-            </Security>
+          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <DeviceCreation paginationOptions={paginationOptions} history={this.props.history} />
+          // </Security>
         ))}
       </div>
     );

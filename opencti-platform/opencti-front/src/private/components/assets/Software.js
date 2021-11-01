@@ -15,11 +15,11 @@ import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
 import SoftwareCards, {
   softwareCardsQuery,
-  softwareCardsdarkLightRootQuery,
+  // softwareCardsdarkLightRootQuery,
 } from './software/SoftwareCards';
 import SoftwareLines, {
   softwareLinesQuery,
-  softwareLinesdarkLightRootQuery,
+  // softwareLinesdarkLightRootQuery,
 } from './software/SoftwareLines';
 import SoftwareCreation from './software/SoftwareCreation';
 import SoftwareDeletion from './software/SoftwareDeletion';
@@ -44,7 +44,6 @@ class Software extends Component {
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
       selectAll: false,
-      displayEdit: false,
       openSoftwareCreation: false,
     };
   }
@@ -83,8 +82,12 @@ class Software extends Component {
     this.setState({ openSoftwareCreation: true });
   }
 
-  handleDisplayEdit() {
-    this.setState({ displayEdit: !this.state.displayEdit });
+  handleDisplayEdit(selectedElements) {
+    const softwareId = Object.entries(selectedElements)[0][1].id;
+    this.props.history.push({
+      pathname: `/dashboard/assets/software/${softwareId}`,
+      openEdit: true,
+    });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -213,16 +216,20 @@ class Software extends Component {
           render={({ props }) => (
             <SoftwareCards
               data={props}
+              selectAll={selectAll}
               paginationOptions={paginationOptions}
               initialLoading={props === null}
+              selectedElements={selectedElements}
               onLabelClick={this.handleAddFilter.bind(this)}
+              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         /> */}
         <QR
           environment={QueryRendererDarkLight}
-          query={softwareCardsdarkLightRootQuery}
+          query={softwareCardsQuery}
+          variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
             console.log(`DarkLightSoftwareCards Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
@@ -344,17 +351,21 @@ class Software extends Component {
           render={({ props }) => (
             <SoftwareLines
               data={props}
-              paginationOptions={paginationOptions}
+              selectAll={selectAll}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              selectedElements={selectedElements}
+              paginationOptions={paginationOptions}
               onLabelClick={this.handleAddFilter.bind(this)}
+              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         /> */}
         <QR
           environment={QueryRendererDarkLight}
-          query={softwareLinesdarkLightRootQuery}
+          query={softwareLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
             console.log(`DarkLightSoftwareLines Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
@@ -398,9 +409,9 @@ class Software extends Component {
         {view === 'cards' && (!openSoftwareCreation && !location.openNewCreation) ? this.renderCards(paginationOptions) : ''}
         {view === 'lines' && (!openSoftwareCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
         {(openSoftwareCreation || location.openNewCreation) && (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <SoftwareCreation paginationOptions={paginationOptions} history={this.props.history} />
-          </Security>
+          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <SoftwareCreation paginationOptions={paginationOptions} history={this.props.history} />
+          // </Security>
         )}
       </div>
     );

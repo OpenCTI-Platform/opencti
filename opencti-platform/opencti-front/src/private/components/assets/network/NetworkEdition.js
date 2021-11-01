@@ -85,10 +85,10 @@ export const networkEditionDarkLightQuery = graphql`
       asset_type
       serial_number
       release_date
-      operational_status
+      # operational_status
       network_name
       network_id
-      implementation_point
+      # implementation_point
       network_address_range {
         ending_ip_address{
           ... on IpV4Address {

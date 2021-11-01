@@ -59,8 +59,8 @@ const styles = (theme) => ({
     padding: '0 310px 50px 0',
   },
   toolBar: {
-    marginLeft: -25,
-    marginRight: -25,
+    marginLeft: -24,
+    marginRight: -24,
     marginTop: -20,
     height: '64px',
     color: theme.palette.header.text,
@@ -100,12 +100,13 @@ const styles = (theme) => ({
   },
   headerItem: {
     float: 'left',
-    fontSize: 12,
+    paddingLeft: 25,
+    fontSize: 16,
     fontWeight: '700',
   },
   sortableHeaderItem: {
     float: 'left',
-    paddingLeft: 10,
+    paddingLeft: 24,
     fontSize: 16,
     fontWeight: '700',
     cursor: 'pointer',
@@ -291,16 +292,14 @@ class ListLines extends Component {
           <div className={classes.views}>
             <div style={{ float: 'right' }}>
               {typeof handleChangeView === 'function' && (
-                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <>
                   <Tooltip title={t('Edit')}>
                     <Button
                       variant="contained"
-                      onClick={handleDisplayEdit && handleDisplayEdit.bind(this)}
+                      onClick={handleDisplayEdit && handleDisplayEdit.bind(this, selectedElements)}
                       className={classes.iconButton}
-                      disabled={
-                        Boolean(!selectedElements
-                          || Object.entries(selectedElements || {}).length < 2)
-                      }
+                      disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)}
                       color="primary"
                       size="large"
                     >
@@ -326,7 +325,8 @@ class ListLines extends Component {
                       {t('New')}
                     </Button>
                   </Tooltip>
-                </Security>
+                </>
+                // </Security>
               )}
               {/* {typeof handleChangeView === 'function' && enableDuplicates && (
                 <Tooltip title={t('Detect duplicates')}>

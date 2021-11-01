@@ -39,7 +39,6 @@ import AddExternalReferencesLines, {
   externalReferenceMutationRelationDelete,
   externalReferenceLinesMutationRelationAdd,
 } from './AddExternalReferencesLines';
-import '../../../../resources/css/customScrollbar.css';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -232,6 +231,7 @@ class AddExternalReferences extends Component {
             backgroundColor: 'transparent',
             boxShadow: 'none',
             borderRadius: '0px',
+            overflowY: 'hidden',
           },
         }}
       >

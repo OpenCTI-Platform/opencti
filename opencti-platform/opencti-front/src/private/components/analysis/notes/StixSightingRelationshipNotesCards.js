@@ -288,7 +288,7 @@ const StixSightingRelationshipNotesCards = createPaginationContainer(
             edges {
               node {
                 id
-                ...StixCoreObjectOrStixCoreRelationshipNoteCard_node
+                # ...StixCoreObjectOrStixCoreRelationshipNoteCard_node
               }
             }
           }

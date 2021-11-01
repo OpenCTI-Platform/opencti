@@ -28,12 +28,16 @@ import {
   addBookmark,
   deleteBookMark,
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
+import ItemIcon from '../../../../components/ItemIcon';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   card: {
     width: '100%',
     height: '319px',
     borderRadius: 9,
+    // background: theme.palette.navAlt.background,
+
   },
   cardDummy: {
     width: '100%',
@@ -97,8 +101,17 @@ const styles = (theme) => ({
 class DeviceCardComponent extends Component {
   render() {
     const {
-      t, fsd, classes, node, bookmarksIds, onLabelClick,
+      t,
+      fsd,
+      classes,
+      node,
+      selectAll,
+      onToggleEntity,
+      bookmarksIds,
+      onLabelClick,
+      selectedElements,
     } = this.props;
+    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     console.log('DeviceCardComponent', node);
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
@@ -158,7 +171,8 @@ class DeviceCardComponent extends Component {
                 >
                   {t('Type')}
                 </Typography>
-                <ComputerIcon size='small' />
+                {node.asset_type
+                && <ItemIcon type={node.asset_type}/>}
               </div>
               <div style={{ marginRight: 'auto', marginLeft: '12px' }}>
                 <Typography
@@ -170,19 +184,15 @@ class DeviceCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('KK-HWELL-011')} */}
-                  {/* {t(node.name)} */}
+                  {node.name && t(node.name)}
                 </Typography>
               </div>
               <div>
                 <Checkbox
-                  size="small"
-                  style={{}}
-                  onClick={
-                  bookmarksIds.includes(node.id)
-                    ? deleteBookMark.bind(this, node.id, 'Threat-Actor')
-                    : addBookmark.bind(this, node.id, 'Threat-Actor')
-                }
-                color={bookmarksIds.includes(node.id) ? 'secondary' : 'primary'}
+                  disableRipple={true}
+                  onClick={onToggleEntity.bind(this, node)}
+                  checked={selectAll || node.id in (selectedElements || {})}
+                  color='primary'
                 />
               </div>
             </Grid>
@@ -196,7 +206,7 @@ class DeviceCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('KK-HWELL-011')} */}
-                  {t(node.asset_id)}
+                  {node.asset_id && truncate(t(node.asset_id), 25)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -209,7 +219,7 @@ class DeviceCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('Lorem Ipsum')} */}
-                  {t(node.fqdn)}
+                  {node.fqdn && truncate(t(node.fqdn), 25)}
                 </Typography>
               </Grid>
               <Grid xs={6} item={true} className={classes.body}>
@@ -220,7 +230,13 @@ class DeviceCardComponent extends Component {
                   {t('IP Address')}
                 </Typography>
                 <Typography>
-                  {t('00:50:56:A3:59:4D')}
+                  {node.ipv4_address
+                    && node.ipv4_address.map((ipv4Address) => (
+                      <>
+                        <div className="clearfix" />
+                        {ipv4Address.ip_address_value && t(ipv4Address.ip_address_value)}
+                      </>
+                    ))}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -233,7 +249,7 @@ class DeviceCardComponent extends Component {
                 </Typography>
                 <Typography>
                     {/* {t('Lorem Ipsum')} */}
-                    {t(node.network_id)}
+                    {node.network_id && t(node.network_id)}
                 </Typography>
               </Grid>
               <Grid>
@@ -248,7 +264,8 @@ class DeviceCardComponent extends Component {
  {/* <Avatar style={{ float: 'left' }} className={classes.avatar}>{node.name.charAt(0)}</Avatar> */}
                     <Typography>
                       {/* {t('Microsoft Windows Server 2016')} */}
-                      {t(node.installed_operating_system.name)}
+                      {node.installed_operating_system && node.installed_operating_system.name
+                      && t(node.installed_operating_system.name)}
                     </Typography>
                   </div>
                 </div>
@@ -261,10 +278,10 @@ class DeviceCardComponent extends Component {
                gutterBottom ={true}>
                 {t('Label')}
               </Typography>
-              {/* <StixCoreObjectLabels
-                labels={node.objectLabel}
+              <StixCoreObjectLabels
+                labels={objectLabel}
                 onClick={onLabelClick.bind(this)}
-              /> */}
+              />
             </div>
           </CardContent>
         </CardActionArea>
@@ -283,38 +300,6 @@ DeviceCardComponent.propTypes = {
   onBookmarkClick: PropTypes.func,
 };
 
-// const DeviceCardFragment = createFragmentContainer(
-//   DeviceCardComponent,
-//   {
-//     node: graphql`
-//       fragment DeviceCard_node on ThreatActor {
-//         id
-//         name
-//         description
-//         created
-//         modified
-//         objectLabel {
-//           edges {
-//             node {
-//               id
-//               value
-//               color
-//             }
-//           }
-//         }
-//         objectMarking {
-//           edges {
-//             node {
-//               id
-//               definition
-//             }
-//           }
-//         }
-//       }
-//     `,
-//   },
-// );
-
 const DeviceCardFragment = createFragmentContainer(
   DeviceCardComponent,
   {
@@ -322,17 +307,61 @@ const DeviceCardFragment = createFragmentContainer(
       fragment DeviceCard_node on ComputingDeviceAsset {
         id
         name
+        asset_id
+        ipv4_address{
+          ip_address_value
+        }
         installed_operating_system {
           name
         }
         asset_type
-        asset_id
         fqdn
+        labels
         network_id
+        # description
+        # created
+        # modified
+        # objectLabel {
+        #   edges {
+        #     node {
+        #       id
+        #       value
+        #       color
+        #     }
+        #   }
+        # }
+        # objectMarking {
+        #   edges {
+        #     node {
+        #       id
+        #       definition
+        #     }
+        #   }
+        # }
       }
     `,
   },
 );
+
+// const DeviceCardFragment = createFragmentContainer(
+//   DeviceCardComponent,
+//   {
+//     node: graphql`
+//       fragment DeviceCard_node on ComputingDeviceAsset {
+//         id
+//         name
+//         asset_id
+//         installed_operating_system {
+//           name
+//         }
+//         asset_type
+//         fqdn
+//         labels
+//         network_id
+//       }
+//     `,
+//   },
+// );
 
 export const DeviceCard = compose(
   inject18n,

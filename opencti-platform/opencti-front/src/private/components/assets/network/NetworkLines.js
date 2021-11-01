@@ -14,7 +14,7 @@ class NetworkLines extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'network',
+      'networkAssetList',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -29,6 +29,7 @@ class NetworkLines extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
+    console.log('NetworkListLineData', this.props.data);
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -72,49 +73,49 @@ export const networkLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: IntrusionSetsOrdering
+    $orderedBy: NetworkAssetOrdering
     $orderMode: OrderingMode
-    $filters: [IntrusionSetsFiltering]
+    $filters: [NetworkAssetFiltering]
   ) {
     ...NetworkLines_data
       @arguments(
         search: $search
         count: $count
         cursor: $cursor
-        orderBy: $orderBy
+        orderedBy: $orderedBy
         orderMode: $orderMode
         filters: $filters
       )
   }
 `;
 
-export const networkLinesdarkLightRootQuery = graphql`
-  query NetworkLinesDarkLightQuery {
-    networkAssetList {
-      edges {
-        node {
-          id
-          name
-          labels
-          asset_id
-          network_id
-          network_address_range {
-            ending_ip_address{
-              ... on IpV4Address {
-                ip_address_value
-              }
-            }
-            starting_ip_address{
-              ... on IpV4Address {
-                ip_address_value
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
+// export const networkLinesdarkLightRootQuery = graphql`
+//   query NetworkLinesDarkLightQuery {
+//     networkAssetList {
+//       edges {
+//         node {
+//           id
+//           name
+//           labels
+//           asset_id
+//           network_id
+//           network_address_range {
+//             ending_ip_address{
+//               ... on IpV4Address {
+//                 ip_address_value
+//               }
+//             }
+//             starting_ip_address{
+//               ... on IpV4Address {
+//                 ip_address_value
+//               }
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+// `;
 
 export default createPaginationContainer(
   NetworkLines,
@@ -125,18 +126,18 @@ export default createPaginationContainer(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        orderBy: { type: "IntrusionSetsOrdering", defaultValue: name }
+        orderedBy: { type: "NetworkAssetOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[IntrusionSetsFiltering]" }
+        filters: { type: "[NetworkAssetFiltering]" }
       ) {
-        intrusionSets(
+        networkAssetList(
           search: $search
           first: $count
-          after: $cursor
-          orderBy: $orderBy
+          # after: $cursor
+          orderedBy: $orderedBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_intrusionSets") {
+        ) @connection(key: "Pagination_networkAssetList") {
           edges {
             node {
               id
@@ -157,7 +158,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.network;
+      return props.data && props.data.networkAssetList;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -170,7 +171,7 @@ export default createPaginationContainer(
         search: fragmentVariables.search,
         count,
         cursor,
-        orderBy: fragmentVariables.orderBy,
+        orderedBy: fragmentVariables.orderedBy,
         orderMode: fragmentVariables.orderMode,
         filters: fragmentVariables.filters,
       };
