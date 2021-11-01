@@ -180,7 +180,6 @@ class ListLines extends Component {
       handleAddFilter,
       handleRemoveFilter,
       handleToggleExports,
-      handleDeleteElements,
       selectedElements,
       handleToggleSelectAll,
       selectAll,

@@ -81,10 +81,6 @@ class Devices extends Component {
     this.setState({ selectAll: false, selectedElements: null });
   }
 
-  handleDeleteElements() {
-    //TODO set state?
-  }
-
   handleDeviceCreation() {
     this.setState({ openDeviceCreation: true });
   }
@@ -222,21 +218,18 @@ class Devices extends Component {
           environment={QueryRendererDarkLight}
           query={devicesCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => {
-            return (
-              <DevicesCards
-                data={props}
-                extra={props}
-                selectAll={selectAll}
-                paginationOptions={paginationOptions}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-              />
-            );
-          }}
+          render={({ error, props }) => <DevicesCards
+              data={props}
+              extra={props}
+              selectAll={selectAll}
+              paginationOptions={paginationOptions}
+              initialLoading={props === null}
+              selectedElements={selectedElements}
+              onLabelClick={this.handleAddFilter.bind(this)}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
+              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+            />
+          }
         />
         {/* <QueryRenderer
           query={devicesCardsQuery}
@@ -330,7 +323,6 @@ class Devices extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
-        handleDeleteElements={this.handleDeleteElements.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
         handleNewCreation={this.handleDeviceCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
@@ -361,9 +353,7 @@ class Devices extends Component {
           environment={QueryRendererDarkLight}
           query={devicesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => {
-            return (
-              <DevicesLines
+          render={({ error, props }) => <DevicesLines
                 data={props}
                 selectAll={selectAll}
                 dataColumns={dataColumns}
@@ -374,8 +364,7 @@ class Devices extends Component {
                 onToggleEntity={this.handleToggleSelectEntity.bind(this)}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
               />
-            );
-          }}
+          }
         />
         {/* <QueryRenderer
           query={devicesLinesQuery}

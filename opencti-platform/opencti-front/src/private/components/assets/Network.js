@@ -224,20 +224,17 @@ class Network extends Component {
           environment={QueryRendererDarkLight}
           query={networkCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => {
-            return (
-              <NetworkCards
-                data={props}
-                selectAll={selectAll}
-                paginationOptions={paginationOptions}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-            );
-          }}
+          render={({ error, props }) => <NetworkCards
+              data={props}
+              selectAll={selectAll}
+              paginationOptions={paginationOptions}
+              initialLoading={props === null}
+              selectedElements={selectedElements}
+              onLabelClick={this.handleAddFilter.bind(this)}
+              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
+            />
+          }
         />
       </ListCards>
     );
@@ -348,21 +345,18 @@ class Network extends Component {
           environment={QueryRendererDarkLight}
           query={networkLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => {
-            return (
-              <NetworkLines
-                data={props}
-                selectAll={selectAll}
-                paginationOptions={paginationOptions}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-            );
-          }}
+          render={({ error, props }) => <NetworkLines
+              data={props}
+              selectAll={selectAll}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              initialLoading={props === null}
+              selectedElements={selectedElements}
+              onLabelClick={this.handleAddFilter.bind(this)}
+              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
+            />
+          }
         />
       </ListLines>
     );
