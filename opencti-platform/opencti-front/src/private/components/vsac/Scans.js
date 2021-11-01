@@ -229,6 +229,11 @@ class Scans extends Component {
     return scans;
   }
 
+  getScatterPlotData(){     
+     
+    }
+
+
   componentDidMount() {
     fetchAllScans("30f033d4-e90d-44f9-8ce0-36597ff08c93")
       .then((response) => {
@@ -248,16 +253,25 @@ class Scans extends Component {
         let analysises = response.data;
         let scatterPlotData = [];
 
-        /*analysises.forEach(analysis =>{
+        analysises.forEach(analysis =>{
          getAnalysisSummary(analysis.id,"30f033d4-e90d-44f9-8ce0-36597ff08c93")
           .then((response) => {
-            scatterPlotData.push(response.data);
+            
+            let scatterPlot = [];
+
+            response.data.forEach((item) => {
+              scatterPlot.push({ x: item.host_percent, y: item.score });
+            });
+
+             scatterPlotData.push(scatterPlot)
+
+          this.setState({scatterPlotData: scatterPlotData});
+
           })
           .catch((error) => {
             console.log(error);
           })
-          this.setState({ scatterPlotData: scatterPlotData})
-        })*/
+        })
         this.setState({ analysises: analysises });
         this.setState({ loadingAnalysises: false });
       })
@@ -283,6 +297,8 @@ class Scans extends Component {
       dialogParams,
     } = this.state;
 
+
+    console.log(scatterPlotData);
     const data = [
       { x: 100, y: 200 },
       { x: 120, y: 100 },
@@ -353,17 +369,6 @@ class Scans extends Component {
       }
     }
 
-    const getScatterPlotData = (data) => {
-      console.log(data);
-      let scatterPlot = [];
-
-      data.forEach((item) => {
-        scatterPlot.push({ x: item.host_percent, y: item.score });
-      });
-
-      return scatterPlot;
-    };
-
     const onNewAnalysis = (id, client, params) => {
       createNewScanAnalysis(id, client, params)
         .then((response) => {
@@ -428,16 +433,27 @@ class Scans extends Component {
           let analysises = response.data;
           let scatterPlotData = [];
 
-          /*analysises.forEach(analysis =>{
+
+
+          analysises.forEach(analysis =>{
          getAnalysisSummary(analysis.id,"30f033d4-e90d-44f9-8ce0-36597ff08c93")
           .then((response) => {
-            scatterPlotData.push(response.data);
+            
+            let scatterPlot = [];
+
+            response.data.forEach((item) => {
+              scatterPlot.push({ x: item.host_percent, y: item.score });
+            });
+
+             scatterPlotData.push(scatterPlot)
+
+          this.setState({scatterPlotData: scatterPlotData});
+
           })
           .catch((error) => {
             console.log(error);
           })
-          this.setState({ scatterPlotData: scatterPlotData})
-        })*/
+        })
           this.setState({ analysises: analysises });
           this.setState({ loadingAnalysises: false });
         })
@@ -822,11 +838,13 @@ class Scans extends Component {
                             />
                             <ReferenceLine x={50} stroke="white" />
                             <ReferenceLine y={50} stroke="white" />
+                            { scatterPlotData && (
                             <Scatter
                               name="A school"
-                              data={data}
+                              data={this.state.scatterPlotData[i]}
                               fill="#8884d8"
                             />
+                            )}
                           </ScatterChart>
                         </ResponsiveContainer>
                       )}
