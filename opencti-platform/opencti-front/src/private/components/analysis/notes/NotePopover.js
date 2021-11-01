@@ -57,6 +57,11 @@ const styles = (theme) => ({
   buttonPopover: {
     textTransform: 'capitalize',
   },
+  popoverDialog: {
+    fontSize: '18px',
+    lineHeight: '24px',
+    color: theme.palette.header.text,
+  },
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -214,11 +219,7 @@ class NotePopover extends Component {
           onClose={this.handleCloseDelete.bind(this)}
         >
             <DialogContent>
-              <Typography style={{
-                fontSize: '18px',
-                lineHeight: '24px',
-                color: 'white',
-              }} >
+              <Typography className={classes.popoverDialog}>
                 {t('Are you sure you’d like to delete this item?')}
               </Typography>
               <DialogContentText>

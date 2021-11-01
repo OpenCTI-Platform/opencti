@@ -80,15 +80,21 @@ export default (logo = null, primary = null, secondary = null) => ({
           scrollbarColor: '#14262c #2d4b5b',
         },
         '*::-webkit-scrollbar': {
-          width: 12,
+          width: 8,
         },
         '*::-webkit-scrollbar-track': {
-          background: '#2d4b5b',
+          // background: '#2d4b5b',
+          background: 'transparent',
+          borderRadius: '7px',
         },
         '*::-webkit-scrollbar-thumb': {
-          backgroundColor: '#14262c',
-          borderRadius: 20,
-          border: '3px solid #2d4b5b',
+          // backgroundColor: '#14262c',
+          // borderRadius: 20,
+          // border: '3px solid #2d4b5b',
+          borderRadius: '7px',
+          backgroundColor: 'rgba(241, 241, 242, 0.35)',
+          border: 'none',
+
         },
         html: {
           WebkitFontSmoothing: 'auto',

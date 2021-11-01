@@ -48,8 +48,8 @@ const styles = (theme) => ({
     margin: '0 300px 0 -10px',
   },
   toolBar: {
-    marginLeft: -25,
-    marginRight: -25,
+    marginLeft: -24,
+    marginRight: -24,
     marginTop: -20,
     height: '64px',
     color: theme.palette.header.text,

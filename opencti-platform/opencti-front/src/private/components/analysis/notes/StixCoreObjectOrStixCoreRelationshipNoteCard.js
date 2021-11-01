@@ -202,10 +202,11 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
                       ) : (
                         t('Unknown')
                       )}
-                    </strong>{' '}
+                    </strong>
                     <span style={{ color: theme.palette.text.secondary }}>
-                      {t('added a note')} on {node.created && nsdt(node.created)}
+                      {t(' added a note on ')}
                     </span>
+                    {nsdt(node.created)}
                   </div>
                   {/* <div
                     style={{

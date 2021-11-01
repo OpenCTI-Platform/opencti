@@ -17,7 +17,6 @@ import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import StixCoreObjectOpinions from '../../analysis/opinions/StixCoreObjectOpinions';
-import '../../../../resources/css/customScrollbar.css';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
@@ -29,12 +28,33 @@ const styles = (theme) => ({
     borderRadius: 6,
   },
   chip: {
-    color: '#FFFFFF',
+    color: theme.palette.header.text,
     height: 25,
     fontSize: 12,
     padding: '14px 12px',
     margin: '0 7px 7px 0',
-    backgroundColor: 'rgba(6,16,45,255)',
+    backgroundColor: theme.palette.header.background,
+  },
+  scrollBg: {
+    background: theme.palette.header.background,
+    width: '100%',
+    color: 'white',
+    padding: '10px 5px 10px 15px',
+    borderRadius: '5px',
+    lineHeight: '20px',
+  },
+  scrollDiv: {
+    width: '100%',
+    background: theme.palette.header.background,
+    height: '78px',
+    overflow: 'hidden',
+    overflowY: 'scroll',
+  },
+  scrollObj: {
+    color: theme.palette.header.text,
+    fontFamily: 'sans-serif',
+    padding: '0px',
+    textAlign: 'left',
   },
 });
 
@@ -156,9 +176,9 @@ class StixDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <div className='scroll-bg'>
-                  <div className='scroll-div'>
-                    <div className='scroll-object'>
+                <div className={classes.scrollBg}>
+                  <div className={classes.scrollDiv}>
+                    <div className={classes.scrollObj}>
                       {stixDomainObject.description && t(stixDomainObject.description)}
                     </div>
                   </div>

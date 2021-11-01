@@ -458,21 +458,6 @@ class DeviceCreationDetailsComponent extends Component {
                     </Tooltip>
                   </div>
                   <div className="clearfix" />
-                  {/* <div className='scroll-bg'>
-                    <div className='scroll-div'>
-                      <div className='scroll-object'>
-                        <Field
-                          component={TextField}
-                          multiline={true}
-                          variant='outlined'
-                          size='small'
-                          name="location"
-                          fullWidth={true}
-                          containerstyle={{ width: '100%', height: '100%' }}
-                        />
-                      </div>
-                    </div>
-                  </div> */}
                   <Field
                   component={TextField}
                   name="Description"
