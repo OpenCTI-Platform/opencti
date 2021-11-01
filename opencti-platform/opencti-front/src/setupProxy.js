@@ -4,7 +4,7 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 const onError = function (err, req, res) {
   console.log("Something went wrong... Ignoring");
 };
-const host = process.env.REACT_APP_GRAPHQL_HOST || 'https://graphql.darklight.ai/'
+const host = process.env.REACT_APP_GRAPHQL_HOST || "http://localhost:4000";
 
 module.exports = function (app) {
   app.use(
