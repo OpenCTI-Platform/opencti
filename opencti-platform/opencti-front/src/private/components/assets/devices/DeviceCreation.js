@@ -129,7 +129,6 @@ class DeviceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('Device Created Successfully! InputData: ', values);
     // const finalValues = pipe(
     //   assoc('createdBy', values.createdBy?.value),
     //   assoc('objectMarking', pluck('value', values.objectMarking)),
@@ -154,7 +153,6 @@ class DeviceCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        console.log('DeviceCreationDarkLightMutationData', data);
         this.props.history.push('/dashboard/assets/devices');
       },
       onError: (err) => console.log('DeviceCreationDarkLightMutationError', err),

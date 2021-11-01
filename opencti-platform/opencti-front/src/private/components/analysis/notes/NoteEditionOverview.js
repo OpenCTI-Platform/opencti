@@ -144,7 +144,6 @@ class NoteEditionOverviewComponent extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('asdasdasdadValues', values);
     CM(environmentDarkLight, {
       mutation: noteMutationFieldPatch,
       variables: {
@@ -158,7 +157,6 @@ class NoteEditionOverviewComponent extends Component {
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
-        console.log('NoteEditionDarkLightMutationresponse', response);
         this.props.handleClose();
       },
       onError: (err) => console.log('NoteEditionDarkLightMutationError', err),

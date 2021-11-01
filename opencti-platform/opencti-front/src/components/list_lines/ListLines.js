@@ -207,7 +207,6 @@ class ListLines extends Component {
       CreateItemComponent,
       message,
     } = this.props;
-    console.log('selectedElementsDartLight', Object.entries(selectedElements || {}));
     let className = classes.container;
     if (noBottomPadding) {
       className = classes.containerWithoutPadding;

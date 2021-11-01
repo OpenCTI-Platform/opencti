@@ -130,7 +130,6 @@ class ExternalReferenceCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        console.log('ExternalReferenceCreationMutationResp', response);
         if (this.props.onCreate) {
           this.props.onCreate(response.externalReferenceAdd, true);
         }

@@ -163,7 +163,6 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
         relationship_type: 'external-reference',
       },
       onCompleted: (data) => {
-        console.log('ExtRefRemoveDarkLightMutationData', data);
         this.setState({ removing: false });
         this.handleCloseDialog();
       },
@@ -196,7 +195,6 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
       t, classes, stixCoreObjectId, data,
     } = this.props;
     const { expanded, displayExternalRefID } = this.state;
-    console.log('externalReferencesEdges', data);
     const externalReferencesEdges = data.itAsset.external_references.edges;
     // const externalReferencesEdges = [data.externalReference];
     const expandable = externalReferencesEdges.length > 7;
@@ -516,7 +514,6 @@ const StixCoreObjectExternalReferencesLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      console.log('propsdfasfafa', props);
       return props.data && props.data.itAsset.external_references;
     },
     getFragmentVariables(prevVars, totalCount) {

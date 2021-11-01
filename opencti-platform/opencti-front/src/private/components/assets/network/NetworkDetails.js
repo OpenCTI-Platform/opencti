@@ -50,7 +50,6 @@ class NetworkDetailsComponent extends Component {
     const ntadr = network.network_address_range;
     const startingAddress = ntadr.starting_ip_address && ntadr.starting_ip_address.ip_address_value;
     const endingAddress = ntadr.ending_ip_address && ntadr.ending_ip_address.ip_address_value;
-    console.log('this is a network', network);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>

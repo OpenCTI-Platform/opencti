@@ -97,7 +97,6 @@ class StixDomainObjectAssetEditionOverviewComponent extends Component {
     } = this.props;
     const { editContext } = stixDomainObject;
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
-    console.log('fetched data ', stixDomainObject);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>

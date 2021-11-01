@@ -16,7 +16,6 @@ export const getAccount = async () => {
   }
 };
 
-//console.log(getAccount())
 export const getInformationPageData = (clientID) => {
   try {
     const headers = {

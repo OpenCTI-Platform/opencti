@@ -112,7 +112,6 @@ class DeviceCardComponent extends Component {
       selectedElements,
     } = this.props;
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
-    console.log('DeviceCardComponent', node);
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea

@@ -78,7 +78,6 @@ class Software extends Component {
   }
 
   handleSoftwareCreation() {
-    console.log('Software Created successfully');
     this.setState({ openSoftwareCreation: true });
   }
 

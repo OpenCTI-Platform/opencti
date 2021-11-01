@@ -78,7 +78,6 @@ class Network extends Component {
   }
 
   handleNetworkCreation() {
-    console.log('Network Created successfully');
     this.setState({ openNetworkCreation: true });
   }
 
@@ -226,7 +225,6 @@ class Network extends Component {
           query={networkCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
-            console.log(`DarkLightNetworkCards Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
               <NetworkCards
                 data={props}
@@ -351,7 +349,6 @@ class Network extends Component {
           query={networkLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
-            console.log(`DarkLightNetworkLines Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
               <NetworkLines
                 data={props}

@@ -42,7 +42,6 @@ class DevicesCards extends Component {
       selectedElements,
     } = this.props;
     const { bookmarks } = this.state;
-    console.log('pathOr([]this.props.data)', this.props.data);
     return (
     // <QueryRenderer
     //   query={stixDomainObjectBookmarksQuery}

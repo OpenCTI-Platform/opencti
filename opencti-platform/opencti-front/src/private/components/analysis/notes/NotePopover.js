@@ -114,7 +114,6 @@ class NotePopover extends Component {
         id: this.props.id,
       },
       onCompleted: (data) => {
-        console.log('NoteDeletionDarkLightMutationData', data);
         this.setState({ deleting: false });
         this.handleClose();
         if (this.props.handleOpenRemove) {

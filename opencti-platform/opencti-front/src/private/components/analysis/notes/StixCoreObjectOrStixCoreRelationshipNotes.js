@@ -26,7 +26,6 @@ class StixCoreObjectOrStixCoreRelationshipNotes extends Component {
           query={stixCoreRelationshipNotesCardsQuery}
           variables={{ id: stixCoreObjectOrStixCoreRelationshipId, count: 200 }}
           render={({ props }) => {
-            console.log('StixNotesIsRelationshipPropsData', stixCoreObjectOrStixCoreRelationshipId);
             if (props) {
               return (
                 <StixCoreRelationshipNotesCards
@@ -61,7 +60,6 @@ class StixCoreObjectOrStixCoreRelationshipNotes extends Component {
           variables={{ id: stixCoreObjectOrStixCoreRelationshipId, count: 200 }}
           render={({ props }) => {
             if (props) {
-              console.log('StixNotesPropsData', props);
               return (
                 <StixCoreObjectNotesCards
                   stixCoreObjectId={stixCoreObjectOrStixCoreRelationshipId}

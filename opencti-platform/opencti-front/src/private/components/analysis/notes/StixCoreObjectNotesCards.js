@@ -139,7 +139,6 @@ class StixCoreObjectNotesCardsContainer extends Component {
     const {
       t, classes, stixCoreObjectId, marginTop, data,
     } = this.props;
-    console.log('NotesCardsData', data);
     const { open } = this.state;
     const notes = R.pathOr([], ['itAsset', 'notes', 'edges'], data);
     return (

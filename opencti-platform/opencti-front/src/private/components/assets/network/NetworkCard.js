@@ -111,7 +111,6 @@ class NetworkCardComponent extends Component {
       onLabelClick,
       selectedElements,
     } = this.props;
-    console.log('sdsaasfasfaf', node);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>

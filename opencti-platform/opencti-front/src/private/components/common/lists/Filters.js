@@ -130,7 +130,6 @@ class Filters extends Component {
         fetchDarklightQuery(itAssetListQuery)
           .toPromise()
           .then((data) => {
-            console.log('sadasdaafafasfaf', data);
             const assetTypeByEntities = R.pipe(
               R.pathOr([], ['itAssetList', 'edges']),
               R.map((n) => ({
@@ -139,7 +138,6 @@ class Filters extends Component {
                 type: n.node.asset_type,
               })),
             )(data);
-            console.log('sadasdaafafasfafsadafaf', assetTypeByEntities);
             this.setState({
               entities: {
                 ...this.state.entities,
@@ -155,7 +153,6 @@ class Filters extends Component {
         fetchDarklightQuery(itAssetListQuery)
           .toPromise()
           .then((data) => {
-            console.log('sadasdaafafasfaf', data);
             const operationStatusEntities = R.pipe(
               R.pathOr([], ['itAssetList', 'edges']),
               R.map((n) => ({
@@ -164,7 +161,6 @@ class Filters extends Component {
                 // type: n.node.asset_type,
               })),
             )(data);
-            console.log('sadasdaafafasfafsadafaf', operationStatusEntities);
             this.setState({
               entities: {
                 ...this.state.entities,
@@ -307,7 +303,6 @@ class Filters extends Component {
                 color: n.node.color,
               })),
             )(data);
-            console.log('sadasdaafafasfafsadafafLabels', labelledByEntities);
             this.setState({
               entities: {
                 ...this.state.entities,

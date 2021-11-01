@@ -127,7 +127,6 @@ class ExternalReferenceEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('asdasdasdadValues', values);
     CM(environmentDarkLight, {
       mutation: externalReferenceMutationFieldPatch,
       variables: {
@@ -143,7 +142,6 @@ class ExternalReferenceEditionContainer extends Component {
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
-        console.log('ExtRefEditionDarkLightMutationresponse', response);
         this.props.handleClose();
       },
       onError: (err) => console.log('ExtRefEditionDarkLightMutationError', err),

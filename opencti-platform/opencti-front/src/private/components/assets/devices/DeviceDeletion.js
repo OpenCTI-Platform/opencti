@@ -146,7 +146,6 @@ class DeviceDeletion extends Component {
       },
       onCompleted: (data) => {
         this.setState({ deleting: false });
-        console.log('DeviceDeletionDarkLightMutationData', data);
         this.handleClose();
         this.props.history.push('/dashboard/assets/devices');
       },
@@ -178,7 +177,6 @@ class DeviceDeletion extends Component {
       id,
       isAllselected,
     } = this.props;
-    console.log('DarkLightID', Boolean(isAllselected));
     return (
       <div className={classes.container}>
         {/* <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}> */}

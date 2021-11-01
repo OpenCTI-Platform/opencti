@@ -143,7 +143,6 @@ class NoteCreation extends Component {
       },
       setSubmitting,
       onCompleted: (response) => {
-        console.log('NoteCreationDarkLightMutationresponse', response);
         setSubmitting(false);
         resetForm();
         this.handleClose();

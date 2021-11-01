@@ -34,7 +34,6 @@ class Devices extends Component {
       props.location,
       'view-devices',
     );
-    console.log('sdassfasfasparams', params);
     this.state = {
       sortBy: R.propOr('name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
@@ -83,7 +82,7 @@ class Devices extends Component {
   }
 
   handleDeleteElements() {
-    console.log('deleted successfully', this.state.selectedElements);
+    //TODO set state?
   }
 
   handleDeviceCreation() {
@@ -224,7 +223,6 @@ class Devices extends Component {
           query={devicesCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
-            console.log(`DarkLightDevicesCards Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
               <DevicesCards
                 data={props}
@@ -364,7 +362,6 @@ class Devices extends Component {
           query={devicesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
-            console.log(`DarkLight Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
               <DevicesLines
                 data={props}

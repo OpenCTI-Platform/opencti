@@ -134,7 +134,6 @@ class RootSoftware extends Component {
           query={softwareDarkLightQuery}
           variables={{ id: softwareId }}
           render={({ error, props }) => {
-            console.log(`softwareDarkLightQuery ${JSON.stringify(props)} OR Error: ${error}`);
             if (props) {
               if (props.softwareAsset) {
                 return (

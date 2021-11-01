@@ -133,7 +133,6 @@ class RootDevice extends Component {
           query={deviceDarkLightQuery}
           variables={{ id: deviceId }}
           render={({ error, props }) => {
-            console.log(`deviceDarkLightQuery ${JSON.stringify(props)} OR Error: ${error}`);
             if (props) {
               if (props.computingDeviceAsset) {
                 return (

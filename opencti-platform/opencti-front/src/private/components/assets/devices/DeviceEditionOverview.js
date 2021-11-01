@@ -224,7 +224,6 @@ class DeviceEditionOverviewComponent extends Component {
       enableReferences,
     } = this.props;
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
-    console.log('fetched device ', device);
     const createdBy = R.pathOr(null, ['createdBy', 'name'], device) === null
       ? ''
       : {

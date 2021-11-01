@@ -124,7 +124,6 @@ class ExternalReferencePopover extends Component {
         id: this.props.externalReferenceId,
       },
       onCompleted: (data) => {
-        console.log('ExtRefDeletionDarkLightMutationData', data);
         this.setState({ deleting: false });
         this.handleCloseDelete();
       },

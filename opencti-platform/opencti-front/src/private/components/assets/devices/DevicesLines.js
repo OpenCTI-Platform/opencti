@@ -29,7 +29,6 @@ class DevicesLines extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    console.log('TotalCount', this.props.data);
     return (
       <ListLinesContent
         initialLoading={initialLoading}

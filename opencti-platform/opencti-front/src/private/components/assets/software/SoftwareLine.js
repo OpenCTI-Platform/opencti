@@ -61,7 +61,6 @@ class SoftwareLineComponent extends Component {
       selectedElements,
     } = this.props;
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
-    console.log('SoftwareNode', node);
     return (
       <ListItem
         classes={{ root: classes.item }}

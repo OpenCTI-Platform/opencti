@@ -135,7 +135,6 @@ class RootNetwork extends Component {
           query={networkDarkLightQuery}
           variables={{ networkAssetId: networkId }}
           render={({ error, props }) => {
-            console.log(`networkDarkLightQuery ${JSON.stringify(props)} OR Error: ${error}`);
             if (props) {
               if (props.networkAsset) {
                 return (

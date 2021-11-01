@@ -60,7 +60,6 @@ class NetworkLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    console.log('asdasfewfwefa', node);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <ListItem

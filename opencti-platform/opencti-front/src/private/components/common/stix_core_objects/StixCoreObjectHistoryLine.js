@@ -245,7 +245,6 @@ class StixCoreObjectHistoryLineComponent extends Component {
     const {
       nsdt, classes, node, isRelation, t,
     } = this.props;
-    console.log('node content', node);
     return (
       <div className={classes.container}>
         {/* <div className={classes.avatar}>

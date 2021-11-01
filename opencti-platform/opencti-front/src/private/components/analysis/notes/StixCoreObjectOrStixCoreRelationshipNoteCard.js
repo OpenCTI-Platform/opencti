@@ -127,7 +127,6 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
       onCompleted: (response) => {
         this.setState({ removing: false });
         this.handleCloseDialog();
-        console.log('NoteRemoveDarkLightMutationresponse', response);
       },
       onError: (err) => console.log('NoteRemoveDarkLightMutationError', err),
     });

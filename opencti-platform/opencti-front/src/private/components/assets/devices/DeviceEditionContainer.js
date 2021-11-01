@@ -133,15 +133,12 @@ class DeviceEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('Device Edited Successfully! InputData: ', values);
-    console.log('DeviceId', this.props.device.id);
     // const finalValues = pipe(
     //   assoc('createdBy', values.createdBy?.value),
     //   assoc('objectMarking', pluck('value', values.objectMarking)),
     //   assoc('objectLabel', pluck('value', values.objectLabel)),
     // )(values);
     const pair = Object.keys(values).map((key) => [{ key, value: values[key] }]);
-    console.log('pairpair', pair);
     CM(environmentDarkLight, {
       mutation: deviceEditionMutation,
       // const adaptedValues = evolve(

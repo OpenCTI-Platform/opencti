@@ -112,7 +112,6 @@ class SoftwareCardComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    console.log('sdasfasfasfafData', node);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
