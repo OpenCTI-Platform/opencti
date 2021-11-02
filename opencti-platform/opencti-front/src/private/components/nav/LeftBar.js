@@ -128,7 +128,7 @@ const LeftBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <FiberManualRecordIcon style={{ fontSize: '0.55rem' }}/>
                 </ListItemIcon>
-                <ListItemText primary={t('Assests')} />
+                <ListItemText primary={t('Assets')} />
               </MenuItem>
               <MenuItem
                 component={Link}
@@ -244,7 +244,7 @@ const LeftBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <LocationCityIcon />
               </ListItemIcon>
-              <ListItemText primary={t('Dark Light')} />
+              <ListItemText primary={t('DarkLight')} />
             </MenuItem>
         </MenuList>
       </Security>
