@@ -44,7 +44,7 @@ export default class Stardog extends DataSource {
         // If terms should be converted to their raw value instead of being represented as RDFJS terms
         materializeRdfJsTerms: true,
       });
-    
+      if(sparqlResponse == null) return null;
       // convert the SPARQL results to JavaScript dictionary
       var results = converter.sparqlJsonResultsToTree( sparqlResponse, singularizeSchema );
       return results;
@@ -80,25 +80,28 @@ export default class Stardog extends DataSource {
   }
 
   async create( dbName, sparqlQuery ) {
-    query.execute( this.conn, dbName, queryStr, 'text/turtle', {
+    return await query.execute( this.conn, dbName, sparqlQuery, 'text/turtle', {
       reasoning: false,
-    }).then(( {body }) => {
-      return(body.results.bindings);
+    }).catch((err) => {
+      console.log(err)
+      throw err;
     });
   }
 
   async delete( dbName, sparqlQuery ) {
-    query.execute( this.conn, dbName, queryStr, 'text/turtle', {
+    return query.execute( this.conn, dbName, sparqlQuery, 'text/turtle', {
       reasoning: false,
-    }).then(( {body }) => {
-      return(body.results.bindings);
+    }).catch((err) => {
+      console.log(err)
+      throw err;
     });
   }
   async edit( dbName, sparqlQuery ) {
-    query.execute( this.conn, dbName, queryStr, 'text/turtle', {
+    return query.execute( this.conn, dbName, sparqlQuery, 'text/turtle', {
       reasoning: false,
-    }).then(( {body }) => {
-      return(body.results.bindings);
+    }).catch((err) => {
+      console.log(err)
+      throw err;
     });
   }
 }
