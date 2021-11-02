@@ -1,5 +1,5 @@
 /* eslint-disable */
-import React, { Component } from "react";
+import React, { Component, useEffect } from "react";
 import * as PropTypes from "prop-types";
 import { withRouter, Link } from "react-router-dom";
 import * as R from "ramda";
@@ -190,6 +190,7 @@ function getModalStyle() {
 }
 
 class Scans extends Component {
+
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
@@ -203,7 +204,7 @@ class Scans extends Component {
       searchTerm: R.propOr("", "searchTerm", params),
       view: R.propOr("lines", "view", params),
       filters: R.propOr({}, "filters", params),
-      client_ID: localStorage.getItem('client_id'),
+      client_ID: null,
       openExports: false,
       numberOfElements: { number: 0, symbol: "" },
       selectedElements: null,
@@ -230,58 +231,58 @@ class Scans extends Component {
     return scans;
   }
 
-  getScatterPlotData(){     
-     
-    }
-
-
   componentDidMount() {
-    fetchAllScans(this.state.client_ID)
-      .then((response) => {
-        const scans = response.data;
 
-        this.setState({ scans: scans });
-        this.setState({ scansReportDate: this.sortScansByReportDate(scans) });
-        this.setState({ renderScans: scans });
-        this.setState({ loadingScans: false });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    this.setState({client_ID: localStorage.getItem('client_id')},function() {
 
-    fetchAllAnalysis(this.state.client_ID)
-      .then((response) => {
-        let analysises = response.data;
-        let scatterPlotData = [];
+      fetchAllScans(this.state.client_ID)
+        .then((response) => {
+          const scans = response.data;
 
-        analysises.forEach(analysis =>{
-         getAnalysisSummary(analysis.id,this.state.client_ID)
-          .then((response) => {
-            
-            let scatterPlot = [];
-
-            response.data.forEach((item) => {
-              scatterPlot.push({ x: item.host_percent, y: item.score });
-            });
-
-             scatterPlotData.push(scatterPlot)
-
-          this.setState({scatterPlotData: scatterPlotData});
-
-          })
-          .catch((error) => {
-            console.log(error);
-          })
+          this.setState({ scans: scans });
+          this.setState({ scansReportDate: this.sortScansByReportDate(scans) });
+          this.setState({ renderScans: scans });
+          this.setState({ loadingScans: false });
         })
-        this.setState({ analysises: analysises });
-        this.setState({ loadingAnalysises: false });
-      })
-      .catch((error) => {
-        console.log(error);
+        .catch((error) => {
+          console.log(error);
+        });
+
+      fetchAllAnalysis(this.state.client_ID)
+        .then((response) => {
+          let analysises = response.data;
+          let scatterPlotData = [];
+
+          analysises.forEach(analysis =>{
+           getAnalysisSummary(analysis.id,this.state.client_ID)
+            .then((response) => {
+              
+              let scatterPlot = [];
+
+              response.data.forEach((item) => {
+                scatterPlot.push({ x: item.host_percent, y: item.score });
+              });
+
+               scatterPlotData.push(scatterPlot)
+
+            this.setState({scatterPlotData: scatterPlotData});
+
+            })
+            .catch((error) => {
+              console.log(error);
+            })
+          })
+          this.setState({ analysises: analysises });
+          this.setState({ loadingAnalysises: false });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
       });
   }
 
   render() {
+
     const { t, n, fsd, mtd, theme } = this.props;
     const {
       scans,
