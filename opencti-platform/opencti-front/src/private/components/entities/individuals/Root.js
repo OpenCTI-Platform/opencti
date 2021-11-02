@@ -119,8 +119,8 @@ class RootIndividual extends Component {
             <StixCoreObjectKnowledgeBar
               stixCoreObjectLink={link}
               availableSections={[
-                'individuals',
-                'individuals',
+                'organizations',
+                'locations',
                 'threat_actors',
                 'intrusion_sets',
                 'campaigns',

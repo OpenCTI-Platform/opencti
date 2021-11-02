@@ -112,12 +112,12 @@ class IndividualKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/entities/individuals/:individualId/knowledge/individuals"
+            path="/dashboard/entities/individuals/:individualId/knowledge/organizations"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={individual.id}
                 relationshipTypes={['part-of']}
-                targetStixDomainObjectTypes={['Individual']}
+                targetStixDomainObjectTypes={['Organization']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}
@@ -130,7 +130,7 @@ class IndividualKnowledgeComponent extends Component {
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={individual.id}
-                relationshipTypes={['localization']}
+                relationshipTypes={['located-at']}
                 targetStixDomainObjectTypes={['City', 'Country', 'Region']}
                 entityLink={link}
                 isRelationReversed={false}

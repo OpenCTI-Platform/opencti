@@ -146,7 +146,8 @@ class EntityStixCoreRelationships extends Component {
       selectedRelationshipType,
     } = this.state;
     const displayTypes = targetStixDomainObjectTypes.length > 1
-      || targetStixDomainObjectTypes.includes('Identity');
+      || targetStixDomainObjectTypes.includes('Identity')
+      || targetStixDomainObjectTypes.includes('Location');
     const displayRelationshipTypes = relationshipTypes.length > 1;
     return (
       <Drawer
@@ -193,66 +194,44 @@ class EntityStixCoreRelationships extends Component {
                     {t('Course of action')}
                   </MenuItem>
                 )}
-                {includes('Individual', targetStixDomainObjectTypes)
-                  || (includes('Identity', targetStixDomainObjectTypes) && (
-                    <MenuItem value="Individual">{t('Individual')}</MenuItem>
-                  ))}
-                {includes('Organization', targetStixDomainObjectTypes)
-                  || (includes('Identity', targetStixDomainObjectTypes) && (
-                    <MenuItem value="Organization">
-                      {t('Organization')}
-                    </MenuItem>
-                  ))}
-                {includes('Sector', targetStixDomainObjectTypes)
-                  || (includes('Identity', targetStixDomainObjectTypes) && (
-                    <MenuItem value="Sector">{t('Sector')}</MenuItem>
-                  ))}
-                {includes('Indicator', targetStixDomainObjectTypes)
-                  || (includes('Indicator', targetStixDomainObjectTypes) && (
-                    <MenuItem value="Indicator">{t('Indicator')}</MenuItem>
-                  ))}
-                {includes('Infrastructure', targetStixDomainObjectTypes)
-                  || (includes('Infrastructure', targetStixDomainObjectTypes) && (
-                    <MenuItem value="Infrastructure">
-                      {t('Infrastructure')}
-                    </MenuItem>
-                  ))}
-                {includes('Intrusion-Set', targetStixDomainObjectTypes) && (
+                {targetStixDomainObjectTypes.some((r) => ['System', 'Identity'].includes(r)) && <MenuItem value="System">{t('System')}</MenuItem>}
+                {targetStixDomainObjectTypes.some((r) => ['Individual', 'Identity'].includes(r)) && <MenuItem value="Individual">{t('Individual')}</MenuItem>}
+                {targetStixDomainObjectTypes.some((r) => ['Organization', 'Identity'].includes(r)) && (
+                  <MenuItem value="Organization">{t('Organization')}</MenuItem>
+                )}
+                {targetStixDomainObjectTypes.some((r) => ['Sector', 'Identity'].includes(r)) && <MenuItem value="Sector">{t('Sector')}</MenuItem>}
+                {targetStixDomainObjectTypes.includes('Indicator') && (
+                  <MenuItem value="Indicator">{t('Indicator')}</MenuItem>
+                )}
+                {targetStixDomainObjectTypes.includes('Infrastructure') && (
+                  <MenuItem value="Infrastructure">
+                    {t('Infrastructure')}
+                  </MenuItem>
+                )}
+                {targetStixDomainObjectTypes.includes('Intrusion-Set') && (
                   <MenuItem value="Intrusion-Set">
                     {t('Intrusion set')}
                   </MenuItem>
                 )}
-                {includes('City', targetStixDomainObjectTypes)
-                  || (includes('Location', targetStixDomainObjectTypes) && (
-                    <MenuItem value="City">{t('City')}</MenuItem>
-                  ))}
-                {includes('Country', targetStixDomainObjectTypes)
-                  || (includes('Location', targetStixDomainObjectTypes) && (
-                    <MenuItem value="Country">{t('Country')}</MenuItem>
-                  ))}
-                {includes('Region', targetStixDomainObjectTypes)
-                  || (includes('Location', targetStixDomainObjectTypes) && (
-                    <MenuItem value="Region">{t('Region')}</MenuItem>
-                  ))}
-                {includes('Position', targetStixDomainObjectTypes)
-                  || (includes('Position', targetStixDomainObjectTypes) && (
-                    <MenuItem value="Position">{t('Position')}</MenuItem>
-                  ))}
-                {includes('Malware', targetStixDomainObjectTypes) && (
+                {targetStixDomainObjectTypes.some((r) => ['City', 'Location'].includes(r)) && <MenuItem value="City">{t('City')}</MenuItem>}
+                {targetStixDomainObjectTypes.some((r) => ['Country', 'Location'].includes(r)) && <MenuItem value="Country">{t('Country')}</MenuItem>}
+                {targetStixDomainObjectTypes.some((r) => ['Region', 'Location'].includes(r)) && <MenuItem value="Region">{t('Region')}</MenuItem>}
+                {targetStixDomainObjectTypes.some((r) => ['Region', 'Position'].includes(r)) && <MenuItem value="Position">{t('Position')}</MenuItem>}
+                {targetStixDomainObjectTypes.includes('Malware') && (
                   <MenuItem value="Malware">{t('Malware')}</MenuItem>
                 )}
-                {includes('Threat-Actor', targetStixDomainObjectTypes) && (
+                {targetStixDomainObjectTypes.includes('Threat-Actor') && (
                   <MenuItem value="Threat-Actor">{t('Threat actor')}</MenuItem>
                 )}
-                {includes('Tool', targetStixDomainObjectTypes) && (
+                {targetStixDomainObjectTypes.includes('Tool') && (
                   <MenuItem value="Tool">{t('Tool')}</MenuItem>
                 )}
-                {includes('Vulnerability', targetStixDomainObjectTypes) && (
+                {targetStixDomainObjectTypes.includes('Vulnerability') && (
                   <MenuItem value="Vulnerability">
                     {t('Vulnerability')}
                   </MenuItem>
                 )}
-                {includes('Incident', targetStixDomainObjectTypes) && (
+                {targetStixDomainObjectTypes.includes('Incident') && (
                   <MenuItem value="Incident">{t('Incident')}</MenuItem>
                 )}
               </Select>
@@ -398,7 +377,8 @@ class EntityStixCoreRelationships extends Component {
     } = this.state;
     // Display types selection when target types are multiple
     const displayTypes = targetStixDomainObjectTypes.length > 1
-      || targetStixDomainObjectTypes.includes('Identity');
+      || targetStixDomainObjectTypes.includes('Identity')
+      || targetStixDomainObjectTypes.includes('Location');
     const displayRelationshipTypes = relationshipTypes && relationshipTypes.length > 1;
     const displayBottomBar = displayTypes || displayRelationshipTypes;
     const selectedTypes = selectedEntityType === 'All'
