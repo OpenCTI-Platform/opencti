@@ -1,5 +1,5 @@
 /* eslint-disable */
-import React from 'react';
+import React, { useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Switch } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
@@ -23,6 +23,7 @@ import Profile from './components/Profile';
 import Message from '../components/Message';
 import { NoMatch, BoundaryRoute } from './components/Error';
 import StixCoreObjectOrStixCoreRelationship from './components/StixCoreObjectOrStixCoreRelationship';
+import { getAccount } from '../services/account.service';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -47,6 +48,23 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Index = (me) => {
+
+  useEffect(() => {
+    getAccount().then((res) => {
+      const account = res.data;
+      if (account) {
+        const clientId = account.clients?.[0].client_id;
+        localStorage.setItem('client_id', clientId);
+      } else {
+        clearToken();
+      }
+    });
+  });
+
+  const clearClientId = () => {
+    localStorage.removeItem('client_id');
+  };
+
   const classes = useStyles();
   return (
     <div className={classes.root}>
