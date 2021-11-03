@@ -11,7 +11,6 @@ services:
       - redisdata:/data
     profiles:
       - backend
-      - opencti
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
@@ -33,7 +32,6 @@ services:
         hard: 65536
     profiles:
       - backend
-      - opencti
 
   rabbitmq:
     image: rabbitmq:3.9-management
@@ -48,7 +46,6 @@ services:
     restart: unless-stopped
     profiles:
       - backend
-      - opencti
   
   opencti:
     image: docker.darklight.ai/opencti
@@ -76,7 +73,6 @@ services:
       - RABBITMQ__PASSWORD=${RABBITMQ_DEFAULT_PASS}
       - SMTP__HOSTNAME=${SMTP_HOSTNAME}
       - SMTP__PORT=25
-      - PROVIDERS__LOCAL__STRATEGY=LocalStrategy
       - SUBSCRIPTION_SCHEDULER__ENABLED=false
     ports:
       - "8080:8080"
@@ -150,7 +146,7 @@ services:
       - RABBITMQ__PASSWORD=${RABBITMQ_DEFAULT_PASS}
       - SMTP__HOSTNAME=${SMTP_HOSTNAME}
       - SMTP__PORT=25
-      - PROVIDERS__LOCAL__STRATEGY=LocalStrategy
+      # - PROVIDERS__LOCAL__STRATEGY=LocalStrategy
       - SUBSCRIPTION_SCHEDULER__ENABLED=false
     ports:
       - "9000:9000"
@@ -164,7 +160,7 @@ services:
     #   - ./darklight.crt:/opt/opencti/certs/darklight.crt
     #   - ./darklight.key:/opt/opencti/certs/darklight.key
     profiles:
-      - backend
+      - graphql
 
 volumes:
   esdata:

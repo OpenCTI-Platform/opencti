@@ -14,9 +14,11 @@ node {
       }
 
       parallel frontend: {
-        docker_steps(registry, "${product}-frontend", '--no-cache -f ./opencti-platform/opencti-front/Dockerfile opencti-platform')
+        String buildArgs = '--no-cache -f ./opencti-platform/opencti-front/Dockerfile opencti-platform'
+        docker_steps(registry, "${product}-frontend", buildArgs)
       }, backend: {
-        docker_steps(registry, "${product}-backend", '--no-cache ./opencti-platform/opencti-graphql/')
+        String buildArgs = '--no-cache ./opencti-platform/opencti-graphql/'
+        docker_steps(registry, "${product}-backend", buildArgs)
       }
 
       stage('Clean Local Docker Resources') {
@@ -27,13 +29,6 @@ node {
         sh(returnStdout: false, script: 'docker system prune --filter "until=336h" -f')
       }
     }
-
-    office365ConnectorSend (
-      status: 'Completed',
-      color: '00FF00',
-      webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
-      message: 'New images built!'
-    )
   } catch(Exception ex) {
     office365ConnectorSend status: 'Failed', webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}"
     throw ex
@@ -54,6 +49,7 @@ void docker_steps(String registry, String image, String buildArgs) {
   }
 
   stage('Clean') {
+    sh "docker ps -a | grep Exit | cut -d ' ' -f 1 | xargs docker rm || true"
     sh "rm ${image}.tar.gz"
   }
 }
