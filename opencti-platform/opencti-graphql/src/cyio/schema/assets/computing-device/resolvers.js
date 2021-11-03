@@ -1,6 +1,6 @@
 import { assetSingularizeSchema as singularizeSchema } from '../asset-mappings.js';
 import { getSparqlQuery, getReducer } from './sparql-query.js';
-import { getSparqlQuery as getSoftwareQuery, 
+import { getSelectSparqlQuery as getSoftwareQuery, 
          getReducer as getSoftwareReducer } from '../software/sparql-query.js';
 import { compareValues } from '../../utils.js';
 
@@ -64,13 +64,11 @@ const computingDeviceResolvers = {
     computingDeviceAsset: async ( _, args, context, info ) => {
       var sparqlQuery = getSparqlQuery('COMPUTING-DEVICE', args.id);
       var reducer = getReducer('COMPUTING-DEVICE');
-      const response = await context.dataSources.Stardog.queryById( 
-        context.dbName, 
-        sparqlQuery, 
-        singularizeSchema 
-      )
-      // console.log( response[0] );
-      return( reducer( response[0]) );
+      const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
+      if (response === undefined ) return null;
+      const first = response[0];
+      if (first === undefined) return null;
+      return( reducer( first ) );
     },
   },
   Mutation: {
@@ -101,13 +99,8 @@ const computingDeviceResolvers = {
 
           // query for the IP address based on its IRI
           var sparqlQuery = getSoftwareQuery('SOFTWARE-IRI', item);
-          const response = await context.dataSources.Stardog.queryById( 
-            context.dbName, 
-            sparqlQuery, 
-            singularizeSchema 
-          )
+          const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
           if (response && response.length > 0) {
-            // console.log( response[0] );
             results.push(reducer( response[0] ))
           }
         }
@@ -119,9 +112,9 @@ const computingDeviceResolvers = {
     },
     installed_operating_system: async ( parent, args, context, ) => {
       var iri = parent.installed_os_iri
-      if (Array.isArray( iri ) ) {
-        console.log(`[DATA-ERROR] value does not comply with spec: ${parent.installed_os_iri}`);
-        if (iri.length > 0) {
+      if (Array.isArray( iri ) && iri.length > 0) {
+        if (iri.length > 1) {
+          console.log(`[WARNING] ${parent.parent_iri} has ${parent.parent_iri.length} values: ${parent.installed_os_iri}`);
           iri = parent.installed_os_iri[0]
         }
       } else {
@@ -129,11 +122,7 @@ const computingDeviceResolvers = {
       }
       var sparqlQuery = getSoftwareQuery('OS-IRI', iri);
       var reducer = getSoftwareReducer('OS-IRI');
-      const response = await context.dataSources.Stardog.queryById( 
-        context.dbName, 
-        sparqlQuery, 
-        singularizeSchema 
-      )
+      const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
       if (response && response.length > 0) {
         // console.log( response[0] );
         let results = reducer(response[0])
@@ -153,13 +142,8 @@ const computingDeviceResolvers = {
 
           // query for the IP address based on its IRI
           var sparqlQuery = getSparqlQuery('IPV4-ADDR', ipAddr);
-          const response = await context.dataSources.Stardog.queryById( 
-            context.dbName, 
-            sparqlQuery, 
-            singularizeSchema 
-          )
+          const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
           if (response && response.length > 0) {
-            // console.log( response[0] );
             results.push(reducer( response[0] ))
           }
         }
@@ -182,13 +166,8 @@ const computingDeviceResolvers = {
 
           // query for the IP address based on its IRI
           var sparqlQuery = getSparqlQuery('IPV6-ADDR', ipAddr);
-          const response = await context.dataSources.Stardog.queryById( 
-            context.dbName, 
-            sparqlQuery, 
-            singularizeSchema 
-          )
+          const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
           if (response.length > 0 ) {
-            // console.log( response[0] );
             results.push(reducer( response[0] ))
           }
         }
@@ -212,13 +191,8 @@ const computingDeviceResolvers = {
 
           // query for the MAC address based on its IRI
           var sparqlQuery = getSparqlQuery('MAC-ADDR', addr);
-          const response = await context.dataSources.Stardog.queryById( 
-            context.dbName, 
-            sparqlQuery, 
-            singularizeSchema 
-          )
+          const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
           if (response.length > 0) {
-            // console.log( response[0] );
             results.push(reducer( response[0] ) )      // TODO: revent back when data is returned as objects, not strings
             // Support for returning MAC address as a string, not a node
             value_array.push( reducer(response[0]).mac_address_value )
@@ -233,7 +207,7 @@ const computingDeviceResolvers = {
         }
     },
     ports: async ( parent, args, context, ) => {
-      let iriArray = parent.ip_addr_iri;
+      let iriArray = parent.ports_iri;
       var reducer = getReducer('PORT-INFO');
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
@@ -245,13 +219,8 @@ const computingDeviceResolvers = {
 
           // query for the IP address based on its IRI
           var sparqlQuery = getSparqlQuery('PORT-INFO', ipAddr);
-          const response = await context.dataSources.Stardog.queryById( 
-            context.dbName, 
-            sparqlQuery, 
-            singularizeSchema 
-          )
+          const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
           if (response && response.length > 0) {
-            // console.log( response[0] );
             results.push(reducer( response[0] ))
           }
         }

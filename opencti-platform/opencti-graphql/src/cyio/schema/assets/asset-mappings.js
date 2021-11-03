@@ -67,7 +67,7 @@ const assetSingularizeSchema = { singularizeVariables: {
     "implementation_point": true,
     "installation_id": true,
     "installed_hardware": false,
-    "installed_operating_system": false,
+    "installed_operating_system": true,
     "installed_software": false,
     "ip_address": false,
     "ip_address_value": true,

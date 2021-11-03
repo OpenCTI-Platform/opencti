@@ -158,6 +158,13 @@ WHERE {
 }`;
 
 function computingDeviceAssetReducer( asset ) {
+  if (Array.isArray( asset.installed_operating_system )  && asset.installed_operating_system.length > 0 ) {
+    if (asset.installed_operating_system.length > 1) {
+      console.log(`[INFO] ${asset.iri} (${asset.id}) has ${asset.installed_operating_system.length} values: ${asset.installed_operating_system}`)
+    }
+    asset.installed_operating_system = asset.installed_operating_system[0]
+  }
+  
   return {
     id: asset.id,
     ...(asset.created && {created: asset.created}),

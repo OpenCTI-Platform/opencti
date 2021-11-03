@@ -58,14 +58,11 @@ const networkResolvers = {
     networkAsset: async (_, args, context, info ) => {
       var sparqlQuery = getSparqlQuery('NETWORK', args.id, );
       var reducer = getReducer('NETWORK')
-      const response = await context.dataSources.Stardog.queryById( 
-        context.dbName, 
-        sparqlQuery, 
-        singularizeSchema 
-      )
-      console.log( response[0] );
-      return( reducer( response[0]) );
-      // return( networkAssetReducer( response[0]) );
+      const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
+      if (response === undefined ) return null;
+      const first = response[0];
+      if (first === undefined) return null;
+      return( reducer( first ) );
     }
   },
   Mutation: {
@@ -82,11 +79,7 @@ const networkResolvers = {
       let item = parent.netaddr_range_iri;
       var sparqlQuery = getSparqlQuery('NETADDR-RANGE', item);
       var reducer = getReducer('NETADDR-RANGE');
-      const response = await context.dataSources.Stardog.queryById( 
-        context.dbName, 
-        sparqlQuery, 
-        singularizeSchema 
-      )
+      const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
       if (response && response.length > 0) {
         // console.log( response[0] );
         // let results = ipAddrRangeReducer( response[0] )    TODO: revert when data is passed as objects, instead of string
@@ -104,7 +97,7 @@ const networkResolvers = {
             ip_address_value: results.ending_addr_iri
           }
         }
-        return results
+        // return results
       }
     }
   }
