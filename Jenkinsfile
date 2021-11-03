@@ -2,83 +2,21 @@ node {
   try {
     String registry = 'docker.darklight.ai'
     String product = 'opencti'
-    def branch = "${env.BRANCH_NAME}"
-    def version = "${env.BUILD_NUMBER}"
-    int versionsToKeep = 3
-    def app;
+    String branch = "${env.BRANCH_NAME}"
 
     if (branch != 'master' && branch != 'main') {
       product += '-' + branch
     }
-    String image = "${registry}/${product}"
 
-    ws("${env.WS_FOLDER}/docker/${product}/${branch}/") {
+    ws("${env.WS_FOLDER}/docker/opencti/${branch}/") {
       stage('Clone Repository') {
         checkout scm
       }
 
-      // stage('Detect Version') {
-      //   def jsPackage = readJSON file: 'opencti-platform/opencti-front/package.json';
-      //   if (jsPackage['version'] != null) {
-      //     version = jsPackage['version']
-      //   }
-      // }
-
-      stage('Build') {
-        dir('opencti-platform/') {
-          app = docker.build("${image}", '--no-cache .')
-        }
-      }
-
-      stage('Export Docker Image to Artifact') {
-        sh "docker save ${image}:${version} | gzip > ${product}-${version}.tar.gz"
-        archiveArtifacts artifacts: "${product}-${version}.tar.gz", followSymlinks: false
-        sh "rm ${product}-${version}.tar.gz"
-      }
-
-      docker.withRegistry("https://${registry}", 'docker-registry-credentials') {
-        stage('Push') {
-          app.push('latest')
-          app.push("${version}")
-        }
-
-        stage('Clean Remote Docker Images') {
-          withCredentials([usernameColonPassword(credentialsId: 'docker-registry-credentials', variable: 'USERPASS')]) {
-            def allTags = sh(returnStdout: true, script: 'curl -u $USERPASS -k -X GET ' + "https://${registry}/v2/${product}/tags/list")
-            def json = readJSON text: allTags
-            def tags = json.tags.minus(["latest"])
-
-            // Now sort the tags
-            def sortedTags = []
-            for (String tag in tags) {
-              if (tag.isInteger()) {
-                sortedTags.add(tag as Integer)
-              } else {
-                echo "[Warning] Found tag that is not an integer: ${tag}"
-              }
-            }
-            sortedTags = sortedTags.sort()
-
-            // Remove the number of tags we want to keep, use the rest to remove the images from the registry
-            if (sortedTags.size() > versionsToKeep) {
-              for (int i in 1..versionsToKeep) {
-                sortedTags.pop()
-              }
-
-              for (Integer tag in sortedTags) {
-                // Pulling the image to deprecate to get the sha/digest, removed afterwards
-                def digest = sh(returnStdout: true, script: "docker pull ${registry}/${product}:${tag} | grep \"Digest: \" | awk \'{print \$2}\'")
-                sh "docker rmi ${registry}/${product}:${tag}"
-
-                if ((digest != null) && (digest.length() != 0)) {
-                  echo "Deprecating version ${tag}..."
-                  echo "Digest of ${tag}: ${digest}"
-                  sh('curl -u $USERPASS -k --request DELETE ' + "https://${registry}/v2/${product}/manifests/${digest}")
-                }
-              }
-            }
-          }
-        }
+      parallel frontend: {
+        docker_steps(registry, "${product}-frontend", '--no-cache -f ./opencti-platform/opencti-front/Dockerfile opencti-platform')
+      }, backend: {
+        docker_steps(registry, "${product}-backend", '--no-cache ./opencti-platform/opencti-graphql/')
       }
 
       stage('Clean Local Docker Resources') {
@@ -94,11 +32,29 @@ node {
       status: 'Completed',
       color: '00FF00',
       webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
-      message: 'New images built and pushed!',
+      message: 'New images built!',
       factDefinitions: [[name: 'OpenCTI', template: "docker pull ${image}"]]
     )
   } catch(Exception ex) {
     office365ConnectorSend status: 'Failed', webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}"
     throw ex
+  }
+}
+
+void docker_steps(String registry, String image, String buildArgs) {
+  stage('Build') {
+    docker.build("${registry}/${image}", "${buildArgs}")
+  }
+
+  stage('Export') {
+    sh "docker save ${registry}/${image} | gzip > ${image}.tar.gz"
+  }
+
+  stage('Save') {
+    archiveArtifacts "${image}.tar.gz", fingerprint: true, followSymlinks: false
+  }
+
+  stage('Clean') {
+    sh "rm ${image}.tar.gz"
   }
 }
