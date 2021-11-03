@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "5.0.3",
+  "version": "5.0.4",
   "main": "index.js",
   "author": "Luatix",
   "license": "Apache-2.0",
