@@ -14,11 +14,14 @@ node {
       }
 
       parallel frontend: {
-        String buildArgs = '--no-cache -f ./opencti-platform/opencti-front/Dockerfile opencti-platform'
+        String buildArgs = '-f ./opencti-platform/opencti-front/Dockerfile opencti-platform'
         docker_steps(registry, "${product}-frontend", buildArgs)
       }, backend: {
-        String buildArgs = '--no-cache ./opencti-platform/opencti-graphql/'
+        String buildArgs = './opencti-platform/opencti-graphql/'
         docker_steps(registry, "${product}-backend", buildArgs)
+      }, fullstack: {
+        String buildArgs = 'opencti-platform'
+        docker_steps(registry, "${product}", buildArgs)
       }
 
       stage('Clean Local Docker Resources') {
