@@ -1,4 +1,4 @@
-export function getSparqlQuery(type, id, filter, ) {
+export function getSelectSparqlQuery(type, id, filter, ) {
   var sparqlQuery;
   let re = /{iri}/g;  // using regex with 'g' switch to replace all instances of a marker
   switch( type ) {
@@ -11,7 +11,6 @@ export function getSparqlQuery(type, id, filter, ) {
       if (id !== undefined) {
         byId = byIdClause.replace("{id}", id);
       }
-      // sparqlQuery = selectQueryForm + byId + predicates + inventoryConstraint + filterStr + '}';
       sparqlQuery = selectClause + 
           typeConstraint + 
           byId + 
@@ -22,7 +21,7 @@ export function getSparqlQuery(type, id, filter, ) {
     default:
       throw new Error(`Unsupported query type ' ${type}'`)
   }
-  console.log(`[INFO] Query = ${sparqlQuery}`)
+  // console.log(`[INFO] Query = ${sparqlQuery}`)
   return sparqlQuery ;
 }
 
@@ -99,20 +98,30 @@ WHERE {
 }`;
 
 function networkAssetReducer( item ) {
+  // if no object type was returned, compute the type from the IRI
+  if ( item.object_type === undefined && item.asset_type !== undefined ) {
+    item.object_type = item.asset_type
+  } else {
+    item.object_type = 'network';
+  }
+  
   return {
     id: item.id,
+    ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels: item.labels}),
     ...(item.name && {name: item.name}),
     ...(item.description && { description: item.description}),
     ...(item.asset_id && { asset_id: item.asset_id}),
+    // ItAsset
     ...(item.asset_type && {asset_type: item.asset_type}),
     ...(item.asset_tag && {asset_tag: item.asset_tag}) ,
     ...(item.serial_number && {serial_number: item.serial_number}),
     ...(item.vendor_name && {vendor_name: item.vendor_name}),
     ...(item.version && {version: item.version}),
     ...(item.release_date && {release_date: item.release_date}),
+    // Network
     ...(item.network_id && {network_id: item.network_id}),
     ...(item.network_name && {network_name: item.network_name}),
     // Hints
@@ -126,12 +135,18 @@ function networkAssetReducer( item ) {
 
 function ipAddrRangeReducer ( item ) {
   if ( typeof item.starting_ip_address == 'string' ) {
-    var entity_type = 'IpV4Address';
-    console.log(`[DATA-ERROR] value does not comply with spec: starting_ip_address is string not object`);
+    console.log(`[ERROR] Value not compliant: starting_ip_address is a string not object`);
   }
+  // if no object type was returned, compute the type from the IRI
+  if ( item.object_type === undefined && item.asset_type !== undefined ) {
+    item.object_type = item.asset_type
+  } else {
+    item.object_type = 'ip-addr-range';
+  }
+
   return {
     id: item.id,
-    ...(entity_type && {entity_type: entity_type}),
+    ...(item.object_type && {entity_type: item.object_type}),
     ...(item.iri &&{parent_iri: item.iri}),
     // Hints
     ...(item.starting_ip_address && {start_addr_iri: item.starting_ip_address}),

@@ -1,95 +1,136 @@
-import { assetSingularizeSchema as singularizeSchema } from '../asset-mappings.js';
-import { getSparqlQuery } from './sparql-query.js';
+import { assetSingularizeSchema as singularizeSchema, objectTypeMapping } from '../asset-mappings.js';
+import { getSelectSparqlQuery, getReducer } from './sparql-query.js';
+import { compareValues } from '../../utils.js';
 
 const assetCommonResolvers = {
   Query: {
     assetList: async ( _, args, context, info  ) => { 
-      var sparqlQuery = getSparqlQuery('BY-ALL', args.id);
+      var sparqlQuery = getSelectSparqlQuery('ASSET', );
+      var reducer = getReducer('ASSET');
       const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
         sparqlQuery,
         singularizeSchema,
-        args.first,       // limit
-        args.offset,      // offset
+        // args.first,       // limit
+        // args.offset,      // offset
         args.filter       // filter
       )
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
-        for (let asset of response) {
-          let edge = {
-            cursor: asset.iri,
-            node: itAssetReducer( asset ),
+        let limit = (args.first === undefined ? response.length : args.first) ;
+        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let assetList ;
+        if (args.orderedBy !== undefined ) {
+          assetList = response.sort(compareValues(args.orderedBy, args.orderMode ));
+        } else {
+          assetList = response;
+        }
+
+        // for each asset in the result set
+        for (let asset of assetList) {
+          // skip down past the offset
+          if ( offset ) {
+            offset--
+            continue
           }
-          edges.push( edge )
+
+          // if haven't reached limit to be returned
+          if ( limit ) {
+            let edge = {
+              cursor: asset.iri,
+              node: reducer( asset ),
+            }
+            edges.push( edge )
+            limit-- ;
+          }
         }
         return {
           pageInfo: {
-            startCursor: response[0].iri,
-            endCursor: response[response.length -1 ].iri,
-            hasNextPage: false,
-            hasPreviousPage: false,
-            globalCount: response.length,
+            startCursor: assetList[0].iri,
+            endCursor: assetList[assetList.length -1 ].iri,
+            hasNextPage: (args.first > assetList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
+            globalCount: assetList.length,
           },
           edges: edges,
         }
       } else {
-        return [];
+        return;
       }
     },
     asset: async ( _, args, context, info ) => {
-      var sparqlQuery = getSparqlQuery('BY-ID', args.id);
-      const response = await context.dataSources.Stardog.queryById( 
-          context.dbName, 
-          sparqlQuery, 
-          singularizeSchema 
-      )
-      console.log( response[0] );
-      return( itAssetReducer( response[0]) );
+      var sparqlQuery = getSelectSparqlQuery('ASSET', args.id);
+      var reducer = getReducer('ASSET');
+      const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
+      if (response === undefined ) return null;
+      const first = response[0];
+      if (first === undefined) return null;
+      return( reducer( first ) );
     },
     itAssetList: async ( _, args, context, info  ) => { 
-      var sparqlQuery = getSparqlQuery('BY-ALL', args.id);
+      var sparqlQuery = getSelectSparqlQuery('IT-ASSET', );
+      var reducer = getReducer('IT-ASSET');
       const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
         sparqlQuery,
         singularizeSchema,
-        args.first,       // limit
-        args.offset,      // offset
+        // args.first,       // limit
+        // args.offset,      // offset
         args.filter       // filter
       )
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
-        for (let asset of response) {
-          let edge = {
-            cursor: asset.iri,
-            node: itAssetReducer( asset ),
+        let limit = (args.first === undefined ? response.length : args.first) ;
+        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let assetList ;
+        if (args.orderedBy !== undefined ) {
+          assetList = response.sort(compareValues(args.orderedBy, args.orderMode ));
+        } else {
+          assetList = response;
+        }
+
+        // for each asset in the result set
+        for (let asset of assetList) {
+          // skip down past the offset
+          if ( offset ) {
+            offset--
+            continue
           }
-          edges.push( edge )
+
+          // if haven't reached limit to be returned
+          if ( limit ) {
+            let edge = {
+              cursor: asset.iri,
+              node: reducer( asset ),
+            }
+            edges.push( edge )
+            limit-- ;
+          }
         }
         return {
           pageInfo: {
-            startCursor: response[0].iri,
-            endCursor: response[response.length -1 ].iri,
-            hasNextPage: false,
-            hasPreviousPage: false,
-            globalCount: response.length,
+            startCursor: assetList[0].iri,
+            endCursor: assetList[assetList.length -1 ].iri,
+            hasNextPage: (args.first > assetList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
+            globalCount: assetList.length,
           },
           edges: edges,
         }
       } else {
-        return [];
+        return;
       }
     },
     itAsset: async ( _, args, context, info ) => {
-      var sparqlQuery = getSparqlQuery('BY-ID', args.id);
-      const response = await context.dataSources.Stardog.queryById( 
-          context.dbName, 
-          sparqlQuery, 
-          singularizeSchema 
-      )
-      console.log( response[0] );
-      return( itAssetReducer( response[0]) );
+      var sparqlQuery = getSelectSparqlQuery('IT-ASSET', args.id);
+      var reducer = getReducer('IT-ASSET');
+      const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
+      if (response === undefined ) return null;
+      const first = response[0];
+      if (first === undefined) return null;
+      return( reducer( first ) );
     },
 
   },
@@ -98,34 +139,38 @@ const assetCommonResolvers = {
   },
   // Map enum GraphQL values to data model required values
   AssetType: {
-    operating_system: 'operating-system',
-    database: 'database',
-    web_server: 'web-server',
-    dns_server: 'dns-server',
-    email_server: 'email-server',
-    directory_server: 'directory-server',
-    pbx: 'pbx',
-    firewall: 'firewall',
-    router: 'router',
-    switch: 'switch',
-    storage_array: 'storage-array',
     appliance: 'appliance',
     application_software: 'application-software',
-    network_device: 'network-device',
     circuit: 'circuit',
     compute_device: 'compute-device',
-    workstation: 'workstation',
-    server: 'server',
+    database: 'database',
+    directory_server: 'directory-server',
+    dns_server: 'dns-server',
+    email_server: 'email-server',
+    firewall: 'firewall',
+    network_device: 'network-device',
     network: 'network',
+    operating_system: 'operating-system',
+    pbx: 'pbx',
+    physical_device: 'physical-device',
+    printer: 'printer',
+    router: 'router',
+    server: 'server',
     service: 'service',
     software: 'software',
-    physical_device: 'physical-device',
+    storage_array: 'storage-array',
+    switch: 'switch',
     system: 'system',
-    web_site: 'web-site',
     voip_handset: 'voip-handset',
     voip_router: 'voip-router',
+    web_server: 'web-server',
+    web_site: 'web-site',
+    workstation: 'workstation',
   },
   Asset: {
+    __resolveType: ( item ) => {
+      return objectTypeMapping[item.entity_type];
+    },
     locations: ( parent, ) => {
     },
     external_references: ( parent, ) => {
@@ -135,34 +180,41 @@ const assetCommonResolvers = {
   },
   AssetLocation: {
   },
+  HardwareAsset: {
+    __resolveType: ( item ) => {
+      return objectTypeMapping[item.entity_type];
+    }
+  },
+  ItAsset: {
+    __resolveType: ( item ) => {
+      return objectTypeMapping[item.entity_type];
+    }
+  },
+  AssetKind: {
+    __resolveType: ( item ) => {
+      return objectTypeMapping[item.entity_type];
+    }
+  },
+  HardwareKind: {
+    __resolveType: ( item ) => {
+      return objectTypeMapping[item.entity_type];
+    }
+  },
+  ItAssetKind: {
+    __resolveType: ( item ) => {
+      return objectTypeMapping[item.entity_type];
+    }
+  },
   IpAddress: {
-    __resolveType: (ipAddress ) => {
-      return ipAddress.entity_type
+    __resolveType: ( item ) => {
+      return objectTypeMapping[item.entity_type];
     },
   },
+  PortRange: {
+    __resolveType: ( item ) => {
+      return objectTypeMapping[item.entity_type];
+    }
+  },
 };
-
-function itAssetReducer( asset ) {
-  return {
-    id: asset.id,
-    ...(asset.created && {created: asset.created}),
-    ...(asset.modified && {modified: asset.modified}),
-    ...(asset.labels && {labels: asset.labels}),
-    ...(asset.name && { name: asset.name} ),
-    ...(asset.description && { description: asset.description}),
-    ...(asset.asset_id && { asset_id: asset.asset_id}),
-    ...(asset.asset_type && {asset_type: asset.asset_type}),
-    ...(asset.asset_tag && {asset_tag: asset.asset_tag}) ,
-    ...(asset.serial_number && {serial_number: asset.serial_number}),
-    ...(asset.vendor_name && {vendor_name: asset.vendor_name}),
-    ...(asset.version && {version: asset.version}),
-    ...(asset.release_date && {release_date: asset.release_date}),
-    // Hints
-    ...(asset.iri && {parent_iri: asset.iri}),
-    ...(asset.locations && {locations_iri: asset.locations}),
-    ...(asset.external_references && {ext_ref_iri: asset.external_references}),
-    ...(asset.notes && {notes_iri: asset.notes}),
-  }
-}
 
 export default assetCommonResolvers;

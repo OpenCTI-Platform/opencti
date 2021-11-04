@@ -1,11 +1,11 @@
 import { assetSingularizeSchema as singularizeSchema } from '../asset-mappings.js';
-import { getSparqlQuery, getReducer } from './sparql-query.js';
+import { getSelectSparqlQuery, getReducer } from './sparql-query.js';
 import { compareValues } from '../../utils.js';
 
 const networkResolvers = {
   Query: {
     networkAssetList: async ( _, args, context, info ) => {
-      var sparqlQuery = getSparqlQuery('NETWORK', );
+      var sparqlQuery = getSelectSparqlQuery('NETWORK', );
       var reducer = getReducer('NETWORK')
       const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
@@ -56,7 +56,7 @@ const networkResolvers = {
       }
     },
     networkAsset: async (_, args, context, info ) => {
-      var sparqlQuery = getSparqlQuery('NETWORK', args.id, );
+      var sparqlQuery = getSelectSparqlQuery('NETWORK', args.id, );
       var reducer = getReducer('NETWORK')
       const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
       if (response === undefined ) return null;
@@ -77,7 +77,7 @@ const networkResolvers = {
   NetworkAsset: {
     network_address_range: async (parent, args, context,  ) => {
       let item = parent.netaddr_range_iri;
-      var sparqlQuery = getSparqlQuery('NETADDR-RANGE', item);
+      var sparqlQuery = getSelectSparqlQuery('NETADDR-RANGE', item);
       var reducer = getReducer('NETADDR-RANGE');
       const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
       if (response && response.length > 0) {
@@ -88,12 +88,12 @@ const networkResolvers = {
           id: results.id,
           starting_ip_address: {
             id: "1243",
-            ...(results.entity_type && {entity_type: results.entity_type}),
+            entity_type: (results.start_addr_iri.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
             ip_address_value: results.start_addr_iri
           },
           ending_ip_address: {
             id: "4556",
-            ...(results.entity_type && {entity_type: results.entity_type}),
+            entity_type: (results.start_addr_iri.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
             ip_address_value: results.ending_addr_iri
           }
         }

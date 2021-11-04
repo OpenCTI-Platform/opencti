@@ -47,6 +47,59 @@ const assetNameContext = {
   "vlan_id": "http://scap.nist.gov/ns/asset-identification#vlan_id",
 };
 
+const objectTypeMapping = {
+  // object-type: GraphQL-Type
+  "account": "AccountAsset",
+  "appliance": "ApplianceAsset",
+  "application-software": "ApplicationSoftwareAsset",
+  "asset": "Asset",
+  "circuit": "CircuitAsset",
+  "computer-account": "ComputerAccountAsset",
+  "compute-device": "ComputingDeviceAsset",
+  "computing-device": "ComputingDeviceAsset",
+  "data": "DataAsset",
+  "database": "DatabaseAsset",
+  "directory-server": "DirectoryServerAsset",
+  "dns-server": "DnsServerAsset",
+  "documentary-asset": "DocumentaryAsset",
+  "email-server": "EmailServerAsset",
+  "firewall": "FirewallAsset",
+  "guidance": "GuidanceAsset",
+  "hardware": "HardwareAsset",
+  "ip-addr-range": "IpAddressRange",
+  "ipv4-addr": "IpV4Address",
+  "ipv6-addr": "IpV6Address",
+  "it-asset": "ItAsset",
+  "location": "AssetLocation",
+  "network-device": "NetworkDeviceAsset",
+  "network": "NetworkAsset",
+  "operating-system": "OperatingSystemAsset",
+  "physical-device": "PhysicalDeviceAsset",
+  "plan": "PlanAsset",
+  "policy": "PolicyAsset",
+  "port-range": "PortRange",
+  "port": "PortInfo",
+  "printer": "PrinterAsset",
+  "procedure": "ProcedureAsset",
+  "responsible-party": "ResponsibleParty",
+  "router": "RouterAsset",
+  "server": "ServerAsset",
+  "service-account": "ServiceAccountAsset",
+  "service": "ServiceAsset",
+  "software": "SoftwareAsset",
+  "standard": "StandardAsset",
+  "storage-array": "StorageArrayAsset",
+  "switch": "SwitchAsset",
+  "system": "SystemAsset",
+  "user-account": "UserAccountAsset",
+  "validation": "ValidationAsset",
+  "voip-handset": "VoIPHandsetAsset",
+  "voip-router": "VoIPRouterAsset",
+  "web-server": "WebServerAsset",
+  "website": "WebsiteAsset",
+  "workstation": "WorkstationAsset"
+};
+
 const assetSingularizeSchema = { singularizeVariables: {
     "": false, // so there is an object as the root instead of an array
     "id": true,
@@ -101,4 +154,4 @@ const assetSingularizeSchema = { singularizeVariables: {
     "vlan_id": true,
   } };
   
-export { assetNameContext, assetSingularizeSchema }
+export { assetNameContext, assetSingularizeSchema, objectTypeMapping }

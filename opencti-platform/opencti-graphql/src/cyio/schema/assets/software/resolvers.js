@@ -1,5 +1,4 @@
-import { assetSingularizeSchema as singularizeSchema } from '../asset-mappings.js';
-// import { getSparqlQuery, getReducer } from './sparql-query.js';
+import { assetSingularizeSchema as singularizeSchema, objectTypeMapping } from '../asset-mappings.js';
 import {
   getSelectSparqlQuery,
   getReducer,
@@ -111,6 +110,11 @@ const softwareResolvers = {
     macos: 'macos',
     other: 'other',
   },
+  SoftwareKind: {
+    __resolveType: ( item ) => {
+      return objectTypeMapping[item.entity_type];
+    }
+  }
 } ;
   
   

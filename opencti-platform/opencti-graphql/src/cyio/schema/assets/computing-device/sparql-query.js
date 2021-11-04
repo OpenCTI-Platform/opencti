@@ -1,4 +1,4 @@
-export function getSparqlQuery( type, id, filter, ) {
+export function getSelectSparqlQuery( type, id, filter, ) {
   var sparqlQuery;
   let re = /{iri}/g;  // using regex with 'g' switch to replace all instances of a marker
   switch( type ) {
@@ -157,63 +157,77 @@ WHERE {
     OPTIONAL { {iri} <http://darklight.ai/ns/common#object_type> ?object_type } .
 }`;
 
-function computingDeviceAssetReducer( asset ) {
-  if (Array.isArray( asset.installed_operating_system )  && asset.installed_operating_system.length > 0 ) {
-    if (asset.installed_operating_system.length > 1) {
-      console.log(`[INFO] ${asset.iri} (${asset.id}) has ${asset.installed_operating_system.length} values: ${asset.installed_operating_system}`)
+function computingDeviceAssetReducer( item ) {
+  // this code is to work around an issue in the data where we sometimes get multiple operatings
+  // when there shouldn't be but just one
+  if (Array.isArray( item.installed_operating_system )  && item.installed_operating_system.length > 0 ) {
+    if (item.installed_operating_system.length > 1) {
+      console.log(`[INFO] ${item.iri} (${item.id}) has ${item.installed_operating_system.length} values: ${item.installed_operating_system}`)
     }
-    asset.installed_operating_system = asset.installed_operating_system[0]
+    item.installed_operating_system = item.installed_operating_system[0]
+  }
+
+  // if no object type was returned, compute the type from the IRI
+  if ( item.object_type === undefined && item.asset_type !== undefined ) {
+    item.object_type = item.asset_type
+  } else {
+    item.object_type = 'computing-device';
   }
   
   return {
-    id: asset.id,
-    ...(asset.created && {created: asset.created}),
-    ...(asset.modified && {modified: asset.modified}),
-    ...(asset.labels && {labels: asset.labels}),
-    ...(asset.name && {name: asset.name} ),
-    ...(asset.description && {description: asset.description}),
-    ...(asset.asset_id && {asset_id: asset.asset_id}),
-    ...(asset.asset_type && {asset_type: asset.asset_type}),
-    ...(asset.asset_tag && {asset_tag: asset.asset_tag}) ,
-    ...(asset.serial_number && {serial_number: asset.serial_number}),
-    ...(asset.vendor_name && {vendor_name: asset.vendor_name}),
-    ...(asset.version && {version: asset.version}),
-    ...(asset.release_date && {release_date: asset.release_date}),
-    ...(asset.function && {function: asset.function}),
-    ...(asset.cpe_identifier && {cpe_identifier: asset.cpe_identifier}),
-    ...(asset.installation_id && {installation_id: asset.installation_id}),
-    ...(asset.model && {model: asset.model}),
-    ...(asset.motherboard_id && {motherboard_id: asset.motherboard_id}),
-    ...(asset.bios_id && {bios_id: asset.bios_id}),
-    ...(asset.network_id && {network_id: asset.network_id}),
-    ...(asset.vlan_id && {vlan_id: asset.vlan_id}),
-    ...(asset.default_gateway && {default_gateway: asset.default_gateway}),
-    ...(asset.fqdn && {fqdn: asset.fqdn}),
-    ...(asset.hostname && {hostname: asset.hostname}),
-    ...(asset.netbios_name && {netbios_name: asset.netbios_name}),
-    ...(asset.uri && {uri: asset.uri}),
-    ...(asset.baseline_configuration_name && {baseline_configuration_name: asset.baseline_configuration_name}),
-    ...(asset.is_publicly_accessible && {is_publicly_accessible: asset.is_publicly_accessible}),
-    ...(asset.is_scanned && {is_scanned: asset.is_scanned}),
-    ...(asset.is_virtual && {is_virtual: asset.is_virtual}),
+    id: item.id,
+    ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.created && {created: item.created}),
+    ...(item.modified && {modified: item.modified}),
+    ...(item.labels && {labels: item.labels}),
+    ...(item.name && {name: item.name} ),
+    ...(item.description && {description: item.description}),
+    ...(item.asset_id && {asset_id: item.asset_id}),
+    // ItAsset
+    ...(item.asset_type && {asset_type: item.asset_type}),
+    ...(item.asset_tag && {asset_tag: item.asset_tag}) ,
+    ...(item.serial_number && {serial_number: item.serial_number}),
+    ...(item.vendor_name && {vendor_name: item.vendor_name}),
+    ...(item.version && {version: item.version}),
+    ...(item.release_date && {release_date: item.release_date}),
+    // Hardware
+    ...(item.function && {function: item.function}),
+    ...(item.cpe_identifier && {cpe_identifier: item.cpe_identifier}),
+    ...(item.installation_id && {installation_id: item.installation_id}),
+    ...(item.model && {model: item.model}),
+    ...(item.motherboard_id && {motherboard_id: item.motherboard_id}),
+    ...(item.baseline_configuration_name && {baseline_configuration_name: item.baseline_configuration_name}),
+    // ComputingDevice
+    ...(item.bios_id && {bios_id: item.bios_id}),
+    ...(item.network_id && {network_id: item.network_id}),
+    ...(item.vlan_id && {vlan_id: item.vlan_id}),
+    ...(item.default_gateway && {default_gateway: item.default_gateway}),
+    ...(item.fqdn && {fqdn: item.fqdn}),
+    ...(item.hostname && {hostname: item.hostname}),
+    ...(item.netbios_name && {netbios_name: item.netbios_name}),
+    ...(item.uri && {uri: item.uri}),
+    ...(item.is_publicly_accessible && {is_publicly_accessible: item.is_publicly_accessible}),
+    ...(item.is_scanned && {is_scanned: item.is_scanned}),
+    ...(item.is_virtual && {is_virtual: item.is_virtual}),
     // Hints
-    ...(asset.iri && {parent_iri: asset.iri}),
-    ...(asset.locations && {locations_iri: asset.locations}),
-    ...(asset.external_references && {ext_ref_iri: asset.external_references}),
-    ...(asset.notes && {notes_iri: asset.notes}),
-    ...(asset.installed_hardware && {installed_hw_iri: asset.installed_hardware}),
-    ...(asset.installed_operating_system && {installed_os_iri: asset.installed_operating_system}),
-    ...(asset.installed_software && {installed_sw_iri: asset.installed_software}),
-    ...(asset.ip_address && {ip_addr_iri: asset.ip_address}),
-    ...(asset.mac_address && {mac_addr_iri: asset.mac_address}),
-    ...(asset.ports && {ports_iri: asset.ports}),
-    ...(asset.connected_to_network && {conn_network_iri: asset.connected_to_network}),
+    ...(item.iri && {parent_iri: item.iri}),
+    ...(item.locations && {locations_iri: item.locations}),
+    ...(item.external_references && {ext_ref_iri: item.external_references}),
+    ...(item.notes && {notes_iri: item.notes}),
+    ...(item.installed_hardware && {installed_hw_iri: item.installed_hardware}),
+    ...(item.installed_operating_system && {installed_os_iri: item.installed_operating_system}),
+    ...(item.installed_software && {installed_sw_iri: item.installed_software}),
+    ...(item.ip_address && {ip_addr_iri: item.ip_address}),
+    ...(item.mac_address && {mac_addr_iri: item.mac_address}),
+    ...(item.ports && {ports_iri: item.ports}),
+    ...(item.connected_to_network && {conn_network_iri: item.connected_to_network}),
   }
 }
 
 function ipAddressReducer( item ) {
   return {
     id: item.id,
+    ...(item.object_type && {entity_type: item.object_type}),
     ...(item.ip_address_value && {ip_address_value: item.ip_address_value}),
   }
 }
@@ -221,6 +235,7 @@ function ipAddressReducer( item ) {
 function macAddressReducer( item ) {
   return {
     id: item.id,
+    ...(item.object_type && {entity_type: item.object_type}),
     ...(item.mac_address_value && {mac_address_value: item.mac_address_value}),
     ...(item.is_virtual !== undefined && {is_virtual: item.is_virtual}),
   }
@@ -229,6 +244,7 @@ function macAddressReducer( item ) {
 function portReducer( item ) {
   return {
     id: item.id,
+    ...(item.object_type && {entity_type: item.object_type}),
     ...(item.port_number && {port_number: item.port_number}),
     ...(item.protocols && {protocols: item.protocols}),
   }

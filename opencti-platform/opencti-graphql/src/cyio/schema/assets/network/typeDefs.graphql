@@ -48,8 +48,8 @@
     vendor_name: String
     version: String
     release_date: DateTime
-    implementation_point: ImplementationPoint!
-    operational_status: OperationalStatus!
+    implementation_point: ImplementationPoint
+    operational_status: OperationalStatus
     # responsible_parties: [ResponsibleParty]
     # NetworkAsset
     network_id: String!
@@ -102,8 +102,6 @@
     name
     asset_type
     asset_id
-    ip_address
-    installed_operating_system
     network_id
     labels
   }
@@ -112,8 +110,6 @@
     name
     asset_type
     asset_id
-    ip_address
-    installed_operating_system
     network_id
     labels
   }
