@@ -42,7 +42,6 @@ class NetworkCards extends Component {
       selectedElements,
     } = this.props;
     const { bookmarks } = this.state;
-    console.log('asdasdasfasfasfasf', this.props.data);
     return (
     // <QueryRenderer
     //   query={stixDomainObjectBookmarksQuery}
