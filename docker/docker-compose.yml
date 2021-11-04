@@ -50,7 +50,7 @@ services:
   opencti:
     image: docker.darklight.ai/opencti
     build: ../opencti-platform
-    container_name: opencti-front
+    container_name: opencti
     environment:
       - NODE_OPTIONS=--max-old-space-size=8096
       - NODE_TLS_REJECT_UNAUTHORIZED=0
