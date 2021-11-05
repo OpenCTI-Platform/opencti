@@ -13,7 +13,6 @@ COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
 RUN yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
 RUN yarn run webpack --mode production
-RUN yarn schema-compile
 
 
 FROM base AS front-builder
@@ -21,8 +20,8 @@ WORKDIR /opt/opencti-build/opencti-front
 COPY opencti-front/package.json opencti-front/yarn.lock ./
 RUN yarn install
 COPY opencti-front /opt/opencti-build/opencti-front
-COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/config/schema/compiled.graphql /opt/opencti-build/opencti-graphql/config/schema/compiled.graphql
-RUN yarn relay && yarn generate
+RUN yarn schema-compile && yarn relay && yarn generate
+RUN rm /opt/opencti-build/opencti-graphql/config/schema/compiled.graphql
 
 
 FROM base AS app

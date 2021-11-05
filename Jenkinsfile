@@ -32,6 +32,12 @@ node {
         sh(returnStdout: false, script: 'docker system prune --filter "until=336h" -f')
       }
     }
+
+    office365ConnectorSend (
+      status: 'Completed',
+      color: '00FF00',
+      webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}"
+    )
   } catch(Exception ex) {
     office365ConnectorSend status: 'Failed', webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}"
     throw ex
