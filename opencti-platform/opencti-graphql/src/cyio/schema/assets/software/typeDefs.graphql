@@ -259,13 +259,16 @@
     asset_type
     asset_id
     labels
+    vendor_name
   }
 
   enum SoftwareAssetFilter {
-    name
-    asset_type
-    asset_id
-    labels
+    created       # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    name          # Name (key:name, values: ["name1","name2"], operator: "matches", filterMode: "or")
+    asset_type    # Asset Type (key:asset_type, values: ["type1","type2","type3"], operator: "matches", filterMode: "or")
+    labels        # Label (key:labels, values:["label1","label2"], operator: "matches", filterMode: "or")
+    vendor_name   # Vendor (key:vendor_name, values:["vendor1","vendor2"], operator: "matches", filterMode: "or")
   }
 
   union SoftwareKind = SoftwareAsset | ApplicationSoftwareAsset | OperatingSystemAsset

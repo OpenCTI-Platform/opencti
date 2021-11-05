@@ -1,6 +1,6 @@
 import { assetSingularizeSchema as singularizeSchema } from '../asset-mappings.js';
 import { getSelectSparqlQuery, getReducer } from './sparql-query.js';
-import { compareValues } from '../../utils.js';
+import { compareValues, generateId, DARKLIGHT_NS } from '../../utils.js';
 
 const networkResolvers = {
   Query: {
@@ -84,16 +84,17 @@ const networkResolvers = {
         // console.log( response[0] );
         // let results = ipAddrRangeReducer( response[0] )    TODO: revert when data is passed as objects, instead of string
         let results = reducer( response[0] )
+        let x = generateId( {"value": results.start_addr_iri}, DARKLIGHT_NS)
         return {
           id: results.id,
           starting_ip_address: {
-            id: "1243",
+            id: generateId( {"value": results.start_addr_iri}, DARKLIGHT_NS),
             entity_type: (results.start_addr_iri.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
             ip_address_value: results.start_addr_iri
           },
           ending_ip_address: {
-            id: "4556",
-            entity_type: (results.start_addr_iri.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
+            id: generateId( {"value": results.ending_addr_iri}, DARKLIGHT_NS),
+            entity_type: (results.ending_addr_iri.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
             ip_address_value: results.ending_addr_iri
           }
         }
