@@ -14,7 +14,6 @@ RUN yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
 RUN yarn run webpack --mode production
 RUN yarn schema-compile
-RUN ls -l ./build/
 
 
 FROM base AS front-builder
