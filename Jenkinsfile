@@ -14,13 +14,13 @@ node {
       }
 
       parallel frontend: {
-        String buildArgs = '-f ./opencti-platform/opencti-front/Dockerfile opencti-platform'
+        String buildArgs = '--no-cache -f ./opencti-platform/opencti-front/Dockerfile opencti-platform'
         docker_steps(registry, "${product}-frontend", buildArgs)
       }, backend: {
-        String buildArgs = './opencti-platform/opencti-graphql/'
+        String buildArgs = '--no-cache ./opencti-platform/opencti-graphql/'
         docker_steps(registry, "${product}-backend", buildArgs)
       }, fullstack: {
-        String buildArgs = 'opencti-platform'
+        String buildArgs = '--no-cache opencti-platform'
         docker_steps(registry, "${product}", buildArgs)
       }
 
@@ -32,6 +32,12 @@ node {
         sh(returnStdout: false, script: 'docker system prune --filter "until=336h" -f')
       }
     }
+
+    office365ConnectorSend (
+      status: 'Completed',
+      color: '00FF00',
+      webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}"
+    )
   } catch(Exception ex) {
     office365ConnectorSend status: 'Failed', webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}"
     throw ex

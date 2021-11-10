@@ -23,6 +23,7 @@ RUN yarn install
 COPY opencti-front /opt/opencti-build/opencti-front
 COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/config/schema/compiled.graphql /opt/opencti-build/opencti-graphql/config/schema/compiled.graphql
 RUN yarn relay && yarn generate
+RUN rm /opt/opencti-build/opencti-graphql/config/schema/compiled.graphql
 
 
 FROM base AS app
