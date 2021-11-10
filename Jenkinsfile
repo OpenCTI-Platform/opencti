@@ -14,9 +14,14 @@ node {
       }
 
       parallel frontend: {
-        docker_steps(registry, "${product}-frontend", '--no-cache -f ./opencti-platform/opencti-front/Dockerfile opencti-platform')
+        String buildArgs = '--no-cache -f ./opencti-platform/opencti-front/Dockerfile opencti-platform'
+        docker_steps(registry, "${product}-frontend", buildArgs)
       }, backend: {
-        docker_steps(registry, "${product}-backend", '--no-cache ./opencti-platform/opencti-graphql/')
+        String buildArgs = '--no-cache ./opencti-platform/opencti-graphql/'
+        docker_steps(registry, "${product}-backend", buildArgs)
+      }, fullstack: {
+        String buildArgs = '--no-cache opencti-platform'
+        docker_steps(registry, "${product}", buildArgs)
       }
 
       stage('Clean Local Docker Resources') {
@@ -31,9 +36,7 @@ node {
     office365ConnectorSend (
       status: 'Completed',
       color: '00FF00',
-      webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
-      message: 'New images built!',
-      factDefinitions: [[name: 'OpenCTI', template: "docker pull ${image}"]]
+      webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}"
     )
   } catch(Exception ex) {
     office365ConnectorSend status: 'Failed', webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}"
@@ -46,15 +49,16 @@ void docker_steps(String registry, String image, String buildArgs) {
     docker.build("${registry}/${image}", "${buildArgs}")
   }
 
-  stage('Export') {
+  stage('Save') {
     sh "docker save ${registry}/${image} | gzip > ${image}.tar.gz"
   }
 
-  stage('Save') {
-    archiveArtifacts "${image}.tar.gz", fingerprint: true, followSymlinks: false
+  stage('Archive') {
+    archiveArtifacts artifacts: "${image}.tar.gz", fingerprint: true, followSymlinks: false
   }
 
   stage('Clean') {
+    sh "docker ps -a | grep Exit | cut -d ' ' -f 1 | xargs docker rm || true"
     sh "rm ${image}.tar.gz"
   }
 }
