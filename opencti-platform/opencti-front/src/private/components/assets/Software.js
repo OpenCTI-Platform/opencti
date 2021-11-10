@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import { QueryRenderer as QR } from 'react-relay';
-import QueryRendererDarkLight from '../../../relay/environmentDarkLight';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -15,11 +13,9 @@ import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
 import SoftwareCards, {
   softwareCardsQuery,
-  // softwareCardsdarkLightRootQuery,
 } from './software/SoftwareCards';
 import SoftwareLines, {
   softwareLinesQuery,
-  // softwareLinesdarkLightRootQuery,
 } from './software/SoftwareLines';
 import SoftwareCreation from './software/SoftwareCreation';
 import SoftwareDeletion from './software/SoftwareDeletion';
@@ -209,7 +205,7 @@ class Software extends Component {
           'createdBy',
         ]}
       >
-        {/* <QueryRenderer
+        <QueryRenderer
           query={softwareCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
@@ -224,26 +220,6 @@ class Software extends Component {
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
-        /> */}
-        <QR
-          environment={QueryRendererDarkLight}
-          query={softwareCardsQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => {
-            console.log(`DarkLightSoftwareCards Error ${error} OR Props ${JSON.stringify(props)}`);
-            return (
-              <SoftwareCards
-                data={props}
-                selectAll={selectAll}
-                paginationOptions={paginationOptions}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-            );
-          }}
         />
       </ListCards>
     );
@@ -344,7 +320,7 @@ class Software extends Component {
           'createdBy',
         ]}
       >
-        {/* <QueryRenderer
+        <QueryRenderer
           query={softwareLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
@@ -360,27 +336,6 @@ class Software extends Component {
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
-        /> */}
-        <QR
-          environment={QueryRendererDarkLight}
-          query={softwareLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => {
-            console.log(`DarkLightSoftwareLines Error ${error} OR Props ${JSON.stringify(props)}`);
-            return (
-              <SoftwareLines
-                data={props}
-                selectAll={selectAll}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                paginationOptions={paginationOptions}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-            );
-          }}
         />
       </ListLines>
     );

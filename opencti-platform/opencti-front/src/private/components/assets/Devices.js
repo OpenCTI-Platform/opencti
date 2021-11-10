@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import { QueryRenderer as QR } from 'react-relay';
 import { QueryRenderer } from '../../../relay/environment';
-import QueryRendererDarkLight from '../../../relay/environmentDarkLight';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
@@ -15,11 +13,9 @@ import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
 import DevicesCards, {
   devicesCardsQuery,
-  // devicesCardsdarkLightRootQuery,
 } from './devices/DevicesCards';
 import DevicesLines, {
   devicesLinesQuery,
-  devicesLinesdarkLightRootQuery,
 } from './devices/DevicesLines';
 import DeviceCreation from './devices/DeviceCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
@@ -214,24 +210,7 @@ class Devices extends Component {
           'labelledBy',
         ]}
       >
-        <QR
-          environment={QueryRendererDarkLight}
-          query={devicesCardsQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => <DevicesCards
-              data={props}
-              extra={props}
-              selectAll={selectAll}
-              paginationOptions={paginationOptions}
-              initialLoading={props === null}
-              selectedElements={selectedElements}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-            />
-          }
-        />
-        {/* <QueryRenderer
+        <QueryRenderer
           query={devicesCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
@@ -250,7 +229,7 @@ class Devices extends Component {
               />
             );
           }}
-        /> */}
+        />
       </ListCards>
     );
   }
@@ -349,24 +328,7 @@ class Devices extends Component {
           'labelledBy',
         ]}
       >
-        <QR
-          environment={QueryRendererDarkLight}
-          query={devicesLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => <DevicesLines
-                data={props}
-                selectAll={selectAll}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                paginationOptions={paginationOptions}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-          }
-        />
-        {/* <QueryRenderer
+        <QueryRenderer
           query={devicesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
@@ -385,7 +347,7 @@ class Devices extends Component {
               />
             );
           }}
-        /> */}
+        />
       </ListLines>
     );
   }

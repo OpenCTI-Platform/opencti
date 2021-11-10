@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import { QueryRenderer as QR } from 'react-relay';
-import QueryRendererDarkLight from '../../../relay/environmentDarkLight';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -15,11 +13,9 @@ import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
 import NetworkCards, {
   networkCardsQuery,
-  // networkCardsdarkLightRootQuery,
 } from './network/NetworkCards';
 import NetworkLines, {
   networkLinesQuery,
-  // networkLinesdarkLightRootQuery,
 } from './network/NetworkLines';
 import NetworkCreation from './network/NetworkCreation';
 import NetworkDeletion from './network/NetworkDeletion';
@@ -204,27 +200,11 @@ class Network extends Component {
           'createdBy',
         ]}
       >
-        {/* <QueryRenderer
+        <QueryRenderer
           query={networkCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
             <NetworkCards
-                data={props}
-                selectAll={selectAll}
-                paginationOptions={paginationOptions}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-          )}
-        /> */}
-        <QR
-          environment={QueryRendererDarkLight}
-          query={networkCardsQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => <NetworkCards
               data={props}
               selectAll={selectAll}
               paginationOptions={paginationOptions}
@@ -233,8 +213,8 @@ class Network extends Component {
               onLabelClick={this.handleAddFilter.bind(this)}
               onToggleEntity={this.handleToggleSelectEntity.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          }
+              />
+          )}
         />
       </ListCards>
     );
@@ -324,7 +304,7 @@ class Network extends Component {
           'createdBy',
         ]}
       >
-        {/* <QueryRenderer
+        <QueryRenderer
           query={networkLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
@@ -340,23 +320,6 @@ class Network extends Component {
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
-        /> */}
-        <QR
-          environment={QueryRendererDarkLight}
-          query={networkLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => <NetworkLines
-              data={props}
-              selectAll={selectAll}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              selectedElements={selectedElements}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          }
         />
       </ListLines>
     );
