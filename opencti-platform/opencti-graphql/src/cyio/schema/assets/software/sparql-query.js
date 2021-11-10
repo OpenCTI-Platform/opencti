@@ -1,5 +1,5 @@
 import {v4 as uuid4} from 'uuid';
-import {UpdateOps, byIdClause, optionalizePredicate, parameterizePredicate} from "../../utils";
+import {UpdateOps, byIdClause, optionalizePredicate, parameterizePredicate} from "../../utils.js";
 
 const predicateMap = {
   id: {
@@ -90,7 +90,7 @@ const predicateMap = {
 }
 
 const selectQueryForm = `
-SELECT ?iri ?id ?object_type 
+SELECT ?iri ?id ?rdf_type ?object_type 
   ?asset_id ?name ?description ?locations ?responsible_party 
   ?asset_type ?asset_tag ?serial_number ?vendor_name ?version ?release_date
   ?function ?cpe_identifier ?software_identifier ?patch ?installation_id ?license_key
@@ -99,15 +99,50 @@ WHERE {
     ?iri a <http://scap.nist.gov/ns/asset-identification#Software> .
 `;
 
-const inventoryConstraint = `
-  {
-      SELECT DISTINCT ?iri
-      WHERE {
-          ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
-                <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
-      }
-  }
+const selectClause = `
+SELECT DISTINCT ?iri ?rdf_type ?id ?object_type 
+  ?asset_id ?name ?description ?locations ?responsible_party 
+  ?asset_type ?asset_tag ?serial_number ?vendor_name ?version ?release_date
+  ?function ?cpe_identifier ?software_identifier ?patch ?installation_id ?license_key
+FROM <tag:stardog:api:context:named>
+WHERE {
 `;
+
+const bindIRIClause = `\tBIND(<{iri}> AS ?iri)\n`;
+const typeConstraint = `?iri a <http://scap.nist.gov/ns/asset-identification#{softwareType}> .`;
+
+const predicateBody = `
+    ?iri <http://darklight.ai/ns/common#id> ?id .
+    ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_id> ?asset_id } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#name> ?name } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#description> ?description } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#locations> ?locations } .
+    # OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#responsible_parties> ?responsible_party } .
+    # ItAsset
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_type> ?asset_type } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_tag> ?asset_tag } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#serial_number> ?serial_number } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#vendor_name> ?vendor_name }.
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#version> ?version } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#release_date> ?release_date } .
+    # Software - OperatingSystem - ApplicationSoftware
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#function> ?function } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#cpe_identifier> ?cpe_identifier } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#software_identifier> ?software_identifier } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#patch_level> ?patch } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#installation_id> ?installation_id }
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#license_key> ?license_key } .
+    `;
+    
+const inventoryConstraint = `
+{
+    SELECT DISTINCT ?iri
+    WHERE {
+        ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
+              <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+    }
+}`;
 
 export const insertQuery = (propValues) => {
   const id = uuid4();
@@ -199,11 +234,6 @@ DELETE {
   `;
 }
 
-export const QueryMode = {
-  BY_ALL: 'BY_ALL',
-  BY_ID: 'BY_ID'
-}
-
 export const addToInventoryQuery = (softwareIri) => {
   return `
   INSERT {
@@ -218,20 +248,99 @@ export const addToInventoryQuery = (softwareIri) => {
   `
 }
 
-export function getSelectSparqlQuery(queryMode, id, filter, ) {
-	let byId = '';
-  switch(queryMode){
-    case QueryMode.BY_ID:
-      byId = byIdClause(id);
-      break;
-    case QueryMode.BY_ALL:
-      break;
-    default:
-      throw new Error(`Unsupported query mode '${queryMode}'`)
-  }
-
-	let filterStr = ''
-  const predicates = Object.entries(predicateMap).map((pred) => pred[1].optional(null, null)).join('\n      ');
-  return selectQueryForm + byId + predicates + inventoryConstraint + filterStr + '}' ;
+export const QueryMode = {
+  BY_ALL: 'BY_ALL',
+  BY_ID: 'BY_ID'
 }
 
+export function getSelectSparqlQuery(type, id, filter, ) {
+  var sparqlQuery;
+  let re = /{iri}/g;  // using regex with 'g' switch to replace all instances of a marker
+  switch( type ) {
+    case 'SOFTWARE':
+      let byId = '';
+      if (id !== undefined) {
+        byId = byIdClause(id);
+      }
+
+      let filterStr = ''
+      sparqlQuery = selectClause + 
+          typeConstraint.replace('{softwareType}', 'Software') + 
+          byId + 
+          predicateBody + 
+          inventoryConstraint + 
+          filterStr + '}';
+      break;
+    case 'SOFTWARE-IRI':
+      sparqlQuery = selectClause + 
+          bindIRIClause.replace('{iri}', id) + 
+          typeConstraint.replace('{softwareType}', 'Software') +
+          predicateBody + '}';
+      break;
+    case 'OS-IRI':
+      sparqlQuery = selectClause + 
+          bindIRIClause.replace('{iri}', id) + 
+          typeConstraint.replace('{softwareType}', 'OperatingSystem') +
+          predicateBody + '}';
+      break
+    default:
+      throw new Error(`Unsupported query type ' ${type}'`)
+  }
+
+  return sparqlQuery ;
+}
+
+export function getReducer( type ) {
+  var reducer;
+  switch( type ) {
+    case 'SOFTWARE':
+    case 'SOFTWARE-IRI':
+    case 'OS-IRI': 
+      reducer = softwareAssetReducer;
+      break;
+    default:
+      throw new Error(`Unsupported reducer type ' ${type}'`)
+  }
+
+  return reducer
+}
+
+  
+function softwareAssetReducer( item ) {
+  // if no object type was returned, compute the type from the IRI
+  if ( item.object_type === undefined && item.asset_type !== undefined ) {
+    item.object_type = item.asset_type
+  } else {
+    item.object_type = 'software';
+  }
+
+  return {
+    id: item.id,
+    ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.created && {created: item.created}),
+    ...(item.modified && {modified: item.modified}),
+    ...(item.labels && {labels: item.labels}),
+    ...(item.name && { name: item.name} ),
+    ...(item.description && { description: item.description}),
+    ...(item.asset_id && { asset_id: item.asset_id}),
+    // ItAsset      
+    ...(item.asset_type && {asset_type: item.asset_type}),
+    ...(item.asset_tag && {asset_tag: item.asset_tag}) ,
+    ...(item.serial_number && {serial_number: item.serial_number}),
+    ...(item.vendor_name && {vendor_name: item.vendor_name}),
+    ...(item.version && {version: item.version}),
+    ...(item.release_date && {release_date: item.release_date}),
+    // Software - OperatingSystem - ApplicationSoftware
+    ...(item.function && {function: item.function}),
+    ...(item.cpe_identifier && {cpe_identifier: item.cpe_identifier}),
+    ...(item.software_identifier && {software_identifier: item.software_identifier}),
+    ...(item.patch_level && {patch_level: item.patch_level}),
+    ...(item.installation_id && {installation_id: item.installation_id}),
+    ...(item.license_key && {license_key: item.license_key}),
+    // Hints
+    ...(item.iri && {parent_iri: item.iri}),
+    ...(item.locations && {locations_iri: item.locations}),
+    ...(item.external_references && {ext_ref_iri: item.external_references}),
+    ...(item.notes && {notes_iri: item.notes}),
+  }
+}
