@@ -10,21 +10,15 @@ import bodyParser from 'body-parser';
 import compression from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
-import showdown from 'showdown';
 import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
-import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, logApp, logAudit } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
-import { checkSystemDependencies } from '../initialization';
-import { getSettings } from '../domain/settings';
 import createSeeMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import { initializeSession } from '../database/session';
 import { LOGIN_ACTION } from '../config/audit';
-
-const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -40,7 +34,7 @@ const extractRefererPathFromReq = (req) => {
   return refererUrl.pathname;
 };
 
-const createApp = async (apolloServer) => {
+const createApp = async () => {
   const appSessionHandler = initializeSession();
   const limiter = new RateLimit({
     windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
@@ -96,15 +90,6 @@ const createApp = async (apolloServer) => {
   app.use(appSessionHandler.session);
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
   app.use(bodyParser.json({ limit: requestSizeLimit }));
-  apolloServer.applyMiddleware({
-    app,
-    cors: true,
-    bodyParserConfig: {
-      limit: requestSizeLimit,
-    },
-    onHealthCheck,
-    path: `${basePath}/graphql`,
-  });
 
   const seeMiddleware = createSeeMiddleware();
   seeMiddleware.applyMiddleware({ app });
@@ -240,16 +225,6 @@ const createApp = async (apolloServer) => {
     })(req, res, next);
   });
 
-  // Other routes - Render index.html
-  app.get('*', (req, res) => {
-    const data = readFileSync(`${__dirname}/../../public/index.html`, 'utf8');
-    const withOptionValued = data.replace(/%BASE_PATH%/g, basePath);
-    res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-    res.header('Expires', '-1');
-    res.header('Pragma', 'no-cache');
-    return res.send(withOptionValued);
-  });
-
   // Error handling
   app.use((err, req, res, next) => {
     logApp.error(`[EXPRESS] Error http call`, { error: err, referer: req.headers.referer });
@@ -260,3 +235,15 @@ const createApp = async (apolloServer) => {
 };
 
 export default createApp;
+
+export const applyWildcard = (app) => {
+  app.get('*', (req, res) => {
+    const data = readFileSync(`${__dirname}/../../public/index.html`, 'utf8');
+    const withOptionValued = data.replace(/%BASE_PATH%/g, basePath);
+    res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    res.header('Expires', '-1');
+    res.header('Pragma', 'no-cache');
+    return res.send(withOptionValued);
+  });
+}
+
