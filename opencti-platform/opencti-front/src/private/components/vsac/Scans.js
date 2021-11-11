@@ -222,6 +222,8 @@ class Scans extends Component {
     };
   }
 
+  
+
   sortScansByReportDate(unSorted) {
     const scans = unSorted
       .slice()
@@ -453,6 +455,9 @@ class Scans extends Component {
         });
     };
 
+    const rerenderParentCallback =() => {
+      refreshAnalysis();
+    }
     const renderDialogSwitch = () => {
       switch (this.state.dialogParams.modal) {
         case "New Analysis":
@@ -494,7 +499,7 @@ class Scans extends Component {
             />
           );
         case "Vulnerability Scan":
-          return <VulnerabilityScan />;
+          return <VulnerabilityScan client_ID={this.state.client_ID} rerenderParentCallback={rerenderParentCallback}/>;
         default:
           return "foo";
       }

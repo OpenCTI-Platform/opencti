@@ -94,7 +94,7 @@ SELECT ?iri ?id ?rdf_type ?object_type
   ?asset_id ?name ?description ?locations ?responsible_party 
   ?asset_type ?asset_tag ?serial_number ?vendor_name ?version ?release_date
   ?function ?cpe_identifier ?software_identifier ?patch ?installation_id ?license_key
-FROM <tag:stardog:api:context:local>
+FROM <tag:stardog:api:context:named>
 WHERE {
     ?iri a <http://scap.nist.gov/ns/asset-identification#Software> .
 `;
@@ -155,6 +155,9 @@ export const insertQuery = (propValues) => {
   INSERT DATA {
     GRAPH ${iri} {
       ${iri} a <http://scap.nist.gov/ns/asset-identification#Software> .
+      ${iri} a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
+      ${iri} a <http://scap.nist.gov/ns/asset-identification#Asset> .
+      ${iri} a <http://darklight.ai/ns/common#Object> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}".
       ${insertPredicates}
     }

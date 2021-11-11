@@ -1,5 +1,7 @@
 /* eslint-disable */
 import { scanAxios } from "../utils/axios";
+import updateFileName from "../utils/s3FileName";
+
 
 export const createScan = async (params, clientID, passedConfig) => {
   const bodyParams = {
