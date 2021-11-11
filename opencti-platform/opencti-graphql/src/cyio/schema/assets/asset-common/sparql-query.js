@@ -1,4 +1,3 @@
-import {v4 as uuid4} from 'uuid';
 import {UpdateOps, byIdClause, optionalizePredicate, parameterizePredicate} from "../../utils.js";
 
 
@@ -136,6 +135,84 @@ export function getReducer( type ) {
       throw new Error(`Unsupported reducer type ' ${type}'`)
   }
   return reducer ;
+}
+
+export const removeMultipleAssetsFromInventoryQuery = (ids) => {
+  const values = ids ? (ids.map((id) => `"${id}"`).join(' ')) : "";
+  return `
+    DELETE {
+      GRAPH ?g {
+        ?inv <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+      }
+    } WHERE {
+      GRAPH ?g {
+        ?inv a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> .
+        ?inv <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+        {
+          SELECT DISTINCT ?iri WHERE {
+            ?iri a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
+            ?iri <http://darklight.ai/ns/common#id> ?id .
+            VALUES ?id {${values}}
+          }
+        }
+      }
+    }
+    `
+}
+
+export const removeAssetFromInventoryQuery = (id) => {
+  return `
+    DELETE {
+      GRAPH ?g {
+        ?inv <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+      }
+    } WHERE {
+      GRAPH ?g {
+        ?inv a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> .
+        ?inv <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+        {
+          SELECT DISTINCT ?iri WHERE {
+            ?iri a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
+            ?iri <http://darklight.ai/ns/common#id> "${id}" .
+          }
+        }
+      }
+    }
+    `
+}
+
+export const deleteMultipleAssetsQuery = (ids) =>{
+  const values = ids ? (ids.map((id) => `"${id}"`).join(' ')) : "";
+  return `
+  DELETE {
+    GRAPH ?g {
+      ?iri ?p ?o
+    }
+  } WHERE {
+    GRAPH ?g {
+      ?iri a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
+      ?iri <http://darklight.ai/ns/common#id> ?id .
+      ?iri ?p ?o .
+      VALUES ?id {${values}}
+    }
+  }
+  `
+}
+
+export const deleteAssetQuery = (id) => {
+  return `
+  DELETE {
+    GRAPH ?g {
+      ?iri ?p ?o
+    }
+  } WHERE {
+    GRAPH ?g {
+      ?iri a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
+      ?iri <http://darklight.ai/ns/common#id> "${id}" .
+      ?iri ?p ?o .
+    }
+  }
+  `
 }
 
 function itAssetReducer( item ) {
