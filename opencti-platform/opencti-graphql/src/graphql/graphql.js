@@ -3,11 +3,14 @@ import { formatError as apolloFormatError } from 'apollo-errors';
 import { GraphQLError } from 'graphql';
 import { dissocPath } from 'ramda';
 import createSchema from './schema';
-import conf, { DEV_MODE } from '../config/conf';
+import conf, {basePath, DEV_MODE} from '../config/conf';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
 import { UnknownError, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
+import {createPrometheusExporterPlugin} from "@bmatei/apollo-prometheus-exporter";
+import {checkSystemDependencies} from "../initialization";
+import {getSettings} from "../domain/settings";
 import { applicationSession } from '../database/session';
 // Stardog
 import StardogKB from '../datasources/stardog.js';
@@ -20,7 +23,9 @@ import StardogKB from '../datasources/stardog.js';
 
 // mocks
 import mockList from './mocks.js' ;
+import nconf from "nconf";
 
+const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 
 const buildContext = (user, req, res) => {
   const workId = req.headers['opencti-work-id'];
@@ -47,9 +52,14 @@ else {
   mocks = mockList;
 }
 
-const createApolloServer = () => {
+let plugins = [loggerPlugin, httpResponsePlugin];
+
+const createApolloServer = (app) => {
+  if(process.env.GRAPHQL_METRICS_ENABLED === '1') plugins.push(createPrometheusExporterPlugin({app}))
+  const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
+
   const cdnUrl = conf.get('app:playground_cdn_url');
-  return new ApolloServer({
+  const server = new ApolloServer({
     schema: createSchema(),
     introspection: true,
     mocks,
@@ -73,8 +83,8 @@ const createApolloServer = () => {
       const user = await authenticateUserFromRequest(req);
       return buildContext(user, req, res);
     },
-    tracing: DEV_MODE,
-    plugins: [loggerPlugin, httpResponsePlugin],
+    tracing: true,
+    plugins: [plugins],
     formatError: (error) => {
       let e = apolloFormatError(error);
       if (e instanceof GraphQLError) {
@@ -113,6 +123,16 @@ const createApolloServer = () => {
       },
     },
   });
+  server.applyMiddleware({
+    app,
+      cors: true,
+      bodyParserConfig: {
+      limit: requestSizeLimit,
+    },
+    onHealthCheck,
+      path: `${basePath}/graphql`,
+  })
+  return server;
 };
 
 export default createApolloServer;
