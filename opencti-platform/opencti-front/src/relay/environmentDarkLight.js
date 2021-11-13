@@ -15,7 +15,7 @@ import {
 const store = new Store(new RecordSource());
 
 const network = Network.create((operation, variables) => (
-  fetch('https://graphql.darklight.ai/graphql', {
+  fetch('https://localhost/graphql', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
