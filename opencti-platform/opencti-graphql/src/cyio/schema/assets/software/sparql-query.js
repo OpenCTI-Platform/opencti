@@ -90,7 +90,7 @@ const predicateMap = {
 }
 
 const selectQueryForm = `
-SELECT ?iri ?id ?rdf_type ?object_type 
+SELECT ?iri ?id ?object_type 
   ?asset_id ?name ?description ?locations ?responsible_party 
   ?asset_type ?asset_tag ?serial_number ?vendor_name ?version ?release_date
   ?function ?cpe_identifier ?software_identifier ?patch ?installation_id ?license_key
@@ -100,7 +100,7 @@ WHERE {
 `;
 
 const selectClause = `
-SELECT DISTINCT ?iri ?rdf_type ?id ?object_type 
+SELECT DISTINCT ?iri ?id ?object_type 
   ?asset_id ?name ?description ?locations ?responsible_party 
   ?asset_type ?asset_tag ?serial_number ?vendor_name ?version ?release_date
   ?function ?cpe_identifier ?software_identifier ?patch ?installation_id ?license_key
@@ -113,7 +113,6 @@ const typeConstraint = `?iri a <http://scap.nist.gov/ns/asset-identification#{so
 
 const predicateBody = `
     ?iri <http://darklight.ai/ns/common#id> ?id .
-    ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type .
     OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_id> ?asset_id } .
     OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#name> ?name } .
     OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#description> ?description } .

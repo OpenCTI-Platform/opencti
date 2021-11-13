@@ -3,7 +3,7 @@ import {UpdateOps, byIdClause, optionalizePredicate, parameterizePredicate} from
 
 
 const selectClause = `
-SELECT DISTINCT ?iri ?rdf_type ?id ?object_type 
+SELECT DISTINCT ?iri ?id ?object_type 
   ?asset_id ?name ?description ?locations ?responsible_party 
   ?asset_type ?asset_tag ?serial_number ?vendor_name ?version ?release_date ?implementation_point ?operational_status
   ?function ?cpe_identifier ?model ?motherboard_id ?installation_id ?installed_hardware ?installed_operating_system ?baseline_configuration_name
@@ -21,7 +21,6 @@ const typeConstraint = `?iri a <http://scap.nist.gov/ns/asset-identification#{as
 
 const predicateBody = `
   ?iri <http://darklight.ai/ns/common#id> ?id .
-  ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type .
 	OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?object_type } .
 	OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_id> ?asset_id } .
 	OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#name> ?name } .
