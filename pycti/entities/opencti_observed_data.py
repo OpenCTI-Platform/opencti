@@ -532,6 +532,29 @@ class ObservedData:
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
+
+        if "objects" in stix_object:
+            stix_observable_results = []
+            for key, observable_item in stix_object["objects"].items():
+                stix_observable_results.append(
+                    self.opencti.stix_cyber_observable.create(
+                        observableData=observable_item,
+                        createdBy=extras["created_by_id"]
+                        if "created_by_id" in extras
+                        else None,
+                        objectMarking=extras["object_marking_ids"]
+                        if "object_marking_ids" in extras
+                        else None,
+                        objectLabel=extras["object_label_ids"]
+                        if "object_label_ids" in extras
+                        else [],
+                    )
+                )
+                refs = []
+                for item in stix_observable_results:
+                    refs.append(item["standard_id"])
+                stix_object["object_refs"] = refs
+
         if stix_object is not None:
             observed_data_result = self.create(
                 stix_id=stix_object["id"],
@@ -571,31 +594,7 @@ class ObservedData:
                 else None,
                 update=update,
             )
-            if "objects" in stix_object:
-                for key, observable_item in stix_object["objects"].items():
-                    stix_observable_result = self.opencti.stix_cyber_observable.create(
-                        observableData=observable_item,
-                        createdBy=extras["created_by_id"]
-                        if "created_by_id" in extras
-                        else None,
-                        objectMarking=extras["object_marking_ids"]
-                        if "object_marking_ids" in extras
-                        else None,
-                        objectLabel=extras["object_label_ids"]
-                        if "object_label_ids" in extras
-                        else [],
-                    )
-                    if stix_observable_result is not None:
-                        self.add_stix_object_or_stix_relationship(
-                            id=observed_data_result["id"],
-                            stixObjectOrStixRelationshipId=stix_observable_result["id"],
-                        )
-                        self.opencti.stix2.mapping_cache[
-                            stix_observable_result["id"]
-                        ] = {
-                            "id": stix_observable_result["id"],
-                            "type": stix_observable_result["entity_type"],
-                        }
+
             return observed_data_result
         else:
             self.opencti.log(
