@@ -195,10 +195,12 @@ const createApp = async () => {
   // -- Passport login
   app.get(`${basePath}/auth/:provider`, (req, res, next) => {
     try {
-      const { provider } = req.params;
       req.session.referer = req.headers.referer;
+      const { provider } = req.params;
+      logApp.debug(`[Passport] Login auth/${provider}/ -> [referer:${req.headers.referer}]`)
       passport.authenticate(provider, {}, (err) => {
         setCookieError(res, err?.message);
+        logApp.debug(`[Passport] Auth error callback]`)
         next(err);
       })(req, res, next);
     } catch (e) {
@@ -210,15 +212,18 @@ const createApp = async () => {
   // -- Passport callback
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
   app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), (req, res, next) => {
+    const {referer} = req.session;
+    logApp.debug(`[Passport] Passport initialize auth/oidc/callback -> [referer:${referer}]`)
     const { provider } = req.params;
     // const host = req.headers.host
-    const {referer} = req.session;
     passport.authenticate(provider, {}, async (err, user) => {
       if (err || !user) {
+        logApp.debug(`[Passport] Authentication failed: [referer: ${referer}`)
         logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
         setCookieError(res, err?.message);
-        return res.redirect(req.referer);
+        return res.redirect(referer);
       }
+      logApp.debug(`[Passport] User authenticated: [referer: ${referer}`)
       // noinspection UnnecessaryLocalVariableJS
       await authenticateUser(req, user, provider);
       req.session.referer = null;
