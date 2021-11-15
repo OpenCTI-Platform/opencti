@@ -22,6 +22,7 @@ module.exports = (env, argv) => {
         ...glob.sync('./src/rules/**/*.js'),
         ...addIf(isDev, [`${require.resolve('webpack/hot/poll')}?1000`]),
       ],
+      'script-clean-relations': [resolvePath('script/script-clean-relations')],
     },
     resolve: {
       extensions: ['.wasm', '.mjs', '.js', '.json', '.graphql'],
