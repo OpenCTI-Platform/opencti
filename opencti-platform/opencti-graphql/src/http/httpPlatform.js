@@ -28,11 +28,11 @@ const setCookieError = (res, message) => {
   });
 };
 
-const extractRefererPathFromReq = (req) => {
-  const refererUrl = new URL(req.headers.referer);
-  // Keep only the pathname to prevent OPEN REDIRECT CWE-601
-  return refererUrl.pathname;
-};
+// const extractRefererPathFromReq = (req) => {
+//   const refererUrl = new URL(req.headers.referer);
+//   // Keep only the pathname to prevent OPEN REDIRECT CWE-601
+//   return refererUrl.pathname;
+// };
 
 const createApp = async () => {
   const appSessionHandler = initializeSession();
@@ -196,7 +196,7 @@ const createApp = async () => {
   app.get(`${basePath}/auth/:provider`, (req, res, next) => {
     try {
       const { provider } = req.params;
-      req.session.referer = extractRefererPathFromReq(req);
+      req.session.referer = req.headers.referer;
       passport.authenticate(provider, {}, (err) => {
         setCookieError(res, err?.message);
         next(err);
@@ -211,12 +211,13 @@ const createApp = async () => {
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
   app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), (req, res, next) => {
     const { provider } = req.params;
-    const { referer } = req.session;
+    // const host = req.headers.host
+    const {referer} = req.session;
     passport.authenticate(provider, {}, async (err, user) => {
       if (err || !user) {
         logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
         setCookieError(res, err?.message);
-        return res.redirect(referer);
+        return res.redirect(req.referer);
       }
       // noinspection UnnecessaryLocalVariableJS
       await authenticateUser(req, user, provider);
