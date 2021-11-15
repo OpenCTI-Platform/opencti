@@ -68,7 +68,7 @@ const initTaxiiApi = (app) => {
     try {
       await extractUser(req, res);
       const rootContent = {
-        display_name: 'Taxii OpenCTI root',
+        title: 'OpenCTI TAXII Server',
         description: 'A global and natively segregate taxii root',
         max_content_length: 100 * 1024 * 1024, // '100mb'
         versions: [TAXII_VERSION],
