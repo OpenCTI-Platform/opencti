@@ -36,6 +36,7 @@ import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardActions from "@material-ui/core/CardActions";
+import LinearProgress from '@material-ui/core/LinearProgress';
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import List from "@material-ui/core/List";
@@ -421,12 +422,11 @@ class Scans extends Component {
     };
 
     const refreshAnalysis = () => {
+      this.setState({ loadingAnalysises: true });
       fetchAllAnalysis(this.state.client_ID)
         .then((response) => {
           let analysises = response.data;
           let scatterPlotData = [];
-
-
 
           analysises.forEach(analysis =>{
          getAnalysisSummary(analysis.id,this.state.client_ID)
@@ -499,7 +499,11 @@ class Scans extends Component {
             />
           );
         case "Vulnerability Scan":
-          return <VulnerabilityScan client_ID={this.state.client_ID} rerenderParentCallback={rerenderParentCallback}/>;
+          return <VulnerabilityScan 
+                  client_ID={this.state.client_ID} 
+                  rerenderParentCallback={rerenderParentCallback}
+                  onClose={handleDialogClose}
+                  />;
         default:
           return "foo";
       }
@@ -519,6 +523,7 @@ class Scans extends Component {
             >
               <CardContent>
                 <p>
+                local
                   Your software and hardware keep your enterprise running.
                   Software and hardware have weaknesses, and those weaknesses
                   have vulnerabilities. The underlying weaknesses in your system
@@ -667,6 +672,7 @@ class Scans extends Component {
         </Grid>
         <Typography variant="h4" gutterBottom={true}>
           Analysises
+          { loadingAnalysises ? <LinearProgress /> : null }
         </Typography>
         <Grid container={true} spacing={3}>
           {!loadingAnalysises ? (
