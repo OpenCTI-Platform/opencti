@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+/* eslint-disable */
+/* refactor */import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
