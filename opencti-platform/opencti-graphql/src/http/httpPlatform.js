@@ -74,7 +74,6 @@ const createApp = async () => {
   if (DEV_MODE) {
     app.set('json spaces', 2);
   }
-  app.set('trust proxy', 2)
   app.use(securityMiddleware);
   app.use(compression({}));
 
