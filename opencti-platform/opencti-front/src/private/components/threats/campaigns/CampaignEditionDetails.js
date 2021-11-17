@@ -95,8 +95,10 @@ class CampaignEditionDetailsComponent extends Component {
 
   onSubmit(values, { setSubmitting }) {
     const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
       R.dissoc('message'),
+      R.dissoc('references'),
       R.assoc(
         'first_seen',
         values.first_seen ? parse(values.first_seen).format() : null,
@@ -118,6 +120,7 @@ class CampaignEditionDetailsComponent extends Component {
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
       },
       setSubmitting,
       onCompleted: () => {
