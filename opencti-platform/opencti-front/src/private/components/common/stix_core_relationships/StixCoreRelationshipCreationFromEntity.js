@@ -52,6 +52,7 @@ import ConfidenceField from '../form/ConfidenceField';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import ExternalReferencesField from '../form/ExternalReferencesField';
 import { defaultValue } from '../../../../utils/Graph';
+import { isNodeInConnection } from '../../../../utils/Store';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -298,22 +299,6 @@ const stixCoreRelationshipValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
 });
 
-const sharedUpdater = (
-  store,
-  userId,
-  paginationOptions,
-  newEdge,
-  connectionKey = null,
-) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    connectionKey || 'Pagination_stixCoreRelationships',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 class StixCoreRelationshipCreationFromEntity extends Component {
   constructor(props) {
     super(props);
@@ -343,21 +328,16 @@ class StixCoreRelationshipCreationFromEntity extends Component {
         variables: { input: finalValues },
         updater: (store) => {
           if (typeof this.props.onCreate !== 'function') {
+            const userProxy = store.get(store.getRoot().getDataID());
             const payload = store.getRootField('stixCoreRelationshipAdd');
-            const newEdge = payload.setLinkedRecord(
-              connectionKey
-                ? payload.getLinkedRecord(isRelationReversed ? 'from' : 'to')
-                : payload,
-              'node',
-            );
-            const container = store.getRoot();
-            sharedUpdater(
-              store,
-              container.getDataID(),
-              this.props.paginationOptions,
-              newEdge,
-              connectionKey,
-            );
+            const createdNode = connectionKey ? payload.getLinkedRecord(isRelationReversed ? 'from' : 'to') : payload;
+            const connKey = connectionKey || 'Pagination_stixCoreRelationships';
+            const { paginationOptions } = this.props;
+            const conn = ConnectionHandler.getConnection(userProxy, connKey, paginationOptions);
+            if (!isNodeInConnection(payload, conn)) {
+              const newEdge = payload.setLinkedRecord(createdNode, 'node');
+              ConnectionHandler.insertEdgeBefore(conn, newEdge);
+            }
           }
         },
         onError: (error) => {

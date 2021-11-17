@@ -53,8 +53,7 @@ const ruleObserveSightingBuilder = () => {
         const { number_observed, first_observed, last_observed } = observedData;
         if (organizationId) {
           const explanation = [observedDataId, objectId, observableId, baseOnId, indicatorId];
-          // eslint-disable-next-line prettier/prettier
-            const dependencies = generateDependencies(
+          const dependencies = generateDependencies(
             observedDataId,
             objectId,
             observableId,
@@ -100,8 +99,7 @@ const ruleObserveSightingBuilder = () => {
         for (let index = 0; index < baseOnRelations.length; index += 1) {
           const { internal_id: baseOnId, fromId: indicatorId } = baseOnRelations[index];
           const explanation = [observedDataId, objectId, observableId, baseOnId, indicatorId];
-          // eslint-disable-next-line prettier/prettier
-            const dependencies = generateDependencies(
+          const dependencies = generateDependencies(
             observedDataId,
             objectId,
             observableId,

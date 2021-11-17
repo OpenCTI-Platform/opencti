@@ -23,6 +23,7 @@ import {
   READ_ENTITIES_INDICES,
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE,
@@ -2535,20 +2536,19 @@ export const createRelationRaw = async (user, input, opts = {}) => {
     lock = await lockResource(participantIds);
     // region check existing relationship
     const existingRelationships = [];
+    const listingArgs = { fromId: from.internal_id, toId: to.internal_id, connectionFormat: false };
     if (fromRule) {
       // In case inferred rule, try to find the relation with basic filters
-      const listingArgs = {
-        fromId: from.internal_id,
-        toId: to.internal_id,
-        connectionFormat: false,
-        indices: [READ_INDEX_INFERRED_RELATIONSHIPS],
-      };
-      const inferredRelationships = await listRelations(SYSTEM_USER, relationshipType, listingArgs);
+      // Only in inferred indices.
+      const fromRuleArgs = { ...listingArgs, indices: [READ_INDEX_INFERRED_RELATIONSHIPS] };
+      const inferredRelationships = await listRelations(SYSTEM_USER, relationshipType, fromRuleArgs);
       existingRelationships.push(...inferredRelationships);
     } else {
+      // In case of direct relation, try to find the relation with time filters
+      // Only in standard indices.
       const timeFilters = buildRelationTimeFilter(resolvedInput);
-      const listingArgs = { fromId: from.internal_id, toId: to.internal_id, connectionFormat: false, ...timeFilters };
-      const manualRelationships = await listRelations(SYSTEM_USER, relationshipType, listingArgs);
+      const manualArgs = { ...listingArgs, indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, ...timeFilters };
+      const manualRelationships = await listRelations(SYSTEM_USER, relationshipType, manualArgs);
       existingRelationships.push(...manualRelationships);
     }
     let existingRelationship = null;
@@ -2906,8 +2906,9 @@ export const createEntity = async (user, input, type) => {
 };
 export const createInferredEntity = async (input, ruleContent, type) => {
   const opts = { fromRule: ruleContent.field, impactStandardId: false };
-  const standardId = idGenFromData(type, ruleContent.content.dependencies.sort());
   logApp.info('Create inferred entity', { type });
+  // Inferred entity have a specific standardId generated from dependencies data.
+  const standardId = idGenFromData(type, ruleContent.content.dependencies.sort());
   const instance = { standard_id: standardId, ...input, [ruleContent.field]: [ruleContent.content] };
   const patch = createRuleDataPatch(instance);
   const inputEntity = { ...instance, ...patch };
@@ -2974,6 +2975,12 @@ export const deleteElementById = async (user, elementId, type, opts = {}) => {
   return deleteElement(user, element, opts);
 };
 export const deleteInferredRuleElement = async (rule, instance, deletedDependencies) => {
+  // Check if deletion is really targeting an inference
+  const isInferred = isInferredIndex(instance._index);
+  if (!isInferred) {
+    throw new UnsupportedError('Instance is not inferred, cant be deleted');
+  }
+  // Delete inference
   const fromRule = RULE_PREFIX + rule;
   const rules = Object.keys(instance).filter((k) => k.startsWith(RULE_PREFIX));
   const completeRuleName = RULE_PREFIX + rule;
@@ -2981,7 +2988,6 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     throw UnsupportedError('Cant ask a deletion on element not inferred by this rule', { rule });
   }
   const monoRule = rules.length === 1;
-  const isPurelyInferred = isInferredIndex(instance._index);
   // Cleanup all explanation that match the dependency id
   const derivedEvents = [];
   const elementsRule = instance[completeRuleName];
@@ -2995,17 +3001,17 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     }
   }
   try {
+    // Current rule doesnt have any more explanation
     if (rebuildRuleContent.length === 0) {
-      // Rule has no more explanation in the rule
-      if (isPurelyInferred && monoRule) {
-        // If purely inferred and mono rule we can safely delete it.
+      // If current inference is only base on one rule, we can safely delete it.
+      if (monoRule) {
         await deleteElementById(RULE_MANAGER_USER, instance.id, instance.entity_type);
         const loaders = { stixLoadById: loadByIdWithMetaRels, connectionLoaders };
         const opts = { withoutMessage: true };
         const event = await buildDeleteEvent(RULE_MANAGER_USER, instance, [], loaders, opts);
         derivedEvents.push(event);
       } else {
-        // If not we need to clean the rule and keep the element
+        // If not we need to clean the rule and keep the element for other rules.
         const input = { [completeRuleName]: null };
         const { event } = await upsertRelationRule(instance, input, { fromRule, ruleOverride: true });
         if (event) {
@@ -3021,7 +3027,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
       }
     }
   } catch (e) {
-    logApp.error('Cant delete inference', { error: e.message });
+    logApp.error('Error deleting inference', { error: e.message });
   }
   return derivedEvents;
 };
