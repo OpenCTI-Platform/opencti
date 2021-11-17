@@ -14,7 +14,7 @@ import { QueryRenderer as QR } from 'react-relay';
 import DarkLightEnvironment from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddExternalReferences from './AddExternalReferences';
+import CyioAddExternalReferences from './CyioAddExternalReferences';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import Security, {
   KNOWLEDGE_KNUPDATE,
@@ -45,7 +45,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixCoreObjectAssetCreationExternalReferences extends Component {
+class CyioCoreObjectAssetCreationExternalReferences extends Component {
   render() {
     const { t, classes } = this.props;
     return (
@@ -57,10 +57,10 @@ class StixCoreObjectAssetCreationExternalReferences extends Component {
           needs={[KNOWLEDGE_KNUPDATE]}
           placeholder={<div style={{ height: 28 }} />}
         >
-          <AddExternalReferences
-            // stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
-            // stixCoreObjectOrStixCoreRelationshipReferences={
-            //   data.stixCoreObject.externalReferences.edges
+          <CyioAddExternalReferences
+            // cyioCoreObjectOrCyioCoreRelationshipId={cyioCoreObjectId}
+            // cyioCoreObjectOrCyioCoreRelationshipReferences={
+            //   data.cyioCoreObject.externalReferences.edges
             // }
           />
         </Security>
@@ -76,8 +76,8 @@ class StixCoreObjectAssetCreationExternalReferences extends Component {
   }
 }
 
-StixCoreObjectAssetCreationExternalReferences.propTypes = {
-  stixCoreObjectId: PropTypes.string,
+CyioCoreObjectAssetCreationExternalReferences.propTypes = {
+  cyioCoreObjectId: PropTypes.string,
   limit: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -87,4 +87,4 @@ StixCoreObjectAssetCreationExternalReferences.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixCoreObjectAssetCreationExternalReferences);
+)(CyioCoreObjectAssetCreationExternalReferences);

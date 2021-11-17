@@ -86,7 +86,7 @@ const styles = () => ({
   },
 });
 
-class StixDomainObjectAssetHeader extends Component {
+class CyioDomainObjectAssetHeader extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -100,7 +100,7 @@ class StixDomainObjectAssetHeader extends Component {
     const {
       t,
       classes,
-      stixDomainObject,
+      cyioDomainObject,
       handleDisplayEdit,
       OperationsComponent,
       handleOpenNewCreation,
@@ -118,7 +118,7 @@ class StixDomainObjectAssetHeader extends Component {
           gutterBottom={true}
           classes={{ root: classes.title }}
         >
-          {stixDomainObject.name}
+          {cyioDomainObject.name && cyioDomainObject.name}
         </Typography>
         <div className={classes.aliases}>
           {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
@@ -127,7 +127,7 @@ class StixDomainObjectAssetHeader extends Component {
                 variant="contained"
                 onClick={handleDisplayEdit.bind(this)}
                 className={classes.iconButton}
-                disabled={Boolean(!stixDomainObject.id)}
+                disabled={Boolean(!cyioDomainObject.id)}
                 color="primary"
                 size="large"
               >
@@ -136,7 +136,7 @@ class StixDomainObjectAssetHeader extends Component {
             </Tooltip>
             <div style={{ display: 'inline-block' }}>
               {OperationsComponent && React.cloneElement(OperationsComponent, {
-                id: stixDomainObject.id,
+                id: cyioDomainObject.id,
                 disabled: disablePopover,
               })}
             </div>
@@ -159,8 +159,8 @@ class StixDomainObjectAssetHeader extends Component {
   }
 }
 
-StixDomainObjectAssetHeader.propTypes = {
-  stixDomainObject: PropTypes.object,
+CyioDomainObjectAssetHeader.propTypes = {
+  cyioDomainObject: PropTypes.object,
   PopoverComponent: PropTypes.object,
   variant: PropTypes.string,
   classes: PropTypes.object,
@@ -172,4 +172,4 @@ StixDomainObjectAssetHeader.propTypes = {
   isOpenctiAlias: PropTypes.bool,
 };
 
-export default compose(inject18n, withStyles(styles))(StixDomainObjectAssetHeader);
+export default compose(inject18n, withStyles(styles))(CyioDomainObjectAssetHeader);

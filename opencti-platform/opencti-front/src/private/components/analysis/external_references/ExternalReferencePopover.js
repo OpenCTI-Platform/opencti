@@ -5,7 +5,6 @@ import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
 import Drawer from '@material-ui/core/Drawer';
-import Typography from '@material-ui/core/Typography';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
@@ -16,8 +15,6 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import ExternalReferenceEdition from './ExternalReferenceEdition';
@@ -28,33 +25,16 @@ const styles = (theme) => ({
     margin: 0,
   },
   drawerPaper: {
+    minHeight: '100vh',
     width: '50%',
     position: 'fixed',
     overflow: 'auto',
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
-  },
-  menuItem: {
-    padding: '15px 0',
-    width: '152px',
-    margin: '0 20px',
-    justifyContent: 'center',
-  },
-  dialogActions: {
-    justifyContent: 'flex-start',
-    padding: '10px 0 20px 22px',
-  },
-  buttonPopover: {
-    textTransform: 'capitalize',
-  },
-  popoverDialog: {
-    fontSize: '18px',
-    lineHeight: '24px',
-    color: theme.palette.header.text,
   },
 });
 
@@ -118,38 +98,27 @@ class ExternalReferencePopover extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: externalReferencePopoverDeletionMutation,
       variables: {
         id: this.props.externalReferenceId,
       },
-      onCompleted: (data) => {
+      updater: (store) => {
+        const container = store.getRoot();
+        const payload = store.getRootField('externalReferenceEdit');
+        const userProxy = store.get(container.getDataID());
+        const conn = ConnectionHandler.getConnection(
+          userProxy,
+          'Pagination_externalReferences',
+          this.props.paginationOptions,
+        );
+        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
+      },
+      onCompleted: () => {
         this.setState({ deleting: false });
         this.handleCloseDelete();
       },
-      onError: (err) => console.log('ExtRefDeletionDarkLightMutationError', err),
     });
-    // commitMutation({
-    //   mutation: externalReferencePopoverDeletionMutation,
-    //   variables: {
-    //     id: this.props.externalReferenceId,
-    //   },
-    //   updater: (store) => {
-    //     const container = store.getRoot();
-    //     const payload = store.getRootField('externalReferenceEdit');
-    //     const userProxy = store.get(container.getDataID());
-    //     const conn = ConnectionHandler.getConnection(
-    //       userProxy,
-    //       'Pagination_externalReferences',
-    //       this.props.paginationOptions,
-    //     );
-    //     ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
-    //   },
-    //   onCompleted: () => {
-    //     this.setState({ deleting: false });
-    //     this.handleCloseDelete();
-    //   },
-    // });
   }
 
   render() {
@@ -171,10 +140,7 @@ class ExternalReferencePopover extends Component {
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
-          <MenuItem
-            className={classes.menuItem}
-            divider={true}
-            onClick={this.handleOpenUpdate.bind(this)}>
+          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
           </MenuItem>
           {handleRemove && (
@@ -183,24 +149,21 @@ class ExternalReferencePopover extends Component {
                 handleRemove();
                 this.handleClose();
               }}
-              divider={true}
-              className={classes.menuItem}
             >
-              {t('Remove')}
+              {t('Remove from this object')}
             </MenuItem>
           )}
-          <MenuItem className={classes.menuItem} onClick={this.handleOpenDelete.bind(this)}>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
             {t('Delete')}
           </MenuItem>
         </Menu>
-        <Dialog
+        <Drawer
           open={this.state.displayUpdate}
-          keepMounted={true}
+          anchor="right"
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseUpdate.bind(this)}
         >
-          <QR
-            environment={environmentDarkLight}
+          <QueryRenderer
             query={externalReferenceEditionQuery}
             variables={{ id: externalReferenceId }}
             render={({ props }) => {
@@ -216,23 +179,7 @@ class ExternalReferencePopover extends Component {
               return <Loader variant="inElement" />;
             }}
           />
-          {/* <QueryRenderer
-            query={externalReferenceEditionQuery}
-            variables={{ id: externalReferenceId }}
-            render={({ props }) => {
-              if (props) {
-                // Done
-                return (
-                  <ExternalReferenceEdition
-                    externalReference={props.externalReference}
-                    handleClose={this.handleCloseUpdate.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          /> */}
-        </Dialog>
+        </Drawer>
         <Dialog
           open={this.state.displayDelete}
           keepMounted={true}
@@ -240,30 +187,21 @@ class ExternalReferencePopover extends Component {
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>
-            <Typography className={classes.popoverDialog} >
-              {t('Are you sure you’d like to delete this item?')}
-            </Typography>
             <DialogContentText>
-              {t('This action can’t be undone')}
+              {t('Do you want to delete this external reference?')}
             </DialogContentText>
           </DialogContent>
-          <DialogActions className={classes.dialogActions}>
+          <DialogActions>
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
-              classes={{ root: classes.buttonPopover }}
-              variant="outlined"
-              size="small"
             >
               {t('Cancel')}
             </Button>
             <Button
               onClick={this.submitDelete.bind(this)}
-              color="secondary"
+              color="primary"
               disabled={this.state.deleting}
-              classes={{ root: classes.buttonPopover }}
-              variant="contained"
-              size="small"
             >
               {t('Delete')}
             </Button>

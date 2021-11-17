@@ -14,12 +14,12 @@ import DeviceDeletion from './DeviceDeletion';
 import DeviceCreation from './DeviceCreation';
 import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixDomainObjectAssetHeader from '../../common/stix_domain_objects/StixDomainObjectAssetHeader';
+import CyioDomainObjectHeader from '../../common/stix_domain_objects/CyioDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import StixDomainObjectAssetOverview from '../../common/stix_domain_objects/StixDomainObjectAssetOverview';
-import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import CyioDomainObjectAssetOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetOverview';
+import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
+import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 
 const styles = () => ({
@@ -61,8 +61,8 @@ class DeviceComponent extends Component {
       <>
         {!this.state.displayEdit && !location.openEdit ? (
           <div className={classes.container}>
-            <StixDomainObjectAssetHeader
-              stixDomainObject={device}
+            <CyioDomainObjectHeader
+              cyioDomainObject={device}
               history={history}
               PopoverComponent={<DevicePopover />}
               handleDisplayEdit={this.handleDisplayEdit.bind(this)}
@@ -75,7 +75,7 @@ class DeviceComponent extends Component {
               classes={{ container: classes.gridContainer }}
             >
               <Grid item={true} xs={6}>
-                <StixDomainObjectAssetOverview stixDomainObject={device} />
+                <CyioDomainObjectAssetOverview cyioDomainObject={device} />
               </Grid>
               <Grid item={true} xs={6}>
                 <DeviceDetails device={device} history={history}/>
@@ -88,16 +88,16 @@ class DeviceComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                {/* <StixCoreObjectExternalReferences
-                  stixCoreObjectId={device.id}
-                /> */}
+                <CyioCoreObjectExternalReferences
+                  cyioCoreObjectId={device.id}
+                />
               </Grid>
               <Grid item={true} xs={6}>
-                <StixCoreObjectLatestHistory stixCoreObjectId={device.id} />
+                <CyioCoreObjectLatestHistory cyioCoreObjectId={device.id} />
               </Grid>
             </Grid>
-            <StixCoreObjectOrStixCoreRelationshipNotes
-              stixCoreObjectOrStixCoreRelationshipId={device.id}
+            <CyioCoreObjectOrCyioCoreRelationshipNotes
+              cyioCoreObjectOrCyioCoreRelationshipId={device.id}
             />
             {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <DeviceEdition deviceId={device.id} />
@@ -125,48 +125,21 @@ DeviceComponent.propTypes = {
 
 const Device = createFragmentContainer(DeviceComponent, {
   device: graphql`
-    fragment Device_device on ThreatActor {
+    fragment Device_device on ComputingDeviceAsset {
       id
-      standard_id
-      x_opencti_stix_ids
-      spec_version
-      revoked
-      confidence
-      created
-      modified
-      created_at
-      updated_at
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-        }
-      }
-      creator {
-        id
-        name
-      }
-      objectMarking {
-        edges {
-          node {
-            id
-            definition
-            x_opencti_color
-          }
-        }
-      }
-      objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
-      }
       name
-      aliases
+      asset_id
+      asset_type
+      asset_tag
+      description
+      version
+      vendor_name
+      serial_number
+      release_date
+      labels
+      # responsible_parties
+      # operational_status
+      ...DeviceDetails_device
     }
   `,
 });

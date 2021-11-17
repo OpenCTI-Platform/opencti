@@ -1,0 +1,538 @@
+import React, { Component } from 'react';
+import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
+// import { createPaginationContainer } from 'react-relay';
+import { ConnectionHandler } from 'relay-runtime';
+import graphql from 'babel-plugin-relay/macro';
+import { withStyles } from '@material-ui/core/styles';
+import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
+import List from '@material-ui/core/List';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import LinkIcon from '@material-ui/icons/Link';
+import Divider from '@material-ui/core/Divider';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import Button from '@material-ui/core/Button';
+import Avatar from '@material-ui/core/Avatar';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogActions from '@material-ui/core/DialogActions';
+import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
+import Slide from '@material-ui/core/Slide';
+import { interval } from 'rxjs';
+import { QueryRenderer as QR, commitMutation as CM, createPaginationContainer } from 'react-relay';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
+import inject18n from '../../../../components/i18n';
+import { truncate } from '../../../../utils/String';
+import { commitMutation } from '../../../../relay/environment';
+import CyioAddExternalReferences from './CyioAddExternalReferences';
+import { cyioExternalReferenceMutationRelationDelete } from './CyioAddExternalReferencesLines';
+import Security, {
+  KNOWLEDGE_KNENRICHMENT,
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../../utils/Security';
+import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
+import FileLine from '../../common/files/FileLine';
+import { FIVE_SECONDS } from '../../../../utils/Time';
+import FileUploader from '../../common/files/FileUploader';
+import CyioExternalReferencePopover from './CyioExternalReferencePopover';
+
+const interval$ = interval(FIVE_SECONDS);
+
+const styles = (theme) => ({
+  paper: {
+    height: '100%',
+    minHeight: '100%',
+    margin: '-4px 0 0 0',
+    padding: 0,
+    position: 'relative',
+  },
+  avatar: {
+    width: 24,
+    height: 24,
+    backgroundColor: theme.palette.primary.main,
+  },
+  avatarDisabled: {
+    width: 24,
+    height: 24,
+  },
+  placeholder: {
+    display: 'inline-block',
+    height: '1em',
+    backgroundColor: theme.palette.grey[700],
+  },
+  buttonExpand: {
+    position: 'absolute',
+    bottom: 2,
+    width: '100%',
+    height: 25,
+    backgroundColor: 'rgba(255, 255, 255, .2)',
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    '&:hover': {
+      backgroundColor: 'rgba(255, 255, 255, .5)',
+    },
+  },
+});
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
+class CyioCoreObjectExternalReferencesLinesContainer extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      displayDialog: false,
+      displayExternalLink: false,
+      externalLink: null,
+      removeExternalReference: null,
+      removing: false,
+      displayExternalRefID: false,
+      expanded: false,
+    };
+  }
+
+  componentDidMount() {
+    this.subscription = interval$.subscribe(() => {
+      this.props.relay.refetchConnection(200);
+    });
+  }
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
+  }
+
+  handleToggleExpand() {
+    this.setState({ expanded: !this.state.expanded });
+  }
+
+  handleOpenDialog(externalReferenceEdge) {
+    const openedState = {
+      displayDialog: true,
+      removeExternalReference: externalReferenceEdge,
+    };
+    this.setState(openedState);
+  }
+
+  handleCloseDialog() {
+    const closedState = {
+      displayDialog: false,
+      removeExternalReference: null,
+    };
+    this.setState(closedState);
+  }
+
+  handleRemoval() {
+    this.setState({ removing: true });
+    this.removeExternalReference(this.state.removeExternalReference);
+  }
+
+  handleOpenExternalLink(url) {
+    this.setState({ displayExternalLink: true, externalLink: url });
+  }
+
+  handleCloseExternalLink() {
+    this.setState({ displayExternalLink: false, externalLink: null });
+  }
+
+  handleBrowseExternalLink() {
+    window.open(this.state.externalLink, '_blank');
+    this.setState({ displayExternalLink: false, externalLink: null });
+  }
+
+  handleToggleDetails() {
+    this.setState({ displayExternalRefID: !this.state.displayExternalRefID });
+  }
+
+  removeExternalReference(externalReferenceEdge) {
+    CM(environmentDarkLight, {
+      mutation: cyioExternalReferenceMutationRelationDelete,
+      variables: {
+        id: externalReferenceEdge.node.id,
+        fromId: this.props.cyioCoreObjectId,
+        relationship_type: 'external-reference',
+      },
+      onCompleted: (data) => {
+        this.setState({ removing: false });
+        this.handleCloseDialog();
+      },
+      onError: (err) => console.log('ExtRefRemoveDarkLightMutationError', err),
+    });
+    // commitMutation({
+    //   mutation: cyioExternalReferenceMutationRelationDelete,
+    //   variables: {
+    //     id: externalReferenceEdge.node.id,
+    //     fromId: this.props.cyioCoreObjectId,
+    //     relationship_type: 'external-reference',
+    //   },
+    //   updater: (store) => {
+    //     const entity = store.get(this.props.cyioCoreObjectId);
+    //     const conn = ConnectionHandler.getConnection(
+    //       entity,
+    //       'Pagination_externalReferences',
+    //     );
+    //     ConnectionHandler.deleteNode(conn, externalReferenceEdge.node.id);
+    //   },
+    //   onCompleted: () => {
+    //     this.setState({ removing: false });
+    //     this.handleCloseDialog();
+    //   },
+    // });
+  }
+
+  render() {
+    const {
+      t, classes, cyioCoreObjectId, data,
+    } = this.props;
+    const { expanded, displayExternalRefID } = this.state;
+    const externalReferencesEdges = data.itAsset.external_references.edges;
+    // const externalReferencesEdges = [data.externalReference];
+    const expandable = externalReferencesEdges.length > 7;
+    return (
+      <div style={{ height: '100%' }}>
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+          {t('External references')}
+        </Typography>
+        <Security
+          needs={[KNOWLEDGE_KNUPDATE]}
+          placeholder={<div style={{ height: 28 }} />}
+        >
+          <CyioAddExternalReferences
+            cyioCoreObjectOrCyioCoreRelationshipId={cyioCoreObjectId}
+            cyioCoreObjectOrCyioCoreRelationshipReferences={
+              data.itAsset.external_references.edges
+              // data.externalReference
+            }
+          />
+        </Security>
+        <div className="clearfix" />
+        <Paper classes={{ root: classes.paper }} elevation={2}>
+          {externalReferencesEdges.length > 0 ? (
+            <List style={{ marginBottom: 0, padding: '12px' }}>
+              {/* {externalReferencesEdges.map( */}
+              {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
+                (externalReferenceEdge) => {
+                  const externalReference = externalReferenceEdge.node;
+                  const externalReferenceId = externalReference.external_id
+                    ? `(${externalReference.external_id})`
+                    : '';
+                  let externalReferenceSecondary = '';
+                  if (
+                    externalReference.url
+                    && externalReference.url.length > 0
+                  ) {
+                    externalReferenceSecondary = externalReference.url;
+                  } else if (
+                    externalReference.description
+                    && externalReference.description.length > 0
+                  ) {
+                    externalReferenceSecondary = externalReference.description;
+                  }
+                  return (
+                    <div key={externalReference.id}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '90% 10%' }}>
+                        <Accordion onChange={this.handleToggleDetails.bind(this)} style={{ borderBottom: '0', boxShadow: 'none' }}>
+                          {/* <ListItem dense={true} divider={true} button={false}> */}
+                          {/* <ListItemIcon>
+                                      <Avatar classes={{ root: classes.avatar }}>
+                                        {externalReference.source_name.substring(0, 1)}
+                                      </Avatar>
+                                    </ListItemIcon> */}
+                          <AccordionSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                            sx={{ width: '100%' }}
+                          >
+                            <ListItemText
+                              primary={externalReference.source_name}
+                              secondary={!displayExternalRefID
+                                ? (externalReference.url && truncate(t(externalReference.url), 80))
+                                : (externalReference.id && t(externalReference.id))}
+                            />
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            <div >
+                              <Typography variant="subtitle1" gutterBottom={true}>
+                                {externalReference.description}
+                              </Typography>
+                              <Typography variant="subtitle2" style={{ display: 'flex', color: '#F9B406' }} >
+                                <LinkIcon fontSize="small" style={{ paddingRight: '5px' }} />
+                                {externalReference.url && truncate(
+                                  t(externalReference.url),
+                                  80,
+                                )}
+                              </Typography>
+                            </div>
+                          </AccordionDetails>
+                          {/* </ListItem> */}
+                        </Accordion>
+                        {/* <ListItemSecondaryAction> */}
+                        {/* <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                                  <FileUploader
+                                    entityId={externalReference.id}
+                                    onUploadSuccess={() => this.props.relay.refetchConnection(200)
+                                    }
+                                    color="inherit"
+                                  />
+                                </Security> */}
+                        <div style={{ marginTop: '12px' }}>
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <CyioExternalReferencePopover
+                              externalReferenceId={externalReference.id}
+                              handleRemove={this.handleOpenDialog.bind(
+                                this,
+                                externalReferenceEdge,
+                              )}
+                            />
+                          </Security>
+                        </div>
+                        {/* </ListItemSecondaryAction> */}
+                      </div>
+                      {/* {externalReference.importFiles.edges.length > 0 && (
+                        <List>
+                          {externalReference.importFiles.edges.map((file) => (
+                            <FileLine
+                              key={file.node.id}
+                              dense={true}
+                              disableImport={true}
+                              file={file.node}
+                              nested={true}
+                            />
+                          ))}
+                        </List>
+                      )} */}
+                      <Divider variant="middle" light={true} />
+                    </div>
+                  );
+                },
+              )}
+            </List>
+          ) : (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {t('No entities of this type has been found.')}
+              </span>
+            </div>
+          )}
+          {expandable && (
+            <Button
+              variant="contained"
+              size="small"
+              onClick={this.handleToggleExpand.bind(this)}
+              classes={{ root: classes.buttonExpand }}
+            >
+              {expanded ? (
+                <ExpandLessOutlined fontSize="small" />
+              ) : (
+                <ExpandMoreOutlined fontSize="small" />
+              )}
+            </Button>
+          )}
+        </Paper>
+        {/* if (externalReference.url) {
+                    return (
+                      <div key={externalReference.id}>
+                        <ListItem
+                          dense={true}
+                          divider={true}
+                          button={true}
+                          onClick={this.handleOpenExternalLink.bind(
+                            this,
+                            externalReference.url,
+                          )}
+                        >
+                          <ListItemIcon>
+                            <Avatar classes={{ root: classes.avatar }}>
+                              {externalReference.source_name.substring(0, 1)}
+                            </Avatar>
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={`${externalReference.source_name} ${externalReferenceId}`}
+                            secondary={truncate(externalReferenceSecondary, 90)}
+                          />
+                          <ListItemSecondaryAction>
+                            <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                              <FileUploader
+                                entityId={externalReference.id}
+                                onUploadSuccess={() => this.props.relay.refetchConnection(200)
+                                }
+                                color="inherit"
+                              />
+                            </Security>
+                            <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                              <ExternalReferenceEnrichment
+                                externalReferenceId={externalReference.id}
+                              />
+                            </Security>
+                            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                              <CyioExternalReferencePopover
+                                externalReferenceId={externalReference.id}
+                                handleRemove={this.handleOpenDialog.bind(
+                                  this,
+                                  externalReferenceEdge,
+                                )}
+                              />
+                            </Security>
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                        {externalReference.importFiles.edges.length > 0 && (
+                          <List>
+                            {externalReference.importFiles.edges.map((file) => (
+                              <FileLine
+                                key={file.node.id}
+                                dense={true}
+                                disableImport={true}
+                                file={file.node}
+                                nested={true}
+                              />
+                            ))}
+                          </List>
+                        )}
+                      </div>
+                    );
+                  } */}
+        <Dialog
+          open={this.state.displayDialog}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseDialog.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to remove this external reference?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseDialog.bind(this)}
+              disabled={this.state.removing}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              onClick={this.handleRemoval.bind(this)}
+              color="primary"
+              disabled={this.state.removing}
+            >
+              {t('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          open={this.state.displayExternalLink}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseExternalLink.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to browse this external link?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleCloseExternalLink.bind(this)}>
+              {t('Cancel')}
+            </Button>
+            <Button
+              button={true}
+              color="secondary"
+              onClick={this.handleBrowseExternalLink.bind(this)}
+            >
+              {t('Browse the link')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
+    );
+  }
+}
+
+CyioCoreObjectExternalReferencesLinesContainer.propTypes = {
+  cyioCoreObjectId: PropTypes.string,
+  data: PropTypes.object,
+  limit: PropTypes.number,
+  classes: PropTypes.object,
+  t: PropTypes.func,
+  fld: PropTypes.func,
+  relay: PropTypes.object,
+};
+
+export const cyioCoreObjectExternalReferencesLinesQuery = graphql`
+  query CyioCoreObjectExternalReferencesLinesQuery($count: Int!, $id: ID!) {
+    ...CyioCoreObjectExternalReferencesLines_data
+      @arguments(count: $count, id: $id)
+  }
+`;
+
+const CyioCoreObjectExternalReferencesLines = createPaginationContainer(
+  CyioCoreObjectExternalReferencesLinesContainer,
+  {
+    data: graphql`
+      fragment CyioCoreObjectExternalReferencesLines_data on Query
+      @argumentDefinitions(
+        count: { type: "Int", defaultValue: 25 }
+        id: { type: "ID!" }
+      ) {
+        itAsset(id: $id) {
+          id
+          external_references(first: $count)
+            @connection(key: "Pagination_external_references") {
+            edges {
+              node {
+                id
+                source_name
+                description
+                url
+                hashes {
+                  value
+                }
+                external_id
+              }
+            }
+          }
+        }
+      }
+    `,
+  },
+  {
+    direction: 'forward',
+    getConnectionFromProps(props) {
+      return props.data && props.data.itAsset.external_references;
+    },
+    getFragmentVariables(prevVars, totalCount) {
+      return {
+        ...prevVars,
+        count: totalCount,
+      };
+    },
+    getVariables(props, { count }, fragmentVariables) {
+      return {
+        count,
+        id: fragmentVariables.id,
+      };
+    },
+    query: cyioCoreObjectExternalReferencesLinesQuery,
+  },
+);
+
+export default R.compose(
+  inject18n,
+  withStyles(styles),
+)(CyioCoreObjectExternalReferencesLines);

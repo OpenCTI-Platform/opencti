@@ -185,7 +185,6 @@ class Network extends Component {
         OperationsComponent={<NetworkDeletion />}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<NetworkCreation />}
         openExports={openExports}
         exportEntityType="Network"
         keyword={searchTerm}
@@ -285,11 +284,6 @@ class Network extends Component {
         selectedElements={selectedElements}
         selectAll={selectAll}
         OperationsComponent={<NetworkDeletion />}
-        CreateItemComponent={
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <NetworkCreation />
-          </Security>
-        }
         openExports={openExports}
         exportEntityType="Network"
         keyword={searchTerm}

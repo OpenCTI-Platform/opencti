@@ -189,7 +189,6 @@ class Devices extends Component {
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<DeviceCreation />}
         OperationsComponent={<DeviceDeletion />}
         openExports={openExports}
         exportEntityType="Device"
@@ -306,7 +305,6 @@ class Devices extends Component {
         handleNewCreation={this.handleDeviceCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
-        CreateItemComponent={<DeviceCreation />}
         OperationsComponent={<DeviceDeletion />}
         openExports={openExports}
         selectAll={selectAll}

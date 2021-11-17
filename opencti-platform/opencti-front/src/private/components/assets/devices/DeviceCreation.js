@@ -28,10 +28,10 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import DeviceCreationOverview from './DeviceCreationOverview';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import StixDomainObjectAssetCreationOverview from '../../common/stix_domain_objects/StixDomainObjectAssetCreationOverview';
-import StixCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/StixCoreObjectAssetCreationExternalReferences';
+import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import CyioDomainObjectAssetCreationOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetCreationOverview';
+import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import Loader from '../../../../components/Loader';
 import DeviceCreationDetails from './DeviceCreationDetails';
 
@@ -265,7 +265,7 @@ class DeviceCreation extends Component {
                 >
                   <Grid item={true} xs={6}>
                     {/* <DeviceCreationOverview setFieldValue={setFieldValue} values={values} /> */}
-                    <StixDomainObjectAssetCreationOverview
+                    <CyioDomainObjectAssetCreationOverview
                       setFieldValue={setFieldValue}
                       values={values}
                     />
@@ -285,13 +285,13 @@ class DeviceCreation extends Component {
                   {/* <StixCoreObjectExternalReferences
                       stixCoreObjectId={device.id}
                     /> */}
-                  <StixCoreObjectAssetCreationExternalReferences />
+                  <CyioCoreObjectAssetCreationExternalReferences />
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <StixCoreObjectLatestHistory />
+                  <CyioCoreObjectLatestHistory />
                 </Grid>
               </Grid>
-              <StixCoreObjectOrStixCoreRelationshipNotes />
+              <CyioCoreObjectOrCyioCoreRelationshipNotes />
             </>
           )}
         </Formik>

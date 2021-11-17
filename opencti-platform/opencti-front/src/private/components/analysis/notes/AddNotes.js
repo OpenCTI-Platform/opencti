@@ -11,9 +11,6 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { Add, Close } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
-import Dialog from '@material-ui/core/Dialog';
-// eslint-disable-next-line import/no-cycle
-import StixCoreObjectNotesCards from './StixCoreObjectNotesCards';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -22,17 +19,18 @@ import NoteCreation from './NoteCreation';
 
 const styles = (theme) => ({
   drawerPaper: {
-    minHeight: '452px',
-    width: '750px',
-    // backgroundColor: theme.palette.navAlt.background,
+    minHeight: '100vh',
+    width: '50%',
+    position: 'fixed',
+    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    padding: '24px 24px 32px 24px',
+    padding: 0,
   },
   createButton: {
-    float: 'left',
+    float: 'right',
     marginTop: -15,
   },
   title: {
@@ -42,9 +40,9 @@ const styles = (theme) => ({
     float: 'right',
   },
   header: {
-    // backgroundColor: theme.palette.navAlt.backgroundHeader,
+    backgroundColor: theme.palette.navAlt.backgroundHeader,
     color: theme.palette.navAlt.backgroundHeaderText,
-    // padding: '20px 20px 20px 60px',
+    padding: '20px 20px 20px 60px',
   },
   closeButton: {
     position: 'absolute',
@@ -88,7 +86,6 @@ class AddNotes extends Component {
     const {
       t,
       classes,
-      display,
       stixCoreObjectOrStixCoreRelationshipId,
       stixCoreObjectOrStixCoreRelationshipNotes,
     } = this.props;
@@ -97,50 +94,40 @@ class AddNotes extends Component {
     };
     return (
       <div>
-        {/* <IconButton
+        <IconButton
+          color="secondary"
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
           classes={{ root: classes.createButton }}
         >
           <Add fontSize="small" />
-        </IconButton> */}
-        {/* <Dialog
+        </IconButton>
+        <Drawer
           open={this.state.open}
+          anchor="right"
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
-        > */}
-        <NoteCreation
-          display={true}
-          contextual={true}
-          inputValue={this.state.search}
-          paginationOptions={paginationOptions}
-        />
-        {/* </Dialog> */}
-        {/* <Dialog
-          open={this.state.open}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        > */}
-          {/* <div className={classes.header}> */}
-            {/* <IconButton
+        >
+          <div className={classes.header}>
+            <IconButton
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
             >
               <Close fontSize="small" />
-            </IconButton> */}
-            {/* <Typography variant="h6" classes={{ root: classes.title }}>
-              {t('New Note')}
-            </Typography> */}
-            {/* <div className={classes.search}>
+            </IconButton>
+            <Typography variant="h6" classes={{ root: classes.title }}>
+              {t('Add notes')}
+            </Typography>
+            <div className={classes.search}>
               <SearchInput
                 variant="inDrawer"
                 placeholder={`${t('Search')}...`}
                 onSubmit={this.handleSearch.bind(this)}
               />
-            </div> */}
-          {/* </div> */}
-          {/* <div className={classes.container}>
+            </div>
+          </div>
+          <div className={classes.container}>
             <QueryRenderer
               query={addNotesLinesQuery}
               variables={{
@@ -198,14 +185,14 @@ class AddNotes extends Component {
                 );
               }}
             />
-          </div> */}
-        {/* </Dialog> */}
-        {/* <NoteCreation
+          </div>
+        </Drawer>
+        <NoteCreation
           display={this.state.open}
           contextual={true}
           inputValue={this.state.search}
           paginationOptions={paginationOptions}
-        /> */}
+        />
       </div>
     );
   }
@@ -216,7 +203,6 @@ AddNotes.propTypes = {
   stixCoreObjectOrStixCoreRelationshipNotes: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
-  display: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(AddNotes);

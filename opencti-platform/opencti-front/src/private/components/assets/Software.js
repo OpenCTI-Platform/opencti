@@ -189,7 +189,6 @@ class Software extends Component {
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<SoftwareCreation />}
         OperationsComponent={<SoftwareDeletion />}
         openExports={openExports}
         exportEntityType="Software"
@@ -304,7 +303,6 @@ class Software extends Component {
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<SoftwareCreation />}
         OperationsComponent={<SoftwareDeletion />}
         openExports={openExports}
         exportEntityType="Software"

@@ -1,20 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr, take } from 'ramda';
-// import { createFragmentContainer } from 'react-relay';
+import { createFragmentContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
-import { OpenInNewOutlined, ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
+import { OpenInNewOutlined } from '@material-ui/icons';
 import { withStyles, withTheme } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
-import Collapse from '@material-ui/core/Collapse';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
-import Divider from '@material-ui/core/Divider';
-import CardActions from '@material-ui/core/CardActions';
 import Typography from '@material-ui/core/Typography';
-import LinkIcon from '@material-ui/icons/Link';
 import { ConnectionHandler } from 'relay-runtime';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -25,8 +21,6 @@ import Slide from '@material-ui/core/Slide';
 import IconButton from '@material-ui/core/IconButton';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -39,8 +33,9 @@ const styles = (theme) => ({
   card: {
     width: '100%',
     height: '100%',
-    borderRadius: 0,
-    padding: '24px 24px 12px 24px',
+    marginBottom: 30,
+    borderRadius: 6,
+    padding: 0,
     position: 'relative',
   },
   avatar: {
@@ -86,7 +81,6 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
       displayDialog: false,
       noteIdToRemove: null,
       removing: false,
-      open: false,
     };
   }
 
@@ -105,53 +99,34 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
     });
   }
 
-  toggleExpand() {
-    this.setState({
-      open: !this.state.open,
-    });
-  }
-
   handleRemoval() {
     this.setState({ removing: true });
     this.removeNote(this.state.noteIdToRemove);
   }
 
   removeNote(noteId) {
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: noteMutationRelationDelete,
       variables: {
         id: noteId,
         toId: this.props.stixCoreObjectOrStixCoreRelationshipId,
         relationship_type: 'object',
       },
-      onCompleted: (response) => {
+      updater: (store) => {
+        const entity = store.get(
+          this.props.stixCoreObjectOrStixCoreRelationshipId,
+        );
+        const conn = ConnectionHandler.getConnection(
+          entity,
+          'Pagination_notes',
+        );
+        ConnectionHandler.deleteNode(conn, noteId);
+      },
+      onCompleted: () => {
         this.setState({ removing: false });
         this.handleCloseDialog();
       },
-      onError: (err) => console.log('NoteRemoveDarkLightMutationError', err),
     });
-    // commitMutation({
-    //   mutation: noteMutationRelationDelete,
-    //   variables: {
-    //     id: noteId,
-    //     toId: this.props.stixCoreObjectOrStixCoreRelationshipId,
-    //     relationship_type: 'object',
-    //   },
-    //   updater: (store) => {
-    //     const entity = store.get(
-    //       this.props.stixCoreObjectOrStixCoreRelationshipId,
-    //     );
-    //     const conn = ConnectionHandler.getConnection(
-    //       entity,
-    //       'Pagination_notes',
-    //     );
-    //     ConnectionHandler.deleteNode(conn, noteId);
-    //   },
-    //   onCompleted: () => {
-    //     this.setState({ removing: false });
-    //     this.handleCloseDialog();
-    //   },
-    // });
   }
 
   render() {
@@ -163,20 +138,20 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
       theme,
       stixCoreObjectOrStixCoreRelationshipId,
     } = this.props;
-    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     let authorName = null;
     let authorLink = null;
     if (node.createdBy) {
       authorName = node.createdBy.name;
-      authorLink = `${resolveLink(node.createdBy.entity_type)}/${node.createdBy.id
+      authorLink = `${resolveLink(node.createdBy.entity_type)}/${
+        node.createdBy.id
       }`;
     }
     return (
       <Card classes={{ root: classes.card }} raised={false}>
         <CardHeader
           style={{
-            padding: '0px 10px 0 15px',
-            // borderBottom: `1px solid ${theme.palette.divider}`,
+            padding: '10px 10px 0 15px',
+            borderBottom: `1px solid ${theme.palette.divider}`,
           }}
           action={
             <NotePopover
@@ -186,133 +161,88 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
             />
           }
           title={
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <div>
-                  <div
-                    style={{
-                      fontDecoration: 'none',
-                      textTransform: 'none',
-                      paddingTop: '3px',
-                    }}
-                  >
-                    <strong>
-                      {authorLink ? (
-                        <Link to={authorLink}>{authorName}</Link>
-                      ) : (
-                        t('Unknown')
-                      )}
-                    </strong>
-                    <span style={{ color: theme.palette.text.secondary }}>
-                      {t(' added a note on ')}
-                    </span>
-                    {nsdt(node.created)}
-                  </div>
-                  {/* <div
-                    style={{
-                      float: 'left',
-                      marginLeft: 20,
-                      fontDecoration: 'none',
-                      textTransform: 'none',
-                    }}
-                  >
-                    {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
-                      (markingDefinition) => (
-                        <ItemMarking
-                          key={markingDefinition.node.id}
-                          label={markingDefinition.node.definition}
-                          color={markingDefinition.node.x_opencti_color}
-                          variant="inList"
-                        />
-                      ),
-                    )}
-                  </div> */}
-                  <div
-                    style={{
-                      float: 'right',
-                      fontDecoration: 'none',
-                      textTransform: 'none',
-                    }}
-                  >
-                  </div>
-              </div>
-                <IconButton
-                aria-haspopup="true"
-                style={{ marginTop: '-6px' }}
-                onClick={this.toggleExpand.bind(this)}
-                >
-                  {this.state.open ? (
-                    <ExpandLessOutlined />
-                  ) : (
-                    <ExpandMoreOutlined />
-                  )}
-                </IconButton>
-              {/* <IconButton
-                aria-haspopup="true"
-                style={{ marginTop: 1 }}
+            <div>
+              <div
+                style={{
+                  float: 'left',
+                  fontDecoration: 'none',
+                  textTransform: 'none',
+                }}
               >
-              {open ? (
-                <ExpandLessOutlined
-                classes={{ root: classes.toggleButton }}
-                onClick={() => this.toggleExpand()} />
-              ) : (
-                <ExpandLessOutlined
-                classes={{ root: classes.toggleButton }}
-                onClick={() => this.toggleExpand()} />
-              )}
-              </IconButton> */}
+                <strong>
+                  {authorLink ? (
+                    <Link to={authorLink}>{authorName}</Link>
+                  ) : (
+                    t('Uknown')
+                  )}
+                </strong>{' '}
+                <span style={{ color: theme.palette.text.secondary }}>
+                  {t('added a note')} on {nsdt(node.created)}
+                </span>
+              </div>
+              <div
+                style={{
+                  float: 'left',
+                  marginLeft: 20,
+                  fontDecoration: 'none',
+                  textTransform: 'none',
+                }}
+              >
+                {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
+                  (markingDefinition) => (
+                    <ItemMarking
+                      key={markingDefinition.node.id}
+                      label={markingDefinition.node.definition}
+                      color={markingDefinition.node.x_opencti_color}
+                      variant="inList"
+                    />
+                  ),
+                )}
+              </div>
+              <div
+                style={{
+                  float: 'right',
+                  fontDecoration: 'none',
+                  textTransform: 'none',
+                }}
+              >
+                <StixCoreObjectLabels
+                  variant="inList"
+                  labels={node.objectLabel}
+                />
+              </div>
             </div>
           }
         />
-           <CardContent style={{
-             padding: '0 0 0 15px',
-             // borderBottom: `1px solid ${theme.palette.divider}`,
-           }}>
-           {
-             this.state.open
-               ? (
-                <Typography style={{ margin: '0 0 10px 0' }} align="left" variant="body2">
-                    {node.content}
-                </Typography>
-               )
-               : (
-              <Typography
-                  variant="body2"
-                  noWrap={true}
-                  style={{ margin: '0 0 10px 0', fontWeight: 500 }}
-                >
-                  <Markdown
-                    remarkPlugins={[remarkGfm, remarkParse]}
-                    parserOptions={{ commonmark: true }}
-                    className="markdown"
-                  >
-                    {node.attribute_abstract}
-                  </Markdown>
-                </Typography>
-               )
-           }
-                {/* <Markdown
-                  remarkPlugins={[remarkGfm, remarkParse]}
-                  parserOptions={{ commonmark: true }}
-                  className="markdown"
-                >
-                  {node.content}
-                </Markdown> */}
-                {/* <IconButton
-                  component={Link}
-                  to={`/dashboard/analysis/notes/${node.id}`}
-                  classes={{ root: classes.external }}
-                >
-                  <OpenInNewOutlined fontSize="small" />
-                </IconButton> */}
-            </CardContent>
-            <Collapse sx={{ width: '1100px', borderRadius: 0 }} in={this.state.open} timeout="auto" unmountOnExit>
-                <CardActions style={{ color: '#F9B406', padding: '0 20px 20px 15px' }}>
-                         <StixCoreObjectLabels
-                      variant="inList"
-                      labels={objectLabel}
-                    />
-                </CardActions>
-            </Collapse>
+        <CardContent>
+          <Typography
+            variant="body2"
+            noWrap={true}
+            style={{ margin: '0 0 10px 0', fontWeight: 500 }}
+          >
+            <Markdown
+              remarkPlugins={[remarkGfm, remarkParse]}
+              parserOptions={{ commonmark: true }}
+              className="markdown"
+            >
+              {node.attribute_abstract}
+            </Markdown>
+          </Typography>
+          <Markdown
+            remarkPlugins={[remarkGfm, remarkParse]}
+            parserOptions={{ commonmark: true }}
+            className="markdown"
+          >
+            {node.content}
+          </Markdown>
+          <IconButton
+            component={Link}
+            to={`/dashboard/analysis/notes/${node.id}`}
+            classes={{ root: classes.external }}
+          >
+            <OpenInNewOutlined fontSize="small" />
+          </IconButton>
+        </CardContent>
         <Dialog
           open={this.state.displayDialog}
           keepMounted={true}
@@ -340,7 +270,6 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <Divider light={true} />
       </Card>
     );
   }
@@ -358,68 +287,41 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard = createFragmentContainer(
   StixCoreObjectOrStixCoreRelationshipNoteCardComponent,
   {
     node: graphql`
-      fragment StixCoreObjectOrStixCoreRelationshipNoteCard_node on CyioNote {
+      fragment StixCoreObjectOrStixCoreRelationshipNoteCard_node on Note {
         id
-        # attribute_abstract
+        attribute_abstract
         content
         created
         modified
-        labels
-        abstract
-        authors
-        # objectLabel {
-        #   edges {
-        #     node {
-        #       id
-        #       value
-        #       color
-        #     }
-        #   }
-        # }
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
+        objectMarking {
+          edges {
+            node {
+              id
+              definition
+              x_opencti_color
+            }
+          }
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
+            }
+          }
+        }
       }
     `,
   },
 );
-
-// const StixCoreObjectOrStixCoreRelationshipNoteCard = createFragmentContainer(
-//   StixCoreObjectOrStixCoreRelationshipNoteCardComponent,
-//   {
-//     node: graphql`
-//       fragment StixCoreObjectOrStixCoreRelationshipNoteCard_node on Note {
-//         id
-//         attribute_abstract
-//         content
-//         created
-//         modified
-//         createdBy {
-//           ... on Identity {
-//             id
-//             name
-//             entity_type
-//           }
-//         }
-//         objectMarking {
-//           edges {
-//             node {
-//               id
-//               definition
-//               x_opencti_color
-//             }
-//           }
-//         }
-//         objectLabel {
-//           edges {
-//             node {
-//               id
-//               value
-//               color
-//             }
-//           }
-//         }
-//       }
-//     `,
-//   },
-// );
 
 export default compose(
   inject18n,

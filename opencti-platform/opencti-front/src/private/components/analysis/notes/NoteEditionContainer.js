@@ -13,9 +13,9 @@ import NoteEditionOverview from './NoteEditionOverview';
 
 const styles = (theme) => ({
   header: {
-    // backgroundColor: theme.palette.navAlt.backgroundHeader,
-    // color: theme.palette.navAlt.backgroundHeaderText,
-    padding: '15px 0 0 20px',
+    backgroundColor: theme.palette.navAlt.backgroundHeader,
+    color: theme.palette.navAlt.backgroundHeaderText,
+    padding: '20px 20px 20px 60px',
   },
   closeButton: {
     position: 'absolute',
@@ -61,25 +61,21 @@ class NoteEditionContainer extends Component {
     return (
       <div>
         <div className={classes.header}>
-          {/* <IconButton
+          <IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
           >
             <Close fontSize="small" />
-          </IconButton> */}
+          </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Note')}
+            {t('Update a note')}
           </Typography>
-          {/* <SubscriptionAvatars context={editContext} /> */}
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <NoteEditionOverview
-            note={this.props.note}
-            context={editContext}
-            handleClose={handleClose.bind(this)}
-          />
+          <NoteEditionOverview note={this.props.note} context={editContext} />
         </div>
       </div>
     );

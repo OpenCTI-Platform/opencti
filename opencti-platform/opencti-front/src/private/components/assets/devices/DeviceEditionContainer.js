@@ -25,13 +25,13 @@ import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } fr
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
+import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import DeviceEditionOverview from './DeviceEditionOverview';
 import DeviceEditionDetails from './DeviceEditionDetails';
-import StixDomainObjectAssetEditionOverview from '../../common/stix_domain_objects/StixDomainObjectAssetEditionOverview';
+import CyioDomainObjectAssetEditionOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetEditionOverview';
 
 const styles = (theme) => ({
   container: {
@@ -379,8 +379,8 @@ class DeviceEditionContainer extends Component {
                   classes={{ container: classes.gridContainer }}
                 >
                   <Grid item={true} xs={6}>
-                    <StixDomainObjectAssetEditionOverview
-                      stixDomainObject={device}
+                    <CyioDomainObjectAssetEditionOverview
+                      cyioDomainObject={device}
                     // enableReferences={this.props.enableReferences}
                     // context={editContext}
                     // handleClose={handleClose.bind(this)}
@@ -403,16 +403,16 @@ class DeviceEditionContainer extends Component {
                 style={{ marginTop: 25 }}
               >
                 <Grid item={true} xs={6}>
-                  {/* <StixCoreObjectExternalReferences
-                    stixCoreObjectId={device.id}
-                  /> */}
+                  <CyioCoreObjectExternalReferences
+                    cyioCoreObjectId={device.id}
+                  />
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <StixCoreObjectLatestHistory stixCoreObjectId={device.id} />
+                  <CyioCoreObjectLatestHistory cyioCoreObjectId={device.id} />
                 </Grid>
               </Grid>
-              <StixCoreObjectOrStixCoreRelationshipNotes
-                stixCoreObjectOrStixCoreRelationshipId={device.id}
+              <CyioCoreObjectOrCyioCoreRelationshipNotes
+                cyioCoreObjectOrCyioCoreRelationshipId={device.id}
               />
             </>
           )}
