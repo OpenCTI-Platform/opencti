@@ -146,3 +146,7 @@ div.markdown p:last-child {
 .react_time_range__rail__inner {
   background-color: transparent !important;
 }
+
+input[type="file"] {
+  width: 100% !important;
+}

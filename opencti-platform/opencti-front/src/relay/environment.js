@@ -146,6 +146,8 @@ export const commitMutation = ({
         MESSAGING$.notifyError(
           'Unauthorized action, please refresh your browser',
         );
+      } else if (onError) {
+        onError(error);
       } else {
         const messages = map(
           (e) => ({
@@ -155,7 +157,6 @@ export const commitMutation = ({
           error.res.errors,
         );
         MESSAGING$.messages.next(messages);
-        if (onError) onError(error);
       }
     }
   },

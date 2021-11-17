@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { compose } from 'ramda';
+import * as R from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -14,6 +14,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
+import { SimpleFileUpload } from 'formik-material-ui';
 import { Add, Close } from '@material-ui/icons';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -88,7 +89,7 @@ const externalReferenceCreationMutation = graphql`
 `;
 
 const externalReferenceValidation = (t) => Yup.object().shape({
-  source_name: Yup.string().required(t('This field is required')),
+  source_name: Yup.string().required(),
   external_id: Yup.string().nullable(),
   url: Yup.string().url(t('The value must be an URL')),
   description: Yup.string().nullable(),
@@ -108,7 +109,8 @@ class ExternalReferenceCreation extends Component {
     this.setState({ open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
+  onSubmit(values, { setSubmitting, setErrors, resetForm }) {
+    const { t } = this.props;
     commitMutation({
       mutation: externalReferenceCreationMutation,
       variables: {
@@ -120,6 +122,17 @@ class ExternalReferenceCreation extends Component {
         this.props.paginationOptions,
         'externalReferenceAdd',
       ),
+      onError: (error) => {
+        const formattedError = R.head(error.res.errors);
+        if (formattedError.data && formattedError.data.field) {
+          setErrors({
+            [formattedError.data.field]: t(formattedError.data.message),
+          });
+        } else {
+          setErrors({ source_name: formattedError.message });
+        }
+        setSubmitting(false);
+      },
       setSubmitting,
       onCompleted: (response) => {
         setSubmitting(false);
@@ -177,6 +190,7 @@ class ExternalReferenceCreation extends Component {
                 external_id: '',
                 url: '',
                 description: '',
+                file: '',
               }}
               validationSchema={externalReferenceValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -186,7 +200,7 @@ class ExternalReferenceCreation extends Component {
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
-                    name="source_name"
+                    name="source_name2"
                     label={t('Source name')}
                     fullWidth={true}
                   />
@@ -211,7 +225,13 @@ class ExternalReferenceCreation extends Component {
                     fullWidth={true}
                     multiline={true}
                     rows="4"
-                    style={{ marginTop: 20 }}
+                    style={{ marginTop: 20, marginBottom: 20 }}
+                  />
+                  <Field
+                    component={SimpleFileUpload}
+                    fullWidth={true}
+                    name="file"
+                    label={t('Associated file')}
                   />
                   <div className={classes.buttons}>
                     <Button
@@ -263,6 +283,7 @@ class ExternalReferenceCreation extends Component {
               external_id: '',
               url: '',
               description: '',
+              file: '',
             }}
             validationSchema={externalReferenceValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -299,7 +320,14 @@ class ExternalReferenceCreation extends Component {
                     fullWidth={true}
                     multiline={true}
                     rows="4"
-                    style={{ marginTop: 20 }}
+                    style={{ marginTop: 20, marginBottom: 20 }}
+                  />
+                  <Field
+                    component={SimpleFileUpload}
+                    InputProps={{ fullWidth: true }}
+                    fullWidth={true}
+                    name="file"
+                    label={t('Associated file')}
                   />
                 </DialogContent>
                 <DialogActions>
@@ -342,7 +370,7 @@ ExternalReferenceCreation.propTypes = {
   onCreate: PropTypes.func,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(ExternalReferenceCreation);

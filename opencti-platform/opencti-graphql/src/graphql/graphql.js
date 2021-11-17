@@ -1,11 +1,11 @@
-import { ApolloServer } from 'apollo-server-express';
+import { ApolloServer, UserInputError } from 'apollo-server-express';
 import { formatError as apolloFormatError } from 'apollo-errors';
-import { GraphQLError } from 'graphql';
 import { dissocPath } from 'ramda';
+import ConstraintDirectiveError from 'graphql-constraint-directive/lib/error';
 import createSchema from './schema';
 import conf, { DEV_MODE } from '../config/conf';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
-import { UnknownError, ValidationError } from '../config/errors';
+import { ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
 import { applicationSession } from '../database/session';
@@ -42,14 +42,12 @@ const createApolloServer = () => {
     plugins: [loggerPlugin, httpResponsePlugin],
     formatError: (error) => {
       let e = apolloFormatError(error);
-      if (e instanceof GraphQLError) {
-        const errorCode = e.extensions.exception.code;
-        if (errorCode === 'ERR_GRAPHQL_CONSTRAINT_VALIDATION') {
-          const { fieldName } = e.extensions.exception;
-          const ConstraintError = ValidationError(fieldName);
+      if (e instanceof UserInputError) {
+        if (e.originalError instanceof ConstraintDirectiveError) {
+          const { originalError } = e.originalError;
+          const { fieldName } = originalError;
+          const ConstraintError = ValidationError(fieldName, originalError);
           e = apolloFormatError(ConstraintError);
-        } else {
-          e = apolloFormatError(UnknownError(errorCode));
         }
       }
       // Remove the exception stack in production.

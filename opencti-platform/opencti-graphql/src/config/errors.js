@@ -114,5 +114,6 @@ export const ValidationError = (field, data) =>
     reason: `Invalid field ${field}`,
     http_status: 500,
     category: CATEGORY_BUSINESS,
+    field,
     ...data,
   });

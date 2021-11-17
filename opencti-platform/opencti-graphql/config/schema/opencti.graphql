@@ -840,6 +840,7 @@ type Settings implements InternalObject & BasicObject {
   platform_map_tile_server_light: String
   platform_login_message: String
   platform_enable_reference: [String]
+  platform_reference_attachment: Boolean
   platform_feature_flags: [Module]
   created_at: DateTime!
   updated_at: DateTime!
@@ -1335,10 +1336,11 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
 input ExternalReferenceAddInput {
   stix_id: String
   x_opencti_stix_ids: [String]
-  source_name: String!
+  source_name: String! @constraint(minLength: 2)
   description: String
   url: String
   hash: String
+  file: Upload
   external_id: String
   created: DateTime
   modified: DateTime

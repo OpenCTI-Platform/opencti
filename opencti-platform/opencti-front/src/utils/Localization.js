@@ -231,6 +231,7 @@ const i18n = {
       'Import type': "Type d'import",
       'STIX2 bundle': 'Bundle STIX2',
       'File to import': 'Fichier à importer',
+      'Associated file': 'Fichier associé',
       'Select your file': 'Selectionner votre fichier',
       selected: 'sélectionné(s)',
       'selected element(s)': 'élément(s) sélectionné(s)',

@@ -13,8 +13,8 @@ import {
   paginateAllThings,
   updateAttribute,
 } from '../database/middleware';
-import { BUS_TOPICS } from '../config/conf';
-import { ForbiddenAccess, FunctionalError } from '../config/errors';
+import conf, { BUS_TOPICS } from '../config/conf';
+import { ForbiddenAccess, FunctionalError, ValidationError } from '../config/errors';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { isStixMetaRelationship, RELATION_EXTERNAL_REFERENCE } from '../schema/stixMetaRelationship';
@@ -22,6 +22,8 @@ import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { askEnrich } from './enrichment';
+import { isEmptyField } from '../database/utils';
+import { stixCoreObjectIdImportPush } from './stixCoreObject';
 
 export const findById = (user, externalReferenceId) => {
   return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
@@ -61,7 +63,16 @@ export const externalReferenceAskEnrichment = async (user, externalReferenceId, 
 };
 
 export const addExternalReference = async (user, externalReference) => {
+  const referenceAttachment = conf.get('app:reference_attachment');
+  if (referenceAttachment && isEmptyField(externalReference.file)) {
+    throw ValidationError('file', {
+      message: 'You must provide an attachment to create a new external reference',
+    });
+  }
   const created = await createEntity(user, externalReference, ENTITY_TYPE_EXTERNAL_REFERENCE);
+  if (!isEmptyField(externalReference.file)) {
+    await stixCoreObjectIdImportPush(user, created.id, externalReference.file);
+  }
   if (!created.i_upserted) {
     await askEnrich(user, created.id, ENTITY_TYPE_EXTERNAL_REFERENCE);
   }
