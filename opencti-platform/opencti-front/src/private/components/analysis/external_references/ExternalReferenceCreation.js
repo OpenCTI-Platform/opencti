@@ -16,7 +16,10 @@ import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { SimpleFileUpload } from 'formik-material-ui';
 import { Add, Close } from '@material-ui/icons';
-import { commitMutation } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -110,7 +113,6 @@ class ExternalReferenceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, setErrors, resetForm }) {
-    const { t } = this.props;
     commitMutation({
       mutation: externalReferenceCreationMutation,
       variables: {
@@ -123,14 +125,7 @@ class ExternalReferenceCreation extends Component {
         'externalReferenceAdd',
       ),
       onError: (error) => {
-        const formattedError = R.head(error.res.errors);
-        if (formattedError.data && formattedError.data.field) {
-          setErrors({
-            [formattedError.data.field]: t(formattedError.data.message),
-          });
-        } else {
-          setErrors({ source_name: formattedError.message });
-        }
+        handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
       setSubmitting,

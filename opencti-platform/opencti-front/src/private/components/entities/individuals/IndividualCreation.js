@@ -8,19 +8,21 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import {
-  compose, pipe, pluck, assoc,
-} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -109,11 +111,12 @@ class IndividualCreation extends Component {
     this.setState({ open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = pipe(
-      assoc('createdBy', values.createdBy?.value),
-      assoc('objectMarking', pluck('value', values.objectMarking)),
-      assoc('objectLabel', pluck('value', values.objectLabel)),
+  onSubmit(values, { setSubmitting, setErrors, resetForm }) {
+    const finalValues = R.pipe(
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
+      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
     )(values);
     commitMutation({
       mutation: individualMutation,
@@ -130,6 +133,10 @@ class IndividualCreation extends Component {
           this.props.paginationOptions,
           newEdge,
         );
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
       setSubmitting,
       onCompleted: () => {
@@ -180,6 +187,7 @@ class IndividualCreation extends Component {
                 createdBy: '',
                 objectMarking: [],
                 objectLabel: [],
+                externalReferences: [],
               }}
               validationSchema={individualValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -224,6 +232,10 @@ class IndividualCreation extends Component {
                     name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
+                  <ExternalReferencesField
+                    name="externalReferences"
+                    style={{ marginTop: 20, width: '100%' }}
+                  />
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"
@@ -260,7 +272,7 @@ IndividualCreation.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(IndividualCreation);

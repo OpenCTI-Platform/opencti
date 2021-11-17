@@ -15,6 +15,7 @@ import {
   filter,
 } from 'ramda';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -24,14 +25,22 @@ import { sectorsSearchQuery } from '../Sectors';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import CommitMessage from '../../common/form/CommitMessage';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const sectorMutationFieldPatch = graphql`
   mutation SectorEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
   ) {
     sectorEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...SectorEditionOverview_sector
         ...Sector_sector
       }
@@ -84,6 +93,7 @@ const sectorValidation = (t) => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
+  references: Yup.array().required(t('This field is required')),
 });
 
 class SectorEditionOverviewComponent extends Component {
@@ -123,16 +133,56 @@ class SectorEditionOverviewComponent extends Component {
     });
   }
 
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.dissoc('references'),
+      R.assoc('status_id', values.status_id?.value),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: sectorMutationFieldPatch,
+      variables: {
+        id: this.props.sector.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
   handleSubmitField(name, value) {
-    sectorValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: sectorMutationFieldPatch,
-          variables: { id: this.props.sector.id, input: { key: name, value } },
-        });
-      })
-      .catch(() => false);
+    if (!this.props.enableReferences) {
+      sectorValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: sectorMutationFieldPatch,
+            variables: {
+              id: this.props.sector.id,
+              input: {
+                key: name,
+                value,
+              },
+            },
+          });
+        })
+        .catch(() => false);
+    }
   }
 
   handleChangeCreatedBy(name, value) {
@@ -148,40 +198,39 @@ class SectorEditionOverviewComponent extends Component {
   }
 
   handleChangeObjectMarking(name, values) {
-    const { sector } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(sector);
-
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: sectorMutationRelationAdd,
-        variables: {
-          id: this.props.sector.id,
-          input: {
-            toId: head(added).value,
+    if (!this.props.enableReferences) {
+      const { sector } = this.props;
+      const currentMarkingDefinitions = pipe(
+        pathOr([], ['objectMarking', 'edges']),
+        map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(sector);
+      const added = difference(values, currentMarkingDefinitions);
+      const removed = difference(currentMarkingDefinitions, values);
+      if (added.length > 0) {
+        commitMutation({
+          mutation: sectorMutationRelationAdd,
+          variables: {
+            id: this.props.sector.id,
+            input: {
+              toId: head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: sectorMutationRelationDelete,
+          variables: {
+            id: this.props.sector.id,
+            toId: head(removed).value,
             relationship_type: 'object-marking',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: sectorMutationRelationDelete,
-        variables: {
-          id: this.props.sector.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
+        });
+      }
     }
   }
 
@@ -197,7 +246,6 @@ class SectorEditionOverviewComponent extends Component {
 
     const added = difference(values, currentSubsectors);
     const removed = difference(currentSubsectors, values);
-
     if (added.length > 0) {
       commitMutation({
         mutation: sectorMutationRelationAdd,
@@ -214,7 +262,6 @@ class SectorEditionOverviewComponent extends Component {
         },
       });
     }
-
     if (removed.length > 0) {
       commitMutation({
         mutation: sectorMutationRelationDelete,
@@ -228,7 +275,9 @@ class SectorEditionOverviewComponent extends Component {
   }
 
   render() {
-    const { t, sector, context } = this.props;
+    const {
+      t, sector, context, enableReferences,
+    } = this.props;
     const createdBy = pathOr(null, ['createdBy', 'name'], sector) === null
       ? ''
       : {
@@ -252,9 +301,11 @@ class SectorEditionOverviewComponent extends Component {
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={sectorValidation(t)}
-        onSubmit={() => true}
+        onSubmit={this.onSubmit.bind(this)}
       >
-        {({ setFieldValue }) => (
+        {({
+          submitForm, isSubmitting, validateForm, setFieldValue,
+        }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
@@ -301,6 +352,14 @@ class SectorEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeObjectMarking.bind(this)}
             />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                validateForm={validateForm}
+                id={sector.id}
+              />
+            )}
           </Form>
         )}
       </Formik>

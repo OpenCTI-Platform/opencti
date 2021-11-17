@@ -111,6 +111,7 @@ const positionValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
   latitude: Yup.number().typeError(t('This field must be a number')),
   longitude: Yup.number().typeError(t('This field must be a number')),
+  references: Yup.array().required(t('This field is required')),
 });
 
 class PositionEditionOverviewComponent extends Component {

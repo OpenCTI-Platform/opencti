@@ -113,6 +113,7 @@ const courseOfActionValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
   x_opencti_threat_hunting: Yup.string().nullable(),
   x_opencti_log_sources: Yup.string().nullable(),
+  references: Yup.array().required(t('This field is required')),
 });
 
 class CourseOfActionEditionOverviewComponent extends Component {

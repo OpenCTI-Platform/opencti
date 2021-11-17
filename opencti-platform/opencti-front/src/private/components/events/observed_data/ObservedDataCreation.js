@@ -18,7 +18,10 @@ import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import MenuItem from '@material-ui/core/MenuItem';
-import { commitMutation } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -30,6 +33,7 @@ import DatePickerField from '../../../../components/DatePickerField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { insertNode } from '../../../../utils/Store';
+import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -110,7 +114,7 @@ class ObservedDataCreation extends Component {
     this.setState({ open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
+  onSubmit(values, { setSubmitting, setErrors, resetForm }) {
     const adaptedValues = evolve(
       {
         first_observed: () => parse(values.first_observed).format(),
@@ -119,6 +123,7 @@ class ObservedDataCreation extends Component {
         createdBy: path(['value']),
         objectMarking: pluck('value'),
         objectLabel: pluck('value'),
+        externalReferences: pluck('value'),
         objects: pluck('value'),
       },
       values,
@@ -134,6 +139,10 @@ class ObservedDataCreation extends Component {
         this.props.paginationOptions,
         'observedDataAdd',
       ),
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
+      },
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
@@ -190,6 +199,7 @@ class ObservedDataCreation extends Component {
                 createdBy: '',
                 objectMarking: [],
                 objectLabel: [],
+                externalReferences: [],
               }}
               validationSchema={observedDataValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -256,6 +266,10 @@ class ObservedDataCreation extends Component {
                   />
                   <ObjectMarkingField
                     name="objectMarking"
+                    style={{ marginTop: 20, width: '100%' }}
+                  />
+                  <ExternalReferencesField
+                    name="externalReferences"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>

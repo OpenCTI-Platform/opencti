@@ -117,6 +117,7 @@ const organizationValidation = (t) => Yup.object().shape({
     t('This field is required'),
   ),
   x_opencti_reliability: Yup.string().required(t('This field is required')),
+  references: Yup.array().required(t('This field is required')),
 });
 
 class OrganizationEditionOverviewComponent extends Component {

@@ -22,6 +22,7 @@ import {
   urlMiddleware,
   RelayNetworkLayer,
 } from 'react-relay-network-modern/node8';
+import * as R from 'ramda';
 import uploadMiddleware from './uploadMiddleware';
 
 // Dev tools
@@ -167,3 +168,22 @@ export const requestSubscription = (args) => RS(environment, args);
 export const fetchQuery = (query, args) => FQ(environment, query, args);
 
 export const commitLocalUpdate = (updater) => CLU(environment, updater);
+
+export const handleErrorInForm = (error, setErrors) => {
+  const formattedError = R.head(error.res.errors);
+  if (formattedError.data && formattedError.data.field) {
+    setErrors({
+      [formattedError.data.field]:
+        formattedError.data.message || formattedError.data.reason,
+    });
+  } else {
+    const messages = map(
+      (e) => ({
+        type: 'error',
+        text: pathOr(e.message, ['data', 'reason'], e),
+      }),
+      error.res.errors,
+    );
+    MESSAGING$.messages.next(messages);
+  }
+};

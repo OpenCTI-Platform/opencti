@@ -15,12 +15,16 @@ import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -107,12 +111,13 @@ class InfrastructureCreation extends Component {
     this.setState({ open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
+  onSubmit(values, { setSubmitting, setErrors, resetForm }) {
     const adaptedValues = evolve(
       {
         createdBy: path(['value']),
         objectMarking: pluck('value'),
         objectLabel: pluck('value'),
+        externalReferences: pluck('value'),
       },
       values,
     );
@@ -131,6 +136,10 @@ class InfrastructureCreation extends Component {
           this.props.paginationOptions,
           newEdge,
         );
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
       setSubmitting,
       onCompleted: () => {
@@ -183,6 +192,7 @@ class InfrastructureCreation extends Component {
                 createdBy: '',
                 objectMarking: [],
                 objectLabel: [],
+                externalReferences: [],
               }}
               validationSchema={infrastructureValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -225,6 +235,10 @@ class InfrastructureCreation extends Component {
                   />
                   <ObjectMarkingField
                     name="objectMarking"
+                    style={{ marginTop: 20, width: '100%' }}
+                  />
+                  <ExternalReferencesField
+                    name="externalReferences"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>

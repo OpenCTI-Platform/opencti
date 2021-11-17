@@ -8,18 +8,20 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import {
-  compose, pluck, evolve, path,
-} from 'ramda';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -118,14 +120,12 @@ class SectorCreation extends Component {
     this.setState({ open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = evolve(
-      {
-        createdBy: path(['value']),
-        objectMarking: pluck('value'),
-      },
-      values,
-    );
+  onSubmit(values, { setSubmitting, resetForm, setErrors }) {
+    const finalValues = R.pipe(
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
+    )(values);
     commitMutation({
       mutation: sectorMutation,
       variables: {
@@ -136,6 +136,10 @@ class SectorCreation extends Component {
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
         sharedUpdater(store, container.getDataID(), {}, newEdge);
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
       setSubmitting,
       onCompleted: () => {
@@ -185,6 +189,7 @@ class SectorCreation extends Component {
                 description: '',
                 createdBy: '',
                 objectMarking: [],
+                externalReferences: [],
               }}
               validationSchema={sectorValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -217,6 +222,10 @@ class SectorCreation extends Component {
                   />
                   <ObjectMarkingField
                     name="objectMarking"
+                    style={{ marginTop: 20, width: '100%' }}
+                  />
+                  <ExternalReferencesField
+                    name="externalReferences"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>
@@ -254,4 +263,4 @@ SectorCreation.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(SectorCreation);
+export default R.compose(inject18n, withStyles(styles))(SectorCreation);

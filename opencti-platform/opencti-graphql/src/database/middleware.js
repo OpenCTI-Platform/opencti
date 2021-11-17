@@ -9,6 +9,7 @@ import {
   MissingReferenceError,
   TYPE_LOCK_ERROR,
   UnsupportedError,
+  ValidationError,
 } from '../config/errors';
 import {
   buildPagination,
@@ -1669,7 +1670,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
   ) {
     const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
     if (!isNoReferenceKey && isEmptyField(opts.references)) {
-      throw FunctionalError('You must provide at least one external reference to update');
+      throw ValidationError('references', { message: 'You must provide at least one external reference to update' });
     }
   }
   const participantIds = getInstanceIds(instance).filter((e) => !locks.includes(e));
@@ -2496,7 +2497,9 @@ export const createRelationRaw = async (user, input, opts = {}) => {
     const enforceReferences = conf.get('app:enforce_references');
     if (enforceReferences && enforceReferences.includes('stix-core-relationship')) {
       if (isEmptyField(input.externalReferences)) {
-        throw FunctionalError('You must provide at least one external reference for relationships');
+        throw ValidationError('externalReferences', {
+          message: 'You must provide at least one external reference to create a relationship',
+        });
       }
     }
   }
@@ -2785,7 +2788,9 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
   const enforceReferences = conf.get('app:enforce_references');
   if (enforceReferences && enforceReferences.includes(type)) {
     if (isEmptyField(input.externalReferences)) {
-      throw FunctionalError('You must provide at least one external reference for this type of entity');
+      throw ValidationError('externalReferences', {
+        message: 'You must provide at least one external reference for this type of entity',
+      });
     }
   }
   const { fromRule } = opts;

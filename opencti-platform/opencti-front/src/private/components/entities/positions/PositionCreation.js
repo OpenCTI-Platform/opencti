@@ -13,7 +13,10 @@ import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -108,7 +111,7 @@ class PositionCreation extends Component {
     this.setState({ open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
+  onSubmit(values, { setSubmitting, setErrors, resetForm }) {
     const finalValues = R.pipe(
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('latitude', parseFloat(values.latitude)),
@@ -131,6 +134,10 @@ class PositionCreation extends Component {
           this.props.paginationOptions,
           newEdge,
         );
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
       setSubmitting,
       onCompleted: () => {

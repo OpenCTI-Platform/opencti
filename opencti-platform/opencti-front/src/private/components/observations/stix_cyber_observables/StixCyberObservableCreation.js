@@ -34,7 +34,11 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+  QueryRenderer,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -47,6 +51,7 @@ import {
 import DatePickerField from '../../../../components/DatePickerField';
 import { parse } from '../../../../utils/Time';
 import MarkDownField from '../../../../components/MarkDownField';
+import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 
 export const ignoredAttributes = [
   'internal_id',
@@ -329,7 +334,7 @@ class StixCyberObservableCreation extends Component {
     this.setState({ type });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
+  onSubmit(values, { setSubmitting, setErrors, resetForm }) {
     let adaptedValues = values;
     // Potential dicts
     if (
@@ -370,6 +375,7 @@ class StixCyberObservableCreation extends Component {
       dissoc('createdBy'),
       dissoc('objectMarking'),
       dissoc('objectLabel'),
+      dissoc('externalReferences'),
       dissoc('createIndicator'),
       dissoc('hashes_MD5'),
       dissoc('hashes_SHA-1'),
@@ -397,6 +403,7 @@ class StixCyberObservableCreation extends Component {
       createdBy: propOr(null, 'value', values.createdBy),
       objectMarking: pluck('value', values.objectMarking),
       objectLabel: pluck('value', values.objectLabel),
+      externalReferences: pluck('value', values.externalReferences),
       createIndicator: values.createIndicator,
       [this.state.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase())]: adaptedValues,
     };
@@ -414,6 +421,10 @@ class StixCyberObservableCreation extends Component {
           this.props.paginationOptions,
           newEdge,
         );
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
       setSubmitting,
       onCompleted: () => {
@@ -484,6 +495,7 @@ class StixCyberObservableCreation extends Component {
               createdBy: '',
               objectMarking: [],
               objectLabel: [],
+              externalReferences: [],
               createIndicator: false,
             };
             const attributes = pipe(
@@ -635,6 +647,10 @@ class StixCyberObservableCreation extends Component {
                     />
                     <ObjectMarkingField
                       name="objectMarking"
+                      style={{ marginTop: 20, width: '100%' }}
+                    />
+                    <ExternalReferencesField
+                      name="externalReferences"
                       style={{ marginTop: 20, width: '100%' }}
                     />
                     <Field

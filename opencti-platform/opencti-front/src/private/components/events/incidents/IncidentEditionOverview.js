@@ -122,6 +122,7 @@ const IncidentValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   status_id: Yup.object(),
+  references: Yup.array().required(t('This field is required')),
 });
 
 class IncidentEditionOverviewComponent extends Component {

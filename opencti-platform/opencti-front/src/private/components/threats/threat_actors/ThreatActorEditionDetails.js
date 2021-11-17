@@ -89,6 +89,7 @@ const threatActorValidation = (t) => Yup.object().shape({
   secondary_motivations: Yup.array().nullable(),
   personal_motivations: Yup.array().nullable(),
   goals: Yup.string().nullable(),
+  references: Yup.array().required(t('This field is required')),
 });
 
 class ThreatActorEditionDetailsComponent extends Component {

@@ -136,6 +136,7 @@ const indicatorValidation = (t) => Yup.object().shape({
   x_opencti_detection: Yup.boolean(),
   x_mitre_platforms: Yup.array(),
   indicator_types: Yup.array(),
+  references: Yup.array().required(t('This field is required')),
 });
 
 class IndicatorEditionOverviewComponent extends Component {

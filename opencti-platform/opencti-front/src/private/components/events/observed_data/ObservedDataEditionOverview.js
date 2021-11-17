@@ -109,6 +109,7 @@ const observedDataValidation = (t) => Yup.object().shape({
   last_observed: Yup.date().required(t('This field is required')),
   number_observed: Yup.number().required(t('This field is required')),
   confidence: Yup.number(),
+  references: Yup.array().required(t('This field is required')),
 });
 
 class ObservedDataEditionOverviewComponent extends Component {

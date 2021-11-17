@@ -62,6 +62,7 @@ const intrusionSetValidation = (t) => Yup.object().shape({
   primary_motivation: Yup.string().nullable(),
   secondary_motivations: Yup.array().nullable(),
   goals: Yup.string().nullable(),
+  references: Yup.array().required(t('This field is required')),
 });
 
 class IntrusionSetEditionDetailsComponent extends Component {

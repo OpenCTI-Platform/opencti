@@ -12,7 +12,10 @@ import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -98,7 +101,7 @@ class IntrusionSetCreation extends Component {
     this.setState({ open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
+  onSubmit(values, { setSubmitting, setErrors, resetForm }) {
     const finalValues = R.pipe(
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -116,6 +119,10 @@ class IntrusionSetCreation extends Component {
         this.props.paginationOptions,
         'intrusionSetAdd',
       ),
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
+      },
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);

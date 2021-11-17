@@ -115,6 +115,7 @@ const threatActorValidation = (t) => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
+  references: Yup.array().required(t('This field is required')),
 });
 
 class ThreatActorEditionOverviewComponent extends Component {
@@ -201,10 +202,8 @@ class ThreatActorEditionOverviewComponent extends Component {
           value: n.node.id,
         })),
       )(threatActor);
-
       const added = R.difference(values, currentMarkingDefinitions);
       const removed = R.difference(currentMarkingDefinitions, values);
-
       if (added.length > 0) {
         commitMutation({
           mutation: threatActorMutationRelationAdd,
@@ -217,7 +216,6 @@ class ThreatActorEditionOverviewComponent extends Component {
           },
         });
       }
-
       if (removed.length > 0) {
         commitMutation({
           mutation: threatActorMutationRelationDelete,

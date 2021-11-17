@@ -111,6 +111,7 @@ const individualValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   contact_information: Yup.string().nullable(),
+  references: Yup.array().required(t('This field is required')),
 });
 
 class IndividualEditionOverviewComponent extends Component {

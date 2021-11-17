@@ -78,6 +78,7 @@ const campaignValidation = (t) => Yup.object().shape({
     .nullable()
     .typeError(t('The value must be a date (YYYY-MM-DD)')),
   objective: Yup.string().nullable(),
+  references: Yup.array().required(t('This field is required')),
 });
 
 class CampaignEditionDetailsComponent extends Component {
