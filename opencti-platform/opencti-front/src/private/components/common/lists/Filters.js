@@ -915,7 +915,7 @@ class Filters extends Component {
             disabled={disabled}
             style={{ color: theme.palette.header.text }}
           >
-            <ToyBrickSearchOutline fontSize="default" />
+            <ToyBrickSearchOutline fontSize="medium" />
           </IconButton>
         </Tooltip>
         <Dialog

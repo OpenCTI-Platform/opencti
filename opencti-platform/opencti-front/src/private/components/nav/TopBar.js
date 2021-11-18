@@ -330,7 +330,7 @@ const TopBar = ({
                   }
                   classes={{ root: classes.button }}
                 >
-                  <InsertChartOutlined fontSize="default" />
+                  <InsertChartOutlined fontSize="medium" />
                 </IconButton>
               </Tooltip>
               <Tooltip title={t('Investigations')}>
@@ -353,7 +353,7 @@ const TopBar = ({
                   }
                   classes={{ root: classes.button }}
                 >
-                  <ExploreOutlined fontSize="default" />
+                  <ExploreOutlined fontSize="medium" />
                 </IconButton>
               </Tooltip>
             </Security>
@@ -374,7 +374,7 @@ const TopBar = ({
                   }
                   classes={{ root: classes.button }}
                 >
-                  <UploadOutline fontSize="default" />
+                  <UploadOutline fontSize="medium" />
                 </IconButton>
               </Tooltip>
             </Security>
@@ -386,7 +386,7 @@ const TopBar = ({
               onClick={handleOpenMenu}
               color="inherit"
             >
-              <AccountCircleOutlined fontSize="default" />
+              <AccountCircleOutlined fontSize="medium" />
             </IconButton>
             <Menu
               id="menu-appbar"

@@ -207,7 +207,13 @@ class ThreatActorEditionDetailsComponent extends Component {
           validationSchema={threatActorValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
         >
-          {({ submitForm, isSubmitting, validateForm }) => (
+          {({
+            submitForm,
+            isSubmitting,
+            validateForm,
+            setFieldValue,
+            values,
+          }) => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
@@ -345,6 +351,8 @@ class ThreatActorEditionDetailsComponent extends Component {
                     submitForm={submitForm}
                     disabled={isSubmitting}
                     validateForm={validateForm}
+                    setFieldValue={setFieldValue}
+                    values={values}
                     id={threatActor.id}
                   />
                 )}

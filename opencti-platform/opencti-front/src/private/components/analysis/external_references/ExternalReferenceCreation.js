@@ -92,7 +92,7 @@ const externalReferenceCreationMutation = graphql`
 `;
 
 const externalReferenceValidation = (t) => Yup.object().shape({
-  source_name: Yup.string().required(),
+  source_name: Yup.string().required(t('This field is required')),
   external_id: Yup.string().nullable(),
   url: Yup.string().url(t('The value must be an URL')),
   description: Yup.string().nullable(),
@@ -136,6 +136,26 @@ class ExternalReferenceCreation extends Component {
         if (this.props.onCreate) {
           this.props.onCreate(response.externalReferenceAdd, true);
         }
+      },
+    });
+  }
+
+  onSubmitContextual(values, { setSubmitting, setErrors, resetForm }) {
+    commitMutation({
+      mutation: externalReferenceCreationMutation,
+      variables: {
+        input: values,
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
+      },
+      setSubmitting,
+      onCompleted: (response) => {
+        setSubmitting(false);
+        resetForm();
+        this.props.creationCallback(response);
+        this.props.handleClose();
       },
     });
   }
@@ -258,19 +278,24 @@ class ExternalReferenceCreation extends Component {
 
   renderContextual() {
     const {
-      t, classes, inputValue, display,
+      t, classes, inputValue, display, open, handleClose,
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButtonContextual}
+        {!handleClose && (
+          <Fab
+            onClick={this.handleOpen.bind(this)}
+            color="secondary"
+            aria-label="Add"
+            className={classes.createButtonContextual}
+          >
+            <Add />
+          </Fab>
+        )}
+        <Dialog
+          open={!handleClose ? this.state.open : open}
+          onClose={this.handleClose.bind(this)}
         >
-          <Add />
-        </Fab>
-        <Dialog open={this.state.open} onClose={this.handleClose.bind(this)}>
           <Formik
             enableReinitialize={true}
             initialValues={{
@@ -281,7 +306,11 @@ class ExternalReferenceCreation extends Component {
               file: '',
             }}
             validationSchema={externalReferenceValidation(t)}
-            onSubmit={this.onSubmit.bind(this)}
+            onSubmit={
+              !handleClose
+                ? this.onSubmit.bind(this)
+                : this.onSubmitContextual.bind(this)
+            }
             onReset={this.onResetContextual.bind(this)}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
@@ -326,7 +355,10 @@ class ExternalReferenceCreation extends Component {
                   />
                 </DialogContent>
                 <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
+                  <Button
+                    onClick={handleClose || handleReset}
+                    disabled={isSubmitting}
+                  >
                     {t('Cancel')}
                   </Button>
                   <Button
@@ -363,6 +395,9 @@ ExternalReferenceCreation.propTypes = {
   display: PropTypes.bool,
   inputValue: PropTypes.string,
   onCreate: PropTypes.func,
+  open: PropTypes.bool,
+  handleClose: PropTypes.func,
+  creationCallback: PropTypes.func,
 };
 
 export default R.compose(

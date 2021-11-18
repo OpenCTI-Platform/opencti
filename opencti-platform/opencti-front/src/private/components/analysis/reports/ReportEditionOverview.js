@@ -290,6 +290,7 @@ class ReportEditionOverviewComponent extends Component {
                     isSubmitting,
                     validateForm,
                     setFieldValue,
+                    values,
                   }) => (
                     <div>
                       <Form style={{ margin: '20px 0 20px 0' }}>
@@ -415,6 +416,8 @@ class ReportEditionOverviewComponent extends Component {
                             submitForm={submitForm}
                             disabled={isSubmitting}
                             validateForm={validateForm}
+                            setFieldValue={setFieldValue}
+                            values={values}
                             id={report.id}
                           />
                         )}

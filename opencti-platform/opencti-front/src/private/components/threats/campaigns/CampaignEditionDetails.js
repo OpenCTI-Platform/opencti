@@ -165,7 +165,13 @@ class CampaignEditionDetailsComponent extends Component {
         validationSchema={campaignValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
       >
-        {({ submitForm, isSubmitting, validateForm }) => (
+        {({
+          submitForm,
+          isSubmitting,
+          validateForm,
+          setFieldValue,
+          values,
+        }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={DatePickerField}
@@ -211,6 +217,8 @@ class CampaignEditionDetailsComponent extends Component {
                 submitForm={submitForm}
                 disabled={isSubmitting}
                 validateForm={validateForm}
+                setFieldValue={setFieldValue}
+                values={values}
                 id={campaign.id}
               />
             )}

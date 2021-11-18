@@ -24,7 +24,11 @@ import Fab from '@material-ui/core/Fab';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
 import Skeleton from '@material-ui/lab/Skeleton';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+  QueryRenderer,
+} from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
@@ -330,10 +334,16 @@ class StixCoreRelationshipCreationFromEntity extends Component {
           if (typeof this.props.onCreate !== 'function') {
             const userProxy = store.get(store.getRoot().getDataID());
             const payload = store.getRootField('stixCoreRelationshipAdd');
-            const createdNode = connectionKey ? payload.getLinkedRecord(isRelationReversed ? 'from' : 'to') : payload;
+            const createdNode = connectionKey
+              ? payload.getLinkedRecord(isRelationReversed ? 'from' : 'to')
+              : payload;
             const connKey = connectionKey || 'Pagination_stixCoreRelationships';
             const { paginationOptions } = this.props;
-            const conn = ConnectionHandler.getConnection(userProxy, connKey, paginationOptions);
+            const conn = ConnectionHandler.getConnection(
+              userProxy,
+              connKey,
+              paginationOptions,
+            );
             if (!isNodeInConnection(payload, conn)) {
               const newEdge = payload.setLinkedRecord(createdNode, 'node');
               ConnectionHandler.insertEdgeBefore(conn, newEdge);
@@ -350,7 +360,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
     });
   }
 
-  async onSubmit(values, { setSubmitting, resetForm }) {
+  async onSubmit(values, { setSubmitting, setErrors, resetForm }) {
     const { isRelationReversed, entityId } = this.props;
     const { targetEntities } = this.state;
     setSubmitting(true);
@@ -376,8 +386,13 @@ class StixCoreRelationshipCreationFromEntity extends Component {
         ),
         R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       )(values);
-      // eslint-disable-next-line no-await-in-loop
-      await this.commit(finalValues);
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await this.commit(finalValues);
+      } catch (error) {
+        setSubmitting(false);
+        return handleErrorInForm(error, setErrors);
+      }
     }
     setSubmitting(false);
     resetForm();
@@ -385,6 +400,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
     if (typeof this.props.onCreate === 'function') {
       this.props.onCreate();
     }
+    return true;
   }
 
   handleResetSelection() {

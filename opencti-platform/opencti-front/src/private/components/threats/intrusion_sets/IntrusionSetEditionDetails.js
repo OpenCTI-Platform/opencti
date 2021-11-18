@@ -170,7 +170,13 @@ class IntrusionSetEditionDetailsComponent extends Component {
         validationSchema={intrusionSetValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
       >
-        {({ submitForm, isSubmitting, validateForm }) => (
+        {({
+          submitForm,
+          isSubmitting,
+          validateForm,
+          setFieldValue,
+          values,
+        }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={DatePickerField}
@@ -249,6 +255,8 @@ class IntrusionSetEditionDetailsComponent extends Component {
                 submitForm={submitForm}
                 disabled={isSubmitting}
                 validateForm={validateForm}
+                setFieldValue={setFieldValue}
+                values={values}
                 id={intrusionSet.id}
               />
             )}

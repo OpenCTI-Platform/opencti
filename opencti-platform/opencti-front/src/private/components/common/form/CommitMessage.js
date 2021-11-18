@@ -37,7 +37,9 @@ class CommitMessage extends Component {
   }
 
   render() {
-    const { disabled, t, id } = this.props;
+    const {
+      disabled, t, id, setFieldValue, values,
+    } = this.props;
     return (
       <div>
         <Button
@@ -58,6 +60,8 @@ class CommitMessage extends Component {
             <ExternalReferencesField
               name="references"
               style={{ marginTop: 20, width: '100%' }}
+              setFieldValue={setFieldValue}
+              values={values.references}
               id={id}
             />
             <Field
@@ -91,6 +95,7 @@ CommitMessage.propTypes = {
   submitForm: PropTypes.func,
   disabled: PropTypes.bool,
   validateForm: PropTypes.func,
+  setFieldValue: PropTypes.func,
   externalReferences: PropTypes.array,
 };
 

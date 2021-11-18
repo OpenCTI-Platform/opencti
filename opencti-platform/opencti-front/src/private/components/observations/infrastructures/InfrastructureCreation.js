@@ -240,6 +240,8 @@ class InfrastructureCreation extends Component {
                   <ExternalReferencesField
                     name="externalReferences"
                     style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.externalReferences}
                   />
                   <div className={classes.buttons}>
                     <Button

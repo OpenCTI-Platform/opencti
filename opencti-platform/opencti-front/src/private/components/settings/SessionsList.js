@@ -166,7 +166,7 @@ class SessionsListComponent extends Component {
                   to={`/dashboard/settings/accesses/users/${user.id}`}
                 >
                   <ListItemIcon classes={{ root: classes.itemIcon }}>
-                    <PersonOutlined fontSize="default" />
+                    <PersonOutlined fontSize="medium" />
                   </ListItemIcon>
                   <ListItemText
                     primary={

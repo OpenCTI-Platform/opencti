@@ -196,7 +196,11 @@ class SectorCreation extends Component {
               onReset={this.onReset.bind(this)}
             >
               {({
-                submitForm, handleReset, isSubmitting, setFieldValue,
+                submitForm,
+                handleReset,
+                isSubmitting,
+                setFieldValue,
+                values,
               }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
@@ -227,6 +231,8 @@ class SectorCreation extends Component {
                   <ExternalReferencesField
                     name="externalReferences"
                     style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.externalReferences}
                   />
                   <div className={classes.buttons}>
                     <Button

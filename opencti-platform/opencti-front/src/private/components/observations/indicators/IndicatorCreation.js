@@ -347,6 +347,8 @@ class IndicatorCreation extends Component {
                   <ExternalReferencesField
                     name="externalReferences"
                     style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.externalReferences}
                   />
                   <Field
                     component={SwitchField}

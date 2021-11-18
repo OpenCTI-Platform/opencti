@@ -63,7 +63,7 @@ const AutocompleteField = (props) => {
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}
       />
-      {typeof openCreate === 'function' ? (
+      {typeof openCreate === 'function' && (
         <IconButton
           onClick={() => openCreate()}
           edge="end"
@@ -71,8 +71,6 @@ const AutocompleteField = (props) => {
         >
           <Add />
         </IconButton>
-      ) : (
-        ''
       )}
     </div>
   );

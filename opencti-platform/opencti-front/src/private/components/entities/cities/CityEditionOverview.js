@@ -261,7 +261,11 @@ class CityEditionOverviewComponent extends Component {
         onSubmit={this.onSubmit.bind(this)}
       >
         {({
-          submitForm, isSubmitting, validateForm, setFieldValue,
+          submitForm,
+          isSubmitting,
+          validateForm,
+          setFieldValue,
+          values,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -338,6 +342,8 @@ class CityEditionOverviewComponent extends Component {
                 submitForm={submitForm}
                 disabled={isSubmitting}
                 validateForm={validateForm}
+                setFieldValue={setFieldValue}
+                values={values}
                 id={city.id}
               />
             )}

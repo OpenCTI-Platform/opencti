@@ -8,15 +8,19 @@ import {
   ascend,
   path,
   union,
+  append,
 } from 'ramda';
 import { Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import { LanguageOutlined } from '@material-ui/icons';
-import { fetchQuery } from '../../../../relay/environment';
+import { ConnectionHandler } from 'relay-runtime';
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { externalReferencesSearchQuery } from '../../analysis/ExternalReferences';
+import ExternalReferenceCreation from '../../analysis/external_references/ExternalReferenceCreation';
+import { externalReferenceLinesMutationRelationAdd } from '../../analysis/external_references/AddExternalReferencesLines';
 
 const styles = () => ({
   icon: {
@@ -28,14 +32,35 @@ const styles = () => ({
     flexGrow: 1,
     marginLeft: 10,
   },
+  autoCompleteIndicator: {
+    display: 'none',
+  },
 });
+
+const sharedUpdater = (store, stixCoreObjectId, newEdge) => {
+  const entity = store.get(stixCoreObjectId);
+  const conn = ConnectionHandler.getConnection(
+    entity,
+    'Pagination_externalReferences',
+  );
+  ConnectionHandler.insertEdgeBefore(conn, newEdge);
+};
 
 class ExternalReferencesField extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      externalReferenceCreation: false,
       externalReferences: [],
     };
+  }
+
+  handleOpenExternalReferenceCreation() {
+    this.setState({ externalReferenceCreation: true });
+  }
+
+  handleCloseExternalReferenceCreation() {
+    this.setState({ externalReferenceCreation: false });
   }
 
   searchExternalReferences(event) {
@@ -71,32 +96,91 @@ class ExternalReferencesField extends Component {
 
   render() {
     const {
-      t, name, style, classes, onChange, helpertext,
+      t,
+      name,
+      style,
+      classes,
+      onChange,
+      setFieldValue,
+      values,
+      helpertext,
+      id,
     } = this.props;
     return (
-      <Field
-        component={AutocompleteField}
-        style={style}
-        name={name}
-        multiple={true}
-        textfieldprops={{
-          label: t('External references'),
-          helperText: helpertext,
-          onFocus: this.searchExternalReferences.bind(this),
-        }}
-        noOptionsText={t('No available options')}
-        options={this.state.externalReferences}
-        onInputChange={this.searchExternalReferences.bind(this)}
-        onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-        renderOption={(option) => (
-          <React.Fragment>
-            <div className={classes.icon} style={{ color: option.color }}>
-              <LanguageOutlined />
-            </div>
-            <div className={classes.text}>{option.label}</div>
-          </React.Fragment>
-        )}
-      />
+      <div>
+        <Field
+          component={AutocompleteField}
+          style={style}
+          name={name}
+          multiple={true}
+          textfieldprops={{
+            label: t('External references'),
+            helperText: helpertext,
+            onFocus: this.searchExternalReferences.bind(this),
+          }}
+          noOptionsText={t('No available options')}
+          options={this.state.externalReferences}
+          onInputChange={this.searchExternalReferences.bind(this)}
+          openCreate={this.handleOpenExternalReferenceCreation.bind(this)}
+          onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
+          renderOption={(option) => (
+            <React.Fragment>
+              <div className={classes.icon} style={{ color: option.color }}>
+                <LanguageOutlined />
+              </div>
+              <div className={classes.text}>{option.label}</div>
+            </React.Fragment>
+          )}
+          classes={{ clearIndicator: classes.autoCompleteIndicator }}
+        />
+        <ExternalReferenceCreation
+          contextual={true}
+          display={true}
+          open={this.state.externalReferenceCreation}
+          handleClose={this.handleCloseExternalReferenceCreation.bind(this)}
+          creationCallback={(data) => {
+            if (id) {
+              const input = {
+                fromId: id,
+                relationship_type: 'external-reference',
+              };
+              commitMutation({
+                mutation: externalReferenceLinesMutationRelationAdd,
+                variables: {
+                  id: data.externalReferenceAdd.id,
+                  input,
+                },
+                updater: (store) => {
+                  const payload = store
+                    .getRootField('externalReferenceEdit')
+                    .getLinkedRecord('relationAdd', { input });
+                  const relationId = payload.getValue('id');
+                  const node = payload.getLinkedRecord('to');
+                  const relation = store.get(relationId);
+                  payload.setLinkedRecord(node, 'node');
+                  payload.setLinkedRecord(relation, 'relation');
+                  sharedUpdater(store, id, payload);
+                },
+              });
+            }
+            setFieldValue(
+              name,
+              append(
+                {
+                  label: `[${data.externalReferenceAdd.source_name}] ${truncate(
+                    data.externalReferenceAdd.description
+                      || data.externalReferenceAdd.url
+                      || data.externalReferenceAdd.external_id,
+                    150,
+                  )}`,
+                  value: data.externalReferenceAdd.id,
+                },
+                values,
+              ),
+            );
+          }}
+        />
+      </div>
     );
   }
 }

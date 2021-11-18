@@ -28,7 +28,7 @@ const styles = (theme) => ({
   },
 });
 
-const externalReferenceLinesMutationRelationAdd = graphql`
+export const externalReferenceLinesMutationRelationAdd = graphql`
   mutation AddExternalReferencesLinesRelationAddMutation(
     $id: ID!
     $input: StixMetaRelationshipAddInput!

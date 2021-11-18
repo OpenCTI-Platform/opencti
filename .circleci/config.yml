@@ -299,7 +299,7 @@ jobs:
           working_directory: ~/opencti/deploy
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master    
                     
-  docker_build:
+  docker_build_platform:
     working_directory: ~/opencti_docker
     machine:
       image: ubuntu-1604:202007-01
@@ -337,7 +337,40 @@ jobs:
           name: Build Docker image opencti/worker
           command: docker buildx build --platform $BUILDX_PLATFORMS -t opencti/worker:latest -t opencti/worker:${CIRCLE_TAG} --push .
 
-  docker_build_rolling:
+  docker_build_worker:
+    working_directory: ~/opencti_docker
+    machine:
+      image: ubuntu-1604:202007-01
+      resource_class: xlarge
+    environment:
+      DOCKER_BUILDKIT: 1
+      BUILDX_PLATFORMS: linux/amd64,linux/arm64
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install buildx
+          command: |
+            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.4.2/buildx-v0.4.2.linux-amd64"
+            curl --output docker-buildx \
+              --silent --show-error --location --fail --retry 3 \
+              "$BUILDX_BINARY_URL"
+            mkdir -p ~/.docker/cli-plugins
+            mv docker-buildx ~/.docker/cli-plugins/
+            chmod a+x ~/.docker/cli-plugins/docker-buildx
+            docker buildx install
+            # Run binfmt
+            docker run --rm --privileged tonistiigi/binfmt:latest --install "$BUILDX_PLATFORMS"
+            docker buildx create --name mybuilder --use
+      - run:
+          name: Login
+          command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run:
+          working_directory: ~/opencti_docker/opencti-worker
+          name: Build Docker image opencti/worker
+          command: docker buildx build --platform $BUILDX_PLATFORMS -t opencti/worker:latest -t opencti/worker:${CIRCLE_TAG} --push .          
+
+  docker_build_platform_rolling:
     working_directory: ~/opencti_docker
     machine:
       image: ubuntu-1604:202007-01
@@ -370,6 +403,35 @@ jobs:
           name: Build Docker image opencti/platform
           command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci -t opencti/platform:rolling --push .
           no_output_timeout: 30m
+
+  docker_build_worker_rolling:
+    working_directory: ~/opencti_docker
+    machine:
+      image: ubuntu-1604:202007-01
+      resource_class: xlarge
+    environment:
+      DOCKER_BUILDKIT: 1
+      BUILDX_PLATFORMS: linux/amd64,linux/arm64
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install buildx
+          command: |
+            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.4.2/buildx-v0.4.2.linux-amd64"
+            curl --output docker-buildx \
+              --silent --show-error --location --fail --retry 3 \
+              "$BUILDX_BINARY_URL"
+            mkdir -p ~/.docker/cli-plugins
+            mv docker-buildx ~/.docker/cli-plugins/
+            chmod a+x ~/.docker/cli-plugins/docker-buildx
+            docker buildx install
+            # Run binfmt
+            docker run --rm --privileged tonistiigi/binfmt:latest --install "$BUILDX_PLATFORMS"
+            docker buildx create --name mybuilder --use
+      - run:
+          name: Login
+          command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
       - run:
           working_directory: ~/opencti_docker/opencti-worker
           name: Build Docker image opencti/worker
@@ -443,14 +505,21 @@ workflows:
             branches:
               only:
                 - master                                          
-      - docker_build_rolling:
+      - docker_build_platform_rolling:
           requires:
             - build_frontend  
           filters:
             branches:
               only:
                 - master
-      - docker_build:
+      - docker_build_worker_rolling:
+          requires:
+            - build_frontend  
+          filters:
+            branches:
+              only:
+                - master                
+      - docker_build_platform:
           requires:
             - build_frontend
           filters:
@@ -458,3 +527,11 @@ workflows:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
               ignore: /.*/
+      - docker_build_worker:
+          requires:
+            - build_frontend
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/              
