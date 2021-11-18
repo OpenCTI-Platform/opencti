@@ -130,7 +130,9 @@ class ListenQueue(threading.Thread):
         five_minutes = 60 * 5
         time_wait = 0
         while self.thread.is_alive():  # Loop while the thread is processing
-            if self.helper.work_id is not None and time_wait > five_minutes:  # Ping every 5 minutes
+            if (
+                self.helper.work_id is not None and time_wait > five_minutes
+            ):  # Ping every 5 minutes
                 self.helper.api.work.ping(self.helper.work_id)
                 time_wait = 0
             else:
