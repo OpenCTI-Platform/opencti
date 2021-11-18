@@ -20,7 +20,7 @@ import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_EXPORT_FILE } from '.
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
-  const isWorkActive = lastModifiedSinceMin < 10; // Timeout if no activity during 10 minutes
+  const isWorkActive = lastModifiedSinceMin < 20; // Timeout if no activity during 20 minutes
   return {
     id: work.internal_id,
     name: work.name || 'Unknown',
