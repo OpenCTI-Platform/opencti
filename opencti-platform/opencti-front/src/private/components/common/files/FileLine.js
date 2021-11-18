@@ -103,7 +103,8 @@ class FileLineComponent extends Component {
     const isImportActive = () => connectors && filter((x) => x.data.active, connectors).length > 0;
     const history = [];
     if (isOutdated) {
-      history.push({ message: `Connector execution timeout, no activity since ${lastModifiedSinceMin} minutes` });
+      const time = moment.duration(lastModifiedSinceMin, 'minutes').humanize();
+      history.push({ message: `Connector execution timeout, no activity for ${time}` });
     } else {
       history.push(...[...messages, ...errors]);
     }
@@ -144,7 +145,7 @@ class FileLineComponent extends Component {
               <FileOutline color={nested ? 'primary' : 'inherit'} />
             )}
           </ListItemIcon>
-          <Tooltip title={file.name}>
+          <Tooltip title={!isFail && !isOutdated ? file.name : ''}>
             <ListItemText
               classes={{ root: classes.itemText }}
               primary={file.name}
