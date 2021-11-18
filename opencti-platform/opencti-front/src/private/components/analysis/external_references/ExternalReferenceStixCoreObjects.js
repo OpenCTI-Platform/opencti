@@ -64,17 +64,16 @@ class ExternalReferenceStixCoreObjectsComponent extends Component {
                     stixCoreObject.x_mitre_id
                       ? `[${stixCoreObject.x_mitre_id}] `
                       : ''
-                  }${truncate(
+                  }${
                     stixCoreObject.name
-                      || stixCoreObject.observable_value
-                      || stixCoreObject.attribute_abstract
-                      || stixCoreObject.content
-                      || stixCoreObject.opinion
-                      || `${fd(stixCoreObject.first_observed)} - ${fd(
-                        stixCoreObject.last_observed,
-                      )}`,
-                    60,
-                  )}`}
+                    || stixCoreObject.observable_value
+                    || stixCoreObject.attribute_abstract
+                    || stixCoreObject.content
+                    || stixCoreObject.opinion
+                    || `${fd(stixCoreObject.first_observed)} - ${fd(
+                      stixCoreObject.last_observed,
+                    )}`
+                  }`}
                   secondary={
                     <Markdown
                       remarkPlugins={[remarkGfm, remarkParse]}
@@ -83,6 +82,7 @@ class ExternalReferenceStixCoreObjectsComponent extends Component {
                     >
                       {truncate(
                         stixCoreObject.description
+                          || stixCoreObject.x_opencti_description
                           || fd(stixCoreObject.created_at),
                         200,
                       )}
@@ -111,7 +111,7 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
     externalReference: graphql`
       fragment ExternalReferenceStixCoreObjects_externalReference on ExternalReference {
         id
-        references {
+        references(types: ["Stix-Core-Object"]) {
           edges {
             node {
               ... on BasicObject {
@@ -143,78 +143,91 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
               }
               ... on AttackPattern {
                 name
+                description
                 x_mitre_id
               }
               ... on Campaign {
                 name
-                first_seen
-                last_seen
+                description
+              }
+              ... on Report {
+                name
+                description
               }
               ... on ObservedData {
                 name
               }
               ... on CourseOfAction {
                 name
+                description
               }
               ... on Individual {
                 name
+                description
               }
               ... on Organization {
                 name
+                description
               }
               ... on Sector {
                 name
+                description
               }
               ... on System {
                 name
+                description
               }
               ... on Indicator {
                 name
-                valid_from
+                description
               }
               ... on Infrastructure {
                 name
+                description
               }
               ... on IntrusionSet {
                 name
-                first_seen
-                last_seen
+                description
               }
               ... on Position {
                 name
+                description
               }
               ... on City {
                 name
+                description
               }
               ... on Country {
                 name
+                description
               }
               ... on Region {
                 name
+                description
               }
               ... on Malware {
                 name
-                first_seen
-                last_seen
+                description
               }
               ... on ThreatActor {
                 name
-                first_seen
-                last_seen
+                description
               }
               ... on Tool {
                 name
+                description
               }
               ... on Vulnerability {
                 name
+                description
               }
               ... on Incident {
                 name
-                first_seen
-                last_seen
+                description
               }
               ... on StixCyberObservable {
                 observable_value
+                x_opencti_description
               }
               ... on StixFile {
                 observableName: name

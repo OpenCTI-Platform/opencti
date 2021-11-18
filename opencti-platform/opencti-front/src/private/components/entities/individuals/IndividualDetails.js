@@ -50,13 +50,7 @@ class IndividualDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Contact information')}
               </Typography>
-              <Markdown
-                remarkPlugins={[remarkGfm, remarkParse]}
-                parserOptions={{ commonmark: true }}
-                className="markdown"
-              >
-                {individual.contact_information}
-              </Markdown>
+              <pre>{individual.contact_information}</pre>
             </Grid>
           </Grid>
         </Paper>

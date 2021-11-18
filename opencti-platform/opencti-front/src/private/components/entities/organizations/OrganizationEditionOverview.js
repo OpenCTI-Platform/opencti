@@ -16,6 +16,7 @@ import {
 } from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@material-ui/core/MenuItem';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
@@ -24,6 +25,8 @@ import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import { adaptFieldValue } from '../../../../utils/String';
+import CommitMessage from '../../common/form/CommitMessage';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -54,9 +57,15 @@ const organizationMutationFieldPatch = graphql`
   mutation OrganizationEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
   ) {
     organizationEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...OrganizationEditionOverview_organization
         ...Organization_organization
       }
@@ -133,19 +142,56 @@ class OrganizationEditionOverviewComponent extends Component {
     });
   }
 
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.dissoc('references'),
+      R.assoc('status_id', values.status_id?.value),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: organizationMutationFieldPatch,
+      variables: {
+        id: this.props.organization.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
   handleSubmitField(name, value) {
-    organizationValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: organizationMutationFieldPatch,
-          variables: {
-            id: this.props.organization.id,
-            input: { key: name, value: value || '' },
-          },
-        });
-      })
-      .catch(() => false);
+    if (!this.props.enableReferences) {
+      organizationValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: organizationMutationFieldPatch,
+            variables: {
+              id: this.props.organization.id,
+              input: {
+                key: name,
+                value: value || '',
+              },
+            },
+          });
+        })
+        .catch(() => false);
+    }
   }
 
   handleChangeCreatedBy(name, value) {
@@ -161,45 +207,46 @@ class OrganizationEditionOverviewComponent extends Component {
   }
 
   handleChangeObjectMarking(name, values) {
-    const { organization } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(organization);
-
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: organizationMutationRelationAdd,
-        variables: {
-          id: this.props.organization.id,
-          input: {
-            toId: head(added).value,
-            relationship_type: 'object-marking',
+    if (!this.props.enableReferences) {
+      const { organization } = this.props;
+      const currentMarkingDefinitions = pipe(
+        pathOr([], ['objectMarking', 'edges']),
+        map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(organization);
+      const added = difference(values, currentMarkingDefinitions);
+      const removed = difference(currentMarkingDefinitions, values);
+      if (added.length > 0) {
+        commitMutation({
+          mutation: organizationMutationRelationAdd,
+          variables: {
+            id: this.props.organization.id,
+            input: {
+              toId: head(added).value,
+              relationship_type: 'object-marking',
+            },
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: organizationMutationRelationDelete,
-        variables: {
-          id: this.props.organization.id,
-          toId: head(removed).value,
-          relationship_type: 'created-by',
-        },
-      });
+        });
+      }
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: organizationMutationRelationDelete,
+          variables: {
+            id: this.props.organization.id,
+            toId: head(removed).value,
+            relationship_type: 'created-by',
+          },
+        });
+      }
     }
   }
 
   render() {
-    const { t, organization, context } = this.props;
+    const {
+      t, organization, context, enableReferences,
+    } = this.props;
     const createdBy = pathOr(null, ['createdBy', 'name'], organization) === null
       ? ''
       : {
@@ -231,9 +278,15 @@ class OrganizationEditionOverviewComponent extends Component {
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={organizationValidation(t)}
-        onSubmit={() => true}
+        onSubmit={this.onSubmit.bind(this)}
       >
-        {({ setFieldValue }) => (
+        {({
+          submitForm,
+          isSubmitting,
+          validateForm,
+          setFieldValue,
+          values,
+        }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
@@ -348,6 +401,16 @@ class OrganizationEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeObjectMarking.bind(this)}
             />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                validateForm={validateForm}
+                setFieldValue={setFieldValue}
+                values={values}
+                id={organization.id}
+              />
+            )}
           </Form>
         )}
       </Formik>

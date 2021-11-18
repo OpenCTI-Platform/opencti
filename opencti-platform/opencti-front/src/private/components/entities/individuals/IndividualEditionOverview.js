@@ -15,6 +15,7 @@ import {
   head,
 } from 'ramda';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -22,6 +23,8 @@ import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import CommitMessage from '../../common/form/CommitMessage';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -52,9 +55,15 @@ const individualMutationFieldPatch = graphql`
   mutation IndividualEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
   ) {
     individualEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...IndividualEditionOverview_individual
         ...Individual_individual
       }
@@ -127,19 +136,56 @@ class IndividualEditionOverviewComponent extends Component {
     });
   }
 
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.dissoc('references'),
+      R.assoc('status_id', values.status_id?.value),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: individualMutationFieldPatch,
+      variables: {
+        id: this.props.individual.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
   handleSubmitField(name, value) {
-    individualValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: individualMutationFieldPatch,
-          variables: {
-            id: this.props.individual.id,
-            input: { key: name, value: value || '' },
-          },
-        });
-      })
-      .catch(() => false);
+    if (!this.props.enableReferences) {
+      individualValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: individualMutationFieldPatch,
+            variables: {
+              id: this.props.individual.id,
+              input: {
+                key: name,
+                value: value || '',
+              },
+            },
+          });
+        })
+        .catch(() => false);
+    }
   }
 
   handleChangeCreatedBy(name, value) {
@@ -155,45 +201,46 @@ class IndividualEditionOverviewComponent extends Component {
   }
 
   handleChangeObjectMarking(name, values) {
-    const { individual } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(individual);
-
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: individualMutationRelationAdd,
-        variables: {
-          id: this.props.individual.id,
-          input: {
-            toId: head(added).value,
+    if (!this.props.enableReferences) {
+      const { individual } = this.props;
+      const currentMarkingDefinitions = pipe(
+        pathOr([], ['objectMarking', 'edges']),
+        map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(individual);
+      const added = difference(values, currentMarkingDefinitions);
+      const removed = difference(currentMarkingDefinitions, values);
+      if (added.length > 0) {
+        commitMutation({
+          mutation: individualMutationRelationAdd,
+          variables: {
+            id: this.props.individual.id,
+            input: {
+              toId: head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: individualMutationRelationDelete,
+          variables: {
+            id: this.props.individual.id,
+            toId: head(removed).value,
             relationship_type: 'object-marking',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: individualMutationRelationDelete,
-        variables: {
-          id: this.props.individual.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
+        });
+      }
     }
   }
 
   render() {
-    const { t, individual, context } = this.props;
+    const {
+      t, individual, context, enableReferences,
+    } = this.props;
     const external = individual.external === true;
     const createdBy = pathOr(null, ['createdBy', 'name'], individual) === null
       ? ''
@@ -226,7 +273,13 @@ class IndividualEditionOverviewComponent extends Component {
         validationSchema={individualValidation(t)}
         onSubmit={() => true}
       >
-        {({ setFieldValue }) => (
+        {({
+          submitForm,
+          isSubmitting,
+          validateForm,
+          setFieldValue,
+          values,
+        }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
@@ -291,6 +344,16 @@ class IndividualEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeObjectMarking.bind(this)}
             />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                validateForm={validateForm}
+                setFieldValue={setFieldValue}
+                values={values}
+                id={individual.id}
+              />
+            )}
           </Form>
         )}
       </Formik>
