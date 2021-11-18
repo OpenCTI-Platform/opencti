@@ -54,17 +54,48 @@ export const UpdateOps = {
 
 export const byIdClause = (id) => `?iri <http://darklight.ai/ns/common#id> "${id}" .`;
 
-export const optionalizePredicate = (predicate) => `OPTIONAL { ${predicate} } .`;
+export const optionalizePredicate = (predicate) => `OPTIONAL { ${predicate} . } `;
 
-export const parameterizePredicate = (iri, value, predicate, binding) => (`${iri || "?iri"} ${predicate} ` + ((value === undefined || value == null) ? `?${binding}` : value )) + ' .'
+export const parameterizePredicate = (iri, value, predicate, binding) => (`${iri || "?iri"} ${predicate} ` + ((value === undefined || value == null) ? `?${binding}` : value ))
+
+export const buildSelectVariables = (predicateMap, selects) => {
+  const reduced = selects.filter((s) => predicateMap.hasOwnProperty(s));
+  const clause = reduced.map((s) => `?${s}`).join(" ")
+  const predicates = reduced.map((s) => predicateMap[s]?.optional()).join(" \n")
+  return {clause, predicates}
+}
 
 export const queryPropertyMap = (info) => {
-  const selectSet = buildNodeSet(info.fieldNodes)
-  const fragmentSet = extractFragments(info.fragments)
+  const selectSet = buildNodeSet(info.fieldNodes);
+  const fragmentSet = extractFragments(info.fragments);
   for(const nodeName in selectSet){
-    expandFragments(selectSet[nodeName], fragmentSet)
+    expandFragments(selectSet[nodeName], fragmentSet);
   }
-  return selectSet
+  return {
+    ...selectSet,
+    getNode: function (name) {
+      for(const nodeName in this){
+        const node = this[nodeName];
+        if(nodeName === name) return node.select;
+        const found = this._getNode(node.children, name);
+        if(found) return found.select;
+      }
+      return null;
+    },
+    _getNode: function (children, name) {
+      if(name in children) {
+        return children[name];
+      }
+      for(const childName in children) {
+        const child = children[childName];
+        if(child.children) {
+          const node = this._getNode(child.children, name);
+          if(node) return node;
+        }
+      }
+      return null;
+    }
+  }
 }
 
 const expandFragments = (node, fragments) => {
