@@ -8,14 +8,13 @@ import {
   removeFromInventoryQuery,
   QueryMode, updateSoftwareQuery
 } from './sparql-query.js';
-import {compareValues, queryPropertyMap} from '../../utils.js';
+import {compareValues} from '../../utils.js';
 
 const softwareResolvers = {
   Query: {
     softwareAssetList: async ( _, args, context, info ) => {
-      const propMap = queryPropertyMap(info);
-      const selects =  propMap.getNode("node");
-      const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selects);
+      const selectionList =  context.selectMap.getNode("node");
+      const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList);
       const reducer = getReducer('SOFTWARE');
       const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
@@ -66,8 +65,7 @@ const softwareResolvers = {
       }
     },
     softwareAsset: async ( _, args, context, info ) => {
-      const propMap = queryPropertyMap(info)
-      var sparqlQuery = getSelectSparqlQuery('SOFTWARE', propMap, args.id);
+      var sparqlQuery = getSelectSparqlQuery('SOFTWARE', context.selectMap.getNode("softwareAsset"), args.id);
       var reducer = getReducer('SOFTWARE');
       const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema, )
       if (response === undefined ) return null;

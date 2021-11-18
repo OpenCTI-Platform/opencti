@@ -24,6 +24,7 @@ import StardogKB from '../datasources/stardog.js';
 // mocks
 import mockList from './mocks.js' ;
 import nconf from "nconf";
+import querySelectMap from "../cyio/schema/querySelectMap";
 
 const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 
@@ -52,7 +53,23 @@ else {
   mocks = mockList;
 }
 
-let plugins = [loggerPlugin, httpResponsePlugin];
+let plugins = [
+  loggerPlugin,
+  httpResponsePlugin,
+  {
+     requestDidStart: () => {
+      return {
+        executionDidStart: () => {
+          return {
+            willResolveField: ({source, args, context, info}) =>{
+              context.selectMap = querySelectMap(info)
+            }
+          }
+        }
+      }
+    }
+  }
+];
 
 const createApolloServer = (app) => {
   if(process.env.GRAPHQL_METRICS_ENABLED === '1') plugins.push(createPrometheusExporterPlugin({app}))
@@ -84,7 +101,7 @@ const createApolloServer = (app) => {
       return buildContext(user, req, res);
     },
     tracing: true,
-    plugins: [plugins],
+    plugins,
     formatError: (error) => {
       let e = apolloFormatError(error);
       if (e instanceof GraphQLError) {
