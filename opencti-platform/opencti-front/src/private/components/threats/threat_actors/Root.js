@@ -151,6 +151,9 @@ class RootThreatActor extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.threatActor}
                             PopoverComponent={<ThreatActorPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Threat-Actor',
+                            )}
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
@@ -219,6 +222,9 @@ class RootThreatActor extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.threatActor}
                             PopoverComponent={<ThreatActorPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Threat-Actor',
+                            )}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}

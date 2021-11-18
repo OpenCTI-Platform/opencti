@@ -22,13 +22,14 @@ const styles = () => ({
 
 class AttackPatternKnowledgeComponent extends Component {
   render() {
-    const { classes, attackPattern } = this.props;
+    const { classes, attackPattern, enableReferences } = this.props;
     const link = `/dashboard/arsenal/attack_patterns/${attackPattern.id}/knowledge`;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
           stixDomainObject={attackPattern}
           PopoverComponent={<AttackPatternPopover />}
+          enableReferences={enableReferences}
         />
         <Switch>
           <Route

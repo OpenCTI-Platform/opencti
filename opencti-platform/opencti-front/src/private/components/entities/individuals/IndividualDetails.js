@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import * as R from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -73,4 +73,4 @@ const IndividualDetails = createFragmentContainer(IndividualDetailsComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(IndividualDetails);
+export default R.compose(inject18n, withStyles(styles))(IndividualDetails);

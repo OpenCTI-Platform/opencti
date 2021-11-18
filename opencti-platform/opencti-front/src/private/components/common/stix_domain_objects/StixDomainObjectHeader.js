@@ -68,9 +68,18 @@ const styles = () => ({
 });
 
 export const stixDomainObjectMutation = graphql`
-  mutation StixDomainObjectHeaderFieldMutation($id: ID!, $input: [EditInput]!) {
+  mutation StixDomainObjectHeaderFieldMutation(
+    $id: ID!
+    $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
+  ) {
     stixDomainObjectEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         x_opencti_stix_ids
         ... on AttackPattern {
           aliases
@@ -246,7 +255,7 @@ class StixDomainObjectHeader extends Component {
           </div>
         )}
         <StixCoreObjectEnrichment stixCoreObjectId={stixDomainObject.id} />
-        {variant !== 'noaliases' ? (
+        {variant !== 'noaliases' && (
           <div className={classes.aliases}>
             {take(5, aliases).map(
               (label) => label.length > 0 && (
@@ -308,8 +317,6 @@ class StixDomainObjectHeader extends Component {
               </div>
             </Slide>
           </div>
-        ) : (
-          ''
         )}
         <div className="clearfix" />
         <Dialog
@@ -343,22 +350,22 @@ class StixDomainObjectHeader extends Component {
                 [],
                 isOpenctiAlias ? 'x_opencti_aliases' : 'aliases',
                 stixDomainObject,
-              ).map((label) => (label.length > 0 ? (
-                  <ListItem key={label} disableGutters={true} dense={true}>
-                    <ListItemText primary={label} />
-                    <ListItemSecondaryAction>
-                      <IconButton
-                        edge="end"
-                        aria-label="delete"
-                        onClick={this.deleteAlias.bind(this, label)}
-                      >
-                        <Delete />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-              ) : (
-                ''
-              )))}
+              ).map(
+                (label) => label.length > 0 && (
+                    <ListItem key={label} disableGutters={true} dense={true}>
+                      <ListItemText primary={label} />
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          edge="end"
+                          aria-label="delete"
+                          onClick={this.deleteAlias.bind(this, label)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                ),
+              )}
             </List>
             <div
               style={{
@@ -409,6 +416,7 @@ StixDomainObjectHeader.propTypes = {
   onViewAs: PropTypes.func,
   disablePopover: PropTypes.bool,
   isOpenctiAlias: PropTypes.bool,
+  enableReferences: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(StixDomainObjectHeader);

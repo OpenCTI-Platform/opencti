@@ -54,6 +54,9 @@ const individualQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
+    settings {
+      platform_enable_reference
+    }
   }
 `;
 

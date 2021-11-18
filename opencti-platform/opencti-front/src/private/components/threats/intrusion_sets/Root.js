@@ -148,6 +148,9 @@ class RootIntrusionSet extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.intrusionSet}
                             PopoverComponent={<IntrusionSetPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Intrusion-Set',
+                            )}
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
@@ -194,6 +197,9 @@ class RootIntrusionSet extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.intrusionSet}
                             PopoverComponent={<IntrusionSetPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Intrusion-Set-Pattern',
+                            )}
                           />
                           <FileManager
                             {...routeProps}
