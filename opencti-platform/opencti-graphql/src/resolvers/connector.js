@@ -28,6 +28,7 @@ import {
   findAll,
   findById,
   deleteWorkForConnector,
+  pingWork,
 } from '../domain/work';
 import { findById as findUserById } from '../domain/user';
 import { redisGetWork, redisUpdateActionExpectation } from '../database/redis';
@@ -68,6 +69,7 @@ const connectorResolvers = {
     },
     workEdit: (_, { id }, { user }) => ({
       delete: () => deleteWork(user, id),
+      ping: () => pingWork(user, id),
       reportExpectation: ({ error }) => reportActionImport(user, id, error),
       addExpectations: ({ expectations }) => redisUpdateActionExpectation(user, id, expectations),
       toReceived: ({ message }) => updateReceivedTime(user, id, message),

@@ -1,17 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter, propOr } from 'ramda';
+import {
+  compose, filter, isEmpty, propOr,
+} from 'ramda';
 import moment from 'moment';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
-import {
-  DeleteOutlined,
-  GetAppOutlined,
-  WarningOutlined,
-} from '@material-ui/icons';
+import { DeleteOutlined, GetAppOutlined, WarningOutlined } from '@material-ui/icons';
 import Tooltip from '@material-ui/core/Tooltip';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -19,11 +17,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Link } from 'react-router-dom';
-import {
-  APP_BASE_PATH,
-  commitMutation,
-  MESSAGING$,
-} from '../../../../relay/environment';
+import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import FileWork from './FileWork';
 
@@ -105,12 +99,15 @@ class FileLineComponent extends Component {
     const { messages, errors } = metaData;
     const isFail = errors.length > 0;
     const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
-    const isOutdated = isProgress && lastModifiedSinceMin > 1;
+    const isOutdated = uploadStatus === 'timeout';
     const isImportActive = () => connectors && filter((x) => x.data.active, connectors).length > 0;
-    const fileName = file.name;
-    const toolTip = directDownload
-      ? fileName
-      : [...messages, ...errors].map((s) => s.message).join(', ');
+    const history = [];
+    if (isOutdated) {
+      history.push({ message: `Connector execution timeout, no activity since ${lastModifiedSinceMin} minutes` });
+    } else {
+      history.push(...[...messages, ...errors]);
+    }
+    const toolTip = history.map((s) => s.message).filter((s) => !isEmpty(s)).join(', ');
     return (
       <div>
         <ListItem
@@ -118,7 +115,7 @@ class FileLineComponent extends Component {
           dense={dense === true}
           classes={{ root: nested ? classes.itemNested : classes.item }}
           button={true}
-          component={Link}
+          component={isOutdated ? null : Link}
           disabled={isProgress}
           to={
             directDownload
@@ -135,20 +132,22 @@ class FileLineComponent extends Component {
                 color={nested ? 'primary' : 'inherit'}
               />
             )}
-            {!isProgress && isFail && (
-              <WarningOutlined
-                color={nested ? 'primary' : 'inherit'}
-                style={{ fontSize: 15, color: '#f44336' }}
-              />
+            {!isProgress && (isFail || isOutdated) && (
+              <Tooltip title={toolTip !== 'null' ? toolTip : ''}>
+                  <WarningOutlined
+                    color={nested ? 'primary' : 'inherit'}
+                    style={{ fontSize: 15, color: '#f44336' }}
+                  />
+              </Tooltip>
             )}
-            {!isProgress && !isFail && (
+            {!isProgress && !isFail && !isOutdated && (
               <FileOutline color={nested ? 'primary' : 'inherit'} />
             )}
           </ListItemIcon>
-          <Tooltip title={toolTip !== 'null' ? toolTip : ''}>
+          <Tooltip title={file.name}>
             <ListItemText
               classes={{ root: classes.itemText }}
-              primary={fileName}
+              primary={file.name}
               secondary={fld(propOr(moment(), 'lastModified', file))}
             />
           </Tooltip>
@@ -181,30 +180,17 @@ class FileLineComponent extends Component {
                 </span>
               </Tooltip>
             )}
-            {isFail || isOutdated ? (
-              <Tooltip title={t('Delete this file')}>
-                <span>
-                  <IconButton
-                    color={nested ? 'inherit' : 'primary'}
-                    onClick={this.handleRemoveJob.bind(this, file.id)}
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            ) : (
-              <Tooltip title={t('Delete this file')}>
-                <span>
-                  <IconButton
+            <Tooltip title={t('Delete this file')}>
+              <span>
+                <IconButton
                     disabled={isProgress}
                     color={nested ? 'inherit' : 'primary'}
                     onClick={this.handleRemoveFile.bind(this, file.id)}
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            )}
+                >
+                  <DeleteOutlined />
+                </IconButton>
+              </span>
+            </Tooltip>
           </ListItemSecondaryAction>
         </ListItem>
         <FileWork file={file} />

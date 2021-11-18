@@ -29,6 +29,7 @@ enum State {
   wait
   progress
   complete
+  timeout
 }
 enum Capabilities {
   CONNECTORAPI
@@ -9357,6 +9358,7 @@ type Subscription {
 
 type WorkEditMutations {
   delete: ID!
+  ping: ID!
   reportExpectation(error: WorkErrorInput): ID!
   addExpectations(expectations: Int): ID!
   toReceived(message: String): ID!

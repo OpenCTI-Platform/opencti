@@ -19,13 +19,15 @@ import { now, sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 
 export const workToExportFile = (work) => {
+  const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
+  const isWorkActive = lastModifiedSinceMin < 10; // Timeout if no activity during 10 minutes
   return {
     id: work.internal_id,
     name: work.name || 'Unknown',
     size: 0,
     lastModified: moment(work.updated_at).toDate(),
-    lastModifiedSinceMin: sinceNowInMinutes(work.updated_at),
-    uploadStatus: work.status,
+    lastModifiedSinceMin,
+    uploadStatus: isWorkActive ? work.status : 'timeout',
     metaData: {
       messages: work.messages,
       errors: work.errors,
@@ -93,6 +95,15 @@ export const deleteWorkRaw = async (work) => {
 export const deleteWork = async (user, workId) => {
   const work = await loadWorkById(user, workId);
   return deleteWorkRaw(work);
+};
+
+export const pingWork = async (user, workId) => {
+  const params = { updated_at: now() };
+  const source = 'ctx._source["updated_at"] = params.updated_at;';
+  await elUpdate(INDEX_HISTORY, workId, {
+    script: { source, lang: 'painless', params },
+  });
+  return workId;
 };
 
 export const deleteWorkForConnector = async (user, connectorId) => {
@@ -174,6 +185,7 @@ export const createWork = async (user, connector, friendlyName, sourceId, args =
   const work = {
     internal_id: workId,
     timestamp: now(),
+    updated_at: now(),
     name: friendlyName,
     entity_type: ENTITY_TYPE_WORK,
     // For specific type, specific id is required
