@@ -127,12 +127,15 @@ class ListenQueue(threading.Thread):
         channel.basic_ack(delivery_tag=method.delivery_tag)
         self.thread = threading.Thread(target=self._data_handler, args=[json_data])
         self.thread.start()
+        five_minutes = 60 * 5
+        time_wait = 0
         while self.thread.is_alive():  # Loop while the thread is processing
-            if self.helper.work_id is not None:
+            if self.helper.work_id is not None and time_wait > five_minutes:  # Ping every 5 minutes
                 self.helper.api.work.ping(self.helper.work_id)
-                time.sleep(60 * 5)  # Sleep 5 minutes during ping
+                time_wait = 0
             else:
-                time.sleep(1)
+                time_wait += 1
+            time.sleep(1)
 
         logging.info(
             "%s",
