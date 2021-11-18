@@ -31,6 +31,17 @@ class OpenCTIApiWork:
            """
         self.api.query(query, {"id": work_id, "message": message, "inError": in_error})
 
+    def ping(self, work_id: str):
+        logging.info("Ping work " + work_id)
+        query = """
+            mutation pingWork($id: ID!) {
+                workEdit(id: $id) {
+                    ping
+                }
+            }
+           """
+        self.api.query(query, {"id": work_id})
+
     def report_expectation(self, work_id: str, error):
         logging.info("Report expectation for " + work_id)
         query = """
