@@ -8,12 +8,14 @@ import {
   removeFromInventoryQuery,
   QueryMode, updateSoftwareQuery
 } from './sparql-query.js';
-import { compareValues } from '../../utils.js';
+import {compareValues, queryPropertyMap} from '../../utils.js';
 
 
 const softwareResolvers = {
   Query: {
     softwareAssetList: async ( _, args, context, info ) => {
+      const propMap = queryPropertyMap(info);
+      const rep = JSON.stringify(propMap);
       var sparqlQuery = getSelectSparqlQuery('SOFTWARE');
       var reducer = getReducer('SOFTWARE');
       const response = await context.dataSources.Stardog.queryAll( 
