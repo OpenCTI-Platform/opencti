@@ -6,10 +6,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import Markdown from 'react-markdown';
 import Grid from '@material-ui/core/Grid';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
