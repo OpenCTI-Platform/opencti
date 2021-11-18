@@ -1,5 +1,5 @@
 import {v4 as uuid4} from 'uuid';
-import {UpdateOps, byIdClause, optionalizePredicate, parameterizePredicate} from "../../utils.js";
+import {UpdateOps, byIdClause, optionalizePredicate, parameterizePredicate, buildSelectVariables} from "../../utils.js";
 
 const predicateMap = {
   id: {
@@ -89,28 +89,6 @@ const predicateMap = {
   }
 }
 
-const selectQueryForm = `
-SELECT ?iri ?id ?object_type 
-  ?asset_id ?name ?description ?locations ?responsible_party 
-  ?asset_type ?asset_tag ?serial_number ?vendor_name ?version ?release_date
-  ?function ?cpe_identifier ?software_identifier ?patch ?installation_id ?license_key
-FROM <tag:stardog:api:context:named>
-WHERE {
-    ?iri a <http://scap.nist.gov/ns/asset-identification#Software> .
-`;
-
-const selectClause = `
-SELECT DISTINCT ?iri ?id ?object_type 
-  ?asset_id ?name ?description ?locations ?responsible_party 
-  ?asset_type ?asset_tag ?serial_number ?vendor_name ?version ?release_date
-  ?function ?cpe_identifier ?software_identifier ?patch ?installation_id ?license_key
-FROM <tag:stardog:api:context:named>
-WHERE {
-`;
-
-const bindIRIClause = `\tBIND(<{iri}> AS ?iri)\n`;
-const typeConstraint = `?iri a <http://scap.nist.gov/ns/asset-identification#{softwareType}> .`;
-
 const predicateBody = `
     ?iri <http://darklight.ai/ns/common#id> ?id .
     OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_id> ?asset_id } .
@@ -133,7 +111,10 @@ const predicateBody = `
     OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#installation_id> ?installation_id }
     OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#license_key> ?license_key } .
     `;
-    
+
+const bindIRIClause = `\tBIND(<{iri}> AS ?iri)\n`;
+const typeConstraint = `?iri a <http://scap.nist.gov/ns/asset-identification#{softwareType}> . \n`;
+
 const inventoryConstraint = `
 {
     SELECT DISTINCT ?iri
@@ -198,8 +179,7 @@ export const removeFromInventoryQuery = (id) => {
 export const updateSoftwareQuery = (id, input) => {
   const iri = `<http://scap.nist.gov/ns/asset-identification#Software-${id}>`;
   let deletePredicates = [], insertPredicates = [], replaceBindingPredicates = [];
-  for(const change of input) {
-    const {key, value, operation} = change;
+  for(const {key, value, operation} of input) {
     if(!predicateMap.hasOwnProperty(key)) continue;
     for(const itr of value) {
       const predicate = predicateMap[key].binding(iri, itr);
@@ -255,8 +235,14 @@ export const QueryMode = {
   BY_ID: 'BY_ID'
 }
 
-export function getSelectSparqlQuery(type, id, filter, ) {
-  var sparqlQuery;
+export function getSelectSparqlQuery(type, select, id, filter) {
+  let sparqlQuery;
+  const { selectionClause, predicates } = buildSelectVariables(predicateMap, select)
+  const selectPortion = `
+SELECT DISTINCT ${selectionClause}
+FROM <tag:stardog:api:context:named>
+WHERE {
+  `;
   let re = /{iri}/g;  // using regex with 'g' switch to replace all instances of a marker
   switch( type ) {
     case 'SOFTWARE':
@@ -266,24 +252,24 @@ export function getSelectSparqlQuery(type, id, filter, ) {
       }
 
       let filterStr = ''
-      sparqlQuery = selectClause + 
+      sparqlQuery = selectPortion +
           typeConstraint.replace('{softwareType}', 'Software') + 
-          byId + 
-          predicateBody + 
+          byId +
+          predicates +
           inventoryConstraint + 
           filterStr + '}';
       break;
     case 'SOFTWARE-IRI':
-      sparqlQuery = selectClause + 
+      sparqlQuery = selectPortion +
           bindIRIClause.replace('{iri}', id) + 
           typeConstraint.replace('{softwareType}', 'Software') +
-          predicateBody + '}';
+          predicates + '}';
       break;
     case 'OS-IRI':
-      sparqlQuery = selectClause + 
+      sparqlQuery = selectPortion +
           bindIRIClause.replace('{iri}', id) + 
           typeConstraint.replace('{softwareType}', 'OperatingSystem') +
-          predicateBody + '}';
+          predicates + '}';
       break
     default:
       throw new Error(`Unsupported query type ' ${type}'`)
