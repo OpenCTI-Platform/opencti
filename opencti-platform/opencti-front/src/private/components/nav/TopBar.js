@@ -59,6 +59,7 @@ import TopMenuPosition from './TopMenuPosition';
 import TopMenuData from './TopMenuData';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
+import TopMenuRisk from './TopMenuRisk';
 import { commitMutation } from '../../../relay/environment';
 import Security, {
   KNOWLEDGE,
@@ -239,6 +240,10 @@ const TopBar = ({
           )}
           {location.pathname.includes('/dashboard/threats/campaigns/') && (
             <TopMenuCampaign />
+          )}
+          {/* added for risk testing purposes */}
+          {location.pathname.includes('/dashboard/risk-assessment/risks/') && (
+            <TopMenuRisk />
           )}
           {(location.pathname === '/dashboard/arsenal'
             || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && (
