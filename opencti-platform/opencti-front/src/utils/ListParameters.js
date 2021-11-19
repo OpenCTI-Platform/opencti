@@ -19,6 +19,7 @@ export const saveViewParameters = (
   noRedirect = false,
 ) => {
   const storageParams = pipe(
+    dissoc('searchTerm'),
     dissoc('graphData'),
     dissoc('initialContent'),
     dissoc('currentContent'),
