@@ -46,12 +46,6 @@ const styles = (theme) => ({
     bottom: 30,
     right: 30,
   },
-  createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -223,13 +217,13 @@ class NoteCreation extends Component {
                       'The value must be a date (YYYY-MM-DD)',
                     )}
                     fullWidth={true}
-                    style={{ marginTop: 20 }}
                   />
                   <Field
                     component={TextField}
                     name="attribute_abstract"
                     label={t('Abstract')}
                     fullWidth={true}
+                    style={{ marginTop: 20 }}
                   />
                   <Field
                     component={MarkDownField}

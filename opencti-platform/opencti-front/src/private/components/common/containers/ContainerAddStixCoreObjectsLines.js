@@ -258,11 +258,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
     const { addedStixCoreObjects } = this.state;
     const stixCoreObjectsNodes = pipe(
       map((n) => n.node),
-      filter(
-        (n) => n.entity_type !== 'Note'
-          && n.entity_type !== 'Opinion'
-          && n.entity_type !== 'Report',
-      ),
+      filter((n) => n.entity_type !== 'Note' && n.entity_type !== 'Opinion'),
     )(data.stixCoreObjects.edges);
     const byType = groupBy((stixCoreObject) => stixCoreObject.entity_type);
     const stixCoreObjects = byType(stixCoreObjectsNodes);
