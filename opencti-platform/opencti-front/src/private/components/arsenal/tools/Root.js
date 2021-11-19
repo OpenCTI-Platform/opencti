@@ -115,7 +115,13 @@ class RootTool extends Component {
                       exact
                       path="/dashboard/arsenal/tools/:toolId"
                       render={(routeProps) => (
-                        <Tool {...routeProps} tool={props.tool} />
+                        <Tool
+                          {...routeProps}
+                          tool={props.tool}
+                          enableReferences={props.settings.platform_enable_reference?.includes(
+                            'Tool',
+                          )}
+                        />
                       )}
                     />
                     <Route
@@ -141,6 +147,9 @@ class RootTool extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.tool}
                             PopoverComponent={<ToolPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Tool',
+                            )}
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
@@ -175,6 +184,9 @@ class RootTool extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.tool}
                             PopoverComponent={<ToolPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Tool',
+                            )}
                           />
                           <FileManager
                             {...routeProps}
@@ -194,6 +206,9 @@ class RootTool extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.tool}
                             PopoverComponent={<ToolPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Tool',
+                            )}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}

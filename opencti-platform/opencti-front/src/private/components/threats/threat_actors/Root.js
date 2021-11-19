@@ -122,6 +122,9 @@ class RootThreatActor extends Component {
                         <ThreatActor
                           {...routeProps}
                           threatActor={props.threatActor}
+                          enableReferences={props.settings.platform_enable_reference?.includes(
+                            'Threat-Actor',
+                          )}
                         />
                       )}
                     />

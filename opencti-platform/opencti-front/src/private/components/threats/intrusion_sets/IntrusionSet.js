@@ -29,12 +29,13 @@ const styles = () => ({
 
 class IntrusionSetComponent extends Component {
   render() {
-    const { classes, intrusionSet } = this.props;
+    const { classes, intrusionSet, enableReferences } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
           stixDomainObject={intrusionSet}
           PopoverComponent={<IntrusionSetPopover />}
+          enableReferences={enableReferences}
         />
         <Grid
           container={true}
@@ -96,6 +97,7 @@ IntrusionSetComponent.propTypes = {
   intrusionSet: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  enableReferences: PropTypes.bool,
 };
 
 const IntrusionSet = createFragmentContainer(IntrusionSetComponent, {

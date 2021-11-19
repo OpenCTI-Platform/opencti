@@ -38,21 +38,23 @@ class CommitMessage extends Component {
 
   render() {
     const {
-      disabled, t, id, setFieldValue, values,
+      disabled, t, id, setFieldValue, values, handleClose, open,
     } = this.props;
     return (
       <div>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={this.handleOpen.bind(this)}
-          style={{ marginTop: 20, float: 'right' }}
-        >
-          {t('Update')}
-        </Button>
+        {handleClose === null && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={this.handleOpen.bind(this)}
+            style={{ marginTop: 20, float: 'right' }}
+          >
+            {t('Update')}
+          </Button>
+        )}
         <Dialog
-          open={this.state.open}
-          onClose={this.handleClose.bind(this)}
+          open={handleClose === null ? this.state.open : open}
+          onClose={handleClose || this.handleClose.bind(this)}
           fullWidth={true}
         >
           <DialogTitle>{t('Reference modification')}</DialogTitle>
@@ -97,6 +99,8 @@ CommitMessage.propTypes = {
   validateForm: PropTypes.func,
   setFieldValue: PropTypes.func,
   externalReferences: PropTypes.array,
+  open: PropTypes.bool,
+  handleClose: PropTypes.func,
 };
 
 export default compose(

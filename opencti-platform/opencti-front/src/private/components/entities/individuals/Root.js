@@ -196,6 +196,9 @@ class RootIndividual extends Component {
                             stixDomainObject={props.individual}
                             PopoverComponent={<IndividualPopover />}
                             onViewAs={this.handleChangeViewAs.bind(this)}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Individual',
+                            )}
                           />
                           <FileManager
                             {...routeProps}

@@ -29,12 +29,13 @@ const styles = () => ({
 
 class CampaignComponent extends Component {
   render() {
-    const { classes, campaign } = this.props;
+    const { classes, campaign, enableReferences } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
           stixDomainObject={campaign}
           PopoverComponent={<CampaignPopover />}
+          enableReferences={enableReferences}
         />
         <Grid
           container={true}
@@ -94,6 +95,7 @@ CampaignComponent.propTypes = {
   campaign: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  enableReferences: PropTypes.bool,
 };
 
 const Campaign = createFragmentContainer(CampaignComponent, {

@@ -155,6 +155,9 @@ class RootOrganization extends Component {
                           organization={props.organization}
                           viewAs={viewAs}
                           onViewAs={this.handleChangeViewAs.bind(this)}
+                          enableReferences={props.settings.platform_enable_reference?.includes(
+                            'Organization',
+                          )}
                         />
                       )}
                     />
@@ -199,6 +202,9 @@ class RootOrganization extends Component {
                             stixDomainObject={props.organization}
                             PopoverComponent={<OrganizationPopover />}
                             onViewAs={this.handleChangeViewAs.bind(this)}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Organization',
+                            )}
                           />
                           <FileManager
                             {...routeProps}
@@ -218,6 +224,9 @@ class RootOrganization extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.organization}
                             PopoverComponent={<OrganizationPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Organization',
+                            )}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}

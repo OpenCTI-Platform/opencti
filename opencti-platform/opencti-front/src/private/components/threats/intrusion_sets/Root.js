@@ -53,6 +53,9 @@ const intrusionSetQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
+      settings {
+          platform_enable_reference
+      }
   }
 `;
 
@@ -119,6 +122,9 @@ class RootIntrusionSet extends Component {
                         <IntrusionSet
                           {...routeProps}
                           intrusionSet={props.intrusionSet}
+                          enableReferences={props.settings.platform_enable_reference?.includes(
+                            'Intrusion-Set',
+                          )}
                         />
                       )}
                     />
@@ -198,7 +204,7 @@ class RootIntrusionSet extends Component {
                             stixDomainObject={props.intrusionSet}
                             PopoverComponent={<IntrusionSetPopover />}
                             enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Intrusion-Set-Pattern',
+                              'Intrusion-Set',
                             )}
                           />
                           <FileManager

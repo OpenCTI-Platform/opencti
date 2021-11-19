@@ -51,6 +51,9 @@ const IncidentQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
+    settings {
+      platform_enable_reference
+    }
   }
 `;
 
@@ -138,6 +141,9 @@ class RootIncident extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.incident}
                             PopoverComponent={<IncidentPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Incident',
+                            )}
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
@@ -156,6 +162,9 @@ class RootIncident extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.incident}
                             PopoverComponent={<IncidentPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Incident',
+                            )}
                           />
                           <FileManager
                             {...routeProps}
@@ -175,6 +184,9 @@ class RootIncident extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.incident}
                             PopoverComponent={<IncidentPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Incident',
+                            )}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}

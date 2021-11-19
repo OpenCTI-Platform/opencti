@@ -196,6 +196,9 @@ class RootSystem extends Component {
                             stixDomainObject={props.system}
                             PopoverComponent={<SystemPopover />}
                             onViewAs={this.handleChangeViewAs.bind(this)}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'System',
+                            )}
                           />
                           <FileManager
                             {...routeProps}
@@ -215,6 +218,9 @@ class RootSystem extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.system}
                             PopoverComponent={<SystemPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'System',
+                            )}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}

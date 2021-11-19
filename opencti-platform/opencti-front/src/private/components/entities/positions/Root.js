@@ -111,7 +111,13 @@ class RootPosition extends Component {
                       exact
                       path="/dashboard/entities/positions/:positionId"
                       render={(routeProps) => (
-                        <Position {...routeProps} position={props.position} />
+                        <Position
+                          {...routeProps}
+                          position={props.position}
+                          enableReferences={props.settings.platform_enable_reference?.includes(
+                            'Position',
+                          )}
+                        />
                       )}
                     />
                     <Route
@@ -140,6 +146,9 @@ class RootPosition extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.position}
                             PopoverComponent={<PositionPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Position',
+                            )}
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
@@ -158,6 +167,9 @@ class RootPosition extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.position}
                             PopoverComponent={<PositionPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Position',
+                            )}
                           />
                           <FileManager
                             {...routeProps}
@@ -177,6 +189,9 @@ class RootPosition extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.position}
                             PopoverComponent={<PositionPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Position',
+                            )}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}

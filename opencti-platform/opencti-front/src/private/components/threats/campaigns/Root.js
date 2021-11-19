@@ -53,6 +53,9 @@ const campaignQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
+    settings {
+      platform_enable_reference
+    }
   }
 `;
 
@@ -114,7 +117,13 @@ class RootCampaign extends Component {
                       exact
                       path="/dashboard/threats/campaigns/:campaignId"
                       render={(routeProps) => (
-                        <Campaign {...routeProps} campaign={props.campaign} />
+                        <Campaign
+                          {...routeProps}
+                          campaign={props.campaign}
+                          enableReferences={props.settings.platform_enable_reference?.includes(
+                            'Campaign',
+                          )}
+                        />
                       )}
                     />
                     <Route
@@ -143,6 +152,9 @@ class RootCampaign extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.campaign}
                             PopoverComponent={<CampaignPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Campaign',
+                            )}
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
@@ -208,6 +220,9 @@ class RootCampaign extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.campaign}
                             PopoverComponent={<CampaignPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Campaign',
+                            )}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}
