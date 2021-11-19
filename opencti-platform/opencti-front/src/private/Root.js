@@ -37,6 +37,9 @@ const rootPrivateQuery = graphql`
       ...AppThemeProvider_settings
       ...AppIntlProvider_settings
     }
+    about {
+      version
+    }
   }
 `;
 
@@ -64,9 +67,13 @@ const Root = () => (
       render={({ props }) => {
         if (props) {
           return (
-            <UserContext.Provider value={
-              { me: props.me, settings: props.settings, helper: buildHelper(props.settings) }
-            }>
+            <UserContext.Provider
+              value={{
+                me: props.me,
+                settings: props.settings,
+                helper: buildHelper(props.settings),
+              }}
+            >
               <ConnectedThemeProvider settings={props.settings}>
                 <CssBaseline />
                 <ConnectedIntlProvider settings={props.settings}>

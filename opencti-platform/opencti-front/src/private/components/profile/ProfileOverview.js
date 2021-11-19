@@ -77,7 +77,7 @@ const passwordValidation = (t) => Yup.object().shape({
 
 const ProfileOverviewComponent = (props) => {
   const {
-    t, me, classes, fldt, subscriptionStatus,
+    t, me, classes, fldt, subscriptionStatus, about,
   } = props;
   const external = false;
   const initialValues = pick(
@@ -346,6 +346,14 @@ const ProfileOverviewComponent = (props) => {
             </Typography>
             <div style={{ marginTop: 20 }}>
               <Typography variant="h4" gutterBottom={true}>
+                {t('OpenCTI version')}
+              </Typography>
+              <pre>{about.version}</pre>
+              <Typography
+                variant="h4"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('API key')}
               </Typography>
               <pre>{me.api_token}</pre>
@@ -354,7 +362,7 @@ const ProfileOverviewComponent = (props) => {
                   variant="contained"
                   color="primary"
                   onClick={renewToken}
-                  style={{ marginBottom: 20 }}
+                  style={{ marginTop: 20 }}
                 >
                   {t('Renew')}
                 </Button>
@@ -531,6 +539,11 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
           }
         }
       }
+    }
+  `,
+  about: graphql`
+    fragment ProfileOverview_about on AppInfo {
+      version
     }
   `,
 });

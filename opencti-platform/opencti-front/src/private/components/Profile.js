@@ -19,6 +19,9 @@ const profileQuery = graphql`
     me {
       ...ProfileOverview_me
     }
+    about {
+      ...ProfileOverview_about
+    }
     settings {
       platform_modules {
         id
@@ -46,6 +49,7 @@ class Profile extends Component {
               return (
                 <ProfileOverview
                   me={props.me}
+                  about={props.about}
                   subscriptionStatus={subscriptionStatus}
                 />
               );

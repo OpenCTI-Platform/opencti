@@ -398,7 +398,11 @@ const StixCoreRelationshipEditionContainer = ({
           onSubmit={onSubmit}
         >
           {({
-            submitForm, isSubmitting, validateForm, setFieldValue,
+            submitForm,
+            isSubmitting,
+            validateForm,
+            setFieldValue,
+            values,
           }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <ConfidenceField
@@ -525,6 +529,8 @@ const StixCoreRelationshipEditionContainer = ({
                   submitForm={submitForm}
                   disabled={isSubmitting}
                   validateForm={validateForm}
+                  setFieldValue={setFieldValue}
+                  values={values}
                   id={stixCoreRelationship.id}
                 />
               )}

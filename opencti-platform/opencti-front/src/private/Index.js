@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
 }));
 
-const Index = (me) => {
+const Index = ({ me }) => {
   const classes = useStyles();
   return (
     <div className={classes.root}>
