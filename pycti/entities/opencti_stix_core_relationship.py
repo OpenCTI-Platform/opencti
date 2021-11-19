@@ -1061,30 +1061,6 @@ class StixCoreRelationship:
         update = kwargs.get("update", False)
         default_date = kwargs.get("defaultDate", False)
         if stix_relation is not None:
-
-            # TODO: Compatibility with OpenCTI 3.X to be REMOVED
-            if "confidence" not in stix_relation:
-                stix_relation["confidence"] = (
-                    stix_relation["x_opencti_weight"]
-                    if "x_opencti_weight" in stix_relation
-                    else 0
-                )
-            if "start_time" not in stix_relation:
-                stix_relation["start_time"] = (
-                    stix_relation["x_opencti_first_seen"]
-                    if "x_opencti_first_seen" in stix_relation
-                    else None
-                )
-            if "stop_time" not in stix_relation:
-                stix_relation["stop_time"] = (
-                    stix_relation["x_opencti_last_seen"]
-                    if "x_opencti_last_seen" in stix_relation
-                    else None
-                )
-            if stix_relation["relationship_type"] == "gathering":
-                stix_relation["relationship_type"] = "part-of"
-            elif stix_relation["relationship_type"] == "localization":
-                stix_relation["relationship_type"] = "located-at"
             source_ref = stix_relation["source_ref"]
             target_ref = stix_relation["target_ref"]
             return self.create(
