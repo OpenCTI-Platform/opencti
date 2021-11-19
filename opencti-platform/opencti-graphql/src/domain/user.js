@@ -586,13 +586,14 @@ export const authenticateUser = async (req, user, provider, token = '') => {
 const AUTH_BEARER = 'Bearer';
 const AUTH_BASIC = 'BasicAuth';
 export const authenticateUserFromRequest = async (req, res) => {
-  const auth = req?.session?.user;
+  const auth = req.session?.user;
+  // If user already have a session
   if (auth) {
     // User already identified, we need to enforce the session validity
-    const { provider, token } = req?.session.session_provider;
+    const { provider, token } = req.session.session_provider;
     // For bearer, validate that the bearer is the same than the session
     if (provider === AUTH_BEARER) {
-      const currentToken = extractTokenFromBearer(req?.headers.authorization);
+      const currentToken = extractTokenFromBearer(req.headers.authorization);
       if (currentToken !== token) {
         // Session doesnt match, kill the current session and try to re auth
         await logout(auth, req, res);
@@ -601,7 +602,7 @@ export const authenticateUserFromRequest = async (req, res) => {
     }
     // For basic auth, validate that user and password match the session
     if (provider === AUTH_BASIC) {
-      const { username, password } = extractInfoFromBasicAuth(req?.headers.authorization);
+      const { username, password } = extractInfoFromBasicAuth(req.headers.authorization);
       const sameUsername = username === auth.user_email;
       const sessionPassword = auth.session_password;
       const passwordCompare = isNotEmptyField(password) && isNotEmptyField(sessionPassword);
@@ -618,17 +619,17 @@ export const authenticateUserFromRequest = async (req, res) => {
   }
   // If user not identified, try to extract token from bearer
   let loginProvider = AUTH_BEARER;
-  let tokenUUID = extractTokenFromBearer(req?.headers.authorization);
+  let tokenUUID = extractTokenFromBearer(req.headers.authorization);
   // If no bearer specified, try with basic auth
   if (!tokenUUID) {
     loginProvider = AUTH_BASIC;
-    tokenUUID = await extractTokenFromBasicAuth(req?.headers.authorization);
+    tokenUUID = await extractTokenFromBasicAuth(req.headers.authorization);
   }
   // Get user from the token if found
   if (tokenUUID) {
     try {
       const user = await resolveUserByToken(tokenUUID);
-      if (req && user) {
+      if (user) {
         await authenticateUser(req, user, loginProvider, tokenUUID);
       }
       return user;
