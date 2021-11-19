@@ -33,6 +33,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import * as R from 'ramda';
+import Slide from '@material-ui/core/Slide';
 import { QueryRenderer } from '../../relay/environment';
 import {
   yearsAgo, dayAgo, now, monthsAgo,
@@ -49,6 +51,16 @@ import StixCoreRelationshipsHorizontalBars from './common/stix_core_relationship
 import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
 import { computeLevel } from '../../utils/Number';
 import ItemMarkings from '../../components/ItemMarkings';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../utils/ListParameters';
+import DashboardSettings from './DashboardSettings';
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   root: {
@@ -159,6 +171,7 @@ const dashboardStixMetaRelationshipsDistributionQuery = graphql`
     $toTypes: [String]
     $startDate: DateTime
     $endDate: DateTime
+    $dateAttribute: String
     $limit: Int
   ) {
     stixMetaRelationshipsDistribution(
@@ -168,6 +181,7 @@ const dashboardStixMetaRelationshipsDistributionQuery = graphql`
       toTypes: $toTypes
       startDate: $startDate
       endDate: $endDate
+      dateAttribute: $dateAttribute
       limit: $limit
     ) {
       label
@@ -346,6 +360,31 @@ const dashboardStixCyberObservablesNumberQuery = graphql`
 `;
 
 class Dashboard extends Component {
+  constructor(props) {
+    super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      'view-dashboard',
+    );
+    this.state = {
+      timeField: R.propOr('technical', 'timeField', params),
+    };
+  }
+
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      'view-dashboard',
+      this.state,
+    );
+  }
+
+  handleChangeTimeField(event) {
+    this.setState({ timeField: event.target.value }, () => this.saveView());
+  }
+
   tickFormatter(title) {
     return truncate(this.props.t(`entity_${title}`), 10);
   }
@@ -354,6 +393,7 @@ class Dashboard extends Component {
     const {
       t, n, fsd, mtd, classes, theme,
     } = this.props;
+    const { timeField } = this.state;
     return (
       <div className={classes.root}>
         <Security
@@ -513,6 +553,8 @@ class Dashboard extends Component {
                     startDate: monthsAgo(3),
                     endDate: now(),
                     limit: 9,
+                    dateAttribute:
+                      timeField === 'functional' ? 'start_time' : 'created_at',
                   }}
                   render={({ props }) => {
                     if (
@@ -674,7 +716,9 @@ class Dashboard extends Component {
                 field="internal_id"
                 startDate={monthsAgo(3)}
                 endDate={now()}
-                dateAttribute="created_at"
+                dateAttribute={
+                  timeField === 'functional' ? 'start_time' : 'created_at'
+                }
               />
             </Grid>
             <Grid item={true} xs={6}>
@@ -695,7 +739,8 @@ class Dashboard extends Component {
                     toTypes: ['Country'],
                     startDate: monthsAgo(3),
                     endDate: now(),
-                    dateAttribute: 'created_at',
+                    dateAttribute:
+                      timeField === 'functional' ? 'start_time' : 'created_at',
                     limit: 20,
                   }}
                   render={({ props }) => {
@@ -973,6 +1018,10 @@ class Dashboard extends Component {
               </Paper>
             </Grid>
           </Grid>
+          <DashboardSettings
+            handleChangeTimeField={this.handleChangeTimeField.bind(this)}
+            timeField={timeField}
+          />
         </Security>
       </div>
     );
