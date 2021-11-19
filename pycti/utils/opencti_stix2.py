@@ -1068,7 +1068,7 @@ class OpenCTIStix2:
         if (
             self.check_max_marking_definition(
                 max_marking_definition_entity,
-                entity["objectMarking"] if "objectMarking" in entity else None,
+                entity["objectMarking"] if "objectMarking" in entity else [],
             )
             is False
         ):
