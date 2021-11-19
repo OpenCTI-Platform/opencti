@@ -79,6 +79,11 @@
     "lock_key": "sync_manager_lock",
     "interval": 10000
   },
+  "retention_manager": {
+    "enabled": true,
+    "lock_key": "retention_manager_lock",
+    "interval": 10000
+  },
   "redis": {
     "namespace": "",
     "hostname": "localhost",
