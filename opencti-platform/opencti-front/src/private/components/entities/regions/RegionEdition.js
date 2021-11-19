@@ -17,6 +17,7 @@ const styles = (theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
+    zIndex: 400,
   },
   drawerPaper: {
     minHeight: '100vh',
