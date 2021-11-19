@@ -7,7 +7,10 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRightOutlined, PersonOutlined } from '@material-ui/icons';
+import {
+  KeyboardArrowRightOutlined,
+  StorageOutlined,
+} from '@material-ui/icons';
 import { compose } from 'ramda';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
@@ -57,7 +60,7 @@ class SystemLineComponent extends Component {
         to={`/dashboard/entities/systems/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <PersonOutlined />
+          <StorageOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
