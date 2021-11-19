@@ -16,6 +16,7 @@ import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
+import ItemStatus from '../../../../components/ItemStatus';
 
 const styles = (theme) => ({
   item: {
@@ -96,6 +97,16 @@ class StixCoreObjectOrStixCoreRelationshipContainerLineComponent extends Compone
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.status_id.width }}
+              >
+                <ItemStatus
+                  status={node.status}
+                  variant="inList"
+                  disabled={!node.workflowEnabled}
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.objectMarking.width }}
               >
                 {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
@@ -135,7 +146,16 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
     node: graphql`
         fragment StixCoreObjectOrStixCoreRelationshipContainerLine_node on Container {
           id
+          workflowEnabled
           entity_type
+          status {
+            id
+            order
+            template {
+              name
+              color
+            }
+          }
           ... on Note {
             attribute_abstract
             content

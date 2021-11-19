@@ -207,12 +207,16 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       },
       created: {
         label: 'Date',
-        width: '15%',
+        width: '10%',
+        isSortable: true,
+      },
+      status_id: {
+        label: 'Status',
+        width: '10%',
         isSortable: true,
       },
       objectMarking: {
         label: 'Marking',
-        width: '15%',
         isSortable: isRuntimeSort,
       },
     };
@@ -255,13 +259,15 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
             paginationOptions={paginationOptions}
             numberOfElements={numberOfElements}
             availableFilterKeys={[
+              'report_types',
+              'container_types',
+              'confidence_gt',
+              'status_id',
               'labelledBy',
               'createdBy',
               'markedBy',
               'created_start_date',
               'created_end_date',
-              'container_type',
-              'report_types',
             ]}>
             <QueryRenderer
               query={stixCoreObjectOrStixCoreRelationshipContainersLinesQuery}

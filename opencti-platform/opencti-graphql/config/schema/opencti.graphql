@@ -2016,6 +2016,8 @@ interface Container {
     types: [String]
     all: Boolean
   ): StixObjectOrStixRelationshipConnection
+  workflowEnabled: Boolean
+  status: Status
 }
 
 ################ Notes
