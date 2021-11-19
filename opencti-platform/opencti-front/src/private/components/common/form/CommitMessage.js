@@ -42,7 +42,7 @@ class CommitMessage extends Component {
     } = this.props;
     return (
       <div>
-        {handleClose === null && (
+        {typeof handleClose !== 'function' && (
           <Button
             variant="contained"
             color="primary"
@@ -53,7 +53,7 @@ class CommitMessage extends Component {
           </Button>
         )}
         <Dialog
-          open={handleClose === null ? this.state.open : open}
+          open={typeof handleClose !== 'function' ? this.state.open : open}
           onClose={handleClose || this.handleClose.bind(this)}
           fullWidth={true}
         >

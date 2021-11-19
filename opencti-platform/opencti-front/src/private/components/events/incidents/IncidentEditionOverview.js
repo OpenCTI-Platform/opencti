@@ -4,16 +4,6 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import {
-  assoc,
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pick,
-  difference,
-  head,
-} from 'ramda';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
@@ -140,8 +130,10 @@ class IncidentEditionOverviewComponent extends Component {
 
   onSubmit(values, { setSubmitting }) {
     const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
       R.dissoc('message'),
+      R.dissoc('references'),
       R.assoc('status_id', values.status_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -158,6 +150,7 @@ class IncidentEditionOverviewComponent extends Component {
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
       },
       setSubmitting,
       onCompleted: () => {
@@ -201,36 +194,33 @@ class IncidentEditionOverviewComponent extends Component {
   handleChangeObjectMarking(name, values) {
     if (!this.props.enableReferences) {
       const { incident } = this.props;
-      const currentMarkingDefinitions = pipe(
-        pathOr([], ['objectMarking', 'edges']),
-        map((n) => ({
+      const currentMarkingDefinitions = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
           label: n.node.definition,
           value: n.node.id,
         })),
       )(incident);
-
-      const added = difference(values, currentMarkingDefinitions);
-      const removed = difference(currentMarkingDefinitions, values);
-
+      const added = R.difference(values, currentMarkingDefinitions);
+      const removed = R.difference(currentMarkingDefinitions, values);
       if (added.length > 0) {
         commitMutation({
           mutation: incidentMutationRelationAdd,
           variables: {
             id: this.props.incident.id,
             input: {
-              toId: head(added).value,
+              toId: R.head(added).value,
               relationship_type: 'object-marking',
             },
           },
         });
       }
-
       if (removed.length > 0) {
         commitMutation({
           mutation: incidentMutationRelationDelete,
           variables: {
             id: this.props.incident.id,
-            toId: head(removed).value,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
@@ -243,42 +233,46 @@ class IncidentEditionOverviewComponent extends Component {
       t, incident, context, enableReferences,
     } = this.props;
     const isInferred = incident.is_inferred;
-    const createdBy = pathOr(null, ['createdBy', 'name'], incident) === null
+    const createdBy = R.pathOr(null, ['createdBy', 'name'], incident) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'name'], incident),
-        value: pathOr(null, ['createdBy', 'id'], incident),
+        label: R.pathOr(null, ['createdBy', 'name'], incident),
+        value: R.pathOr(null, ['createdBy', 'id'], incident),
       };
-    const status = pathOr(null, ['status', 'template', 'name'], incident) === null
+    const status = R.pathOr(null, ['status', 'template', 'name'], incident) === null
       ? ''
       : {
         label: t(
-          `status_${pathOr(null, ['status', 'template', 'name'], incident)}`,
+          `status_${R.pathOr(
+            null,
+            ['status', 'template', 'name'],
+            incident,
+          )}`,
         ),
-        color: pathOr(null, ['status', 'template', 'color'], incident),
-        value: pathOr(null, ['status', 'id'], incident),
-        order: pathOr(null, ['status', 'order'], incident),
+        color: R.pathOr(null, ['status', 'template', 'color'], incident),
+        value: R.pathOr(null, ['status', 'id'], incident),
+        order: R.pathOr(null, ['status', 'order'], incident),
       };
-    const killChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
+    const killChainPhases = R.pipe(
+      R.pathOr([], ['killChainPhases', 'edges']),
+      R.map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
       })),
     )(incident);
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
+    const objectMarking = R.pipe(
+      R.pathOr([], ['objectMarking', 'edges']),
+      R.map((n) => ({
         label: n.node.definition,
         value: n.node.id,
       })),
     )(incident);
-    const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('killChainPhases', killChainPhases),
-      assoc('objectMarking', objectMarking),
-      assoc('status_id', status),
-      pick([
+    const initialValues = R.pipe(
+      R.assoc('createdBy', createdBy),
+      R.assoc('killChainPhases', killChainPhases),
+      R.assoc('objectMarking', objectMarking),
+      R.assoc('status_id', status),
+      R.pick([
         'name',
         'confidence',
         'description',
@@ -440,7 +434,7 @@ const IncidentEditionOverview = createFragmentContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(IncidentEditionOverview);

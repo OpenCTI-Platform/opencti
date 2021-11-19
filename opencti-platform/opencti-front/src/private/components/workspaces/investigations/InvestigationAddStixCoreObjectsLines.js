@@ -390,6 +390,7 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
                 content
               }
               ... on ObservedData {
+                name
                 first_observed
                 last_observed
               }

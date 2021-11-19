@@ -4,17 +4,8 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import {
-  assoc,
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pick,
-  difference,
-  head,
-} from 'ramda';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -23,6 +14,10 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import DatePickerField from '../../../../components/DatePickerField';
+import { adaptFieldValue } from '../../../../utils/String';
+import CommitMessage from '../../common/form/CommitMessage';
+import StatusField from '../../common/form/StatusField';
+import { parse } from '../../../../utils/Time';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -53,9 +48,15 @@ export const observedDataMutationFieldPatch = graphql`
   mutation ObservedDataEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
   ) {
     observedDataEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...ObservedDataEditionOverview_observedData
       }
     }
@@ -125,19 +126,58 @@ class ObservedDataEditionOverviewComponent extends Component {
     });
   }
 
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.dissoc('references'),
+      R.assoc('first_observed', parse(values.first_observed).format()),
+      R.assoc('last_observed', parse(values.last_observed).format()),
+      R.assoc('status_id', values.status_id?.value),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: observedDataMutationFieldPatch,
+      variables: {
+        id: this.props.observedData.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
   handleSubmitField(name, value) {
-    observedDataValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: observedDataMutationFieldPatch,
-          variables: {
-            id: this.props.observedData.id,
-            input: { key: name, value: value || '' },
-          },
-        });
-      })
-      .catch(() => false);
+    if (!this.props.enableReferences) {
+      observedDataValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: observedDataMutationFieldPatch,
+            variables: {
+              id: this.props.observedData.id,
+              input: {
+                key: name,
+                value: value || '',
+              },
+            },
+          });
+        })
+        .catch(() => false);
+    }
   }
 
   handleChangeCreatedBy(name, value) {
@@ -153,62 +193,63 @@ class ObservedDataEditionOverviewComponent extends Component {
   }
 
   handleChangeObjectMarking(name, values) {
-    const { observedData } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(observedData);
-
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: observedDataMutationRelationAdd,
-        variables: {
-          id: this.props.observedData.id,
-          input: {
-            toId: head(added).value,
+    if (!this.props.enableReferences) {
+      const { observedData } = this.props;
+      const currentMarkingDefinitions = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(observedData);
+      const added = R.difference(values, currentMarkingDefinitions);
+      const removed = R.difference(currentMarkingDefinitions, values);
+      if (added.length > 0) {
+        commitMutation({
+          mutation: observedDataMutationRelationAdd,
+          variables: {
+            id: this.props.observedData.id,
+            input: {
+              toId: R.head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: observedDataMutationRelationDelete,
+          variables: {
+            id: this.props.observedData.id,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: observedDataMutationRelationDelete,
-        variables: {
-          id: this.props.observedData.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
+        });
+      }
     }
   }
 
   render() {
-    const { t, observedData, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], observedData) === null
+    const {
+      t, observedData, context, enableReferences,
+    } = this.props;
+    const createdBy = R.pathOr(null, ['createdBy', 'name'], observedData) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'name'], observedData),
-        value: pathOr(null, ['createdBy', 'id'], observedData),
+        label: R.pathOr(null, ['createdBy', 'name'], observedData),
+        value: R.pathOr(null, ['createdBy', 'id'], observedData),
       };
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
+    const objectMarking = R.pipe(
+      R.pathOr([], ['objectMarking', 'edges']),
+      R.map((n) => ({
         label: n.node.definition,
         value: n.node.id,
       })),
     )(observedData);
-    const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('objectMarking', objectMarking),
-      pick([
+    const initialValues = R.pipe(
+      R.assoc('createdBy', createdBy),
+      R.assoc('objectMarking', objectMarking),
+      R.pick([
         'first_observed',
         'last_observed',
         'number_observed',
@@ -222,8 +263,15 @@ class ObservedDataEditionOverviewComponent extends Component {
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={observedDataValidation(t)}
+        onSubmit={this.onSubmit.bind(this)}
       >
-        {({ setFieldValue }) => (
+        {({
+          submitForm,
+          isSubmitting,
+          validateForm,
+          setFieldValue,
+          values,
+        }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
@@ -282,6 +330,22 @@ class ObservedDataEditionOverviewComponent extends Component {
                 editContext={context}
                 variant="edit"
               />
+              {observedData.workflowEnabled && (
+                <StatusField
+                  name="status_id"
+                  type="Observed-Data"
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onChange={this.handleSubmitField.bind(this)}
+                  setFieldValue={setFieldValue}
+                  style={{ marginTop: 20 }}
+                  helpertext={
+                    <SubscriptionFocus
+                      context={context}
+                      fieldName="status_id"
+                    />
+                  }
+                />
+              )}
               <CreatedByField
                 name="createdBy"
                 style={{ marginTop: 20, width: '100%' }}
@@ -302,6 +366,15 @@ class ObservedDataEditionOverviewComponent extends Component {
                 }
                 onChange={this.handleChangeObjectMarking.bind(this)}
               />
+              {enableReferences && (
+                <CommitMessage
+                  submitForm={submitForm}
+                  disabled={isSubmitting}
+                  validateForm={validateForm}
+                  setFieldValue={setFieldValue}
+                  values={values}
+                />
+              )}
             </Form>
           </div>
         )}
@@ -315,6 +388,7 @@ ObservedDataEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   observedData: PropTypes.object,
+  enableReferences: PropTypes.bool,
   context: PropTypes.array,
 };
 
@@ -344,12 +418,14 @@ const ObservedDataEditionOverview = createFragmentContainer(
             }
           }
         }
+        workflowEnabled
+        is_inferred
       }
     `,
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(ObservedDataEditionOverview);
