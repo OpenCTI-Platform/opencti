@@ -71,17 +71,23 @@ class StixCoreObjectStixCyberObservableLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
+                style={{ width: dataColumns.relationship_type.width }}
               >
-                {isTo
-                  ? t(`entity_${node.to.entity_type}`)
-                  : t(`entity_${node.from.entity_type}`)}
+                {t(`relationship_${node.relationship_type}`)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.observable_value.width }}
               >
                 {isTo ? node.to.observable_value : node.from.observable_value}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.entity_type.width }}
+              >
+                {isTo
+                  ? t(`entity_${node.to.entity_type}`)
+                  : t(`entity_${node.from.entity_type}`)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -132,6 +138,7 @@ const StixCoreObjectStixCyberObservableLineFragment = createFragmentContainer(
     node: graphql`
       fragment StixCoreObjectStixCyberObservableLine_node on StixCoreRelationship {
         id
+        relationship_type
         confidence
         start_time
         stop_time
@@ -177,7 +184,7 @@ class StixCoreObjectStixCyberObservableLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
+                style={{ width: dataColumns.relationship_type.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -189,6 +196,17 @@ class StixCoreObjectStixCyberObservableLineDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.observable_value.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.entity_type.width }}
               >
                 <Skeleton
                   animation="wave"

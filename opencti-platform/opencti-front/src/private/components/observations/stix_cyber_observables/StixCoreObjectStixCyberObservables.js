@@ -79,15 +79,20 @@ class StixCoreObjectStixCyberObservables extends Component {
   buildColumns(helper) {
     const isRuntimeSort = helper.isRuntimeFieldEnable();
     return {
+      relationship_type: {
+        label: 'Relationship type',
+        width: '15%',
+        isSortable: true,
+      },
+      observable_value: {
+        label: 'Value',
+        width: '25%',
+        isSortable: isRuntimeSort,
+      },
       entity_type: {
         label: 'Type',
         width: '15%',
         isSortable: false,
-      },
-      observable_value: {
-        label: 'Value',
-        width: '35%',
-        isSortable: isRuntimeSort,
       },
       start_time: {
         label: 'First obs.',
