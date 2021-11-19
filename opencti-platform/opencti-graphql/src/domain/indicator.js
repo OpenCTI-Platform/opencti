@@ -46,7 +46,7 @@ const OpenCTITimeToLive = {
     'TLP:RED-yes': 120,
     'TLP:RED-no': 120,
   },
-  URL: {
+  Url: {
     'TLP:WHITE-no': 60,
     'TLP:WHITE-yes': 15,
     'TLP:GREEN-no': 60,
@@ -75,9 +75,9 @@ const computeValidUntil = async (user, indicator) => {
   }
   // get the highest marking definition
   let markingDefinition = 'TLP:WHITE';
-  if (indicator.markingDefinitions && indicator.markingDefinitions.length > 0) {
+  if (indicator.objectMarking && indicator.objectMarking.length > 0) {
     const markingDefinitions = await Promise.all(
-      indicator.markingDefinitions.map((markingDefinitionId) => {
+      indicator.objectMarking.map((markingDefinitionId) => {
         return findMarkingDefinitionById(user, markingDefinitionId);
       })
     );
