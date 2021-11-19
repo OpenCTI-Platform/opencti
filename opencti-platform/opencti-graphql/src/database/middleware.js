@@ -2978,7 +2978,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
   // Check if deletion is really targeting an inference
   const isInferred = isInferredIndex(instance._index);
   if (!isInferred) {
-    throw new UnsupportedError('Instance is not inferred, cant be deleted');
+    throw UnsupportedError('Instance is not inferred, cant be deleted');
   }
   // Delete inference
   const fromRule = RULE_PREFIX + rule;

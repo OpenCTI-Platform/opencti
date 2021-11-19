@@ -512,10 +512,10 @@ export const logout = async (user, req, res) => {
   await delUserContext(user);
   return new Promise((resolve, reject) => {
     res.clearCookie(OPENCTI_SESSION);
-    // req.session.destroy();
     req.session.regenerate((err) => {
       if (err) {
         reject(err);
+        return;
       }
       logAudit.info(user, LOGOUT_ACTION);
       resolve(user.id);
@@ -589,7 +589,7 @@ export const authenticateUserFromRequest = async (req, res) => {
   const auth = req?.session?.user;
   if (auth) {
     // User already identified, we need to enforce the session validity
-    const { provider, token } = req.session.session_provider;
+    const { provider, token } = req?.session.session_provider;
     // For bearer, validate that the bearer is the same than the session
     if (provider === AUTH_BEARER) {
       const currentToken = extractTokenFromBearer(req?.headers.authorization);
@@ -601,7 +601,7 @@ export const authenticateUserFromRequest = async (req, res) => {
     }
     // For basic auth, validate that user and password match the session
     if (provider === AUTH_BASIC) {
-      const { username, password } = await extractInfoFromBasicAuth(req?.headers.authorization);
+      const { username, password } = extractInfoFromBasicAuth(req?.headers.authorization);
       const sameUsername = username === auth.user_email;
       const sessionPassword = auth.session_password;
       const passwordCompare = isNotEmptyField(password) && isNotEmptyField(sessionPassword);
