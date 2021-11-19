@@ -8036,6 +8036,7 @@ enum StixCoreRelationshipsOrdering {
   toName
   toValidFrom
   toValidUntil
+  toObservableValue
   toPatternType
   status_id
 }

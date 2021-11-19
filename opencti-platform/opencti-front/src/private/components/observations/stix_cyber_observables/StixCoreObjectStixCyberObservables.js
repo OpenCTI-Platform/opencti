@@ -76,8 +76,7 @@ class StixCoreObjectStixCyberObservables extends Component {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  buildColumns(helper) {
-    const isRuntimeSort = helper.isRuntimeFieldEnable();
+  buildColumns() {
     return {
       relationship_type: {
         label: 'Relationship type',
@@ -87,7 +86,7 @@ class StixCoreObjectStixCyberObservables extends Component {
       observable_value: {
         label: 'Value',
         width: '25%',
-        isSortable: isRuntimeSort,
+        isSortable: false,
       },
       entity_type: {
         label: 'Type',
@@ -116,10 +115,10 @@ class StixCoreObjectStixCyberObservables extends Component {
     const { stixCoreObjectLink, isRelationReversed } = this.props;
     return (
         <UserContext.Consumer>
-          {({ helper }) => <ListLines
+          {() => <ListLines
             sortBy={sortBy}
             orderAsc={orderAsc}
-            dataColumns={this.buildColumns(helper)}
+            dataColumns={this.buildColumns()}
             handleSort={this.handleSort.bind(this)}
             handleSearch={this.handleSearch.bind(this)}
             displayImport={true}
@@ -133,7 +132,7 @@ class StixCoreObjectStixCyberObservables extends Component {
                   data={props}
                   paginationOptions={paginationOptions}
                   stixCoreObjectLink={stixCoreObjectLink}
-                  dataColumns={this.buildColumns(helper)}
+                  dataColumns={this.buildColumns()}
                   initialLoading={props === null}
                   setNumberOfElements={this.setNumberOfElements.bind(this)}
                   isRelationReversed={isRelationReversed}
