@@ -69,7 +69,7 @@ const styles = (theme) => ({
 class RetentionLineComponent extends Component {
   render() {
     const {
-      t, classes, node, dataColumns, paginationOptions,
+      t, classes, node, dataColumns, paginationOptions, nsdt,
     } = this.props;
     const filters = JSON.parse(node.filters);
     const filterPairs = toPairs(filters);
@@ -152,7 +152,7 @@ class RetentionLineComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.last_execution_date.width }}
               >
-                {node.last_execution_date}
+                {nsdt(node.last_execution_date)}
               </div>
             </div>
           }

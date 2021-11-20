@@ -10,11 +10,13 @@ import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import Chip from '@material-ui/core/Chip';
 import * as R from 'ramda';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters, { isUniqFilter } from '../../common/lists/Filters';
-import { truncate } from '../../../../utils/String';
+import { adaptFieldValue, truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   header: {
@@ -83,59 +85,49 @@ const RetentionEditionContainer = (props) => {
   } = props;
   const initialValues = R.pickAll(['name', 'max_retention'], retentionRule);
   const [filters, setFilters] = useState(JSON.parse(props.retentionRule.filters));
-  const handleSubmitField = (name, value) => {
-    retentionValidation(props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: retentionMutationFieldPatch,
-          variables: {
-            id: props.retentionRule.id,
-            input: { key: name, value: value || '' },
-          },
-        });
-      })
-      .catch(() => false);
-  };
-  const handleAddFilter = (key, id, value) => {
-    let newFilters;
-    if (filters[key] && filters[key].length > 0) {
-      newFilters = R.assoc(
-        key,
-        isUniqFilter(key)
-          ? [{ id, value }]
-          : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-        filters,
-      );
-    } else {
-      newFilters = R.assoc(key, [{ id, value }], filters);
-    }
-    const jsonFilters = JSON.stringify(newFilters);
+  const onSubmit = (values, { setSubmitting }) => {
+    const inputValues = R.pipe(
+      R.assoc('filters', JSON.stringify(filters)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
     commitMutation({
       mutation: retentionMutationFieldPatch,
       variables: {
         id: props.retentionRule.id,
-        input: { key: 'filters', value: jsonFilters },
+        input: inputValues,
       },
+      setSubmitting,
       onCompleted: () => {
-        setFilters(newFilters);
+        setSubmitting(false);
+        handleClose();
       },
     });
   };
+  const handleAddFilter = (key, id, value) => {
+    if (filters[key]) {
+      if (filters[key].length > 0) {
+        setFilters(
+          R.assoc(
+            key,
+            isUniqFilter(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
+            filters,
+          ),
+        );
+      } else {
+        setFilters(R.assoc(key, [{ id, value }], filters));
+      }
+    } else {
+      setFilters(R.assoc(key, [{ id, value }], filters));
+    }
+  };
   const handleRemoveFilter = (key) => {
-    const newFilters = R.dissoc(key, filters);
-    const jsonFilters = JSON.stringify(newFilters);
-    const variables = {
-      id: props.retentionRule.id,
-      input: { key: 'filters', value: jsonFilters },
-    };
-    commitMutation({
-      mutation: retentionMutationFieldPatch,
-      variables,
-      onCompleted: () => {
-        setFilters(newFilters);
-      },
-    });
+    setFilters(R.dissoc(key, filters));
   };
   return (
     <div>
@@ -154,15 +146,15 @@ const RetentionEditionContainer = (props) => {
           enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={retentionValidation(t)}
+          onSubmit={onSubmit}
         >
-          {() => (
+          {({ isSubmitting, submitForm }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
                 name="name"
                 label={t('Name')}
                 fullWidth={true}
-                onSubmit={handleSubmitField}
               />
               <Field
                 component={TextField}
@@ -170,7 +162,6 @@ const RetentionEditionContainer = (props) => {
                 label={t('Maximum retention days')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
-                onSubmit={handleSubmitField}
               />
               <div style={{ marginTop: 35 }}>
                 <Filters
@@ -236,6 +227,17 @@ const RetentionEditionContainer = (props) => {
                   );
                 }, R.toPairs(filters))}
               </div>
+              <DialogActions>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    style={{ marginTop: 20, float: 'right' }}
+                >
+                  {t('Update')}
+                </Button>
+              </DialogActions>
             </Form>
           )}
         </Formik>
