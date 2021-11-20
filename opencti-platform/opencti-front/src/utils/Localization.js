@@ -373,7 +373,8 @@ const i18n = {
       'Create a TAXII collection': 'Créer une collection TAXII',
       'Update a TAXII collection': 'Modifier une collection TAXII',
       'Create a live stream': 'Créer un stream live',
-      'Let the field empty to grant all users': 'Laissez le champ vide pour autoriser tous les utilisateurs',
+      'Let the field empty to grant all users':
+        'Laissez le champ vide pour autoriser tous les utilisateurs',
       'Update a live stream': 'Modifier un stream live',
       'Add external references': 'Ajouter des références externes',
       'Add notes': 'Ajouter des notes',
@@ -777,6 +778,7 @@ const i18n = {
         "Ce secteur n'a aucune description.",
       'Relationship type': 'Type de relation',
       'Creation date': 'Date de création',
+      'Created the': 'Créé le',
       'Creation date (in this platform)':
         'Date de création (dans la plateforme)',
       'Technical date': 'Date technique',

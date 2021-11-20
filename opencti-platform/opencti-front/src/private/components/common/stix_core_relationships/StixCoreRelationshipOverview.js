@@ -599,6 +599,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               id
               relationship_type
               created_at
+              start_time
+              stop_time
+              created
               from {
                 ... on BasicObject {
                   id
@@ -616,6 +619,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on StixCoreRelationship {
                   relationship_type
                   created_at
+                  start_time
+                  stop_time
+                  created
                 }
                 ... on AttackPattern {
                   name
@@ -817,6 +823,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   id
                   entity_type
                   relationship_type
+                  start_time
+                  stop_time
+                  created
                   from {
                     ... on BasicObject {
                       id
@@ -831,6 +840,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     }
                     ... on StixCoreRelationship {
                       created_at
+                      start_time
+                      stop_time
+                      created
                     }
                     ... on AttackPattern {
                       name
@@ -904,6 +916,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     }
                     ... on StixCoreRelationship {
                       created_at
+                      start_time
+                      stop_time
+                      created
                     }
                     ... on AttackPattern {
                       name
@@ -1118,6 +1133,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on StixCoreRelationship {
                   created_at
                   relationship_type
+                  start_time
+                  stop_time
+                  created
                 }
                 ... on AttackPattern {
                   name
@@ -1319,6 +1337,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   id
                   entity_type
                   relationship_type
+                  start_time
+                  stop_time
+                  created
                   from {
                     ... on BasicObject {
                       id
@@ -1335,6 +1356,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     }
                     ... on StixCoreRelationship {
                       created_at
+                      start_time
+                      stop_time
+                      created
                     }
                     ... on AttackPattern {
                       name
@@ -1549,6 +1573,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     }
                     ... on StixCoreRelationship {
                       created_at
+                      start_time
+                      stop_time
+                      created
                     }
                     ... on AttackPattern {
                       name
@@ -1770,6 +1797,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on StixCoreRelationship {
                   relationship_type
                   created_at
+                  start_time
+                  stop_time
+                  created
                 }
                 ... on AttackPattern {
                   name
@@ -1971,6 +2001,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   id
                   entity_type
                   relationship_type
+                  start_time
+                  stop_time
+                  created
                   from {
                     ... on BasicObject {
                       id
@@ -1985,6 +2018,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     }
                     ... on StixCoreRelationship {
                       created_at
+                      start_time
+                      stop_time
+                      created
                     }
                     ... on AttackPattern {
                       name
@@ -2058,6 +2094,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     }
                     ... on StixCoreRelationship {
                       created_at
+                      start_time
+                      stop_time
+                      created
                     }
                     ... on AttackPattern {
                       name
@@ -2272,6 +2311,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on StixCoreRelationship {
                   created_at
                   relationship_type
+                  start_time
+                  stop_time
+                  created
                 }
                 ... on AttackPattern {
                   name
@@ -2473,6 +2515,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   id
                   entity_type
                   relationship_type
+                  start_time
+                  stop_time
+                  created
                   from {
                     ... on BasicObject {
                       id
@@ -2489,6 +2534,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     }
                     ... on StixCoreRelationship {
                       created_at
+                      start_time
+                      stop_time
+                      created
                     }
                     ... on AttackPattern {
                       name
@@ -2703,6 +2751,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     }
                     ... on StixCoreRelationship {
                       created_at
+                      start_time
+                      stop_time
+                      created
                     }
                     ... on AttackPattern {
                       name
@@ -2939,6 +2990,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           }
           ... on StixCoreRelationship {
             created_at
+            start_time
+            stop_time
+            created
           }
           ... on AttackPattern {
             name
@@ -3140,6 +3194,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             id
             entity_type
             relationship_type
+            start_time
+            stop_time
+            created
             from {
               ... on BasicObject {
                 id
@@ -3154,6 +3211,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               }
               ... on StixCoreRelationship {
                 created_at
+                start_time
+                stop_time
+                created
               }
               ... on AttackPattern {
                 name
@@ -3227,6 +3287,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               }
               ... on StixCoreRelationship {
                 created_at
+                start_time
+                stop_time
+                created
               }
               ... on AttackPattern {
                 name
@@ -3304,6 +3367,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           }
           ... on StixCoreRelationship {
             created_at
+            start_time
+            stop_time
+            created
           }
           ... on AttackPattern {
             name
@@ -3505,6 +3571,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             id
             entity_type
             relationship_type
+            start_time
+            stop_time
+            created
             from {
               ... on BasicObject {
                 id
