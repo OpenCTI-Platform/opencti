@@ -218,6 +218,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
   constructor(props) {
     super(props);
     this.initialized = false;
+    this.zoomed = 0;
     this.graph = React.createRef();
     this.selectedNodes = new Set();
     this.selectedLinks = new Set();
@@ -279,18 +280,21 @@ class ReportKnowledgeCorrelationComponent extends Component {
       if (this.state.modeTree !== '') {
         this.graph.current.d3Force('charge').strength(-5000);
       }
-      if (this.zoom && this.zoom.k && !this.state.mode3D) {
-        this.graph.current.zoom(this.zoom.k, 400);
-      } else {
-        const currentContext = this;
-        setTimeout(
-          () => currentContext.graph
-            && currentContext.graph.current
-            && currentContext.graph.current.zoomToFit(0, 150),
-          1200,
-        );
+      if (this.zoomed < 2) {
+        if (this.zoom && this.zoom.k && !this.state.mode3D) {
+          this.graph.current.zoom(this.zoom.k, 400);
+        } else {
+          const currentContext = this;
+          setTimeout(
+            () => currentContext.graph
+              && currentContext.graph.current
+              && currentContext.graph.current.zoomToFit(0, 150),
+            1200,
+          );
+        }
       }
       this.initialized = true;
+      this.zoomed += 1;
     }
   }
 
@@ -467,6 +471,10 @@ class ReportKnowledgeCorrelationComponent extends Component {
 
   handleZoomToFit() {
     this.graph.current.zoomToFit(400, 150);
+  }
+
+  onZoom() {
+    this.zoomed += 1;
   }
 
   handleZoomEnd(zoom) {
@@ -860,6 +868,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
             width={width}
             height={height}
             graphData={graphData}
+            onZoom={this.onZoom.bind(this)}
             onZoomEnd={this.handleZoomEnd.bind(this)}
             nodeRelSize={4}
             nodeCanvasObject={

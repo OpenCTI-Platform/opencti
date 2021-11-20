@@ -36,6 +36,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
   constructor(props) {
     super(props);
     this.initialized = false;
+    this.zoomed = 0;
     this.graph = React.createRef();
     this.selectedNodes = new Set();
     this.selectedLinks = new Set();
@@ -73,6 +74,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       ),
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
+      zoomed: false,
     };
   }
 
@@ -83,18 +85,21 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       if (this.state.modeTree !== '') {
         this.graph.current.d3Force('charge').strength(-1000);
       }
-      if (this.zoom && this.zoom.k && !this.state.mode3D) {
-        this.graph.current.zoom(this.zoom.k, 400);
-      } else {
-        const currentContext = this;
-        setTimeout(
-          () => currentContext.graph
-            && currentContext.graph.current
-            && currentContext.graph.current.zoomToFit(0, 150),
-          1200,
-        );
+      if (this.zoomed < 2) {
+        if (this.zoom && this.zoom.k && !this.state.mode3D) {
+          this.graph.current.zoom(this.zoom.k, 400);
+        } else {
+          const currentContext = this;
+          setTimeout(
+            () => currentContext.graph
+              && currentContext.graph.current
+              && currentContext.graph.current.zoomToFit(0, 150),
+            1200,
+          );
+        }
       }
       this.initialized = true;
+      this.zoomed += 1;
     }
   }
 
@@ -257,6 +262,10 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     this.graph.current.zoomToFit(400, 150);
   }
 
+  onZoom() {
+    this.zoomed += 1;
+  }
+
   handleZoomEnd(zoom) {
     if (
       this.initialized
@@ -398,11 +407,19 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     );
     const markedBy = R.uniqBy(
       R.prop('id'),
-      R.flatten(R.map((n) => n.markedBy, this.graphData.nodes)),
+      R.flatten(
+        R.map(
+          (n) => n.markedBy,
+          R.union(this.graphData.nodes, this.graphData.links),
+        ),
+      ),
     );
     const createdBy = R.uniqBy(
       R.prop('id'),
-      R.map((n) => n.createdBy, this.graphData.nodes),
+      R.map(
+        (n) => n.createdBy,
+        R.union(this.graphData.nodes, this.graphData.links),
+      ),
     );
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     const timeRangeValues = computeTimeRangeValues(
@@ -545,6 +562,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
             width={width}
             height={height}
             graphData={graphData}
+            onZoom={this.onZoom.bind(this)}
             onZoomEnd={this.handleZoomEnd.bind(this)}
             nodeRelSize={4}
             nodeCanvasObject={

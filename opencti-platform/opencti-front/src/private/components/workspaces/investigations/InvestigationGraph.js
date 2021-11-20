@@ -702,6 +702,7 @@ class InvestigationGraphComponent extends Component {
   constructor(props) {
     super(props);
     this.initialized = false;
+    this.zoomed = 0;
     this.graph = React.createRef();
     this.selectedNodes = new Set();
     this.selectedLinks = new Set();
@@ -743,6 +744,7 @@ class InvestigationGraphComponent extends Component {
       displayProgress: false,
       width: null,
       height: null,
+      zoomed: false,
     };
   }
 
@@ -753,18 +755,21 @@ class InvestigationGraphComponent extends Component {
       if (this.state.modeTree !== '') {
         this.graph.current.d3Force('charge').strength(-1000);
       }
-      if (this.zoom && this.zoom.k && !this.state.mode3D) {
-        this.graph.current.zoom(this.zoom.k, 400);
-      } else {
-        const currentContext = this;
-        setTimeout(
-          () => currentContext.graph
-            && currentContext.graph.current
-            && currentContext.graph.current.zoomToFit(0, 150),
-          1200,
-        );
+      if (this.zoomed < 2) {
+        if (this.zoom && this.zoom.k && !this.state.mode3D) {
+          this.graph.current.zoom(this.zoom.k, 400);
+        } else {
+          const currentContext = this;
+          setTimeout(
+            () => currentContext.graph
+              && currentContext.graph.current
+              && currentContext.graph.current.zoomToFit(0, 150),
+            1200,
+          );
+        }
       }
       this.initialized = true;
+      this.zoomed += 1;
     }
   }
 
@@ -938,6 +943,10 @@ class InvestigationGraphComponent extends Component {
     } else {
       this.graph.current.zoomToFit(400, 150);
     }
+  }
+
+  onZoom() {
+    this.zoomed += 1;
   }
 
   handleZoomEnd(zoom) {
@@ -1577,6 +1586,7 @@ class InvestigationGraphComponent extends Component {
             width={graphWidth}
             height={graphHeight}
             graphData={graphData}
+            onZoom={this.onZoom.bind(this)}
             onZoomEnd={this.handleZoomEnd.bind(this)}
             nodeRelSize={4}
             nodeCanvasObject={
