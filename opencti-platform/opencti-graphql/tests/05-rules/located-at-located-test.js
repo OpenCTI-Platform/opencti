@@ -94,7 +94,7 @@ describe('Located at located rule', () => {
       expect(parisToWesternEuropeMarkings.includes(TLP_TEST_INSTANCE.internal_id)).toBeTruthy();
       const parisToEurope = await inferenceLookup(afterLiveRelations, PARIS, EUROPE, RELATION_LOCATED_AT);
       expect(parisToEurope).not.toBeNull();
-      expect(parisToEurope.confidence).toBe(38);
+      expect(parisToEurope.confidence).toBe(48);
       expect(parisToEurope[RULE].length).toBe(2);
       const parisToEuropeMarkings = parisToEurope.object_marking_refs;
       expect(parisToEuropeMarkings.length).toBe(2); // TLP:TEST + TLP:WHITE
