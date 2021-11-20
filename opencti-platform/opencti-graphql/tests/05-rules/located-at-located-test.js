@@ -51,7 +51,7 @@ describe('Located at located rule', () => {
       // For confidence we have 2 explanations
       // HIETZING > located-in > WESTERN EUROPE [Confidence: 15] > located-in > EUROPE [Confidence: 0] = 8
       // HIETZING > located-in > FRANCE [Confidence: 30] > located-in > EUROPE  [Confidence: 0] = 15
-      expect(hietzingToEurope.confidence).toBe(12); // AVG 2 relations (15 + 8) = 12
+      expect(hietzingToEurope.confidence).toBe(21); // AVG 2 relations (15 + 8) = 12
       expect(hietzingToEurope.start_time).toBe('2020-02-29T23:00:00.000Z');
       expect(hietzingToEurope.stop_time).toBe('2020-02-29T23:00:00.000Z');
       expect(hietzingToEurope[RULE].length).toBe(2);
