@@ -82,7 +82,7 @@
   "retention_manager": {
     "enabled": true,
     "lock_key": "retention_manager_lock",
-    "interval": 10000
+    "interval": 60000
   },
   "redis": {
     "namespace": "",

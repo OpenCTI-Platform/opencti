@@ -794,7 +794,7 @@ input QueryTaskAddInput {
 input RetentionRuleAddInput {
   name: String!
   filters: String!
-  max_retention: Int!
+  max_retention: Int! @constraint(min: 1)
 }
 type RetentionRule {
   id: ID!
@@ -8521,7 +8521,7 @@ type Query {
     search: String
   ): WorkspaceConnection @auth(for: [EXPLORE])
   retentionRule(id: String!): RetentionRule @auth(for: [SETTINGS])
-  retentionRules(first: Int, after: ID): RetentionRuleConnection @auth(for: [SETTINGS])
+  retentionRules(first: Int, after: ID, search: String): RetentionRuleConnection @auth(for: [SETTINGS])
   taxiiCollection(id: String!): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   taxiiCollections(
     first: Int

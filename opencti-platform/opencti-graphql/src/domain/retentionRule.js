@@ -2,7 +2,7 @@ import { deleteElementById, listEntities, loadById, updateAttribute } from '../d
 import { ENTITY_TYPE_RETENTION_RULE } from '../schema/internalObject';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { elIndex } from '../database/elasticSearch';
-import { INDEX_INTERNAL_OBJECTS, isEmptyField } from '../database/utils';
+import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { UnsupportedError } from '../config/errors';
 
 // 'id', 'standard_id', 'name', 'filters', 'last_execution_date'
@@ -11,15 +11,8 @@ import { UnsupportedError } from '../config/errors';
 export const createRetentionRule = async (user, input) => {
   // filters must be a valid json
   const { filters } = input;
-  // max_life must be a valid duration
-  if (isEmptyField(filters)) {
-    throw UnsupportedError('Retention rule must have filters');
-  }
   try {
-    const jsonFilters = JSON.parse(filters);
-    if (isEmptyField(jsonFilters.entity_type)) {
-      throw UnsupportedError('Retention rule must define at least one entity type');
-    }
+    JSON.parse(filters);
   } catch {
     throw UnsupportedError('Retention rule must have valid filters');
   }

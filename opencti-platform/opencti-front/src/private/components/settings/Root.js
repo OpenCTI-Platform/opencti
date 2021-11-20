@@ -12,6 +12,7 @@ import KillChainPhases from './KillChainPhases';
 import Attributes from './Attributes';
 import Labels from './Labels';
 import Workflow from './Workflow';
+import Retention from './Retention';
 import { BoundaryRoute } from '../Error';
 
 const Root = () => (
@@ -55,6 +56,11 @@ const Root = () => (
       exact
       path="/dashboard/settings/workflow"
       component={Workflow}
+    />
+    <BoundaryRoute
+        exact
+        path="/dashboard/settings/retention"
+        component={Retention}
     />
     <BoundaryRoute exact path="/dashboard/settings/rules" component={Rules} />
     <BoundaryRoute
