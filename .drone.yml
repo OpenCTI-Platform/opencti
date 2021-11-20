@@ -27,7 +27,7 @@ steps:
   - yarn install
   - yarn build
   - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
-  - sleep 30
+  - sleep 60
   - yarn test
 
 - name: api-coverage
@@ -115,7 +115,7 @@ services:
     RABBITMQ__HOSTNAME: rabbitmq
     SUBSCRIPTION_SCHEDULER__ENABLED: false
   commands:
-    - sleep 30
+    - sleep 60
     - apk add build-base git libffi-dev
     - cp -a opencti-platform /tmp/raw-start-platform
     - cd /tmp/raw-start-platform/opencti-graphql
@@ -138,7 +138,7 @@ services:
     RABBITMQ__HOSTNAME: rabbitmq
     SUBSCRIPTION_SCHEDULER__ENABLED: false
   commands:
-    - sleep 60
+    - sleep 90
     - apk add build-base git libffi-dev
     - cp -a opencti-platform /tmp/live-start-platform
     - cd /tmp/live-start-platform/opencti-graphql
@@ -161,7 +161,7 @@ services:
     RABBITMQ__HOSTNAME: rabbitmq
     SUBSCRIPTION_SCHEDULER__ENABLED: false
   commands:
-    - sleep 90
+    - sleep 120
     - apk add build-base git libffi-dev
     - cp -a opencti-platform /tmp/direct-start-platform
     - cd /tmp/direct-start-platform/opencti-graphql
@@ -184,7 +184,7 @@ services:
     RABBITMQ__HOSTNAME: rabbitmq
     SUBSCRIPTION_SCHEDULER__ENABLED: false
   commands:
-    - sleep 120
+    - sleep 160
     - apk add build-base git libffi-dev
     - cp -a opencti-platform /tmp/restore-start-platform
     - cd /tmp/restore-start-platform/opencti-graphql
