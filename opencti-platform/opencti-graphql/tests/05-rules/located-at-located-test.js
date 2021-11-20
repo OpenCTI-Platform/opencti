@@ -43,7 +43,7 @@ describe('Located at located rule', () => {
       // eslint-disable-next-line prettier/prettier
       const hietzingToWesternEurope = await inferenceLookup(afterActivationRelations, HIETZING, WESTERN_EUROPE, RELATION_LOCATED_AT);
       expect(hietzingToWesternEurope).not.toBeNull();
-      expect(hietzingToWesternEurope.confidence).toBe(15); // AVG 2 relations (30 + 0) = 15
+      expect(hietzingToWesternEurope.confidence).toBe(23); // AVG 2 relations (30 + 0) = 15
       expect(hietzingToWesternEurope.start_time).toBe('2020-02-29T23:00:00.000Z');
       expect(hietzingToWesternEurope.stop_time).toBe('2020-02-29T23:00:00.000Z');
       const hietzingToEurope = await inferenceLookup(afterActivationRelations, HIETZING, EUROPE, RELATION_LOCATED_AT);
