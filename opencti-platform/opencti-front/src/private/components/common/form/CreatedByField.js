@@ -9,9 +9,8 @@ import { withStyles } from '@material-ui/core/styles';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
-import IdentityCreation, {
-  identityCreationIdentitiesSearchQuery,
-} from '../identities/IdentityCreation';
+import IdentityCreation from '../identities/IdentityCreation';
+import { identitySearchIdentitiesSearchQuery } from '../identities/IdentitySearch';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
@@ -77,7 +76,7 @@ class CreatedByField extends Component {
   }
 
   searchIdentities() {
-    fetchQuery(identityCreationIdentitiesSearchQuery, {
+    fetchQuery(identitySearchIdentitiesSearchQuery, {
       types: ['Individual', 'Organization'],
       search: this.state.keyword,
       first: 10,

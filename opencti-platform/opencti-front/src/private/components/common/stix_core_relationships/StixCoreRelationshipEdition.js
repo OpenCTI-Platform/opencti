@@ -52,6 +52,7 @@ class StixCoreRelationshipEdition extends Component {
       open,
       handleClose,
       handleDelete,
+      noStoreUpdate,
     } = this.props;
     return (
       <Drawer
@@ -79,6 +80,7 @@ class StixCoreRelationshipEdition extends Component {
                         ? handleDelete.bind(this)
                         : null
                     }
+                    noStoreUpdate={noStoreUpdate}
                   />
                 );
               }
@@ -102,6 +104,7 @@ StixCoreRelationshipEdition.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  noStoreUpdate: PropTypes.bool,
 };
 
 export default compose(

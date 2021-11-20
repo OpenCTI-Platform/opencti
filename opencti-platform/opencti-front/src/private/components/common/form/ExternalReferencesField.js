@@ -104,6 +104,7 @@ class ExternalReferencesField extends Component {
       setFieldValue,
       values,
       helpertext,
+      noStoreUpdate,
       id,
     } = this.props;
     return (
@@ -139,6 +140,7 @@ class ExternalReferencesField extends Component {
           open={this.state.externalReferenceCreation}
           handleClose={this.handleCloseExternalReferenceCreation.bind(this)}
           creationCallback={(data) => {
+            const newExternalReference = data.externalReferenceAdd;
             if (id) {
               const input = {
                 fromId: id,
@@ -147,35 +149,53 @@ class ExternalReferencesField extends Component {
               commitMutation({
                 mutation: externalReferenceLinesMutationRelationAdd,
                 variables: {
-                  id: data.externalReferenceAdd.id,
+                  id: newExternalReference.id,
                   input,
                 },
                 updater: (store) => {
-                  const payload = store
-                    .getRootField('externalReferenceEdit')
-                    .getLinkedRecord('relationAdd', { input });
-                  const relationId = payload.getValue('id');
-                  const node = payload.getLinkedRecord('to');
-                  const relation = store.get(relationId);
-                  payload.setLinkedRecord(node, 'node');
-                  payload.setLinkedRecord(relation, 'relation');
-                  sharedUpdater(store, id, payload);
+                  if (noStoreUpdate !== true) {
+                    const payload = store
+                      .getRootField('externalReferenceEdit')
+                      .getLinkedRecord('relationAdd', { input });
+                    const relationId = payload.getValue('id');
+                    const node = payload.getLinkedRecord('to');
+                    const relation = store.get(relationId);
+                    payload.setLinkedRecord(node, 'node');
+                    payload.setLinkedRecord(relation, 'relation');
+                    sharedUpdater(store, id, payload);
+                  }
                 },
               });
             }
-            setFieldValue(
-              name,
-              append(
-                {
-                  label: `[${data.externalReferenceAdd.source_name}] ${truncate(
-                    data.externalReferenceAdd.description
-                      || data.externalReferenceAdd.url
-                      || data.externalReferenceAdd.external_id,
-                    150,
-                  )}`,
-                  value: data.externalReferenceAdd.id,
-                },
-                values,
+            this.setState(
+              {
+                externalReferences: append(
+                  {
+                    label: `[${newExternalReference.source_name}] ${truncate(
+                      newExternalReference.description
+                        || newExternalReference.url
+                        || newExternalReference.external_id,
+                      150,
+                    )}`,
+                    value: newExternalReference.id,
+                  },
+                  this.state.externalReferences,
+                ),
+              },
+              () => setFieldValue(
+                name,
+                append(
+                  {
+                    label: `[${newExternalReference.source_name}] ${truncate(
+                      newExternalReference.description
+                          || newExternalReference.url
+                          || newExternalReference.external_id,
+                      150,
+                    )}`,
+                    value: newExternalReference.id,
+                  },
+                  values || [],
+                ),
               ),
             );
           }}

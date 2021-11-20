@@ -16,11 +16,15 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import MarkDownField from '../../../../components/MarkDownField';
+import ObjectLabelField from '../form/ObjectLabelField';
+import ObjectMarkingField from '../form/ObjectMarkingField';
+import ExternalReferencesField from '../form/ExternalReferencesField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -67,24 +71,6 @@ const styles = (theme) => ({
   },
 });
 
-export const identityCreationIdentitiesSearchQuery = graphql`
-  query IdentityCreationIdentitiesSearchQuery(
-    $types: [String]
-    $search: String
-    $first: Int
-  ) {
-    identities(types: $types, search: $search, first: $first) {
-      edges {
-        node {
-          id
-          name
-          entity_type
-        }
-      }
-    }
-  }
-`;
-
 const identityMutation = graphql`
   mutation IdentityCreationMutation($input: IdentityAddInput!) {
     identityAdd(input: $input) {
@@ -115,10 +101,15 @@ class IdentityCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    const finalValues = R.pipe(
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
+      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
+    )(values);
     commitMutation({
       mutation: identityMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       setSubmitting,
       onCompleted: (response) => {
@@ -176,12 +167,21 @@ class IdentityCreation extends Component {
                 name: '',
                 description: '',
                 type: '',
+                objectMarking: [],
+                objectLabel: [],
+                externalReferences: [],
               }}
               validationSchema={identityValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
             >
-              {({ submitForm, handleReset, isSubmitting }) => (
+              {({
+                submitForm,
+                handleReset,
+                isSubmitting,
+                setFieldValue,
+                values,
+              }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
@@ -217,6 +217,22 @@ class IdentityCreation extends Component {
                     <MenuItem value="Individual">{t('Individual')}</MenuItem>
                     <MenuItem value="System">{t('System')}</MenuItem>
                   </Field>
+                  <ObjectLabelField
+                    name="objectLabel"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.objectLabel}
+                  />
+                  <ObjectMarkingField
+                    name="objectMarking"
+                    style={{ marginTop: 20, width: '100%' }}
+                  />
+                  <ExternalReferencesField
+                    name="externalReferences"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.externalReferences}
+                  />
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"
@@ -257,12 +273,21 @@ class IdentityCreation extends Component {
             name: inputValue,
             description: '',
             type: '',
+            objectMarking: [],
+            objectLabel: [],
+            externalReferences: [],
           }}
           validationSchema={identityValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onResetContextual.bind(this)}
         >
-          {({ submitForm, handleReset, isSubmitting }) => (
+          {({
+            submitForm,
+            handleReset,
+            isSubmitting,
+            setFieldValue,
+            values,
+          }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Dialog
                 open={open}
@@ -294,31 +319,39 @@ class IdentityCreation extends Component {
                     fullWidth={true}
                     containerstyle={{ marginTop: 20, width: '100%' }}
                   >
-                    {!onlyAuthors ? (
+                    {!onlyAuthors && (
                       <MenuItem value="Sector">{t('Sector')}</MenuItem>
-                    ) : (
-                      ''
                     )}
                     <MenuItem value="Organization">
                       {t('Organization')}
                     </MenuItem>
-                    {!onlyAuthors ? (
+                    {!onlyAuthors && (
                       <MenuItem value="Region">{t('Region')}</MenuItem>
-                    ) : (
-                      ''
                     )}
-                    {!onlyAuthors ? (
+                    {!onlyAuthors && (
                       <MenuItem value="Country">{t('Country')}</MenuItem>
-                    ) : (
-                      ''
                     )}
-                    {!onlyAuthors ? (
+                    {!onlyAuthors && (
                       <MenuItem value="City">{t('City')}</MenuItem>
-                    ) : (
-                      ''
                     )}
                     <MenuItem value="Individual">{t('Individual')}</MenuItem>
                   </Field>
+                  <ObjectLabelField
+                    name="objectLabel"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.objectLabel}
+                  />
+                  <ObjectMarkingField
+                    name="objectMarking"
+                    style={{ marginTop: 20, width: '100%' }}
+                  />
+                  <ExternalReferencesField
+                    name="externalReferences"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.externalReferences}
+                  />
                 </DialogContent>
                 <DialogActions>
                   <Button

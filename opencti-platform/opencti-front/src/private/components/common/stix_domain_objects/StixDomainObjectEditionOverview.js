@@ -20,6 +20,7 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import {
   commitMutation,
   requestSubscription,
@@ -34,6 +35,8 @@ import {
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import { typesWithoutName } from '../../../../utils/Entity';
+import CommitMessage from '../form/CommitMessage';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
   header: {
@@ -89,9 +92,15 @@ export const stixDomainObjectMutationFieldPatch = graphql`
   mutation StixDomainObjectEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
   ) {
     stixDomainObjectEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...StixDomainObjectEditionOverview_stixDomainObject
       }
     }
@@ -145,6 +154,7 @@ const stixDomainObjectValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
   aliases: Yup.string().nullable(),
   x_opencti_aliases: Yup.string().nullable(),
+  references: Yup.array().required(t('This field is required')),
 });
 
 class StixDomainObjectEditionContainer extends Component {
@@ -160,6 +170,73 @@ class StixDomainObjectEditionContainer extends Component {
     this.sub.dispose();
   }
 
+  handleChangeFocus(name) {
+    commitMutation({
+      mutation: stixDomainObjectEditionFocus,
+      variables: {
+        id: this.props.stixDomainObject.id,
+        input: {
+          focusOn: name,
+        },
+      },
+    });
+  }
+
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.dissoc('references'),
+      R.assoc('status_id', values.status_id?.value),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: stixDomainObjectMutationFieldPatch,
+      variables: {
+        id: this.props.stixDomainObject.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
+  handleSubmitField(name, value) {
+    if (!this.props.enableReferences) {
+      stixDomainObjectValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: stixDomainObjectMutationFieldPatch,
+            variables: {
+              id: this.props.stixDomainObject.id,
+              input: {
+                key: name,
+                value:
+                  name === 'aliases' || name === 'x_opencti_aliases'
+                    ? split(',', value)
+                    : value,
+              },
+            },
+          });
+        })
+        .catch(() => false);
+    }
+  }
+
   handleChangeCreatedBy(name, value) {
     if (!this.props.enableReferences) {
       commitMutation({
@@ -173,79 +250,50 @@ class StixDomainObjectEditionContainer extends Component {
   }
 
   handleChangeObjectMarking(name, values) {
-    const { stixDomainObject } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(stixDomainObject);
-
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: stixDomainObjectMutationRelationAdd,
-        variables: {
-          id: stixDomainObject.id,
-          input: {
-            toId: head(added).value,
-            relationship_type: 'object-marking',
-          },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: stixDomainObjectMutationRelationDelete,
-        variables: {
-          id: stixDomainObject.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
-    }
-  }
-
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: stixDomainObjectEditionFocus,
-      variables: {
-        id: this.props.stixDomainObject.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
-
-  handleSubmitField(name, value) {
-    stixDomainObjectValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
+    if (!this.props.enableReferences) {
+      const { stixDomainObject } = this.props;
+      const currentMarkingDefinitions = pipe(
+        pathOr([], ['objectMarking', 'edges']),
+        map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(stixDomainObject);
+      const added = difference(values, currentMarkingDefinitions);
+      const removed = difference(currentMarkingDefinitions, values);
+      if (added.length > 0) {
         commitMutation({
-          mutation: stixDomainObjectMutationFieldPatch,
+          mutation: stixDomainObjectMutationRelationAdd,
           variables: {
-            id: this.props.stixDomainObject.id,
+            id: stixDomainObject.id,
             input: {
-              key: name,
-              value:
-                name === 'aliases' || name === 'x_opencti_aliases'
-                  ? split(',', value)
-                  : value,
+              toId: head(added).value,
+              relationship_type: 'object-marking',
             },
           },
         });
-      })
-      .catch(() => false);
+      }
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: stixDomainObjectMutationRelationDelete,
+          variables: {
+            id: stixDomainObject.id,
+            toId: head(removed).value,
+            relationship_type: 'object-marking',
+          },
+        });
+      }
+    }
   }
 
   render() {
     const {
-      t, classes, handleClose, stixDomainObject,
+      t,
+      classes,
+      handleClose,
+      stixDomainObject,
+      noStoreUpdate,
+      enableReferences,
     } = this.props;
     const { editContext } = stixDomainObject;
     const createdBy = pathOr(null, ['createdBy', 'name'], stixDomainObject) === null
@@ -303,8 +351,15 @@ class StixDomainObjectEditionContainer extends Component {
             enableReinitialize={true}
             initialValues={initialValues}
             validationSchema={stixDomainObjectValidation(t)}
+            onSubmit={this.onSubmit.bind(this)}
           >
-            {(setFieldValue) => (
+            {({
+              submitForm,
+              isSubmitting,
+              validateForm,
+              setFieldValue,
+              values,
+            }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 {'name' in stixDomainObject && (
                   <Field
@@ -401,6 +456,17 @@ class StixDomainObjectEditionContainer extends Component {
                   }
                   onChange={this.handleChangeObjectMarking.bind(this)}
                 />
+                {enableReferences && (
+                  <CommitMessage
+                    submitForm={submitForm}
+                    disabled={isSubmitting}
+                    validateForm={validateForm}
+                    setFieldValue={setFieldValue}
+                    values={values}
+                    id={stixDomainObject.id}
+                    noStoreUpdate={noStoreUpdate}
+                  />
+                )}
               </Form>
             )}
           </Formik>
@@ -416,6 +482,8 @@ StixDomainObjectEditionContainer.propTypes = {
   stixDomainObject: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  noStoreUpdate: PropTypes.bool,
+  enableReferences: PropTypes.bool,
 };
 
 const StixDomainObjectEditionFragment = createFragmentContainer(

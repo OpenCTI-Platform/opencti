@@ -369,6 +369,30 @@ export const applyNodeFilters = (
   return nodes;
 };
 
+export const applyLinkFilters = (
+  linksData,
+  markedBy = [],
+  createdBy = [],
+  interval = [],
+) => {
+  const links = R.pipe(
+    R.filter(
+      (n) => markedBy.length === 0
+        || !n.markedBy
+        || R.any((m) => R.includes(m.id, markedBy), n.markedBy),
+    ),
+    R.filter(
+      (n) => createdBy.length === 0 || R.includes(n.createdBy.id, createdBy),
+    ),
+    R.filter(
+      (n) => interval.length === 0
+        || isNone(n.defaultDate)
+        || (n.defaultDate >= interval[0] && n.defaultDate <= interval[1]),
+    ),
+  )(linksData);
+  return links;
+};
+
 export const applyFilters = (
   graphData,
   stixCoreObjectsTypes = [],
@@ -385,12 +409,18 @@ export const applyFilters = (
     excludedStixCoreObjectsTypes,
     interval,
   );
+  const filteredLinks = applyLinkFilters(
+    graphData.links,
+    markedBy,
+    createdBy,
+    interval,
+  );
   const nodeIds = R.map((n) => n.id, nodes);
   const links = R.pipe(
     R.filter(
       (n) => R.includes(n.source_id, nodeIds) && R.includes(n.target_id, nodeIds),
     ),
-  )(graphData.links);
+  )(filteredLinks);
   return {
     nodes,
     links,
@@ -580,6 +610,13 @@ export const buildGraphData = (objects, graphData, t) => {
       target_id: n.to.id,
       inferred: n.is_inferred,
       defaultDate: jsDate(defaultDate(n)),
+      markedBy: R.map(
+        (m) => ({ id: m.node.id, definition: m.node.definition }),
+        R.pathOr([], ['objectMarking', 'edges'], n),
+      ),
+      createdBy: n.createdBy
+        ? n.createdBy
+        : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: 'Unknown' },
     })),
   )(objects);
   const nestedLinks = R.pipe(
@@ -601,6 +638,13 @@ export const buildGraphData = (objects, graphData, t) => {
         start_time: '',
         stop_time: '',
         defaultDate: jsDate(defaultDate(n)),
+        markedBy: R.map(
+          (m) => ({ id: m.id, definition: m.node.definition }),
+          R.pathOr([], ['objectMarking', 'edges'], n),
+        ),
+        createdBy: n.createdBy
+          ? n.createdBy
+          : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: 'Unknown' },
       },
       {
         id: n.id,
@@ -616,6 +660,13 @@ export const buildGraphData = (objects, graphData, t) => {
         start_time: '',
         stop_time: '',
         defaultDate: jsDate(defaultDate(n)),
+        markedBy: R.map(
+          (m) => ({ id: m.id, definition: m.node.definition }),
+          R.pathOr([], ['objectMarking', 'edges'], n),
+        ),
+        createdBy: n.createdBy
+          ? n.createdBy
+          : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: 'Unknown' },
       },
     ]),
     R.flatten,

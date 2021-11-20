@@ -740,6 +740,7 @@ class InvestigationGraphBar extends Component {
                   open={openEditEntity}
                   stixDomainObjectId={R.propOr(null, 'id', selectedNodes[0])}
                   handleClose={this.handleCloseEntityEdition.bind(this)}
+                  noStoreUpdate={true}
                 />
                 <StixCoreRelationshipEdition
                   open={openEditRelation}
@@ -748,6 +749,7 @@ class InvestigationGraphBar extends Component {
                     || R.propOr(null, 'id', selectedLinks[0])
                   }
                   handleClose={this.handleCloseRelationEdition.bind(this)}
+                  noStoreUpdate={true}
                 />
                 <Tooltip title={t('Expand')}>
                   <span>

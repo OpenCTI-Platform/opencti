@@ -148,6 +148,7 @@ class StixCoreRelationshipPopover extends Component {
           stixCoreRelationshipId={stixCoreRelationshipId}
           open={this.state.displayUpdate}
           handleClose={this.handleCloseUpdate.bind(this)}
+          noStoreUpdate={true}
         />
         <Dialog
           open={this.state.displayDelete}

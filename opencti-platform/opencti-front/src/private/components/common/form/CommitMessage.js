@@ -38,7 +38,14 @@ class CommitMessage extends Component {
 
   render() {
     const {
-      disabled, t, id, setFieldValue, values, handleClose, open,
+      disabled,
+      t,
+      id,
+      setFieldValue,
+      values,
+      handleClose,
+      open,
+      noStoreUpdate,
     } = this.props;
     return (
       <div>
@@ -65,6 +72,7 @@ class CommitMessage extends Component {
               setFieldValue={setFieldValue}
               values={values.references}
               id={id}
+              noStoreUpdate={noStoreUpdate}
             />
             <Field
               component={MarkDownField}
@@ -101,6 +109,7 @@ CommitMessage.propTypes = {
   externalReferences: PropTypes.array,
   open: PropTypes.bool,
   handleClose: PropTypes.func,
+  noStoreUpdate: PropTypes.bool,
 };
 
 export default compose(

@@ -60,7 +60,7 @@ import ItemMarking from '../../../components/ItemMarking';
 import ItemIcon from '../../../components/ItemIcon';
 import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
 import { defaultValue } from '../../../utils/Graph';
-import { identityCreationIdentitiesSearchQuery } from '../common/identities/IdentityCreation';
+import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import Security, {
   KNOWLEDGE_KNUPDATE,
@@ -571,7 +571,7 @@ class ToolBar extends Component {
       actionsInputs[i],
     );
     this.setState({ actionsInputs });
-    fetchQuery(identityCreationIdentitiesSearchQuery, {
+    fetchQuery(identitySearchIdentitiesSearchQuery, {
       types: ['Individual', 'Organization'],
       search: newValue && newValue.length > 0 ? newValue : '',
       first: 10,

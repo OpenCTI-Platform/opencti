@@ -166,6 +166,7 @@ const stixCoreRelationshipValidation = (t) => Yup.object().shape({
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .nullable(),
   description: Yup.string().nullable(),
+  references: Yup.array().required(t('This field is required')),
 });
 
 const StixCoreRelationshipEditionContainer = ({
@@ -176,6 +177,7 @@ const StixCoreRelationshipEditionContainer = ({
   stixCoreRelationship,
   stixDomainObject,
   enableReferences,
+  noStoreUpdate,
 }) => {
   const { editContext } = stixCoreRelationship;
   useEffect(() => {
@@ -532,6 +534,7 @@ const StixCoreRelationshipEditionContainer = ({
                   setFieldValue={setFieldValue}
                   values={values}
                   id={stixCoreRelationship.id}
+                  noStoreUpdate={noStoreUpdate}
                 />
               )}
             </Form>
@@ -550,6 +553,7 @@ StixCoreRelationshipEditionContainer.propTypes = {
   stixCoreRelationship: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  noStoreUpdate: PropTypes.bool,
 };
 
 const StixCoreRelationshipEditionFragment = createFragmentContainer(

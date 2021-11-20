@@ -20,7 +20,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { identityCreationIdentitiesSearchQuery } from '../identities/IdentityCreation';
+import { identitySearchIdentitiesSearchQuery } from '../identities/IdentitySearch';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import { attributesSearchQuery } from '../../settings/AttributesQuery';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
@@ -124,7 +124,7 @@ class Filters extends Component {
     }
     switch (filterKey) {
       case 'toSightingId':
-        fetchQuery(identityCreationIdentitiesSearchQuery, {
+        fetchQuery(identitySearchIdentitiesSearchQuery, {
           types: ['Identity'],
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
@@ -151,7 +151,7 @@ class Filters extends Component {
           });
         break;
       case 'createdBy':
-        fetchQuery(identityCreationIdentitiesSearchQuery, {
+        fetchQuery(identitySearchIdentitiesSearchQuery, {
           types: ['Organization', 'Individual', 'System'],
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,

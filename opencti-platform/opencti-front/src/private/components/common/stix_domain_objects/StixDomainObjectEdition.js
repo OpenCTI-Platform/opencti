@@ -28,6 +28,10 @@ const stixDomainObjectEditionQuery = graphql`
   query StixDomainObjectEditionQuery($id: String!) {
     stixDomainObject(id: $id) {
       ...StixDomainObjectEditionOverview_stixDomainObject
+      entity_type
+    }
+    settings {
+      platform_enable_reference
     }
   }
 `;
@@ -41,6 +45,7 @@ class StixDomainObjectEdition extends Component {
       handleClose,
       handleDelete,
       variant,
+      noStoreUpdate,
     } = this.props;
     return (
       <Drawer
@@ -59,12 +64,16 @@ class StixDomainObjectEdition extends Component {
                   <StixDomainObjectEditionOverview
                     variant={variant}
                     stixDomainObject={props.stixDomainObject}
+                    enableReferences={props.settings.platform_enable_reference?.includes(
+                      props.stixDomainObject.entity_type,
+                    )}
                     handleClose={handleClose.bind(this)}
                     handleDelete={
                       typeof handleDelete === 'function'
                         ? handleDelete.bind(this)
                         : null
                     }
+                    noStoreUpdate={noStoreUpdate}
                   />
                 );
               }
@@ -88,6 +97,7 @@ StixDomainObjectEdition.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  noStoreUpdate: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(StixDomainObjectEdition);

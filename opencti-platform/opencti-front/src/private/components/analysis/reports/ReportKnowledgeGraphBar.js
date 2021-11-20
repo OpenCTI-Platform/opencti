@@ -708,6 +708,7 @@ class ReportKnowledgeGraphBar extends Component {
                   open={openEditEntity}
                   stixDomainObjectId={R.propOr(null, 'id', selectedNodes[0])}
                   handleClose={this.handleCloseEntityEdition.bind(this)}
+                  noStoreUpdate={true}
                 />
                 <StixCoreRelationshipEdition
                   open={openEditRelation}
@@ -716,6 +717,7 @@ class ReportKnowledgeGraphBar extends Component {
                     || R.propOr(null, 'id', selectedLinks[0])
                   }
                   handleClose={this.handleCloseRelationEdition.bind(this)}
+                  noStoreUpdate={true}
                 />
                 {onAddRelation && (
                   <Tooltip title={t('Create a relationship')}>

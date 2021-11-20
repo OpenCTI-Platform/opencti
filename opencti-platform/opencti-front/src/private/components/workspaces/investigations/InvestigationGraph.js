@@ -1408,11 +1408,19 @@ class InvestigationGraphComponent extends Component {
     );
     const markedBy = R.uniqBy(
       R.prop('id'),
-      R.flatten(R.map((n) => n.markedBy, this.graphData.nodes)),
+      R.flatten(
+        R.map(
+          (n) => n.markedBy,
+          R.union(this.graphData.nodes, this.graphData.links),
+        ),
+      ),
     );
     const createdBy = R.uniqBy(
       R.prop('id'),
-      R.map((n) => n.createdBy, this.graphData.nodes),
+      R.map(
+        (n) => n.createdBy,
+        R.union(this.graphData.nodes, this.graphData.links),
+      ),
     );
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     const timeRangeValues = computeTimeRangeValues(

@@ -15,6 +15,7 @@ import {
   head,
 } from 'ramda';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -23,6 +24,8 @@ import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import CommitMessage from '../../common/form/CommitMessage';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -53,9 +56,15 @@ const toolMutationFieldPatch = graphql`
   mutation ToolEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
   ) {
     toolEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...ToolEditionOverview_tool
         ...Tool_tool
       }
@@ -120,6 +129,38 @@ class ToolEditionOverviewComponent extends Component {
         input: {
           focusOn: name,
         },
+      },
+    });
+  }
+
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.dissoc('references'),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: toolMutationFieldPatch,
+      variables: {
+        id: this.props.tool.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
       },
     });
   }
@@ -225,7 +266,9 @@ class ToolEditionOverviewComponent extends Component {
   }
 
   render() {
-    const { t, tool, context } = this.props;
+    const {
+      t, tool, context, enableReferences,
+    } = this.props;
     const createdBy = pathOr(null, ['createdBy', 'name'], tool) === null
       ? ''
       : {
@@ -263,9 +306,15 @@ class ToolEditionOverviewComponent extends Component {
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={toolValidation(t)}
-        onSubmit={() => true}
+        onSubmit={this.onSubmit.bind(this)}
       >
-        {({ setFieldValue }) => (
+        {({
+          submitForm,
+          isSubmitting,
+          validateForm,
+          setFieldValue,
+          values,
+        }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
@@ -324,6 +373,16 @@ class ToolEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeObjectMarking.bind(this)}
             />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                validateForm={validateForm}
+                setFieldValue={setFieldValue}
+                values={values}
+                id={tool.id}
+              />
+            )}
           </Form>
         )}
       </Formik>
@@ -335,6 +394,7 @@ ToolEditionOverviewComponent.propTypes = {
   t: PropTypes.func,
   tool: PropTypes.object,
   context: PropTypes.array,
+  enableReferences: PropTypes.bool,
 };
 
 const ToolEditionOverview = createFragmentContainer(
