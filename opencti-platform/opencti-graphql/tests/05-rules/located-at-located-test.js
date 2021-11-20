@@ -85,7 +85,7 @@ describe('Located at located rule', () => {
       // eslint-disable-next-line prettier/prettier
       const parisToWesternEurope = await inferenceLookup(afterLiveRelations, PARIS, WESTERN_EUROPE, RELATION_LOCATED_AT);
       expect(parisToWesternEurope).not.toBeNull();
-      expect(parisToWesternEurope.confidence).toBe(50); // AVG 2 relations (100 + 0) = 50
+      expect(parisToWesternEurope.confidence).toBe(58); // AVG 2 relations (100 + 0) = 50
       expect(parisToWesternEurope.start_time).toBe('2020-01-20T20:30:00.000Z');
       expect(parisToWesternEurope.stop_time).toBe('2020-02-29T10:00:00.000Z');
       const parisToWesternEuropeMarkings = parisToWesternEurope.object_marking_refs;
