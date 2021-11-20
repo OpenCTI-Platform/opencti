@@ -58,7 +58,7 @@ describe('Located at located rule', () => {
       expect(hietzingToEurope.i_inference_weight).toBe(2);
       const franceToEurope = await inferenceLookup(afterActivationRelations, FRANCE, EUROPE, RELATION_LOCATED_AT);
       expect(franceToEurope).not.toBeNull();
-      expect(franceToEurope.confidence).toBe(0);
+      expect(franceToEurope.confidence).toBe(15);
       expect(franceToEurope.start_time).toBe(FROM_START_STR);
       expect(franceToEurope.stop_time).toBe(UNTIL_END_STR);
       // Create new element to trigger a live event
