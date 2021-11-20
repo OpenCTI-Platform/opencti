@@ -83,6 +83,24 @@ const TopMenuSettings = ({ t, location, classes }) => (
         >
           {t('Workflows')}
         </Button>
+          <Button
+              component={Link}
+              to="/dashboard/settings/retention"
+              variant={
+                  location.pathname.includes('/dashboard/settings/retention')
+                    ? 'contained'
+                    : 'text'
+              }
+              size="small"
+              color={
+                  location.pathname.includes('/dashboard/settings/retention')
+                    ? 'secondary'
+                    : 'inherit'
+              }
+              classes={{ root: classes.button }}
+          >
+              {t('Retention policies')}
+          </Button>
         <Button
           component={Link}
           to="/dashboard/settings/rules"

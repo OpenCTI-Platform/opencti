@@ -8,6 +8,7 @@ import conf, {
   ENABLED_SUBSCRIPTION_MANAGER,
   PLATFORM_VERSION,
   ENABLED_SYNC_MANAGER,
+  ENABLED_RETENTION_MANAGER,
 } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { elVersion, isRuntimeSortEnable } from '../database/elasticSearch';
@@ -26,6 +27,7 @@ export const getModules = () => {
   modules.push({ id: 'RULE_ENGINE', enable: ENABLED_RULE_ENGINE });
   modules.push({ id: 'SUBSCRIPTION_MANAGER', enable: ENABLED_SUBSCRIPTION_MANAGER });
   modules.push({ id: 'SYNC_MANAGER', enable: ENABLED_SYNC_MANAGER });
+  modules.push({ id: 'RETENTION_MANAGER', enable: ENABLED_RETENTION_MANAGER });
   return modules;
 };
 

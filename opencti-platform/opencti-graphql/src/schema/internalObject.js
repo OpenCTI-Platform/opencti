@@ -15,6 +15,7 @@ export const ENTITY_TYPE_ATTRIBUTE = 'Attribute';
 export const ENTITY_TYPE_WORKSPACE = 'Workspace';
 export const ENTITY_TYPE_WORK = 'work';
 export const ENTITY_TYPE_TASK = 'Task';
+export const ENTITY_TYPE_RETENTION_RULE = 'RetentionRule';
 export const ENTITY_TYPE_SYNC = 'Sync';
 export const ENTITY_TYPE_TAXII_COLLECTION = 'TaxiiCollection';
 export const ENTITY_TYPE_STREAM_COLLECTION = 'StreamCollection';
@@ -38,6 +39,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_STATUS_TEMPLATE,
   ENTITY_TYPE_STATUS,
   ENTITY_TYPE_TASK,
+  ENTITY_TYPE_RETENTION_RULE,
   ENTITY_TYPE_SYNC,
   ENTITY_TYPE_MIGRATION_STATUS,
   ENTITY_TYPE_MIGRATION_REFERENCE,
@@ -207,6 +209,7 @@ export const internalObjectsAttributes = {
     'last_execution_date',
     'completed',
   ],
+  [ENTITY_TYPE_RETENTION_RULE]: ['standard_id', 'name', 'filters', 'max_retention', 'last_execution_date'],
   [ENTITY_TYPE_SYNC]: [
     'internal_id',
     'standard_id',

@@ -6,12 +6,14 @@ import conf, {
   ENABLED_TASK_SCHEDULER,
   logApp,
   ENABLED_SYNC_MANAGER,
+  ENABLED_RETENTION_MANAGER,
 } from './config/conf';
 import expiredManager from './manager/expiredManager';
 import subscriptionManager from './manager/subscriptionManager';
 import taskManager from './manager/taskManager';
 import ruleEngine from './manager/ruleManager';
 import syncManager from './manager/syncManager';
+import retentionManager from './manager/retentionManager';
 import httpServer from './http/httpServer';
 
 // Http server
@@ -30,6 +32,14 @@ export const startModules = async () => {
     logApp.info(`[OPENCTI] Expiration manager started`);
   } else {
     logApp.info(`[OPENCTI] Expiration manager not started (disabled by configuration)`);
+  }
+  // endregion
+  // region Retention manager
+  if (ENABLED_RETENTION_MANAGER) {
+    await retentionManager.start();
+    logApp.info(`[OPENCTI] Retention manager started`);
+  } else {
+    logApp.info(`[OPENCTI] Retention manager not started (disabled by configuration)`);
   }
   // endregion
   // region Task manager
@@ -78,6 +88,10 @@ export const shutdownModules = async () => {
   // region Expiration manager
   await expiredManager.shutdown();
   logApp.info(`[OPENCTI] Expiration manager stopped`);
+  // endregion
+  // region Retention manager
+  await retentionManager.shutdown();
+  logApp.info(`[OPENCTI] Retention manager stopped`);
   // endregion
   // region Task manager
   await taskManager.shutdown();

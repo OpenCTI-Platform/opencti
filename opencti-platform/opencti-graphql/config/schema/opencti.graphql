@@ -791,6 +791,31 @@ input QueryTaskAddInput {
   actions: [TaskActionInput]!
 }
 
+input RetentionRuleAddInput {
+  name: String!
+  filters: String!
+  max_retention: Int! @constraint(min: 1)
+}
+type RetentionRule {
+  id: ID!
+  standard_id: String!
+  name: String!
+  filters: String!
+  max_retention: Int!
+  last_execution_date: DateTime
+}
+type RetentionRuleConnection {
+  pageInfo: PageInfo!
+  edges: [RetentionRuleEdge]
+}
+type RetentionRuleEdge {
+  cursor: String!
+  node: RetentionRule!
+}
+type RetentionRuleEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!): RetentionRule
+}
 ###### ENTITIES
 
 interface BasicObject {
@@ -8495,6 +8520,8 @@ type Query {
     filterMode: FilterMode
     search: String
   ): WorkspaceConnection @auth(for: [EXPLORE])
+  retentionRule(id: String!): RetentionRule @auth(for: [SETTINGS])
+  retentionRules(first: Int, after: ID, search: String): RetentionRuleConnection @auth(for: [SETTINGS])
   taxiiCollection(id: String!): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   taxiiCollections(
     first: Int
@@ -9816,6 +9843,10 @@ type Mutation {
   deleteTask(id: ID!): ID! @auth(for: [KNOWLEDGE_KNUPDATE])
   listTaskAdd(input: ListTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
   queryTaskAdd(input: QueryTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
+
+  ### RETENTION RULE
+  retentionRuleAdd(input: RetentionRuleAddInput): RetentionRule! @auth(for: [SETTINGS])
+  retentionRuleEdit(id: ID!): RetentionRuleEditMutations @auth(for: [SETTINGS])
 
   ### RULE
   ruleSetActivation(id: ID!, enable: Boolean!): Rule! @auth(for: [SETTINGS])
