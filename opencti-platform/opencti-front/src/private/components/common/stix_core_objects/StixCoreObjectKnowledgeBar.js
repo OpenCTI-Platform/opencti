@@ -92,6 +92,20 @@ class StixCoreObjectKnowledgeBar extends Component {
             </ListItemIcon>
             <ListItemText primary={t('Related entities')} />
           </MenuItem>
+          {includes('sectors', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/sectors`}
+              selected={location.pathname === `${stixCoreObjectLink}/sectors`}
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <DomainOutlined />
+              </ListItemIcon>
+              <ListItemText primary={t('Sectors')} />
+            </MenuItem>
+          )}
           {includes('cities', availableSections) && (
             <MenuItem
               component={Link}
@@ -164,20 +178,6 @@ class StixCoreObjectKnowledgeBar extends Component {
                 <FlagOutlined />
               </ListItemIcon>
               <ListItemText primary={t('Locations')} />
-            </MenuItem>
-          )}
-          {includes('sectors', availableSections) && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/sectors`}
-              selected={location.pathname === `${stixCoreObjectLink}/sectors`}
-              dense={false}
-              classes={{ root: classes.item }}
-            >
-              <ListItemIcon style={{ minWidth: 35 }}>
-                <DomainOutlined />
-              </ListItemIcon>
-              <ListItemText primary={t('Sectors')} />
             </MenuItem>
           )}
         </MenuList>

@@ -96,6 +96,8 @@ class RootRegion extends Component {
               'campaigns',
               'incidents',
               'malwares',
+              'attack_patterns',
+              'tools',
               'observables',
               'sightings',
             ]}

@@ -97,6 +97,8 @@ class RootCity extends Component {
               'campaigns',
               'incidents',
               'malwares',
+              'attack_patterns',
+              'tools',
               'observables',
               'sightings',
             ]}

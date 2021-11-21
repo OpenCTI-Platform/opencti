@@ -121,10 +121,10 @@ class RootOrganization extends Component {
             <StixCoreObjectKnowledgeBar
               stixCoreObjectLink={link}
               availableSections={[
+                'sectors',
                 'organizations',
                 'individuals',
                 'locations',
-                'sectors',
                 'threat_actors',
                 'intrusion_sets',
                 'campaigns',

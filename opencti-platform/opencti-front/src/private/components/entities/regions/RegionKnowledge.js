@@ -192,6 +192,34 @@ class RegionKnowledgeComponent extends Component {
               />
             )}
           />
+          <Route
+            exact
+            path="/dashboard/entities/regions/:regionId/knowledge/attack_patterns"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={region.id}
+                relationshipTypes={['targets']}
+                targetStixDomainObjectTypes={['Attack-Pattern']}
+                entityLink={link}
+                isRelationReversed={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/entities/regions/:regionId/knowledge/tools"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={region.id}
+                relationshipTypes={['targets']}
+                targetStixDomainObjectTypes={['Tool']}
+                entityLink={link}
+                isRelationReversed={true}
+                {...routeProps}
+              />
+            )}
+          />
         </Switch>
       </div>
     );

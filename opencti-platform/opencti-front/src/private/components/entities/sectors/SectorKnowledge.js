@@ -181,6 +181,34 @@ class SectorKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/entities/sectors/:sectorId/knowledge/attack_patterns"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={sector.id}
+                relationshipTypes={['targets']}
+                targetStixDomainObjectTypes={['Attack-Pattern']}
+                entityLink={link}
+                isRelationReversed={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/entities/sectors/:sectorId/knowledge/tools"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={sector.id}
+                relationshipTypes={['targets']}
+                targetStixDomainObjectTypes={['Tool']}
+                entityLink={link}
+                isRelationReversed={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/entities/sectors/:sectorId/knowledge/observables"
             render={(routeProps) => (
               <StixCoreObjectStixCyberObservables

@@ -89,11 +89,14 @@ class RootPosition extends Component {
             stixCoreObjectLink={link}
             availableSections={[
               'organizations',
+              'locations',
               'threat_actors',
               'intrusion_sets',
               'campaigns',
               'incidents',
               'malwares',
+              'attack_patterns',
+              'tools',
               'observables',
               'sightings',
             ]}

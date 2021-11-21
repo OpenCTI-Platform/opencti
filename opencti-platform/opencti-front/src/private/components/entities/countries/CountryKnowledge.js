@@ -196,6 +196,34 @@ class CountryKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/entities/countries/:countryId/knowledge/attack_patterns"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={country.id}
+                relationshipTypes={['targets']}
+                targetStixDomainObjectTypes={['Attack-Pattern']}
+                entityLink={link}
+                isRelationReversed={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/entities/countries/:countryId/knowledge/tools"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={country.id}
+                relationshipTypes={['targets']}
+                targetStixDomainObjectTypes={['Tool']}
+                entityLink={link}
+                isRelationReversed={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/entities/countries/:countryId/knowledge/observables"
             render={(routeProps) => (
               <StixCoreObjectStixCyberObservables

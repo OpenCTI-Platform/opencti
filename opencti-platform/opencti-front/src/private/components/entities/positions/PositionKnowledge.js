@@ -182,6 +182,34 @@ class PositionKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/entities/positions/:positionId/knowledge/attack_patterns"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={position.id}
+                relationshipTypes={['targets']}
+                targetStixDomainObjectTypes={['Attack-Pattern']}
+                entityLink={link}
+                isRelationReversed={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/entities/positions/:positionId/knowledge/tools"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={position.id}
+                relationshipTypes={['targets']}
+                targetStixDomainObjectTypes={['Tool']}
+                entityLink={link}
+                isRelationReversed={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/entities/positions/:positionId/knowledge/observables"
             render={(routeProps) => (
               <StixCoreObjectStixCyberObservables
