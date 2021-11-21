@@ -177,6 +177,8 @@ const i18n = {
       'Granted by default': 'Alloué par défaut',
       'Granted by default at user creation':
         "Alloué par défaut à la création d'un utilisateur",
+      'Automatically authorize this group to new marking definition':
+        'Autoriser automatiquement ce groupe sur les nouveaux marquages',
       'Unauthorized action, please refresh your browser':
         'Action non autorisée, merci de rafraichir votre navigateur',
       Capabilities: 'Capacités',

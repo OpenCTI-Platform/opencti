@@ -92,7 +92,7 @@ class StixCoreObjectKnowledgeBar extends Component {
             </ListItemIcon>
             <ListItemText primary={t('Related entities')} />
           </MenuItem>
-          {includes('cities', availableSections) ? (
+          {includes('cities', availableSections) && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/cities`}
@@ -105,10 +105,8 @@ class StixCoreObjectKnowledgeBar extends Component {
               </ListItemIcon>
               <ListItemText primary={t('Cities')} />
             </MenuItem>
-          ) : (
-            ''
           )}
-          {includes('organizations', availableSections) ? (
+          {includes('organizations', availableSections) && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/organizations`}
@@ -123,10 +121,8 @@ class StixCoreObjectKnowledgeBar extends Component {
               </ListItemIcon>
               <ListItemText primary={t('Organizations')} />
             </MenuItem>
-          ) : (
-            ''
           )}
-          {includes('individuals', availableSections) ? (
+          {includes('individuals', availableSections) && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/individuals`}
@@ -141,10 +137,8 @@ class StixCoreObjectKnowledgeBar extends Component {
               </ListItemIcon>
               <ListItemText primary={t('Individuals')} />
             </MenuItem>
-          ) : (
-            ''
           )}
-          {includes('countries', availableSections) ? (
+          {includes('countries', availableSections) && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/countries`}
@@ -157,10 +151,8 @@ class StixCoreObjectKnowledgeBar extends Component {
               </ListItemIcon>
               <ListItemText primary={t('Countries')} />
             </MenuItem>
-          ) : (
-            ''
           )}
-          {includes('locations', availableSections) ? (
+          {includes('locations', availableSections) && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/locations`}
@@ -173,10 +165,8 @@ class StixCoreObjectKnowledgeBar extends Component {
               </ListItemIcon>
               <ListItemText primary={t('Locations')} />
             </MenuItem>
-          ) : (
-            ''
           )}
-          {includes('sectors', availableSections) ? (
+          {includes('sectors', availableSections) && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/sectors`}
@@ -189,8 +179,6 @@ class StixCoreObjectKnowledgeBar extends Component {
               </ListItemIcon>
               <ListItemText primary={t('Sectors')} />
             </MenuItem>
-          ) : (
-            ''
           )}
         </MenuList>
         {isInAvailableSection([
@@ -208,7 +196,7 @@ class StixCoreObjectKnowledgeBar extends Component {
               </ListSubheader>
             }
           >
-            {includes('attribution', availableSections) ? (
+            {includes('attribution', availableSections) && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/attribution`}
@@ -223,10 +211,8 @@ class StixCoreObjectKnowledgeBar extends Component {
                 </ListItemIcon>
                 <ListItemText primary={t('Attribution')} />
               </MenuItem>
-            ) : (
-              ''
             )}
-            {includes('victimology', availableSections) ? (
+            {includes('victimology', availableSections) && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/victimology`}
@@ -241,10 +227,8 @@ class StixCoreObjectKnowledgeBar extends Component {
                 </ListItemIcon>
                 <ListItemText primary={t('Victimology')} />
               </MenuItem>
-            ) : (
-              ''
             )}
-            {includes('threat_actors', availableSections) ? (
+            {includes('threat_actors', availableSections) && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/threat_actors`}
@@ -259,10 +243,8 @@ class StixCoreObjectKnowledgeBar extends Component {
                 </ListItemIcon>
                 <ListItemText primary={t('Threat actors')} />
               </MenuItem>
-            ) : (
-              ''
             )}
-            {includes('intrusion_sets', availableSections) ? (
+            {includes('intrusion_sets', availableSections) && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/intrusion_sets`}
@@ -277,10 +259,8 @@ class StixCoreObjectKnowledgeBar extends Component {
                 </ListItemIcon>
                 <ListItemText primary={t('Intrusion sets')} />
               </MenuItem>
-            ) : (
-              ''
             )}
-            {includes('campaigns', availableSections) ? (
+            {includes('campaigns', availableSections) && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/campaigns`}
@@ -295,8 +275,6 @@ class StixCoreObjectKnowledgeBar extends Component {
                 </ListItemIcon>
                 <ListItemText primary={t('Campaigns')} />
               </MenuItem>
-            ) : (
-              ''
             )}
           </MenuList>
           ) : (

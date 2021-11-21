@@ -90,6 +90,8 @@ class RootCity extends Component {
             stixCoreObjectLink={link}
             availableSections={[
               'organizations',
+              'countries',
+              'regions',
               'threat_actors',
               'intrusion_sets',
               'campaigns',

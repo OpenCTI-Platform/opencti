@@ -362,7 +362,6 @@ const ProfileOverviewComponent = (props) => {
                   variant="contained"
                   color="primary"
                   onClick={renewToken}
-                  style={{ marginTop: 20 }}
                 >
                   {t('Renew')}
                 </Button>
