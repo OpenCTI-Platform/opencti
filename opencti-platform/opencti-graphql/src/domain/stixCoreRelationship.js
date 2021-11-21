@@ -120,7 +120,7 @@ export const stixRelations = (user, stixCoreObjectId, args) => {
 // region mutations
 export const addStixCoreRelationship = async (user, stixCoreRelationship) => {
   if (!isStixCoreRelationship(stixCoreRelationship.relationship_type)) {
-    throw FunctionalError('Only stix-core-relationship can be created trough this method.');
+    throw FunctionalError('Only stix-core-relationship can be created through this method.');
   }
   const created = await createRelation(user, stixCoreRelationship);
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].ADDED_TOPIC, created, user);
@@ -132,7 +132,7 @@ export const stixCoreRelationshipDelete = async (user, stixCoreRelationshipId) =
 
 export const stixCoreRelationshipDeleteByFromAndTo = async (user, fromId, toId, relationshipType) => {
   if (!isStixCoreRelationship(relationshipType)) {
-    throw FunctionalError('Only stix-core-relationship can be deleted trough this method.');
+    throw FunctionalError('Only stix-core-relationship can be deleted through this method.');
   }
   await deleteRelationsByFromAndTo(user, fromId, toId, relationshipType, ABSTRACT_STIX_CORE_RELATIONSHIP);
   return true;

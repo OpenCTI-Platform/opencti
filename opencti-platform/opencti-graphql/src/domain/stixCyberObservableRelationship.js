@@ -17,7 +17,7 @@ export const findById = (user, stixCyberObservableRelationshipId) => {
 // region mutations
 export const addStixCyberObservableRelationship = async (user, stixCyberObservableRelationship) => {
   if (!isStixCyberObservableRelationship(stixCyberObservableRelationship.relationship_type)) {
-    throw FunctionalError('Only stix-cyber-observable-relationship can be created trough this method.');
+    throw FunctionalError('Only stix-cyber-observable-relationship can be created through this method.');
   }
   const created = await createRelation(user, stixCyberObservableRelationship);
   return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP].ADDED_TOPIC, created, user);
