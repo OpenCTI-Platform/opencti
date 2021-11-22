@@ -729,11 +729,14 @@ class InvestigationGraphComponent extends Component {
       R.uniq,
     )(R.union(this.graphData.nodes, this.graphData.links));
     const allCreatedBy = R.pipe(
-      R.filter((n) => !R.isEmpty(n.createdBy) && !R.isNil(n.createdBy)),
       R.map((n) => n.createdBy.id),
       R.uniq,
     )(R.union(this.graphData.nodes, this.graphData.links));
-    const stixCoreObjectsTypes = R.propOr(allStixCoreObjectsTypes, 'stixCoreObjectsTypes', params);
+    const stixCoreObjectsTypes = R.propOr(
+      allStixCoreObjectsTypes,
+      'stixCoreObjectsTypes',
+      params,
+    );
     const markedBy = R.propOr(allMarkedBy, 'markedBy', params);
     const createdBy = R.propOr(allCreatedBy, 'createdBy', params);
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
@@ -948,6 +951,36 @@ class InvestigationGraphComponent extends Component {
     }
   }
 
+  resetAllFilters() {
+    return new Promise((resolve) => {
+      const allStixCoreObjectsTypes = R.pipe(
+        R.map((n) => n.entity_type),
+        R.uniq,
+      )(this.graphData.nodes);
+      const allMarkedBy = R.pipe(
+        R.map((n) => n.markedBy),
+        R.flatten,
+        R.map((n) => n.id),
+        R.uniq,
+      )(R.union(this.graphData.nodes, this.graphData.links));
+      const allCreatedBy = R.pipe(
+        R.map((n) => n.createdBy.id),
+        R.uniq,
+      )(R.union(this.graphData.nodes, this.graphData.links));
+      this.setState(
+        {
+          stixCoreObjectsTypes: allStixCoreObjectsTypes,
+          markedBy: allMarkedBy,
+          createdBy: allCreatedBy,
+        },
+        () => {
+          this.saveParameters(false);
+          resolve(true);
+        },
+      );
+    });
+  }
+
   handleZoomToFit(adjust = false) {
     if (adjust === true) {
       const container = document.getElementById('container');
@@ -1030,7 +1063,7 @@ class InvestigationGraphComponent extends Component {
     });
   }
 
-  handleAddEntity(stixCoreObject) {
+  async handleAddEntity(stixCoreObject) {
     if (R.map((n) => n.id, this.graphObjects).includes(stixCoreObject.id)) return;
     this.graphObjects = [...this.graphObjects, stixCoreObject];
     this.graphData = buildGraphData(
@@ -1038,6 +1071,7 @@ class InvestigationGraphComponent extends Component {
       decodeGraphData(this.props.workspace.graph_data),
       this.props.t,
     );
+    await this.resetAllFilters();
     const selectedTimeRangeInterval = computeTimeRangeInterval(
       this.graphObjects,
     );
@@ -1059,7 +1093,7 @@ class InvestigationGraphComponent extends Component {
     );
   }
 
-  handleAddRelation(stixCoreRelationship) {
+  async handleAddRelation(stixCoreRelationship) {
     if (R.map((n) => n.id, this.graphObjects).includes(stixCoreRelationship.id)) return;
     this.graphObjects = [...this.graphObjects, stixCoreRelationship];
     this.graphData = buildGraphData(
@@ -1067,6 +1101,7 @@ class InvestigationGraphComponent extends Component {
       decodeGraphData(this.props.workspace.graph_data),
       this.props.t,
     );
+    await this.resetAllFilters();
     const selectedTimeRangeInterval = computeTimeRangeInterval(
       this.graphObjects,
     );
@@ -1135,7 +1170,7 @@ class InvestigationGraphComponent extends Component {
     });
   }
 
-  handleDeleteSelected() {
+  async handleDeleteSelected() {
     // Remove selected links
     const selectedLinks = Array.from(this.selectedLinks);
     const selectedLinksIds = R.map((n) => n.id, selectedLinks);
@@ -1204,6 +1239,7 @@ class InvestigationGraphComponent extends Component {
       decodeGraphData(this.props.workspace.graph_data),
       this.props.t,
     );
+    await this.resetAllFilters();
     this.setState({
       graphData: applyFilters(
         this.graphData,
@@ -1339,6 +1375,7 @@ class InvestigationGraphComponent extends Component {
       decodeGraphData(this.props.workspace.graph_data),
       this.props.t,
     );
+    await this.resetAllFilters();
     const selectedTimeRangeInterval = computeTimeRangeInterval(
       this.graphObjects,
     );
@@ -1435,7 +1472,11 @@ class InvestigationGraphComponent extends Component {
     const stixCoreObjectsTypes = R.pipe(
       R.map((n) => R.assoc(
         'tlabel',
-        t(`${n.relationship_type ? 'relation_' : 'entity_'}${n.entity_type}`),
+        t(
+          `${n.relationship_type ? 'relationship_' : 'entity_'}${
+            n.entity_type
+          }`,
+        ),
         n,
       )),
       sortByLabel,

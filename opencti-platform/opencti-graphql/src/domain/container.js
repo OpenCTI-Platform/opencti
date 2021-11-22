@@ -63,7 +63,7 @@ export const containersObjectsOfObject = async (user, { id, types, filters = [],
   );
   const containersObjectsResult = R.uniqBy(R.path(['node', 'id']), [
     ...containers.edges,
-    ...R.filter((n) => !isStixCoreRelationship(n.node.toType), containersObjectsRelationships),
+    ...containersObjectsRelationships,
     ...R.map((n) => ({ node: n }), containersObjects),
   ]);
   return buildPagination(0, null, containersObjectsResult, containersObjectsResult.length);

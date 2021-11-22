@@ -64,7 +64,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       R.uniq,
     )(R.union(this.graphData.nodes, this.graphData.links));
     const allCreatedBy = R.pipe(
-      R.filter((n) => !R.isEmpty(n.createdBy) && !R.isNil(n.createdBy)),
       R.map((n) => n.createdBy.id),
       R.uniq,
     )(R.union(this.graphData.nodes, this.graphData.links));
@@ -425,7 +424,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     const stixCoreObjectsTypes = R.pipe(
       R.map((n) => R.assoc(
         'tlabel',
-        t(`${n.relationship_type ? 'relation_' : 'entity_'}${n.entity_type}`),
+        t(`${n.relationship_type ? 'relationship_' : 'entity_'}${n.entity_type}`),
         n,
       )),
       sortByLabel,

@@ -285,7 +285,8 @@ class ReportKnowledgeGraphBar extends Component {
         && !selectedNodes[0].isObservable)
       || (!isInferred
         && numberOfSelectedNodes === 0
-        && numberOfSelectedLinks === 1);
+        && numberOfSelectedLinks === 1
+        && !selectedLinks[0].parent_types.includes('stix-meta-relationship'));
     const fromSelectedTypes = numberOfSelectedNodes >= 2
       ? R.uniq(R.map((n) => n.entity_type, R.init(selectedNodes)))
       : [];

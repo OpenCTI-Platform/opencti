@@ -344,22 +344,10 @@ export const applyNodeFilters = (
   interval = [],
 ) => {
   const nodes = R.pipe(
-    R.filter(
-      (n) => excludedStixCoreObjectsTypes.length === 0
-        || !R.includes(n.entity_type, excludedStixCoreObjectsTypes),
-    ),
-    R.filter(
-      (n) => stixCoreObjectsTypes.length === 0
-        || R.includes(n.entity_type, stixCoreObjectsTypes),
-    ),
-    R.filter(
-      (n) => markedBy.length === 0
-        || !n.markedBy
-        || R.any((m) => R.includes(m.id, markedBy), n.markedBy),
-    ),
-    R.filter(
-      (n) => createdBy.length === 0 || R.includes(n.createdBy?.id, createdBy),
-    ),
+    R.filter((n) => !R.includes(n.entity_type, excludedStixCoreObjectsTypes)),
+    R.filter((n) => R.includes(n.entity_type, stixCoreObjectsTypes)),
+    R.filter((n) => R.any((m) => R.includes(m.id, markedBy), n.markedBy)),
+    R.filter((n) => R.includes(n.createdBy.id, createdBy)),
     R.filter(
       (n) => interval.length === 0
         || isNone(n.defaultDate)
@@ -376,14 +364,8 @@ export const applyLinkFilters = (
   interval = [],
 ) => {
   const links = R.pipe(
-    R.filter(
-      (n) => markedBy.length === 0
-        || !n.markedBy
-        || R.any((m) => R.includes(m.id, markedBy), n.markedBy),
-    ),
-    R.filter(
-      (n) => createdBy.length === 0 || R.includes(n.createdBy.id, createdBy),
-    ),
+    R.filter((n) => R.any((m) => R.includes(m.id, markedBy), n.markedBy)),
+    R.filter((n) => R.includes(n.createdBy.id, createdBy)),
     R.filter(
       (n) => interval.length === 0
         || isNone(n.defaultDate)
@@ -427,28 +409,90 @@ export const applyFilters = (
   };
 };
 
-export const buildCorrelationData = (objects, graphData, t, filterAdjust) => {
-  const thisReportLinkNodes = R.pipe(
-    R.filter((n) => n.reports && n.parent_types && n.reports.edges.length > 1),
-  )(
-    applyNodeFilters(
-      R.filter((o) => o && o.id && o.entity_type && o.reports, objects),
-      filterAdjust.stixCoreObjectsTypes,
-      filterAdjust.markedBy,
-      filterAdjust.createdBy,
-      [],
-      filterAdjust.selectedTimeRangeInterval,
-    ),
+export const buildCorrelationData = (
+  originalObjects,
+  graphData,
+  t,
+  filterAdjust,
+) => {
+  const objects = R.map((n) => {
+    let { objectMarking } = n;
+    if (R.isNil(objectMarking) || R.isEmpty(objectMarking.edges)) {
+      objectMarking = [
+        {
+          node: {
+            id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+            definition: t('None'),
+            definition_type: t('None'),
+          },
+        },
+      ];
+    } else {
+      objectMarking = R.map((m) => m.node, objectMarking.edges);
+    }
+    let { createdBy } = n;
+    if (R.isNil(createdBy) || R.isEmpty(createdBy)) {
+      createdBy = {
+        id: '0533fcc9-b9e8-4010-877c-174343cb24cd',
+        name: t('None'),
+      };
+    }
+    return {
+      ...n,
+      objectMarking,
+      createdBy,
+      markedBy: objectMarking,
+    };
+  }, originalObjects);
+  const filteredObjects = applyNodeFilters(
+    R.filter((o) => o && o.id && o.entity_type && o.reports, objects),
+    [...filterAdjust.stixCoreObjectsTypes, ...['Report', 'reported-in']],
+    filterAdjust.markedBy,
+    filterAdjust.createdBy,
+    [],
+    filterAdjust.selectedTimeRangeInterval,
+  );
+  const thisReportLinkNodes = R.filter(
+    (n) => n.reports && n.parent_types && n.reports.edges.length > 0,
+    filteredObjects,
   );
   const relatedReportNodes = applyNodeFilters(
     R.pipe(
       R.map((n) => n.reports.edges),
       R.flatten,
-      R.map((n) => n.node),
+      R.map((n) => {
+        let { objectMarking } = n.node;
+        if (R.isNil(objectMarking) || R.isEmpty(objectMarking.edges)) {
+          objectMarking = [
+            {
+              node: {
+                id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+                definition: t('None'),
+                definition_type: t('None'),
+              },
+            },
+          ];
+        } else {
+          objectMarking = R.map((m) => m.node, objectMarking.edges);
+        }
+        let { createdBy } = n.node;
+        if (R.isNil(createdBy) || R.isEmpty(createdBy)) {
+          createdBy = {
+            id: '0533fcc9-b9e8-4010-877c-174343cb24cd',
+            name: t('None'),
+          };
+        }
+        return {
+          ...n.node,
+          objectMarking,
+          createdBy,
+          markedBy: objectMarking,
+        };
+      }),
       R.uniqBy(R.prop('id')),
       R.map((n) => (n.defaultDate ? { ...n } : { ...n, defaultDate: jsDate(defaultDate(n)) })),
     )(thisReportLinkNodes),
-    [],
+    [...filterAdjust.stixCoreObjectsTypes, ...['Report', 'reported-in']],
     filterAdjust.markedBy,
     filterAdjust.createdBy,
     [],
@@ -458,7 +502,7 @@ export const buildCorrelationData = (objects, graphData, t, filterAdjust) => {
     R.map((n) => R.map(
       (e) => ({
         id: R.concat(n.id, '-', e.id),
-        parent_types: ['basic-relationship'],
+        parent_types: ['basic-relationship', 'stix-meta-relationship'],
         entity_type: 'basic-relationship',
         relationship_type: 'reported-in',
         source: n.id,
@@ -472,6 +516,8 @@ export const buildCorrelationData = (objects, graphData, t, filterAdjust) => {
         start_time: '',
         stop_time: '',
         defaultDate: jsDate(defaultDate(n)),
+        markedBy: n.markedBy,
+        createdBy: n.createdBy,
       }),
       relatedReportNodes,
     )),
@@ -494,30 +540,12 @@ export const buildCorrelationData = (objects, graphData, t, filterAdjust) => {
       color: n.x_opencti_color || n.color || itemColor(n.entity_type, false),
       parent_types: n.parent_types,
       isObservable: !!n.observable_value,
-      markedBy: R.map(
-        (m) => ({ id: m.node.id, definition: m.node.definition }),
-        R.pathOr(
-          [
-            {
-              node: {
-                id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
-                definition: 'None',
-                definition_type: 'None',
-              },
-            },
-          ],
-          ['objectMarking', 'edges'],
-          n,
-        ),
-      ),
-      createdBy: n.createdBy
-        ? n.createdBy
-        : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: 'Unknown' },
+      markedBy: n.markedBy,
+      createdBy: n.createdBy,
       fx: graphData[n.id] && graphData[n.id].x ? graphData[n.id].x : null,
       fy: graphData[n.id] && graphData[n.id].y ? graphData[n.id].y : null,
     })),
   )(combinedNodes);
-
   return {
     nodes,
     links,
@@ -584,25 +612,23 @@ export const buildGraphData = (objects, graphData, t) => {
       toId: n.to?.id,
       toType: n.to?.entity_type,
       isObservable: !!n.observable_value,
-      markedBy: R.map(
-        (m) => ({ id: m.node.id, definition: m.node.definition }),
-        R.pathOr(
-          [
+      markedBy:
+        !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking.edges)
+          ? R.map(
+            (m) => ({ id: m.node.id, definition: m.node.definition }),
+            n.objectMarking.edges,
+          )
+          : [
             {
-              node: {
-                id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
-                definition: t('None'),
-                definition_type: t('None'),
-              },
+              id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+              definition: t('None'),
+              definition_type: t('None'),
             },
           ],
-          ['objectMarking', 'edges'],
-          n,
-        ),
-      ),
-      createdBy: n.createdBy
-        ? n.createdBy
-        : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: t('None') },
+      createdBy:
+        !R.isNil(n.createdBy) && !R.isEmpty(n.createdBy)
+          ? n.createdBy
+          : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: t('None') },
       fx: graphData[n.id] && graphData[n.id].x ? graphData[n.id].x : null,
       fy: graphData[n.id] && graphData[n.id].y ? graphData[n.id].y : null,
     })),
@@ -634,25 +660,23 @@ export const buildGraphData = (objects, graphData, t) => {
       target_id: n.to.id,
       inferred: n.is_inferred,
       defaultDate: jsDate(defaultDate(n)),
-      markedBy: R.map(
-        (m) => ({ id: m.node.id, definition: m.node.definition }),
-        R.pathOr(
-          [
+      markedBy:
+        !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking.edges)
+          ? R.map(
+            (m) => ({ id: m.node.id, definition: m.node.definition }),
+            n.objectMarking.edges,
+          )
+          : [
             {
-              node: {
-                id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
-                definition: t('None'),
-                definition_type: t('None'),
-              },
+              id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+              definition: t('None'),
+              definition_type: t('None'),
             },
           ],
-          ['objectMarking', 'edges'],
-          n,
-        ),
-      ),
-      createdBy: n.createdBy
-        ? n.createdBy
-        : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: t('None') },
+      createdBy:
+        !R.isNil(n.createdBy) && !R.isEmpty(n.createdBy)
+          ? n.createdBy
+          : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: t('None') },
     })),
   )(objects);
   const nestedLinks = R.pipe(
@@ -674,25 +698,23 @@ export const buildGraphData = (objects, graphData, t) => {
         start_time: '',
         stop_time: '',
         defaultDate: jsDate(defaultDate(n)),
-        markedBy: R.map(
-          (m) => ({ id: m.node.id, definition: m.node.definition }),
-          R.pathOr(
-            [
+        markedBy:
+          !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking.edges)
+            ? R.map(
+              (m) => ({ id: m.node.id, definition: m.node.definition }),
+              n.objectMarking.edges,
+            )
+            : [
               {
-                node: {
-                  id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
-                  definition: t('None'),
-                  definition_type: t('None'),
-                },
+                id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+                definition: t('None'),
+                definition_type: t('None'),
               },
             ],
-            ['objectMarking', 'edges'],
-            n,
-          ),
-        ),
-        createdBy: n.createdBy
-          ? n.createdBy
-          : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: t('None') },
+        createdBy:
+          !R.isNil(n.createdBy) && !R.isEmpty(n.createdBy)
+            ? n.createdBy
+            : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: t('None') },
       },
       {
         id: n.id,
@@ -708,13 +730,23 @@ export const buildGraphData = (objects, graphData, t) => {
         start_time: '',
         stop_time: '',
         defaultDate: jsDate(defaultDate(n)),
-        markedBy: R.map(
-          (m) => ({ id: m.id, definition: m.node.definition }),
-          R.pathOr([], ['objectMarking', 'edges'], n),
-        ),
-        createdBy: n.createdBy
-          ? n.createdBy
-          : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: 'Unknown' },
+        markedBy:
+          !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking.edges)
+            ? R.map(
+              (m) => ({ id: m.node.id, definition: m.node.definition }),
+              n.objectMarking.edges,
+            )
+            : [
+              {
+                id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+                definition: t('None'),
+                definition_type: t('None'),
+              },
+            ],
+        createdBy:
+          !R.isNil(n.createdBy) && !R.isEmpty(n.createdBy)
+            ? n.createdBy
+            : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: t('None') },
       },
     ]),
     R.flatten,

@@ -389,6 +389,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
               'located-at',
               'part-of',
               'belongs-to',
+              'related-to',
             ],
             filters: paginationOptions.filters,
             search: searchTerm,
