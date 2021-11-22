@@ -74,9 +74,8 @@ const buildSelection = (node) => {
       if(childSelect) childMap.select = childSelect;
       if(childChildren) childMap.children = childChildren;
       children[child.name.value] = childMap;
-    }else{
-      select.push(child.name.value);
     }
+    select.push(child.name.value);
   }
   if(select.length > 0) map.select = select
   if(Object.getOwnPropertyNames(children).length > 0) map.children = children;
