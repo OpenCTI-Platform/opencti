@@ -1,8 +1,8 @@
 requests~=2.26.0
-PyYAML~=5.4
-setuptools~=58.0.0
+PyYAML~=6.0
+setuptools~=59.2.0
 datefinder~=0.7
-stix2~=2.1.0
+stix2~=3.0.1
 pika~=1.2
 sseclient~=0.0.27
 python_json_logger~=2.0.2

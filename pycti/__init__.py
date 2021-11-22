@@ -42,7 +42,7 @@ from .utils.constants import StixCyberObservableTypes, StixMetaTypes
 from .utils.opencti_stix2 import OpenCTIStix2
 from .utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from .utils.opencti_stix2_update import OpenCTIStix2Update
-from .utils.opencti_stix2_utils import OpenCTIStix2Utils, SimpleObservable, StixIncident
+from .utils.opencti_stix2_utils import OpenCTIStix2Utils, SimpleObservable
 
 __all__ = [
     "OpenCTIApiClient",
@@ -86,5 +86,4 @@ __all__ = [
     "StixCyberObservableTypes",
     "StixMetaTypes",
     "SimpleObservable",
-    "StixIncident",
 ]
