@@ -39,7 +39,7 @@ import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRela
 import ItemYears from '../../../../components/ItemYears';
 import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
-import { stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
+import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 
 const styles = (theme) => ({
   itemIcon: {
@@ -87,8 +87,8 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
           : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 })),
       uniq,
       indexBy(prop('id')),
-    )(data.stixCoreRelationships.edges);
-    const stixCoreRelationships = pipe(
+    )(data.stixRelationships.edges);
+    const stixRelationships = pipe(
       map((n) => n.node),
       map((n) => assoc(
         'startTimeYear',
@@ -129,34 +129,34 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
       mapObjIndexed((value, key) => assoc('stixDomainObjects', value, killChainPhases[key])),
       values,
       sortWith([ascend(prop('x_opencti_order'))]),
-    )(data.stixCoreRelationships.edges);
+    )(data.stixRelationships.edges);
     return (
       <div style={{ marginBottom: 90 }}>
         <div id="container">
           <List id="test">
-            {stixCoreRelationships.map((stixCoreRelationship) => (
-              <div key={stixCoreRelationship.id}>
+            {stixRelationships.map((stixRelationship) => (
+              <div key={stixRelationship.id}>
                 <ListItem
                   button={true}
                   divider={true}
                   onClick={this.handleToggleLine.bind(
                     this,
-                    stixCoreRelationship.id,
+                    stixRelationship.id,
                   )}
                 >
                   <ListItemIcon>
                     <Launch color="primary" role="img" />
                   </ListItemIcon>
-                  <ListItemText primary={stixCoreRelationship.phase_name} />
+                  <ListItemText primary={stixRelationship.phase_name} />
                   <ListItemSecondaryAction>
                     <IconButton
                       onClick={this.handleToggleLine.bind(
                         this,
-                        stixCoreRelationship.id,
+                        stixRelationship.id,
                       )}
                       aria-haspopup="true"
                     >
-                      {this.state.expandedLines[stixCoreRelationship.id]
+                      {this.state.expandedLines[stixRelationship.id]
                       === false ? (
                         <ExpandMore />
                         ) : (
@@ -166,12 +166,10 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                   </ListItemSecondaryAction>
                 </ListItem>
                 <Collapse
-                  in={
-                    this.state.expandedLines[stixCoreRelationship.id] !== false
-                  }
+                  in={this.state.expandedLines[stixRelationship.id] !== false}
                 >
                   <List>
-                    {stixCoreRelationship.stixDomainObjects.map(
+                    {stixRelationship.stixDomainObjects.map(
                       (stixDomainObject) => {
                         const restricted = stixDomainObject.to === null;
                         const link = `${entityLink}/relations/${stixDomainObject.id}`;
@@ -249,7 +247,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                             />
                             <ListItemSecondaryAction>
                               <StixCoreRelationshipPopover
-                                stixCoreRelationshipId={stixDomainObject.id}
+                                stixRelationshipId={stixDomainObject.id}
                                 paginationOptions={paginationOptions}
                                 onDelete={this.props.relay.refetch.bind(this)}
                               />
@@ -283,10 +281,9 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
   {
     data: graphql`
       fragment StixDomainObjectGlobalKillChain_data on Query {
-        stixCoreRelationships(
-          fromId: $fromId
-          fromRole: $fromRole
-          toTypes: $toTypes
+        stixRelationships(
+          elementId: $elementId
+          elementWithTargetTypes: $elementWithTargetTypes
           relationship_type: $relationship_type
           first: $first
           orderBy: $orderBy
@@ -296,9 +293,31 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
           edges {
             node {
               id
-              description
-              start_time
-              stop_time
+              entity_type
+              ... on StixCoreRelationship {
+                description
+                created
+                start_time
+                stop_time
+                killChainPhases {
+                  edges {
+                    node {
+                      id
+                      phase_name
+                      x_opencti_order
+                    }
+                  }
+                }
+                objectMarking {
+                  edges {
+                    node {
+                      id
+                      definition
+                      x_opencti_color
+                    }
+                  }
+                }
+              }
               to {
                 ... on BasicObject {
                   id
@@ -390,31 +409,13 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                   name
                 }
               }
-              killChainPhases {
-                edges {
-                  node {
-                    id
-                    phase_name
-                    x_opencti_order
-                  }
-                }
-              }
-              objectMarking {
-                edges {
-                  node {
-                    id
-                    definition
-                    x_opencti_color
-                  }
-                }
-              }
             }
           }
         }
       }
     `,
   },
-  stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery,
+  stixDomainObjectThreatKnowledgeStixRelationshipsQuery,
 );
 
 export default compose(

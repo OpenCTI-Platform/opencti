@@ -16,9 +16,16 @@ import TimelineOppositeContent from '@material-ui/lab/TimelineOppositeContent';
 import TimelineDot from '@material-ui/lab/TimelineDot';
 import { createRefetchContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
-import inject18n from '../../../../components/i18n';
+import Slide from '@material-ui/core/Slide';
 import ItemIcon from '../../../../components/ItemIcon';
-import { stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
+import inject18n from '../../../../components/i18n';
+import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
+import { truncate } from '../../../../utils/String';
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   paper: {
@@ -35,32 +42,38 @@ const styles = (theme) => ({
 class StixDomainObjectTimelineComponent extends Component {
   render() {
     const {
-      md, classes, data, stixDomainObjectId, entityLink,
+      md, classes, data, stixDomainObjectId, entityLink, timeField,
     } = this.props;
-    const stixCoreRelationships = pipe(
+    const stixRelationships = pipe(
       map((n) => n.node),
       map((n) => (n.from.id === stixDomainObjectId
         ? assoc('targetEntity', n.to, n)
         : assoc('targetEntity', n.from, n))),
-    )(data.stixCoreRelationships.edges);
+    )(data.stixRelationships.edges);
     return (
       <div style={{ marginBottom: 90 }}>
         <div id="container">
           <Timeline align="alternate">
-            {stixCoreRelationships.map((stixCoreRelationship) => {
-              const link = `${entityLink}/relations/${stixCoreRelationship.id}`;
+            {stixRelationships.map((stixRelationship) => {
+              const link = `${entityLink}/relations/${stixRelationship.id}`;
               return (
-                <TimelineItem key={stixCoreRelationship.id}>
+                <TimelineItem key={stixRelationship.id}>
                   <TimelineOppositeContent>
                     <Typography variant="body2" color="textSecondary">
-                      {md(stixCoreRelationship.start_time)}
+                      {md(
+                        timeField === 'technical'
+                          ? stixRelationship.created
+                              || stixRelationship.created_at
+                          : stixRelationship.start_time
+                              || stixRelationship.created_at,
+                      )}
                     </Typography>
                   </TimelineOppositeContent>
                   <TimelineSeparator>
                     <Link to={link}>
                       <TimelineDot color="primary" variant="outlined">
                         <ItemIcon
-                          type={stixCoreRelationship.targetEntity.entity_type}
+                          type={stixRelationship.targetEntity.entity_type}
                         />
                       </TimelineDot>
                     </Link>
@@ -69,10 +82,19 @@ class StixDomainObjectTimelineComponent extends Component {
                   <TimelineContent>
                     <Paper elevation={3} className={classes.paper}>
                       <Typography variant="h2">
-                        {stixCoreRelationship.targetEntity.name}
+                        {stixRelationship.targetEntity.name
+                          || stixRelationship.targetEntity.attribute_abstract
+                          || stixRelationship.targetEntity.content}
                       </Typography>
                       <span style={{ color: '#a8a8a8' }}>
-                        {stixCoreRelationship.description}
+                        {truncate(
+                          stixRelationship.description
+                            && stixRelationship.description.length > 0
+                            ? stixRelationship.description
+                            : stixRelationship.targetEntity.description
+                                || stixRelationship.targetEntity.content,
+                          100,
+                        )}
                       </span>
                     </Paper>
                   </TimelineContent>
@@ -93,6 +115,7 @@ StixDomainObjectTimelineComponent.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  timeField: PropTypes.string,
 };
 
 const StixDomainObjectTimeline = createRefetchContainer(
@@ -100,10 +123,9 @@ const StixDomainObjectTimeline = createRefetchContainer(
   {
     data: graphql`
       fragment StixDomainObjectTimeline_data on Query {
-        stixCoreRelationships(
-          fromId: $fromId
-          fromRole: $fromRole
-          toTypes: $toTypes
+        stixRelationships(
+          elementId: $elementId
+          elementWithTargetTypes: $elementWithTargetTypes
           relationship_type: $relationship_type
           first: $first
           orderBy: $orderBy
@@ -113,9 +135,34 @@ const StixDomainObjectTimeline = createRefetchContainer(
           edges {
             node {
               id
-              description
-              start_time
-              stop_time
+              entity_type
+              ... on StixMetaRelationship {
+                created_at
+              }
+              ... on StixCoreRelationship {
+                description
+                created
+                start_time
+                stop_time
+                killChainPhases {
+                  edges {
+                    node {
+                      id
+                      phase_name
+                      x_opencti_order
+                    }
+                  }
+                }
+                objectMarking {
+                  edges {
+                    node {
+                      id
+                      definition
+                      x_opencti_color
+                    }
+                  }
+                }
+              }
               from {
                 ... on BasicObject {
                   id
@@ -123,6 +170,7 @@ const StixDomainObjectTimeline = createRefetchContainer(
                 }
                 ... on AttackPattern {
                   name
+                  description
                   x_mitre_id
                   killChainPhases {
                     edges {
@@ -136,45 +184,63 @@ const StixDomainObjectTimeline = createRefetchContainer(
                 }
                 ... on Campaign {
                   name
+                  description
                 }
                 ... on CourseOfAction {
                   name
+                  description
+                }
+                ... on Note {
+                  attribute_abstract
+                  content
                 }
                 ... on Individual {
                   name
+                  description
                 }
                 ... on Organization {
                   name
+                  description
                 }
                 ... on Sector {
                   name
+                  description
                 }
                 ... on System {
                   name
+                  description
                 }
                 ... on Indicator {
                   name
+                  description
                 }
                 ... on Infrastructure {
                   name
+                  description
                 }
                 ... on IntrusionSet {
                   name
+                  description
                 }
                 ... on Position {
                   name
+                  description
                 }
                 ... on City {
                   name
+                  description
                 }
                 ... on Country {
                   name
+                  description
                 }
                 ... on Region {
                   name
+                  description
                 }
                 ... on Malware {
                   name
+                  description
                   killChainPhases {
                     edges {
                       node {
@@ -187,9 +253,11 @@ const StixDomainObjectTimeline = createRefetchContainer(
                 }
                 ... on ThreatActor {
                   name
+                  description
                 }
                 ... on Tool {
                   name
+                  description
                   killChainPhases {
                     edges {
                       node {
@@ -202,27 +270,11 @@ const StixDomainObjectTimeline = createRefetchContainer(
                 }
                 ... on Vulnerability {
                   name
+                  description
                 }
                 ... on Incident {
                   name
-                }
-              }
-              killChainPhases {
-                edges {
-                  node {
-                    id
-                    phase_name
-                    x_opencti_order
-                  }
-                }
-              }
-              objectMarking {
-                edges {
-                  node {
-                    id
-                    definition
-                    x_opencti_color
-                  }
+                  description
                 }
               }
               to {
@@ -232,6 +284,7 @@ const StixDomainObjectTimeline = createRefetchContainer(
                 }
                 ... on AttackPattern {
                   name
+                  description
                   x_mitre_id
                   killChainPhases {
                     edges {
@@ -245,45 +298,63 @@ const StixDomainObjectTimeline = createRefetchContainer(
                 }
                 ... on Campaign {
                   name
+                  description
+                }
+                ... on Note {
+                  attribute_abstract
+                  content
                 }
                 ... on CourseOfAction {
                   name
+                  description
                 }
                 ... on Individual {
                   name
+                  description
                 }
                 ... on Organization {
                   name
+                  description
                 }
                 ... on Sector {
                   name
+                  description
                 }
                 ... on System {
                   name
+                  description
                 }
                 ... on Indicator {
                   name
+                  description
                 }
                 ... on Infrastructure {
                   name
+                  description
                 }
                 ... on IntrusionSet {
                   name
+                  description
                 }
                 ... on Position {
                   name
+                  description
                 }
                 ... on City {
                   name
+                  description
                 }
                 ... on Country {
                   name
+                  description
                 }
                 ... on Region {
                   name
+                  description
                 }
                 ... on Malware {
                   name
+                  description
                   killChainPhases {
                     edges {
                       node {
@@ -296,9 +367,11 @@ const StixDomainObjectTimeline = createRefetchContainer(
                 }
                 ... on ThreatActor {
                   name
+                  description
                 }
                 ... on Tool {
                   name
+                  description
                   killChainPhases {
                     edges {
                       node {
@@ -311,27 +384,11 @@ const StixDomainObjectTimeline = createRefetchContainer(
                 }
                 ... on Vulnerability {
                   name
+                  description
                 }
                 ... on Incident {
                   name
-                }
-              }
-              killChainPhases {
-                edges {
-                  node {
-                    id
-                    phase_name
-                    x_opencti_order
-                  }
-                }
-              }
-              objectMarking {
-                edges {
-                  node {
-                    id
-                    definition
-                    x_opencti_color
-                  }
+                  description
                 }
               }
             }
@@ -340,7 +397,7 @@ const StixDomainObjectTimeline = createRefetchContainer(
       }
     `,
   },
-  stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery,
+  stixDomainObjectThreatKnowledgeStixRelationshipsQuery,
 );
 
 export default compose(inject18n, withStyles(styles))(StixDomainObjectTimeline);

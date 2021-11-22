@@ -42,7 +42,7 @@ const styles = (theme) => ({
   },
 });
 
-class WorkspaceEdition extends Component {
+class DashboardSettings extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -99,7 +99,7 @@ class WorkspaceEdition extends Component {
   }
 }
 
-WorkspaceEdition.propTypes = {
+DashboardSettings.propTypes = {
   me: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -111,4 +111,4 @@ WorkspaceEdition.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(WorkspaceEdition);
+)(DashboardSettings);

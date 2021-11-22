@@ -7,11 +7,23 @@ import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
 import { HexagonMultipleOutline, ShieldSearch } from 'mdi-material-ui';
-import { DescriptionOutlined, DeviceHubOutlined } from '@material-ui/icons';
+import {
+  DescriptionOutlined,
+  DeviceHubOutlined,
+  SettingsOutlined,
+} from '@material-ui/icons';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import * as R from 'ramda';
 import Chip from '@material-ui/core/Chip';
+import IconButton from '@material-ui/core/IconButton';
+import Popover from '@material-ui/core/Popover';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -22,7 +34,7 @@ import StixCoreObjectStixCoreRelationshipsCloud from '../stix_core_relationships
 import StixDomainObjectGlobalKillChain from './StixDomainObjectGlobalKillChain';
 import StixDomainObjectTimeline from './StixDomainObjectTimeline';
 import Loader from '../../../../components/Loader';
-import { stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
+import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import ExportButtons from '../../../../components/ExportButtons';
 import Filters, { isUniqFilter } from '../lists/Filters';
 import {
@@ -33,6 +45,10 @@ import {
 import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
+  container: {
+    width: 300,
+    padding: 20,
+  },
   card: {
     width: '100%',
     marginBottom: 20,
@@ -132,9 +148,13 @@ class StixDomainObjectThreatKnowledge extends Component {
       sortBy: R.propOr('name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
-      viewType: R.propOr('killchain', 'viewType', params),
+      viewType: R.propOr('timeline', 'viewType', params),
       filters: R.propOr({}, 'filters', params),
+      timeField: R.propOr('technical', 'timeField', params),
+      notes: R.propOr(false, 'notes', params),
       openExports: false,
+      openTimeField: false,
+      anchorEl: null,
       numberOfElements: { number: 0, symbol: '' },
     };
   }
@@ -149,12 +169,25 @@ class StixDomainObjectThreatKnowledge extends Component {
   }
 
   handleChangeViewType(event, type) {
-    this.setState(
-      {
-        viewType: type,
-      },
-      () => this.saveView(),
-    );
+    if (type) {
+      this.setState({ viewType: type }, () => this.saveView());
+    }
+  }
+
+  handleChangeTimeField(event) {
+    this.setState({ timeField: event.target.value }, () => this.saveView());
+  }
+
+  handleChangeNotes(event) {
+    this.setState({ notes: event.target.checked }, () => this.saveView());
+  }
+
+  handleOpenTimeField(event) {
+    this.setState({ openTimeField: true, anchorEl: event.currentTarget });
+  }
+
+  handleCloseTimeField() {
+    this.setState({ openTimeField: false });
   }
 
   handleAddFilter(key, id, value, event = null) {
@@ -193,7 +226,9 @@ class StixDomainObjectThreatKnowledge extends Component {
   }
 
   render() {
-    const { viewType, filters } = this.state;
+    const {
+      viewType, filters, timeField, openTimeField, anchorEl, notes,
+    } = this.state;
     const {
       t,
       n,
@@ -226,25 +261,32 @@ class StixDomainObjectThreatKnowledge extends Component {
         'Region',
         'Country',
         'City',
+        'Note',
       ];
     } else {
       toTypes = ['Attack-Pattern', 'Malware', 'Tool', 'Vulnerability'];
     }
     const finalFilters = convertFilters(R.dissoc('entity_type', filters));
     const paginationOptions = {
-      fromId: stixDomainObjectId,
-      toTypes: R.filter(
+      elementId: stixDomainObjectId,
+      elementWithTargetTypes: R.filter(
         (x) => x.toLowerCase() !== stixDomainObjectType,
         toTypes,
       ),
-      relationship_type: 'stix-core-relationship',
       filters: finalFilters,
     };
     if (viewType === 'timeline') {
-      paginationOptions.orderBy = 'start_time';
+      paginationOptions.relationship_type = 'stix-relationship';
+      // eslint-disable-next-line no-nested-ternary
+      paginationOptions.orderBy = timeField === 'technical'
+        ? notes
+          ? 'created_at'
+          : 'created'
+        : 'start_time';
       paginationOptions.orderMode = 'desc';
+      paginationOptions.orderMissing = true;
     } else {
-      paginationOptions.fromRole = 'uses_from';
+      paginationOptions.relationship_type = 'uses';
     }
     return (
       <div>
@@ -421,14 +463,15 @@ class StixDomainObjectThreatKnowledge extends Component {
           onChange={this.handleChangeViewType.bind(this)}
           style={{ margin: '0 0 20px 0' }}
         >
-          <Tab label={t('Global kill chain')} value="killchain" />
           <Tab label={t('Timeline')} value="timeline" />
+          <Tab label={t('Global kill chain')} value="killchain" />
           <div className={classes.filters}>
             <Filters
               availableFilterKeys={[
                 'entity_type',
                 'markedBy',
                 'createdBy',
+                'labelledBy',
                 'created_start_date',
                 'created_end_date',
               ]}
@@ -480,6 +523,52 @@ class StixDomainObjectThreatKnowledge extends Component {
                 </span>
               );
             }, R.toPairs(filters))}
+            <IconButton
+              color="primary"
+              onClick={this.handleOpenTimeField.bind(this)}
+              style={{ float: 'left', marginTop: -7 }}
+            >
+              <SettingsOutlined />
+            </IconButton>
+            <Popover
+              classes={{ paper: classes.container }}
+              open={openTimeField}
+              anchorEl={anchorEl}
+              onClose={this.handleCloseTimeField.bind(this)}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'center',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'center',
+              }}
+            >
+              <FormControl style={{ width: '100%' }}>
+                <InputLabel id="timeField">{t('Date reference')}</InputLabel>
+                <Select
+                  labelId="timeField"
+                  value={timeField === null ? '' : timeField}
+                  onChange={this.handleChangeTimeField.bind(this)}
+                  fullWidth={true}
+                >
+                  <MenuItem value="technical">{t('Technical date')}</MenuItem>
+                  <MenuItem value="functional">{t('Functional date')}</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControlLabel
+                style={{ marginTop: 20 }}
+                control={
+                  <Switch
+                    checked={notes}
+                    onChange={this.handleChangeNotes.bind(this)}
+                    name="notes"
+                    color="primary"
+                  />
+                }
+                label={t('Display notes')}
+              />
+            </Popover>
           </div>
         </Tabs>
         <div className={classes.export}>
@@ -491,7 +580,7 @@ class StixDomainObjectThreatKnowledge extends Component {
           />
         </div>
         <QueryRenderer
-          query={stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery}
+          query={stixDomainObjectThreatKnowledgeStixRelationshipsQuery}
           variables={{ first: 500, ...paginationOptions }}
           render={({ props }) => {
             if (props) {
@@ -511,6 +600,7 @@ class StixDomainObjectThreatKnowledge extends Component {
                   entityLink={link}
                   paginationOptions={paginationOptions}
                   stixDomainObjectId={stixDomainObjectId}
+                  timeField={timeField}
                 />
               );
             }

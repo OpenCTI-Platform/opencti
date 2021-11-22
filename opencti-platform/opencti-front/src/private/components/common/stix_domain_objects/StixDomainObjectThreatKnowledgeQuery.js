@@ -1,16 +1,15 @@
 import graphql from 'babel-plugin-relay/macro';
 
 // eslint-disable-next-line import/prefer-default-export
-export const stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery = graphql`
-  query StixDomainObjectThreatKnowledgeQueryStixCoreRelationshipsQuery(
-    $fromId: String
-    $fromRole: String
-    $toTypes: [String]
+export const stixDomainObjectThreatKnowledgeStixRelationshipsQuery = graphql`
+  query StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery(
+    $elementId: String
+    $elementWithTargetTypes: [String]
     $relationship_type: [String]
     $first: Int
-    $orderBy: StixCoreRelationshipsOrdering
+    $orderBy: StixRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: [StixRelationshipsFiltering]
   ) {
     ...StixDomainObjectGlobalKillChain_data
     ...StixDomainObjectTimeline_data

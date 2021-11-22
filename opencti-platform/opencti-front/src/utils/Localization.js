@@ -461,6 +461,7 @@ const i18n = {
       'Launch an import': 'Lancer un import',
       Data: 'Données',
       Settings: 'Paramètres',
+      'Dashboard settings': 'Paramètres du tableau de bord',
       About: 'A propos',
       General: 'Général',
       Versions: 'Versions',
@@ -589,6 +590,7 @@ const i18n = {
       'Disable forces': 'Désactiver les forces',
       'Display time range selector':
         "Afficher le sélecteur d'intervalle de temps",
+      'Display notes': 'Afficher les notes',
       'Unfix the nodes and re-apply forces':
         'Libérer les noeuds et ré-appliquer les forces',
       'Fit graph to canvas': "Dimensionner le graphe à l'espace",

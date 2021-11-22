@@ -21,6 +21,8 @@ export const saveViewParameters = (
   const storageParams = pipe(
     dissoc('searchTerm'),
     dissoc('graphData'),
+    dissoc('anchorEl'),
+    dissoc('openTimeField'),
     dissoc('initialContent'),
     dissoc('currentContent'),
     dissoc('currentHtmlContent'),
@@ -33,6 +35,8 @@ export const saveViewParameters = (
   localStorage.setItem(localStorageKey, JSON.stringify(storageParams));
   let urlParams = pipe(
     dissoc('graphData'),
+    dissoc('openTimeField'),
+    dissoc('anchorEl'),
     dissoc('view'),
     dissoc('types'),
     dissoc('openExports'),
@@ -99,6 +103,9 @@ export const buildViewParamsFromUrlAndStorage = (
   }
   if (finalParams.modeFixed) {
     finalParams.modeFixed = finalParams.modeFixed.toString() === 'true';
+  }
+  if (finalParams.notes) {
+    finalParams.notes = finalParams.notes.toString() === 'true';
   }
   if (finalParams.currentTab) {
     finalParams.currentTab = parseInt(finalParams.currentTab, 10);
