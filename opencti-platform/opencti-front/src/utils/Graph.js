@@ -358,7 +358,7 @@ export const applyNodeFilters = (
         || R.any((m) => R.includes(m.id, markedBy), n.markedBy),
     ),
     R.filter(
-      (n) => createdBy.length === 0 || R.includes(n.createdBy.id, createdBy),
+      (n) => createdBy.length === 0 || R.includes(n.createdBy?.id, createdBy),
     ),
     R.filter(
       (n) => interval.length === 0

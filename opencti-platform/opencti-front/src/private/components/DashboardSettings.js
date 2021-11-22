@@ -78,12 +78,13 @@ class DashboardSettings extends Component {
         >
           <DialogTitle>{t('Dashboard settings')}</DialogTitle>
           <DialogContent>
-            <FormControl style={{ width: 194, marginRight: 20 }}>
+            <FormControl style={{ width: '100%' }}>
               <InputLabel id="timeField">{t('Date reference')}</InputLabel>
               <Select
                 labelId="timeField"
                 value={timeField === null ? '' : timeField}
                 onChange={handleChangeTimeField.bind(this)}
+                fullWidth={true}
               >
                 <MenuItem value="technical">{t('Technical date')}</MenuItem>
                 <MenuItem value="functional">{t('Functional date')}</MenuItem>

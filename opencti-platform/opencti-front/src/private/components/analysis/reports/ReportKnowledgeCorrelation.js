@@ -225,16 +225,53 @@ class ReportKnowledgeCorrelationComponent extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-report-${this.props.report.id}-knowledge-correlation`,
+      `view-report-${props.report.id}-knowledge-correlation`,
     );
     this.zoom = R.propOr(null, 'zoom', params);
     this.graphObjects = R.map((n) => n.node, props.report.objects.edges);
-    const stixCoreObjectsTypes = R.filter(
-      (t) => typeof t !== 'undefined' && t !== '',
-      R.propOr([], 'stixCoreObjectsTypes', params),
+    const stixCoreObjectsTypes = R.pipe(
+      R.map((n) => n.node.entity_type),
+      R.filter((n) => n && n.length > 0),
+      R.uniq,
+    )(props.report.objects.edges);
+    const markedBy = R.uniq(
+      R.concat(
+        R.pipe(
+          R.filter((m) => m.node.objectMarking),
+          R.map((m) => m.node.objectMarking.edges),
+          R.flatten,
+          R.map((m) => m.node.id),
+        )(props.report.objects.edges),
+        R.pipe(
+          R.filter((m) => m.node.reports),
+          R.map((m) => m.node.reports.edges),
+          R.flatten,
+          R.map((m) => m.node.objectMarking.edges),
+          R.flatten,
+          R.map((m) => m.node.id),
+        )(props.report.objects.edges),
+      ),
     );
-    const markedBy = R.propOr([], 'markedBy', params);
-    const createdBy = R.propOr([], 'createdBy', params);
+    const createdBy = R.uniq(
+      R.concat(
+        R.pipe(
+          R.filter((m) => m.node.createdBy),
+          R.map((m) => m.node.createdBy),
+          R.flatten,
+          R.filter((m) => m.id),
+          R.map((n) => n.id),
+        )(props.report.objects.edges),
+        R.pipe(
+          R.filter((m) => m && m.node.reports),
+          R.map((m) => m.node.reports.edges),
+          R.flatten,
+          R.map((m) => m.node.createdBy),
+          R.flatten,
+          R.filter((m) => m && m.id),
+          R.map((n) => n.id),
+        )(props.report.objects.edges),
+      ),
+    );
     const timeRangeInterval = computeTimeRangeInterval(
       R.uniqBy(
         R.prop('id'),
@@ -652,7 +689,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
   }
 
   render() {
-    const { report, theme } = this.props;
+    const { report, theme, t } = this.props;
     const {
       mode3D,
       modeFixed,
@@ -668,10 +705,22 @@ class ReportKnowledgeCorrelationComponent extends Component {
     } = this.state;
     const width = window.innerWidth - 210;
     const height = window.innerHeight - 180;
-    const stixCoreObjectsTypes = R.filter(
-      (t) => typeof t !== 'undefined' && t !== '',
-      R.uniq(R.map((e) => e.node.entity_type, report.objects.edges)),
-    );
+    const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
+    const stixCoreObjectsTypes = R.pipe(
+      R.map((n) => R.assoc(
+        'tlabel',
+        t(
+          `${n.node.relationship_type ? 'relation_' : 'entity_'}${
+            n.node.entity_type
+          }`,
+        ),
+        n,
+      )),
+      sortByLabel,
+      R.map((n) => n.node.entity_type),
+      R.filter((n) => n && n.length > 0),
+      R.uniq,
+    )(report.objects.edges);
     const markedBy = R.uniqBy(
       R.prop('id'),
       R.concat(
@@ -980,7 +1029,20 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
             }
           }
         }
-        objects(first: 100) {
+        objects(
+          types: [
+            "Threat-Actor"
+            "Intrusion-Set"
+            "Campaign"
+            "Incident"
+            "Malware"
+            "Tool"
+            "Vulnerability"
+            "Stix-Cyber-Observable"
+            "Indicator"
+          ]
+          first: 100
+        ) {
           edges {
             node {
               ... on BasicObject {

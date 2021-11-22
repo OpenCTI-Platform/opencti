@@ -170,7 +170,9 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
       t, classes, stixCoreObjectId, data,
     } = this.props;
     const { expanded } = this.state;
-    const externalReferencesEdges = data.stixCoreObject.externalReferences.edges;
+    const externalReferencesEdges = data && data.stixCoreObject
+      ? data.stixCoreObject.externalReferences.edges
+      : [];
     const expandable = externalReferencesEdges.length > 7;
     return (
       <div style={{ height: '100%' }}>

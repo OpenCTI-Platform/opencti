@@ -260,9 +260,24 @@ class ReportKnowledgeGraphComponent extends Component {
       decodeGraphData(props.report.x_opencti_graph_data),
       props.t,
     );
-    const stixCoreObjectsTypes = R.propOr([], 'stixCoreObjectsTypes', params);
-    const markedBy = R.propOr([], 'markedBy', params);
-    const createdBy = R.propOr([], 'createdBy', params);
+    const allStixCoreObjectsTypes = R.pipe(
+      R.map((n) => n.entity_type),
+      R.uniq,
+    )(this.graphData.nodes);
+    const allMarkedBy = R.pipe(
+      R.map((n) => n.markedBy),
+      R.flatten,
+      R.map((n) => n.id),
+      R.uniq,
+    )(R.union(this.graphData.nodes, this.graphData.links));
+    const allCreatedBy = R.pipe(
+      R.filter((n) => !R.isEmpty(n.createdBy) && !R.isNil(n.createdBy)),
+      R.map((n) => n.createdBy.id),
+      R.uniq,
+    )(R.union(this.graphData.nodes, this.graphData.links));
+    const stixCoreObjectsTypes = R.propOr(allStixCoreObjectsTypes, 'stixCoreObjectsTypes', params);
+    const markedBy = R.propOr(allMarkedBy, 'markedBy', params);
+    const createdBy = R.propOr(allCreatedBy, 'createdBy', params);
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
@@ -859,7 +874,9 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   render() {
-    const { report, theme, mode } = this.props;
+    const {
+      report, theme, mode, t,
+    } = this.props;
     const {
       mode3D,
       modeFixed,
@@ -877,25 +894,32 @@ class ReportKnowledgeGraphComponent extends Component {
     } = this.state;
     const graphWidth = width || window.innerWidth - 210;
     const graphHeight = height || window.innerHeight - 180;
-    const stixCoreObjectsTypes = R.uniq(
-      R.map((n) => n.entity_type, this.graphData.nodes),
+    const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
+    const sortByDefinition = R.sortBy(
+      R.compose(R.toLower, R.prop('definition')),
     );
-    const markedBy = R.uniqBy(
-      R.prop('id'),
-      R.flatten(
-        R.map(
-          (n) => n.markedBy,
-          R.union(this.graphData.nodes, this.graphData.links),
-        ),
-      ),
-    );
-    const createdBy = R.uniqBy(
-      R.prop('id'),
-      R.map(
-        (n) => n.createdBy,
-        R.union(this.graphData.nodes, this.graphData.links),
-      ),
-    );
+    const sortByName = R.sortBy(R.compose(R.toLower, R.prop('name')));
+    const stixCoreObjectsTypes = R.pipe(
+      R.map((n) => R.assoc(
+        'tlabel',
+        t(`${n.relationship_type ? 'relation_' : 'entity_'}${n.entity_type}`),
+        n,
+      )),
+      sortByLabel,
+      R.map((n) => n.entity_type),
+      R.uniq,
+    )(this.graphData.nodes);
+    const markedBy = R.pipe(
+      R.map((n) => n.markedBy),
+      R.flatten,
+      R.uniqBy(R.prop('id')),
+      sortByDefinition,
+    )(R.union(this.graphData.nodes, this.graphData.links));
+    const createdBy = R.pipe(
+      R.map((n) => n.createdBy),
+      R.uniqBy(R.prop('id')),
+      sortByName,
+    )(R.union(this.graphData.nodes, this.graphData.links));
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     const timeRangeValues = computeTimeRangeValues(
       timeRangeInterval,
@@ -1042,7 +1066,8 @@ class ReportKnowledgeGraphComponent extends Component {
             onLinkClick={this.handleLinkClick.bind(this)}
             onBackgroundClick={this.handleBackgroundClick.bind(this)}
             cooldownTicks={modeFixed ? 0 : 'Infinity'}
-            dagMode={ // eslint-disable-next-line no-nested-ternary
+            dagMode={
+              // eslint-disable-next-line no-nested-ternary
               modeTree === 'horizontal'
                 ? 'lr'
                 : modeTree === 'vertical'
