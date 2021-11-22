@@ -178,7 +178,11 @@ import {
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { isStixCyberObservable, stixCyberObservableFieldsToBeUpdated } from '../schema/stixCyberObservable';
+import {
+  isStixCyberObservable,
+  isStixCyberObservableHashedObservable,
+  stixCyberObservableFieldsToBeUpdated,
+} from '../schema/stixCyberObservable';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import {
   dayFormat,
@@ -909,9 +913,6 @@ const computeConfidenceLevel = (input) => {
   }
   return confidence;
 };
-// endregion
-
-// region mutation update
 const updatedInputsToData = (inputs) => {
   const inputPairs = R.map((input) => {
     const { key, value } = input;
@@ -1024,7 +1025,42 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
   }
   return { key: finalKey, value: finalVal, operation };
 };
+const mergeInstanceWithUpdateInputs = (instance, inputs) => {
+  const updates = Array.isArray(inputs) ? inputs : [inputs];
+  const metaKeys = [...META_STIX_ATTRIBUTES, ...META_FIELD_ATTRIBUTES];
+  const attributes = updates.filter((e) => !metaKeys.includes(e.key));
+  const mergeInput = (input) => rebuildAndMergeInputFromExistingData(input, instance);
+  const remappedInputs = R.map((i) => mergeInput(i), attributes);
+  const resolvedInputs = R.filter((f) => !R.isEmpty(f), remappedInputs);
+  return mergeInstanceWithInputs(instance, resolvedInputs);
+};
+const listEntitiesByHashes = (user, type, hashes) => {
+  const searchHashes = Object.entries(hashes)
+    .map(([, s]) => s)
+    .filter((s) => isNotEmptyField(s));
+  return listEntities(user, [type], {
+    filters: [{ key: 'hashes.*', values: searchHashes, operator: 'wildcard' }],
+    connectionFormat: false,
+  });
+};
+const hashMergeValidation = (instances) => {
+  // region Specific check for observables with hashes
+  // If multiple results start by checking the possible merge validity
+  const allHashes = instances.map((h) => h.hashes);
+  const elements = allHashes.map((e) => Object.entries(e)).flat();
+  const groupElements = R.groupBy(([key]) => key, elements);
+  Object.entries(groupElements).forEach(([algo, values]) => {
+    const hashes = R.uniq(values.map(([, data]) => data));
+    if (hashes.length > 1) {
+      const field = `hash_${algo.toUpperCase()}`;
+      const message = { message: `Hashes collision for ${algo} algorithm` };
+      throw ValidationError(field, message);
+    }
+  });
+};
+// endregion
 
+// region mutation update
 const targetedRelations = (entities, direction) => {
   return R.flatten(
     R.map((s) => {
@@ -1053,7 +1089,6 @@ const targetedRelations = (entities, direction) => {
     }, entities)
   );
 };
-
 const ed = (date) => isEmptyField(date) || date === FROM_START_STR || date === UNTIL_END_STR;
 const noDate = (e) => ed(e.first_seen) && ed(e.last_seen) && ed(e.start_time) && ed(e.stop_time);
 const filterTargetByExisting = (sources, targets) => {
@@ -1642,7 +1677,6 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
     updatedInstance: mergeInstanceWithInputs(instance, impactedInputs),
   };
 };
-// noinspection ExceptionCaughtLocallyJS
 export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
@@ -1662,19 +1696,19 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
   if (!instance) {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
-  const enforceReferences = conf.get('app:enforce_references');
+  const instanceMergeWithInputs = mergeInstanceWithUpdateInputs(instance, inputs);
+  const enforceReferences = conf.get('app:enforce_references') || [];
   const keys = R.map((t) => t.key, attributes);
   if (
-    enforceReferences &&
-    (enforceReferences.includes(instance.entity_type) ||
-      (enforceReferences.includes('stix-core-relationship') && isStixCoreRelationship(instance.entity_type)))
+    enforceReferences.includes(instance.entity_type) ||
+    (enforceReferences.includes('stix-core-relationship') && isStixCoreRelationship(instance.entity_type))
   ) {
     const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
     if (!isNoReferenceKey && isEmptyField(opts.references)) {
       throw ValidationError('references', { message: 'You must provide at least one external reference to update' });
     }
   }
-  const participantIds = getInstanceIds(instance).filter((e) => !locks.includes(e));
+  let locksIds = getInstanceIds(instance);
   // 01. Check if updating alias lead to entity conflict
   if (isStixObjectAliased(instance.entity_type)) {
     // If user ask for aliases modification, we need to check if it not already belong to another entity.
@@ -1692,50 +1726,65 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
   }
   // 02. Check if this update is not resulting to an entity merging
   let eventualNewStandardId = null;
-  if (impactStandardId && isFieldContributingToStandardId(instance, keys)) {
+  const standardIdImpacted = impactStandardId && isFieldContributingToStandardId(instance, keys);
+  if (standardIdImpacted) {
     // In this case we need to reconstruct the data like if an update already appears
     // Based on that we will be able to generate the correct standard id
-    const mergeInput = (input) => rebuildAndMergeInputFromExistingData(input, instance);
-    const remappedInputs = R.map((i) => mergeInput(i), attributes);
-    const resolvedInputs = R.filter((f) => !R.isEmpty(f), remappedInputs);
-    const updatedInstance = mergeInstanceWithInputs(instance, resolvedInputs);
-    const targetStandardId = generateStandardId(instance.entity_type, updatedInstance);
+    locksIds = getInstanceIds(instanceMergeWithInputs); // Take lock ids on the new merged instance.
+    const targetStandardId = generateStandardId(instance.entity_type, instanceMergeWithInputs);
     if (targetStandardId !== instance.standard_id) {
-      participantIds.push(targetStandardId);
+      locksIds.push(targetStandardId);
       eventualNewStandardId = targetStandardId;
     }
   }
   // --- take lock, ensure no one currently create or update this element
   let lock;
+  const participantIds = R.uniq(locksIds.filter((e) => !locks.includes(e)));
   try {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
     // region handle attributes
     // Only for StixCyberObservable
+    const existingEntities = [];
+    let existingEntityPromise = Promise.resolve(undefined);
+    let existingByHashedPromise = Promise.resolve([]);
     if (eventualNewStandardId) {
-      const existingEntity = await internalLoadById(user, eventualNewStandardId);
-      if (existingEntity) {
-        // If stix observable, we can merge. If not throw an error.
-        if (isStixCyberObservable(existingEntity.entity_type)) {
-          // There is a potential merge, in this mode we doest not support multi update
-          const noneStandardKeys = Object.keys(elementsByKey).filter(
-            (k) => !isFieldContributingToStandardId(instance, [k])
-          );
-          const haveExtraKeys = noneStandardKeys.length > 0;
-          if (haveExtraKeys) {
-            throw UnsupportedError(`This update can produce a merge, only one update action supported`);
-          }
-          // Everything ok, let merge
-          const mergeOpts = { locks: participantIds };
-          const sourceEntityIds = [instance.internal_id];
-          // noinspection UnnecessaryLocalVariableJS
-          const merged = await mergeEntities(user, existingEntity.internal_id, sourceEntityIds, mergeOpts);
-          // Return merged element after waiting for it.
-          return { element: merged };
+      existingEntityPromise = internalLoadById(user, eventualNewStandardId);
+    }
+    if (isStixCyberObservableHashedObservable(instance.entity_type)) {
+      existingByHashedPromise = listEntitiesByHashes(user, instance.entity_type, instanceMergeWithInputs.hashes).then(
+        (entities) => entities.filter((e) => e.id !== id)
+      );
+    }
+    const [existingEntity, existingByHashed] = await Promise.all([existingEntityPromise, existingByHashedPromise]);
+    if (existingEntity) {
+      existingEntities.push(existingEntity);
+    }
+    existingEntities.push(...existingByHashed);
+    // If already exist entities
+    if (existingEntities.length > 0) {
+      // If stix observable, we can merge. If not throw an error.
+      if (isStixCyberObservable(type)) {
+        // There is a potential merge, in this mode we doest not support multi update
+        const noneStandardKeys = Object.keys(elementsByKey).filter(
+          (k) => !isFieldContributingToStandardId(instance, [k])
+        );
+        const haveExtraKeys = noneStandardKeys.length > 0;
+        if (haveExtraKeys) {
+          throw UnsupportedError(`This update can produce a merge, only one update action supported`);
         }
-        // noinspection ExceptionCaughtLocallyJS
-        throw FunctionalError(`This update will produce a duplicate`, { id: instance.id, type });
+        // Everything ok, let merge
+        const target = existingEntities.shift();
+        const sources = [instanceMergeWithInputs, ...existingEntities];
+        hashMergeValidation([target, ...sources]);
+        // eslint-disable-next-line prettier/prettier
+        const merged = await mergeEntities(user, target.internal_id, sources.map((c) => c.internal_id), { locks: participantIds });
+        logApp.info(`[OPENCTI] Success merge of entity ${merged.id}`);
+        // Return merged element after waiting for it.
+        return { element: merged };
       }
+      // noinspection ExceptionCaughtLocallyJS
+      throw FunctionalError(`This update will produce a duplicate`, { id: instance.id, type });
     }
     // noinspection UnnecessaryLocalVariableJS
     const data = updateAttributeRaw(instance, attributes, opts);
@@ -1744,10 +1793,8 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     if (isStixCyberObservable(updatedInstance.entity_type)) {
       const observableSyntaxResult = checkObservableSyntax(updatedInstance.entity_type, updatedInstance);
       if (observableSyntaxResult !== true) {
-        throw FunctionalError(`Observable of type ${updatedInstance.entity_type} is not correctly formatted.`, {
-          id,
-          type,
-        });
+        const reason = `Observable of type ${updatedInstance.entity_type} is not correctly formatted.`;
+        throw FunctionalError(reason, { id, type });
       }
     }
     if (impactedInputs.length > 0) {
@@ -2807,7 +2854,20 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
     // Generate the internal id if needed
     const standardId = resolvedInput.standard_id || generateStandardId(type, resolvedInput);
     // Check if the entity exists, must be done with SYSTEM USER to really find it.
-    const existingEntities = await internalFindByIds(SYSTEM_USER, participantIds, { type });
+    const existingEntities = [];
+    const existingByIdsPromise = internalFindByIds(SYSTEM_USER, participantIds, { type });
+    // Hash are per definition keys.
+    // When creating a hash, we can check all hashes to update or merge the result
+    // Generating multiple standard ids could be a solution but to complex to implements
+    // For now, we will look for any observables that have any hashes of this input.
+    let existingByHashedPromise = Promise.resolve([]);
+    if (isStixCyberObservableHashedObservable(type)) {
+      existingByHashedPromise = listEntitiesByHashes(user, type, input.hashes);
+      resolvedInput.update = true;
+    }
+    // Resolve the existing entity
+    const [existingByIds, existingByHashed] = await Promise.all([existingByIdsPromise, existingByHashedPromise]);
+    existingEntities.push(...existingByIds, ...existingByHashed);
     // If existing entities have been found and type is a STIX Core Object
     let dataEntity;
     if (existingEntities.length > 0) {
@@ -2837,9 +2897,10 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
           // The new one is new reference, merge all found entities
           // Target entity is existingByStandard by default or any other
           const target = R.find((e) => e.standard_id === standardId, filteredEntities) || R.head(filteredEntities);
-          const sourcesEntities = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
-          const sources = sourcesEntities.map((s) => s.internal_id);
-          await mergeEntities(user, target.internal_id, sources, { locks: participantIds });
+          const sources = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
+          hashMergeValidation([target, ...sources]);
+          // eslint-disable-next-line prettier/prettier
+          await mergeEntities(user, target.internal_id, sources.map((s) => s.internal_id), { locks: participantIds });
           dataEntity = upsertElementRaw(target, type, resolvedInput);
         } else if (existingByStandard) {
           // Sometimes multiple entities can match
