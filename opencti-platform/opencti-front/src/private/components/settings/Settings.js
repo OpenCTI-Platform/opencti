@@ -70,9 +70,11 @@ const settingsQuery = graphql`
       platform_theme_dark_primary
       platform_theme_dark_secondary
       platform_theme_dark_logo
+      platform_theme_dark_logo_login
       platform_theme_light_primary
       platform_theme_light_secondary
       platform_theme_light_logo
+      platform_theme_light_logo_login
       platform_enable_reference
       platform_providers {
         name
@@ -102,9 +104,11 @@ const settingsMutationFieldPatch = graphql`
         platform_theme_dark_primary
         platform_theme_dark_secondary
         platform_theme_dark_logo
+        platform_theme_dark_logo_login
         platform_theme_light_primary
         platform_theme_light_secondary
         platform_theme_light_logo
+        platform_theme_light_logo_login
         platform_language
         platform_login_message
       }
@@ -144,9 +148,11 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_theme_dark_primary: Yup.string().nullable(),
   platform_theme_dark_secondary: Yup.string().nullable(),
   platform_theme_dark_logo: Yup.string().nullable(),
+  platform_theme_dark_logo_login: Yup.string().nullable(),
   platform_theme_light_primary: Yup.string().nullable(),
   platform_theme_light_secondary: Yup.string().nullable(),
   platform_theme_light_logo: Yup.string().nullable(),
+  platform_theme_light_logo_login: Yup.string().nullable(),
   platform_language: Yup.string().nullable(),
   platform_login_message: Yup.string().nullable(),
 });
@@ -216,9 +222,11 @@ class Settings extends Component {
                   'platform_theme_dark_primary',
                   'platform_theme_dark_secondary',
                   'platform_theme_dark_logo',
+                  'platform_theme_dark_logo_login',
                   'platform_theme_light_primary',
                   'platform_theme_light_secondary',
                   'platform_theme_light_logo',
+                  'platform_theme_light_logo_login',
                   'platform_map_tile_server_dark',
                   'platform_map_tile_server_light',
                 ],
@@ -512,6 +520,33 @@ class Settings extends Component {
                                   }
                                 />
                                 <Field
+                                  component={TextField}
+                                  name="platform_theme_dark_logo_login"
+                                  label={t(
+                                    '[Theme dark] Logo URL for login page',
+                                  )}
+                                  placeholder={t('Default')}
+                                  InputLabelProps={{
+                                    shrink: true,
+                                  }}
+                                  fullWidth={true}
+                                  style={{ marginTop: 20 }}
+                                  onFocus={this.handleChangeFocus.bind(
+                                    this,
+                                    id,
+                                  )}
+                                  onSubmit={this.handleSubmitField.bind(
+                                    this,
+                                    id,
+                                  )}
+                                  helperText={
+                                    <SubscriptionFocus
+                                      context={editContext}
+                                      fieldName="platform_theme_dark_logo_login"
+                                    />
+                                  }
+                                />
+                                <Field
                                   component={ColorPickerField}
                                   name="platform_theme_light_primary"
                                   label={t('[Theme light] Primary color')}
@@ -583,6 +618,33 @@ class Settings extends Component {
                                     <SubscriptionFocus
                                       context={editContext}
                                       fieldName="platform_theme_light_logo"
+                                    />
+                                  }
+                                />
+                                <Field
+                                  component={TextField}
+                                  name="platform_theme_light_logo_login"
+                                  label={t(
+                                    '[Theme light] Logo URL for login page',
+                                  )}
+                                  placeholder={t('Default')}
+                                  InputLabelProps={{
+                                    shrink: true,
+                                  }}
+                                  fullWidth={true}
+                                  style={{ marginTop: 20 }}
+                                  onFocus={this.handleChangeFocus.bind(
+                                    this,
+                                    id,
+                                  )}
+                                  onSubmit={this.handleSubmitField.bind(
+                                    this,
+                                    id,
+                                  )}
+                                  helperText={
+                                    <SubscriptionFocus
+                                      context={editContext}
+                                      fieldName="platform_theme_light_logo_login"
                                     />
                                   }
                                 />

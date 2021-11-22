@@ -11,6 +11,8 @@ const rootPublicQuery = graphql`
     settings {
       platform_theme
       platform_login_message
+      platform_theme_dark_logo_login
+      platform_theme_light_logo_login
       platform_providers {
         name
         type

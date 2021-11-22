@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { filter } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import { compose, filter } from 'ramda';
+import { withStyles, withTheme } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import {
   Google, KeyOutline, Facebook, Github,
@@ -12,7 +12,7 @@ import { APP_BASE_PATH } from '../../relay/environment';
 import logo from '../../resources/images/logo_opencti.png';
 import LoginForm from './LoginForm';
 
-const loginHeight = 400;
+const loginHeight = 450;
 
 const styles = (theme) => ({
   container: {
@@ -22,8 +22,9 @@ const styles = (theme) => ({
     height: loginHeight,
   },
   logo: {
-    width: '200px',
-    margin: '0px 0px 30px 0px',
+    height: 130,
+    margin: '0 auto',
+    marginBottom: 20,
   },
   button: {
     margin: theme.spacing(1),
@@ -68,13 +69,13 @@ const styles = (theme) => ({
   },
 });
 
-const Login = ({ classes, settings }) => {
+const Login = ({ classes, theme, settings }) => {
   // eslint-disable-next-line max-len
   const [dimension, setDimension] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
-  const marginTop = dimension.height / 2 - loginHeight / 2 - 120;
+  const marginTop = dimension.height / 2 - loginHeight / 2;
   const updateWindowDimensions = () => {
     setDimension({ width: window.innerWidth, height: window.innerHeight });
   };
@@ -128,23 +129,32 @@ const Login = ({ classes, settings }) => {
     </div>
   );
   const loginMessage = settings.platform_login_message;
+  const loginLogo = theme.palette.type === 'dark'
+    ? settings.platform_theme_dark_logo_login
+    : settings.platform_theme_light_logo_login;
   const providers = settings.platform_providers;
   const isAuthForm = filter((p) => p.type === 'FORM', providers).length > 0;
   const authSSOs = filter((p) => p.type === 'SSO', providers);
   const isAuthButtons = authSSOs.length > 0;
   return (
-    <div className={classes.container} style={{ marginTop }}>
-      <img src={logo} alt="logo" className={classes.logo} />
-      {loginMessage && loginMessage.length > 0 && (
-        <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Markdown>{loginMessage}</Markdown>
-        </Paper>
-      )}
-      {isAuthForm && <LoginForm />}
-      {isAuthButtons && renderExternalAuth(authSSOs)}
-      {providers.length === 0 && (
-        <div>No authentication provider available</div>
-      )}
+    <div style={{ marginTop, textAlign: 'center' }}>
+      <img
+        src={loginLogo && loginLogo.length > 0 ? loginLogo : logo}
+        alt="logo"
+        className={classes.logo}
+      />
+      <div className={classes.container}>
+        {loginMessage && loginMessage.length > 0 && (
+          <Paper classes={{ root: classes.paper }} elevation={2}>
+            <Markdown>{loginMessage}</Markdown>
+          </Paper>
+        )}
+        {isAuthForm && <LoginForm />}
+        {isAuthButtons && renderExternalAuth(authSSOs)}
+        {providers.length === 0 && (
+          <div>No authentication provider available</div>
+        )}
+      </div>
     </div>
   );
 };
@@ -154,4 +164,4 @@ Login.propTypes = {
   settings: PropTypes.object,
 };
 
-export default withStyles(styles)(Login);
+export default compose(withTheme, withStyles(styles))(Login);
