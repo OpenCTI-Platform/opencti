@@ -1240,7 +1240,6 @@ const i18n = {
       team: 'Equipe organisée',
       organization: 'Organisation structurée',
       government: 'Etatique/Gouvernemental',
-      unkown: 'Inconnu',
       accidental: 'Accidentel/Erreur',
       coercion: 'Forcé/Contraint',
       dominance: 'Domination/Pouvoir',

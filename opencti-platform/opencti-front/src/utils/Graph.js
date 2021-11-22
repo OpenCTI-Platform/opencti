@@ -496,7 +496,19 @@ export const buildCorrelationData = (objects, graphData, t, filterAdjust) => {
       isObservable: !!n.observable_value,
       markedBy: R.map(
         (m) => ({ id: m.node.id, definition: m.node.definition }),
-        R.pathOr([], ['objectMarking', 'edges'], n),
+        R.pathOr(
+          [
+            {
+              node: {
+                id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+                definition: 'None',
+                definition_type: 'None',
+              },
+            },
+          ],
+          ['objectMarking', 'edges'],
+          n,
+        ),
       ),
       createdBy: n.createdBy
         ? n.createdBy
@@ -574,11 +586,23 @@ export const buildGraphData = (objects, graphData, t) => {
       isObservable: !!n.observable_value,
       markedBy: R.map(
         (m) => ({ id: m.node.id, definition: m.node.definition }),
-        R.pathOr([], ['objectMarking', 'edges'], n),
+        R.pathOr(
+          [
+            {
+              node: {
+                id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+                definition: t('None'),
+                definition_type: t('None'),
+              },
+            },
+          ],
+          ['objectMarking', 'edges'],
+          n,
+        ),
       ),
       createdBy: n.createdBy
         ? n.createdBy
-        : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: 'Unknown' },
+        : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: t('None') },
       fx: graphData[n.id] && graphData[n.id].x ? graphData[n.id].x : null,
       fy: graphData[n.id] && graphData[n.id].y ? graphData[n.id].y : null,
     })),
@@ -612,11 +636,23 @@ export const buildGraphData = (objects, graphData, t) => {
       defaultDate: jsDate(defaultDate(n)),
       markedBy: R.map(
         (m) => ({ id: m.node.id, definition: m.node.definition }),
-        R.pathOr([], ['objectMarking', 'edges'], n),
+        R.pathOr(
+          [
+            {
+              node: {
+                id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+                definition: t('None'),
+                definition_type: t('None'),
+              },
+            },
+          ],
+          ['objectMarking', 'edges'],
+          n,
+        ),
       ),
       createdBy: n.createdBy
         ? n.createdBy
-        : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: 'Unknown' },
+        : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: t('None') },
     })),
   )(objects);
   const nestedLinks = R.pipe(
@@ -639,12 +675,24 @@ export const buildGraphData = (objects, graphData, t) => {
         stop_time: '',
         defaultDate: jsDate(defaultDate(n)),
         markedBy: R.map(
-          (m) => ({ id: m.id, definition: m.node.definition }),
-          R.pathOr([], ['objectMarking', 'edges'], n),
+          (m) => ({ id: m.node.id, definition: m.node.definition }),
+          R.pathOr(
+            [
+              {
+                node: {
+                  id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+                  definition: t('None'),
+                  definition_type: t('None'),
+                },
+              },
+            ],
+            ['objectMarking', 'edges'],
+            n,
+          ),
         ),
         createdBy: n.createdBy
           ? n.createdBy
-          : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: 'Unknown' },
+          : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: t('None') },
       },
       {
         id: n.id,
