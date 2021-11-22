@@ -103,7 +103,7 @@ class StixCoreRelationshipInference extends Component {
         <ForceGraph2D
           ref={this.graph}
           width={width}
-          height={440}
+          height={400}
           graphData={graphData}
           nodeRelSize={4}
           nodeCanvasObject={(node, ctx) => nodePaint(node, node.color, ctx, false)

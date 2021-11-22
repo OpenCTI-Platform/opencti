@@ -10,9 +10,15 @@ import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Fab from '@material-ui/core/Fab';
-import { ArrowRightAlt, Edit } from '@material-ui/icons';
+import {
+  ArrowRightAlt,
+  Edit,
+  ExpandLessOutlined,
+  ExpandMoreOutlined,
+} from '@material-ui/icons';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import Button from '@material-ui/core/Button';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
@@ -109,12 +115,28 @@ const styles = (theme) => ({
   gridContainer: {
     marginBottom: 20,
   },
+  buttonExpand: {
+    position: 'absolute',
+    bottom: 2,
+    width: '100%',
+    height: 25,
+    backgroundColor: 'rgba(255, 255, 255, .2)',
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    '&:hover': {
+      backgroundColor: 'rgba(255, 255, 255, .5)',
+    },
+  },
 });
 
 class StixCoreRelationshipContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = { openEdit: false };
+    this.state = { openEdit: false, expanded: false };
+  }
+
+  handleToggleExpand() {
+    this.setState({ expanded: !this.state.expanded });
   }
 
   handleOpenEdition() {
@@ -162,6 +184,7 @@ class StixCoreRelationshipContainer extends Component {
     const {
       t, nsdt, classes, stixCoreRelationship, paddingRight,
     } = this.props;
+    const { expanded } = this.state;
     const { from } = stixCoreRelationship;
     const { to } = stixCoreRelationship;
     const fromRestricted = from === null;
@@ -182,6 +205,8 @@ class StixCoreRelationshipContainer extends Component {
         }/knowledge/relations`
         : resolveLink(to.entity_type)
       : '';
+    const expandable = stixCoreRelationship.x_opencti_inferences
+      && stixCoreRelationship.x_opencti_inferences.length > 1;
     return (
       <div className={classes.container}>
         <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : ''}>
@@ -408,11 +433,15 @@ class StixCoreRelationshipContainer extends Component {
         </Grid>
         <div>
           {stixCoreRelationship.x_opencti_inferences !== null ? (
-            <div style={{ marginTop: 40 }}>
+            <div style={{ marginTop: 50 }}>
               <Typography variant="h4" gutterBottom={true}>
-                {t('Inference explanation')}
+                {t('Inference explanation')} (
+                {stixCoreRelationship.x_opencti_inferences.length})
               </Typography>
-              {stixCoreRelationship.x_opencti_inferences.map((inference) => (
+              {R.take(
+                expanded ? 200 : 1,
+                stixCoreRelationship.x_opencti_inferences,
+              ).map((inference) => (
                 <StixCoreRelationshipInference
                   key={inference.rule.id}
                   inference={inference}
@@ -420,6 +449,20 @@ class StixCoreRelationshipContainer extends Component {
                   paddingRight={paddingRight}
                 />
               ))}
+              {expandable && (
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={this.handleToggleExpand.bind(this)}
+                  classes={{ root: classes.buttonExpand }}
+                >
+                  {expanded ? (
+                    <ExpandLessOutlined fontSize="small" />
+                  ) : (
+                    <ExpandMoreOutlined fontSize="small" />
+                  )}
+                </Button>
+              )}
             </div>
           ) : (
             <div style={{ margin: '40px 0 0px 0' }}>

@@ -73,7 +73,9 @@ def main():
         if len(parts) > 0:
             pattern = ObservationExpression(OrBooleanExpression(parts))
     else:
-        pattern = ObservationExpression(generate_part(observable_type, observable_value))
+        ece = generate_part(observable_type, observable_value)
+        if ece is not None:
+            pattern = ObservationExpression(ece)
     if pattern is not None:
         return_data({"status": "success", "data": str(pattern)})
     else:
