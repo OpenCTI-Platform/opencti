@@ -48,7 +48,7 @@ class StixCoreObjectExternalReferences extends Component {
         query={stixCoreObjectExternalReferencesLinesQuery}
         variables={{ id: stixCoreObjectId, count: 200 }}
         render={({ props }) => {
-          if (props) {
+          if (props && props.stixCoreObject) {
             return (
               <StixCoreObjectExternalReferencesLines
                 stixCoreObjectId={stixCoreObjectId}

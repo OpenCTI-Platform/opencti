@@ -1731,7 +1731,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
           // noinspection UnnecessaryLocalVariableJS
           const merged = await mergeEntities(user, existingEntity.internal_id, sourceEntityIds, mergeOpts);
           // Return merged element after waiting for it.
-          return merged;
+          return { element: merged };
         }
         // noinspection ExceptionCaughtLocallyJS
         throw FunctionalError(`This update will produce a duplicate`, { id: instance.id, type });

@@ -84,37 +84,42 @@ const createIndicatorFromObservable = async (user, input, observable) => {
   try {
     let entityType = observable.entity_type;
     let key = entityType;
+    const indicatorName = observableValue(observable);
+    let value = indicatorName;
     if (isStixCyberObservableHashedObservable(entityType)) {
       if (observable.hashes) {
+        key = '';
+        value = '';
         if (observable.hashes['SHA-256']) {
           key = `${entityType}_sha256`;
-        } else if (observable.hashes['SHA-1']) {
-          key = `${entityType}_sha1`;
-        } else if (observable.hashes.MD5) {
-          key = `${entityType}_md5`;
+          value = observable.hashes['SHA-256'];
+        }
+        if (observable.hashes['SHA-1']) {
+          key = key.length > 0 ? `${key}__${entityType}_sha1` : `${entityType}_sha1`;
+          value = value.length > 0 ? `${value}__${observable.hashes['SHA-1']}` : observable.hashes['SHA-1'];
+        }
+        if (observable.hashes.MD5) {
+          key = key.length > 0 ? `${key}__${entityType}_md5` : `${entityType}_md5`;
+          value = value.length > 0 ? `${value}__${observable.hashes.MD5}` : observable.hashes.MD5;
         }
       } else if (observable.name) {
         key = `${entityType}_name`;
       }
-    }
-    if (observable.pid) {
+    } else if (observable.pid) {
       key = `${entityType}_pid`;
-    }
-    if (observable.subject) {
+    } else if (observable.subject) {
       key = `${entityType}_subject`;
-    }
-    if (observable.body) {
+    } else if (observable.body) {
       key = `${entityType}_body`;
     }
-    const indicatorName = observableValue(observable);
     if (key.includes('StixFile')) {
-      key = key.replace('StixFile', 'File');
+      key = key.replaceAll('StixFile', 'File');
     }
     if (key.includes('Artifact')) {
-      key = key.replace('Artifact', 'File');
+      key = key.replaceAll('Artifact', 'File');
       entityType = 'StixFile';
     }
-    const pattern = await createStixPattern(key, indicatorName);
+    const pattern = await createStixPattern(key, value);
     if (pattern) {
       const indicatorToCreate = {
         pattern_type: 'stix',

@@ -1,7 +1,7 @@
 import json
 import sys
 
-from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpression
+from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpression, OrBooleanExpression
 
 PATTERN_MAPPING = {
     "Autonomous-System": ["number"],
@@ -38,6 +38,17 @@ def return_data(data):
     exit(0)
 
 
+def generate_part(observable_type, observable_value):
+    if observable_type in PATTERN_MAPPING:
+        lhs = ObjectPath(
+            observable_type.lower()
+            if "_" not in observable_type
+            else observable_type.split("_")[0].lower(),
+            PATTERN_MAPPING[observable_type],
+        )
+        return EqualityComparisonExpression(lhs, observable_value)
+    return None
+
 def main():
     if len(sys.argv) <= 2:
         return_data(
@@ -49,15 +60,22 @@ def main():
 
     observable_type = sys.argv[1]
     observable_value = sys.argv[2]
-    if observable_type in PATTERN_MAPPING:
-        lhs = ObjectPath(
-            observable_type.lower()
-            if "_" not in observable_type
-            else observable_type.split("_")[0].lower(),
-            PATTERN_MAPPING[observable_type],
-        )
-        ece = ObservationExpression(EqualityComparisonExpression(lhs, observable_value))
-        return_data({"status": "success", "data": str(ece)})
+    pattern = None
+    if "__" in observable_type:
+        observable_types = observable_type.split("__")
+        observable_values = observable_value.split("__")
+        length = len(observable_types)
+        parts = []
+        for i in range(length):
+            part = generate_part(observable_types[i], observable_values[i])
+            if part is not None:
+                parts.append(part)
+        if len(parts) > 0:
+            pattern = ObservationExpression(OrBooleanExpression(parts))
+    else:
+        pattern = ObservationExpression(generate_part(observable_type, observable_value))
+    if pattern is not None:
+        return_data({"status": "success", "data": str(pattern)})
     else:
         return_data({"status": "unknown", "data": None})
 

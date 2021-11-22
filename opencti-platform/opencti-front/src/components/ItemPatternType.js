@@ -42,8 +42,8 @@ const inlineStyles = {
     border: '1px solid #4caf50',
   },
   snort: {
-    backgroundColor: 'rgba(78, 52, 46, 0.08)',
-    color: '#4e342e',
+    backgroundColor: 'rgb(231, 133, 109, 0.08)',
+    color: '#8d4e41',
     border: '1px solid #4e342e',
   },
   suricata: {
