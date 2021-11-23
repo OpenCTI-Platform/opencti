@@ -805,6 +805,7 @@ type RetentionRule {
   filters: String!
   max_retention: Int!
   last_execution_date: DateTime
+  last_deleted_count: Int
 }
 type RetentionRuleConnection {
   pageInfo: PageInfo!

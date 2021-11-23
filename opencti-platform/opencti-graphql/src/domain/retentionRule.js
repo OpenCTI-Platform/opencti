@@ -5,7 +5,7 @@ import { elIndex } from '../database/elasticSearch';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { UnsupportedError } from '../config/errors';
 
-// 'id', 'standard_id', 'name', 'filters', 'last_execution_date'
+// 'id', 'standard_id', 'name', 'filters', 'last_execution_date', 'last_deleted_count'
 
 // input { name, filters }
 export const createRetentionRule = async (user, input) => {
@@ -24,6 +24,7 @@ export const createRetentionRule = async (user, input) => {
     standard_id: generateStandardId(ENTITY_TYPE_RETENTION_RULE, input),
     entity_type: ENTITY_TYPE_RETENTION_RULE,
     last_execution_date: null,
+    last_deleted_count: null,
     ...input,
   };
   await elIndex(INDEX_INTERNAL_OBJECTS, retentionRule);

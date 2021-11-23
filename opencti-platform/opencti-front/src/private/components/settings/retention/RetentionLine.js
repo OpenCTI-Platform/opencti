@@ -152,7 +152,7 @@ class RetentionLineComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.last_execution_date.width }}
               >
-                {nsdt(node.last_execution_date)}
+                <b>{node.last_deleted_count}</b> @ {nsdt(node.last_execution_date)}
               </div>
             </div>
           }
@@ -184,6 +184,7 @@ const RetentionLineFragment = createFragmentContainer(RetentionLineComponent, {
       name
       max_retention
       last_execution_date
+      last_deleted_count
       filters
     }
   `,
