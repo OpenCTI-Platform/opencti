@@ -1745,7 +1745,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     lock = await lockResource(participantIds);
     // region handle attributes
     // Only for StixCyberObservable
-    const existingEntities = [];
+    const lookingEntities = [];
     let existingEntityPromise = Promise.resolve(undefined);
     let existingByHashedPromise = Promise.resolve([]);
     if (eventualNewStandardId) {
@@ -1758,9 +1758,10 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     }
     const [existingEntity, existingByHashed] = await Promise.all([existingEntityPromise, existingByHashedPromise]);
     if (existingEntity) {
-      existingEntities.push(existingEntity);
+      lookingEntities.push(existingEntity);
     }
-    existingEntities.push(...existingByHashed);
+    lookingEntities.push(...existingByHashed);
+    const existingEntities = R.uniqBy((e) => e.internal_id, lookingEntities);
     // If already exist entities
     if (existingEntities.length > 0) {
       // If stix observable, we can merge. If not throw an error.
@@ -2867,7 +2868,7 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
     }
     // Resolve the existing entity
     const [existingByIds, existingByHashed] = await Promise.all([existingByIdsPromise, existingByHashedPromise]);
-    existingEntities.push(...existingByIds, ...existingByHashed);
+    existingEntities.push(...R.uniqBy((e) => e.internal_id, [...existingByIds, ...existingByHashed]));
     // If existing entities have been found and type is a STIX Core Object
     let dataEntity;
     if (existingEntities.length > 0) {
