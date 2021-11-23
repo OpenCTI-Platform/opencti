@@ -17,7 +17,7 @@ import {
 import * as M from './stixMetaObject';
 import { isStixMetaObject } from './stixMetaObject';
 import * as C from './stixCyberObservable';
-import { isStixCyberObservable } from './stixCyberObservable';
+import { isStixCyberObservable, isStixCyberObservableHashedObservable } from './stixCyberObservable';
 import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID } from './general';
 import { isInternalRelationship } from './internalRelationship';
 import { isStixCoreRelationship } from './stixCoreRelationship';
@@ -370,6 +370,16 @@ export const generateAliasesIdsForInstance = (instance) => {
   }
   return [];
 };
+const getHashIds = (type, hashes) => {
+  const ids = [];
+  if (isStixCyberObservableHashedObservable(type)) {
+    const hashIds = Object.entries(hashes)
+      .map(([, s]) => s)
+      .filter((s) => isNotEmptyField(s));
+    ids.push(...hashIds);
+  }
+  return ids;
+};
 export const getInstanceIds = (instance, withoutInternal = false) => {
   const ids = [];
   if (!withoutInternal) {
@@ -380,6 +390,7 @@ export const getInstanceIds = (instance, withoutInternal = false) => {
     ids.push(...instance.x_opencti_stix_ids);
   }
   ids.push(...generateAliasesIdsForInstance(instance));
+  ids.push(...getHashIds(instance.entity_type, instance.hashes));
   return R.uniq(ids);
 };
 export const getInputIds = (type, input) => {
@@ -391,6 +402,7 @@ export const getInputIds = (type, input) => {
     ids.push(input.stix_id);
   }
   ids.push(...generateAliasesIdsForInstance(input));
+  ids.push(...getHashIds(type, input.hashes));
   return R.uniq(ids);
 };
 export const getInstanceIdentifiers = (instance) => {
