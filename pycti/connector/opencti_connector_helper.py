@@ -496,6 +496,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     def get_only_contextual(self) -> Optional[Union[bool, int, str]]:
         return self.connect_only_contextual
 
+    def get_run_and_terminate(self) -> Optional[Union[bool, int, str]]:
+        return self.connect_run_and_terminate
+
     def set_state(self, state) -> None:
         """sets the connector state
 
@@ -520,6 +523,21 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         except:  # pylint: disable=bare-except
             pass
         return None
+
+    def force_ping(self):
+        try:
+            initial_state = self.get_state()
+            result = self.api.connector.ping(self.connector_id, initial_state)
+            remote_state = (
+                json.loads(result["connector_state"])
+                if result["connector_state"] is not None
+                and len(result["connector_state"]) > 0
+                else None
+            )
+            if initial_state != remote_state:
+                self.api.connector.ping(self.connector_id, initial_state)
+        except Exception:  # pylint: disable=broad-except
+            logging.error("Error pinging the API")
 
     def listen(self, message_callback: Callable[[Dict], str]) -> None:
         """listen for messages and register callback function
