@@ -54,7 +54,7 @@ export const findAll = (user, args) => {
   return listEntities(user, [ENTITY_TYPE_TASK], args);
 };
 
-const buildQueryFilters = (rawFilters, taskPosition) => {
+const buildQueryFilters = (rawFilters, search, taskPosition) => {
   const types = [];
   const queryFilters = [];
   const filters = rawFilters ? JSON.parse(rawFilters) : undefined;
@@ -80,10 +80,11 @@ const buildQueryFilters = (rawFilters, taskPosition) => {
     orderBy: 'internal_id',
     after: taskPosition,
     filters: queryFilters,
+    search: search && search.length > 0 ? search : null,
   };
 };
-export const executeTaskQuery = async (user, filters, start = null) => {
-  const options = buildQueryFilters(filters, start);
+export const executeTaskQuery = async (user, filters, search, start = null) => {
+  const options = buildQueryFilters(filters, search, start);
   return elPaginate(user, READ_STIX_INDICES, options);
 };
 
@@ -113,12 +114,12 @@ export const createRuleTask = async (user, input) => {
 };
 
 export const createQueryTask = async (user, input) => {
-  const { actions, filters } = input;
+  const { actions, filters, search = null } = input;
   checkActionValidity(user, actions);
-  const queryData = await executeTaskQuery(user, filters);
+  const queryData = await executeTaskQuery(user, filters, search);
   const countExpected = queryData.pageInfo.globalCount;
   const task = createDefaultTask(user, input, TASK_TYPE_QUERY, countExpected);
-  const queryTask = { ...task, actions, task_filters: filters };
+  const queryTask = { ...task, actions, task_filters: filters, task_search: search };
   await elIndex(INDEX_INTERNAL_OBJECTS, queryTask);
   return queryTask;
 };

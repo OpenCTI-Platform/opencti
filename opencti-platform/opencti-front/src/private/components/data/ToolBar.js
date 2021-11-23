@@ -375,6 +375,7 @@ class ToolBar extends Component {
     const { actions, mergingElement } = this.state;
     const {
       filters,
+      search,
       selectAll,
       selectedElements,
       numberOfSelectedElements,
@@ -401,6 +402,7 @@ class ToolBar extends Component {
         variables: {
           input: {
             filters: jsonFilters,
+            search,
             actions: finalActions,
           },
         },
@@ -748,6 +750,7 @@ class ToolBar extends Component {
       selectedElements,
       selectAll,
       filters,
+      search,
       withPaddingRight,
       theme,
     } = this.props;
@@ -943,6 +946,22 @@ class ToolBar extends Component {
                     <TableCell>
                       {selectAll ? (
                         <div className={classes.filters}>
+                          {search && search.length > 0 && (
+                            <span>
+                              <Chip
+                                classes={{ root: classes.filter }}
+                                label={
+                                  <div>
+                                    <strong>{t('Search')}</strong>: {search}
+                                  </div>
+                                }
+                              />
+                              <Chip
+                                classes={{ root: classes.operator }}
+                                label={t('AND')}
+                              />
+                            </span>
+                          )}
                           {R.map((currentFilter) => {
                             const label = `${truncate(
                               t(`filter_${currentFilter[0]}`),
@@ -1322,6 +1341,7 @@ ToolBar.propTypes = {
   selectedElements: PropTypes.object,
   selectAll: PropTypes.bool,
   filters: PropTypes.object,
+  search: PropTypes.string,
   handleClearSelectedElements: PropTypes.func,
   withPaddingRight: PropTypes.bool,
 };

@@ -266,6 +266,7 @@ class Entities extends Component {
                 filters,
               )
           }
+          search={searchTerm}
           handleClearSelectedElements={this.handleClearSelectedElements.bind(
             this,
           )}

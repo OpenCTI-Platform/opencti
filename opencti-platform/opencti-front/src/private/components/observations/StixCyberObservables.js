@@ -272,6 +272,7 @@ class StixCyberObservables extends Component {
               numberOfSelectedElements={numberOfSelectedElements}
               selectAll={selectAll}
               filters={finalFilters}
+              search={searchTerm}
               handleClearSelectedElements={this.handleClearSelectedElements.bind(
                 this,
               )}

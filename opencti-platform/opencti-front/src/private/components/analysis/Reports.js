@@ -247,6 +247,7 @@ class Reports extends Component {
           selectedElements={selectedElements}
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
+          search={searchTerm}
           filters={finalFilters}
           handleClearSelectedElements={this.handleClearSelectedElements.bind(
             this,

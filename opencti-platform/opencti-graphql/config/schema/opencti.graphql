@@ -761,6 +761,7 @@ type QueryTask implements Task {
   errors: [TaskError]
   # QueryTask
   task_filters: String!
+  task_search: String
 }
 
 type TaskConnectionEdge {
@@ -788,6 +789,7 @@ input ListTaskAddInput {
 }
 input QueryTaskAddInput {
   filters: String!
+  search: String
   actions: [TaskActionInput]!
 }
 

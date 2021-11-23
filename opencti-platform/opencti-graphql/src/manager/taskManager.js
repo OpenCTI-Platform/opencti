@@ -116,10 +116,10 @@ const computeRuleTaskElements = async (task) => {
   return processingElements;
 };
 const computeQueryTaskElements = async (user, task) => {
-  const { actions, task_position, task_filters } = task;
+  const { actions, task_position, task_filters, task_search = null } = task;
   const processingElements = [];
   // Fetch the information
-  const data = await executeTaskQuery(user, task_filters, task_position);
+  const data = await executeTaskQuery(user, task_filters, task_search, task_position);
   // const expectedNumber = data.pageInfo.globalCount;
   const elements = data.edges;
   // Apply the actions for each element

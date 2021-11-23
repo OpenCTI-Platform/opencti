@@ -220,6 +220,22 @@ class TasksListComponent extends Component {
                         {t('Targeted entities')} ({n(task.task_expected_number)}
                         )
                       </Typography>
+                      {task.task_search && (
+                        <span>
+                          <Chip
+                            classes={{ root: classes.filter }}
+                            label={
+                              <div>
+                                <strong>{t('Search')}</strong>: {task.task_search}
+                              </div>
+                            }
+                          />
+                          <Chip
+                            classes={{ root: classes.operator }}
+                            label={t('AND')}
+                          />
+                        </span>
+                      )}
                       {task.type !== 'RULE'
                         && (filters ? (
                           R.map((currentFilter) => {
@@ -556,6 +572,7 @@ const TasksList = createRefetchContainer(
               }
               ... on QueryTask {
                 task_filters
+                task_search
               }
             }
           }
