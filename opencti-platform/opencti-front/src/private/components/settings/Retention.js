@@ -49,7 +49,7 @@ class Retention extends Component {
       },
       filters: {
         label: 'Apply on',
-        width: '45%',
+        width: '35%',
       },
       retention: {
         label: 'Max retention',
@@ -58,6 +58,10 @@ class Retention extends Component {
       last_execution_date: {
         label: 'Last execution',
         width: '20%',
+      },
+      remaining_count: {
+        label: 'Remaining',
+        width: '10%',
       },
     };
     return (
