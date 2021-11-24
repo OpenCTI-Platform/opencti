@@ -29,7 +29,7 @@ export const RETENTION_MANAGER_USER = {
 // If the lock is free, every API as the right to take it.
 const SCHEDULE_TIME = conf.get('retention_manager:interval') || 60000;
 const RETENTION_MANAGER_KEY = conf.get('retention_manager:lock_key') || 'retention_manager_lock';
-const RETENTION_BATCH_SIZE = conf.get('retention_manager:batch_size') || 1000;
+const RETENTION_BATCH_SIZE = conf.get('retention_manager:batch_size') || 100;
 const RETENTION_INDICES = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_META_RELATIONSHIPS];
 
 const executeProcessing = async (retentionRule) => {
@@ -47,8 +47,12 @@ const executeProcessing = async (retentionRule) => {
     const { node } = elements[index];
     const { updated_at: up } = node;
     const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
-    logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
-    await deleteElementById(RETENTION_MANAGER_USER, node.internal_id, node.entity_type);
+    try {
+      await deleteElementById(RETENTION_MANAGER_USER, node.internal_id, node.entity_type);
+      logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
+    } catch (e) {
+      logApp.error(`[OPENCTI] Retention manager error deleting ${node.id}`, { error: e });
+    }
   }
   // Patch the last execution of the rule
   const patch = {

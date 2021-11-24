@@ -146,13 +146,19 @@ class RetentionLineComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.retention.width }}
               >
-                {node.max_retention} {t('day(s)')} [<b>{n(node.remaining_count)}</b>]
+                {node.max_retention} {t('day(s)')}
               </div>
               <div
                   className={classes.bodyItem}
                   style={{ width: dataColumns.last_execution_date.width }}
               >
-                {nsdt(node.last_execution_date)} [<b>{n(node.last_deleted_count)}</b>]
+                {nsdt(node.last_execution_date)}
+              </div>
+              <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.remaining_count.width }}
+              >
+                {n(node.remaining_count)}
               </div>
             </div>
           }
@@ -184,7 +190,6 @@ const RetentionLineFragment = createFragmentContainer(RetentionLineComponent, {
       name
       max_retention
       last_execution_date
-      last_deleted_count
       remaining_count
       filters
     }
@@ -243,6 +248,17 @@ class RetentionDummyComponent extends Component {
               <div
                   className={classes.bodyItem}
                   style={{ width: dataColumns.last_execution_date.width }}
+              >
+                <Skeleton
+                    animation="wave"
+                    variant="rect"
+                    width="20%"
+                    height="100%"
+                />
+              </div>
+              <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.remaining_count.width }}
               >
                 <Skeleton
                     animation="wave"
