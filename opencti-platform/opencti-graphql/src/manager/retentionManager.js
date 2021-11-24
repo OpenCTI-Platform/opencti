@@ -44,11 +44,11 @@ const executeProcessing = async (retentionRule) => {
   const elements = result.edges;
   logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);
   for (let index = 0; index < elements.length; index += 1) {
-    const element = elements[index];
-    const { updated_at: up } = element;
+    const { node } = elements[index];
+    const { updated_at: up } = node;
     const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
-    logApp.debug(`[OPENCTI] Retention manager deleting ${element.name}/${element.id} after ${humanDuration}`);
-    await deleteElementById(RETENTION_MANAGER_USER, element.internal_id);
+    logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
+    await deleteElementById(RETENTION_MANAGER_USER, node.internal_id, node.entity_type);
   }
   // Patch the last execution of the rule
   const patch = {
