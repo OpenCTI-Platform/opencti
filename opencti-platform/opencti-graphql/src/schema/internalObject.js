@@ -218,6 +218,7 @@ export const internalObjectsAttributes = {
     'max_retention',
     'last_execution_date',
     'last_deleted_count',
+    'remaining_count',
   ],
   [ENTITY_TYPE_SYNC]: [
     'internal_id',

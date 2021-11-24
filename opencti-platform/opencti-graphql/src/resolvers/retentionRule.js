@@ -1,4 +1,5 @@
 import {
+  checkRetentionRule,
   createRetentionRule,
   deleteRetentionRule,
   findAll,
@@ -13,6 +14,7 @@ const retentionResolvers = {
   },
   Mutation: {
     retentionRuleAdd: (_, { input }, { user }) => createRetentionRule(user, input),
+    retentionRuleCheck: (_, { input }) => checkRetentionRule(input),
     retentionRuleEdit: (_, { id }, { user }) => ({
       delete: () => deleteRetentionRule(user, id),
       fieldPatch: ({ input }) => retentionRuleEditField(user, id, input),

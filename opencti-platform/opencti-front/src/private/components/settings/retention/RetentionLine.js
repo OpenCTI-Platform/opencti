@@ -69,7 +69,7 @@ const styles = (theme) => ({
 class RetentionLineComponent extends Component {
   render() {
     const {
-      t, classes, node, dataColumns, paginationOptions, nsdt,
+      t, classes, node, dataColumns, paginationOptions, nsdt, n,
     } = this.props;
     const filters = JSON.parse(node.filters);
     const filterPairs = toPairs(filters);
@@ -99,12 +99,12 @@ class RetentionLineComponent extends Component {
                   const values = (
                     <span>
                       {map(
-                        (n) => (
-                          <span key={n.value}>
-                            {n.value && n.value.length > 0
-                              ? truncate(n.value, 15)
+                        (val) => (
+                          <span key={val.value}>
+                            {val.value && val.value.length > 0
+                              ? truncate(val.value, 15)
                               : t('No label')}{' '}
-                            {last(currentFilter[1]).value !== n.value && (
+                            {last(currentFilter[1]).value !== val.value && (
                               <code>OR</code>
                             )}{' '}
                           </span>
@@ -146,13 +146,13 @@ class RetentionLineComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.retention.width }}
               >
-                {node.max_retention} {t('day(s)')}
+                {node.max_retention} {t('day(s)')} [<b>{n(node.remaining_count)}</b>]
               </div>
               <div
                   className={classes.bodyItem}
                   style={{ width: dataColumns.last_execution_date.width }}
               >
-                <b>{node.last_deleted_count}</b> @ {nsdt(node.last_execution_date)}
+                {nsdt(node.last_execution_date)} [<b>{n(node.last_deleted_count)}</b>]
               </div>
             </div>
           }
@@ -185,6 +185,7 @@ const RetentionLineFragment = createFragmentContainer(RetentionLineComponent, {
       max_retention
       last_execution_date
       last_deleted_count
+      remaining_count
       filters
     }
   `,

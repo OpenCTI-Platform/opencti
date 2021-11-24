@@ -1,11 +1,23 @@
 import { deleteElementById, listEntities, loadById, updateAttribute } from '../database/middleware';
 import { ENTITY_TYPE_RETENTION_RULE } from '../schema/internalObject';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { elIndex } from '../database/elasticSearch';
-import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { elIndex, elPaginate } from '../database/elasticSearch';
+import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
 import { UnsupportedError } from '../config/errors';
+import { convertFiltersToQueryOptions } from './taxii';
+import { RETENTION_MANAGER_USER } from '../manager/retentionManager';
+import { utcDate } from '../utils/format';
 
-// 'id', 'standard_id', 'name', 'filters', 'last_execution_date', 'last_deleted_count'
+// 'id', 'standard_id', 'name', 'filters', 'last_execution_date', 'last_deleted_count', 'remaining_count'
+
+export const checkRetentionRule = async (input) => {
+  const { filters, max_retention: maxDays } = input;
+  const jsonFilters = JSON.parse(filters || '{}');
+  const before = utcDate().subtract(maxDays, 'days');
+  const queryOptions = convertFiltersToQueryOptions(jsonFilters, { before });
+  const result = await elPaginate(RETENTION_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, queryOptions);
+  return result.pageInfo.globalCount;
+};
 
 // input { name, filters }
 export const createRetentionRule = async (user, input) => {
@@ -25,6 +37,7 @@ export const createRetentionRule = async (user, input) => {
     entity_type: ENTITY_TYPE_RETENTION_RULE,
     last_execution_date: null,
     last_deleted_count: null,
+    remaining_count: null,
     ...input,
   };
   await elIndex(INDEX_INTERNAL_OBJECTS, retentionRule);
