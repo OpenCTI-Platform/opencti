@@ -4,7 +4,6 @@ import { paginateAllThings, listEntities, listThings, loadById, listRelations } 
 import { buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination } from '../database/utils';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 
 export const STATUS_STATUS_PROGRESS = 1;
 export const STATUS_STATUS_ANALYZED = 2;

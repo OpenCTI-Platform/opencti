@@ -716,6 +716,8 @@ const i18n = {
       'Delete this file': 'Supprimer ce fichier',
       'No file for the moment': 'Aucun fichier pour le moment',
       'File information': 'Information du fichier',
+      'Copy/paste text content': 'Copier/coller du contenu textuel',
+      'Free text import': 'Import de texte libre',
       'Bundle details': 'Détails du bundle',
       'Bundle content': 'Contenu du bundle',
       Dependencies: 'Dépendances',

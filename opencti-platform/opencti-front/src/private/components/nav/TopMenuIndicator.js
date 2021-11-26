@@ -7,6 +7,10 @@ import Button from '@material-ui/core/Button';
 import { ArrowForwardIosOutlined } from '@material-ui/icons';
 import { ShieldSearch } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
+import Security, {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/Security';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -122,6 +126,28 @@ class TopMenuIndicator extends Component {
         >
           {t('Sightings')}
         </Button>
+        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
+          <Button
+            component={Link}
+            to={`/dashboard/observations/indicators/${indicatorId}/files`}
+            variant={
+              location.pathname
+              === `/dashboard/observations/indicators/${indicatorId}/files`
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname
+              === `/dashboard/observations/indicators/${indicatorId}/files`
+                ? 'secondary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Files')}
+          </Button>
+        </Security>
         <Button
           component={Link}
           to={`/dashboard/observations/indicators/${indicatorId}/history`}

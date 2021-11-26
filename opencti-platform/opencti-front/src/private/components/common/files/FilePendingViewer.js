@@ -12,7 +12,6 @@ import List from '@material-ui/core/List';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import PendingFileLine from './PendingFileLine';
-import PendingFileUploader from './PendingFileUploader';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -21,6 +20,7 @@ const styles = () => ({
     height: '100%',
     minHeight: '100%',
     padding: '10px 15px 10px 15px',
+    marginTop: 13,
     borderRadius: 6,
   },
 });
@@ -52,12 +52,6 @@ const FilePendingViewerBase = ({
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Pending files')}
         </Typography>
-        <div style={{ float: 'left', marginTop: -17 }}>
-          <PendingFileUploader
-            entityId={id}
-            onUploadSuccess={() => relay.refetch({ id })}
-          />
-        </div>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {edges.length ? (

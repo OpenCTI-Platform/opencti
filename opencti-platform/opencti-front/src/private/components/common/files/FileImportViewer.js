@@ -13,6 +13,7 @@ import FileLine from './FileLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import FileUploader from './FileUploader';
 import inject18n from '../../../../components/i18n';
+import FreeTextUploader from './FreeTextUploader';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -53,6 +54,10 @@ const FileImportViewerBase = ({
         </Typography>
         <div style={{ float: 'left', marginTop: -17 }}>
           <FileUploader
+            entityId={id}
+            onUploadSuccess={() => relay.refetch({ id })}
+          />
+          <FreeTextUploader
             entityId={id}
             onUploadSuccess={() => relay.refetch({ id })}
           />

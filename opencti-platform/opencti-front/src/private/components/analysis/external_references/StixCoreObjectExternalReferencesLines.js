@@ -186,7 +186,9 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
           <AddExternalReferences
             stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
             stixCoreObjectOrStixCoreRelationshipReferences={
-              data.stixCoreObject.externalReferences.edges
+              data && data.stixCoreObject
+                ? data.stixCoreObject.externalReferences.edges
+                : []
             }
           />
         </Security>

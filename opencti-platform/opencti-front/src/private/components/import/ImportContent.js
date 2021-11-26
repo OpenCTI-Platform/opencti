@@ -33,8 +33,8 @@ import FileLine from '../common/files/FileLine';
 import inject18n from '../../../components/i18n';
 import FileUploader from '../common/files/FileUploader';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
-import PendingFileUploader from '../common/files/PendingFileUploader';
 import PendingFileLine from '../common/files/PendingFileLine';
+import FreeTextUploader from '../common/files/FreeTextUploader';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -210,6 +210,7 @@ class ImportContentComponent extends Component {
               </Typography>
               <div style={{ float: 'left', marginTop: -17 }}>
                 <FileUploader onUploadSuccess={() => relay.refetch()} />
+                <FreeTextUploader onUploadSuccess={() => relay.refetch()} />
               </div>
               <div className="clearfix" />
               <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -314,11 +315,12 @@ class ImportContentComponent extends Component {
               >
                 {t('Pending files')}
               </Typography>
-              <div style={{ float: 'left', marginTop: -17 }}>
-                <PendingFileUploader onUploadSuccess={() => relay.refetch()} />
-              </div>
               <div className="clearfix" />
-              <Paper classes={{ root: classes.paper }} elevation={2}>
+              <Paper
+                classes={{ root: classes.paper }}
+                elevation={2}
+                style={{ marginTop: 15 }}
+              >
                 {pendingFilesEdges.length ? (
                   <List>
                     {pendingFilesEdges.map((file) => (

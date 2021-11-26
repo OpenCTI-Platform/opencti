@@ -16,6 +16,7 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import IndicatorEntities from './IndicatorEntities';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
+import FileManager from '../../common/files/FileManager';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -24,6 +25,10 @@ const subscription = graphql`
         ...Indicator_indicator
         ...IndicatorEditionContainer_indicator
       }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
+      ...FilePendingViewer_entity
     }
   }
 `;
@@ -37,6 +42,16 @@ const indicatorQuery = graphql`
       ...Indicator_indicator
       ...IndicatorHeader_indicator
       ...IndicatorDetails_indicator
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
+      ...FilePendingViewer_entity
+    }
+    connectorsForExport {
+      ...FileManager_connectorsExport
+    }
+    settings {
+      platform_enable_reference
     }
   }
 `;
@@ -84,6 +99,9 @@ class RootIndicator extends Component {
                         <Indicator
                           {...routeProps}
                           indicator={props.indicator}
+                          enableReferences={props.settings.platform_enable_reference?.includes(
+                            'Indicator',
+                          )}
                         />
                       )}
                     />
@@ -105,6 +123,22 @@ class RootIndicator extends Component {
                               'Individual',
                               'System',
                             ]}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/indicators/:indicatorId/files"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <IndicatorHeader indicator={props.indicator} />
+                          <FileManager
+                            {...routeProps}
+                            id={indicatorId}
+                            connectorsImport={[]}
+                            connectorsExport={props.connectorsForExport}
+                            entity={props.indicator}
                           />
                         </React.Fragment>
                       )}
