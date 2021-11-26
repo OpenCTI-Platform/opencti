@@ -439,6 +439,13 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             False,
             False,
         )
+        self.connect_validate_before_import = get_config_variable(
+            "CONNECTOR_VALIDATE_BEFORE_IMPORT",
+            ["connector", "validate_before_import"],
+            config,
+            False,
+            False,
+        )
 
         # Configure logger
         numeric_level = getattr(
@@ -498,6 +505,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
     def get_run_and_terminate(self) -> Optional[Union[bool, int, str]]:
         return self.connect_run_and_terminate
+
+    def get_validate_before_import(self) -> Optional[Union[bool, int, str]]:
+        return self.connect_validate_before_import
 
     def set_state(self, state) -> None:
         """sets the connector state
@@ -626,7 +636,18 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         entities_types = kwargs.get("entities_types", None)
         update = kwargs.get("update", False)
         event_version = kwargs.get("event_version", None)
+        bypass_validation = kwargs.get("bypass_validation", False)
+        file_name = kwargs.get("file_name", work_id + ".json")
+        entity_id = kwargs.get("entity_id", None)
 
+        if self.connect_validate_before_import and not bypass_validation:
+            self.api.upload_pending_file(
+                file_name=file_name,
+                data=bundle,
+                mime_type="application/json",
+                entity_id=entity_id,
+            )
+            return []
         if entities_types is None:
             entities_types = []
         stix2_splitter = OpenCTIStix2Splitter()
