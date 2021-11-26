@@ -211,7 +211,15 @@ export const internalObjectsAttributes = {
     'last_execution_date',
     'completed',
   ],
-  [ENTITY_TYPE_RETENTION_RULE]: ['standard_id', 'name', 'filters', 'max_retention', 'last_execution_date'],
+  [ENTITY_TYPE_RETENTION_RULE]: [
+    'standard_id',
+    'name',
+    'filters',
+    'max_retention',
+    'last_execution_date',
+    'last_deleted_count',
+    'remaining_count',
+  ],
   [ENTITY_TYPE_SYNC]: [
     'internal_id',
     'standard_id',

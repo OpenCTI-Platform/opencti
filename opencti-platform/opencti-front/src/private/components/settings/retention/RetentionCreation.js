@@ -15,7 +15,7 @@ import Chip from '@material-ui/core/Chip';
 import * as R from 'ramda';
 import { assoc, pipe } from 'ramda';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters, { isUniqFilter } from '../../common/lists/Filters';
 import { truncate } from '../../../../utils/String';
@@ -87,6 +87,12 @@ const RetentionCreationMutation = graphql`
   }
 `;
 
+const RetentionCheckMutation = graphql`
+  mutation RetentionCreationCheckMutation($input: RetentionRuleAddInput!) {
+    retentionRuleCheck(input: $input)
+  }
+`;
+
 const RetentionCreationValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   max_retention: Yup.number().min(1, t('This field must be >= 1')),
@@ -106,6 +112,7 @@ const RetentionCreation = (props) => {
   const { t, classes } = props;
   const [open, setOpen] = useState(false);
   const [filters, setFilters] = useState({});
+  const [verified, setVerified] = useState(false);
 
   const handleOpen = () => {
     setOpen(true);
@@ -149,7 +156,28 @@ const RetentionCreation = (props) => {
     handleClose();
   };
 
+  const handleVerify = (values) => {
+    const finalValues = pipe(
+      assoc('max_retention', Number(values.max_retention)),
+    )(values);
+    const jsonFilters = JSON.stringify(filters);
+    commitMutation({
+      mutation: RetentionCheckMutation,
+      variables: {
+        input: { ...finalValues, filters: jsonFilters },
+      },
+      onCompleted: (data) => {
+        setVerified(true);
+        MESSAGING$.notifySuccess(t(`Retention policy will delete ${data.retentionRuleCheck} elements`));
+      },
+      onError: () => {
+        setVerified(false);
+      },
+    });
+  };
+
   const handleAddFilter = (key, id, value) => {
+    setVerified(false);
     if (filters[key] && filters[key].length > 0) {
       setFilters(
         R.assoc(
@@ -166,6 +194,7 @@ const RetentionCreation = (props) => {
   };
 
   const handleRemoveFilter = (key) => {
+    setVerified(false);
     setFilters(R.dissoc(key, filters));
   };
 
@@ -197,15 +226,14 @@ const RetentionCreation = (props) => {
         </div>
         <div className={classes.container}>
           <Formik
-            initialValues={{
-              name: '',
-              max_retention: '31',
-            }}
+            initialValues={{ name: '', max_retention: '31' }}
             validationSchema={RetentionCreationValidation(t)}
             onSubmit={onSubmit}
             onReset={onReset}
           >
-            {({ submitForm, handleReset, isSubmitting }) => (
+            {({
+              submitForm, handleReset, isSubmitting, values,
+            }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
@@ -218,6 +246,7 @@ const RetentionCreation = (props) => {
                   name="max_retention"
                   label={t('Maximum retention days')}
                   fullWidth={true}
+                  onChange={() => setVerified(false)}
                   style={{ marginTop: 20 }}
                 />
                 <div style={{ marginTop: 35 }}>
@@ -246,7 +275,7 @@ const RetentionCreation = (props) => {
                       t(`filter_${currentFilter[0]}`),
                       20,
                     )}`;
-                    const values = (
+                    const filterValues = (
                       <span>
                         {R.map(
                           (n) => (
@@ -269,7 +298,7 @@ const RetentionCreation = (props) => {
                           classes={{ root: classes.filter }}
                           label={
                             <div>
-                              <strong>{label}</strong>: {values}
+                              <strong>{label}</strong>: {filterValues}
                             </div>
                           }
                           onDelete={() => handleRemoveFilter(currentFilter[0])}
@@ -295,10 +324,19 @@ const RetentionCreation = (props) => {
                     {t('Cancel')}
                   </Button>
                   <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={() => handleVerify(values)}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                  >
+                    {t('Verify')}
+                  </Button>
+                  <Button
                     variant="contained"
                     color="primary"
                     onClick={submitForm}
-                    disabled={isSubmitting}
+                    disabled={!verified || isSubmitting}
                     classes={{ root: classes.button }}
                   >
                     {t('Create')}

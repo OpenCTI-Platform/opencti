@@ -4,13 +4,13 @@ import { lockResource } from '../database/redis';
 import { findAll as findRetentionRulesToExecute } from '../domain/retentionRule';
 import conf, { logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import { deleteElement, patchAttribute } from '../database/middleware';
+import { deleteElementById, patchAttribute } from '../database/middleware';
 import { BYPASS, ROLE_ADMINISTRATOR } from '../utils/access';
 import { ENTITY_TYPE_RETENTION_RULE } from '../schema/internalObject';
 import { now, utcDate } from '../utils/format';
-import { isEmptyField, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
+import { READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_META_RELATIONSHIPS, READ_STIX_INDICES } from '../database/utils';
 import { convertFiltersToQueryOptions } from '../domain/taxii';
-import { elList } from '../database/elasticSearch';
+import { elPaginate } from '../database/elasticSearch';
 
 const RETENTION_MANAGER_USER_UUID = '82ed2c6c-eb27-498e-b904-4f2abc04e05f';
 export const RETENTION_MANAGER_USER = {
@@ -29,30 +29,37 @@ export const RETENTION_MANAGER_USER = {
 // If the lock is free, every API as the right to take it.
 const SCHEDULE_TIME = conf.get('retention_manager:interval') || 60000;
 const RETENTION_MANAGER_KEY = conf.get('retention_manager:lock_key') || 'retention_manager_lock';
-
-const queryCallback = async (elements) => {
-  logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);
-  for (let index = 0; index < elements.length; index += 1) {
-    const element = elements[index];
-    const { updated_at: up } = element;
-    const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
-    logApp.info(`[OPENCTI] Retention manager deleting ${element.name}/${element.id} after ${humanDuration}`);
-    await deleteElement(RETENTION_MANAGER_USER, element);
-  }
-};
+const RETENTION_BATCH_SIZE = conf.get('retention_manager:batch_size') || 100;
+const RETENTION_INDICES = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_META_RELATIONSHIPS];
 
 const executeProcessing = async (retentionRule) => {
   const { id, name, max_retention: maxDays, filters } = retentionRule;
   logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
-  if (!isEmptyField(filters)) {
-    const jsonFilters = JSON.parse(filters);
-    const before = utcDate().subtract(maxDays, 'days');
-    const queryOptions = convertFiltersToQueryOptions(jsonFilters, { before });
-    queryOptions.callback = queryCallback;
-    await elList(RETENTION_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, queryOptions);
+  const jsonFilters = JSON.parse(filters || '{}');
+  const before = utcDate().subtract(maxDays, 'days');
+  const queryOptions = convertFiltersToQueryOptions(jsonFilters, { before });
+  const opts = { ...queryOptions, first: RETENTION_BATCH_SIZE };
+  const result = await elPaginate(RETENTION_MANAGER_USER, RETENTION_INDICES, opts);
+  const remainingDeletions = result.pageInfo.globalCount;
+  const elements = result.edges;
+  logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);
+  for (let index = 0; index < elements.length; index += 1) {
+    const { node } = elements[index];
+    const { updated_at: up } = node;
+    const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
+    try {
+      await deleteElementById(RETENTION_MANAGER_USER, node.internal_id, node.entity_type);
+      logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
+    } catch (e) {
+      logApp.error(`[OPENCTI] Retention manager error deleting ${node.id}`, { error: e });
+    }
   }
   // Patch the last execution of the rule
-  const patch = { last_execution_date: now() };
+  const patch = {
+    last_execution_date: now(),
+    remaining_count: remainingDeletions,
+    last_deleted_count: elements.length,
+  };
   await patchAttribute(RETENTION_MANAGER_USER, id, ENTITY_TYPE_RETENTION_RULE, patch);
 };
 

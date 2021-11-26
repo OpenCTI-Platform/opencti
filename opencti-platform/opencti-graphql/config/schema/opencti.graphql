@@ -807,6 +807,8 @@ type RetentionRule {
   filters: String!
   max_retention: Int!
   last_execution_date: DateTime
+  last_deleted_count: Int
+  remaining_count: Int
 }
 type RetentionRuleConnection {
   pageInfo: PageInfo!
@@ -9912,6 +9914,7 @@ type Mutation {
 
   ### RETENTION RULE
   retentionRuleAdd(input: RetentionRuleAddInput): RetentionRule! @auth(for: [SETTINGS])
+  retentionRuleCheck(input: RetentionRuleAddInput): Int! @auth(for: [SETTINGS])
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations @auth(for: [SETTINGS])
 
   ### RULE

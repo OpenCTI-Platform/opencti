@@ -69,7 +69,7 @@ const styles = (theme) => ({
 class RetentionLineComponent extends Component {
   render() {
     const {
-      t, classes, node, dataColumns, paginationOptions, nsdt,
+      t, classes, node, dataColumns, paginationOptions, nsdt, n,
     } = this.props;
     const filters = JSON.parse(node.filters);
     const filterPairs = toPairs(filters);
@@ -100,12 +100,12 @@ class RetentionLineComponent extends Component {
                     const values = (
                       <span>
                         {map(
-                          (n) => (
-                            <span key={n.value}>
-                              {n.value && n.value.length > 0
-                                ? truncate(n.value, 15)
+                          (val) => (
+                            <span key={val.value}>
+                              {val.value && val.value.length > 0
+                                ? truncate(val.value, 15)
                                 : t('No label')}{' '}
-                              {last(currentFilter[1]).value !== n.value && (
+                              {last(currentFilter[1]).value !== val.value && (
                                 <code>OR</code>
                               )}{' '}
                             </span>
@@ -159,6 +159,12 @@ class RetentionLineComponent extends Component {
               >
                 {nsdt(node.last_execution_date)}
               </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.remaining_count.width }}
+              >
+                {n(node.remaining_count)}
+              </div>
             </div>
           }
         />
@@ -189,6 +195,7 @@ const RetentionLineFragment = createFragmentContainer(RetentionLineComponent, {
       name
       max_retention
       last_execution_date
+      remaining_count
       filters
     }
   `,
@@ -246,6 +253,17 @@ class RetentionDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.last_execution_date.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="20%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.remaining_count.width }}
               >
                 <Skeleton
                   animation="wave"
