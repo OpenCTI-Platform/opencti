@@ -240,8 +240,9 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
     }
 
     return (
-        <UserContext.Consumer>
-          {({ helper }) => <ListLines
+      <UserContext.Consumer>
+        {({ helper }) => (
+          <ListLines
             sortBy={sortBy}
             orderAsc={orderAsc}
             dataColumns={this.buildColumns(helper)}
@@ -268,7 +269,8 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
               'markedBy',
               'created_start_date',
               'created_end_date',
-            ]}>
+            ]}
+          >
             <QueryRenderer
               query={stixCoreObjectOrStixCoreRelationshipContainersLinesQuery}
               variables={{ count: 25, ...paginationOptions }}
@@ -283,7 +285,8 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
                 />
               )}
             />
-          </ListLines>}
+          </ListLines>
+        )}
       </UserContext.Consumer>
     );
   }

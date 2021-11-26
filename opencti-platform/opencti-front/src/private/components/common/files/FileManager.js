@@ -35,6 +35,7 @@ import inject18n from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import Loader from '../../../../components/Loader';
 import FileExternalReferencesViewer from './FileExternalReferencesViewer';
+import FilePendingViewer from './FilePendingViewer';
 
 const styles = () => ({
   container: {
@@ -56,8 +57,13 @@ export const fileManagerAskJobImportMutation = graphql`
   mutation FileManagerAskJobImportMutation(
     $fileName: ID!
     $connectorId: String
+    $bypassValidation: Boolean
   ) {
-    askJobImport(fileName: $fileName, connectorId: $connectorId) {
+    askJobImport(
+      fileName: $fileName
+      connectorId: $connectorId
+      bypassValidation: $bypassValidation
+    ) {
       ...FileLine_file
     }
   }
@@ -210,6 +216,10 @@ const FileManager = ({
         <FileImportViewer
           entity={entity}
           connectors={importConnsPerFormat}
+          handleOpenImport={handleOpenImport}
+        />
+        <FilePendingViewer
+          entity={entity}
           handleOpenImport={handleOpenImport}
         />
         <FileExportViewer

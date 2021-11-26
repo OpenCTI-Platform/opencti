@@ -16,7 +16,10 @@ import IndicatorsLines, {
 } from './indicators/IndicatorsLines';
 import IndicatorCreation from './indicators/IndicatorCreation';
 import IndicatorsRightBar from './indicators/IndicatorsRightBar';
-import Security, { UserContext, KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security, {
+  UserContext,
+  KNOWLEDGE_KNUPDATE,
+} from '../../../utils/Security';
 import ToolBar from '../data/ToolBar';
 import { isUniqFilter } from '../common/lists/Filters';
 
@@ -260,8 +263,9 @@ class Indicators extends Component {
       );
     }
     return (
-        <UserContext.Consumer>
-          {({ helper }) => <div>
+      <UserContext.Consumer>
+        {({ helper }) => (
+          <div>
             <ListLines
               sortBy={sortBy}
               orderAsc={orderAsc}
@@ -294,7 +298,8 @@ class Indicators extends Component {
                 'x_opencti_detection',
                 'sightedBy',
                 'basedOn',
-              ]}>
+              ]}
+            >
               <QueryRenderer
                 query={indicatorsLinesQuery}
                 variables={{ count: 25, ...paginationOptions }}
@@ -324,8 +329,9 @@ class Indicators extends Component {
               )}
               withPaddingRight={true}
             />
-          </div>}
-        </UserContext.Consumer>
+          </div>
+        )}
+      </UserContext.Consumer>
     );
   }
 

@@ -270,6 +270,8 @@ export const defaultValue = (n, tooltip = false) => {
       || n.definition
       || n.source_name
       || n.phase_name
+      || (n.hashes
+        && (n.hashes.MD5 || n.hashes['SHA-1'] || n.hashes['SHA-256']))
       || defaultValue(R.head(R.pathOr([], ['objects', 'edges'], n))?.node)
       || 'Unknown'
     }`;
@@ -285,9 +287,20 @@ export const defaultValue = (n, tooltip = false) => {
     || n.definition
     || n.source_name
     || n.phase_name
+    || (n.hashes && (n.hashes.MD5 || n.hashes['SHA-1'] || n.hashes['SHA-256']))
     || defaultValue(R.head(R.pathOr([], ['objects', 'edges'], n))?.node)
     || 'Unknown'
   }`;
+};
+
+export const defaultSecondaryValue = (n) => {
+  if (!n) return '';
+  return (
+    n.description
+    || n.x_opencti_description
+    || n.content
+    || dateFormat(n.created_at)
+  );
 };
 
 export const computeTimeRangeInterval = (objects) => {

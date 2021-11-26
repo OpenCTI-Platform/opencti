@@ -226,7 +226,8 @@ class TasksListComponent extends Component {
                             classes={{ root: classes.filter }}
                             label={
                               <div>
-                                <strong>{t('Search')}</strong>: {task.task_search}
+                                <strong>{t('Search')}</strong>:{' '}
+                                {task.task_search}
                               </div>
                             }
                           />

@@ -32,6 +32,7 @@ const subscription = graphql`
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
+      ...FilePendingViewer_entity
     }
   }
 `;
@@ -49,6 +50,10 @@ const threatActorQuery = graphql`
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
+      ...FilePendingViewer_entity
+    }
+    connectorsForImport {
+      ...FileManager_connectorsImport
     }
     connectorsForExport {
       ...FileManager_connectorsExport
@@ -210,7 +215,7 @@ class RootThreatActor extends Component {
                           <FileManager
                             {...routeProps}
                             id={threatActorId}
-                            connectorsImport={[]}
+                            connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.threatActor}
                           />

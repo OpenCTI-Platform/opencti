@@ -1,22 +1,20 @@
 import React, { useEffect } from 'react';
 import * as PropTypes from 'prop-types';
+import { compose } from 'ramda';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { interval } from 'rxjs';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
-import List from '@material-ui/core/List';
-import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core';
-import Tooltip from '@material-ui/core/Tooltip';
-import IconButton from '@material-ui/core/IconButton';
-import { FileExportOutline } from 'mdi-material-ui';
-import { FIVE_SECONDS } from '../../../../utils/Time';
-import FileLine from './FileLine';
+import List from '@material-ui/core/List';
+import { TEN_SECONDS } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
+import PendingFileLine from './PendingFileLine';
+import PendingFileUploader from './PendingFileUploader';
 
-const interval$ = interval(FIVE_SECONDS);
+const interval$ = interval(TEN_SECONDS);
 
 const styles = () => ({
   paper: {
@@ -27,16 +25,18 @@ const styles = () => ({
   },
 });
 
-const FileExportViewerBase = ({
+const FilePendingViewerBase = ({
   entity,
+  disableImport,
+  handleOpenImport,
+  connectors,
   relay,
   t,
   classes,
-  handleOpenExport,
-  isExportPossible,
 }) => {
-  const { id, exportFiles } = entity;
-  const { edges } = exportFiles;
+  const { id, pendingFiles } = entity;
+  const { edges } = pendingFiles;
+  const isContainer = entity.entity_type !== 'Report';
   useEffect(() => {
     // Refresh the export viewer every interval
     const subscription = interval$.subscribe(() => {
@@ -47,42 +47,31 @@ const FileExportViewerBase = ({
     };
   });
   return (
-    <Grid item={true} xs={6} style={{ marginTop: 30 }}>
-      <div style={{ height: '100%' }} className="break">
+    <Grid item={true} xs={6}>
+      <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Exported files')}
+          {t('Pending files')}
         </Typography>
         <div style={{ float: 'left', marginTop: -17 }}>
-          <Tooltip
-            title={
-              isExportPossible
-                ? t('Generate an export')
-                : t('No export connector available to generate an export')
-            }
-            aria-label="generate-export"
-          >
-            <span>
-              <IconButton
-                onClick={handleOpenExport}
-                disabled={!isExportPossible}
-                aria-haspopup="true"
-                color="primary"
-              >
-                <FileExportOutline />
-              </IconButton>
-            </span>
-          </Tooltip>
+          <PendingFileUploader
+            entityId={id}
+            onUploadSuccess={() => relay.refetch({ id })}
+          />
         </div>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {edges.length ? (
             <List>
               {edges.map((file) => (
-                <FileLine
+                <PendingFileLine
                   key={file.node.id}
-                  file={file.node}
                   dense={true}
-                  disableImport={true}
+                  disableImport={isContainer || disableImport}
+                  file={file.node}
+                  connectors={
+                    connectors && connectors[file.node.metaData.mimetype]
+                  }
+                  handleOpenImport={handleOpenImport}
                 />
               ))}
             </List>
@@ -105,43 +94,47 @@ const FileExportViewerBase = ({
   );
 };
 
-const FileExportViewerComponent = compose(
+const FilePendingViewerComponent = compose(
   inject18n,
   withStyles(styles),
-)(FileExportViewerBase);
+)(FilePendingViewerBase);
 
-const FileExportViewerRefetchQuery = graphql`
-  query FileExportViewerRefetchQuery($id: String!) {
+const FilePendingViewerRefetchQuery = graphql`
+  query FilePendingViewerRefetchQuery($id: String!) {
     stixCoreObject(id: $id) {
-      ...FileExportViewer_entity
+      ...FilePendingViewer_entity
     }
   }
 `;
 
-const FileExportViewer = createRefetchContainer(
-  FileExportViewerComponent,
+const FilePendingViewer = createRefetchContainer(
+  FilePendingViewerComponent,
   {
     entity: graphql`
-      fragment FileExportViewer_entity on StixCoreObject {
+      fragment FilePendingViewer_entity on StixCoreObject {
         id
-        exportFiles(first: 1000) @connection(key: "Pagination_exportFiles") {
+        entity_type
+        pendingFiles(first: 1000) @connection(key: "Pagination_pendingFiles") {
           edges {
             node {
               id
-              ...FileLine_file
+              ...PendingFileLine_file
+              metaData {
+                mimetype
+              }
             }
           }
         }
       }
     `,
   },
-  FileExportViewerRefetchQuery,
+  FilePendingViewerRefetchQuery,
 );
 
-FileExportViewer.propTypes = {
+FilePendingViewer.propTypes = {
   entity: PropTypes.object,
-  handleOpenExport: PropTypes.func,
-  isExportPossible: PropTypes.bool,
+  disableImport: PropTypes.bool,
+  connectors: PropTypes.object,
 };
 
-export default FileExportViewer;
+export default FilePendingViewer;

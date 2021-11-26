@@ -36,7 +36,6 @@ const FileImportViewerBase = ({
 }) => {
   const { id, importFiles } = entity;
   const { edges } = importFiles;
-  const isContainer = entity.entity_type !== 'Report';
   useEffect(() => {
     // Refresh the export viewer every interval
     const subscription = interval$.subscribe(() => {
@@ -47,56 +46,50 @@ const FileImportViewerBase = ({
     };
   });
   return (
-    <React.Fragment>
-      <Grid item={true} xs={6}>
-        <div style={{ height: '100%' }} className="break">
-          <Typography
-            variant="h4"
-            gutterBottom={true}
-            style={{ float: 'left' }}
-          >
-            {t('Uploaded files')}
-          </Typography>
-          <div style={{ float: 'left', marginTop: -17 }}>
-            <FileUploader
-              entityId={id}
-              onUploadSuccess={() => relay.refetch({ id })}
-            />
-          </div>
-          <div className="clearfix" />
-          <Paper classes={{ root: classes.paper }} elevation={2}>
-            {edges.length ? (
-              <List>
-                {edges.map((file) => (
-                  <FileLine
-                    key={file.node.id}
-                    dense={true}
-                    disableImport={isContainer || disableImport}
-                    file={file.node}
-                    connectors={
-                      connectors && connectors[file.node.metaData.mimetype]
-                    }
-                    handleOpenImport={handleOpenImport}
-                  />
-                ))}
-              </List>
-            ) : (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t('No file for the moment')}
-                </span>
-              </div>
-            )}
-          </Paper>
+    <Grid item={true} xs={6}>
+      <div style={{ height: '100%' }} className="break">
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+          {t('Uploaded files')}
+        </Typography>
+        <div style={{ float: 'left', marginTop: -17 }}>
+          <FileUploader
+            entityId={id}
+            onUploadSuccess={() => relay.refetch({ id })}
+          />
         </div>
-      </Grid>
-    </React.Fragment>
+        <div className="clearfix" />
+        <Paper classes={{ root: classes.paper }} elevation={2}>
+          {edges.length ? (
+            <List>
+              {edges.map((file) => (
+                <FileLine
+                  key={file.node.id}
+                  dense={true}
+                  disableImport={disableImport}
+                  file={file.node}
+                  connectors={
+                    connectors && connectors[file.node.metaData.mimetype]
+                  }
+                  handleOpenImport={handleOpenImport}
+                />
+              ))}
+            </List>
+          ) : (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {t('No file for the moment')}
+              </span>
+            </div>
+          )}
+        </Paper>
+      </div>
+    </Grid>
   );
 };
 

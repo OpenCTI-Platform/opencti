@@ -27,8 +27,8 @@ export const groupsQuery = graphql`
     groups {
       edges {
         node {
-            id
-            name
+          id
+          name
         }
       }
     }

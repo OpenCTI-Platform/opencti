@@ -51,11 +51,7 @@ export const RetentionLinesQuery = graphql`
     $cursor: ID
   ) {
     ...RetentionLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-      )
+      @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -69,11 +65,8 @@ export default createPaginationContainer(
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
       ) {
-        retentionRules(
-          search: $search
-          first: $count
-          after: $cursor
-        ) @connection(key: "Pagination_retentionRules") {
+        retentionRules(search: $search, first: $count, after: $cursor)
+          @connection(key: "Pagination_retentionRules") {
           edges {
             node {
               ...RetentionLine_node

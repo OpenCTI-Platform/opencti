@@ -53,29 +53,58 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       ),
       props.t,
     );
+    const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
+    const sortByDefinition = R.sortBy(
+      R.compose(R.toLower, R.prop('definition')),
+    );
+    const sortByName = R.sortBy(R.compose(R.toLower, R.prop('name')));
     const allStixCoreObjectsTypes = R.pipe(
       R.map((n) => n.entity_type),
       R.uniq,
+      R.map((n) => ({
+        label: n,
+        tlabel: props.t(
+          `${n.relationship_type ? 'relationship_' : 'entity_'}${n.entity_type}`,
+        ),
+      })),
+      sortByLabel,
+      R.map((n) => n.label),
     )(this.graphData.nodes);
     const allMarkedBy = R.pipe(
       R.map((n) => n.markedBy),
       R.flatten,
-      R.map((n) => n.id),
-      R.uniq,
+      R.uniqBy(R.prop('id')),
+      sortByDefinition,
     )(R.union(this.graphData.nodes, this.graphData.links));
     const allCreatedBy = R.pipe(
-      R.map((n) => n.createdBy.id),
-      R.uniq,
+      R.map((n) => n.createdBy),
+      R.uniqBy(R.prop('id')),
+      sortByName,
     )(R.union(this.graphData.nodes, this.graphData.links));
-    const stixCoreObjectsTypes = R.propOr(allStixCoreObjectsTypes, 'stixCoreObjectsTypes', params);
-    const markedBy = R.propOr(allMarkedBy, 'markedBy', params);
-    const createdBy = R.propOr(allCreatedBy, 'createdBy', params);
+    const stixCoreObjectsTypes = R.propOr(
+      allStixCoreObjectsTypes,
+      'stixCoreObjectsTypes',
+      params,
+    );
+    const markedBy = R.propOr(
+      allMarkedBy.map((n) => n.id),
+      'markedBy',
+      params,
+    );
+    const createdBy = R.propOr(
+      allCreatedBy.map((n) => n.id),
+      'createdBy',
+      params,
+    );
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
       modeFixed: R.propOr(false, 'modeFixed', params),
       modeTree: R.propOr('', 'modeTree', params),
       selectedTimeRangeInterval: timeRangeInterval,
+      allStixCoreObjectsTypes,
+      allMarkedBy,
+      allCreatedBy,
       stixCoreObjectsTypes,
       markedBy,
       createdBy,
@@ -400,14 +429,17 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
   }
 
   render() {
-    const { handleChangeView, theme, t } = this.props;
+    const { handleChangeView, theme } = this.props;
     const {
       mode3D,
       modeFixed,
       modeTree,
-      stixCoreObjectsTypes: currentStixCoreObjectsTypes,
-      markedBy: currentMarkedBy,
-      createdBy: currentCreatedBy,
+      allStixCoreObjectsTypes,
+      allMarkedBy,
+      allCreatedBy,
+      stixCoreObjectsTypes,
+      markedBy,
+      createdBy,
       graphData,
       numberOfSelectedNodes,
       numberOfSelectedLinks,
@@ -416,32 +448,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     } = this.state;
     const width = window.innerWidth - 210;
     const height = window.innerHeight - 210;
-    const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
-    const sortByDefinition = R.sortBy(
-      R.compose(R.toLower, R.prop('definition')),
-    );
-    const sortByName = R.sortBy(R.compose(R.toLower, R.prop('name')));
-    const stixCoreObjectsTypes = R.pipe(
-      R.map((n) => R.assoc(
-        'tlabel',
-        t(`${n.relationship_type ? 'relationship_' : 'entity_'}${n.entity_type}`),
-        n,
-      )),
-      sortByLabel,
-      R.map((n) => n.entity_type),
-      R.uniq,
-    )(this.graphData.nodes);
-    const markedBy = R.pipe(
-      R.map((n) => n.markedBy),
-      R.flatten,
-      R.uniqBy(R.prop('id')),
-      sortByDefinition,
-    )(R.union(this.graphData.nodes, this.graphData.links));
-    const createdBy = R.pipe(
-      R.map((n) => n.createdBy),
-      R.uniqBy(R.prop('id')),
-      sortByName,
-    )(R.union(this.graphData.nodes, this.graphData.links));
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     const timeRangeValues = computeTimeRangeValues(
       timeRangeInterval,
@@ -462,12 +468,12 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
             this,
           )}
           handleToggleMarkedBy={this.handleToggleMarkedBy.bind(this)}
-          stixCoreObjectsTypes={stixCoreObjectsTypes}
-          currentStixCoreObjectsTypes={currentStixCoreObjectsTypes}
-          markedBy={markedBy}
-          currentMarkedBy={currentMarkedBy}
-          createdBy={createdBy}
-          currentCreatedBy={currentCreatedBy}
+          stixCoreObjectsTypes={allStixCoreObjectsTypes}
+          currentStixCoreObjectsTypes={stixCoreObjectsTypes}
+          markedBy={allMarkedBy}
+          currentMarkedBy={markedBy}
+          createdBy={allCreatedBy}
+          currentCreatedBy={createdBy}
           handleSelectAll={this.handleSelectAll.bind(this)}
           handleSelectByType={this.handleSelectByType.bind(this)}
           selectedNodes={Array.from(this.selectedNodes)}

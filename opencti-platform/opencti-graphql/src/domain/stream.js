@@ -38,7 +38,10 @@ export const createStreamCollection = async (user, input) => {
   // Create groups relations
   const relBuilder = (g) => ({ fromId: g, toId: collectionId, relationship_type: RELATION_ACCESSES_TO });
   // eslint-disable-next-line prettier/prettier
-  await createRelations(user, relatedGroups.map((g) => relBuilder(g)));
+  await createRelations(
+    user,
+    relatedGroups.map((g) => relBuilder(g))
+  );
   return data;
 };
 export const streamCollectionGroups = async (user, collection) => {

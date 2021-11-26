@@ -114,8 +114,9 @@ class StixCoreObjectStixCyberObservables extends Component {
     const { sortBy, orderAsc, numberOfElements } = this.state;
     const { stixCoreObjectLink, isRelationReversed } = this.props;
     return (
-        <UserContext.Consumer>
-          {() => <ListLines
+      <UserContext.Consumer>
+        {() => (
+          <ListLines
             sortBy={sortBy}
             orderAsc={orderAsc}
             dataColumns={this.buildColumns()}
@@ -123,7 +124,8 @@ class StixCoreObjectStixCyberObservables extends Component {
             handleSearch={this.handleSearch.bind(this)}
             displayImport={true}
             secondaryAction={true}
-            numberOfElements={numberOfElements}>
+            numberOfElements={numberOfElements}
+          >
             <QueryRenderer
               query={stixCoreObjectStixCyberObservablesLinesQuery}
               variables={{ count: 25, ...paginationOptions }}
@@ -139,8 +141,9 @@ class StixCoreObjectStixCyberObservables extends Component {
                 />
               )}
             />
-          </ListLines>}
-       </UserContext.Consumer>
+          </ListLines>
+        )}
+      </UserContext.Consumer>
     );
   }
 

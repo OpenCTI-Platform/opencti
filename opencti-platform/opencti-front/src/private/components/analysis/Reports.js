@@ -14,7 +14,10 @@ import inject18n from '../../../components/i18n';
 import ReportCreation from './reports/ReportCreation';
 import ToolBar from '../data/ToolBar';
 import { isUniqFilter } from '../common/lists/Filters';
-import Security, { KNOWLEDGE_KNUPDATE, UserContext } from '../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE,
+  UserContext,
+} from '../../../utils/Security';
 
 class Reports extends Component {
   constructor(props) {
@@ -287,14 +290,18 @@ class Reports extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-        <UserContext.Consumer>
-          {({ helper }) => <div>
-            { view === 'lines' ? this.renderLines(paginationOptions, helper) : '' }
+      <UserContext.Consumer>
+        {({ helper }) => (
+          <div>
+            {view === 'lines'
+              ? this.renderLines(paginationOptions, helper)
+              : ''}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <ReportCreation paginationOptions={paginationOptions} />
             </Security>
-          </div>}
-        </UserContext.Consumer>
+          </div>
+        )}
+      </UserContext.Consumer>
     );
   }
 }

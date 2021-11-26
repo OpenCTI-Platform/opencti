@@ -285,145 +285,139 @@ class ThreatActorEditionOverviewComponent extends Component {
           setFieldValue,
           values,
         }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
-                component={TextField}
-                name="name"
-                label={t('Name')}
-                fullWidth={true}
-                onFocus={this.handleChangeFocus.bind(this)}
-                onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus context={context} fieldName="name" />
-                }
-              />
-              <Field
-                component={SelectField}
-                name="threat_actor_types"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
-                label={t('Threat actor types')}
-                fullWidth={true}
-                multiple={true}
-                containerstyle={{ width: '100%', marginTop: 20 }}
-                helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="threat_actor_types"
-                  />
-                }
-              >
-                <MenuItem key="activist" value="activist">
-                  {t('activist')}
-                </MenuItem>
-                <MenuItem key="competitor" value="competitor">
-                  {t('competitor')}
-                </MenuItem>
-                <MenuItem key="crime-syndicate" value="crime-syndicate">
-                  {t('crime-syndicate')}
-                </MenuItem>
-                <MenuItem key="criminal'" value="criminal'">
-                  {t('criminal')}
-                </MenuItem>
-                <MenuItem key="hacker" value="hacker">
-                  {t('hacker')}
-                </MenuItem>
-                <MenuItem key="insider-accidental" value="insider-accidental">
-                  {t('insider-accidental')}
-                </MenuItem>
-                <MenuItem key="insider-disgruntled" value="insider-disgruntled">
-                  {t('insider-disgruntled')}
-                </MenuItem>
-                <MenuItem key="nation-state" value="nation-state">
-                  {t('nation-state')}
-                </MenuItem>
-                <MenuItem key="sensationalist" value="sensationalist">
-                  {t('sensationalist')}
-                </MenuItem>
-                <MenuItem key="spy" value="spy">
-                  {t('spy')}
-                </MenuItem>
-                <MenuItem key="terrorist" value="terrorist">
-                  {t('terrorist')}
-                </MenuItem>
-                <MenuItem key="unknown" value="unknown">
-                  {t('unknown')}
-                </MenuItem>
-              </Field>
-              <ConfidenceField
-                name="confidence"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
-                label={t('Confidence')}
-                fullWidth={true}
-                containerstyle={{ width: '100%', marginTop: 20 }}
-                editContext={context}
-                variant="edit"
-              />
-              <Field
-                component={MarkDownField}
-                name="description"
-                label={t('Description')}
-                fullWidth={true}
-                multiline={true}
-                rows="4"
-                style={{ marginTop: 20 }}
-                onFocus={this.handleChangeFocus.bind(this)}
-                onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="description"
-                  />
-                }
-              />
-              {threatActor.workflowEnabled && (
-                <StatusField
-                  name="status_id"
-                  type="Threat-Actor"
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  setFieldValue={setFieldValue}
-                  style={{ marginTop: 20 }}
-                  helpertext={
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="status_id"
-                    />
-                  }
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <Field
+              component={TextField}
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="name" />
+              }
+            />
+            <Field
+              component={SelectField}
+              name="threat_actor_types"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Threat actor types')}
+              fullWidth={true}
+              multiple={true}
+              containerstyle={{ width: '100%', marginTop: 20 }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="threat_actor_types"
                 />
-              )}
-              <CreatedByField
-                name="createdBy"
-                style={{ marginTop: 20, width: '100%' }}
+              }
+            >
+              <MenuItem key="activist" value="activist">
+                {t('activist')}
+              </MenuItem>
+              <MenuItem key="competitor" value="competitor">
+                {t('competitor')}
+              </MenuItem>
+              <MenuItem key="crime-syndicate" value="crime-syndicate">
+                {t('crime-syndicate')}
+              </MenuItem>
+              <MenuItem key="criminal'" value="criminal'">
+                {t('criminal')}
+              </MenuItem>
+              <MenuItem key="hacker" value="hacker">
+                {t('hacker')}
+              </MenuItem>
+              <MenuItem key="insider-accidental" value="insider-accidental">
+                {t('insider-accidental')}
+              </MenuItem>
+              <MenuItem key="insider-disgruntled" value="insider-disgruntled">
+                {t('insider-disgruntled')}
+              </MenuItem>
+              <MenuItem key="nation-state" value="nation-state">
+                {t('nation-state')}
+              </MenuItem>
+              <MenuItem key="sensationalist" value="sensationalist">
+                {t('sensationalist')}
+              </MenuItem>
+              <MenuItem key="spy" value="spy">
+                {t('spy')}
+              </MenuItem>
+              <MenuItem key="terrorist" value="terrorist">
+                {t('terrorist')}
+              </MenuItem>
+              <MenuItem key="unknown" value="unknown">
+                {t('unknown')}
+              </MenuItem>
+            </Field>
+            <ConfidenceField
+              name="confidence"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Confidence')}
+              fullWidth={true}
+              containerstyle={{ width: '100%', marginTop: 20 }}
+              editContext={context}
+              variant="edit"
+            />
+            <Field
+              component={MarkDownField}
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="description" />
+              }
+            />
+            {threatActor.workflowEnabled && (
+              <StatusField
+                name="status_id"
+                type="Threat-Actor"
+                onFocus={this.handleChangeFocus.bind(this)}
+                onChange={this.handleSubmitField.bind(this)}
                 setFieldValue={setFieldValue}
+                style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus context={context} fieldName="createdBy" />
+                  <SubscriptionFocus context={context} fieldName="status_id" />
                 }
-                onChange={this.handleChangeCreatedBy.bind(this)}
               />
-              <ObjectMarkingField
-                name="objectMarking"
-                style={{ marginTop: 20, width: '100%' }}
-                helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldname="objectMarking"
-                  />
-                }
-                onChange={this.handleChangeObjectMarking.bind(this)}
-              />
-              {enableReferences && (
-                <CommitMessage
-                  submitForm={submitForm}
-                  disabled={isSubmitting}
-                  validateForm={validateForm}
-                  setFieldValue={setFieldValue}
-                  values={values}
-                  id={threatActor.id}
+            )}
+            <CreatedByField
+              name="createdBy"
+              style={{ marginTop: 20, width: '100%' }}
+              setFieldValue={setFieldValue}
+              helpertext={
+                <SubscriptionFocus context={context} fieldName="createdBy" />
+              }
+              onChange={this.handleChangeCreatedBy.bind(this)}
+            />
+            <ObjectMarkingField
+              name="objectMarking"
+              style={{ marginTop: 20, width: '100%' }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldname="objectMarking"
                 />
-              )}
-            </Form>
+              }
+              onChange={this.handleChangeObjectMarking.bind(this)}
+            />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                validateForm={validateForm}
+                setFieldValue={setFieldValue}
+                values={values}
+                id={threatActor.id}
+              />
+            )}
+          </Form>
         )}
       </Formik>
     );

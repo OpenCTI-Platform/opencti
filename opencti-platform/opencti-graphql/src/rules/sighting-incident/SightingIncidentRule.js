@@ -56,14 +56,22 @@ const ruleSightingIncidentBuilder = () => {
         const ruleRelContent = createRuleContent(id, dependencies, explanation, ruleBaseContent);
         // Create **Incident C** `related-to` **indicator A**
         // eslint-disable-next-line prettier/prettier
-        const incidentToIndicator = { fromId: inferredEntity.element.id,  toId: indicatorId,  relationship_type: RELATION_RELATED_TO };
+        const incidentToIndicator = {
+          fromId: inferredEntity.element.id,
+          toId: indicatorId,
+          relationship_type: RELATION_RELATED_TO,
+        };
         const incidentToIndicatorEvent = await createInferredRelation(incidentToIndicator, ruleRelContent);
         if (incidentToIndicatorEvent) {
           events.push(incidentToIndicatorEvent);
         }
         // Create **Incident C** `targets` **identity B**
         // eslint-disable-next-line prettier/prettier
-        const incidentToIdentity = { fromId: inferredEntity.element.id,  toId: identityId,  relationship_type: RELATION_TARGETS };
+        const incidentToIdentity = {
+          fromId: inferredEntity.element.id,
+          toId: identityId,
+          relationship_type: RELATION_TARGETS,
+        };
         const incidentToIdentityEvent = await createInferredRelation(incidentToIdentity, ruleRelContent);
         if (incidentToIdentityEvent) {
           events.push(incidentToIdentityEvent);

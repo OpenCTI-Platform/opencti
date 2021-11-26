@@ -82,10 +82,7 @@ const streamCollectionValidation = (t) => Yup.object().shape({
 });
 
 const groupMutationRelationAdd = graphql`
-  mutation StreamCollectionEditionGroupAddMutation(
-    $id: ID!
-    $groupId: ID!
-  ) {
+  mutation StreamCollectionEditionGroupAddMutation($id: ID!, $groupId: ID!) {
     streamCollectionEdit(id: $id) {
       addGroup(id: $groupId) {
         ...StreamCollectionEdition_streamCollection
@@ -95,10 +92,7 @@ const groupMutationRelationAdd = graphql`
 `;
 
 const groupMutationRelationDelete = graphql`
-  mutation StreamCollectionEditionGroupDeleteMutation(
-    $id: ID!
-    $groupId: ID!
-  ) {
+  mutation StreamCollectionEditionGroupDeleteMutation($id: ID!, $groupId: ID!) {
     streamCollectionEdit(id: $id) {
       deleteGroup(id: $groupId) {
         ...StreamCollectionEdition_streamCollection
@@ -245,10 +239,10 @@ const StreamCollectionEditionContainer = (props) => {
                 onSubmit={handleSubmitField}
               />
               <GroupField
-                  name="groups"
-                  helpertext={t('Let the field empty to grant all users')}
-                  style={{ marginTop: 20, width: '100%' }}
-                  onChange={handleChangeGroups}
+                name="groups"
+                helpertext={t('Let the field empty to grant all users')}
+                style={{ marginTop: 20, width: '100%' }}
+                onChange={handleChangeGroups}
               />
               <div style={{ marginTop: 35 }}>
                 <Filters

@@ -12,7 +12,10 @@ import ListLines from '../../../components/list_lines/ListLines';
 import NotesLines, { notesLinesQuery } from './notes/NotesLines';
 import inject18n from '../../../components/i18n';
 import NoteCreation from './notes/NoteCreation';
-import Security, { KNOWLEDGE_KNUPDATE, UserContext } from '../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE,
+  UserContext,
+} from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 
 class Notes extends Component {
@@ -217,12 +220,16 @@ class Notes extends Component {
     };
     return (
       <UserContext.Consumer>
-        {({ helper }) => <div>
-          { view === 'lines' ? this.renderLines(paginationOptions, helper) : '' }
+        {({ helper }) => (
+          <div>
+            {view === 'lines'
+              ? this.renderLines(paginationOptions, helper)
+              : ''}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <NoteCreation paginationOptions={paginationOptions} />
             </Security>
-          </div>}
+          </div>
+        )}
       </UserContext.Consumer>
     );
   }

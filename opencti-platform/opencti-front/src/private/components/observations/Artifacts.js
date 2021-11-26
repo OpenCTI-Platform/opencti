@@ -10,7 +10,10 @@ import {
   convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
-import Security, { UserContext, KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security, {
+  UserContext,
+  KNOWLEDGE_KNUPDATE,
+} from '../../../utils/Security';
 import ToolBar from '../data/ToolBar';
 import ArtifactsLines, {
   artifactsLinesQuery,
@@ -193,64 +196,67 @@ class StixCyberObservables extends Component {
       finalFilters,
     );
     return (
-        <UserContext.Consumer>
-          {({ helper }) => <div>
-              <ListLines
-                sortBy={sortBy}
-                orderAsc={orderAsc}
-                dataColumns={this.buildColumns(helper)}
-                handleSort={this.handleSort.bind(this)}
-                handleSearch={this.handleSearch.bind(this)}
-                handleAddFilter={this.handleAddFilter.bind(this)}
-                handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-                handleToggleExports={this.handleToggleExports.bind(this)}
-                openExports={openExports}
-                handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-                selectAll={selectAll}
-                exportEntityType="Artifact"
-                exportContext={null}
-                keyword={searchTerm}
-                filters={filters}
-                iconExtension={true}
-                paginationOptions={paginationOptions}
-                numberOfElements={numberOfElements}
-                availableFilterKeys={[
-                  'labelledBy',
-                  'markedBy',
-                  'created_at_start_date',
-                  'created_at_end_date',
-                  'createdBy',
-                ]}>
-                <QueryRenderer
-                  query={artifactsLinesQuery}
-                  variables={{ count: 25, ...paginationOptions }}
-                  render={({ props }) => (
-                    <ArtifactsLines
-                      data={props}
-                      paginationOptions={paginationOptions}
-                      dataColumns={this.buildColumns(helper)}
-                      initialLoading={props === null}
-                      onLabelClick={this.handleAddFilter.bind(this)}
-                      selectedElements={selectedElements}
-                      onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                      selectAll={selectAll}
-                      setNumberOfElements={this.setNumberOfElements.bind(this)}
-                    />
-                  )}
-                />
-              </ListLines>
-              <ToolBar
-                selectedElements={selectedElements}
-                numberOfSelectedElements={numberOfSelectedElements}
-                selectAll={selectAll}
-                filters={finalFilters}
-                search={searchTerm}
-                handleClearSelectedElements={this.handleClearSelectedElements.bind(
-                  this,
+      <UserContext.Consumer>
+        {({ helper }) => (
+          <div>
+            <ListLines
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={this.buildColumns(helper)}
+              handleSort={this.handleSort.bind(this)}
+              handleSearch={this.handleSearch.bind(this)}
+              handleAddFilter={this.handleAddFilter.bind(this)}
+              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+              handleToggleExports={this.handleToggleExports.bind(this)}
+              openExports={openExports}
+              handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+              selectAll={selectAll}
+              exportEntityType="Artifact"
+              exportContext={null}
+              keyword={searchTerm}
+              filters={filters}
+              iconExtension={true}
+              paginationOptions={paginationOptions}
+              numberOfElements={numberOfElements}
+              availableFilterKeys={[
+                'labelledBy',
+                'markedBy',
+                'created_at_start_date',
+                'created_at_end_date',
+                'createdBy',
+              ]}
+            >
+              <QueryRenderer
+                query={artifactsLinesQuery}
+                variables={{ count: 25, ...paginationOptions }}
+                render={({ props }) => (
+                  <ArtifactsLines
+                    data={props}
+                    paginationOptions={paginationOptions}
+                    dataColumns={this.buildColumns(helper)}
+                    initialLoading={props === null}
+                    onLabelClick={this.handleAddFilter.bind(this)}
+                    selectedElements={selectedElements}
+                    onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                    selectAll={selectAll}
+                    setNumberOfElements={this.setNumberOfElements.bind(this)}
+                  />
                 )}
               />
-          </div>}
-        </UserContext.Consumer>
+            </ListLines>
+            <ToolBar
+              selectedElements={selectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              selectAll={selectAll}
+              filters={finalFilters}
+              search={searchTerm}
+              handleClearSelectedElements={this.handleClearSelectedElements.bind(
+                this,
+              )}
+            />
+          </div>
+        )}
+      </UserContext.Consumer>
     );
   }
 

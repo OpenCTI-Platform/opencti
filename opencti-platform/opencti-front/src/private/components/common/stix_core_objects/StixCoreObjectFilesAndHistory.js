@@ -36,6 +36,7 @@ import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_defin
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from './StixCoreObjectHistory';
 import FileExternalReferencesViewer from '../files/FileExternalReferencesViewer';
+import FilePendingViewer from '../files/FilePendingViewer';
 
 const styles = () => ({
   container: {
@@ -222,6 +223,10 @@ const StixCoreObjectFilesAndHistory = ({
         <FileImportViewer
           entity={entity}
           connectors={importConnsPerFormat}
+          handleOpenImport={handleOpenImport}
+        />
+        <FilePendingViewer
+          entity={entity}
           handleOpenImport={handleOpenImport}
         />
         <FileExportViewer

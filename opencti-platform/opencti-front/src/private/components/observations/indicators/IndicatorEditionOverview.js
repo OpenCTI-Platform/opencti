@@ -345,7 +345,11 @@ class IndicatorEditionOverviewComponent extends Component {
         onSubmit={this.onSubmit.bind(this)}
       >
         {({
-          submitForm, isSubmitting, validateForm, setFieldValue, values,
+          submitForm,
+          isSubmitting,
+          validateForm,
+          setFieldValue,
+          values,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field

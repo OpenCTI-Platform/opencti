@@ -44,7 +44,7 @@ export default {
         if (!isCallError && !perfLog) {
           return;
         }
-        const contextVariables = context.request.variables || {}
+        const contextVariables = context.request.variables || {};
         const size = Buffer.byteLength(JSON.stringify(contextVariables));
         const isWrite = context.operation && context.operation.operation === 'mutation';
         const contextUser = context.context.user;

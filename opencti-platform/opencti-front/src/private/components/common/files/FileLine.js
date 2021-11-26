@@ -9,7 +9,11 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
-import { DeleteOutlined, GetAppOutlined, WarningOutlined } from '@material-ui/icons';
+import {
+  DeleteOutlined,
+  GetAppOutlined,
+  WarningOutlined,
+} from '@material-ui/icons';
 import Tooltip from '@material-ui/core/Tooltip';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -17,7 +21,11 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Link } from 'react-router-dom';
-import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import {
+  APP_BASE_PATH,
+  commitMutation,
+  MESSAGING$,
+} from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import FileWork from './FileWork';
 
@@ -104,11 +112,16 @@ class FileLineComponent extends Component {
     const history = [];
     if (isOutdated) {
       const time = moment.duration(lastModifiedSinceMin, 'minutes').humanize();
-      history.push({ message: `Connector execution timeout, no activity for ${time}` });
+      history.push({
+        message: `Connector execution timeout, no activity for ${time}`,
+      });
     } else {
       history.push(...[...messages, ...errors]);
     }
-    const toolTip = history.map((s) => s.message).filter((s) => !isEmpty(s)).join(', ');
+    const toolTip = history
+      .map((s) => s.message)
+      .filter((s) => !isEmpty(s))
+      .join(', ');
     return (
       <div>
         <ListItem
@@ -135,10 +148,10 @@ class FileLineComponent extends Component {
             )}
             {!isProgress && (isFail || isOutdated) && (
               <Tooltip title={toolTip !== 'null' ? toolTip : ''}>
-                  <WarningOutlined
-                    color={nested ? 'primary' : 'inherit'}
-                    style={{ fontSize: 15, color: '#f44336' }}
-                  />
+                <WarningOutlined
+                  color={nested ? 'primary' : 'inherit'}
+                  style={{ fontSize: 15, color: '#f44336' }}
+                />
               </Tooltip>
             )}
             {!isProgress && !isFail && !isOutdated && (
@@ -184,9 +197,9 @@ class FileLineComponent extends Component {
             <Tooltip title={t('Delete this file')}>
               <span>
                 <IconButton
-                    disabled={isProgress}
-                    color={nested ? 'inherit' : 'primary'}
-                    onClick={this.handleRemoveFile.bind(this, file.id)}
+                  disabled={isProgress}
+                  color={nested ? 'inherit' : 'primary'}
+                  onClick={this.handleRemoveFile.bind(this, file.id)}
                 >
                   <DeleteOutlined />
                 </IconButton>

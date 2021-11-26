@@ -163,7 +163,9 @@ const TopBar = ({
         </div>
         <div className={classes.menuContainer}>
           {(location.pathname === '/dashboard'
-            || location.pathname === '/dashboard/import') && <TopMenuDashboard />}
+            || location.pathname.includes('/dashboard/import')) && (
+            <TopMenuDashboard />
+          )}
           {location.pathname.includes('/dashboard/search') && <TopMenuSearch />}
           {(location.pathname === '/dashboard/analysis'
             || location.pathname.match('/dashboard/analysis/[a-z_]+$')) && (
@@ -363,12 +365,12 @@ const TopBar = ({
                   component={Link}
                   to="/dashboard/import"
                   variant={
-                    location.pathname === '/dashboard/import'
+                    location.pathname.includes('/dashboard/import')
                       ? 'contained'
                       : 'text'
                   }
                   color={
-                    location.pathname === '/dashboard/import'
+                    location.pathname.includes('/dashboard/import')
                       ? 'secondary'
                       : 'inherit'
                   }

@@ -162,10 +162,10 @@ class RetentionPopover extends Component {
               if (props) {
                 // Done
                 return (
-                    <RetentionEdition
-                        retentionRule={props.retentionRule}
-                        handleClose={this.handleCloseUpdate.bind(this)}
-                    />
+                  <RetentionEdition
+                    retentionRule={props.retentionRule}
+                    handleClose={this.handleCloseUpdate.bind(this)}
+                  />
                 );
               }
               return <Loader variant="inElement" />;

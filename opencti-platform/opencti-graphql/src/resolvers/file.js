@@ -1,22 +1,32 @@
-import { deleteFile, filesListing } from '../database/minio';
-import { askJobImport, uploadImport } from '../domain/file';
+import { deleteFile, filesListing, loadFile } from '../database/minio';
+import { askJobImport, uploadImport, uploadPending } from '../domain/file';
 import { worksForSource } from '../domain/work';
 import { stixCoreObjectImportDelete } from '../domain/stixCoreObject';
+import { internalLoadById } from '../database/middleware';
 
 const fileResolvers = {
   Query: {
-    importFiles: (entity, { first }, { user }) => filesListing(user, first, 'import/global/'),
+    file: (_, { id }, { user }) => loadFile(user, id),
+    importFiles: (_, { first }, { user }) => filesListing(user, first, 'import/global/'),
+    pendingFiles: (_, { first }, { user }) => filesListing(user, first, 'import/pending/'),
   },
   File: {
     works: (file, _, { user }) => worksForSource(user, file.id),
+    metaData: (file, _, { user }) => {
+      if (file.metaData.entity_id) {
+        return { ...file.metaData, entity: internalLoadById(user, file.metaData.entity_id) };
+      }
+      return file.metaData;
+    },
   },
   Mutation: {
     uploadImport: (_, { file }, { user }) => uploadImport(user, file),
+    uploadPending: (_, { file, entityId }, { user }) => uploadPending(user, file, entityId),
     deleteImport: (_, { fileName }, { user }) => {
       // Imported file must be handle specifically
       // File deletion must publish a specific event
       // and update the updated_at field of the source entity
-      if (fileName.startsWith('import')) {
+      if (fileName.startsWith('import') && !fileName.includes('global') && !fileName.includes('pending')) {
         return stixCoreObjectImportDelete(user, fileName);
       }
       // If not, a simple deletion is enough

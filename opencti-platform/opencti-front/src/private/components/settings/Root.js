@@ -58,9 +58,9 @@ const Root = () => (
       component={Workflow}
     />
     <BoundaryRoute
-        exact
-        path="/dashboard/settings/retention"
-        component={Retention}
+      exact
+      path="/dashboard/settings/retention"
+      component={Retention}
     />
     <BoundaryRoute exact path="/dashboard/settings/rules" component={Rules} />
     <BoundaryRoute

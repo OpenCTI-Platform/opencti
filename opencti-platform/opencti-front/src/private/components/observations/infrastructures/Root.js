@@ -29,6 +29,7 @@ const subscription = graphql`
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
+      ...FilePendingViewer_entity
     }
   }
 `;
@@ -46,6 +47,7 @@ const infrastructureQuery = graphql`
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
+      ...FilePendingViewer_entity
     }
     connectorsForExport {
       ...FileManager_connectorsExport

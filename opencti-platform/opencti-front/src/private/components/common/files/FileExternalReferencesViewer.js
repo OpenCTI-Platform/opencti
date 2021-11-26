@@ -20,7 +20,7 @@ const styles = () => ({
     height: '100%',
     minHeight: '100%',
     padding: '10px 15px 10px 15px',
-    marginTop: 15,
+    marginTop: 12,
     borderRadius: 6,
   },
 });
@@ -53,50 +53,42 @@ const FileExternalReferencesViewerBase = ({
     };
   });
   return (
-    <React.Fragment>
-      <Grid item={true} xs={12} style={{ marginTop: 30 }}>
-        <div style={{ height: '100%' }} className="break">
-          <Typography
-            variant="h4"
-            gutterBottom={true}
-            style={{ float: 'left' }}
-          >
-            {t('External references files')}
-          </Typography>
-          <div className="clearfix" />
-          <Paper classes={{ root: classes.paper }} elevation={2}>
-            {allFiles.length ? (
-              <List>
-                {allFiles.map((file) => (
-                  <FileLine
-                    key={file.id}
-                    dense={true}
-                    disableImport={isContainer || disableImport}
-                    file={file}
-                    connectors={
-                      connectors && connectors[file.metaData.mimetype]
-                    }
-                    handleOpenImport={handleOpenImport}
-                  />
-                ))}
-              </List>
-            ) : (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t('No file for the moment')}
-                </span>
-              </div>
-            )}
-          </Paper>
-        </div>
-      </Grid>
-    </React.Fragment>
+    <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+      <div style={{ height: '100%' }}>
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+          {t('External references files')}
+        </Typography>
+        <div className="clearfix" />
+        <Paper classes={{ root: classes.paper }} elevation={2}>
+          {allFiles.length ? (
+            <List>
+              {allFiles.map((file) => (
+                <FileLine
+                  key={file.id}
+                  dense={true}
+                  disableImport={isContainer || disableImport}
+                  file={file}
+                  connectors={connectors && connectors[file.metaData.mimetype]}
+                  handleOpenImport={handleOpenImport}
+                />
+              ))}
+            </List>
+          ) : (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {t('No file for the moment')}
+              </span>
+            </div>
+          )}
+        </Paper>
+      </div>
+    </Grid>
   );
 };
 
@@ -109,6 +101,7 @@ const FileExternalReferencesViewerRefetchQuery = graphql`
   query FileExternalReferencesViewerRefetchQuery($id: String!) {
     stixDomainObject(id: $id) {
       ...FileExternalReferencesViewer_entity
+      ...FilePendingViewer_entity
     }
   }
 `;

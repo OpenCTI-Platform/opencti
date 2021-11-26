@@ -70,6 +70,8 @@ const stixCoreObjectResolvers = {
       connectorsForEnrichment(user, stixCoreObject.entity_type, onlyAlive),
     importFiles: (stixCoreObject, { first }, { user }) =>
       filesListing(user, first, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}/`),
+    pendingFiles: (stixCoreObject, { first }, { user }) =>
+      filesListing(user, first, 'import/pending/', stixCoreObject.id),
     exportFiles: (stixCoreObject, { first }, { user }) =>
       filesListing(user, first, `export/${stixCoreObject.entity_type}/${stixCoreObject.id}/`),
   },

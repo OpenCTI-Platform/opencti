@@ -1,29 +1,17 @@
 import React from 'react';
-import * as PropTypes from 'prop-types';
-import { QueryRenderer } from '../../../relay/environment';
-import Import, { ImportQuery } from './Import';
-import Loader from '../../../components/Loader';
+import { Switch } from 'react-router-dom';
+import { BoundaryRoute } from '../Error';
+import Import from './Import';
+import PendingFile from './PendingFile';
 
-const RootImport = () => (
-  <QueryRenderer
-    query={ImportQuery}
-    variables={{}}
-    render={({ props }) => {
-      if (props) {
-        return (
-          <Import
-            connectorsImport={props.connectorsForImport}
-            importFiles={props.importFiles}
-          />
-        );
-      }
-      return <Loader />;
-    }}
-  />
+const Root = () => (
+  <Switch>
+    <BoundaryRoute exact path="/dashboard/import" component={Import} />
+    <BoundaryRoute
+      path="/dashboard/import/pending/:fileId"
+      render={(routeProps) => <PendingFile {...routeProps} />}
+    />
+  </Switch>
 );
 
-RootImport.propTypes = {
-  children: PropTypes.node,
-};
-
-export default RootImport;
+export default Root;

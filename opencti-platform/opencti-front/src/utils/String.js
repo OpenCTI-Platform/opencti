@@ -23,3 +23,19 @@ export const adaptFieldValue = (value) => {
   }
   return value.toString();
 };
+
+export const pascalize = (s) => s.replace(/(\w)(\w*)/g, (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase());
+
+export const convertStixType = (s) => {
+  let type = pascalize(s);
+  if (type.includes('Opencti')) {
+    type = type.replaceAll('Opencti', 'OpenCTI');
+  }
+  if (type.includes('Ipv')) {
+    type = type.replaceAll('Ipv', 'IPv');
+  }
+  if (type === 'File') {
+    return 'StixFile';
+  }
+  return type;
+};

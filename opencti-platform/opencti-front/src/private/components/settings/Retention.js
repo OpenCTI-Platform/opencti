@@ -10,7 +10,9 @@ import {
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
-import RetentionLines, { RetentionLinesQuery } from './retention/RetentionLines';
+import RetentionLines, {
+  RetentionLinesQuery,
+} from './retention/RetentionLines';
 import RetentionCreation from './retention/RetentionCreation';
 
 class Retention extends Component {
@@ -66,7 +68,8 @@ class Retention extends Component {
         handleSearch={this.handleSearch.bind(this)}
         displayImport={false}
         secondaryAction={true}
-        keyword={searchTerm}>
+        keyword={searchTerm}
+      >
         <QueryRenderer
           query={RetentionLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
@@ -84,9 +87,7 @@ class Retention extends Component {
   }
 
   render() {
-    const {
-      view, searchTerm,
-    } = this.state;
+    const { view, searchTerm } = this.state;
     const paginationOptions = { search: searchTerm };
     return (
       <div>

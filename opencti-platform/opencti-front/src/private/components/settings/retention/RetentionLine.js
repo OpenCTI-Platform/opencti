@@ -91,66 +91,71 @@ class RetentionLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.filters.width }}
               >
-                {filterPairs.length > 0 ? map((currentFilter) => {
-                  const label = `${truncate(
-                    t(`filter_${currentFilter[0]}`),
-                    20,
-                  )}`;
-                  const values = (
-                    <span>
-                      {map(
-                        (n) => (
-                          <span key={n.value}>
-                            {n.value && n.value.length > 0
-                              ? truncate(n.value, 15)
-                              : t('No label')}{' '}
-                            {last(currentFilter[1]).value !== n.value && (
-                              <code>OR</code>
-                            )}{' '}
-                          </span>
-                        ),
-                        currentFilter[1],
-                      )}
-                    </span>
-                  );
-                  return (
-                    <span>
-                      <Chip
-                        key={currentFilter[0]}
-                        classes={{ root: classes.filter }}
-                        label={
-                          <div>
-                            <strong>{label}</strong>: {values}
-                          </div>
-                        }
-                      />
-                      {last(toPairs(filters))[0] !== currentFilter[0] && (
+                {filterPairs.length > 0 ? (
+                  map((currentFilter) => {
+                    const label = `${truncate(
+                      t(`filter_${currentFilter[0]}`),
+                      20,
+                    )}`;
+                    const values = (
+                      <span>
+                        {map(
+                          (n) => (
+                            <span key={n.value}>
+                              {n.value && n.value.length > 0
+                                ? truncate(n.value, 15)
+                                : t('No label')}{' '}
+                              {last(currentFilter[1]).value !== n.value && (
+                                <code>OR</code>
+                              )}{' '}
+                            </span>
+                          ),
+                          currentFilter[1],
+                        )}
+                      </span>
+                    );
+                    return (
+                      <span>
                         <Chip
-                          classes={{ root: classes.operator }}
-                          label={t('AND')}
-                        />
-                      )}
-                    </span>
-                  );
-                }, filterPairs) : <span>
-                      <Chip classes={{ root: classes.filter }}
+                          key={currentFilter[0]}
+                          classes={{ root: classes.filter }}
                           label={
                             <div>
-                              <strong>{t('Everything')}</strong>
+                              <strong>{label}</strong>: {values}
                             </div>
                           }
-                      />
-                    </span>}
+                        />
+                        {last(toPairs(filters))[0] !== currentFilter[0] && (
+                          <Chip
+                            classes={{ root: classes.operator }}
+                            label={t('AND')}
+                          />
+                        )}
+                      </span>
+                    );
+                  }, filterPairs)
+                ) : (
+                  <span>
+                    <Chip
+                      classes={{ root: classes.filter }}
+                      label={
+                        <div>
+                          <strong>{t('Everything')}</strong>
+                        </div>
+                      }
+                    />
+                  </span>
+                )}
               </div>
               <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.retention.width }}
+                className={classes.bodyItem}
+                style={{ width: dataColumns.retention.width }}
               >
                 {node.max_retention} {t('day(s)')}
               </div>
               <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.last_execution_date.width }}
+                className={classes.bodyItem}
+                style={{ width: dataColumns.last_execution_date.width }}
               >
                 {nsdt(node.last_execution_date)}
               </div>
@@ -159,8 +164,8 @@ class RetentionLineComponent extends Component {
         />
         <ListItemSecondaryAction>
           <RetentionPopover
-              retentionRuleId={node.id}
-              paginationOptions={paginationOptions}
+            retentionRuleId={node.id}
+            paginationOptions={paginationOptions}
           />
         </ListItemSecondaryAction>
       </ListItem>
@@ -239,14 +244,14 @@ class RetentionDummyComponent extends Component {
                 />
               </div>
               <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.last_execution_date.width }}
+                className={classes.bodyItem}
+                style={{ width: dataColumns.last_execution_date.width }}
               >
                 <Skeleton
-                    animation="wave"
-                    variant="rect"
-                    width="20%"
-                    height="100%"
+                  animation="wave"
+                  variant="rect"
+                  width="20%"
+                  height="100%"
                 />
               </div>
             </div>

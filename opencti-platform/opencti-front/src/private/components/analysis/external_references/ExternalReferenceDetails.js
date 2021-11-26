@@ -21,9 +21,7 @@ const styles = () => ({
 
 class ExternalReferenceDetailsComponent extends Component {
   render() {
-    const {
-      t, classes, externalReference,
-    } = this.props;
+    const { t, classes, externalReference } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>

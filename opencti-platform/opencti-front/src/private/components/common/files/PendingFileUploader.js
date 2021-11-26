@@ -8,25 +8,15 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 
-const fileUploaderGlobalMutation = graphql`
-  mutation FileUploaderGlobalMutation($file: Upload!) {
-    uploadImport(file: $file) {
+const pendingFileUploaderMutation = graphql`
+  mutation PendingFileUploaderMutation($file: Upload!, $entityId: String) {
+    uploadPending(file: $file, entityId: $entityId) {
       ...FileLine_file
     }
   }
 `;
 
-const fileUploaderEntityMutation = graphql`
-  mutation FileUploaderEntityMutation($id: ID!, $file: Upload!) {
-    stixCoreObjectEdit(id: $id) {
-      importPush(file: $file) {
-        ...FileLine_file
-      }
-    }
-  }
-`;
-
-const FileUploader = (props) => {
+const PendingFileUploader = (props) => {
   const {
     entityId, onUploadSuccess, t, color,
   } = props;
@@ -35,9 +25,7 @@ const FileUploader = (props) => {
   const handleOpenUpload = () => uploadRef.current.click();
   const handleUpload = (file) => {
     commitMutation({
-      mutation: entityId
-        ? fileUploaderEntityMutation
-        : fileUploaderGlobalMutation,
+      mutation: pendingFileUploaderMutation,
       variables: { file, id: entityId },
       optimisticUpdater: () => {
         setUpload(file.name);
@@ -56,6 +44,7 @@ const FileUploader = (props) => {
         ref={uploadRef}
         type="file"
         style={{ display: 'none' }}
+        accept=".json,.stix,.stix2"
         onChange={({
           target: {
             validity,
@@ -94,10 +83,10 @@ const FileUploader = (props) => {
   );
 };
 
-FileUploader.propTypes = {
+PendingFileUploader.propTypes = {
   entityId: PropTypes.string,
   onUploadSuccess: PropTypes.func.isRequired,
   color: PropTypes.string,
 };
 
-export default inject18n(FileUploader);
+export default inject18n(PendingFileUploader);

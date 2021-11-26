@@ -12,7 +12,10 @@ import ListLines from '../../../components/list_lines/ListLines';
 import OpinionsLines, { opinionsLinesQuery } from './opinions/OpinionsLines';
 import inject18n from '../../../components/i18n';
 import OpinionCreation from './opinions/OpinionCreation';
-import Security, { KNOWLEDGE_KNUPDATE, UserContext } from '../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE,
+  UserContext,
+} from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 
 class Opinions extends Component {
@@ -217,12 +220,16 @@ class Opinions extends Component {
     };
     return (
       <UserContext.Consumer>
-        {({ helper }) => <div>
-          { view === 'lines' ? this.renderLines(paginationOptions, helper) : '' }
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <OpinionCreation paginationOptions={paginationOptions} />
-          </Security>
-        </div>}
+        {({ helper }) => (
+          <div>
+            {view === 'lines'
+              ? this.renderLines(paginationOptions, helper)
+              : ''}
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <OpinionCreation paginationOptions={paginationOptions} />
+            </Security>
+          </div>
+        )}
       </UserContext.Consumer>
     );
   }

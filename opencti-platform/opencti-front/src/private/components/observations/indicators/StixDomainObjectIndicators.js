@@ -13,7 +13,10 @@ import {
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import IndicatorsRightBar from './IndicatorsRightBar';
-import Security, { UserContext, KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security, {
+  UserContext,
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../utils/Security';
 import ToolBar from '../../data/ToolBar';
 import { isUniqFilter } from '../../common/lists/Filters';
 
@@ -248,8 +251,9 @@ class StixDomainObjectIndicators extends Component {
       search: searchTerm,
     };
     return (
-        <UserContext.Consumer>
-          {({ helper }) => <div>
+      <UserContext.Consumer>
+        {({ helper }) => (
+          <div>
             <ListLines
               sortBy={sortBy}
               orderAsc={orderAsc}
@@ -303,8 +307,9 @@ class StixDomainObjectIndicators extends Component {
               )}
               withPaddingRight={true}
             />
-          </div>}
-        </UserContext.Consumer>
+          </div>
+        )}
+      </UserContext.Consumer>
     );
   }
 

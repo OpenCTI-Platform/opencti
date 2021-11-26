@@ -58,38 +58,42 @@ class Rules extends Component {
     const { searchTerm } = this.state;
     const { classes } = this.props;
     return (
-        <UserContext.Consumer>
-          {({ helper }) => {
-            if (!helper.isRuleEngineEnable()) {
-              return <Alert severity="info">
+      <UserContext.Consumer>
+        {({ helper }) => {
+          if (!helper.isRuleEngineEnable()) {
+            return (
+              <Alert severity="info">
                 {this.props.t(
                   'To use this feature, your platform administrator must enable the rule engine in the config.',
                 )}
-              </Alert>;
-            }
-            return <div className={classes.container}>
+              </Alert>
+            );
+          }
+          return (
+            <div className={classes.container}>
               <div className={classes.parameters}>
                 <div style={{ float: 'left', marginRight: 20 }}>
                   <SearchInput
-                      variant="small"
-                      onSubmit={this.handleSearch.bind(this)}
-                      keyword={searchTerm}
+                    variant="small"
+                    onSubmit={this.handleSearch.bind(this)}
+                    keyword={searchTerm}
                   />
                 </div>
               </div>
-              <div className="clearfix"/>
+              <div className="clearfix" />
               <QueryRenderer
-                  query={rulesListQuery}
-                  render={({ props }) => {
-                    if (props) {
-                      return <RulesList data={props} keyword={searchTerm}/>;
-                    }
-                    return <div/>;
-                  }}
+                query={rulesListQuery}
+                render={({ props }) => {
+                  if (props) {
+                    return <RulesList data={props} keyword={searchTerm} />;
+                  }
+                  return <div />;
+                }}
               />
-            </div>;
-          }}
-        </UserContext.Consumer>
+            </div>
+          );
+        }}
+      </UserContext.Consumer>
     );
   }
 }

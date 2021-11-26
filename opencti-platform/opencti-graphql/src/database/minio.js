@@ -1,6 +1,6 @@
 import * as Minio from 'minio';
 import * as He from 'he';
-import { assoc, concat, map, sort } from 'ramda';
+import { assoc, concat, map, sort, filter } from 'ramda';
 import querystring from 'querystring';
 import conf, { booleanConf, logApp, logAudit } from '../config/conf';
 import { buildPagination } from './utils';
@@ -148,12 +148,15 @@ export const upload = async (user, path, file, metadata = {}) => {
   });
 };
 
-export const filesListing = async (user, first, path) => {
+export const filesListing = async (user, first, path, entityId = null) => {
   const files = await rawFilesListing(user, path);
   const inExport = await loadExportWorksAsProgressFiles(user, path);
   const allFiles = concat(inExport, files);
   const sortedFiles = sort((a, b) => b.lastModified - a.lastModified, allFiles);
-  const fileNodes = map((f) => ({ node: f }), sortedFiles);
+  let fileNodes = map((f) => ({ node: f }), sortedFiles);
+  if (entityId) {
+    fileNodes = filter((n) => n.node.metaData.entity_id === entityId, fileNodes);
+  }
   return buildPagination(first, null, fileNodes, allFiles.length);
 };
 

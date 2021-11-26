@@ -5,7 +5,15 @@ import { connectorsForImport } from './connector';
 import { createWork } from './work';
 import { logApp } from '../config/conf';
 
-export const uploadJobImport = async (user, fileId, fileMime, entityId, manual = false, connectorId = null) => {
+export const uploadJobImport = async (
+  user,
+  fileId,
+  fileMime,
+  entityId,
+  manual = false,
+  connectorId = null,
+  bypassValidation = false
+) => {
   let connectors = await connectorsForImport(user, fileMime, true, !manual);
   if (connectorId) {
     connectors = R.filter((n) => n.id === connectorId, connectors);
@@ -33,6 +41,7 @@ export const uploadJobImport = async (user, fileId, fileMime, entityId, manual =
           file_mime: fileMime,
           file_fetch: `/storage/get/${fileId}`, // Path to get the file
           entity_id: entityId, // Context of the upload
+          bypass_validation: bypassValidation, // Force no validation
         },
       };
     };
@@ -46,7 +55,7 @@ export const uploadJobImport = async (user, fileId, fileMime, entityId, manual =
 };
 
 export const askJobImport = async (user, args) => {
-  const { fileName, connectorId = null, bypassEntityId = null } = args;
+  const { fileName, connectorId = null, bypassEntityId = null, bypassValidation = false } = args;
   logApp.debug(`[JOBS] ask import for file ${fileName} by ${user.user_email}`);
   const file = await loadFile(user, fileName);
   await uploadJobImport(
@@ -55,7 +64,8 @@ export const askJobImport = async (user, args) => {
     file.metaData.mimetype,
     bypassEntityId || file.metaData.entity_id,
     true,
-    connectorId
+    connectorId,
+    bypassValidation
   );
   return file;
 };
@@ -65,3 +75,6 @@ export const uploadImport = async (user, file) => {
   await uploadJobImport(user, up.id, up.metaData.mimetype, up.metaData.entity_id);
   return up;
 };
+
+export const uploadPending = async (user, file, entityId = null) =>
+  upload(user, 'import/pending', file, entityId ? { entity_id: entityId } : {});

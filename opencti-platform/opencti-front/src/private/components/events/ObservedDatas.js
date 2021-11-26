@@ -14,7 +14,10 @@ import ObservedDatasLines, {
 } from './observed_data/ObservedDatasLines';
 import inject18n from '../../../components/i18n';
 import ObservedDataCreation from './observed_data/ObservedDataCreation';
-import Security, { UserContext, KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security, {
+  UserContext,
+  KNOWLEDGE_KNUPDATE,
+} from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 
 class ObservedDatas extends Component {
@@ -160,48 +163,50 @@ class ObservedDatas extends Component {
       exportContext = `of-entity-${authorId}`;
     }
     return (
-        <UserContext.Consumer>
-          {({ helper }) => <ListLines
-              sortBy={sortBy}
-              orderAsc={orderAsc}
-              dataColumns={this.buildColumns(helper)}
-              handleSort={this.handleSort.bind(this)}
-              handleSearch={this.handleSearch.bind(this)}
-              handleAddFilter={this.handleAddFilter.bind(this)}
-              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-              handleToggleExports={this.handleToggleExports.bind(this)}
-              openExports={openExports}
-              noPadding={typeof this.props.onChangeOpenExports === 'function'}
-              exportEntityType="ObservedData"
-              exportContext={exportContext}
-              keyword={searchTerm}
-              filters={filters}
-              paginationOptions={paginationOptions}
-              numberOfElements={numberOfElements}
-              availableFilterKeys={[
-                'labelledBy',
-                'createdBy',
-                'markedBy',
-                'created_start_date',
-                'created_end_date',
-              ]}
-            >
-              <QueryRenderer
-                query={observedDatasLinesQuery}
-                variables={{ count: 25, ...paginationOptions }}
-                render={({ props }) => (
-                  <ObservedDatasLines
-                    data={props}
-                    paginationOptions={paginationOptions}
-                    dataColumns={this.buildColumns(helper)}
-                    initialLoading={props === null}
-                    onLabelClick={this.handleAddFilter.bind(this)}
-                    setNumberOfElements={this.setNumberOfElements.bind(this)}
-                  />
-                )}
-              />
-            </ListLines>}
-        </UserContext.Consumer>
+      <UserContext.Consumer>
+        {({ helper }) => (
+          <ListLines
+            sortBy={sortBy}
+            orderAsc={orderAsc}
+            dataColumns={this.buildColumns(helper)}
+            handleSort={this.handleSort.bind(this)}
+            handleSearch={this.handleSearch.bind(this)}
+            handleAddFilter={this.handleAddFilter.bind(this)}
+            handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+            handleToggleExports={this.handleToggleExports.bind(this)}
+            openExports={openExports}
+            noPadding={typeof this.props.onChangeOpenExports === 'function'}
+            exportEntityType="ObservedData"
+            exportContext={exportContext}
+            keyword={searchTerm}
+            filters={filters}
+            paginationOptions={paginationOptions}
+            numberOfElements={numberOfElements}
+            availableFilterKeys={[
+              'labelledBy',
+              'createdBy',
+              'markedBy',
+              'created_start_date',
+              'created_end_date',
+            ]}
+          >
+            <QueryRenderer
+              query={observedDatasLinesQuery}
+              variables={{ count: 25, ...paginationOptions }}
+              render={({ props }) => (
+                <ObservedDatasLines
+                  data={props}
+                  paginationOptions={paginationOptions}
+                  dataColumns={this.buildColumns(helper)}
+                  initialLoading={props === null}
+                  onLabelClick={this.handleAddFilter.bind(this)}
+                  setNumberOfElements={this.setNumberOfElements.bind(this)}
+                />
+              )}
+            />
+          </ListLines>
+        )}
+      </UserContext.Consumer>
     );
   }
 

@@ -12,7 +12,10 @@ import ContainerStixObjectsOrStixRelationshipsLines, {
   ContainerStixObjectsOrStixRelationshipsLinesQuery,
 } from './ContainerStixObjectsOrStixRelationshipsLines';
 import inject18n from '../../../../components/i18n';
-import Security, { KNOWLEDGE_KNUPDATE, UserContext } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE,
+  UserContext,
+} from '../../../../utils/Security';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 
 const styles = () => ({
@@ -26,7 +29,10 @@ const styles = () => ({
 });
 
 const ContainerStixObjectsOrStixRelationshipsComponent = ({
-  container, classes, t, paginationOptions,
+  container,
+  classes,
+  t,
+  paginationOptions,
 }) => {
   const { helper } = useContext(UserContext);
   const isRuntimeSort = helper.isRuntimeFieldEnable();
@@ -52,43 +58,43 @@ const ContainerStixObjectsOrStixRelationshipsComponent = ({
     },
   };
   return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Related entities')}
-        </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ContainerAddStixCoreObjects
-            containerId={propOr(null, 'id', container)}
-            containerObjects={pathOr([], ['objects', 'edges'], container)}
-            paginationOptions={paginationOptions}
-            simple={true}
-            targetStixCoreObjectTypes={[
-              'Stix-Domain-Object',
-              'Stix-Cyber-Observable',
-            ]}
+    <div style={{ height: '100%' }}>
+      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+        {t('Related entities')}
+      </Typography>
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <ContainerAddStixCoreObjects
+          containerId={propOr(null, 'id', container)}
+          containerObjects={pathOr([], ['objects', 'edges'], container)}
+          paginationOptions={paginationOptions}
+          simple={true}
+          targetStixCoreObjectTypes={[
+            'Stix-Domain-Object',
+            'Stix-Cyber-Observable',
+          ]}
+        />
+      </Security>
+      <div className="clearfix" />
+      <Paper classes={{ root: classes.paper }} elevation={2}>
+        <ListLines
+          dataColumns={dataColumns}
+          secondaryAction={true}
+          noHeaders={true}
+        >
+          <QueryRenderer
+            query={ContainerStixObjectsOrStixRelationshipsLinesQuery}
+            variables={{ id: container.id, count: 25 }}
+            render={({ props }) => (
+              <ContainerStixObjectsOrStixRelationshipsLines
+                container={props ? props.container : null}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+              />
+            )}
           />
-        </Security>
-        <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
-          <ListLines
-            dataColumns={dataColumns}
-            secondaryAction={true}
-            noHeaders={true}
-          >
-            <QueryRenderer
-              query={ContainerStixObjectsOrStixRelationshipsLinesQuery}
-              variables={{ id: container.id, count: 25 }}
-              render={({ props }) => (
-                <ContainerStixObjectsOrStixRelationshipsLines
-                  container={props ? props.container : null}
-                  dataColumns={dataColumns}
-                  initialLoading={props === null}
-                />
-              )}
-            />
-          </ListLines>
-        </Paper>
-      </div>
+        </ListLines>
+      </Paper>
+    </div>
   );
 };
 

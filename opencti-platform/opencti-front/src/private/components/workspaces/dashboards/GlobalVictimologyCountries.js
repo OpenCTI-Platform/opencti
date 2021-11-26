@@ -127,4 +127,7 @@ GlobalVictimologyCountries.propTypes = {
   mapReload: PropTypes.bool,
 };
 
-export default R.compose(inject18n, withStyles(styles))(GlobalVictimologyCountries);
+export default R.compose(
+  inject18n,
+  withStyles(styles),
+)(GlobalVictimologyCountries);

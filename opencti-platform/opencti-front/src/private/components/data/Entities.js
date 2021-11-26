@@ -210,69 +210,79 @@ class Entities extends Component {
     }
     const entityTypes = R.map((n) => ({ id: n, value: n }), types);
     return (
-        <UserContext.Consumer>
-          {({ helper }) => <div><ListLines
-            sortBy={sortBy}
-            orderAsc={orderAsc}
-            dataColumns={this.buildColumns(helper)}
-            handleSort={this.handleSort.bind(this)}
-            handleSearch={this.handleSearch.bind(this)}
-            handleAddFilter={this.handleAddFilter.bind(this)}
-            handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-            handleChangeView={this.handleChangeView.bind(this)}
-            handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-            selectAll={selectAll}
-            disableCards={true}
-            keyword={searchTerm}
-            filters={filters}
-            paginationOptions={paginationOptions}
-            numberOfElements={numberOfElements}
-            iconExtension={true}
-            availableFilterKeys={[
-              'labelledBy',
-              'markedBy',
-              'created_start_date',
-              'created_end_date',
-              'createdBy',
-            ]}>
-          <QueryRenderer
-            query={entitiesStixDomainObjectsLinesQuery}
-            variables={{ count: 25, ...paginationOptions }}
-            render={({ props }) => (
-              <EntitiesStixDomainObjectsLines
-                data={props}
-                paginationOptions={paginationOptions}
-                dataColumns={this.buildColumns(helper)}
-                initialLoading={props === null}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                selectedElements={selectedElements}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                selectAll={selectAll}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
+      <UserContext.Consumer>
+        {({ helper }) => (
+          <div>
+            <ListLines
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={this.buildColumns(helper)}
+              handleSort={this.handleSort.bind(this)}
+              handleSearch={this.handleSearch.bind(this)}
+              handleAddFilter={this.handleAddFilter.bind(this)}
+              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+              handleChangeView={this.handleChangeView.bind(this)}
+              handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+              selectAll={selectAll}
+              disableCards={true}
+              keyword={searchTerm}
+              filters={filters}
+              paginationOptions={paginationOptions}
+              numberOfElements={numberOfElements}
+              iconExtension={true}
+              availableFilterKeys={[
+                'labelledBy',
+                'markedBy',
+                'created_start_date',
+                'created_end_date',
+                'createdBy',
+              ]}
+            >
+              <QueryRenderer
+                query={entitiesStixDomainObjectsLinesQuery}
+                variables={{ count: 25, ...paginationOptions }}
+                render={({ props }) => (
+                  <EntitiesStixDomainObjectsLines
+                    data={props}
+                    paginationOptions={paginationOptions}
+                    dataColumns={this.buildColumns(helper)}
+                    initialLoading={props === null}
+                    onLabelClick={this.handleAddFilter.bind(this)}
+                    selectedElements={selectedElements}
+                    onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                    selectAll={selectAll}
+                    setNumberOfElements={this.setNumberOfElements.bind(this)}
+                  />
+                )}
               />
-            )}
-          />
-        </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          filters={
-            entityTypes.length > 0
-              ? R.assoc('entity_type', entityTypes, filters)
-              : R.assoc(
-                'entity_type',
-                [{ id: 'Stix-Domain-Object', value: 'Stix-Domain-Object' }],
-                filters,
-              )
-          }
-          search={searchTerm}
-          handleClearSelectedElements={this.handleClearSelectedElements.bind(
-            this,
-          )}
-          withPaddingRight={true}
-        /></div>}
-        </UserContext.Consumer>
+            </ListLines>
+            <ToolBar
+              selectedElements={selectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              selectAll={selectAll}
+              filters={
+                entityTypes.length > 0
+                  ? R.assoc('entity_type', entityTypes, filters)
+                  : R.assoc(
+                    'entity_type',
+                    [
+                      {
+                        id: 'Stix-Domain-Object',
+                        value: 'Stix-Domain-Object',
+                      },
+                    ],
+                    filters,
+                  )
+              }
+              search={searchTerm}
+              handleClearSelectedElements={this.handleClearSelectedElements.bind(
+                this,
+              )}
+              withPaddingRight={true}
+            />
+          </div>
+        )}
+      </UserContext.Consumer>
     );
   }
 

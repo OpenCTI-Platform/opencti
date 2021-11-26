@@ -82,15 +82,24 @@ class Stream extends Component {
         message={
           <span>
             {t('Global streams are available for granted users. Live at')}{' '}
-            <a href="/stream/live" target="_blank" style={{ color: theme.palette.secondary.main }}>
+            <a
+              href="/stream/live"
+              target="_blank"
+              style={{ color: theme.palette.secondary.main }}
+            >
               <i>/stream/live</i>
-            </a>
-            {' '}{t('and raw at')}{' '}
-            <a href="/stream" target="_blank" style={{ color: theme.palette.secondary.main }}>
+            </a>{' '}
+            {t('and raw at')}{' '}
+            <a
+              href="/stream"
+              target="_blank"
+              style={{ color: theme.palette.secondary.main }}
+            >
               <i>/stream</i>
             </a>
           </span>
-        }>
+        }
+      >
         <QueryRenderer
           query={StreamLinesQuery}
           variables={{ count: 25, ...paginationOptions }}

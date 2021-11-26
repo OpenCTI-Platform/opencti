@@ -16,7 +16,10 @@ import {
   convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
-import Security, { UserContext, KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security, {
+  UserContext,
+  KNOWLEDGE_KNUPDATE,
+} from '../../../utils/Security';
 import ToolBar from '../data/ToolBar';
 import { isUniqFilter } from '../common/lists/Filters';
 
@@ -218,8 +221,9 @@ class StixCyberObservables extends Component {
       finalFilters,
     );
     return (
-        <UserContext.Consumer>
-          {({ helper }) => <div>
+      <UserContext.Consumer>
+        {({ helper }) => (
+          <div>
             <ListLines
               sortBy={sortBy}
               orderAsc={orderAsc}
@@ -248,7 +252,8 @@ class StixCyberObservables extends Component {
                 'x_opencti_score_lte',
                 'createdBy',
                 'sightedBy',
-              ]}>
+              ]}
+            >
               <QueryRenderer
                 query={stixCyberObservablesLinesQuery}
                 variables={{ count: 25, ...paginationOptions }}
@@ -278,8 +283,9 @@ class StixCyberObservables extends Component {
               )}
               withPaddingRight={true}
             />
-          </div>}
-        </UserContext.Consumer>
+          </div>
+        )}
+      </UserContext.Consumer>
     );
   }
 

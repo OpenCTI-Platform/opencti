@@ -62,10 +62,7 @@ const styles = (theme) => ({
 });
 
 const retentionMutationFieldPatch = graphql`
-  mutation RetentionEditionFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
+  mutation RetentionEditionFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     retentionRuleEdit(id: $id) {
       fieldPatch(input: $input) {
         ...RetentionEdition_retentionRule
@@ -84,7 +81,9 @@ const RetentionEditionContainer = (props) => {
     t, classes, handleClose, retentionRule,
   } = props;
   const initialValues = R.pickAll(['name', 'max_retention'], retentionRule);
-  const [filters, setFilters] = useState(JSON.parse(props.retentionRule.filters));
+  const [filters, setFilters] = useState(
+    JSON.parse(props.retentionRule.filters),
+  );
   const onSubmit = (values, { setSubmitting }) => {
     const inputValues = R.pipe(
       R.assoc('filters', JSON.stringify(filters)),
@@ -229,11 +228,11 @@ const RetentionEditionContainer = (props) => {
               </div>
               <DialogActions>
                 <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    style={{ marginTop: 20, float: 'right' }}
+                  variant="contained"
+                  color="primary"
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                  style={{ marginTop: 20, float: 'right' }}
                 >
                   {t('Update')}
                 </Button>

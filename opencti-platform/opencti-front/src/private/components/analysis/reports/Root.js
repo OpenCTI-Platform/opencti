@@ -29,6 +29,7 @@ const subscription = graphql`
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
+      ...FilePendingViewer_entity
     }
   }
 `;
@@ -47,6 +48,7 @@ const reportQuery = graphql`
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
+      ...FilePendingViewer_entity
     }
     connectorsForExport {
       ...StixCoreObjectFilesAndHistory_connectorsExport
@@ -182,7 +184,7 @@ class RootReport extends Component {
                             connectorsExport={props.connectorsForExport}
                             connectorsImport={props.connectorsForImport}
                             entity={props.report}
-                            withoutRelations={false}
+                            withoutRelations={true}
                             bypassEntityId={true}
                           />
                         </React.Fragment>

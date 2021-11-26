@@ -192,8 +192,9 @@ class ContainerStixDomainObjectsComponent extends Component {
       containedBy: [{ id: container.id, value: defaultValue(container) }],
     };
     return (
-        <UserContext.Consumer>
-          {({ helper }) => <div className={classes.container}>
+      <UserContext.Consumer>
+        {({ helper }) => (
+          <div className={classes.container}>
             <ListLines
               sortBy={sortBy}
               orderAsc={orderAsc}
@@ -214,7 +215,11 @@ class ContainerStixDomainObjectsComponent extends Component {
             >
               <QueryRenderer
                 query={containerStixDomainObjectsLinesQuery}
-                variables={{ id: container.id, count: 25, ...paginationOptions }}
+                variables={{
+                  id: container.id,
+                  count: 25,
+                  ...paginationOptions,
+                }}
                 render={({ props }) => (
                   <ContainerStixDomainObjectsLines
                     container={props ? props.container : null}
@@ -248,8 +253,9 @@ class ContainerStixDomainObjectsComponent extends Component {
               handleClear={this.handleClear.bind(this)}
               openExports={openExports}
             />
-          </div>}
-        </UserContext.Consumer>
+          </div>
+        )}
+      </UserContext.Consumer>
     );
   }
 }
