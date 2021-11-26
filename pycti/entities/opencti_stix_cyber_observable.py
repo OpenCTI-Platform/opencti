@@ -294,6 +294,9 @@ class StixCyberObservable:
             ... on XOpenCTICryptocurrencyWallet {
                 value
             }
+            ... on XOpenCTIHostname {
+                value
+            }
             ... on XOpenCTIText {
                 value
             }
