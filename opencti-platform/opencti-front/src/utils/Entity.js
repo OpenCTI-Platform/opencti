@@ -82,6 +82,31 @@ export const resolveLink = (type) => {
 
 export const typesWithoutName = ['Observed-Data'];
 
+export const pascalize = (str) => str.replace(/(\w)(\w*)/g, (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase());
+
+export const observableKeyToType = (key) => {
+  const keySplit = key.split('.');
+  let type = pascalize(keySplit[0]);
+  if (type.toLowerCase() === 'file') {
+    type = 'StixFile';
+  } else if (type.toLowerCase() === 'ipv4-addr') {
+    type = 'IPv4-Addr';
+  } else if (type.toLowerCase() === 'ipv6-addr') {
+    type = 'IPv6-Addr';
+  } else if (type.toLowerCase() === 'x-opencti-hostname') {
+    type = 'X-OpenCTI-Hostname';
+  } else if (type.toLowerCase() === 'x-opencti-cryptocurrency-wallet') {
+    type = 'X-OpenCTI-Cryptocurrency-Wallet';
+  } else if (type.toLowerCase() === 'x-opencti-user-agent') {
+    type = 'X-OpenCTI-User-Agent';
+  } else if (type.toLowerCase() === 'x-opencti-cryptographic-key') {
+    type = 'X-OpenCTI-Cryptographic-Key';
+  } else if (type.toLowerCase() === 'x-opencti-text') {
+    type = 'X-OpenCTI-Text';
+  }
+  return type;
+};
+
 export const openVocabularies = {
   'malware-type-ov': [
     {

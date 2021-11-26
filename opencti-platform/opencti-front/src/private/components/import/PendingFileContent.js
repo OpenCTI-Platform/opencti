@@ -22,14 +22,13 @@ import DialogContent from '@material-ui/core/DialogContent';
 import MenuItem from '@material-ui/core/MenuItem';
 import DialogActions from '@material-ui/core/DialogActions';
 import Checkbox from '@material-ui/core/Checkbox';
-import Tooltip from '@material-ui/core/Tooltip';
 import * as Yup from 'yup';
 import { Link, withRouter } from 'react-router-dom';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import ItemIcon from '../../../components/ItemIcon';
 import { defaultValue } from '../../../utils/Graph';
 import inject18n from '../../../components/i18n';
-import { resolveLink } from '../../../utils/Entity';
+import { observableKeyToType, resolveLink } from '../../../utils/Entity';
 import PendingFileToolBar from './PendingFileToolBar';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import { fileManagerAskJobImportMutation } from '../common/files/FileManager';
@@ -41,6 +40,13 @@ const styles = (theme) => ({
     margin: 0,
   },
   paper: {
+    height: '100%',
+    minHeight: '100%',
+    margin: '10px 0 0 0',
+    padding: '15px',
+    borderRadius: 6,
+  },
+  paperList: {
     height: '100%',
     minHeight: '100%',
     margin: '10px 0 0 0',
@@ -63,7 +69,7 @@ const styles = (theme) => ({
     textAlign: 'right',
   },
   linesContainer: {
-    marginTop: 10,
+    marginTop: 0,
   },
   itemHead: {
     paddingLeft: 10,
@@ -106,7 +112,7 @@ const inlineStylesHeaders = {
     fontSize: 12,
     fontWeight: '700',
   },
-  name: {
+  default_value: {
     float: 'left',
     width: '40%',
     fontSize: 12,
@@ -140,7 +146,7 @@ const inlineStyles = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  name: {
+  default_value: {
     float: 'left',
     width: '40%',
     height: 20,
@@ -199,11 +205,15 @@ class PendingFileContentComponent extends Component {
       checkedObjects: [],
       uncheckedObjects: [],
       objects: [],
+      indexedObjects: {},
       objectsWithDependencies: [],
       indexedObjectsWithDependencies: {},
       dataToValidate: null,
-      sortBy: 'name',
-      orderAsc: true,
+      sortBy: 'nb_inbound_dependencies',
+      orderAsc: false,
+      checkAll: true,
+      currentJson: '',
+      displayJson: false,
     };
   }
 
@@ -215,6 +225,14 @@ class PendingFileContentComponent extends Component {
 
   handleCloseValidate() {
     this.setState({ dataToValidate: null });
+  }
+
+  handleOpenJson(content) {
+    this.setState({ displayJson: true, currentJson: content });
+  }
+
+  handleCloseJson() {
+    this.setState({ displayJson: false, currentJson: '' });
   }
 
   onSubmitValidate(values, { setSubmitting, resetForm }) {
@@ -247,7 +265,14 @@ class PendingFileContentComponent extends Component {
               resetForm();
               this.handleCloseValidate();
               MESSAGING$.notifySuccess('Import successfully asked');
-              this.props.history.push('/dashboard/import');
+              if (this.props.file.metaData.entity) {
+                const entityLink = `${resolveLink(
+                  this.props.file.metaData.entity.entity_type,
+                )}/${this.props.file.metaData.entity.id}`;
+                this.props.history.push(`${entityLink}/files`);
+              } else {
+                this.props.history.push('/dashboard/import');
+              }
             },
           });
         }, 2000);
@@ -261,7 +286,14 @@ class PendingFileContentComponent extends Component {
       mutation: pendingFileContentDeleteMutation,
       variables: { fileName: file.id },
       onCompleted: () => {
-        this.props.history.push('/dashboard/import');
+        if (this.props.file.metaData.entity) {
+          const entityLink = `${resolveLink(
+            this.props.file.metaData.entity.entity_type,
+          )}/${this.props.file.metaData.entity.id}`;
+          this.props.history.push(`${entityLink}/files`);
+        } else {
+          this.props.history.push('/dashboard/import');
+        }
       },
     });
   }
@@ -287,7 +319,7 @@ class PendingFileContentComponent extends Component {
       let objectDependencies = [];
       for (const [key, value] of Object.entries(object)) {
         if (key.endsWith('_refs')) {
-          objectDependencies = R.append(value, objectDependencies);
+          objectDependencies = [...objectDependencies, ...value];
         } else if (key.endsWith('_ref')) {
           const isCreatedByRef = key === 'created_by_ref';
           if (isCreatedByRef) {
@@ -306,7 +338,11 @@ class PendingFileContentComponent extends Component {
     }
     let objectsWithDependencies = [];
     for (const object of objects) {
-      const objectWithDependencies = object;
+      const objectWithDependencies = R.assoc(
+        'default_value',
+        defaultValue(object),
+        object,
+      );
       objectWithDependencies.dependencies = dependencies[object.id].dependencies;
       objectWithDependencies.nb_dependencies = objectWithDependencies.dependencies.length;
       objectWithDependencies.inbound_dependencies = R.map(
@@ -324,6 +360,7 @@ class PendingFileContentComponent extends Component {
       );
     }
     const allObjectsIds = R.map((n) => n.id, objects);
+    const indexedObjects = R.indexBy(R.prop('id'), objects);
     const indexedObjectsWithDependencies = R.indexBy(
       R.prop('id'),
       objectsWithDependencies,
@@ -332,6 +369,7 @@ class PendingFileContentComponent extends Component {
       allObjectsIds,
       checkedObjects: allObjectsIds,
       objects,
+      indexedObjects,
       objectsWithDependencies,
       indexedObjectsWithDependencies,
     };
@@ -363,6 +401,22 @@ class PendingFileContentComponent extends Component {
       ];
     }
     this.setState({ checkedObjects, uncheckedObjects });
+  }
+
+  handleToggleAll() {
+    if (this.state.checkAll) {
+      this.setState({
+        checkedObjects: [],
+        uncheckedObjects: R.map((n) => n.id, this.state.objects),
+        checkAll: false,
+      });
+    } else {
+      this.setState({
+        checkedObjects: R.map((n) => n.id, this.state.objects),
+        uncheckedObjects: [],
+        checkAll: true,
+      });
+    }
   }
 
   reverseBy(field) {
@@ -399,7 +453,14 @@ class PendingFileContentComponent extends Component {
       classes, t, file, fldt, connectorsImport, nsdt,
     } = this.props;
     const {
-      objectsWithDependencies, objects, checkedObjects, dataToValidate,
+      objectsWithDependencies,
+      objects,
+      indexedObjects,
+      checkedObjects,
+      dataToValidate,
+      checkAll,
+      displayJson,
+      currentJson,
     } = this.state;
     let entityLink = null;
     if (file.metaData.entity) {
@@ -524,7 +585,7 @@ class PendingFileContentComponent extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ marginTop: 35 }}>
           {t('Bundle content')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paperList }} elevation={2}>
           <List classes={{ root: classes.linesContainer }}>
             <ListItem
               classes={{ root: classes.itemHead }}
@@ -546,7 +607,7 @@ class PendingFileContentComponent extends Component {
                 primary={
                   <div>
                     {this.SortHeader('type', 'Type', true)}
-                    {this.SortHeader('name', 'Name', true)}
+                    {this.SortHeader('default_value', 'Name', true)}
                     {this.SortHeader('nb_dependencies', 'Dependencies', true)}
                     {this.SortHeader(
                       'nb_inbound_dependencies',
@@ -557,13 +618,31 @@ class PendingFileContentComponent extends Component {
                   </div>
                 }
               />
-              <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
+              <ListItemSecondaryAction>
+                <Checkbox
+                  edge="end"
+                  onChange={this.handleToggleAll.bind(this)}
+                  checked={checkAll}
+                />
+              </ListItemSecondaryAction>
             </ListItem>
-            {sortedObjectsWithDependencies.map((object) => (
-              <Tooltip key={object.id} title={JSON.stringify(object)}>
-                <ListItem classes={{ root: classes.item }} divider={true}>
+            {sortedObjectsWithDependencies.map((object) => {
+              const type = object.type === 'x-opencti-simple-observable'
+                ? observableKeyToType(object.key)
+                : convertStixType(object.type);
+              return (
+                <ListItem
+                  key={object.id}
+                  classes={{ root: classes.item }}
+                  divider={true}
+                  button={true}
+                  onClick={this.handleOpenJson.bind(
+                    this,
+                    JSON.stringify(indexedObjects[object.id]),
+                  )}
+                >
                   <ListItemIcon color="primary">
-                    <ItemIcon type={convertStixType(object.type)} />
+                    <ItemIcon type={type} />
                   </ListItemIcon>
                   <ListItemText
                     primary={
@@ -572,13 +651,13 @@ class PendingFileContentComponent extends Component {
                           className={classes.bodyItem}
                           style={inlineStyles.type}
                         >
-                          {convertStixType(object.type)}
+                          {type}
                         </div>
                         <div
                           className={classes.bodyItem}
-                          style={inlineStyles.name}
+                          style={inlineStyles.default_value}
                         >
-                          {defaultValue(object)}
+                          {object.default_value}
                         </div>
                         <div
                           className={classes.bodyItem}
@@ -609,8 +688,8 @@ class PendingFileContentComponent extends Component {
                     />
                   </ListItemSecondaryAction>
                 </ListItem>
-              </Tooltip>
-            ))}
+              );
+            })}
           </List>
         </Paper>
         <PendingFileToolBar
@@ -683,6 +762,25 @@ class PendingFileContentComponent extends Component {
             </Form>
           )}
         </Formik>
+        <Dialog
+          open={displayJson}
+          keepMounted={true}
+          onClick={this.handleCloseJson.bind(this)}
+          fullWidth={true}
+        >
+          <DialogTitle>{t('JSON content')}</DialogTitle>
+          <DialogContent>
+            <pre>{currentJson}</pre>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseJson.bind(this)}
+              classes={{ root: classes.button }}
+            >
+              {t('Close')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }

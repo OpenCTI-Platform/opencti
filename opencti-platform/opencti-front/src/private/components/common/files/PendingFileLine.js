@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter, propOr } from 'ramda';
+import { compose, propOr } from 'ramda';
 import moment from 'moment';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -9,7 +9,6 @@ import IconButton from '@material-ui/core/IconButton';
 import { FileOutline } from 'mdi-material-ui';
 import {
   DeleteOutlined,
-  CheckCircleOutlined,
   CancelOutlined,
   GetAppOutlined,
   WarningOutlined,
@@ -121,11 +120,8 @@ class PendingFileLineComponent extends Component {
       t,
       fld,
       file,
-      connectors,
       dense,
-      disableImport,
       directDownload,
-      handleOpenImport,
       nested,
     } = this.props;
     const { displayDelete } = this.state;
@@ -134,7 +130,6 @@ class PendingFileLineComponent extends Component {
     const isFail = errors.length > 0;
     const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
     const isOutdated = uploadStatus === 'timeout';
-    const isImportActive = () => connectors && filter((x) => x.data.active, connectors).length > 0;
     const isDeleteActive = file.works.length > 0;
     return (
       <div>
@@ -183,20 +178,6 @@ class PendingFileLineComponent extends Component {
                     color={nested ? 'inherit' : 'primary'}
                   >
                     <GetAppOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            )}
-            {!disableImport && (
-              <Tooltip title={t('Validate this pending bundle')}>
-                <span>
-                  <IconButton
-                    disabled={isProgress || !isImportActive() || isDeleteActive}
-                    onClick={handleOpenImport.bind(this, file)}
-                    aria-haspopup="true"
-                    color={nested ? 'inherit' : 'primary'}
-                  >
-                    <CheckCircleOutlined />
                   </IconButton>
                 </span>
               </Tooltip>
