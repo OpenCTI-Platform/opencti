@@ -272,6 +272,12 @@ export const defaultValue = (n, tooltip = false) => {
       || n.phase_name
       || (n.hashes
         && (n.hashes.MD5 || n.hashes['SHA-1'] || n.hashes['SHA-256']))
+      || (n.source_ref_name
+        && n.target_ref_name
+        && `${truncate(n.source_ref_name, 20)} ➡️ ${truncate(
+          n.target_ref_name,
+          20,
+        )}`)
       || defaultValue(R.head(R.pathOr([], ['objects', 'edges'], n))?.node)
       || 'Unknown'
     }`;
@@ -288,6 +294,12 @@ export const defaultValue = (n, tooltip = false) => {
     || n.source_name
     || n.phase_name
     || (n.hashes && (n.hashes.MD5 || n.hashes['SHA-1'] || n.hashes['SHA-256']))
+    || (n.source_ref_name
+      && n.target_ref_name
+      && `${truncate(n.source_ref_name, 20)} ➡️ ${truncate(
+        n.target_ref_name,
+        20,
+      )}`)
     || defaultValue(R.head(R.pathOr([], ['objects', 'edges'], n))?.node)
     || 'Unknown'
   }`;

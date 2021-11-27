@@ -123,7 +123,7 @@ const inlineStylesHeaders = {
   },
   default_value: {
     float: 'left',
-    width: '40%',
+    width: '50%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -157,7 +157,7 @@ const inlineStyles = {
   },
   default_value: {
     float: 'left',
-    width: '40%',
+    width: '50%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -333,6 +333,8 @@ class PendingFileContentComponent extends Component {
 
   // eslint-disable-next-line class-methods-use-this
   computeState(objects) {
+    const indexedObjects = R.indexBy(R.prop('id'), objects);
+    const allObjectsIds = R.map((n) => n.id, objects);
     const dependencies = {};
     for (const object of objects) {
       let objectDependencies = [];
@@ -361,14 +363,7 @@ class PendingFileContentComponent extends Component {
       if (object.object_refs) {
         containersChecked[object.id] = object.object_refs;
       }
-      const objectWithDependencies = R.assoc(
-        'default_value',
-        defaultValue(object),
-        object,
-      );
-      objectWithDependencies.dependencies = dependencies[object.id].dependencies;
-      objectWithDependencies.nb_dependencies = objectWithDependencies.dependencies.length;
-      objectWithDependencies.inbound_dependencies = R.map(
+      const inboundDependencies = R.map(
         (n) => n.id,
         R.filter(
           (o) => o.dependencies.includes(object.id)
@@ -378,6 +373,31 @@ class PendingFileContentComponent extends Component {
           R.values(dependencies),
         ),
       );
+      const objectWithDependencies = R.pipe(
+        R.assoc(
+          'default_value',
+          defaultValue(
+            R.pipe(
+              R.assoc(
+                'source_ref_name',
+                object.source_ref
+                  ? defaultValue(indexedObjects[object.source_ref] || {})
+                  : null,
+              ),
+              R.assoc(
+                'target_ref_name',
+                object.target_ref
+                  ? defaultValue(indexedObjects[object.target_ref] || {})
+                  : null,
+              ),
+            )(object),
+          ),
+        ),
+        R.assoc('dependencies', dependencies[object.id].dependencies),
+        R.assoc('nb_dependencies', dependencies[object.id].dependencies.length),
+        R.assoc('inbound_dependencies', inboundDependencies),
+        R.assoc('nb_inbound_dependencies', inboundDependencies.length),
+      )(object);
       // eslint-disable-next-line max-len
       objectWithDependencies.nb_inbound_dependencies = objectWithDependencies.inbound_dependencies.length;
       objectsWithDependencies = R.append(
@@ -385,8 +405,6 @@ class PendingFileContentComponent extends Component {
         objectsWithDependencies,
       );
     }
-    const allObjectsIds = R.map((n) => n.id, objects);
-    const indexedObjects = R.indexBy(R.prop('id'), objects);
     const indexedObjectsWithDependencies = R.indexBy(
       R.prop('id'),
       objectsWithDependencies,
@@ -890,7 +908,7 @@ class PendingFileContentComponent extends Component {
                       />
                     </ListItemSecondaryAction>
                   </ListItem>
-                  {object.object_refs && (
+                  {entityId !== object.id && object.object_refs && (
                     <List component="div" disablePadding>
                       {object.object_refs.map((objectRef) => {
                         const subObject = indexedObjectsWithDependencies[objectRef];
@@ -917,7 +935,7 @@ class PendingFileContentComponent extends Component {
                                       className={classes.bodyItem}
                                       style={inlineStyles.default_value}
                                     >
-                                      {t('Unknown')}
+                                      {objectRef}
                                     </div>
                                     <div
                                       className={classes.bodyItem}
