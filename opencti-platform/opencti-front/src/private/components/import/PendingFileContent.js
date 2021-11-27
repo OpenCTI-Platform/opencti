@@ -422,7 +422,8 @@ class PendingFileContentComponent extends Component {
   }
 
   handleToggleItem(itemId) {
-    let { checkedObjects, uncheckedObjects, containersChecked } = this.state;
+    let { uncheckedObjects, containersChecked } = this.state;
+    let checkedObjects;
     const { allContainers, containersUnchecked } = this.state;
     const item = this.state.indexedObjectsWithDependencies[itemId];
     if (this.state.checkedObjects.includes(itemId)) {
@@ -915,6 +916,7 @@ class PendingFileContentComponent extends Component {
                         if (!subObject) {
                           return (
                             <ListItem
+                              key={subObject.id}
                               classes={{ root: classes.itemNested }}
                               divider={true}
                               button={true}
