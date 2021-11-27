@@ -185,7 +185,7 @@ class TopMenuReport extends Component {
             }
             classes={{ root: classes.button }}
           >
-            {t('Files & history')}
+            {t('Data')}
           </Button>
         </Security>
       </div>

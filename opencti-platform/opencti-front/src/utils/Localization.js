@@ -722,6 +722,7 @@ const i18n = {
       'Bundle content': 'Contenu du bundle',
       Dependencies: 'Dépendances',
       Impacted: 'Impactés',
+      'JSON content': 'Contenu JSON',
       'Last modified': 'Dernière modification',
       'Linked entity': 'Entité liée',
       'Number of entities': "Nombre d'entités",

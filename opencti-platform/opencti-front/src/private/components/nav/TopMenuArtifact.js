@@ -137,7 +137,7 @@ class TopMenuArtifact extends Component {
           }
           classes={{ root: classes.button }}
         >
-          {t('Files')}
+          {t('Data')}
         </Button>
         <Button
           component={Link}

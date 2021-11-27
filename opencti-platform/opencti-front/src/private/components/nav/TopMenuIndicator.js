@@ -145,7 +145,7 @@ class TopMenuIndicator extends Component {
             }
             classes={{ root: classes.button }}
           >
-            {t('Files')}
+            {t('Data')}
           </Button>
         </Security>
         <Button

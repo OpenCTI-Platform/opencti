@@ -25,6 +25,10 @@ import Checkbox from '@material-ui/core/Checkbox';
 import * as Yup from 'yup';
 import { Link, withRouter } from 'react-router-dom';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
+import {
+  Cell, Pie, PieChart, ResponsiveContainer,
+} from 'recharts';
+import { withTheme } from '@material-ui/core/styles';
 import ItemIcon from '../../../components/ItemIcon';
 import { defaultValue } from '../../../utils/Graph';
 import inject18n from '../../../components/i18n';
@@ -34,6 +38,7 @@ import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import { fileManagerAskJobImportMutation } from '../common/files/FileManager';
 import SelectField from '../../../components/SelectField';
 import { convertStixType } from '../../../utils/String';
+import { itemColor } from '../../../utils/Colors';
 
 const styles = (theme) => ({
   container: {
@@ -59,6 +64,10 @@ const styles = (theme) => ({
   },
   item: {
     paddingLeft: 10,
+    height: 50,
+  },
+  itemNested: {
+    paddingLeft: 30,
     height: 50,
   },
   gridContainer: {
@@ -202,7 +211,10 @@ class PendingFileContentComponent extends Component {
     super(props);
     this.state = {
       allObjectsIds: [],
+      allContainers: {},
       checkedObjects: [],
+      containersChecked: {},
+      containersUnchecked: {},
       uncheckedObjects: [],
       objects: [],
       indexedObjects: {},
@@ -218,8 +230,15 @@ class PendingFileContentComponent extends Component {
   }
 
   handleOpenValidate() {
-    const indexedObjects = R.indexBy(R.prop('id'), this.state.objects);
-    const data = R.map((n) => indexedObjects[n], this.state.checkedObjects);
+    const data = R.pipe(
+      R.map((n) => this.state.indexedObjects[n]),
+      R.map((n) => {
+        if (n.object_refs) {
+          return R.assoc('object_refs', this.state.containersChecked[n.id], n);
+        }
+        return n;
+      }),
+    )(this.state.checkedObjects);
     this.setState({ dataToValidate: data });
   }
 
@@ -337,7 +356,11 @@ class PendingFileContentComponent extends Component {
       };
     }
     let objectsWithDependencies = [];
+    const containersChecked = {};
     for (const object of objects) {
+      if (object.object_refs) {
+        containersChecked[object.id] = object.object_refs;
+      }
       const objectWithDependencies = R.assoc(
         'default_value',
         defaultValue(object),
@@ -348,7 +371,10 @@ class PendingFileContentComponent extends Component {
       objectWithDependencies.inbound_dependencies = R.map(
         (n) => n.id,
         R.filter(
-          (o) => o.dependencies.includes(object.id),
+          (o) => o.dependencies.includes(object.id)
+            && !o.id.startsWith('report')
+            && !o.id.startsWith('opinion')
+            && !o.id.startsWith('note'),
           R.values(dependencies),
         ),
       );
@@ -372,12 +398,14 @@ class PendingFileContentComponent extends Component {
       indexedObjects,
       objectsWithDependencies,
       indexedObjectsWithDependencies,
+      containersChecked,
+      allContainers: containersChecked,
     };
   }
 
   handleToggleItem(itemId) {
-    let checkedObjects = [];
-    let uncheckedObjects = [];
+    let { checkedObjects, uncheckedObjects, containersChecked } = this.state;
+    const { allContainers, containersUnchecked } = this.state;
     const item = this.state.indexedObjectsWithDependencies[itemId];
     if (this.state.checkedObjects.includes(itemId)) {
       uncheckedObjects = R.append(itemId, this.state.uncheckedObjects);
@@ -385,6 +413,14 @@ class PendingFileContentComponent extends Component {
         (n) => n !== itemId && !item.inbound_dependencies.includes(n),
         this.state.checkedObjects,
       );
+      if (item.object_refs) {
+        containersChecked = R.assoc(itemId, [], this.state.containersChecked);
+      }
+      containersChecked = R.pipe(
+        R.toPairs,
+        R.map((n) => [n[0], R.filter((o) => o !== itemId, n[1])]),
+        R.fromPairs,
+      )(containersChecked);
     } else {
       uncheckedObjects = R.filter(
         (n) => n !== itemId,
@@ -399,20 +435,83 @@ class PendingFileContentComponent extends Component {
           this.state.allObjectsIds,
         ),
       ];
+      if (item.object_refs) {
+        containersChecked = R.assoc(
+          itemId,
+          R.filter(
+            (n) => !(containersUnchecked[item.id] || []).includes(n)
+              && !this.state.uncheckedObjects.includes(n),
+            item.object_refs,
+          ),
+          this.state.containersChecked,
+        );
+      }
+      containersChecked = R.pipe(
+        R.toPairs,
+        R.map((n) => [
+          n[0],
+          !uncheckedObjects.includes(n[0])
+          && !(containersUnchecked[n[0]] || []).includes(item.id)
+          && allContainers[n[0]].includes(item.id)
+            ? R.append(item.id, n[1])
+            : n[1],
+        ]),
+        R.fromPairs,
+      )(containersChecked);
     }
-    this.setState({ checkedObjects, uncheckedObjects });
+    this.setState({ checkedObjects, uncheckedObjects, containersChecked });
+  }
+
+  handleToggleContainerItem(containerId, itemId) {
+    if (this.state.containersChecked[containerId].includes(itemId)) {
+      this.setState({
+        containersChecked: R.assoc(
+          containerId,
+          R.filter(
+            (n) => n !== itemId,
+            this.state.containersChecked[containerId] || [],
+          ),
+          this.state.containersChecked,
+        ),
+        containersUnchecked: R.assoc(
+          containerId,
+          R.append(itemId, this.state.containersUnchecked[containerId] || []),
+          this.state.containersUnchecked,
+        ),
+      });
+    } else {
+      this.setState({
+        containersChecked: R.assoc(
+          containerId,
+          R.append(itemId, this.state.containersChecked[containerId] || []),
+          this.state.containersChecked,
+        ),
+        containersUnchecked: R.assoc(
+          containerId,
+          R.filter(
+            (n) => n !== itemId,
+            this.state.containersUnchecked[containerId] || [],
+          ),
+          this.state.containersUnchecked,
+        ),
+      });
+    }
   }
 
   handleToggleAll() {
     if (this.state.checkAll) {
       this.setState({
         checkedObjects: [],
+        containersChecked: {},
+        containersUnchecked: this.state.allContainers,
         uncheckedObjects: R.map((n) => n.id, this.state.objects),
         checkAll: false,
       });
     } else {
       this.setState({
         checkedObjects: R.map((n) => n.id, this.state.objects),
+        containersChecked: this.state.allContainers,
+        containersUnchecked: {},
         uncheckedObjects: [],
         checkAll: true,
       });
@@ -448,22 +547,75 @@ class PendingFileContentComponent extends Component {
     );
   }
 
+  renderLabel(props) {
+    const { theme } = this.props;
+    const RADIAN = Math.PI / 180;
+    const {
+      cx, cy, midAngle, outerRadius, fill, payload, percent, value,
+    } = props;
+    const sin = Math.sin(-RADIAN * midAngle);
+    const cos = Math.cos(-RADIAN * midAngle);
+    const sx = cx + (outerRadius + 10) * cos;
+    const sy = cy + (outerRadius + 10) * sin;
+    const mx = cx + (outerRadius + 30) * cos;
+    const my = cy + (outerRadius + 30) * sin;
+    const ex = mx + (cos >= 0 ? 1 : -1) * 22;
+    const ey = my;
+    const textAnchor = cos >= 0 ? 'start' : 'end';
+    return (
+      <g>
+        <path
+          d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
+          stroke={fill}
+          fill="none"
+        />
+        <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
+        <text
+          x={ex + (cos >= 0 ? 1 : -1) * 12}
+          y={ey}
+          textAnchor={textAnchor}
+          fill={theme.palette.text.primary}
+          style={{ fontSize: 12 }}
+        >
+          {' '}
+          {payload.label} ({value})
+        </text>
+        <text
+          x={ex + (cos >= 0 ? 1 : -1) * 12}
+          y={ey}
+          dy={18}
+          textAnchor={textAnchor}
+          fill="#999999"
+          style={{ fontSize: 12 }}
+        >
+          {` ${(percent * 100).toFixed(2)}%`}
+        </text>
+      </g>
+    );
+  }
+
   render() {
     const {
-      classes, t, file, fldt, connectorsImport, nsdt,
+      classes, t, file, fldt, connectorsImport, nsdt, theme,
     } = this.props;
     const {
       objectsWithDependencies,
+      indexedObjectsWithDependencies,
       objects,
       indexedObjects,
       checkedObjects,
+      uncheckedObjects,
       dataToValidate,
       checkAll,
       displayJson,
       currentJson,
+      containersChecked,
+      containersUnchecked,
     } = this.state;
+    let entityId = null;
     let entityLink = null;
     if (file.metaData.entity) {
+      entityId = file.metaData.entity.standard_id;
       entityLink = `${resolveLink(file.metaData.entity.entity_type)}/${
         file.metaData.entity.id
       }`;
@@ -475,13 +627,23 @@ class PendingFileContentComponent extends Component {
     );
     const sortedObjectsWithDependencies = sort(objectsWithDependencies);
     const numberOfEntities = R.filter(
-      (n) => n.entity_type !== 'relationship',
+      (n) => n.type !== 'relationship',
       objects,
     ).length;
     const numberOfRelationships = R.filter(
-      (n) => n.entity_type === 'relationship',
+      (n) => n.type === 'relationship',
       objects,
     ).length;
+    const graphData = R.pipe(
+      R.countBy(R.prop('type')),
+      R.toPairs,
+      R.map((n) => ({ label: n[0], value: n[1] })),
+    )(objects);
+    const connectors = R.filter(
+      (n) => n.connector_scope.length > 0
+        && R.includes('application/json', n.connector_scope),
+      connectorsImport,
+    );
     return (
       <div className={classes.container}>
         <Typography
@@ -523,6 +685,14 @@ class PendingFileContentComponent extends Component {
                       {t('Last modified')}
                     </Typography>
                     {fldt(file.lastModified)}
+                    <Typography
+                      variant="h3"
+                      gutterBottom={true}
+                      style={{ marginTop: 20 }}
+                    >
+                      {t('Number of entities')}
+                    </Typography>
+                    <span style={{ fontSize: 20 }}>{numberOfEntities}</span>
                   </Grid>
                   <Grid item={true} xs={6}>
                     <Typography variant="h3" gutterBottom={true}>
@@ -551,6 +721,16 @@ class PendingFileContentComponent extends Component {
                     ) : (
                       t('None')
                     )}
+                    <Typography
+                      variant="h3"
+                      gutterBottom={true}
+                      style={{ marginTop: 20 }}
+                    >
+                      {t('Number of relationships')}
+                    </Typography>
+                    <span style={{ fontSize: 20 }}>
+                      {numberOfRelationships}
+                    </span>
                   </Grid>
                 </Grid>
               </Paper>
@@ -562,22 +742,40 @@ class PendingFileContentComponent extends Component {
                 {t('Bundle details')}
               </Typography>
               <Paper classes={{ root: classes.paper }} elevation={2}>
-                <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t('Number of entities')}
-                    </Typography>
-                    <span style={{ fontSize: 20 }}>{numberOfEntities}</span>
-                  </Grid>
-                  <Grid item={true} xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t('Number of relationships')}
-                    </Typography>
-                    <span style={{ fontSize: 20 }}>
-                      {numberOfRelationships}
-                    </span>
-                  </Grid>
-                </Grid>
+                <div style={{ height: 300 }}>
+                  <ResponsiveContainer height="100%" width="100%">
+                    <PieChart
+                      margin={{
+                        top: 40,
+                        right: 0,
+                        bottom: 30,
+                        left: 0,
+                      }}
+                    >
+                      <Pie
+                        data={graphData}
+                        dataKey="value"
+                        nameKey="label"
+                        cx="50%"
+                        cy="50%"
+                        fill="#82ca9d"
+                        innerRadius="63%"
+                        outerRadius="80%"
+                        label={this.renderLabel.bind(this)}
+                        labelLine={true}
+                        paddingAngle={5}
+                      >
+                        {graphData.map((entry, index) => (
+                          <Cell
+                            key={index}
+                            fill={itemColor(entry.label)}
+                            stroke={theme.palette.background.paper}
+                          />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </Paper>
             </div>
           </Grid>
@@ -630,64 +828,156 @@ class PendingFileContentComponent extends Component {
               const type = object.type === 'x-opencti-simple-observable'
                 ? observableKeyToType(object.key)
                 : convertStixType(object.type);
+              const isDisabled = entityId === object.id
+                || (!checkedObjects.includes(object.id)
+                  && !uncheckedObjects.includes(object.id));
               return (
-                <ListItem
-                  key={object.id}
-                  classes={{ root: classes.item }}
-                  divider={true}
-                  button={true}
-                  onClick={this.handleOpenJson.bind(
-                    this,
-                    JSON.stringify(indexedObjects[object.id]),
-                  )}
-                >
-                  <ListItemIcon color="primary">
-                    <ItemIcon type={type} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.type}
-                        >
-                          {type}
+                <div key={object.id}>
+                  <ListItem
+                    classes={{ root: classes.item }}
+                    divider={true}
+                    button={true}
+                    onClick={this.handleOpenJson.bind(
+                      this,
+                      JSON.stringify(indexedObjects[object.id], null, 2),
+                    )}
+                  >
+                    <ListItemIcon color="primary">
+                      <ItemIcon type={type} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.type}
+                          >
+                            {type}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.default_value}
+                          >
+                            {object.default_value}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.nb_dependencies}
+                          >
+                            {object.nb_dependencies}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.nb_inbound_dependencies}
+                          >
+                            {object.nb_inbound_dependencies}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.created}
+                          >
+                            {nsdt(object.created)}
+                          </div>
                         </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.default_value}
-                        >
-                          {object.default_value}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.nb_dependencies}
-                        >
-                          {object.nb_dependencies}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.nb_inbound_dependencies}
-                        >
-                          {object.nb_inbound_dependencies}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.created}
-                        >
-                          {nsdt(object.created)}
-                        </div>
-                      </div>
-                    }
-                  />
-                  <ListItemSecondaryAction>
-                    <Checkbox
-                      edge="end"
-                      onChange={this.handleToggleItem.bind(this, object.id)}
-                      checked={checkedObjects.includes(object.id)}
+                      }
                     />
-                  </ListItemSecondaryAction>
-                </ListItem>
+                    <ListItemSecondaryAction>
+                      <Checkbox
+                        edge="end"
+                        onChange={this.handleToggleItem.bind(this, object.id)}
+                        checked={checkedObjects.includes(object.id)}
+                        disabled={isDisabled}
+                      />
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                  {object.object_refs && (
+                    <List component="div" disablePadding>
+                      {object.object_refs.map((objectRef) => {
+                        const subObject = indexedObjectsWithDependencies[objectRef];
+                        const subObjectType = subObject.type === 'x-opencti-simple-observable'
+                          ? observableKeyToType(subObject.key)
+                          : convertStixType(subObject.type);
+                        const isSubObjectDisabled = uncheckedObjects.includes(subObject.id)
+                          || (!(containersChecked[object.id] || []).includes(
+                            subObject.id,
+                          )
+                            && !(containersUnchecked[object.id] || []).includes(
+                              subObject.id,
+                            ));
+                        return (
+                          <ListItem
+                            key={subObject.id}
+                            classes={{ root: classes.itemNested }}
+                            divider={true}
+                            button={true}
+                            onClick={this.handleOpenJson.bind(
+                              this,
+                              JSON.stringify(
+                                indexedObjects[subObject.id],
+                                null,
+                                2,
+                              ),
+                            )}
+                          >
+                            <ListItemIcon color="primary">
+                              <ItemIcon type={subObjectType} />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={
+                                <div>
+                                  <div
+                                    className={classes.bodyItem}
+                                    style={inlineStyles.type}
+                                  >
+                                    {subObjectType}
+                                  </div>
+                                  <div
+                                    className={classes.bodyItem}
+                                    style={inlineStyles.default_value}
+                                  >
+                                    {subObject.default_value}
+                                  </div>
+                                  <div
+                                    className={classes.bodyItem}
+                                    style={inlineStyles.nb_dependencies}
+                                  >
+                                    {subObject.nb_dependencies}
+                                  </div>
+                                  <div
+                                    className={classes.bodyItem}
+                                    style={inlineStyles.nb_inbound_dependencies}
+                                  >
+                                    {subObject.nb_inbound_dependencies}
+                                  </div>
+                                  <div
+                                    className={classes.bodyItem}
+                                    style={inlineStyles.created}
+                                  >
+                                    {nsdt(subObject.created)}
+                                  </div>
+                                </div>
+                              }
+                            />
+                            <ListItemSecondaryAction>
+                              <Checkbox
+                                edge="end"
+                                onChange={this.handleToggleContainerItem.bind(
+                                  this,
+                                  object.id,
+                                  subObject.id,
+                                )}
+                                checked={(
+                                  containersChecked[object.id] || []
+                                ).includes(subObject.id)}
+                                disabled={isDisabled || isSubObjectDisabled}
+                              />
+                            </ListItemSecondaryAction>
+                          </ListItem>
+                        );
+                      })}
+                    </List>
+                  )}
+                </div>
               );
             })}
           </List>
@@ -700,7 +990,7 @@ class PendingFileContentComponent extends Component {
         />
         <Formik
           enableReinitialize={true}
-          initialValues={{ connector_id: '' }}
+          initialValues={{ connector_id: connectors[0].id }}
           validationSchema={importValidation(t)}
           onSubmit={this.onSubmitValidate.bind(this)}
           onReset={this.handleCloseValidate.bind(this)}
@@ -722,16 +1012,11 @@ class PendingFileContentComponent extends Component {
                     fullWidth={true}
                     containerstyle={{ width: '100%' }}
                   >
-                    {connectorsImport.map((connector, i) => {
-                      const disabled = !dataToValidate
-                        || (connector.connector_scope.length > 0
-                          && !R.includes(
-                            'application/json',
-                            connector.connector_scope,
-                          ));
+                    {connectors.map((connector) => {
+                      const disabled = !dataToValidate;
                       return (
                         <MenuItem
-                          key={i}
+                          key={connector.id}
                           value={connector.id}
                           disabled={disabled || !connector.active}
                         >
@@ -832,6 +1117,7 @@ const PendingFileContent = createFragmentContainer(
           entity_id
           entity {
             id
+            standard_id
             entity_type
             ... on AttackPattern {
               name
@@ -910,5 +1196,6 @@ const PendingFileContent = createFragmentContainer(
 export default R.compose(
   inject18n,
   withRouter,
+  withTheme,
   withStyles(styles),
 )(PendingFileContent);
