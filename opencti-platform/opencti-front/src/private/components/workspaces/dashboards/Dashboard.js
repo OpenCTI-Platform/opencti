@@ -206,7 +206,11 @@ class DashboardComponent extends Component {
 
   // eslint-disable-next-line class-methods-use-this
   renderGlobalVisualization(widget, config) {
-    const { relativeDate, timeField = 'technical' } = config;
+    const { relativeDate } = config;
+    let { timeField = 'technical' } = config;
+    if (this.props.timeField) {
+      timeField = this.props.timeField;
+    }
     const startDate = relativeDate
       ? this.computerRelativeDate(relativeDate)
       : config.startDate;
@@ -314,7 +318,11 @@ class DashboardComponent extends Component {
 
   // eslint-disable-next-line class-methods-use-this
   renderThreatVisualization(widget, config) {
-    const { relativeDate, timeField = 'technical' } = config;
+    const { relativeDate } = config;
+    let { timeField = 'technical' } = config;
+    if (this.props.timeField) {
+      timeField = this.props.timeField;
+    }
     const startDate = relativeDate
       ? this.computerRelativeDate(relativeDate)
       : config.startDate;
@@ -407,7 +415,11 @@ class DashboardComponent extends Component {
 
   // eslint-disable-next-line class-methods-use-this
   renderEntityVisualization(widget, config) {
-    const { relativeDate, timeField = 'technical' } = config;
+    const { relativeDate } = config;
+    let { timeField = 'technical' } = config;
+    if (this.props.timeField) {
+      timeField = this.props.timeField;
+    }
     const startDate = relativeDate
       ? this.computerRelativeDate(relativeDate)
       : config.startDate;
@@ -475,21 +487,112 @@ class DashboardComponent extends Component {
   }
 
   render() {
-    const { t, classes, workspace } = this.props;
+    const {
+      t, classes, workspace, noToolbar,
+    } = this.props;
     const manifest = this.decodeManifest();
     const relativeDate = R.propOr(null, 'relativeDate', manifest.config);
-    const timeField = R.propOr('technical', 'timeField', manifest.config);
+    let timeField = R.propOr('technical', 'timeField', manifest.config);
+    if (this.props.timeField) {
+      timeField = this.props.timeField;
+    }
     return (
-      <div className={classes.container} id="container">
-        <WorkspaceHeader workspace={workspace} variant="dashboard" />
-        <Drawer
-          anchor="bottom"
-          variant="permanent"
-          classes={{ paper: classes.bottomNav }}
-        >
-          <Security
-            needs={[EXPLORE_EXUPDATE]}
-            placeholder={
+      <div
+        className={classes.container}
+        id="container"
+        style={{
+          paddingBottom: noToolbar ? 0 : 50,
+          marginTop: noToolbar ? -20 : 0,
+        }}
+      >
+        {!noToolbar && (
+          <WorkspaceHeader workspace={workspace} variant="dashboard" />
+        )}
+        {!noToolbar && (
+          <Drawer
+            anchor="bottom"
+            variant="permanent"
+            classes={{ paper: classes.bottomNav }}
+          >
+            <Security
+              needs={[EXPLORE_EXUPDATE]}
+              placeholder={
+                <Grid container={true} spacing={1}>
+                  <Grid item={true} xs="auto">
+                    <FormControl style={{ width: 194, marginRight: 20 }}>
+                      <InputLabel id="timeField">
+                        {t('Date reference')}
+                      </InputLabel>
+                      <Select
+                        labelId="timeField"
+                        value={relativeDate === null ? '' : relativeDate}
+                        onChange={this.handleTimeFieldChange.bind(this)}
+                        disabled={true}
+                      >
+                        <MenuItem value="technical">
+                          {t('Technical date')}
+                        </MenuItem>
+                        <MenuItem value="functional">
+                          {t('Functional date')}
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item={true} xs="auto">
+                    <FormControl style={{ width: 194, marginRight: 20 }}>
+                      <InputLabel id="relative">
+                        {t('Relative time')}
+                      </InputLabel>
+                      <Select
+                        labelId="relative"
+                        value={relativeDate === null ? '' : relativeDate}
+                        onChange={this.handleDateChange.bind(
+                          this,
+                          'relativeDate',
+                        )}
+                        disabled={true}
+                      >
+                        <MenuItem value="none">{t('None')}</MenuItem>
+                        <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
+                        <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
+                        <MenuItem value="months-1">{t('Last month')}</MenuItem>
+                        <MenuItem value="months-6">
+                          {t('Last 6 months')}
+                        </MenuItem>
+                        <MenuItem value="years-1">{t('Last year')}</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item={true} xs="auto">
+                    <DatePicker
+                      value={R.propOr(null, 'startDate', manifest.config)}
+                      disableToolbar={true}
+                      format="YYYY-MM-DD"
+                      autoOk={true}
+                      label={t('Start date')}
+                      clearable={true}
+                      disableFuture={true}
+                      disabled={true}
+                      onChange={this.handleDateChange.bind(this, 'startDate')}
+                      style={{ marginRight: 20 }}
+                    />
+                  </Grid>
+                  <Grid item={true} xs="auto">
+                    <DatePicker
+                      value={R.propOr(null, 'endDate', manifest.config)}
+                      disableToolbar={true}
+                      format="YYYY-MM-DD"
+                      autoOk={true}
+                      label={t('End date')}
+                      clearable={true}
+                      disabled={true}
+                      disableFuture={true}
+                      onChange={this.handleDateChange.bind(this, 'endDate')}
+                    />
+                  </Grid>
+                </Grid>
+              }
+            >
               <Grid container={true} spacing={1}>
                 <Grid item={true} xs="auto">
                   <FormControl style={{ width: 194, marginRight: 20 }}>
@@ -498,9 +601,8 @@ class DashboardComponent extends Component {
                     </InputLabel>
                     <Select
                       labelId="timeField"
-                      value={relativeDate === null ? '' : relativeDate}
+                      value={timeField === null ? '' : timeField}
                       onChange={this.handleTimeFieldChange.bind(this)}
-                      disabled={true}
                     >
                       <MenuItem value="technical">
                         {t('Technical date')}
@@ -521,7 +623,6 @@ class DashboardComponent extends Component {
                         this,
                         'relativeDate',
                       )}
-                      disabled={true}
                     >
                       <MenuItem value="none">{t('None')}</MenuItem>
                       <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
@@ -541,7 +642,7 @@ class DashboardComponent extends Component {
                     label={t('Start date')}
                     clearable={true}
                     disableFuture={true}
-                    disabled={true}
+                    disabled={relativeDate !== null}
                     onChange={this.handleDateChange.bind(this, 'startDate')}
                     style={{ marginRight: 20 }}
                   />
@@ -554,77 +655,15 @@ class DashboardComponent extends Component {
                     autoOk={true}
                     label={t('End date')}
                     clearable={true}
-                    disabled={true}
+                    disabled={relativeDate !== null}
                     disableFuture={true}
                     onChange={this.handleDateChange.bind(this, 'endDate')}
                   />
                 </Grid>
               </Grid>
-            }
-          >
-            <Grid container={true} spacing={1}>
-              <Grid item={true} xs="auto">
-                <FormControl style={{ width: 194, marginRight: 20 }}>
-                  <InputLabel id="timeField">{t('Date reference')}</InputLabel>
-                  <Select
-                    labelId="timeField"
-                    value={timeField === null ? '' : timeField}
-                    onChange={this.handleTimeFieldChange.bind(this)}
-                  >
-                    <MenuItem value="technical">{t('Technical date')}</MenuItem>
-                    <MenuItem value="functional">
-                      {t('Functional date')}
-                    </MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item={true} xs="auto">
-                <FormControl style={{ width: 194, marginRight: 20 }}>
-                  <InputLabel id="relative">{t('Relative time')}</InputLabel>
-                  <Select
-                    labelId="relative"
-                    value={relativeDate === null ? '' : relativeDate}
-                    onChange={this.handleDateChange.bind(this, 'relativeDate')}
-                  >
-                    <MenuItem value="none">{t('None')}</MenuItem>
-                    <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
-                    <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
-                    <MenuItem value="months-1">{t('Last month')}</MenuItem>
-                    <MenuItem value="months-6">{t('Last 6 months')}</MenuItem>
-                    <MenuItem value="years-1">{t('Last year')}</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item={true} xs="auto">
-                <DatePicker
-                  value={R.propOr(null, 'startDate', manifest.config)}
-                  disableToolbar={true}
-                  format="YYYY-MM-DD"
-                  autoOk={true}
-                  label={t('Start date')}
-                  clearable={true}
-                  disableFuture={true}
-                  disabled={relativeDate !== null}
-                  onChange={this.handleDateChange.bind(this, 'startDate')}
-                  style={{ marginRight: 20 }}
-                />
-              </Grid>
-              <Grid item={true} xs="auto">
-                <DatePicker
-                  value={R.propOr(null, 'endDate', manifest.config)}
-                  disableToolbar={true}
-                  format="YYYY-MM-DD"
-                  autoOk={true}
-                  label={t('End date')}
-                  clearable={true}
-                  disabled={relativeDate !== null}
-                  disableFuture={true}
-                  onChange={this.handleDateChange.bind(this, 'endDate')}
-                />
-              </Grid>
-            </Grid>
-          </Security>
-        </Drawer>
+            </Security>
+          </Drawer>
+        )}
         <Security
           needs={[EXPLORE_EXUPDATE]}
           placeholder={
@@ -685,7 +724,11 @@ class DashboardComponent extends Component {
               xs: 18,
               xxs: 18,
             }}
-            onLayoutChange={this.onLayoutChange.bind(this)}
+            isDraggable={!noToolbar}
+            isResizable={!noToolbar}
+            onLayoutChange={
+              noToolbar ? () => true : this.onLayoutChange.bind(this)
+            }
           >
             {R.values(manifest.widgets).map((widget) => (
               <Paper
@@ -694,9 +737,11 @@ class DashboardComponent extends Component {
                 classes={{ root: classes.paper }}
                 elevation={2}
               >
-                <WidgetPopover
-                  onDelete={this.handleDeleteWidget.bind(this, widget.id)}
-                />
+                {!noToolbar && (
+                  <WidgetPopover
+                    onDelete={this.handleDeleteWidget.bind(this, widget.id)}
+                  />
+                )}
                 {widget.perspective === 'global'
                   && this.renderGlobalVisualization(widget, manifest.config)}
                 {widget.perspective === 'threat'
@@ -706,7 +751,9 @@ class DashboardComponent extends Component {
               </Paper>
             ))}
           </ResponsiveGridLayout>
-          <WidgetCreation onComplete={this.handleAddWidget.bind(this)} />
+          {!noToolbar && (
+            <WidgetCreation onComplete={this.handleAddWidget.bind(this)} />
+          )}
         </Security>
       </div>
     );
@@ -717,6 +764,8 @@ DashboardComponent.propTypes = {
   workspace: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  noToolbar: PropTypes.bool,
+  timeField: PropTypes.string,
 };
 
 const Dashboard = createFragmentContainer(DashboardComponent, {

@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Fab from '@material-ui/core/Fab';
 import { SettingsOutlined } from '@material-ui/icons';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import IconButton from '@material-ui/core/IconButton';
 import DialogContent from '@material-ui/core/DialogContent';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -14,6 +14,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import Slide from '@material-ui/core/Slide';
+import graphql from 'babel-plugin-relay/macro';
+import { QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 
 const Transition = React.forwardRef((props, ref) => (
@@ -21,24 +23,32 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
+export const dashboardSettingsDashboardsQuery = graphql`
+  query DashboardSettingsDashboardsQuery(
+    $count: Int!
+    $orderBy: WorkspacesOrdering
+    $orderMode: OrderingMode
+    $filters: [WorkspacesFiltering]
+  ) {
+    workspaces(
+      first: $count
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
 const styles = (theme) => ({
-  editButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 400,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
+  icon: {
+    marginLeft: theme.spacing(1),
   },
 });
 
@@ -58,44 +68,90 @@ class DashboardSettings extends Component {
 
   render() {
     const {
-      classes, t, handleChangeTimeField, timeField,
+      t,
+      handleChangeTimeField,
+      timeField,
+      handleChangeDashboard,
+      dashboard,
     } = this.props;
     const { open } = this.state;
     return (
-      <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Edit"
-          className={classes.editButton}
-        >
-          <SettingsOutlined />
-        </Fab>
+      <span>
+        <IconButton onClick={this.handleOpen.bind(this)} size="small">
+          <SettingsOutlined fontSize="small" />
+        </IconButton>
         <Dialog
           open={open}
           TransitionComponent={Transition}
           onClose={this.handleClose.bind(this)}
+          maxWidth="xs"
+          fullWidth={true}
         >
           <DialogTitle>{t('Dashboard settings')}</DialogTitle>
           <DialogContent>
-            <FormControl style={{ width: '100%' }}>
-              <InputLabel id="timeField">{t('Date reference')}</InputLabel>
-              <Select
-                labelId="timeField"
-                value={timeField === null ? '' : timeField}
-                onChange={handleChangeTimeField.bind(this)}
-                fullWidth={true}
-              >
-                <MenuItem value="technical">{t('Technical date')}</MenuItem>
-                <MenuItem value="functional">{t('Functional date')}</MenuItem>
-              </Select>
-            </FormControl>
+            <QueryRenderer
+              query={dashboardSettingsDashboardsQuery}
+              variables={{
+                count: 50,
+                orderBy: 'name',
+                orderMode: 'asc',
+                filters: [{ key: 'type', values: ['dashboard'] }],
+              }}
+              render={({ props }) => {
+                if (props) {
+                  return (
+                    <div>
+                      <FormControl style={{ width: '100%' }}>
+                        <InputLabel id="timeField">
+                          {t('Date reference')}
+                        </InputLabel>
+                        <Select
+                          labelId="timeField"
+                          value={timeField === null ? '' : timeField}
+                          onChange={handleChangeTimeField.bind(this)}
+                          fullWidth={true}
+                        >
+                          <MenuItem value="technical">
+                            {t('Technical date')}
+                          </MenuItem>
+                          <MenuItem value="functional">
+                            {t('Functional date')}
+                          </MenuItem>
+                        </Select>
+                      </FormControl>
+                      <FormControl style={{ width: '100%', marginTop: 20 }}>
+                        <InputLabel id="timeField">
+                          {t('Custom dashboard')}
+                        </InputLabel>
+                        <Select
+                          labelId="dashboard"
+                          value={dashboard === null ? '' : dashboard}
+                          onChange={handleChangeDashboard.bind(this)}
+                          fullWidth={true}
+                        >
+                          <MenuItem value="default">{t('Default')}</MenuItem>
+                          {props.workspaces.edges.map((workspaceEdge) => {
+                            const workspace = workspaceEdge.node;
+                            return (
+                              <MenuItem key={workspace.id} value={workspace.id}>
+                                {workspace.name}
+                              </MenuItem>
+                            );
+                          })}
+                        </Select>
+                      </FormControl>
+                    </div>
+                  );
+                }
+                return <div />;
+              }}
+            />
           </DialogContent>
           <DialogActions>
             <Button onClick={this.handleClose.bind(this)}>{t('Close')}</Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </span>
     );
   }
 }
@@ -105,6 +161,8 @@ DashboardSettings.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  handleChangeDashboard: PropTypes.func,
+  dashboard: PropTypes.string,
   handleChangeTimeField: PropTypes.func,
   timeField: PropTypes.string,
 };

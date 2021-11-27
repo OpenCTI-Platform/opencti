@@ -1,16 +1,55 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  assoc, compose, head, last, map, pluck, filter,
-} from 'ramda';
+import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
+import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import LocationMiniMapTargets from './LocationMiniMapTargets';
 import { QueryRenderer } from '../../../../relay/environment';
 import { computeLevel } from '../../../../utils/Number';
-import { dashboardStixCoreRelationshipsDistributionQuery } from '../../Dashboard';
+
+export const globalVictimologyMapStixCoreRelationshipsDistributionQuery = graphql`
+  query GlobalVictimologyMapStixCoreRelationshipsDistributionQuery(
+    $field: String!
+    $operation: StatsOperation!
+    $relationship_type: String
+    $toTypes: [String]
+    $startDate: DateTime
+    $endDate: DateTime
+    $dateAttribute: String
+    $limit: Int
+  ) {
+    stixCoreRelationshipsDistribution(
+      field: $field
+      operation: $operation
+      relationship_type: $relationship_type
+      toTypes: $toTypes
+      startDate: $startDate
+      endDate: $endDate
+      dateAttribute: $dateAttribute
+      limit: $limit
+    ) {
+      label
+      value
+      entity {
+        ... on BasicObject {
+          entity_type
+        }
+        ... on BasicRelationship {
+          entity_type
+        }
+        ... on Country {
+          name
+          x_opencti_aliases
+          latitude
+          longitude
+        }
+      }
+    }
+  }
+`;
 
 const styles = () => ({
   paper: {
@@ -35,7 +74,7 @@ class GlobalVictimologyMap extends Component {
           {title || t('Victimology map')}
         </Typography>
         <QueryRenderer
-          query={dashboardStixCoreRelationshipsDistributionQuery}
+          query={globalVictimologyMapStixCoreRelationshipsDistributionQuery}
           variables={{
             field: 'internal_id',
             operation: 'count',
@@ -48,24 +87,24 @@ class GlobalVictimologyMap extends Component {
           }}
           render={({ props }) => {
             if (props && props.stixCoreRelationshipsDistribution) {
-              const values = pluck(
+              const values = R.pluck(
                 'value',
                 props.stixCoreRelationshipsDistribution,
               );
-              const countries = map(
-                (x) => assoc(
+              const countries = R.map(
+                (x) => R.assoc(
                   'level',
-                  computeLevel(x.value, last(values), head(values) + 1),
+                  computeLevel(x.value, R.last(values), R.head(values) + 1),
                   x.entity,
                 ),
-                filter(
+                R.filter(
                   (n) => n.entity.entity_type === 'Country',
                   props.stixCoreRelationshipsDistribution,
                 ),
               );
-              const cities = map(
+              const cities = R.map(
                 (x) => x.entity,
-                filter(
+                R.filter(
                   (n) => n.entity.entity_type === 'City',
                   props.stixCoreRelationshipsDistribution,
                 ),
@@ -108,4 +147,4 @@ GlobalVictimologyMap.propTypes = {
   dateAttribute: PropTypes.string,
 };
 
-export default compose(inject18n, withStyles(styles))(GlobalVictimologyMap);
+export default R.compose(inject18n, withStyles(styles))(GlobalVictimologyMap);

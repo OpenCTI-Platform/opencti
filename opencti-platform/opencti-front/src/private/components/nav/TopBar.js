@@ -123,7 +123,16 @@ const logoutMutation = graphql`
 `;
 
 const TopBar = ({
-  t, classes, location, history, keyword, theme,
+  t,
+  classes,
+  location,
+  history,
+  keyword,
+  theme,
+  handleChangeTimeField,
+  timeField,
+  handleChangeDashboard,
+  dashboard,
 }) => {
   const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
   const handleOpenMenu = (event) => {
@@ -164,7 +173,12 @@ const TopBar = ({
         <div className={classes.menuContainer}>
           {(location.pathname === '/dashboard'
             || location.pathname.includes('/dashboard/import')) && (
-            <TopMenuDashboard />
+            <TopMenuDashboard
+              handleChangeTimeField={handleChangeTimeField}
+              timeField={timeField}
+              handleChangeDashboard={handleChangeDashboard}
+              dashboard={dashboard}
+            />
           )}
           {location.pathname.includes('/dashboard/search') && <TopMenuSearch />}
           {(location.pathname === '/dashboard/analysis'

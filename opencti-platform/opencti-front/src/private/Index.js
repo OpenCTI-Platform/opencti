@@ -1,7 +1,8 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Switch, withRouter } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
+import { compose } from 'ramda';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
@@ -43,11 +44,13 @@ const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
 }));
 
-const Index = ({ me }) => {
+const noTopBarLocations = ['/dashboard'];
+
+const Index = ({ me, location }) => {
   const classes = useStyles();
   return (
     <div className={classes.root}>
-      <TopBar />
+      {!noTopBarLocations.includes(location.pathname) && <TopBar />}
       <LeftBar />
       <Message />
       <main className={classes.content} style={{ paddingRight: 24 }}>
@@ -106,4 +109,4 @@ Index.propTypes = {
   me: PropTypes.object,
 };
 
-export default Index;
+export default compose(withRouter)(Index);

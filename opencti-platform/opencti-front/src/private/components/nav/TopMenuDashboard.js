@@ -5,6 +5,7 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import inject18n from '../../../components/i18n';
+import DashboardSettings from '../DashboardSettings';
 
 const styles = (theme) => ({
   button: {
@@ -17,7 +18,15 @@ const styles = (theme) => ({
 
 class TopMenuDashboard extends Component {
   render() {
-    const { t, location, classes } = this.props;
+    const {
+      t,
+      location,
+      classes,
+      handleChangeTimeField,
+      timeField,
+      handleChangeDashboard,
+      dashboard,
+    } = this.props;
     return (
       <div>
         <Button
@@ -30,6 +39,12 @@ class TopMenuDashboard extends Component {
         >
           {t('Dashboard')}
         </Button>
+        <DashboardSettings
+          handleChangeTimeField={handleChangeTimeField}
+          timeField={timeField}
+          handleChangeDashboard={handleChangeDashboard}
+          dashboard={dashboard}
+        />
       </div>
     );
   }

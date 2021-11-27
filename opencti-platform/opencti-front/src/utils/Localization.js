@@ -514,6 +514,7 @@ const i18n = {
       Indicator: 'Indicateur',
       Indicators: 'Indicateurs',
       'Custom dashboards': 'Tableaux de bord personnalisés',
+      'Custom dashboard': 'Tableau de bord personnalisé',
       'Unique identifier': 'Identifiant unique',
       'Related entities': 'Entités liées',
       'Indicators composed with this observable':
