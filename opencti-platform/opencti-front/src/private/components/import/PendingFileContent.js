@@ -894,6 +894,64 @@ class PendingFileContentComponent extends Component {
                     <List component="div" disablePadding>
                       {object.object_refs.map((objectRef) => {
                         const subObject = indexedObjectsWithDependencies[objectRef];
+                        if (!subObject) {
+                          return (
+                            <ListItem
+                              classes={{ root: classes.itemNested }}
+                              divider={true}
+                              button={true}
+                            >
+                              <ListItemIcon color="primary">
+                                <ItemIcon type="Unknown" />
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={
+                                  <div>
+                                    <div
+                                      className={classes.bodyItem}
+                                      style={inlineStyles.type}
+                                    >
+                                      {t('Unknown')}
+                                    </div>
+                                    <div
+                                      className={classes.bodyItem}
+                                      style={inlineStyles.default_value}
+                                    >
+                                      {t('Unknown')}
+                                    </div>
+                                    <div
+                                      className={classes.bodyItem}
+                                      style={inlineStyles.nb_dependencies}
+                                    >
+                                      {0}
+                                    </div>
+                                    <div
+                                      className={classes.bodyItem}
+                                      style={
+                                        inlineStyles.nb_inbound_dependencies
+                                      }
+                                    >
+                                      {0}
+                                    </div>
+                                    <div
+                                      className={classes.bodyItem}
+                                      style={inlineStyles.created}
+                                    >
+                                      {t('N/A')}
+                                    </div>
+                                  </div>
+                                }
+                              />
+                              <ListItemSecondaryAction>
+                                <Checkbox
+                                  edge="end"
+                                  disabled={true}
+                                  checked={true}
+                                />
+                              </ListItemSecondaryAction>
+                            </ListItem>
+                          );
+                        }
                         const subObjectType = subObject.type === 'x-opencti-simple-observable'
                           ? observableKeyToType(subObject.key)
                           : convertStixType(subObject.type);
