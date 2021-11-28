@@ -916,7 +916,7 @@ class PendingFileContentComponent extends Component {
                         if (!subObject) {
                           return (
                             <ListItem
-                              key={subObject.id}
+                              key={objectRef}
                               classes={{ root: classes.itemNested }}
                               divider={true}
                               button={true}

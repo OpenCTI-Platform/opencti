@@ -25,7 +25,7 @@ import { askEnrich } from './enrichment';
 import { isEmptyField } from '../database/utils';
 import { stixCoreObjectIdImportPush } from './stixCoreObject';
 import { BYPASS } from '../utils/access';
-import { BYPASS_REFERENCE, KNOWLEDGE_DELETE } from '../initialization';
+import { BYPASS_REFERENCE } from '../initialization';
 
 export const findById = (user, externalReferenceId) => {
   return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
