@@ -82,7 +82,10 @@ export const resolveLink = (type) => {
 
 export const typesWithoutName = ['Observed-Data'];
 
-export const pascalize = (str) => str.replace(/(\w)(\w*)/g, (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase());
+export const pascalize = (str) => str.replace(
+  /(\w)(\w*)/g,
+  (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase(),
+);
 
 export const observableKeyToType = (key) => {
   const keySplit = key.split('.');
@@ -105,6 +108,27 @@ export const observableKeyToType = (key) => {
     type = 'X-OpenCTI-Text';
   }
   return type;
+};
+
+export const patternMapping = {
+  'Autonomous-System': ['number'],
+  Directory: ['path'],
+  'Email-Message': ['body'],
+  'Email-Mime-Part-Type': ['body'],
+  Mutex: ['name'],
+  'Network-Traffic': ['dst_port'],
+  Process: ['pid'],
+  Software: ['name'],
+  'User-Account': ['acount_login'],
+  'Windows-Registry-Key': ['key'],
+  'Windows-Registry-Value-Type': ['name'],
+};
+
+export const getObservablePatternMapping = (type) => {
+  if (patternMapping[type]) {
+    return `${type}.${patternMapping[type].join('.')}`;
+  }
+  return `${type}.value`;
 };
 
 export const openVocabularies = {

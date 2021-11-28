@@ -8,6 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
+import Chip from '@material-ui/core/Chip';
 import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemCreator from '../../../../components/ItemCreator';
@@ -89,7 +90,16 @@ class StixCyberObservableOverview extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Observable type')}
               </Typography>
-              {t(`entity_${stixCyberObservable.entity_type}`)}
+              <Chip
+                classes={{ root: classes.chip }}
+                style={{
+                  backgroundColor: 'rgba(32, 58, 246, 0.08)',
+                  color: '#203af6',
+                  border: '1px solid #203af6',
+                }}
+                label={t(`entity_${stixCyberObservable.entity_type}`)}
+              />
+
               <Typography
                 variant="h3"
                 gutterBottom={true}

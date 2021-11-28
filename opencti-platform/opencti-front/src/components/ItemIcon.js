@@ -90,6 +90,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'Individual':
       return <PersonOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Organization':
+    case 'Identity':
       return (
         <AccountBalanceOutlined style={style} fontSize={fontSize} role="img" />
       );

@@ -25,14 +25,21 @@ import Checkbox from '@material-ui/core/Checkbox';
 import * as Yup from 'yup';
 import { Link, withRouter } from 'react-router-dom';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
+import { CodeJson } from 'mdi-material-ui';
 import {
   Cell, Pie, PieChart, ResponsiveContainer,
 } from 'recharts';
 import { withTheme } from '@material-ui/core/styles';
+import Select from '@material-ui/core/Select';
+import IconButton from '@material-ui/core/IconButton';
 import ItemIcon from '../../../components/ItemIcon';
 import { defaultValue } from '../../../utils/Graph';
 import inject18n from '../../../components/i18n';
-import { observableKeyToType, resolveLink } from '../../../utils/Entity';
+import {
+  getObservablePatternMapping,
+  observableKeyToType,
+  resolveLink,
+} from '../../../utils/Entity';
 import PendingFileToolBar from './PendingFileToolBar';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import { fileManagerAskJobImportMutation } from '../common/files/FileManager';
@@ -537,6 +544,76 @@ class PendingFileContentComponent extends Component {
     }
   }
 
+  handleChangeType(objectId, event) {
+    const originalObject = this.state.indexedObjects[objectId];
+    const originalObjectWithDependencies = this.state.indexedObjectsWithDependencies[objectId];
+    if (originalObject.type !== 'x-opencti-simple-observable') {
+      const newObject = R.assoc(
+        'type',
+        event.target.value.toLowerCase(),
+        originalObject,
+      );
+      const newObjectWithDependencies = R.assoc(
+        'type',
+        event.target.value.toLowerCase(),
+        originalObjectWithDependencies,
+      );
+      const indexedObjects = R.assoc(
+        objectId,
+        newObject,
+        this.state.indexedObjects,
+      );
+      const indexedObjectsWithDependencies = R.assoc(
+        objectId,
+        newObjectWithDependencies,
+        this.state.indexedObjectsWithDependencies,
+      );
+      const objectsWithDependencies = R.map((n) => {
+        if (n.id === objectId) {
+          return newObjectWithDependencies;
+        }
+        return n;
+      }, this.state.objectsWithDependencies);
+      this.setState({
+        indexedObjects,
+        indexedObjectsWithDependencies,
+        objectsWithDependencies,
+      });
+    } else {
+      const newObject = R.assoc(
+        'key',
+        getObservablePatternMapping(event.target.value),
+        originalObject,
+      );
+      const newObjectWithDependencies = R.assoc(
+        'key',
+        getObservablePatternMapping(event.target.value),
+        originalObjectWithDependencies,
+      );
+      const indexedObjects = R.assoc(
+        objectId,
+        newObject,
+        this.state.indexedObjects,
+      );
+      const indexedObjectsWithDependencies = R.assoc(
+        objectId,
+        newObjectWithDependencies,
+        this.state.indexedObjectsWithDependencies,
+      );
+      const objectsWithDependencies = R.map((n) => {
+        if (n.id === objectId) {
+          return newObjectWithDependencies;
+        }
+        return n;
+      }, this.state.objectsWithDependencies);
+      this.setState({
+        indexedObjects,
+        indexedObjectsWithDependencies,
+        objectsWithDependencies,
+      });
+    }
+  }
+
   reverseBy(field) {
     this.setState({ sortBy: field, orderAsc: !this.state.orderAsc });
   }
@@ -615,7 +692,15 @@ class PendingFileContentComponent extends Component {
 
   render() {
     const {
-      classes, t, file, fldt, connectorsImport, nsdt, theme,
+      classes,
+      t,
+      file,
+      fldt,
+      connectorsImport,
+      nsdt,
+      theme,
+      stixDomainObjectTypes,
+      observableTypes,
     } = this.props;
     const {
       objectsWithDependencies,
@@ -631,6 +716,12 @@ class PendingFileContentComponent extends Component {
       containersChecked,
       containersUnchecked,
     } = this.state;
+    const sdoTypes = [
+      ...stixDomainObjectTypes.edges.map((n) => n.node.id),
+      'Marking-Definition',
+      'Identity',
+    ];
+    const scoTypes = observableTypes.edges.map((n) => n.node.id);
     let entityId = null;
     let entityLink = null;
     if (file.metaData.entity) {
@@ -836,6 +927,9 @@ class PendingFileContentComponent extends Component {
                 }
               />
               <ListItemSecondaryAction>
+                <IconButton color="primary" disabled={true} size="small">
+                  <CodeJson fontSize="small" />
+                </IconButton>
                 <Checkbox
                   edge="end"
                   onChange={this.handleToggleAll.bind(this)}
@@ -852,15 +946,7 @@ class PendingFileContentComponent extends Component {
                   && !uncheckedObjects.includes(object.id));
               return (
                 <div key={object.id}>
-                  <ListItem
-                    classes={{ root: classes.item }}
-                    divider={true}
-                    button={true}
-                    onClick={this.handleOpenJson.bind(
-                      this,
-                      JSON.stringify(indexedObjects[object.id], null, 2),
-                    )}
-                  >
+                  <ListItem classes={{ root: classes.item }} divider={true}>
                     <ListItemIcon color="primary">
                       <ItemIcon type={type} />
                     </ListItemIcon>
@@ -871,7 +957,41 @@ class PendingFileContentComponent extends Component {
                             className={classes.bodyItem}
                             style={inlineStyles.type}
                           >
-                            {type}
+                            {[
+                              'relationship',
+                              'sighting',
+                              'report',
+                              'note',
+                              'opinion',
+                            ].includes(object.type) || type === 'StixFile' ? (
+                                type
+                              ) : (
+                              <Select
+                                labelId="type"
+                                value={type}
+                                onChange={this.handleChangeType.bind(
+                                  this,
+                                  object.id,
+                                )}
+                                style={{
+                                  margin: 0,
+                                  width: '80%',
+                                  height: '100%',
+                                }}
+                              >
+                                {scoTypes.includes(type)
+                                  ? scoTypes.map((n) => (
+                                      <MenuItem key={n} value={n}>
+                                        {t(`entity_${n}`)}
+                                      </MenuItem>
+                                  ))
+                                  : sdoTypes.map((n) => (
+                                      <MenuItem key={n} value={n}>
+                                        {t(`entity_${n}`)}
+                                      </MenuItem>
+                                  ))}
+                              </Select>
+                              )}
                           </div>
                           <div
                             className={classes.bodyItem}
@@ -901,6 +1021,15 @@ class PendingFileContentComponent extends Component {
                       }
                     />
                     <ListItemSecondaryAction>
+                      <IconButton
+                        onClick={this.handleOpenJson.bind(
+                          this,
+                          JSON.stringify(indexedObjects[object.id], null, 2),
+                        )}
+                        size="small"
+                      >
+                        <CodeJson fontSize="small" />
+                      </IconButton>
                       <Checkbox
                         edge="end"
                         onChange={this.handleToggleItem.bind(this, object.id)}
@@ -919,7 +1048,6 @@ class PendingFileContentComponent extends Component {
                               key={objectRef}
                               classes={{ root: classes.itemNested }}
                               divider={true}
-                              button={true}
                             >
                               <ListItemIcon color="primary">
                                 <ItemIcon type="Unknown" />
@@ -1151,6 +1279,8 @@ class PendingFileContentComponent extends Component {
 
 PendingFileContentComponent.propTypes = {
   file: PropTypes.object,
+  stixDomainObjectTypes: PropTypes.array,
+  observableTypes: PropTypes.array,
   connectorsImport: PropTypes.array,
   children: PropTypes.node,
   match: PropTypes.object,

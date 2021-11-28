@@ -9,6 +9,22 @@ import Loader from '../../../components/Loader';
 
 const pendingFileQuery = graphql`
   query PendingFileQuery($id: String!) {
+    stixDomainObjectTypes: subTypes(type: "Stix-Domain-Object") {
+      edges {
+        node {
+          id
+          label
+        }
+      }
+    }
+    observableTypes: subTypes(type: "Stix-Cyber-Observable") {
+      edges {
+        node {
+          id
+          label
+        }
+      }
+    }
     connectorsForImport {
       ...PendingFileContent_connectorsImport
     }
@@ -36,6 +52,8 @@ class PendingFile extends Component {
               <PendingFileContent
                 file={props.file}
                 connectorsImport={props.connectorsForImport}
+                stixDomainObjectTypes={props.stixDomainObjectTypes}
+                observableTypes={props.observableTypes}
               />
             );
           }
