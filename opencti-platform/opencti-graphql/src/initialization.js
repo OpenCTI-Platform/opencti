@@ -72,6 +72,7 @@ export const SETTINGS_CAPABILITIES = {
     { name: 'SETLABELS', description: 'Manage labels & Attributes', attribute_order: 3400 },
   ],
 };
+export const BYPASS_REFERENCE = 'BYPASSREFERENCE';
 export const CAPABILITIES = [
   BYPASS_CAPABILITIES,
   KNOWLEDGE_CAPABILITIES,
@@ -107,7 +108,7 @@ export const CAPABILITIES = [
     description: 'Connect and consume the platform streams (/stream, /stream/live)',
   },
   {
-    name: 'BYPASSREFERENCE',
+    name: BYPASS_REFERENCE,
     attribute_order: 6000,
     description: 'Bypass mandatory references if any',
   },

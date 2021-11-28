@@ -473,7 +473,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];
     const data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(92); // The 4 Default TLP Marking definitions + 1
+    expect(data.edges.length).toEqual(93); // The 4 Default TLP Marking definitions + 1
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];
@@ -553,7 +553,7 @@ describe('Elasticsearch pagination', () => {
     let data = await elPaginate(ADMIN_USER, READ_RELATIONSHIPS_INDICES);
     expect(data).not.toBeNull();
     const groupByIndices = R.groupBy((e) => e.node._index, data.edges);
-    expect(groupByIndices['opencti_internal_relationships-000001'].length).toEqual(13);
+    expect(groupByIndices['opencti_internal_relationships-000001'].length).toEqual(14);
     expect(groupByIndices['opencti_stix_core_relationships-000001'].length).toEqual(21);
     // expect(groupByIndices['opencti_stix_meta_relationships-000001'].length).toEqual(110);
     expect(groupByIndices['opencti_stix_sighting_relationships-000001'].length).toEqual(3);

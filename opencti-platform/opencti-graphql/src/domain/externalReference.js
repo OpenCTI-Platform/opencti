@@ -24,6 +24,8 @@ import { pushToConnector } from '../database/rabbitmq';
 import { askEnrich } from './enrichment';
 import { isEmptyField } from '../database/utils';
 import { stixCoreObjectIdImportPush } from './stixCoreObject';
+import { BYPASS } from '../utils/access';
+import { BYPASS_REFERENCE, KNOWLEDGE_DELETE } from '../initialization';
 
 export const findById = (user, externalReferenceId) => {
   return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
@@ -64,7 +66,9 @@ export const externalReferenceAskEnrichment = async (user, externalReferenceId, 
 
 export const addExternalReference = async (user, externalReference) => {
   const referenceAttachment = conf.get('app:reference_attachment');
-  if (referenceAttachment && isEmptyField(externalReference.file)) {
+  const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
+  const isAllowedToByPass = userCapabilities.includes(BYPASS) || userCapabilities.includes(BYPASS_REFERENCE);
+  if (!isAllowedToByPass && referenceAttachment && isEmptyField(externalReference.file)) {
     throw ValidationError('file', {
       message: 'You must provide an attachment to create a new external reference',
     });

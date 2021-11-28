@@ -200,7 +200,7 @@ import {
 import { checkObservableSyntax } from '../utils/syntax';
 // eslint-disable-next-line import/no-cycle
 import { deleteAllFiles, rawFilesListing, stixFileConverter } from './minio';
-import { filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
+import { BYPASS, filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
 import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import {
   FIELD_ATTRIBUTE_TO_EMBEDDED_RELATION,
@@ -213,6 +213,7 @@ import {
   STIX_ATTRIBUTE_TO_META_FIELD,
   STIX_EMBEDDED_RELATION_TO_FIELD,
 } from '../schema/stixEmbeddedRelationship';
+import { BYPASS_REFERENCE } from '../initialization';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -1779,7 +1780,12 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
         const sources = [instanceMergeWithInputs, ...existingEntities];
         hashMergeValidation([target, ...sources]);
         // eslint-disable-next-line prettier/prettier
-        const merged = await mergeEntities(user, target.internal_id, sources.map((c) => c.internal_id), { locks: participantIds });
+        const merged = await mergeEntities(
+          user,
+          target.internal_id,
+          sources.map((c) => c.internal_id),
+          { locks: participantIds }
+        );
         logApp.info(`[OPENCTI] Success merge of entity ${merged.id}`);
         // Return merged element after waiting for it.
         return { element: merged };
@@ -2834,7 +2840,9 @@ const buildEntityData = async (user, input, type, opts = {}) => {
 };
 export const createEntityRaw = async (user, input, type, opts = {}) => {
   const enforceReferences = conf.get('app:enforce_references');
-  if (enforceReferences && enforceReferences.includes(type)) {
+  const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
+  const isAllowedToByPass = userCapabilities.includes(BYPASS) || userCapabilities.includes(BYPASS_REFERENCE);
+  if (!isAllowedToByPass && enforceReferences && enforceReferences.includes(type)) {
     if (isEmptyField(input.externalReferences)) {
       throw ValidationError('externalReferences', {
         message: 'You must provide at least one external reference for this type of entity',
@@ -2901,7 +2909,12 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
           const sources = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
           hashMergeValidation([target, ...sources]);
           // eslint-disable-next-line prettier/prettier
-          await mergeEntities(user, target.internal_id, sources.map((s) => s.internal_id), { locks: participantIds });
+          await mergeEntities(
+            user,
+            target.internal_id,
+            sources.map((s) => s.internal_id),
+            { locks: participantIds }
+          );
           dataEntity = upsertElementRaw(target, type, resolvedInput);
         } else if (existingByStandard) {
           // Sometimes multiple entities can match
