@@ -1,6 +1,4 @@
-pycti==5.0.3
-stix2-patterns==1.3.2
-elasticsearch==7.13.1
+pycti==5.1.0
 plyara==2.1.1
 parsuricata==0.1.1
 sigmatools==0.19.1
