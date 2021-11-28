@@ -19,6 +19,7 @@ import TextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { now } from '../../../../utils/Time';
+import { isValidStixBundle } from '../../../../utils/String';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -88,14 +89,26 @@ class FreeTextUploader extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const { entityId, onUploadSuccess } = this.props;
     const { content } = values;
-    const blob = new Blob([content], { type: 'text/plain' });
-    const file = new File(
-      [blob],
-      `${now()}_${this.props.entityId ? this.props.entityId : 'global'}.txt`,
-      {
-        type: 'text/plain',
-      },
-    );
+    let file;
+    if (isValidStixBundle(content)) {
+      const blob = new Blob([content], { type: 'text/json' });
+      file = new File(
+        [blob],
+        `${now()}_${this.props.entityId ? this.props.entityId : 'global'}.json`,
+        {
+          type: 'application/json',
+        },
+      );
+    } else {
+      const blob = new Blob([content], { type: 'text/plain' });
+      file = new File(
+        [blob],
+        `${now()}_${this.props.entityId ? this.props.entityId : 'global'}.txt`,
+        {
+          type: 'text/plain',
+        },
+      );
+    }
     commitMutation({
       mutation: entityId
         ? freeTextUploaderEntityMutation

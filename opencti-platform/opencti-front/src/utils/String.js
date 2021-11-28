@@ -39,3 +39,12 @@ export const convertStixType = (s) => {
   }
   return type;
 };
+
+export const isValidStixBundle = (bundle) => {
+  try {
+    const data = JSON.parse(bundle);
+    return !!(data.objects && data.objects.length > 0);
+  } catch (e) {
+    return false;
+  }
+};

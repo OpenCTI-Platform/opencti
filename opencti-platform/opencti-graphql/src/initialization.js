@@ -106,6 +106,11 @@ export const CAPABILITIES = [
     attribute_order: 5000,
     description: 'Connect and consume the platform streams (/stream, /stream/live)',
   },
+  {
+    name: 'BYPASSREFERENCE',
+    attribute_order: 6000,
+    description: 'Bypass mandatory references if any',
+  },
 ];
 // endregion
 
@@ -312,6 +317,7 @@ export const createBasicRolesAndCapabilities = async () => {
       'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
       'KNOWLEDGE_KNENRICHMENT',
       'CONNECTORAPI',
+      'BYPASSREFERENCE',
       'MODULES_MODMANAGE',
       'STREAMAPI',
       'SETTINGS_SETMARKINGS',
