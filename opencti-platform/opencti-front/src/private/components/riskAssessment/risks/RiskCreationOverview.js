@@ -98,368 +98,342 @@ class RiskCreationOverviewComponent extends Component {
           {t('Basic Information')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-            <Grid container={true} spacing={3}>
-              <Grid item={true} xs={12}>
+          <Grid container={true} spacing={3} style={{ marginBottom: '9px' }}>
+            <Grid item={true} xs={6}>
+              <Grid item={true}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
                   style={{ float: 'left' }}
                 >
-                  {t('Name')}
+                  {t('ID')}
                 </Typography>
-                <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                  <Tooltip title={t('Installed Operating System')} >
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
+                <div className="clearfix" />
                 <Field
                   component={TextField}
                   variant='outlined'
                   size='small'
-                  name="name"
+                  name="asset_id"
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
-                  // onFocus={this.handleChangeFocus.bind(this)}
-                  // onSubmit={this.handleSubmitField.bind(this)}
                 />
               </Grid>
-              <Grid item={true} xs={6}>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left' }}
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Grid item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Item ID')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
                   >
-                    {t('ID')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                    <Tooltip title={t('Installed Operating System')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    size='small'
-                    name="id"
-                    fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                  // helperText={
-                  //   <SubscriptionFocus fieldName="name" />
-                  // }
-                  />
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
                 </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 17 }}
-                  >
-                    {t('Asset ID')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '17px 0 0 5px' }}>
-                    <Tooltip title={t('Installed Software')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    size='small'
-                    name="asset_id"
-                    fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 17 }}
-                  >
-                    {t('Description')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '17px 0 0 5px' }}>
-                    <Tooltip title={t('Description')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  {/* <div className="clearfix" />
-                      <textarea className="scrollbar-customize" rows="3" cols="24" /> */}
-                  <div className="clearfix" />
-                  <Field
+                <div className="clearfix" />
+                <Field
                   component={TextField}
-                  name="Description"
-                  fullWidth={true}
-                  multiline={true}
-                  rows="3"
                   variant='outlined'
-                  />
-                </div>
-                <div style={{ marginTop: '6px' }}>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 15 }}
-                  >
-                    {t('Version')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
-                    <Tooltip title={t('Version')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    size='small'
-                    name="version"
-                    fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 16 }}
-                  >
-                    {t('Serial Number')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '18px 0 0 5px' }}>
-                    <Tooltip title={t('Serial Number')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    size='small'
-                    name="serial_number"
-                    fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 16 }}
-                  >
-                    {t('Responsible Parties')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '17px 0 0 5px' }}>
-                    <Tooltip title={t('Responsible Parties')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={SelectField}
-                    variant='outlined'
-                    name="ports"
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  />
-                  <Field
-                    component={SelectField}
-                    variant='outlined'
-                    name="ports"
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Label')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Label')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <ObjectLabelField
-                    name="labels"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                </div>
-              </Grid>
-              <Grid item={true} xs={6}>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left' }}
-                  >
-                    {t('Asset Type')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                    <Tooltip title={t('Asset Type')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <AssetType
-                    component={SelectField}
-                    variant='outlined'
-                    name="asset_type"
-                    disabled={true}
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '100%' }}
-                    helperText={t('Select Asset Type')}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Asset Tag')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Asset Tag')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <AssetTaglist
-                    component={SelectField}
-                    variant='outlined'
-                    name="asset_tag"
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '100%' }}
-                  >
-                  </AssetTaglist>
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Location')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Location')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                  component={TextField}
-                  name="Location"
+                  size='small'
+                  name="asset_id"
                   fullWidth={true}
-                  multiline={true}
-                  rows="3"
-                  variant='outlined'
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Vendor Name')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Vendor Name')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="vendor_name"
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Release Date')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Release Date')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="release_date"
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Operation State')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Operation State')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="operational_status"
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '100%' }}
-                  />
-                </div>
+                  containerstyle={{ width: '100%' }}
+                />
               </Grid>
             </Grid>
+          </Grid>
+          <Grid item={true} xs={12} style={{ marginBottom: '15px' }}>
+            <Typography
+              variant="h3"
+              color="textSecondary"
+              gutterBottom={true}
+              style={{ float: 'left' }}
+            >
+              {t('Description')}
+            </Typography>
+            <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+              <Tooltip
+                title={t(
+                  'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                )}
+              >
+                <Information fontSize="inherit" color="disabled" />
+              </Tooltip>
+            </div>
+            <div className="clearfix" />
+            <Field
+              component={TextField}
+              name="Description"
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              variant='outlined'
+            />
+          </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid xs={6} item={true}>
+              <Grid style={{ marginBottom: '58px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Weakness')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  variant='outlined'
+                  size='small'
+                  name="asset_id"
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                />
+              </Grid>
+              <Grid style={{ marginBottom: '20px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Risk Rating')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  variant='outlined'
+                  size='small'
+                  name="asset_id"
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                />
+              </Grid>
+              <Grid style={{ marginBottom: '15px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Impact')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  variant='outlined'
+                  size='small'
+                  name="asset_id"
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                />
+              </Grid>
+              <Grid style={{ marginBottom: '10px', display: 'flex', flexWrap: 'wrap' }} item={true}>
+                <Typography color="textSecondary" variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+                  {t('Responsible Parties')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <AddIcon fontSize="small" style={{ margin: '-5px 0 0 0' }} />
+                <div className="clearfix" />
+                <Field
+                  component={SelectField}
+                  variant='outlined'
+                  name="ports"
+                  size='small'
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
+                />
+                <Field
+                  component={SelectField}
+                  variant='outlined'
+                  name="ports"
+                  size='small'
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
+                />
+              </Grid>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Grid style={{ marginBottom: '15px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Controls')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <AddIcon fontSize="small" style={{ margin: '-5px 0 0 0' }} />
+                <div className="clearfix" />
+                <Field
+                  component={SelectField}
+                  variant='outlined'
+                  name="ports"
+                  size='small'
+                  fullWidth={true}
+                  style={{ height: '38.09px', marginBottom: '3px' }}
+                  containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                />
+                <Field
+                  component={SelectField}
+                  variant='outlined'
+                  name="ports"
+                  size='small'
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                />
+              </Grid>
+              <Grid style={{ marginBottom: '20px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Priority')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  variant='outlined'
+                  size='small'
+                  name="asset_id"
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                />
+              </Grid>
+              <Grid style={{ marginBottom: '10px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Likelihood')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  variant='outlined'
+                  size='small'
+                  name="asset_id"
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                />
+              </Grid>
+            </Grid>
+          </Grid>
+          <Grid style={{ marginTop: '10px' }} item={true}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              color="textSecondary"
+              style={{ float: 'left' }}
+            >
+              {t('Label')}
+            </Typography>
+            <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+              <Tooltip
+                title={t(
+                  'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                )}
+              >
+                <Information fontSize="inherit" color="disabled" />
+              </Tooltip>
+            </div>
+            <div className="clearfix" />
+            <ObjectLabelField
+              variant='outlined'
+              name="labels"
+              style={{ marginTop: 10, width: '100%' }}
+              setFieldValue={setFieldValue}
+              values={values.objectLabel}
+            />
+          </Grid>
         </Paper>
       </div>
     );

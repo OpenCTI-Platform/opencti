@@ -1,28 +1,23 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withRouter } from 'react-router-dom';
+import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles/index';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
-import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
-import MoreVert from '@material-ui/icons/MoreVert';
-import graphql from 'babel-plugin-relay/macro';
+import { MoreVertOutlined } from '@material-ui/icons';
+import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
-import { remediationEditionQuery } from './RemediationEdition';
-import RemediationEditionContainer from './RemediationEditionContainer';
-import Loader from '../../../../../components/Loader';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../../utils/Security';
+import { commitMutation } from '../../../../../relay/environment';
+// import StixCoreRelationshipEdition from './StixCoreRelationshipEdition';
 
 const styles = (theme) => ({
   container: {
@@ -40,10 +35,23 @@ const styles = (theme) => ({
     }),
     padding: 0,
   },
+  popoverDialog: {
+    fontSize: '18px',
+    lineHeight: '24px',
+    color: theme.palette.header.text,
+  },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
+  },
+  buttonPopover: {
+    textTransform: 'capitalize',
+  },
   menuItem: {
-    padding: '15px 40px 15px 40px',
+    padding: '15px 0',
+    width: '152px',
     margin: '0 20px',
-    textAlign: 'center',
+    justifyContent: 'center',
   },
 });
 
@@ -52,9 +60,9 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const RemediationPopoverDeletionMutation = graphql`
+const remediationPopoverDeletionMutation = graphql`
   mutation RemediationPopoverDeletionMutation($id: ID!) {
-    threatActorEdit(id: $id) {
+    stixCoreRelationshipEdit(id: $id) {
       delete
     }
   }
@@ -65,18 +73,28 @@ class RemediationPopover extends Component {
     super(props);
     this.state = {
       anchorEl: null,
+      displayUpdate: false,
       displayDelete: false,
-      displayEdit: false,
       deleting: false,
     };
   }
 
   handleOpen(event) {
     this.setState({ anchorEl: event.currentTarget });
+    event.stopPropagation();
   }
 
   handleClose() {
     this.setState({ anchorEl: null });
+  }
+
+  handleOpenUpdate() {
+    this.setState({ displayUpdate: true });
+    this.handleClose();
+  }
+
+  handleCloseUpdate() {
+    this.setState({ displayUpdate: false });
   }
 
   handleOpenDelete() {
@@ -91,43 +109,45 @@ class RemediationPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: RemediationPopoverDeletionMutation,
+      mutation: remediationPopoverDeletionMutation,
       variables: {
-        id: this.props.id,
+        id: this.props.stixCoreRelationshipId,
       },
-      config: [
-        {
-          type: 'NODE_DELETE',
-          deletedIDFieldName: 'id',
-        },
-      ],
+      updater: (store) => {
+        if (typeof this.props.onDelete !== 'function') {
+          const container = store.getRoot();
+          const payload = store.getRootField('stixCoreRelationshipEdit');
+          const userProxy = store.get(container.getDataID());
+          const conn = ConnectionHandler.getConnection(
+            userProxy,
+            this.props.connectionKey || 'Pagination_stixCoreRelationships',
+            this.props.paginationOptions,
+          );
+          ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
+        }
+      },
       onCompleted: () => {
         this.setState({ deleting: false });
-        this.handleClose();
-        this.props.history.push('/dashboard/risk-assessment/risks/:riskId/remediation');
+        this.handleCloseDelete();
+        if (typeof this.props.onDelete === 'function') {
+          this.props.onDelete();
+        }
       },
     });
   }
 
-  handleOpenEdit() {
-    this.setState({ displayEdit: true });
-    this.handleClose();
-  }
-
-  handleCloseEdit() {
-    this.setState({ displayEdit: false });
-  }
-
   render() {
-    const { classes, t, id } = this.props;
+    const {
+      classes, t, stixCoreRelationshipId, disabled,
+    } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 1 }}
+          disabled={disabled}
         >
-          <MoreVert />
+          <MoreVertOutlined />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}
@@ -135,15 +155,33 @@ class RemediationPopover extends Component {
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
-          <MenuItem className={classes.menuItem} onClick={this.handleOpenEdit.bind(this)}>
+          <MenuItem
+            className={classes.menuItem}
+            divider={true}
+            onClick={this.handleOpenUpdate.bind(this)}
+          >
             {t('Update')}
           </MenuItem>
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem className={classes.menuItem} onClick={this.handleOpenDelete.bind(this)}>
-              {t('Delete')}
-            </MenuItem>
-          </Security>
+          <MenuItem
+            className={classes.menuItem}
+            divider={true}
+          >
+            {t('Remove')}
+          </MenuItem>
+          <MenuItem
+            className={classes.menuItem}
+            divider={true}
+            onClick={this.handleOpenDelete.bind(this)}
+          >
+            {t('Delete')}
+          </MenuItem>
         </Menu>
+        {/* <StixCoreRelationshipEdition
+          variant="noGraph"
+          stixCoreRelationshipId={stixCoreRelationshipId}
+          open={this.state.displayUpdate}
+          handleClose={this.handleCloseUpdate.bind(this)}
+        /> */}
         <Dialog
           open={this.state.displayDelete}
           keepMounted={true}
@@ -151,14 +189,20 @@ class RemediationPopover extends Component {
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>
+            <Typography className={classes.popoverDialog} >
+              {t('Are you sure you’d like to delete this item?')}
+            </Typography>
             <DialogContentText>
-              {t('Do you want to delete this remediation?')}
+              {t('This action can’t be undone')}
             </DialogContentText>
           </DialogContent>
-          <DialogActions>
+          <DialogActions className={classes.dialogActions}>
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
+              classes={{ root: classes.buttonPopover }}
+              variant="outlined"
+              size="small"
             >
               {t('Cancel')}
             </Button>
@@ -166,49 +210,30 @@ class RemediationPopover extends Component {
               onClick={this.submitDelete.bind(this)}
               color="primary"
               disabled={this.state.deleting}
+              classes={{ root: classes.buttonPopover }}
+              variant="outlined"
+              size="small"
             >
               {t('Delete')}
             </Button>
           </DialogActions>
         </Dialog>
-        <Drawer
-          open={this.state.displayEdit}
-          anchor="right"
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseEdit.bind(this)}
-        >
-          <QueryRenderer
-            query={remediationEditionQuery}
-            variables={{ id }}
-            render={({ props }) => {
-              console.log('RemediationEditionContainer', props);
-              if (props) {
-                return (
-                  <RemediationEditionContainer
-                    remediation={props.threatActor}
-                    handleClose={this.handleCloseEdit.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Drawer>
       </div>
     );
   }
 }
 
 RemediationPopover.propTypes = {
-  id: PropTypes.string,
+  stixCoreRelationshipId: PropTypes.string,
+  disabled: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  onDelete: PropTypes.func,
+  connectionKey: PropTypes.string,
 };
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles),
 )(RemediationPopover);

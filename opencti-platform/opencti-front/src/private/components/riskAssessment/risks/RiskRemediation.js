@@ -5,17 +5,17 @@ import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import inject18n from '../../../../../components/i18n';
-import EntityStixCoreRelationships from '../../../common/stix_core_relationships/EntityStixCoreRelationships';
-import StixCoreRelationship from '../../../common/stix_core_relationships/StixCoreRelationship';
-import RemediationPopover from './RemediationPopover';
-import StixDomainObjectHeader from '../../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixDomainObjectAttackPatterns from '../../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
-import StixDomainObjectThreatKnowledge from '../../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
-import StixDomainObjectVictimology from '../../../common/stix_domain_objects/StixDomainObjectVictimology';
-import StixCoreObjectStixCyberObservables from '../../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
-import EntityStixSightingRelationships from '../../../events/stix_sighting_relationships/EntityStixSightingRelationships';
-import StixSightingRelationship from '../../../events/stix_sighting_relationships/StixSightingRelationship';
+import inject18n from '../../../../components/i18n';
+import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
+import RiskPopover from './RiskPopover';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
+import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
+import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
+import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
+import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
 const styles = () => ({
   container: {
@@ -24,22 +24,22 @@ const styles = () => ({
   },
 });
 
-class RemediationKnowledgeComponent extends Component {
+class RiskRemediationComponent extends Component {
   render() {
-    const { classes, remediation } = this.props;
-    const link = `/dashboard/risk-assessment/risks/${remediation.id}/knowledge`;
+    const { classes, risk } = this.props;
+    const link = `/dashboard/risk-assessment/risks/${risk.id}/knowledge`;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
-          stixDomainObject={remediation}
-          PopoverComponent={<RemediationPopover />}
+          stixDomainObject={risk}
+          PopoverComponent={<RiskPopover />}
         />
         <Route
           exact
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/relations/:relationId"
           render={(routeProps) => (
             <StixCoreRelationship
-              entityId={remediation.id}
+              entityId={risk.id}
               paddingRight={true}
               {...routeProps}
             />
@@ -50,7 +50,7 @@ class RemediationKnowledgeComponent extends Component {
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/sightings/:sightingId"
           render={(routeProps) => (
             <StixSightingRelationship
-              entityId={remediation.id}
+              entityId={risk.id}
               paddingRight={true}
               {...routeProps}
             />
@@ -61,8 +61,8 @@ class RemediationKnowledgeComponent extends Component {
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/overview"
           render={(routeProps) => (
             <StixDomainObjectThreatKnowledge
-              stixDomainObjectId={remediation.id}
-              stixDomainObjectType="Device"
+              stixDomainObjectId={risk.id}
+              stixDomainObjectType="Risk"
               {...routeProps}
             />
           )}
@@ -72,10 +72,10 @@ class RemediationKnowledgeComponent extends Component {
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/related"
           render={(routeProps) => (
             <EntityStixCoreRelationships
-              entityId={remediation.id}
+              entityId={risk.id}
               relationshipTypes={['related-to', 'part-of']}
               targetStixDomainObjectTypes={[
-                'Device',
+                'Risk',
                 'Intrusion-Set',
                 'Campaign',
                 'Incident',
@@ -101,7 +101,7 @@ class RemediationKnowledgeComponent extends Component {
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/victimology"
           render={(routeProps) => (
             <StixDomainObjectVictimology
-              stixDomainObjectId={remediation.id}
+              stixDomainObjectId={risk.id}
               entityLink={link}
               {...routeProps}
             />
@@ -112,9 +112,9 @@ class RemediationKnowledgeComponent extends Component {
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/risks"
           render={(routeProps) => (
             <EntityStixCoreRelationships
-              entityId={remediation.id}
+              entityId={risk.id}
               relationshipTypes={['part-of']}
-              targetStixDomainObjectTypes={['Device']}
+              targetStixDomainObjectTypes={['Risk']}
               entityLink={link}
               allDirections={true}
               {...routeProps}
@@ -126,7 +126,7 @@ class RemediationKnowledgeComponent extends Component {
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/network"
           render={(routeProps) => (
             <EntityStixCoreRelationships
-              entityId={remediation.id}
+              entityId={risk.id}
               relationshipTypes={['attributed-to']}
               targetStixDomainObjectTypes={['Intrusion-Set']}
               entityLink={link}
@@ -140,7 +140,7 @@ class RemediationKnowledgeComponent extends Component {
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/software"
           render={(routeProps) => (
             <EntityStixCoreRelationships
-              entityId={remediation.id}
+              entityId={risk.id}
               relationshipTypes={['attributed-to']}
               targetStixDomainObjectTypes={['Software']}
               entityLink={link}
@@ -154,7 +154,7 @@ class RemediationKnowledgeComponent extends Component {
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/attack_patterns"
           render={(routeProps) => (
             <StixDomainObjectAttackPatterns
-              stixDomainObjectId={remediation.id}
+              stixDomainObjectId={risk.id}
               entityLink={link}
               {...routeProps}
             />
@@ -165,7 +165,7 @@ class RemediationKnowledgeComponent extends Component {
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/malwares"
           render={(routeProps) => (
             <EntityStixCoreRelationships
-              entityId={remediation.id}
+              entityId={risk.id}
               relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
@@ -178,7 +178,7 @@ class RemediationKnowledgeComponent extends Component {
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/tools"
           render={(routeProps) => (
             <EntityStixCoreRelationships
-              entityId={remediation.id}
+              entityId={risk.id}
               relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Tool']}
               entityLink={link}
@@ -191,7 +191,7 @@ class RemediationKnowledgeComponent extends Component {
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/vulnerabilities"
           render={(routeProps) => (
             <EntityStixCoreRelationships
-              entityId={remediation.id}
+              entityId={risk.id}
               relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Vulnerability']}
               entityLink={link}
@@ -204,7 +204,7 @@ class RemediationKnowledgeComponent extends Component {
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/incidents"
           render={(routeProps) => (
             <EntityStixCoreRelationships
-              entityId={remediation.id}
+              entityId={risk.id}
               relationshipTypes={['attributed-to']}
               targetStixDomainObjectTypes={['Incident']}
               entityLink={link}
@@ -218,7 +218,7 @@ class RemediationKnowledgeComponent extends Component {
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/observables"
           render={(routeProps) => (
             <StixCoreObjectStixCyberObservables
-              stixCoreObjectId={remediation.id}
+              cyioCoreObjectId={risk.id}
               stixCoreObjectLink={link}
               noRightBar={true}
               {...routeProps}
@@ -230,7 +230,7 @@ class RemediationKnowledgeComponent extends Component {
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/infrastructures"
           render={(routeProps) => (
             <EntityStixCoreRelationships
-              entityId={remediation.id}
+              entityId={risk.id}
               relationshipTypes={['uses', 'compromises']}
               targetStixDomainObjectTypes={['Infrastructure']}
               entityLink={link}
@@ -244,7 +244,7 @@ class RemediationKnowledgeComponent extends Component {
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/sightings"
           render={(routeProps) => (
             <EntityStixSightingRelationships
-              entityId={remediation.id}
+              entityId={risk.id}
               entityLink={link}
               noRightBar={true}
               targetStixDomainObjectTypes={[
@@ -266,17 +266,17 @@ class RemediationKnowledgeComponent extends Component {
   }
 }
 
-RemediationKnowledgeComponent.propTypes = {
-  remediation: PropTypes.object,
+RiskRemediationComponent.propTypes = {
+  risk: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const RemediationKnowledge = createFragmentContainer(
-  RemediationKnowledgeComponent,
+const RiskRemediation = createFragmentContainer(
+  RiskRemediationComponent,
   {
-    remediation: graphql`
-      fragment RemediationKnowledge_remediation on ThreatActor {
+    risk: graphql`
+      fragment RiskRemediation_risk on ThreatActor {
         id
         name
         aliases
@@ -289,4 +289,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(RemediationKnowledge);
+)(RiskRemediation);

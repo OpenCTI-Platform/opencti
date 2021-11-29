@@ -19,6 +19,11 @@ import {
 } from '@material-ui/icons';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
+import Slide from '@material-ui/core/Slide';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
 import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
@@ -28,11 +33,13 @@ import { commitMutation, QueryRenderer } from '../../../../../relay/environment'
 import inject18n from '../../../../../components/i18n';
 import StixDomainObjectHeader from '../../../common/stix_domain_objects/StixDomainObjectHeader';
 import RemediationCreationGeneral from './RemediationCreationGeneral';
+import RelatedTasks from './RelatedTasks';
+import RequiredAssets from './RequiredAssets';
 import CyioCoreObjectLatestHistory from '../../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectAssetCreationExternalReferences from '../../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import Loader from '../../../../../components/Loader';
-import RemediationCreationDetails from './RemediationCreationDetails';
+// import RemediationCreationDetails from './RemediationCreationDetails';
 
 const styles = (theme) => ({
   container: {
@@ -44,6 +51,9 @@ const styles = (theme) => ({
     height: '64px',
     backgroundColor: theme.palette.background.paper,
   },
+  buttonPopover: {
+    textTransform: 'capitalize',
+  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -53,9 +63,13 @@ const styles = (theme) => ({
     marginRight: 15,
     padding: '8px 16px 8px 8px',
   },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
+  },
   title: {
     float: 'left',
-    textTransform: 'uppercase',
+    textTransform: 'capitalize',
   },
   rightContainer: {
     float: 'right',
@@ -80,10 +94,15 @@ const styles = (theme) => ({
   },
 });
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
 const remediationCreationMutation = graphql`
   mutation RemediationCreationMutation($input: ComputingDeviceAssetAddInput) {
     createComputingDeviceAsset (input: $input) {
-      ...RemediationDetails_remediation
+      # ...RemediationDetails_remediation
       operational_status
       serial_number
       release_date
@@ -223,10 +242,11 @@ class RemediationCreation extends Component {
               <div className={classes.header}>
                 <Typography
                   variant="h1"
+                  color="secondary"
                   gutterBottom={true}
                   classes={{ root: classes.title }}
                 >
-                  {t('New Asset')}
+                  {t('New Remediation')}
                 </Typography>
                 <div className={classes.rightContainer}>
                   <Tooltip title={t('Cancel')}>
@@ -235,7 +255,8 @@ class RemediationCreation extends Component {
                       size="small"
                       startIcon={<Close />}
                       color='primary'
-                      onClick={() => history.goBack()}
+                      // onClick={() => history.goBack()}
+                      onClick={this.handleOpen.bind(this)}
                       className={classes.iconButton}
                     >
                       {t('Cancel')}
@@ -253,6 +274,42 @@ class RemediationCreation extends Component {
                       {t('Done')}
                     </Button>
                   </Tooltip>
+                  <Dialog
+                    open={this.state.open}
+                    keepMounted={true}
+                    TransitionComponent={Transition}
+                    onClose={this.handleClose.bind(this)}
+                  >
+                    <DialogContent>
+                      <Typography className={classes.popoverDialog} >
+                        {t('Are you sure you’d like to cancel?')}
+                      </Typography>
+                      <DialogContentText>
+                        {t('Your progress will not be saved')}
+                      </DialogContentText>
+                    </DialogContent>
+                    <DialogActions className={classes.dialogActions}>
+                      <Button
+                        onClick={this.handleClose.bind(this)}
+                        // disabled={this.state.deleting}
+                        classes={{ root: classes.buttonPopover }}
+                        variant="outlined"
+                        size="small"
+                      >
+                        {t('Go Back')}
+                      </Button>
+                      <Button
+                        color="secondary"
+                        // disabled={this.state.deleting}
+                        onClick={() => history.goBack()}
+                        classes={{ root: classes.buttonPopover }}
+                        variant="contained"
+                        size="small"
+                      >
+                        {t('Yes, Cancel')}
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
                 </div>
               </div>
               <Form>
@@ -270,7 +327,7 @@ class RemediationCreation extends Component {
                   </Grid>
                   <Grid item={true} xs={6}>
                     {/* <RemediationCreationDetails setFieldValue={setFieldValue} /> */}
-                    <CyioCoreObjectOrCyioCoreRelationshipNotes />
+                    <CyioCoreObjectOrCyioCoreRelationshipNotes marginTop='-25px' />
                   </Grid>
                 </Grid>
               </Form>
@@ -284,13 +341,14 @@ class RemediationCreation extends Component {
                   {/* <StixCoreObjectExternalReferences
                       stixCoreObjectId={remediation.id}
                     /> */}
-                  <CyioCoreObjectAssetCreationExternalReferences />
+                  {/* <CyioCoreObjectAssetCreationExternalReferences /> */}
+                  <RequiredAssets />
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <CyioCoreObjectLatestHistory />
+                  {/* <CyioCoreObjectLatestHistory /> */}
+                  <RelatedTasks />
                 </Grid>
               </Grid>
-              <CyioCoreObjectOrCyioCoreRelationshipNotes />
             </>
           )}
         </Formik>

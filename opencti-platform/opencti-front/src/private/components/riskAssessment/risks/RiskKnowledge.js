@@ -218,7 +218,7 @@ class RiskKnowledgeComponent extends Component {
           path="/dashboard/risk-assessment/risks/:riskId/knowledge/observables"
           render={(routeProps) => (
             <StixCoreObjectStixCyberObservables
-              stixCoreObjectId={risk.id}
+              cyioCoreObjectId={risk.id}
               stixCoreObjectLink={link}
               noRightBar={true}
               {...routeProps}

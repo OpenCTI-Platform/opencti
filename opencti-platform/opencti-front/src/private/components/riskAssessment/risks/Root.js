@@ -12,7 +12,6 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import Risk from './Risk';
-import RiskDeletion from './RiskDeletion';
 import RiskKnowledge from './RiskKnowledge';
 import Loader from '../../../../components/Loader';
 import FileManager from '../../common/files/FileManager';
@@ -21,16 +20,19 @@ import RiskPopover from './RiskPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
+import Remediation from './remediation/Remediation';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
-import Remediation from './Remediation';
+import RiskAnalysisContainer from './RiskAnalysisContainer';
+import RiskTracking from './RiskTracking';
+import RemediationContainer from './remediation/RemediationContainer';
 
 const subscription = graphql`
   subscription RootRiskSubscription($id: ID!) {
     stixDomainObject(id: $id) {
       ... on ThreatActor {
-        ...Risk_risk
+       # ...Risk_risk
         ...RiskEditionContainer_risk
       }
       ...FileImportViewer_entity
@@ -41,61 +43,12 @@ const subscription = graphql`
 `;
 
 const riskQuery = graphql`
-  query RootRiskQuery($id: String!) {
-    threatActor(id: $id) {
-      id
-      standard_id
-      name
-      aliases
-      x_opencti_graph_data
-      ...Risk_risk
-      ...RiskKnowledge_risk
-      ...FileImportViewer_entity
-      ...FileExportViewer_entity
-      ...FileExternalReferencesViewer_entity
-    }
-    connectorsForExport {
-      ...FileManager_connectorsExport
-    }
-  }
-`;
-
-const riskDarkLightQuery = graphql`
-  query RootRiskDarkLightQuery($id: ID!) {
+  query RootRiskQuery($id: ID!) {
     risk(id: $id) {
       id
-      remediations {
-        edges {
-          node {
-            name
-            description
-          }
-        }
-      }
-      priority
-      deadline
-      risk_status
-      impacted_control_id
-      risk_log {
-        edges {
-          node {
-            related_responses {
-              edges {
-                node {
-                  lifecycle
-                }
-              }
-            }
-          }
-        }
-      }
-      remediations {
-        edges {
-          node {
-            response_type
-          }
-        }
-      } 
+      name
+      standard_id
+      ...Risk_risk
     }
   }
 `;
@@ -112,24 +65,10 @@ class RootRisk extends Component {
       subscription,
       variables: { id: riskId },
     });
-    this.state = {
-      displayEdit: false,
-    };
   }
 
   componentWillUnmount() {
     this.sub.dispose();
-  }
-
-  handleDisplayEdit() {
-    this.setState({ displayEdit: !this.state.displayEdit });
-  }
-
-  handleOpenNewCreation() {
-    this.props.history.push({
-      pathname: '/dashboard/risk-assessment/risks',
-      openNewCreation: true,
-    });
   }
 
   render() {
@@ -164,7 +103,7 @@ class RootRisk extends Component {
         </Route>
         <QR
           environment={QueryRendererDarkLight}
-          query={riskDarkLightQuery}
+          query={riskQuery}
           variables={{ id: riskId }}
           render={({ error, props }) => {
             if (props) {
@@ -184,47 +123,63 @@ class RootRisk extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/risk-assessment/risks/:riskId/files"
+                      path="/dashboard/risk-assessment/risks/:riskId/analysis"
                       render={(routeProps) => (
-                        <React.Fragment>
-                          <CyioDomainObjectHeader
-                            cyioDomainObject={props.risk}
-                            // history={history}
-                            PopoverComponent={<RiskPopover />}
-                            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-                            handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-                            OperationsComponent={<RiskDeletion />}
-                          />
-                          {/* <FileManager
+                          <RiskAnalysisContainer
                             {...routeProps}
-                            id={threatActorId}
-                            connectorsImport={[]}
-                            connectorsExport={props.connectorsForExport}
-                            entity={props.threatActor}
-                          /> */}
-                        </React.Fragment>
+                            risk={props.risk}
+                          />
                       )}
                     />
-                    <Route
+                    {/* <Route
                       exact
                       path="/dashboard/risk-assessment/risks/:riskId/remediation"
                       render={(routeProps) => (
-                        <React.Fragment>
-                          <CyioDomainObjectHeader
-                            cyioDomainObject={props.risk}
-                            // history={history}
-                            PopoverComponent={<RiskPopover />}
-                            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-                            handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-                            OperationsComponent={<RiskDeletion />}
-                          />
                           <Remediation
                             {...routeProps}
                             risk={props.risk}
                           />
-                        </React.Fragment>
+                      )}
+                    /> */}
+                     <Route
+                      exact
+                      path="/dashboard/risk-assessment/risks/:riskId/remediation"
+                      render={(routeProps) => (
+                        <Remediation
+                            {...routeProps}
+                            risk={props.risk}
+                        />
                       )}
                     />
+                    <Route
+                      exact
+                      path="/dashboard/risk-assessment/risks/:riskId/remediation/:remediationId"
+                      render={(routeProps) => (
+                        <RemediationContainer
+                            {...routeProps}
+                            risk={props.risk}
+                        />
+                      )}
+                    />
+                     <Route
+                      exact
+                      path="/dashboard/risk-assessment/risks/:riskId/tracking"
+                      render={(routeProps) => (
+                          <RiskTracking
+                            {...routeProps}
+                            risk={props.risk}
+                          />
+                      )}
+                    />
+                    {/* <Route
+                      path="/dashboard/risk-assessment/risks/:riskId/remediation"
+                      render={(routeProps) => (
+                        <RiskKnowledge
+                          {...routeProps}
+                          risk={props.threatActor}
+                        />
+                      )}
+                    /> */}
                 </Switch>
                 );
               }
@@ -345,7 +300,7 @@ class RootRisk extends Component {
                           />
                           <StixCoreObjectHistory
                             {...routeProps}
-                            stixCoreObjectId={riskId}
+                            cyioCoreObjectId={riskId}
                           />
                         </React.Fragment>
                       )}

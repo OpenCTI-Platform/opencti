@@ -8,6 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { Grid, Switch, Tooltip } from '@material-ui/core';
 import Chip from '@material-ui/core/Chip';
+import Button from '@material-ui/core/Button';
 import Link from '@material-ui/core/Link';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -78,70 +79,81 @@ class RiskDetailsComponent extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
-              <div style={{ marginBottom: '23px' }}>
+              <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
                   style={{ float: 'left' }}
                 >
-                  {t('Installed Operating System')}
+                  {t('Name')}
                 </Typography>
                 <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                  <Tooltip title={t('Installed Operating System')} >
+                  <Tooltip
+                    title={t(
+                      'Name',
+                    )}
+                  >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Link
-                  component="button"
-                  variant="body2"
-                  className={classes.link}
-                  onClick={() => {
-                    console.info("I'm a button.");
-                  }}
-                >
-                  <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{risk.installed_operating_system && t(risk.installed_operating_system.name)}
-                </Link>
-                {/* <ExpandableMarkdown
-                  source={risk.description}
-                  limit={400}
-                /> */}
+                {risk.name && t(risk.name)}
               </div>
-              <div style={{ marginBottom: '10px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Installed Software')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Installed Software')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
+              <div>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left', marginTop: 20 }}
+                      >
+                        {t('Description')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                        <Tooltip
+                          title={t(
+                            'Description',
+                          )}
+                        >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <div className={classes.scrollBg}>
+                          <div className={classes.scrollDiv}>
+                            <div className={classes.scrollObj}>
+                            {risk.description && t(risk.description)}
+                            </div>
+                          </div>
+                      </div>
                 </div>
-                <div className="clearfix" />
-                {/* {risk.sophistication && t(risk.sophistication)} */}
-                {risk.installed_software
-                && risk.installed_software.map((software, key) => (
-                  <div key={key}>
-                    <div className="clearfix" />
-                    <Link
-                      key={key}
-                      component="button"
-                      variant="body2"
-                      className={classes.link}
-                      onClick={() => (
-                        software.id && history.push(`/dashboard/risk-assessment/risks/${software.id}`)
+                  <div style={{ marginTop: '15px' }}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 5 }}
+                  >
+                    {t('Risk Status')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '6px 0 0 5px' }}>
+                    <Tooltip
+                      title={t(
+                        'Risk Status',
                       )}
                     >
-                      <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{software.name && t(software.name)}
-                    </Link>
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
                   </div>
-                ))}
-              </div>
+                  <div className="clearfix" />
+                  <Button
+                  variant="outlined"
+                  size="small"
+                  style={{ cursor: 'default' }}
+                  >
+                    {risk.risk_status && t(risk.risk_status)}
+                  </Button>
+                </div>
               <div>
                 <Typography
                   variant="h3"
@@ -149,239 +161,14 @@ class RiskDetailsComponent extends Component {
                   gutterBottom={true}
                   style={{ float: 'left', marginTop: 20 }}
                 >
-                  {t('Motherboard ID')}
+                  {t('Impacted Component')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Motherboard ID')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {risk.motherboard_id && t(risk.motherboard_id)}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Ports')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Ports')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {risk.ports && risk.ports.map((port, key) => (
-                  port.protocols && port.protocols.map((protocol) => (
-                    <Chip key={key} classes={{ root: classes.chip }} label={`${port.port_number && t(port.port_number)} ${protocol && t(protocol)}`} color="primary" />
-                  ))
-                ))}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Installation ID')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Installation ID')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {risk.installation_id && t(risk.installation_id)}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Connected to Network')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Connected to Network')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Link
-                  component="button"
-                  variant="body2"
-                  className={classes.link}
-                  onClick={() => (
-                    risk.connected_to_network.id && history.push(`/dashboard/risk-assessment/risks/${risk.connected_to_network.id}`)
-                  )}
-                >
-                  <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{risk.connected_to_network && risk.connected_to_network.name && t(risk.connected_to_network.name)}
-                </Link>
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('NetBIOS Name')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('NetBIOS Name')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {risk.netbios_name && t(risk.netbios_name)}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Virtual')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Virtual')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Switch color="primary" defaultChecked={risk.is_virtual && risk.is_virtual} size="small" />
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Publicly Accessible')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Publicly Accessible')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Switch color="primary" defaultChecked={risk.is_publicly_accessible && risk.is_publicly_accessible} size="small" />
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('FQDN')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('FQDN')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {risk.fqdn && t(risk.fqdn)}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('IPv4 Address')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('ipv4_address')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {risk.ipv4_address
-                  && risk.ipv4_address.map((ipv4Address) => (
-                    <>
-                      <div className="clearfix" />
-                      {ipv4Address.ip_address_value && t(ipv4Address.ip_address_value)}
-                    </>
-                  ))}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('IPv6 Address')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('ipv6_address')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {risk.ipv6_address
-                  && risk.ipv6_address.map((ipv6Address) => (
-                    <>
-                      <div className="clearfix" />
-                      {ipv6Address.ip_address_value && t(ipv6Address.ip_address_value)}
-                    </>
-                  ))}
-              </div>
-            </Grid>
-            <Grid item={true} xs={6}>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t('Installed Hardware')}
-                </Typography>
-                <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                  <Tooltip title={t('Installed Hardware')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {risk.installed_hardware && risk.installed_hardware.map((data, key) => (
-                  <div key={key}>
-                    <div className="clearfix" />
-                      <Link
-                        key={key}
-                        component="button"
-                        variant="body2"
-                        className={classes.link}
-                        onClick={() => (
-                          data.id && history.push(`/dashboard/risk-assessment/risks/${data.id}`)
-                        )}
-                      >
-                        <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{data.name && t(data.name)}
-                      </Link>
-                  </div>
-                ))}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Location')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Location')}>
+                  <Tooltip
+                    title={t(
+                      'Impacted Component',
+                    )}
+                  >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -389,55 +176,137 @@ class RiskDetailsComponent extends Component {
                 <div className={classes.scrollBg}>
                     <div className={classes.scrollDiv}>
                       <div className={classes.scrollObj}>
-                        {risk.locations && risk.locations.map((location, key) => (
-                          <div key={key}>
-                            {`${location.street_address && t(location.street_address)}, `}
-                            {`${location.city && t(location.city)}, `}
-                            {`${location.country && t(location.country)}, ${location.postal_code && t(location.postal_code)}`}
-                          </div>
-                        ))}
+                        {t('Description')}
+                      </div>
+                    </div>
+                </div>
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Detection Source')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'Detection Source',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('Lorem Ipsum Dolor Sit Amet')}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('False Positive')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'False Positive',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+              <div className="clearfix" />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  style={{ cursor: 'default' }}
+                  >
+                    {risk.false_positive && t(risk.false_positive)}
+                  </Button>
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 21 }}
+                >
+                  {t('Risk Adjusted')}
+                </Typography>
+                <div style={{ float: 'left', margin: '22px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'Risk Adjusted',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                  <Button
+                  variant="outlined"
+                  size="small"
+                  style={{ cursor: 'default' }}
+                  >
+                    {risk.risk_adjusted && t(risk.risk_adjusted)}
+                  </Button>
+              </div>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <div style={{ marginTop: '37px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Statement')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'Statement',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <div className='scroll-bg'>
+                  <div className={classes.scrollBg}>
+                    <div className={classes.scrollDiv}>
+                      <div className={classes.scrollObj}>
+                        {risk.statement && t(risk.statement)}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div>
+              <div style={{ marginBottom: '12px', marginTop: '6px' }}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: 'left', marginTop: 15 }}
                 >
-                  {t('Model')}
+                  {t('Deadline')}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Model')} >
+                <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'Deadline',
+                    )}
+                  >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {risk.model && t(risk.model)}
-              </div>
-              <div style={{ marginBottom: '15px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('MAC Address')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('MAC Address')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {risk.mac_address && risk.mac_address.map((macAddress, key) => (
-                  <div key={key}>
-                    <div className="clearfix" />
-                    {macAddress && t(macAddress)}
-                  </div>
-                ))}
+                {risk.deadline && fd(risk.deadline)}
               </div>
               <div>
                 <Typography
@@ -446,16 +315,25 @@ class RiskDetailsComponent extends Component {
                   gutterBottom={true}
                   style={{ float: 'left', marginTop: 20 }}
                 >
-                  {t('Baseline Configuration Name')}
+                  {t('Inpacted Assets')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Baseline Configuration Name')} >
+                  <Tooltip
+                    title={t(
+                      'Impacted Assets',
+                    )}
+                  >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {risk.baseline_configuration_name
-                  && t(risk.baseline_configuration_name)}
+                <div className={classes.scrollBg}>
+                    <div className={classes.scrollDiv}>
+                      <div className={classes.scrollObj}>
+                        {t('Description')}
+                      </div>
+                    </div>
+                </div>
               </div>
               <div>
                 <Typography
@@ -464,26 +342,19 @@ class RiskDetailsComponent extends Component {
                   gutterBottom={true}
                   style={{ float: 'left', marginTop: 20 }}
                 >
-                  {t('URI')}
+                  {t('Impacted Control')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('URI')} >
+                  <Tooltip
+                    title={t(
+                      'Impacted Control',
+                    )}
+                  >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Link
-                  component="button"
-                  variant="body2"
-                  className={classes.link}
-                  onClick={() => {
-                    console.info("I'm a button.");
-                  }}
-                >
-                  <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{risk.uri && t(risk.uri)}
-                </Link>
-                {/* {risk.primary_motivation
-                  && t(risk.primary_motivation)} */}
+                {t('Lorem Ipsum Dono Ist')}
               </div>
               <div>
                 <Typography
@@ -492,16 +363,25 @@ class RiskDetailsComponent extends Component {
                   gutterBottom={true}
                   style={{ float: 'left', marginTop: 20 }}
                 >
-                  {t('BIOS ID')}
+                  {t('Operationally Required')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('BIOS ID')} >
+                  <Tooltip
+                    title={t(
+                      'Operationally Required',
+                    )}
+                  >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {risk.bios_id
-                  && t(risk.bios_id)}
+                <Button
+                  variant="outlined"
+                  size="small"
+                  style={{ cursor: 'default' }}
+                  >
+                    {t('Approved')}
+                  </Button>
               </div>
               <div>
                 <Typography
@@ -510,51 +390,25 @@ class RiskDetailsComponent extends Component {
                   gutterBottom={true}
                   style={{ float: 'left', marginTop: 20 }}
                 >
-                  {t('Scanned')}
+                  {t('Vendor Dependency')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Scanned')} >
+                  <Tooltip
+                    title={t(
+                      'Vendor Dependency',
+                    )}
+                  >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Switch color="primary" defaultChecked={risk.is_scanned && risk.is_scanned} size="small" />
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Host Name')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Host Name')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {risk.hostname
-                  && t(risk.hostname)}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Default Gateway')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Default Gateway')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {risk.default_gateway
-                  && t(risk.default_gateway)}
+                  <Button
+                  variant="outlined"
+                  size="small"
+                  style={{ cursor: 'default' }}
+                  >
+                    {risk.vendor_dependency && t(risk.vendor_dependency)}
+                  </Button>
               </div>
             </Grid>
           </Grid>
@@ -575,60 +429,16 @@ const RiskDetails = createFragmentContainer(
   RiskDetailsComponent,
   {
     risk: graphql`
-      fragment RiskDetails_risk on ComputingDeviceAsset {
-        installed_software {
-          id
-          name
-        }
-        connected_to_network {
-          id
-          name
-        }
-        installed_operating_system {
-          id
-          name
-        }
-        ipv4_address  {
-          ip_address_value
-        }
-        ipv6_address  {
-          ip_address_value
-        }
-        locations {
-          city
-          country
-          description
-        }
-        ports {
-          protocols
-          port_number
-        }
-        locations{
-          city
-          country
-          postal_code
-          street_address
-          administrative_area
-        }
-        uri
-        model
-        mac_address
-        fqdn
-        baseline_configuration_name
-        bios_id
-        is_scanned
-        hostname
-        default_gateway
-        motherboard_id
-        installation_id
-        netbios_name
-        is_virtual
-        is_publicly_accessible
-        installed_hardware {
-          id
-          name
-          uri
-        }
+      fragment RiskDetails_risk on Risk {
+        id
+        name
+        description
+        statement
+        risk_status
+        deadline
+        false_positive
+        vendor_dependency
+        risk_adjusted
       }
     `,
   },

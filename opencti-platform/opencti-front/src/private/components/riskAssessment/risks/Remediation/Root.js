@@ -12,7 +12,7 @@ import {
 } from '../../../../../relay/environment';
 import TopBar from '../../../nav/TopBar';
 import Remediation from './Remediation';
-import RemediationKnowledge from './RemediationKnowledge';
+// import RemediationKnowledge from './RemediationKnowledge';
 import Loader from '../../../../../components/Loader';
 import FileManager from '../../../common/files/FileManager';
 import StixDomainObjectHeader from '../../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -43,7 +43,7 @@ const remediationQuery = graphql`
     computingDeviceAsset(id: $id) {
       id
       name
-      ...Remediation_remediation
+     # ...Remediation_remediation
     }
   }
 `;

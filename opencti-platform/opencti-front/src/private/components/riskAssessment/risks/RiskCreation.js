@@ -30,7 +30,6 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import RiskCreationOverview from './RiskCreationOverview';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
-import CyioDomainObjectAssetCreationOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetCreationOverview';
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import Loader from '../../../../components/Loader';
 import RiskCreationDetails from './RiskCreationDetails';
@@ -85,7 +84,7 @@ const riskCreationMutation = graphql`
   mutation RiskCreationMutation($input: ComputingDeviceAssetAddInput) {
     createComputingDeviceAsset (input: $input) {
       # ...RiskCard_node
-      ...RiskDetails_risk
+      # ...RiskDetails_risk
       operational_status
       serial_number
       release_date
@@ -228,7 +227,7 @@ class RiskCreation extends Component {
                   gutterBottom={true}
                   classes={{ root: classes.title }}
                 >
-                  {t('New Asset')}
+                  {t('New Risk')}
                 </Typography>
                 <div className={classes.rightContainer}>
                   <Tooltip title={t('Cancel')}>
@@ -265,7 +264,7 @@ class RiskCreation extends Component {
                 >
                   <Grid item={true} xs={6}>
                     {/* <RiskCreationOverview setFieldValue={setFieldValue} values={values} /> */}
-                    <CyioDomainObjectAssetCreationOverview
+                    <RiskCreationOverview
                       setFieldValue={setFieldValue}
                       values={values}
                     />
@@ -282,8 +281,8 @@ class RiskCreation extends Component {
                 style={{ marginTop: 25 }}
               >
                 <Grid item={true} xs={6}>
-                  {/* <StixCoreObjectExternalReferences
-                      stixCoreObjectId={risk.id}
+                  {/* <CyioExternalReferences
+                      cyioCoreObjectId={risk.id}
                     /> */}
                   <CyioCoreObjectAssetCreationExternalReferences />
                 </Grid>

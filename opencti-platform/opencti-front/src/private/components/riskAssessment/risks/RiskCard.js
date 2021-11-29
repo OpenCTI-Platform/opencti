@@ -57,9 +57,9 @@ const styles = (theme) => ({
     justifyContent: 'space-between',
     marginBottom: '13px',
   },
-  body: {
-    marginBottom: '13px',
-  },
+  // body: {
+  //   marginBottom: '13px',
+  // },
   content: {
     width: '100%',
     padding: '24px',
@@ -172,31 +172,63 @@ class RiskCardComponent extends Component {
                 />
               </div>
             </Grid>
-            <Grid xs={12} container={true} >
+            <Grid container={true} >
+              <Grid item={true} xs={6} className={classes.body}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom ={true}>
+                    {t('Priority')}
+                  </Typography>
+                  <Typography>
+                    {node.priority && t(node.priority)}
+                  </Typography>
+              </Grid>
               <Grid item={true} xs={6} className={classes.body}>
                 <Typography
                  variant="h3"
                  color="textSecondary"
                  gutterBottom ={true}>
-                  {t('Priority')}
+                  {t('Risk')}
                 </Typography>
                 <Typography>
-                  {node.priority && t(node.priority)}
+                  {t('Medium')}
+                  {/* {nodem.risk && t(node.risk)} */}
                 </Typography>
-                <div className="clearfix" />
+              </Grid>
+            </Grid>
+            <Grid container={true} >
+              <Grid item={true} xs={6} className={classes.body}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
+                  >
+                    {t('Component')}
+                  </Typography>
+                  <Typography>
+                    {t('Lorem Ipsum')}
+                    {/* {node.fqdn && truncate(t(node.fqdn), 25)} */}
+                  </Typography>
+              </Grid>
+              <Grid item={true} xs={6} className={classes.body}>
                 <Typography
                  variant="h3"
                  color="textSecondary"
                  style={{ marginTop: '13px' }}
                  gutterBottom={true}
                 >
-                  {t('Component')}
+                  {t('Controls')}
                 </Typography>
                 <Typography>
-                  {t('Lorem Ipsum')}
-                  {/* {node.fqdn && truncate(t(node.fqdn), 25)} */}
+                    {t('Lorem Ipsum')}
+                    {/* {node.network_id && t(node.network_id)} */}
                 </Typography>
-                <div className="clearfix" />
+              </Grid>
+            </Grid>
+            <Grid container={true}>
+              <Grid item={true} xs={6} className={classes.body}>
                 <Typography
                  variant="h3"
                  color="textSecondary"
@@ -209,7 +241,24 @@ class RiskCardComponent extends Component {
                   {t('Lorem Ipsum')}
                   {/* {node.fqdn && t(node.fqdn)} */}
                 </Typography>
-                <div className="clearfix" />
+              </Grid>
+              <Grid item={true} xs={6} className={classes.body}>
+                <Typography
+                 variant="h3"
+                 color="textSecondary"
+                 style={{ marginTop: '13px' }}
+                 gutterBottom={true}
+                >
+                  {t('Controls')}
+                </Typography>
+                <Typography>
+                    {t('Lorem Ipsum')}
+                    {/* {node.network_id && t(node.network_id)} */}
+                </Typography>
+              </Grid>
+            </Grid>
+            <Grid container={true} >
+              <Grid item={true} xs={6} className={classes.body}>
                 <Typography
                  variant="h3"
                  color="textSecondary"
@@ -224,43 +273,6 @@ class RiskCardComponent extends Component {
                 </Typography>
               </Grid>
               <Grid xs={6} item={true} className={classes.body}>
-                <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 gutterBottom ={true}>
-                  {t('Risk')}
-                </Typography>
-                <Typography>
-                  {t('Medium')}
-                  {/* {nodem.risk && t(node.risk)} */}
-                </Typography>
-                <div className="clearfix" />
-                <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 style={{ marginTop: '13px' }}
-                 gutterBottom={true}
-                >
-                  {t('Controls')}
-                </Typography>
-                <Typography>
-                    {t('Lorem Ipsum')}
-                    {/* {node.network_id && t(node.network_id)} */}
-                </Typography>
-                <div className="clearfix" />
-                <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 style={{ marginTop: '13px' }}
-                 gutterBottom={true}
-                >
-                  {t('Controls')}
-                </Typography>
-                <Typography>
-                    {t('Lorem Ipsum')}
-                    {/* {node.network_id && t(node.network_id)} */}
-                </Typography>
-                <div className="clearfix" />
                 <Typography
                  variant="h3"
                  color="textSecondary"

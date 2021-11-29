@@ -27,13 +27,16 @@ const styles = (theme) => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 30,
+    height: 35,
     fontSize: 13,
     paddingLeft: 24,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    display: 'flex',
+    justifyContent: 'left',
+    alignItems: 'center',
   },
   goIcon: {
     position: 'absolute',
@@ -107,8 +110,7 @@ class RiskLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.risk.width }}
               >
-                Medium
-                {/* {node.asset_id && node.asset_id} */}
+                {node.name && t(node.name)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -127,7 +129,7 @@ class RiskLineComponent extends Component {
                 style={{ width: dataColumns.response.width }}
               >
                 Avoid
-                {node.fqdn && node.fqdn}
+                {/* {node.response_type && t(node.response_type)} */}
               </div>
               <div
                 className={classes.bodyItem}
@@ -198,6 +200,7 @@ const RiskLineFragment = createFragmentContainer(
         deadline
         risk_status
         impacted_control_id
+        name
         risk_log {
           edges {
             node {

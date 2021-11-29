@@ -4,8 +4,7 @@ import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import Risks from './Risks';
 import RootRisk from './risks/Root';
-import Remediation from './risks/Remediation';
-import RootRemediation from './risks/Remediation/Root';
+import Remediation from './risks/remediation/Remediation';
 
 class Root extends Component {
   render() {
@@ -27,14 +26,9 @@ class Root extends Component {
           render={(routeProps) => <RootRisk {...routeProps} me={me} />}
         />
         <BoundaryRoute
-          exact
           path="/dashboard/risk-assessment/risks/:riskId/remediation"
-          component={Remediation}
+          render={(routeProps) => <Remediation {...routeProps} me={me} />}
         />
-        {/* <BoundaryRoute
-          path="/dashboard/risk-assessment/risks/:riskId"
-          render={(routeProps) => <RootRemediation {...routeProps} me={me} />}
-        /> */}
       </Switch>
     );
   }

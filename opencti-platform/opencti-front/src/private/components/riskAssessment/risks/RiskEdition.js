@@ -44,49 +44,11 @@ export const riskEditionQuery = graphql`
 
 export const riskEditionDarkLightQuery = graphql`
   query RiskEditionContainerDarkLightQuery($id: ID!) {
-    computingDeviceAsset(id: $id) {
+    risk(id: $id) {
       id
       name
-      installed_operating_system {
-        name
-      }
-      asset_id
-      network_id
-      description
-      locations {
-        description
-      }
-      version
-      vendor_name
-      asset_tag
-      asset_type
-      serial_number
-      release_date
-      # operational_status
-      installed_software {
-        name
-      }
-      connected_to_network {
-        name
-      }
-      uri
-      model
-      mac_address
-      fqdn
-      baseline_configuration_name
-      bios_id
-      is_scanned
-      hostname
-      default_gateway
-      motherboard_id
-      installation_id
-      netbios_name
-      is_virtual
-      is_publicly_accessible
-      installed_hardware {
-        name
-        uri
-      }
+      ...RiskEditionOverview_risk
+      ...RiskEditionDetails_risk
     }
   }
 `;
@@ -145,7 +107,7 @@ class RiskEdition extends Component {
             if (props) {
               return (
                 <RiskEditionContainer
-                  risk={props.computingDeviceAsset}
+                  risk={props.risk}
                   // enableReferences={props.settings.platform_enable_reference?.includes(
                     //   'Risk',
                     // )}

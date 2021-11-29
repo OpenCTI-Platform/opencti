@@ -64,17 +64,17 @@ class TopMenuRisk extends Component {
         {/* <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}> */}
         <Button
             component={Link}
-            to={`/dashboard/risk-assessment/risks/${riskId}/files`}
+            to={`/dashboard/risk-assessment/risks/${riskId}/analysis`}
             variant={
               location.pathname
-              === `/dashboard/risk-assessment/risks/${riskId}/files`
+              === `/dashboard/risk-assessment/risks/${riskId}/analysis`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/risk-assessment/risks/${riskId}/files`
+              === `/dashboard/risk-assessment/risks/${riskId}/analysis`
                 ? 'secondary'
                 : 'inherit'
             }
@@ -86,17 +86,17 @@ class TopMenuRisk extends Component {
         {/* </Security> */}
         <Button
           component={Link}
-          to={`/dashboard/risk-assessment/risks/${riskId}/analysis`}
+          to={`/dashboard/risk-assessment/risks/${riskId}/remediation`}
           variant={
             location.pathname
-            === `/dashboard/risk-assessment/risks/${riskId}/analysis`
+            === `/dashboard/risk-assessment/risks/${riskId}/remediation`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/risk-assessment/risks/${riskId}/analysis`
+            === `/dashboard/risk-assessment/risks/${riskId}/remediation`
               ? 'secondary'
               : 'inherit'
           }
@@ -149,10 +149,10 @@ class TopMenuRisk extends Component {
         </Button> */}
         <Button
           component={Link}
-          to={`/dashboard/risk-assessment/risks/${riskId}/knowledge`}
+          to={`/dashboard/risk-assessment/risks/${riskId}/tracking`}
           variant={
             location.pathname.includes(
-              `/dashboard/risk-assessment/risks/${riskId}/knowledge`,
+              `/dashboard/risk-assessment/risks/${riskId}/tracking`,
             )
               ? 'contained'
               : 'text'
@@ -160,7 +160,7 @@ class TopMenuRisk extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/risk-assessment/risks/${riskId}/knowledge`,
+              `/dashboard/risk-assessment/risks/${riskId}/tracking`,
             )
               ? 'secondary'
               : 'inherit'

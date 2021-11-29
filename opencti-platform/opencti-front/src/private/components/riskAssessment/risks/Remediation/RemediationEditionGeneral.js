@@ -74,7 +74,7 @@ const styles = (theme) => ({
   },
 });
 
-class RemediationCreationOverviewComponent extends Component {
+class RemediationEditionGeneralOverviewComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -417,7 +417,7 @@ class RemediationCreationOverviewComponent extends Component {
   }
 }
 
-RemediationCreationOverviewComponent.propTypes = {
+RemediationEditionGeneralOverviewComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -427,11 +427,11 @@ RemediationCreationOverviewComponent.propTypes = {
   handleClose: PropTypes.func,
 };
 
-const RemediationCreationOverview = createFragmentContainer(
-  RemediationCreationOverviewComponent,
+const RemediationEditionGeneralOverview = createFragmentContainer(
+  RemediationEditionGeneralOverviewComponent,
   {
     remediation: graphql`
-      fragment RemediationCreationGeneral_remediation on ThreatActor {
+      fragment RemediationEditionGeneral_remediation on ThreatActor {
         id
         name
         threat_actor_types
@@ -461,4 +461,4 @@ const RemediationCreationOverview = createFragmentContainer(
 export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(RemediationCreationOverview);
+)(RemediationEditionGeneralOverview);

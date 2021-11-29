@@ -5,15 +5,16 @@ import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import { QueryRenderer as QR } from 'react-relay';
-import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
-import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
-import ListLines from '../../../../components/list_lines/ListLines';
-import RemediationLines, {
-  remediationLinesQuery,
-} from './Remediation/RemediationLines';
-import RemediationCreation from './Remediation/RemediationCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
+import { QueryRenderer } from '../../../../../relay/environment';
+import inject18n from '../../../../../components/i18n';
+import ListLines from '../../../../../components/list_lines/ListLines';
+import RemediationEntitiesLines, {
+  remediationEntitiesLinesQuery,
+} from './RemediationEntitiesLines';
+import StixCoreRelationshipCreationFromEntity from '../../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
+import AddRemediation from './AddRemediation';
 
 const styles = () => ({
   paper: {
@@ -25,7 +26,7 @@ const styles = () => ({
   },
 });
 
-class Remediation extends Component {
+class RemediationEntities extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -34,12 +35,7 @@ class Remediation extends Component {
       searchTerm: '',
       view: 'lines',
       relationReversed: false,
-      numberOfElements: { number: 0, symbol: '' },
     };
-  }
-
-  setNumberOfElements(numberOfElements) {
-    this.setState({ numberOfElements });
   }
 
   handleReverseRelation() {
@@ -57,34 +53,33 @@ class Remediation extends Component {
   renderLines(paginationOptions) {
     const { sortBy, orderAsc } = this.state;
     const { entityId } = this.props;
-    console.log('asfafdfsdgsRemediation', this.props.risk);
     const dataColumns = {
-      name: {
+      relationship_type: {
         label: 'Title',
         width: '15%',
         isSortable: true,
       },
-      type: {
+      entity_type: {
         label: 'Response type',
         width: '15%',
         isSortable: false,
       },
-      assetId: {
+      name: {
         label: 'Lifecycle',
         width: '15%',
         isSortable: false,
       },
-      ipAddress: {
+      start_time: {
         label: 'Decision Maker',
         width: '15%',
         isSortable: true,
       },
-      fqdn: {
+      stop_time: {
         label: 'Start Date',
         width: '15%',
         isSortable: true,
       },
-      os: {
+      confidence: {
         label: 'End Date',
         width: '12%',
         isSortable: true,
@@ -101,34 +96,40 @@ class Remediation extends Component {
         orderAsc={orderAsc}
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
+        // handleSearch={this.handleSearch.bind(this)}
         displayImport={true}
         secondaryAction={true}
         searchVariant="inDrawer2"
       >
-        {/* <QR
+        {/* <QueryRenderer */}
+        <QR
           environment={QueryRendererDarkLight}
-          query={remediationLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => ( */}
-            <RemediationLines
-              data={this.props.risk}
+          query={remediationEntitiesLinesQuery}
+          variables={{ id: entityId, count: 200 }}
+          render={({ props }) => {
+            console.log('RemediationEntitiesData', props);
+            return (<RemediationEntitiesLines
+              data={props}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
-              initialLoading={this.props.risk === null}
+              initialLoading={props === null}
               displayRelation={true}
               entityId={entityId}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
-          {/* )}
-        /> */}
+            );
+          }}
+        />
       </ListLines>
     );
   }
 
   render() {
     const {
-      view, sortBy, orderAsc, searchTerm, relationReversed,
+      view,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      relationReversed,
     } = this.state;
     const { classes, t, entityId } = this.props;
     const paginationOptions = {
@@ -139,38 +140,6 @@ class Remediation extends Component {
     };
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Remediation')}
-        </Typography>
-        <Security
-          needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ height: 29 }} />}
-        >
-          {/* <RemediationCreation
-            paginationOptions={paginationOptions}
-            handleReverseRelation={this.handleReverseRelation.bind(this)}
-            entityId={entityId}
-            variant="inLine"
-            isRelationReversed={relationReversed}
-            targetStixDomainObjectTypes={[
-              'Threat-Actor',
-              'Intrusion-Set',
-              'Campaign',
-              'Incident',
-              'Malware',
-              'Tool',
-              'Vulnerability',
-              'Individual',
-              'Organization',
-              'Sector',
-              'Region',
-              'Country',
-              'City',
-              'Position',
-            ]}
-            targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
-          /> */}
-        </Security>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {view === 'lines' ? this.renderLines(paginationOptions) : ''}
@@ -180,7 +149,7 @@ class Remediation extends Component {
   }
 }
 
-Remediation.propTypes = {
+RemediationEntities.propTypes = {
   entityId: PropTypes.string,
   relationship_type: PropTypes.string,
   classes: PropTypes.object,
@@ -191,4 +160,4 @@ Remediation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(Remediation);
+)(RemediationEntities);

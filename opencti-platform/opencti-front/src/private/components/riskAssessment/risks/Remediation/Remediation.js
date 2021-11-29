@@ -1,26 +1,26 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import { compose } from 'ramda';
+import * as PropTypes from 'prop-types';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { Redirect } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
+import IconButton from '@material-ui/core/IconButton';
+import {
+  Add,
+} from '@material-ui/icons';
 import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
+import { withStyles } from '@material-ui/core';
 import inject18n from '../../../../../components/i18n';
-import RemediationDetails from './RemediationDetails';
-import RemediationEdition from './RemediationEdition';
-import RemediationPopover from './RemediationPopover';
-import RemediationDeletion from './RemediationDeletion';
-import RemediationCreation from './RemediationCreation';
-import StixCoreObjectOrStixCoreRelationshipLastReports from '../../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
-import StixDomainObjectHeader from '../../../common/stix_domain_objects/StixDomainObjectHeader';
 import CyioDomainObjectHeader from '../../../common/stix_domain_objects/CyioDomainObjectHeader';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
-import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
-import CyioDomainObjectAssetOverview from '../../../common/stix_domain_objects/CyioDomainObjectAssetOverview';
-import StixCoreObjectExternalReferences from '../../../analysis/external_references/StixCoreObjectExternalReferences';
-import CyioCoreObjectLatestHistory from '../../../common/stix_core_objects/CyioCoreObjectLatestHistory';
-import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
+import RemediationEntities from './RemediationEntities';
+import { QueryRenderer } from '../../../../../relay/environment';
+import RiskDeletion from '../RiskDeletion';
+import AddRemediation from './AddRemediation';
+import RemediationCreation from './RemediationCreation';
+// import StixCyberObservableLinks, {
+//   riskLinksQuery,
+// } from './StixCyberObservableLinks';
+// import StixCyberObservableIndicators from './StixCyberObservableIndicators';
 
 const styles = () => ({
   container: {
@@ -31,117 +31,87 @@ const styles = () => ({
   },
 });
 
-class RemediationComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      displayEdit: false,
-    };
-  }
+const Remediation = (props) => {
+  const { t, risk, classes } = props;
+  const [openCreation, setOpenCreation] = React.useState(false);
+  const paginationOptions = {
+    elementId: risk.id,
+    orderBy: 'created_at',
+    orderMode: 'desc',
+  };
 
-  handleDisplayEdit() {
-    this.setState({ displayEdit: !this.state.displayEdit });
-  }
+  const handleCreation = () => {
+    setOpenCreation(true);
+    // this.props.handleCreation();
+  };
 
-  handleOpenNewCreation() {
+  const handleOpenNewCreation = () => {
     this.props.history.push({
       pathname: '/dashboard/risk-assessment/risks',
       openNewCreation: true,
     });
-  }
-
-  render() {
-    const {
-      classes,
-      remediation,
-      history,
-      location,
-    } = this.props;
-    return (
-      <>
-        {!this.state.displayEdit && !location.openEdit ? (
-          <div className={classes.container}>
-            <CyioDomainObjectHeader
-              cyioDomainObject={remediation}
-              history={history}
-              PopoverComponent={<RemediationPopover />}
-              handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-              handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-              OperationsComponent={<RemediationDeletion />}
-            />
-            <Grid
-              container={true}
-              spacing={3}
-              classes={{ container: classes.gridContainer }}
-            >
-              <Grid item={true} xs={6}>
-                <CyioDomainObjectAssetOverview cyioDomainObject={remediation} />
-              </Grid>
-              <Grid item={true} xs={6}>
-                <RemediationDetails remediation={remediation} history={history}/>
-              </Grid>
-            </Grid>
-            <Grid
-              container={true}
-              spacing={3}
-              classes={{ container: classes.gridContainer }}
-              style={{ marginTop: 25 }}
-            >
-              <Grid item={true} xs={6}>
-                {/* <StixCoreObjectExternalReferences
-                  stixCoreObjectId={remediation.id}
-                /> */}
-              </Grid>
-              <Grid item={true} xs={6}>
-                <CyioCoreObjectLatestHistory cyioCoreObjectId={remediation.id} />
-              </Grid>
-            </Grid>
-            <CyioCoreObjectOrCyioCoreRelationshipNotes
-              cyioCoreObjectOrCyioCoreRelationshipId={remediation.id}
-            />
-            {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <RemediationEdition remediationId={remediation.id} />
-              </Security> */}
-          </div>
-        ) : (
-          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <RemediationEdition
-            open={this.state.openEdit}
-            remediationId={remediation.id}
-            history={history}
+  };
+  return (
+    <div className={classes.container}>
+      {console.log('remediationData', risk)}
+      {!openCreation ? (
+        <>
+          <CyioDomainObjectHeader
+            cyioDomainObject={risk}
+            // history={history}
+            // PopoverComponent={<DevicePopover />}
+            // handleDisplayEdit={handleDisplayEdit.bind(this)}
+            handleOpenNewCreation={handleOpenNewCreation.bind(this)}
+            OperationsComponent={<RiskDeletion />}
           />
-          // </Security>
-        )}
-      </>
-    );
-  }
-}
-
-RemediationComponent.propTypes = {
-  remediation: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
+          <Grid item={true} xs={12}>
+            <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+              {t('Remediation')}
+            </Typography>
+            {/* <Security
+              needs={[KNOWLEDGE_KNUPDATE]}
+              placeholder={<div style={{ height: 29 }} />}
+            > */}
+            <IconButton
+              color="secondary"
+              aria-label="Label"
+              onClick={handleCreation}
+              style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+            >
+              <Add fontSize="small" />
+            </IconButton>
+            {/* </Security> */}
+            <RemediationEntities
+              entityId={risk.id}
+            />
+          </Grid>
+        </>) : (
+        <RemediationCreation />
+      )}
+      {/* </Grid> */}
+    </div>
+  );
 };
 
-const Remediation = createFragmentContainer(RemediationComponent, {
-  remediation: graphql`
-    fragment Remediation_remediation on ComputingDeviceAsset {
-      id
-      name
-      asset_id
-      asset_type
-      asset_tag
-      description
-      version
-      vendor_name
-      serial_number
-      release_date
-      labels
-      # responsible_parties
-      # operational_status
-      ...RemediationDetails_remediation
-    }
-  `,
-});
+// const RemediationFragment = createFragmentContainer(
+//   Remediation,
+//   {
+//     risk: graphql`
+//       fragment risk on StixCyberObservable {
+//         id
+//         entity_type
+//         ...risk
+//         ...risk
+//       }
+//     `,
+//   },
+// );
 
-export default compose(inject18n, withStyles(styles))(Remediation);
+Remediation.propTypes = {
+  risk: PropTypes.object,
+};
+
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(Remediation);

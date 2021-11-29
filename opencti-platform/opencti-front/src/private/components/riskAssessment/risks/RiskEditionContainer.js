@@ -26,12 +26,11 @@ import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
-import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
+import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import RiskEditionOverview from './RiskEditionOverview';
 import RiskEditionDetails from './RiskEditionDetails';
-import CyioDomainObjectAssetEditionOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetEditionOverview';
 
 const styles = (theme) => ({
   container: {
@@ -151,7 +150,7 @@ class RiskEditionContainer extends Component {
       //   values,
       // );
       variables: {
-        id: this.props.risk.id,
+        id: this.props.risk?.id,
         input: [
           { key: 'name', value: 'Hello' },
           { key: 'asset_id', value: values.asset_id },
@@ -213,32 +212,32 @@ class RiskEditionContainer extends Component {
     } = this.props;
     console.log('RiskEditionPropsData', risk);
     const initialValues = R.pipe(
-      R.assoc('id', risk.id),
-      R.assoc('asset_id', risk.asset_id),
-      R.assoc('description', risk.description),
-      R.assoc('name', risk.name),
-      R.assoc('asset_tag', risk.asset_tag),
-      R.assoc('asset_type', risk.asset_type),
-      R.assoc('location', risk.locations && risk.locations.map((index) => [index.description]).join('\n')),
-      R.assoc('version', risk.version),
-      R.assoc('vendor_name', risk.vendor_name),
-      R.assoc('serial_number', risk.serial_number),
-      R.assoc('release_date', risk.release_date),
-      R.assoc('operational_status', risk.operational_status),
-      R.assoc('installation_id', risk.installation_id || ''),
-      R.assoc('bios_id', risk.bios_id || ''),
-      // R.assoc('connected_to_network', risk.connected_to_network.name || ''),
-      R.assoc('netbios_name', risk.netbios_name || ''),
-      R.assoc('baseline_configuration_name', risk.baseline_configuration_name || ''),
-      R.assoc('mac_address', (risk.mac_address || []).join()),
-      R.assoc('model', risk.model || ''),
-      R.assoc('hostname', risk.hostname || ''),
-      R.assoc('default_gateway', risk.default_gateway || ''),
-      R.assoc('motherboard_id', risk.motherboard_id || ''),
-      R.assoc('is_scanned', risk.is_scanned || ''),
-      R.assoc('is_virtual', risk.is_virtual || ''),
-      R.assoc('is_publicly_accessible', risk.is_publicly_accessible || ''),
-      R.assoc('uri', risk.uri || ''),
+      R.assoc('id', risk?.id),
+      R.assoc('asset_id', risk?.asset_id),
+      R.assoc('description', risk?.description),
+      R.assoc('name', risk?.name),
+      R.assoc('asset_tag', risk?.asset_tag),
+      R.assoc('asset_type', risk?.asset_type),
+      R.assoc('location', risk?.locations?.map((index) => [index.description]).join('\n')),
+      R.assoc('version', risk?.version),
+      R.assoc('vendor_name', risk?.vendor_name),
+      R.assoc('serial_number', risk?.serial_number),
+      R.assoc('release_date', risk?.release_date),
+      R.assoc('operational_status', risk?.operational_status),
+      R.assoc('installation_id', risk?.installation_id || ''),
+      R.assoc('bios_id', risk?.bios_id || ''),
+      // R.assoc('connected_to_network', risk?.connected_to_network.name || ''),
+      R.assoc('netbios_name', risk?.netbios_name || ''),
+      R.assoc('baseline_configuration_name', risk?.baseline_configuration_name || ''),
+      R.assoc('mac_address', (risk?.mac_address || []).join()),
+      R.assoc('model', risk?.model || ''),
+      R.assoc('hostname', risk?.hostname || ''),
+      R.assoc('default_gateway', risk?.default_gateway || ''),
+      R.assoc('motherboard_id', risk?.motherboard_id || ''),
+      R.assoc('is_scanned', risk?.is_scanned || ''),
+      R.assoc('is_virtual', risk?.is_virtual || ''),
+      R.assoc('is_publicly_accessible', risk?.is_publicly_accessible || ''),
+      R.assoc('uri', risk?.uri || ''),
       R.pick([
         'id',
         'asset_id',
@@ -268,7 +267,7 @@ class RiskEditionContainer extends Component {
         'uri',
       ]),
     )(risk);
-    const { editContext } = risk;
+    // const { editContext } = risk;
     return (
       <div className={classes.container}>
         <Formik
@@ -338,8 +337,8 @@ class RiskEditionContainer extends Component {
                   classes={{ container: classes.gridContainer }}
                 >
                   <Grid item={true} xs={6}>
-                    <CyioDomainObjectAssetEditionOverview
-                      cyioDomainObject={risk}
+                    <RiskEditionOverview
+                      risk={risk}
                     // enableReferences={this.props.enableReferences}
                     // context={editContext}
                     // handleClose={handleClose.bind(this)}
@@ -348,9 +347,9 @@ class RiskEditionContainer extends Component {
                   <Grid item={true} xs={6}>
                     <RiskEditionDetails
                       risk={risk}
-                      // enableReferences={this.props.enableReferences}
-                      context={editContext}
-                      handleClose={handleClose.bind(this)}
+                    // enableReferences={this.props.enableReferences}
+                    // context={editContext}
+                    // handleClose={handleClose.bind(this)}
                     />
                   </Grid>
                 </Grid>
@@ -363,34 +362,34 @@ class RiskEditionContainer extends Component {
               >
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectExternalReferences
-                    cyioCoreObjectId={risk.id}
+                  // cyioCoreObjectId={risk?.id}
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <CyioCoreObjectLatestHistory cyioCoreObjectId={risk.id} />
+                  {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk?.id} /> */}
+                  <CyioCoreObjectOrCyioCoreRelationshipNotes
+                    cyioCoreObjectOrCyioCoreRelationshipId={risk?.id}
+                  />
                 </Grid>
               </Grid>
-              <CyioCoreObjectOrCyioCoreRelationshipNotes
-                cyioCoreObjectOrCyioCoreRelationshipId={risk.id}
-              />
               <Dialog
                 open={this.state.displayCancel}
                 TransitionComponent={Transition}
                 onClose={this.handleCancelButton.bind(this)}
               >
-                  <DialogContent>
-                    <Typography style={{
-                      fontSize: '18px',
-                      lineHeight: '24px',
-                      color: 'white',
-                    }} >
-                      {t('Are you sure you’d like to cancel?')}
-                    </Typography>
-                    <DialogContentText>
-                      {t('Your progress will not be saved')}
-                    </DialogContentText>
-                  </DialogContent>
-                <DialogActions className={ classes.dialogActions }>
+                <DialogContent>
+                  <Typography style={{
+                    fontSize: '18px',
+                    lineHeight: '24px',
+                    color: 'white',
+                  }} >
+                    {t('Are you sure you’d like to cancel?')}
+                  </Typography>
+                  <DialogContentText>
+                    {t('Your progress will not be saved')}
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions className={classes.dialogActions}>
                   <Button
                     // onClick={this.handleCloseDelete.bind(this)}
                     // disabled={this.state.deleting}
@@ -437,7 +436,7 @@ const RiskEditionFragment = createFragmentContainer(
     risk: graphql`
       fragment RiskEditionContainer_risk on ThreatActor {
         id
-        ...RiskEditionOverview_risk
+        # ...RiskEditionOverview_risk
         # ...RiskEditionDetails_risk
         editContext {
           name

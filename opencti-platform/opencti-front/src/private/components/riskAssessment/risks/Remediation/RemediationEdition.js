@@ -11,7 +11,7 @@ import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import RemediationEditionContainer from './RemediationEditionContainer';
-import { remediationEditionOverviewFocus } from './RemediationEditionOverview';
+// import { riskEditionOverviewFocus } from '../RiskEditionOverview';
 import Loader from '../../../../../components/Loader';
 
 const styles = (theme) => ({
@@ -37,56 +37,18 @@ const styles = (theme) => ({
 export const remediationEditionQuery = graphql`
   query RemediationEditionContainerQuery($id: String!) {
     threatActor(id: $id) {
-      ...RemediationEditionContainer_remediation
+      ...RemediationEditionContainer_risk
     }
   }
 `;
 
 export const remediationEditionDarkLightQuery = graphql`
   query RemediationEditionContainerDarkLightQuery($id: ID!) {
-    computingDeviceAsset(id: $id) {
+    risk(id: $id) {
       id
       name
-      installed_operating_system {
-        name
-      }
-      asset_id
-      network_id
-      description
-      locations {
-        description
-      }
-      version
-      vendor_name
-      asset_tag
-      asset_type
-      serial_number
-      release_date
-      # operational_status
-      installed_software {
-        name
-      }
-      connected_to_network {
-        name
-      }
-      uri
-      model
-      mac_address
-      fqdn
-      baseline_configuration_name
-      bios_id
-      is_scanned
-      hostname
-      default_gateway
-      motherboard_id
-      installation_id
-      netbios_name
-      is_virtual
-      is_publicly_accessible
-      installed_hardware {
-        name
-        uri
-      }
+      # ...RemediationEditionOverview_risk
+      # ...RemediationEditionDetails_risk
     }
   }
 `;
@@ -103,9 +65,9 @@ class RemediationEdition extends Component {
 
   handleClose() {
     commitMutation({
-      mutation: remediationEditionOverviewFocus,
+      // mutation: riskEditionOverviewFocus,
       variables: {
-        id: this.props.remediationId,
+        id: this.props.riskId,
         input: { focusOn: '' },
       },
     });
@@ -115,7 +77,7 @@ class RemediationEdition extends Component {
   render() {
     const {
       classes,
-      remediationId,
+      riskId,
       open,
       history,
     } = this.props;
@@ -139,15 +101,15 @@ class RemediationEdition extends Component {
         <QR
           environment={environmentDarkLight}
           query={remediationEditionDarkLightQuery}
-          variables={{ id: remediationId }}
+          variables={{ id: riskId }}
           render={({ error, props }) => {
             console.log(`RemediationEditionDarkLightQuery Error ${error} OR Props ${JSON.stringify(props)}`);
             if (props) {
               return (
                 <RemediationEditionContainer
-                  remediation={props.computingDeviceAsset}
+                  risk={props.risk}
                   // enableReferences={props.settings.platform_enable_reference?.includes(
-                    //   'Device',
+                    //   'Risk',
                     // )}
                   history={history}
                   handleClose={this.handleClose.bind(this)}
@@ -159,14 +121,14 @@ class RemediationEdition extends Component {
         />
           {/* <QueryRenderer
             query={remediationEditionQuery}
-            variables={{ id: remediationId }}
+            variables={{ id: riskId }}
             render={({ props }) => {
               if (props) {
                 return (
                   <RemediationEditionContainer
-                    remediation={props.threatActor}
+                    risk={props.threatActor}
                     // enableReferences={props.settings.platform_enable_reference?.includes(
-                    //   'Device',
+                    //   'Risk',
                     // )}
                     handleClose={this.handleClose.bind(this)}
                   />
@@ -183,7 +145,7 @@ class RemediationEdition extends Component {
 }
 
 RemediationEdition.propTypes = {
-  remediationId: PropTypes.string,
+  riskId: PropTypes.string,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
