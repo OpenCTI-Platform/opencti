@@ -5,6 +5,7 @@ import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { assoc, compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
+import UserPreferencesModal from './UserPreferencesModal';
 import Toolbar from '@material-ui/core/Toolbar';
 import graphql from 'babel-plugin-relay/macro';
 import MenuList from '@material-ui/core/MenuList';
@@ -81,6 +82,7 @@ const LeftBar = ({
   t, location, history, classes,
 }) => {
   const [open, setOpen] = useState({ activities: true, knowledge: true });
+  const [userPrefOpen ,setUserPrefOpen] = useState(false);
   const toggle = (key) => setOpen(assoc(key, !open[key], open));
   const { me } = useContext(UserContext);
   let toData;
@@ -90,6 +92,10 @@ const LeftBar = ({
     toData = '/dashboard/data/connectors';
   } else {
     toData = '/dashboard/data/taxii';
+  }
+
+  const handleUserPrefOpen = () => {
+
   }
 
   return (
@@ -237,9 +243,7 @@ const LeftBar = ({
               <ListItemText primary={t(me.name)} />
             </MenuItem>
             <MenuItem
-              component={Link}
-              to={toData}
-              selected={location.pathname.includes('/dashboard/data/dark')}
+              onClick={() => setUserPrefOpen(true) }
               dense={false}
               classes={{ root: classes.menuItem }}
             >
@@ -250,7 +254,9 @@ const LeftBar = ({
             </MenuItem>
         </MenuList>
       </Security>
+      <UserPreferencesModal isOpen={userPrefOpen}/>
     </Drawer>
+
   );
 };
 
