@@ -144,15 +144,15 @@ type AppInfo {
   """
   The OpenCTI api current memory usage
   """
-  memory: AppMemory
+  memory: AppMemory @auth(for: [SETTINGS])
   """
   The list of OpenCTI software dependencies
   """
-  dependencies: [DependencyVersion!]!
+  dependencies: [DependencyVersion!]! @auth(for: [SETTINGS])
   """
   The objects statistics
   """
-  debugStats: AppDebugStatistics
+  debugStats: AppDebugStatistics @auth(for: [SETTINGS])
 }
 
 ### STATS
@@ -8491,7 +8491,7 @@ type Query {
   ###### INTERNAL
 
   platform_theme: String
-  about: AppInfo @auth(for: [SETTINGS])
+  about: AppInfo
   logsWorkerConfig: LogsWorkerConfig @auth(for: [MODULES])
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: [MODULES])
   elasticSearchMetrics: ElasticSearchMetrics @auth(for: [MODULES])

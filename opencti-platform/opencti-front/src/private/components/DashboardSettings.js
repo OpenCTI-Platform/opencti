@@ -16,6 +16,7 @@ import Button from '@material-ui/core/Button';
 import Slide from '@material-ui/core/Slide';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer } from '../../relay/environment';
+import Security, { EXPLORE } from '../../utils/Security';
 import inject18n from '../../components/i18n';
 
 const Transition = React.forwardRef((props, ref) => (
@@ -89,63 +90,92 @@ class DashboardSettings extends Component {
         >
           <DialogTitle>{t('Dashboard settings')}</DialogTitle>
           <DialogContent>
-            <QueryRenderer
-              query={dashboardSettingsDashboardsQuery}
-              variables={{
-                count: 50,
-                orderBy: 'name',
-                orderMode: 'asc',
-                filters: [{ key: 'type', values: ['dashboard'] }],
-              }}
-              render={({ props }) => {
-                if (props) {
-                  return (
-                    <div>
-                      <FormControl style={{ width: '100%' }}>
-                        <InputLabel id="timeField">
-                          {t('Date reference')}
-                        </InputLabel>
-                        <Select
-                          labelId="timeField"
-                          value={timeField === null ? '' : timeField}
-                          onChange={handleChangeTimeField.bind(this)}
-                          fullWidth={true}
-                        >
-                          <MenuItem value="technical">
-                            {t('Technical date')}
-                          </MenuItem>
-                          <MenuItem value="functional">
-                            {t('Functional date')}
-                          </MenuItem>
-                        </Select>
-                      </FormControl>
-                      <FormControl style={{ width: '100%', marginTop: 20 }}>
-                        <InputLabel id="timeField">
-                          {t('Custom dashboard')}
-                        </InputLabel>
-                        <Select
-                          labelId="dashboard"
-                          value={dashboard === null ? '' : dashboard}
-                          onChange={handleChangeDashboard.bind(this)}
-                          fullWidth={true}
-                        >
-                          <MenuItem value="default">{t('Default')}</MenuItem>
-                          {props.workspaces.edges.map((workspaceEdge) => {
-                            const workspace = workspaceEdge.node;
-                            return (
-                              <MenuItem key={workspace.id} value={workspace.id}>
-                                {workspace.name}
-                              </MenuItem>
-                            );
-                          })}
-                        </Select>
-                      </FormControl>
-                    </div>
-                  );
-                }
-                return <div />;
-              }}
-            />
+            <Security
+              needs={[EXPLORE]}
+              placeholder={
+                <div>
+                  <FormControl style={{ width: '100%' }}>
+                    <InputLabel id="timeField">
+                      {t('Date reference')}
+                    </InputLabel>
+                    <Select
+                      labelId="timeField"
+                      value={timeField === null ? '' : timeField}
+                      onChange={handleChangeTimeField.bind(this)}
+                      fullWidth={true}
+                    >
+                      <MenuItem value="technical">
+                        {t('Technical date')}
+                      </MenuItem>
+                      <MenuItem value="functional">
+                        {t('Functional date')}
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+                </div>
+              }
+            >
+              <QueryRenderer
+                query={dashboardSettingsDashboardsQuery}
+                variables={{
+                  count: 50,
+                  orderBy: 'name',
+                  orderMode: 'asc',
+                  filters: [{ key: 'type', values: ['dashboard'] }],
+                }}
+                render={({ props }) => {
+                  if (props) {
+                    return (
+                      <div>
+                        <FormControl style={{ width: '100%' }}>
+                          <InputLabel id="timeField">
+                            {t('Date reference')}
+                          </InputLabel>
+                          <Select
+                            labelId="timeField"
+                            value={timeField === null ? '' : timeField}
+                            onChange={handleChangeTimeField.bind(this)}
+                            fullWidth={true}
+                          >
+                            <MenuItem value="technical">
+                              {t('Technical date')}
+                            </MenuItem>
+                            <MenuItem value="functional">
+                              {t('Functional date')}
+                            </MenuItem>
+                          </Select>
+                        </FormControl>
+                        <FormControl style={{ width: '100%', marginTop: 20 }}>
+                          <InputLabel id="timeField">
+                            {t('Custom dashboard')}
+                          </InputLabel>
+                          <Select
+                            labelId="dashboard"
+                            value={dashboard === null ? '' : dashboard}
+                            onChange={handleChangeDashboard.bind(this)}
+                            fullWidth={true}
+                          >
+                            <MenuItem value="default">{t('Default')}</MenuItem>
+                            {props.workspaces.edges.map((workspaceEdge) => {
+                              const workspace = workspaceEdge.node;
+                              return (
+                                <MenuItem
+                                  key={workspace.id}
+                                  value={workspace.id}
+                                >
+                                  {workspace.name}
+                                </MenuItem>
+                              );
+                            })}
+                          </Select>
+                        </FormControl>
+                      </div>
+                    );
+                  }
+                  return <div />;
+                }}
+              />
+            </Security>
           </DialogContent>
           <DialogActions>
             <Button onClick={this.handleClose.bind(this)}>{t('Close')}</Button>
