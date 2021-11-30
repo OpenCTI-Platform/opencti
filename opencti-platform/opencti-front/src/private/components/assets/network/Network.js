@@ -89,9 +89,9 @@ class NetworkComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                <CyioCoreObjectExternalReferences
+                {/* <CyioCoreObjectExternalReferences
                   cyioCoreObjectId={network.id}
-                />
+                /> */}
               </Grid>
               <Grid item={true} xs={6}>
                 <CyioCoreObjectLatestHistory cyioCoreObjectId={network.id} />

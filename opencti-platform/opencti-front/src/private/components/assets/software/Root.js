@@ -96,7 +96,9 @@ class RootSoftware extends Component {
             ]}
           />
         </Route>
-        <QueryRenderer
+        {/* <QueryRenderer */}
+        <QR
+          environment={QueryRendererDarkLight}
           query={softwareQuery}
           variables={{ id: softwareId }}
           render={({ error, props }) => {

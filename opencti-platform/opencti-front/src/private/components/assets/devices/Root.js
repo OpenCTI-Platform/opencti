@@ -98,7 +98,9 @@ class RootDevice extends Component {
             ]}
           />
         </Route>
-        <QueryRenderer
+        {/* <QueryRenderer */}
+        <QR
+          environment={QueryRendererDarkLight}
           query={deviceQuery}
           variables={{ id: deviceId }}
           render={({ error, props }) => {

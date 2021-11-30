@@ -118,7 +118,9 @@ class RootNetwork extends Component {
             ]}
           />
         </Route>
-        <QueryRenderer
+        {/* <QueryRenderer */}
+        <QR
+          environment={QueryRendererDarkLight}
           query={networkQuery}
           variables={{ id: networkId }}
           render={({ error, props }) => {

@@ -199,8 +199,8 @@ class NetworkEditionContainer extends Component {
       R.assoc('network_id', network.network_id),
       R.assoc('is_scanned', network.is_scanned),
       R.assoc('implementation_point', network.implementation_point),
-      R.assoc('starting_address', network.network_address_range.starting_ip_address && network.network_address_range.starting_ip_address.ip_address_value),
-      R.assoc('ending_address', network.network_address_range.ending_ip_address && network.network_address_range.ending_ip_address.ip_address_value),
+      R.assoc('starting_address', network?.network_address_range?.starting_ip_address?.ip_address_value || ''),
+      R.assoc('ending_address', network?.network_address_range?.ending_ip_address?.ip_address_value || ''),
       R.pick([
         'id',
         'asset_id',
@@ -319,9 +319,9 @@ class NetworkEditionContainer extends Component {
                 style={{ marginTop: 25 }}
               >
                 <Grid item={true} xs={6}>
-                  <CyioCoreObjectExternalReferences
+                  {/* <CyioCoreObjectExternalReferences
                     cyioCoreObjectId={network.id}
-                  />
+                  /> */}
                 </Grid>
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectLatestHistory cyioCoreObjectId={network.id} />

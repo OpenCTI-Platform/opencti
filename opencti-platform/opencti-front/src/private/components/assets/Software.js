@@ -4,6 +4,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
+import { QueryRenderer as QR } from 'react-relay';
+import QueryRendererDarkLight from '../../../relay/environmentDarkLight';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -11,8 +13,8 @@ import {
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
-import ListCards from '../../../components/list_cards/ListCards';
-import ListLines from '../../../components/list_lines/ListLines';
+import CyioListCards from '../../../components/list_cards/CyioListCards';
+import CyioListLines from '../../../components/list_lines/CyioListLines';
 import SoftwareCards, {
   softwareCardsQuery,
 } from './software/SoftwareCards';
@@ -176,7 +178,7 @@ class Software extends Component {
       },
     };
     return (
-      <ListCards
+      <CyioListCards
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -206,7 +208,9 @@ class Software extends Component {
           'createdBy',
         ]}
       >
-        <QueryRenderer
+        {/* <QueryRenderer */}
+        <QR
+          environment={QueryRendererDarkLight}
           query={softwareCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
@@ -222,7 +226,7 @@ class Software extends Component {
             />
           )}
         />
-      </ListCards>
+      </CyioListCards>
     );
   }
 
@@ -290,7 +294,7 @@ class Software extends Component {
       },
     };
     return (
-      <ListLines
+      <CyioListLines
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -320,7 +324,9 @@ class Software extends Component {
           'createdBy',
         ]}
       >
-        <QueryRenderer
+        {/* <QueryRenderer */}
+        <QR
+          environment={QueryRendererDarkLight}
           query={softwareLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
@@ -337,7 +343,7 @@ class Software extends Component {
             />
           )}
         />
-      </ListLines>
+      </CyioListLines>
     );
   }
 

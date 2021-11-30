@@ -323,7 +323,7 @@ class SoftwareEditionContainer extends Component {
                 style={{ marginTop: 25 }}
               >
                 <Grid item={true} xs={6}>
-                  <CyioCoreObjectExternalReferences cyioCoreObjectId={software.id} />
+                  {/* <CyioCoreObjectExternalReferences cyioCoreObjectId={software.id} /> */}
                 </Grid>
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectLatestHistory cyioCoreObjectId={software.id} />
