@@ -332,10 +332,6 @@ jobs:
           name: Build Docker image opencti/platform
           command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci -t opencti/platform:latest -t opencti/platform:${CIRCLE_TAG} --push .
           no_output_timeout: 30m
-      - run:
-          working_directory: ~/opencti_docker/opencti-worker
-          name: Build Docker image opencti/worker
-          command: docker buildx build --platform $BUILDX_PLATFORMS -t opencti/worker:latest -t opencti/worker:${CIRCLE_TAG} --push .
 
   docker_build_worker:
     working_directory: ~/opencti_docker
