@@ -372,7 +372,7 @@ export const generateAliasesIdsForInstance = (instance) => {
 };
 const getHashIds = (type, hashes) => {
   const ids = [];
-  if (isStixCyberObservableHashedObservable(type)) {
+  if (isStixCyberObservableHashedObservable(type) && isNotEmptyField(hashes)) {
     const hashIds = Object.entries(hashes)
       .map(([, s]) => s)
       .filter((s) => isNotEmptyField(s));

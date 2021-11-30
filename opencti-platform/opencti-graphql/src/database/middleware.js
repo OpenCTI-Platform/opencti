@@ -1036,6 +1036,9 @@ const mergeInstanceWithUpdateInputs = (instance, inputs) => {
   return mergeInstanceWithInputs(instance, resolvedInputs);
 };
 const listEntitiesByHashes = (user, type, hashes) => {
+  if (isEmptyField(hashes)) {
+    return [];
+  }
   const searchHashes = Object.entries(hashes)
     .map(([, s]) => s)
     .filter((s) => isNotEmptyField(s));
