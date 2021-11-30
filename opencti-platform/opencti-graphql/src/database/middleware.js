@@ -1047,17 +1047,19 @@ const listEntitiesByHashes = (user, type, hashes) => {
 const hashMergeValidation = (instances) => {
   // region Specific check for observables with hashes
   // If multiple results start by checking the possible merge validity
-  const allHashes = instances.map((h) => h.hashes);
-  const elements = allHashes.map((e) => Object.entries(e)).flat();
-  const groupElements = R.groupBy(([key]) => key, elements);
-  Object.entries(groupElements).forEach(([algo, values]) => {
-    const hashes = R.uniq(values.map(([, data]) => data));
-    if (hashes.length > 1) {
-      const field = `hash_${algo.toUpperCase()}`;
-      const message = { message: `Hashes collision for ${algo} algorithm` };
-      throw ValidationError(field, message);
-    }
-  });
+  const allHashes = instances.map((h) => h.hashes).filter((e) => isNotEmptyField(e));
+  if (allHashes.length > 0) {
+    const elements = allHashes.map((e) => Object.entries(e)).flat();
+    const groupElements = R.groupBy(([key]) => key, elements);
+    Object.entries(groupElements).forEach(([algo, values]) => {
+      const hashes = R.uniq(values.map(([, data]) => data));
+      if (hashes.length > 1) {
+        const field = `hash_${algo.toUpperCase()}`;
+        const message = { message: `Hashes collision for ${algo} algorithm` };
+        throw ValidationError(field, message);
+      }
+    });
+  }
 };
 // endregion
 
