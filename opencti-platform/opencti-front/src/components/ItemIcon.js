@@ -109,6 +109,7 @@ const iconSelector = (type, variant, fontSize, color) => {
         <CityVariantOutline style={style} fontSize={fontSize} role="img" />
       );
     case 'Position':
+    case 'Location':
       return <PlaceOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Country':
       return <FlagOutlined style={style} fontSize={fontSize} role="img" />;

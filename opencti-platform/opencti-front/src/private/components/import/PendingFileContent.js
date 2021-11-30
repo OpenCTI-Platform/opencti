@@ -1038,11 +1038,22 @@ class PendingFileContentComponent extends Component {
                       />
                     </ListItemSecondaryAction>
                   </ListItem>
-                  {entityId !== object.id && object.object_refs && (
+                  {object.object_refs && (
                     <List component="div" disablePadding>
                       {object.object_refs.map((objectRef) => {
                         const subObject = indexedObjectsWithDependencies[objectRef];
                         if (!subObject) {
+                          const subObjectTypeRaw = objectRef.split('--')[0];
+                          const subObjectType = subObjectTypeRaw === 'x-opencti-simple-observable'
+                            ? observableKeyToType(subObjectTypeRaw)
+                            : convertStixType(subObjectTypeRaw);
+                          const isSubObjectDisabled = uncheckedObjects.includes(objectRef)
+                            || (!(containersChecked[object.id] || []).includes(
+                              objectRef,
+                            )
+                              && !(containersUnchecked[object.id] || []).includes(
+                                objectRef,
+                              ));
                           return (
                             <ListItem
                               key={objectRef}
@@ -1050,7 +1061,7 @@ class PendingFileContentComponent extends Component {
                               divider={true}
                             >
                               <ListItemIcon color="primary">
-                                <ItemIcon type="Unknown" />
+                                <ItemIcon type={subObjectType} />
                               </ListItemIcon>
                               <ListItemText
                                 primary={
@@ -1059,7 +1070,7 @@ class PendingFileContentComponent extends Component {
                                       className={classes.bodyItem}
                                       style={inlineStyles.type}
                                     >
-                                      {t('Unknown')}
+                                      {subObjectType}
                                     </div>
                                     <div
                                       className={classes.bodyItem}
@@ -1093,8 +1104,15 @@ class PendingFileContentComponent extends Component {
                               <ListItemSecondaryAction>
                                 <Checkbox
                                   edge="end"
-                                  disabled={true}
-                                  checked={true}
+                                  onChange={this.handleToggleContainerItem.bind(
+                                    this,
+                                    object.id,
+                                    objectRef,
+                                  )}
+                                  checked={(
+                                    containersChecked[object.id] || []
+                                  ).includes(objectRef)}
+                                  disabled={isSubObjectDisabled}
                                 />
                               </ListItemSecondaryAction>
                             </ListItem>
@@ -1175,7 +1193,7 @@ class PendingFileContentComponent extends Component {
                                 checked={(
                                   containersChecked[object.id] || []
                                 ).includes(subObject.id)}
-                                disabled={isDisabled || isSubObjectDisabled}
+                                disabled={isSubObjectDisabled}
                               />
                             </ListItemSecondaryAction>
                           </ListItem>

@@ -39,12 +39,14 @@ class TopMenuDashboard extends Component {
         >
           {t('Dashboard')}
         </Button>
-        <DashboardSettings
-          handleChangeTimeField={handleChangeTimeField}
-          timeField={timeField}
-          handleChangeDashboard={handleChangeDashboard}
-          dashboard={dashboard}
-        />
+        {handleChangeTimeField && handleChangeDashboard && (
+          <DashboardSettings
+            handleChangeTimeField={handleChangeTimeField}
+            timeField={timeField}
+            handleChangeDashboard={handleChangeDashboard}
+            dashboard={dashboard}
+          />
+        )}
       </div>
     );
   }

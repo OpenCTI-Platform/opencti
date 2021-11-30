@@ -278,6 +278,7 @@ export const defaultValue = (n, tooltip = false) => {
           n.target_ref_name,
           20,
         )}`)
+      || n.id
       || defaultValue(R.head(R.pathOr([], ['objects', 'edges'], n))?.node)
       || 'Unknown'
     }`;
