@@ -277,8 +277,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             done({ message: 'Restricted access, ask your administrator' });
           }
         });
-        passport.use('oic', openIDStrategy);
-        providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'oic' });
+        // passport.use('oic', openIDStrategy);
+        // providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'oic' });
+        passport.use(providerIdent, openIDStrategy);
+        providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerIdent });
       });
     }
     if (strategy === STRATEGY_FACEBOOK) {
