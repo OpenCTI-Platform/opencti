@@ -7,7 +7,7 @@ import sys
 from setuptools import setup
 from setuptools.command.install import install
 
-VERSION = "5.1.0"
+VERSION = "5.1.1"
 
 HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
