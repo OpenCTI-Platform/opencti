@@ -1,10 +1,9 @@
-import {v4 as uuid4} from 'uuid';
 import {UpdateOps, byIdClause, optionalizePredicate, parameterizePredicate} from "../../utils.js";
 
 
 
 const selectClause = `
-SELECT DISTINCT ?iri ?rdf_type ?id ?object_type 
+SELECT DISTINCT ?iri ?id ?object_type 
   ?asset_id ?name ?description ?locations ?responsible_party 
   ?asset_type ?asset_tag ?serial_number ?vendor_name ?version ?release_date ?implementation_point ?operational_status
   ?function ?cpe_identifier ?model ?motherboard_id ?installation_id ?installed_hardware ?installed_operating_system ?baseline_configuration_name
@@ -22,7 +21,6 @@ const typeConstraint = `?iri a <http://scap.nist.gov/ns/asset-identification#{as
 
 const predicateBody = `
   ?iri <http://darklight.ai/ns/common#id> ?id .
-  ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type .
 	OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?object_type } .
 	OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_id> ?asset_id } .
 	OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#name> ?name } .
@@ -136,6 +134,84 @@ export function getReducer( type ) {
       throw new Error(`Unsupported reducer type ' ${type}'`)
   }
   return reducer ;
+}
+
+export const removeMultipleAssetsFromInventoryQuery = (ids) => {
+  const values = ids ? (ids.map((id) => `"${id}"`).join(' ')) : "";
+  return `
+    DELETE {
+      GRAPH ?g {
+        ?inv <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+      }
+    } WHERE {
+      GRAPH ?g {
+        ?inv a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> .
+        ?inv <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+        {
+          SELECT DISTINCT ?iri WHERE {
+            ?iri a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
+            ?iri <http://darklight.ai/ns/common#id> ?id .
+            VALUES ?id {${values}}
+          }
+        }
+      }
+    }
+    `
+}
+
+export const removeAssetFromInventoryQuery = (id) => {
+  return `
+    DELETE {
+      GRAPH ?g {
+        ?inv <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+      }
+    } WHERE {
+      GRAPH ?g {
+        ?inv a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> .
+        ?inv <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+        {
+          SELECT DISTINCT ?iri WHERE {
+            ?iri a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
+            ?iri <http://darklight.ai/ns/common#id> "${id}" .
+          }
+        }
+      }
+    }
+    `
+}
+
+export const deleteMultipleAssetsQuery = (ids) =>{
+  const values = ids ? (ids.map((id) => `"${id}"`).join(' ')) : "";
+  return `
+  DELETE {
+    GRAPH ?g {
+      ?iri ?p ?o
+    }
+  } WHERE {
+    GRAPH ?g {
+      ?iri a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
+      ?iri <http://darklight.ai/ns/common#id> ?id .
+      ?iri ?p ?o .
+      VALUES ?id {${values}}
+    }
+  }
+  `
+}
+
+export const deleteAssetQuery = (id) => {
+  return `
+  DELETE {
+    GRAPH ?g {
+      ?iri ?p ?o
+    }
+  } WHERE {
+    GRAPH ?g {
+      ?iri a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
+      ?iri <http://darklight.ai/ns/common#id> "${id}" .
+      ?iri ?p ?o .
+    }
+  }
+  `
 }
 
 function itAssetReducer( item ) {

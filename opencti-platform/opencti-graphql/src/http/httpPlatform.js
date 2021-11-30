@@ -10,21 +10,15 @@ import bodyParser from 'body-parser';
 import compression from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
-import showdown from 'showdown';
 import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
-import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, logApp, logAudit } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
-import { checkSystemDependencies } from '../initialization';
-import { getSettings } from '../domain/settings';
 import createSeeMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import { initializeSession } from '../database/session';
 import { LOGIN_ACTION } from '../config/audit';
-
-const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -34,13 +28,13 @@ const setCookieError = (res, message) => {
   });
 };
 
-const extractRefererPathFromReq = (req) => {
-  const refererUrl = new URL(req.headers.referer);
-  // Keep only the pathname to prevent OPEN REDIRECT CWE-601
-  return refererUrl.pathname;
-};
+// const extractRefererPathFromReq = (req) => {
+//   const refererUrl = new URL(req.headers.referer);
+//   // Keep only the pathname to prevent OPEN REDIRECT CWE-601
+//   return refererUrl.pathname;
+// };
 
-const createApp = async (apolloServer) => {
+const createApp = async () => {
   const appSessionHandler = initializeSession();
   const limiter = new RateLimit({
     windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
@@ -96,15 +90,6 @@ const createApp = async (apolloServer) => {
   app.use(appSessionHandler.session);
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
   app.use(bodyParser.json({ limit: requestSizeLimit }));
-  apolloServer.applyMiddleware({
-    app,
-    cors: true,
-    bodyParserConfig: {
-      limit: requestSizeLimit,
-    },
-    onHealthCheck,
-    path: `${basePath}/graphql`,
-  });
 
   const seeMiddleware = createSeeMiddleware();
   seeMiddleware.applyMiddleware({ app });
@@ -210,10 +195,12 @@ const createApp = async (apolloServer) => {
   // -- Passport login
   app.get(`${basePath}/auth/:provider`, (req, res, next) => {
     try {
+      req.session.referer = req.headers.referer;
       const { provider } = req.params;
-      req.session.referer = extractRefererPathFromReq(req);
+      logApp.debug(`[Passport] Login auth/${provider}/ -> [referer:${req.headers.referer}]`)
       passport.authenticate(provider, {}, (err) => {
         setCookieError(res, err?.message);
+        logApp.debug(`[Passport] Auth error callback]`)
         next(err);
       })(req, res, next);
     } catch (e) {
@@ -225,29 +212,23 @@ const createApp = async (apolloServer) => {
   // -- Passport callback
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
   app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), (req, res, next) => {
+    const {referer} = req.session;
+    logApp.debug(`[Passport] Passport initialize auth/oidc/callback -> [referer:${referer}]`)
     const { provider } = req.params;
-    const { referer } = req.session;
+    // const host = req.headers.host
     passport.authenticate(provider, {}, async (err, user) => {
       if (err || !user) {
+        logApp.debug(`[Passport] Authentication failed: [referer: ${referer}`)
         logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
         setCookieError(res, err?.message);
         return res.redirect(referer);
       }
+      logApp.debug(`[Passport] User authenticated: [referer: ${referer}`)
       // noinspection UnnecessaryLocalVariableJS
       await authenticateUser(req, user, provider);
       req.session.referer = null;
       return res.redirect(referer);
     })(req, res, next);
-  });
-
-  // Other routes - Render index.html
-  app.get('*', (req, res) => {
-    const data = readFileSync(`${__dirname}/../../public/index.html`, 'utf8');
-    const withOptionValued = data.replace(/%BASE_PATH%/g, basePath);
-    res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-    res.header('Expires', '-1');
-    res.header('Pragma', 'no-cache');
-    return res.send(withOptionValued);
   });
 
   // Error handling
@@ -260,3 +241,15 @@ const createApp = async (apolloServer) => {
 };
 
 export default createApp;
+
+export const applyWildcard = (app) => {
+  app.get('*', (req, res) => {
+    const data = readFileSync(`${__dirname}/../../public/index.html`, 'utf8');
+    const withOptionValued = data.replace(/%BASE_PATH%/g, basePath);
+    res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    res.header('Expires', '-1');
+    res.header('Pragma', 'no-cache');
+    return res.send(withOptionValued);
+  });
+}
+

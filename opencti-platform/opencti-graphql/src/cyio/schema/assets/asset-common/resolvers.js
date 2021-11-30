@@ -1,6 +1,13 @@
 import { assetSingularizeSchema as singularizeSchema, objectTypeMapping } from '../asset-mappings.js';
-import { getSelectSparqlQuery, getReducer } from './sparql-query.js';
 import { compareValues } from '../../utils.js';
+import { 
+  getSelectSparqlQuery,
+  getReducer,
+  deleteMultipleAssetsQuery,
+  removeMultipleAssetsFromInventoryQuery,
+  deleteAssetQuery,
+  removeAssetFromInventoryQuery
+} from './sparql-query.js';
 
 const assetCommonResolvers = {
   Query: {
@@ -56,7 +63,7 @@ const assetCommonResolvers = {
           edges: edges,
         }
       } else {
-        return;
+        return [];
       }
     },
     asset: async ( _, args, context, info ) => {
@@ -135,7 +142,20 @@ const assetCommonResolvers = {
 
   },
   Mutation: {
-
+    deleteAsset: async (_, {id}, context) => {
+      const dbName = context.dbName;
+      const dq = deleteAssetQuery(id);
+      await context.dataSources.Stardog.delete(dbName, dq);
+      const ra = removeAssetFromInventoryQuery(id);
+      await context.dataSources.Stardog.delete(dbName, ra);
+    },
+    deleteAssets: async (_, { ids }, context) => {
+      const dbName = context.dbName;
+      const dq = deleteMultipleAssetsQuery(ids);
+      await context.dataSources.Stardog.delete(dbName, dq);
+      const ra = removeMultipleAssetsFromInventoryQuery(ids);
+      await context.dataSources.Stardog.delete(dbName, ra);
+    }
   },
   // Map enum GraphQL values to data model required values
   AssetType: {

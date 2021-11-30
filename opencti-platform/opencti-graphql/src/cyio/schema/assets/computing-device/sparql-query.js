@@ -59,7 +59,7 @@ export function getReducer( type ) {
 
 
 const selectClause = `
-SELECT DISTINCT ?iri ?rdf_type ?id
+SELECT DISTINCT ?iri ?id
   ?asset_id ?name ?description ?locations
   ?asset_type ?asset_tag ?serial_number ?vendor_name ?version ?release_date
   ?function ?cpe_identifier ?model ?motherboard_id ?installation_id ?installed_hardware ?installed_operating_system 
@@ -74,8 +74,6 @@ const byIdClause = `\t?iri <http://darklight.ai/ns/common#id> "{id}" .`;
 
 const predicates = `
 ?iri <http://darklight.ai/ns/common#id> ?id .
-?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type .
-# OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id } .
   OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_id> ?asset_id } .
   OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#name> ?name } .
   OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#description> ?description } .
@@ -123,35 +121,32 @@ const inventoryConstraint = `
       }
   }` ;
 
-const ipAddr = `SELECT DISTINCT ?rdf_type ?id ?object_type ?ip_address_value ?defanged ?stix_value
+const ipAddr = `SELECT DISTINCT ?id ?object_type ?ip_address_value ?defanged ?stix_value
 FROM <tag:stardog:api:context:named>
 WHERE {
     <{iri}> a <http://scap.nist.gov/ns/asset-identification#{ipAddrType}> ;
         <http://darklight.ai/ns/common#id> ?id  ;
-        <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type  ;
         <http://scap.nist.gov/ns/asset-identification#ip_address_value> ?ip_address_value .
     OPTIONAL { <{iri}> <http://darklight.ai/ns/common#object_type> ?object_type } .
     OPTIONAL { <{iri}> <http://docs.oasis-open.org/ns/cti/stix#defanged> ?defanged } .
     OPTIONAL { <{iri}> <http://docs.oasis-open.org/ns/cti/stix/ip-address#value> ?stix_value } .
 }`;
-const macAddr = `SELECT DISTINCT ?rdf_type ?id ?object_type ?mac_address_value ?is_virtual ?stix_value
+const macAddr = `SELECT DISTINCT ?id ?object_type ?mac_address_value ?is_virtual ?stix_value
 FROM <tag:stardog:api:context:named>
 WHERE {
     <{iri}> a <http://scap.nist.gov/ns/asset-identification#MACAddress> ;
         <http://darklight.ai/ns/common#id> ?id  ;
-        <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type  ;
         <http://scap.nist.gov/ns/asset-identification#mac_address_value> ?mac_address_value .
     OPTIONAL { <{iri}> <http://scap.nist.gov/ns/asset-identification#is_virtual> ?is_virtual } .
     OPTIONAL { <{iri}> <http://darklight.ai/ns/common#object_type> ?object_type } .
     OPTIONAL { <{iri}> <http://docs.oasis-open.org/ns/cti/stix/ip-address#value> ?stix_value } .
 }`;
 
-const portInfo = `SELECT DISTINCT ?rdf_type ?id ?object_type ?port_number ?protocols 
+const portInfo = `SELECT DISTINCT ?id ?object_type ?port_number ?protocols 
 FROM <tag:stardog:api:context:named>
 WHERE {
     {iri} a <http://scap.nist.gov/ns/asset-identification#Port> ;
         <http://darklight.ai/ns/common#id> ?id  ;
-        <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type  ;
         <http://scap.nist.gov/ns/asset-identification#port_number> ?port_number ;
         <http://scap.nist.gov/ns/asset-identification#protocols> ?protocols .
     OPTIONAL { {iri} <http://darklight.ai/ns/common#object_type> ?object_type } .

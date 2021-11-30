@@ -1,3 +1,6 @@
+/* eslint-disable */
+/* refactor */
+/* eslint-disable import/no-cycle */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';

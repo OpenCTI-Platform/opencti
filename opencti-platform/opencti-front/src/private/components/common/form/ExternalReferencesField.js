@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import {
   compose,
