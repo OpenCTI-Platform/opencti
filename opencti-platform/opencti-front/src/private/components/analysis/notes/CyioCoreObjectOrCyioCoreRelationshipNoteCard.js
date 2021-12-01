@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr, take } from 'ramda';
+import { compose } from 'ramda';
 // import { createFragmentContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
-import { OpenInNewOutlined, ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
+import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import { withStyles, withTheme } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import Collapse from '@material-ui/core/Collapse';
@@ -14,8 +14,7 @@ import CardHeader from '@material-ui/core/CardHeader';
 import Divider from '@material-ui/core/Divider';
 import CardActions from '@material-ui/core/CardActions';
 import Typography from '@material-ui/core/Typography';
-import LinkIcon from '@material-ui/icons/Link';
-import { ConnectionHandler } from 'relay-runtime';
+// import { ConnectionHandler } from 'relay-runtime';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
@@ -25,12 +24,11 @@ import Slide from '@material-ui/core/Slide';
 import IconButton from '@material-ui/core/IconButton';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
+import { commitMutation as CM, createFragmentContainer } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
-import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
-import { commitMutation } from '../../../../relay/environment';
+// import { commitMutation } from '../../../../relay/environment';
 import { noteMutationRelationDelete } from './AddNotesLines';
 import CyioNotePopover from './CyioNotePopover';
 import { resolveLink } from '../../../../utils/Entity';
@@ -124,11 +122,11 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
         toId: this.props.CyioCoreObjectOrCyioCoreRelationshipId,
         relationship_type: 'object',
       },
-      onCompleted: (response) => {
+      onCompleted: () => {
         this.setState({ removing: false });
         this.handleCloseDialog();
       },
-      onError: (err) => console.log('NoteRemoveDarkLightMutationError', err),
+      // onError: (err) => console.log('NoteRemoveDarkLightMutationError', err),
     });
     // commitMutation({
     //   mutation: noteMutationRelationDelete,

@@ -12,26 +12,20 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import {
   Edit,
-  Delete,
   ArrowDropDown,
   ArrowDropUp,
-  DashboardOutlined,
-  TableChartOutlined,
   AppsOutlined,
   AddCircleOutline,
 } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
 import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
-import { FileExportOutline } from 'mdi-material-ui';
 import Checkbox from '@material-ui/core/Checkbox';
 import Alert from '@material-ui/lab/Alert';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
-import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
-import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
+// import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
-import StixCyberObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
 import { truncate } from '../../utils/String';
 import TopBarMenu from '../../private/components/nav/TopBarMenu';
 
@@ -172,14 +166,11 @@ class CyioListLines extends Component {
     const {
       t,
       classes,
-      disablePopover,
       handleSearch,
       handleChangeView,
       disableCards,
-      enableDuplicates,
       handleAddFilter,
       handleRemoveFilter,
-      handleToggleExports,
       selectedElements,
       handleToggleSelectAll,
       selectAll,
@@ -188,13 +179,10 @@ class CyioListLines extends Component {
       noBottomPadding,
       dataColumns,
       secondaryAction,
-      paginationOptions,
       keyword,
       filters,
       bottomNav,
       children,
-      exportEntityType,
-      exportContext,
       handleDisplayEdit,
       numberOfElements,
       availableFilterKeys,

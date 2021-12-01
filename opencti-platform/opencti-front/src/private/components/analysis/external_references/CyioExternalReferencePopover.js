@@ -2,9 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { ConnectionHandler } from 'relay-runtime';
+// import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
-import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -19,7 +18,7 @@ import { MoreVertOutlined } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+// import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import CyioExternalReferenceEdition from './CyioExternalReferenceEdition';
 import Loader from '../../../../components/Loader';
 
@@ -123,11 +122,11 @@ class CyioExternalReferencePopover extends Component {
       variables: {
         id: this.props.externalReferenceId,
       },
-      onCompleted: (data) => {
+      onCompleted: () => {
         this.setState({ deleting: false });
         this.handleCloseDelete();
       },
-      onError: (err) => console.log('ExtRefDeletionDarkLightMutationError', err),
+      // onError: (err) => console.log('ExtRefDeletionDarkLightMutationError', err),
     });
     // commitMutation({
     //   mutation: cyioExternalReferencePopoverDeletionMutation,

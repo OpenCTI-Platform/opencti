@@ -60,7 +60,7 @@ class CyioCoreObjectOrCyioCoreRelationshipNotes extends Component {
           query={cyioCoreObjectNotesCardsQuery}
           variables={{ id: cyioCoreObjectOrCyioCoreRelationshipId, count: 200 }}
           render={({ props }) => {
-            if (props && props.itAsset) {
+            if (props) {
               return (
                 <CyioCoreObjectNotesCards
                   cyioCoreObjectId={cyioCoreObjectOrCyioCoreRelationshipId}

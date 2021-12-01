@@ -11,8 +11,6 @@ import {
   pathOr,
   pipe,
   pick,
-  difference,
-  head,
 } from 'ramda';
 import * as Yup from 'yup';
 import Button from '@material-ui/core/Button';
@@ -21,12 +19,7 @@ import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
 import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObjectLabelsView';
-import { SubscriptionFocus } from '../../../../components/Subscription';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import DatePickerField from '../../../../components/DatePickerField';
-import TextField from '../../../../components/TextField';
+// import { SubscriptionFocus } from '../../../../components/Subscription';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -80,34 +73,34 @@ export const cyioNoteEditionOverviewFocus = graphql`
   }
 `;
 
-const cyioNoteMutationRelationAdd = graphql`
-  mutation CyioNoteEditionOverviewRelationAddMutation(
-    $id: ID!
-    $input: StixMetaRelationshipAddInput
-  ) {
-    noteEdit(id: $id) {
-      relationAdd(input: $input) {
-        from {
-          ...CyioNoteEditionOverview_note
-        }
-      }
-    }
-  }
-`;
+// const cyioNoteMutationRelationAdd = graphql`
+//   mutation CyioNoteEditionOverviewRelationAddMutation(
+//     $id: ID!
+//     $input: StixMetaRelationshipAddInput
+//   ) {
+//     noteEdit(id: $id) {
+//       relationAdd(input: $input) {
+//         from {
+//           ...CyioNoteEditionOverview_note
+//         }
+//       }
+//     }
+//   }
+// `;
 
-const cyioNoteMutationRelationDelete = graphql`
-  mutation CyioNoteEditionOverviewRelationDeleteMutation(
-    $id: ID!
-    $toId: String!
-    $relationship_type: String!
-  ) {
-    noteEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ...CyioNoteEditionOverview_note
-      }
-    }
-  }
-`;
+// const cyioNoteMutationRelationDelete = graphql`
+//   mutation CyioNoteEditionOverviewRelationDeleteMutation(
+//     $id: ID!
+//     $toId: String!
+//     $relationship_type: String!
+//   ) {
+//     noteEdit(id: $id) {
+//       relationDelete(toId: $toId, relationship_type: $relationship_type) {
+//         ...CyioNoteEditionOverview_note
+//       }
+//     }
+//   }
+// `;
 
 const cyioNoteValidation = (t) => Yup.object().shape({
   attribute_abstract: Yup.string(),
@@ -154,12 +147,12 @@ class CyioNoteEditionOverviewComponent extends Component {
         ],
       },
       setSubmitting,
-      onCompleted: (response) => {
+      onCompleted: () => {
         setSubmitting(false);
         resetForm();
         this.props.handleClose();
       },
-      onError: (err) => console.log('CyioNoteEditionDarkLightMutationError', err),
+      // onError: (err) => console.log('CyioNoteEditionDarkLightMutationError', err),
     });
   }
 
@@ -220,7 +213,6 @@ class CyioNoteEditionOverviewComponent extends Component {
       t,
       note,
       classes,
-      context,
     } = this.props;
     const createdBy = pathOr(null, ['createdBy', 'name'], note) === null
       ? ''
@@ -258,7 +250,6 @@ class CyioNoteEditionOverviewComponent extends Component {
         {({
           submitForm,
           handleReset,
-          setFieldValue,
           isSubmitting,
         }) => (
           <div>

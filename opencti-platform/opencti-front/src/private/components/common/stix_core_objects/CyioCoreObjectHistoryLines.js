@@ -20,7 +20,7 @@ const styles = () => ({
 class CyioCoreObjectHistoryLinesComponent extends Component {
   render() {
     const {
-      t, classes, data, isRelationLog,
+      classes, data, isRelationLog,
     } = this.props;
     const logs = pathOr([], ['logs', 'edges'], data);
     return (

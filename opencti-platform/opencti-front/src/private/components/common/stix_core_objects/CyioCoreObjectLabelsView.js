@@ -24,7 +24,6 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
-import Slide from '@material-ui/core/Slide';
 import { Add, CancelOutlined } from '@material-ui/icons';
 import Tooltip from '@material-ui/core/Tooltip';
 import { Label, Information } from 'mdi-material-ui';
@@ -34,9 +33,9 @@ import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import SelectField from '../../../../components/SelectField';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import LabelCreation from '../../settings/labels/LabelCreation';
-import Security, {
+import {
   granted,
-  KNOWLEDGE_KNUPDATE,
+  // KNOWLEDGE_KNUPDATE,
   SETTINGS_SETLABELS,
   UserContext,
 } from '../../../../utils/Security';

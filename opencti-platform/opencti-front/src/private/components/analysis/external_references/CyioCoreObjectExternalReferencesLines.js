@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 // import { createPaginationContainer } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
+// import { ConnectionHandler } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
@@ -14,12 +14,8 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import LinkIcon from '@material-ui/icons/Link';
 import Divider from '@material-ui/core/Divider';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Button from '@material-ui/core/Button';
-import Avatar from '@material-ui/core/Avatar';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
@@ -27,22 +23,19 @@ import DialogActions from '@material-ui/core/DialogActions';
 import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
 import { interval } from 'rxjs';
-import { QueryRenderer as QR, commitMutation as CM, createPaginationContainer } from 'react-relay';
+import { commitMutation as CM, createPaginationContainer } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
-import { commitMutation } from '../../../../relay/environment';
+// import { commitMutation } from '../../../../relay/environment';
 import CyioAddExternalReferences from './CyioAddExternalReferences';
 import { cyioExternalReferenceMutationRelationDelete } from './CyioAddExternalReferencesLines';
 import Security, {
-  KNOWLEDGE_KNENRICHMENT,
+  // KNOWLEDGE_KNENRICHMENT,
   KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPLOAD,
+  // KNOWLEDGE_KNUPLOAD,
 } from '../../../../utils/Security';
-import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
-import FileLine from '../../common/files/FileLine';
 import { FIVE_SECONDS } from '../../../../utils/Time';
-import FileUploader from '../../common/files/FileUploader';
 import CyioExternalReferencePopover from './CyioExternalReferencePopover';
 
 const interval$ = interval(FIVE_SECONDS);
@@ -162,11 +155,11 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
         fromId: this.props.cyioCoreObjectId,
         relationship_type: 'external-reference',
       },
-      onCompleted: (data) => {
+      onCompleted: () => {
         this.setState({ removing: false });
         this.handleCloseDialog();
       },
-      onError: (err) => console.log('ExtRefRemoveDarkLightMutationError', err),
+      // onError: (err) => console.log('ExtRefRemoveDarkLightMutationError', err),
     });
     // commitMutation({
     //   mutation: cyioExternalReferenceMutationRelationDelete,
@@ -223,31 +216,10 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
               {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
                 (externalReferenceEdge) => {
                   const externalReference = externalReferenceEdge.node;
-                  const externalReferenceId = externalReference.external_id
-                    ? `(${externalReference.external_id})`
-                    : '';
-                  let externalReferenceSecondary = '';
-                  if (
-                    externalReference.url
-                    && externalReference.url.length > 0
-                  ) {
-                    externalReferenceSecondary = externalReference.url;
-                  } else if (
-                    externalReference.description
-                    && externalReference.description.length > 0
-                  ) {
-                    externalReferenceSecondary = externalReference.description;
-                  }
                   return (
                     <div key={externalReference.id}>
                       <div style={{ display: 'grid', gridTemplateColumns: '90% 10%' }}>
                         <Accordion onChange={this.handleToggleDetails.bind(this)} style={{ borderBottom: '0', boxShadow: 'none' }}>
-                          {/* <ListItem dense={true} divider={true} button={false}> */}
-                          {/* <ListItemIcon>
-                                      <Avatar classes={{ root: classes.avatar }}>
-                                        {externalReference.source_name.substring(0, 1)}
-                                      </Avatar>
-                                    </ListItemIcon> */}
                           <AccordionSummary
                             expandIcon={<ExpandMoreIcon />}
                             aria-controls="panel1a-content"
@@ -277,15 +249,6 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
                           </AccordionDetails>
                           {/* </ListItem> */}
                         </Accordion>
-                        {/* <ListItemSecondaryAction> */}
-                        {/* <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-                                  <FileUploader
-                                    entityId={externalReference.id}
-                                    onUploadSuccess={() => this.props.relay.refetchConnection(200)
-                                    }
-                                    color="inherit"
-                                  />
-                                </Security> */}
                         <div style={{ marginTop: '12px' }}>
                           <Security needs={[KNOWLEDGE_KNUPDATE]}>
                             <CyioExternalReferencePopover
@@ -297,21 +260,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
                             />
                           </Security>
                         </div>
-                        {/* </ListItemSecondaryAction> */}
                       </div>
-                      {/* {externalReference.importFiles.edges.length > 0 && (
-                        <List>
-                          {externalReference.importFiles.edges.map((file) => (
-                            <FileLine
-                              key={file.node.id}
-                              dense={true}
-                              disableImport={true}
-                              file={file.node}
-                              nested={true}
-                            />
-                          ))}
-                        </List>
-                      )} */}
                       <Divider variant="middle" light={true} />
                     </div>
                   );
@@ -346,68 +295,6 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
             </Button>
           )}
         </Paper>
-        {/* if (externalReference.url) {
-                    return (
-                      <div key={externalReference.id}>
-                        <ListItem
-                          dense={true}
-                          divider={true}
-                          button={true}
-                          onClick={this.handleOpenExternalLink.bind(
-                            this,
-                            externalReference.url,
-                          )}
-                        >
-                          <ListItemIcon>
-                            <Avatar classes={{ root: classes.avatar }}>
-                              {externalReference.source_name.substring(0, 1)}
-                            </Avatar>
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={`${externalReference.source_name} ${externalReferenceId}`}
-                            secondary={truncate(externalReferenceSecondary, 90)}
-                          />
-                          <ListItemSecondaryAction>
-                            <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-                              <FileUploader
-                                entityId={externalReference.id}
-                                onUploadSuccess={() => this.props.relay.refetchConnection(200)
-                                }
-                                color="inherit"
-                              />
-                            </Security>
-                            <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                              <ExternalReferenceEnrichment
-                                externalReferenceId={externalReference.id}
-                              />
-                            </Security>
-                            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                              <CyioExternalReferencePopover
-                                externalReferenceId={externalReference.id}
-                                handleRemove={this.handleOpenDialog.bind(
-                                  this,
-                                  externalReferenceEdge,
-                                )}
-                              />
-                            </Security>
-                          </ListItemSecondaryAction>
-                        </ListItem>
-                        {externalReference.importFiles.edges.length > 0 && (
-                          <List>
-                            {externalReference.importFiles.edges.map((file) => (
-                              <FileLine
-                                key={file.node.id}
-                                dense={true}
-                                disableImport={true}
-                                file={file.node}
-                                nested={true}
-                              />
-                            ))}
-                          </List>
-                        )}
-                      </div>
-                    );
-                  } */}
         <Dialog
           open={this.state.displayDialog}
           keepMounted={true}

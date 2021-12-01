@@ -6,33 +6,13 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import { createPaginationContainer } from 'react-relay';
 import Typography from '@material-ui/core/Typography';
-import { Field, Form, Formik } from 'formik';
-import Button from '@material-ui/core/Button';
-import {
-  Add,
-  EditOutlined,
-  ExpandMoreOutlined,
-  RateReviewOutlined,
-} from '@material-ui/icons';
-import Accordion from '@material-ui/core/Accordion';
-import Grid from '@material-ui/core/Grid';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
-import * as Yup from 'yup';
 import { ConnectionHandler } from 'relay-runtime';
-import IconButton from '@material-ui/core/IconButton';
 import inject18n from '../../../../components/i18n';
 import CyioCoreObjectOrCyioCoreRelationshipNoteCard from './CyioCoreObjectOrCyioCoreRelationshipNoteCard';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import MarkDownField from '../../../../components/MarkDownField';
+// import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import { commitMutation } from '../../../../relay/environment';
-import NoteCreation, { noteCreationMutation } from './NoteCreation';
-import TextField from '../../../../components/TextField';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import { dayStartDate } from '../../../../utils/Time';
-import CyioAddNotes from './CyioAddNotes';
+import { noteCreationMutation } from './NoteCreation';
+import CyioNoteCreation from './CyioNoteCreation';
 
 const styles = (theme) => ({
   paper: {
@@ -60,14 +40,6 @@ const styles = (theme) => ({
 //   attribute_abstract: Yup.string(),
 //   content: Yup.string().required(t('This field is required')),
 // });
-const noteValidation = (t) => Yup.object().shape({
-  confidence: Yup.number(),
-  created: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
-  attribute_abstract: Yup.string(),
-  content: Yup.string().required(t('This field is required')),
-});
 
 const sharedUpdater = (store, entityId, newEdge) => {
   const entity = store.get(entityId);
@@ -137,26 +109,24 @@ class CyioCoreObjectNotesCardsContainer extends Component {
 
   render() {
     const {
-      t, classes, cyioCoreObjectId, marginTop, data,
+      t, cyioCoreObjectId, marginTop, data,
     } = this.props;
-    const { open } = this.state;
     const notes = R.pathOr([], ['itAsset', 'notes', 'edges'], data);
+    const paginationOptions = {
+      search: this.state.search,
+    };
     return (
       <div style={{ marginTop: marginTop || 40 }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Notes')}
         </Typography>
         {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
-          {/* <IconButton
-            onClick={this.handleToggleWrite.bind(this)}
-            classes={{ root: classes.createButton }}
-          > */}
-            {/* <EditOutlined fontSize="small" /> */}
-            <CyioAddNotes
-            cyioCoreObjectOrCyioCoreRelationshipId={cyioCoreObjectId}
-            cyioCoreObjectOrCyioCoreRelationshipNotes={notes}
-             />
-          {/* </IconButton> */}
+        <CyioNoteCreation
+          display={true}
+          contextual={true}
+          inputValue={this.state.search}
+          paginationOptions={paginationOptions}
+        />
         {/* </Security> */}
         <div className="clearfix" />
         {notes.map((noteEdge) => {

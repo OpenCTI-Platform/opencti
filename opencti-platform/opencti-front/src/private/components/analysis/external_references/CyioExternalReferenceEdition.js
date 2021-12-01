@@ -6,12 +6,9 @@ import { Form, Formik, Field } from 'formik';
 import { compose, pick } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
-import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
+import { commitMutation as CM, createFragmentContainer } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import {
@@ -20,10 +17,6 @@ import {
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
-import {
-  SubscriptionAvatars,
-  SubscriptionFocus,
-} from '../../../../components/Subscription';
 
 const styles = (theme) => ({
   header: {
@@ -139,12 +132,12 @@ class CyioExternalReferenceEditionContainer extends Component {
         ],
       },
       setSubmitting,
-      onCompleted: (response) => {
+      onCompleted: () => {
         setSubmitting(false);
         resetForm();
         this.props.handleClose();
       },
-      onError: (err) => console.log('ExtRefEditionDarkLightMutationError', err),
+      // onError: (err) => console.log('ExtRefEditionDarkLightMutationError', err),
     });
   }
 
@@ -169,9 +162,9 @@ class CyioExternalReferenceEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, externalReference,
+      t, classes, externalReference,
     } = this.props;
-    const { editContext } = externalReference;
+    // const { editContext } = externalReference;
     const initialValues = pick(
       ['source_name', 'external_id', 'url', 'description'],
       externalReference,
@@ -204,7 +197,6 @@ class CyioExternalReferenceEditionContainer extends Component {
               submitForm,
               handleReset,
               isSubmitting,
-              setFieldValue,
             }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field

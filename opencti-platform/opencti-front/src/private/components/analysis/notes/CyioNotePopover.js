@@ -8,20 +8,17 @@ import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
-import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
-import ExpandMoreOutlined from '@material-ui/icons/ExpandMoreOutlined';
 import graphql from 'babel-plugin-relay/macro';
-import { ConnectionHandler } from 'relay-runtime';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
-import { QueryRenderer, commitMutation } from '../../../../relay/environment';
+// import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
 import CyioNoteEditionContainer from './CyioNoteEditionContainer';
 import Loader from '../../../../components/Loader';
@@ -113,7 +110,7 @@ class CyioNotePopover extends Component {
       variables: {
         id: this.props.id,
       },
-      onCompleted: (data) => {
+      onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
         if (this.props.handleOpenRemove) {
@@ -122,7 +119,7 @@ class CyioNotePopover extends Component {
           this.props.history.push('/dashboard/analysis/notes');
         }
       },
-      onError: (err) => console.log('NoteDeletionDarkLightMutationError', err),
+      // onError: (err) => console.log('NoteDeletionDarkLightMutationError', err),
     });
     // commitMutation({
     //   mutation: CyioNotePopoverDeletionMutation,

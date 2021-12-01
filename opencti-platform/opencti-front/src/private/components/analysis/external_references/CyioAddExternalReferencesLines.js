@@ -7,18 +7,14 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import DialogContent from '@material-ui/core/DialogContent';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
-import Avatar from '@material-ui/core/Avatar';
-import { CheckCircle } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
-import CyioExternalReferenceCreation from './CyioExternalReferenceCreation';
 
 const styles = (theme) => ({
   avatar: {
@@ -183,9 +179,6 @@ class CyioAddExternalReferencesLinesContainer extends Component {
       classes,
       data,
       cyioCoreObjectOrCyioCoreRelationshipReferences,
-      open,
-      search,
-      paginationOptions,
     } = this.props;
     const cyioCoreObjectOrCyioCoreRelationshipReferencesIds = map(
       (n) => n.node.id,

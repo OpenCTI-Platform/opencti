@@ -5,10 +5,7 @@ import { createFragmentContainer } from 'react-relay';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import { Close } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import { SubscriptionAvatars } from '../../../../components/Subscription';
 import CyioNoteEditionOverview from './CyioNoteEditionOverview';
 
 const styles = (theme) => ({

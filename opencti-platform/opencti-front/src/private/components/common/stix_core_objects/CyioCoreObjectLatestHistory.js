@@ -7,7 +7,7 @@ import inject18n from '../../../../components/i18n';
 import CyioCoreObjectHistoryLines, {
   cyioCoreObjectHistoryLinesQuery,
 } from './CyioCoreObjectHistoryLines';
-import { QueryRenderer } from '../../../../relay/environment';
+// import { QueryRenderer } from '../../../../relay/environment';
 
 class CyioCoreObjectLatestHistory extends Component {
   render() {

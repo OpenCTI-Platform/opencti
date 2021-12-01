@@ -4,35 +4,26 @@ import {
   map, filter, head, compose,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
 import Dialog from '@material-ui/core/Dialog';
 import Button from '@material-ui/core/Button';
 import InputAdornment from '@material-ui/core/InputAdornment';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
 import CardActions from '@material-ui/core/CardActions';
 import TextField from '@material-ui/core/TextField';
-import CardHeader from '@material-ui/core/CardHeader';
-import Checkbox from '@material-ui/core/Checkbox';
 import Collapse from '@material-ui/core/Collapse';
 import Divider from '@material-ui/core/Divider';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { ConnectionHandler } from 'relay-runtime';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
-import { Add, Close } from '@material-ui/icons';
+import { Add } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
 import { QueryRenderer as QR } from 'react-relay';
 import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
-import SearchInput from '../../../../components/SearchInput';
-import { QueryRenderer, commitMutation } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import CyioExternalReferenceCreation from './CyioExternalReferenceCreation';
 import CyioAddExternalReferencesLines, {
   cyioAddExternalReferencesLinesQuery,

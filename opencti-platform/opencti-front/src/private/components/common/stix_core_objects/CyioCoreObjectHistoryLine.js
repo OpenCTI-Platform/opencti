@@ -15,7 +15,6 @@ import {
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
-import Badge from '@material-ui/core/Badge';
 import Avatar from '@material-ui/core/Avatar';
 import {
   AddOutlined,
@@ -243,7 +242,11 @@ class CyioCoreObjectHistoryLineComponent extends Component {
 
   render() {
     const {
-      nsdt, classes, node, isRelation, t,
+      nsdt,
+      classes,
+      node,
+      // isRelation,
+      t,
     } = this.props;
     return (
       <div className={classes.container}>

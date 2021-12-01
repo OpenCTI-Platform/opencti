@@ -15,7 +15,7 @@ import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
-import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
+// import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
 import { truncate } from '../../utils/String';
 import TopBarMenu from '../../private/components/nav/TopBarMenu';
@@ -107,21 +107,17 @@ class CyioListCards extends Component {
       handleChangeView,
       handleAddFilter,
       handleRemoveFilter,
-      handleToggleExports,
       openExports,
-      dataColumns,
-      paginationOptions,
+      // dataColumns,
       OperationsComponent,
       handleDisplayEdit,
       selectedElements,
       keyword,
       filters,
       selectAll,
-      sortBy,
-      orderAsc,
+      // sortBy,
+      // orderAsc,
       children,
-      exportEntityType,
-      exportContext,
       handleNewCreation,
       numberOfElements,
       availableFilterKeys,

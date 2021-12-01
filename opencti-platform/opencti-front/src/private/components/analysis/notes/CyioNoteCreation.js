@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { ConnectionHandler } from 'relay-runtime';
+// import { ConnectionHandler } from 'relay-runtime';
 import {
   compose, evolve, path, pluck,
 } from 'ramda';
@@ -10,18 +10,15 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import Grid from '@material-ui/core/Grid';
-import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { commitMutation as CM, createFragmentContainer } from 'react-relay';
+import { commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
-import { commitMutation } from '../../../../relay/environment';
+// import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -103,15 +100,15 @@ const cyioNoteValidation = (t) => Yup.object().shape({
   content: Yup.string().required(t('This field is required')),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_notes',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
+// const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
+//   const userProxy = store.get(userId);
+//   const conn = ConnectionHandler.getConnection(
+//     userProxy,
+//     'Pagination_notes',
+//     paginationOptions,
+//   );
+//   ConnectionHandler.insertEdgeBefore(conn, newEdge);
+// };
 
 class CyioNoteCreation extends Component {
   constructor(props) {
@@ -142,12 +139,12 @@ class CyioNoteCreation extends Component {
         input: adaptedValues,
       },
       setSubmitting,
-      onCompleted: (response) => {
+      onCompleted: () => {
         setSubmitting(false);
         resetForm();
         this.handleClose();
       },
-      onError: (err) => console.log('NoteCreationDarkLightMutationError', err),
+      // onError: (err) => console.log('NoteCreationDarkLightMutationError', err),
     });
     // commitMutation({
     //   mutation: cyioNoteCreationMutation,

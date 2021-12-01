@@ -15,13 +15,13 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import { commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
-import { commitMutation } from '../../../../relay/environment';
+// import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
-import { insertNode } from '../../../../utils/Store';
+// import { insertNode } from '../../../../utils/Store';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -134,7 +134,7 @@ class CyioExternalReferenceCreation extends Component {
           this.props.onCreate(response.externalReferenceAdd, true);
         }
       },
-      onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
+      // onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
     });
     // commitMutation({
     //   mutation: cyioExternalReferenceCreationMutation,
