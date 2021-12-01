@@ -75,7 +75,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixDomainObjectCreationOverviewComponent extends Component {
+class CyioDomainObjectAssetCreationOverviewComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -88,7 +88,6 @@ class StixDomainObjectCreationOverviewComponent extends Component {
     const {
       t,
       classes,
-      stixDomainObject,
       context,
       values,
       onSubmit,
@@ -455,11 +454,10 @@ class StixDomainObjectCreationOverviewComponent extends Component {
   }
 }
 
-StixDomainObjectCreationOverviewComponent.propTypes = {
+CyioDomainObjectAssetCreationOverviewComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  stixDomainObject: PropTypes.object,
   enableReferences: PropTypes.bool,
   context: PropTypes.array,
   handleClose: PropTypes.func,
@@ -468,4 +466,4 @@ StixDomainObjectCreationOverviewComponent.propTypes = {
 export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(StixDomainObjectCreationOverviewComponent);
+)(CyioDomainObjectAssetCreationOverviewComponent);

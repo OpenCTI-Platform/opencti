@@ -176,7 +176,7 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {device.ports.length !== 0 && device.ports.map((port, key) => (
+                {device.ports && device.ports.map((port, key) => (
                   port.protocols && port.protocols.map((protocol) => (
                     <Chip key={key} classes={{ root: classes.chip }} label={`${port.port_number && t(port.port_number)} ${protocol && t(protocol)}`} color="primary" />
                   ))
