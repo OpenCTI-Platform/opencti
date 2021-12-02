@@ -219,7 +219,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('asset_id', device.asset_id),
       R.assoc('description', device.description),
       R.assoc('name', device.name),
-      R.assoc('asset_tag', device.asset_tag),
+      R.assoc('asset_tag', device.asset_tag || ''),
       R.assoc('asset_type', device.asset_type),
       R.assoc('location', device.locations && device.locations.map((index) => [index.description]).join('\n')),
       R.assoc('version', device.version),
