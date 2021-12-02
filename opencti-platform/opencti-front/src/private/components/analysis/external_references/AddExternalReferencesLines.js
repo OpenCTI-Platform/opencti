@@ -9,10 +9,8 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import DialogContent from '@material-ui/core/DialogContent';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
 import Avatar from '@material-ui/core/Avatar';
 import { CheckCircle } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
@@ -30,13 +28,9 @@ const styles = (theme) => ({
   icon: {
     color: theme.palette.primary.main,
   },
-  list: {
-    marginLeft: '24px',
-    marginRight: '24px',
-  },
 });
 
-export const externalReferenceLinesMutationRelationAdd = graphql`
+const externalReferenceLinesMutationRelationAdd = graphql`
   mutation AddExternalReferencesLinesRelationAddMutation(
     $id: ID!
     $input: StixMetaRelationshipAddInput!
@@ -160,7 +154,7 @@ class AddExternalReferencesLinesContainer extends Component {
         relationship_type: 'external-reference',
       };
       commitMutation({
-        mutation: this.externalReferenceLinesMutationRelationAdd,
+        mutation: externalReferenceLinesMutationRelationAdd,
         variables: {
           id: externalReference.id,
           input,
@@ -195,7 +189,7 @@ class AddExternalReferencesLinesContainer extends Component {
     );
     return (
       <div>
-        <List className={classes.list}>
+        <List>
           {data.externalReferences.edges.map((externalReferenceNode) => {
             const externalReference = externalReferenceNode.node;
             const alreadyAdded = stixCoreObjectOrStixCoreRelationshipReferencesIds.includes(
@@ -218,9 +212,11 @@ class AddExternalReferencesLinesContainer extends Component {
               >
                 <ListItemIcon>
                   {alreadyAdded ? (
-                    <Checkbox classes={{ root: classes.icon }} />
+                    <CheckCircle classes={{ root: classes.icon }} />
                   ) : (
-                    <Checkbox classes={{ root: classes.icon }} />
+                    <Avatar classes={{ root: classes.avatar }}>
+                      {externalReference.source_name.substring(0, 1)}
+                    </Avatar>
                   )}
                 </ListItemIcon>
                 <ListItemText
@@ -237,13 +233,13 @@ class AddExternalReferencesLinesContainer extends Component {
             );
           })}
         </List>
-        {/* <ExternalReferenceCreation
+        <ExternalReferenceCreation
           display={open}
           contextual={true}
           inputValue={search}
           paginationOptions={paginationOptions}
           onCreate={this.toggleExternalReference.bind(this)}
-        /> */}
+        />
       </div>
     );
   }

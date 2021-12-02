@@ -5,7 +5,7 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
-import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
+import CyioListCardsContent from '../../../../components/list_cards/CyioListCardsContent';
 import { SoftwareCardDummy, SoftwareCard } from './SoftwareCard';
 import { setNumberOfElements } from '../../../../utils/Number';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -55,7 +55,7 @@ class SoftwareCards extends Component {
     //         onLabelClick={onLabelClick.bind(this)}
     //         setBookmarkList={this.handleSetBookmarkList.bind(this)}
     //       />
-            <ListCardsContent
+            <CyioListCardsContent
               initialLoading={initialLoading}
               loadMore={relay.loadMore.bind(this)}
               hasMore={relay.hasMore.bind(this)}
