@@ -327,7 +327,8 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                   <Field
                     component={SelectField}
                     variant='outlined'
-                    name="ports"
+                    disabled={true}
+                    name="responsible_parties"
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px' }}
@@ -336,7 +337,8 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                   <Field
                     component={SelectField}
                     variant='outlined'
-                    name="ports"
+                    disabled={true}
+                    name="responsible_parties"
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px' }}
