@@ -48,6 +48,8 @@ import {
   ShieldSearch,
   ServerNetwork,
 } from 'mdi-material-ui';
+import networkIcon from '../resources/images/assets/networkIcon.svg';
+import softwareIcon from '../resources/images/assets/softwareIcon.svg';
 
 const iconSelector = (type, variant, fontSize, color) => {
   let style = {};
@@ -84,6 +86,10 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <Router style={style} fontSize={fontSize} role="img" />;
     case 'firewall':
       return <Whatshot style={style} fontSize={fontSize} role="img" />;
+    case 'network':
+      return <img src={networkIcon} style={{ height: '20px' }} alt="network-icon" />;
+    case 'software':
+      return <img src={softwareIcon} style={{ height: '20px' }} alt="software-icon" />;
     case 'switch':
       return <Scanner style={style} fontSize={fontSize} role="img" />;
     case 'storage_array':
