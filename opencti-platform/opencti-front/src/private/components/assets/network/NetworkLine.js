@@ -198,18 +198,18 @@ const NetworkLineFragment = createFragmentContainer(
         asset_type
         network_name
         network_id
-        network_address_range {
-          ending_ip_address{
-            ... on IpV4Address {
-              ip_address_value
-            }
-          }
-          starting_ip_address{
-            ... on IpV4Address {
-              ip_address_value
-            }
-          }
-        }
+        # network_address_range {
+        #   ending_ip_address{
+        #     ... on IpV4Address {
+        #       ip_address_value
+        #     }
+        #   }
+        #   starting_ip_address{
+        #     ... on IpV4Address {
+        #       ip_address_value
+        #     }
+        #   }
+        # }
         labels
         # created
         # modified

@@ -50,8 +50,8 @@ class NetworkDetailsComponent extends Component {
       t, classes, network, fd,
     } = this.props;
     const ntadr = network.network_address_range;
-    const startingAddress = ntadr.starting_ip_address && ntadr.starting_ip_address.ip_address_value;
-    const endingAddress = ntadr.ending_ip_address && ntadr.ending_ip_address.ip_address_value;
+    const startingAddress = ntadr?.starting_ip_address && ntadr.starting_ip_address?.ip_address_value;
+    const endingAddress = ntadr?.ending_ip_address && ntadr.ending_ip_address?.ip_address_value;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -206,18 +206,18 @@ const NetworkDetails = createFragmentContainer(
         network_name
         network_id
         # implementation_point
-        network_address_range {
-          ending_ip_address{
-            ... on IpV4Address {
-              ip_address_value
-            }
-          }
-          starting_ip_address{
-            ... on IpV4Address {
-              ip_address_value
-            }
-          }
-        }
+        # network_address_range {
+        #   ending_ip_address{
+        #     ... on IpV4Address {
+        #       ip_address_value
+        #     }
+        #   }
+        #   starting_ip_address{
+        #     ... on IpV4Address {
+        #       ip_address_value
+        #     }
+        #   }
+        # }
       }
     `,
   },

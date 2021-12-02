@@ -188,6 +188,7 @@ const DeviceLineFragment = createFragmentContainer(
           ip_address_value
         }
         installed_operating_system{
+          name
           vendor_name
         }
         fqdn

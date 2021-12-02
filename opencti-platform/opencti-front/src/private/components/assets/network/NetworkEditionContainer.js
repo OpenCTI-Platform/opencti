@@ -25,10 +25,10 @@ import TextField from '../../../../components/TextField';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import NetworkEditionOverview from './NetworkEditionOverview';
 import NetworkEditionDetails from './NetworkEditionDetails';
-import StixDomainObjectAssetEditionOverview from '../../common/stix_domain_objects/StixDomainObjectAssetEditionOverview';
-import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import CyioDomainObjectAssetEditionOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetEditionOverview';
+import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
+import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 
 const styles = (theme) => ({
   container: {
@@ -199,8 +199,8 @@ class NetworkEditionContainer extends Component {
       R.assoc('network_id', network.network_id),
       R.assoc('is_scanned', network.is_scanned),
       R.assoc('implementation_point', network.implementation_point),
-      R.assoc('starting_address', network.network_address_range.starting_ip_address && network.network_address_range.starting_ip_address.ip_address_value),
-      R.assoc('ending_address', network.network_address_range.ending_ip_address && network.network_address_range.ending_ip_address.ip_address_value),
+      R.assoc('starting_address', network?.network_address_range?.starting_ip_address?.ip_address_value || ''),
+      R.assoc('ending_address', network?.network_address_range?.ending_ip_address?.ip_address_value || ''),
       R.pick([
         'id',
         'asset_id',
@@ -295,8 +295,8 @@ class NetworkEditionContainer extends Component {
                 // context={editContext}
                 handleClose={handleClose.bind(this)}
                 /> */}
-                    <StixDomainObjectAssetEditionOverview
-                      stixDomainObject={network}
+                    <CyioDomainObjectAssetEditionOverview
+                      cyioDomainObject={network}
                     // enableReferences={this.props.enableReferences}
                     // context={editContext}
                     // handleClose={handleClose.bind(this)}
@@ -319,16 +319,16 @@ class NetworkEditionContainer extends Component {
                 style={{ marginTop: 25 }}
               >
                 <Grid item={true} xs={6}>
-                  {/* <StixCoreObjectExternalReferences
-                    stixCoreObjectId={network.id}
+                  {/* <CyioCoreObjectExternalReferences
+                    cyioCoreObjectId={network.id}
                   /> */}
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <StixCoreObjectLatestHistory stixCoreObjectId={network.id} />
+                  <CyioCoreObjectLatestHistory cyioCoreObjectId={network.id} />
                 </Grid>
               </Grid>
-              <StixCoreObjectOrStixCoreRelationshipNotes
-                stixCoreObjectOrStixCoreRelationshipId={network.id}
+              <CyioCoreObjectOrCyioCoreRelationshipNotes
+                cyioCoreObjectOrCyioCoreRelationshipId={network.id}
               />
             </>
           )}

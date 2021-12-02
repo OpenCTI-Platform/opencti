@@ -12,15 +12,13 @@ import {
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
-import ListCards from '../../../components/list_cards/ListCards';
-import ListLines from '../../../components/list_lines/ListLines';
+import CyioListCards from '../../../components/list_cards/CyioListCards';
+import CyioListLines from '../../../components/list_lines/CyioListLines';
 import NetworkCards, {
   networkCardsQuery,
-  // networkCardsdarkLightRootQuery,
 } from './network/NetworkCards';
 import NetworkLines, {
   networkLinesQuery,
-  // networkLinesdarkLightRootQuery,
 } from './network/NetworkLines';
 import NetworkCreation from './network/NetworkCreation';
 import NetworkDeletion from './network/NetworkDeletion';
@@ -175,7 +173,7 @@ class Network extends Component {
       },
     };
     return (
-      <ListCards
+      <CyioListCards
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -190,7 +188,6 @@ class Network extends Component {
         OperationsComponent={<NetworkDeletion />}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<NetworkCreation />}
         openExports={openExports}
         exportEntityType="Network"
         keyword={searchTerm}
@@ -205,27 +202,13 @@ class Network extends Component {
           'createdBy',
         ]}
       >
-        {/* <QueryRenderer
-          query={networkCardsQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <NetworkCards
-                data={props}
-                selectAll={selectAll}
-                paginationOptions={paginationOptions}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-          )}
-        /> */}
+        {/* <QueryRenderer */}
         <QR
           environment={QueryRendererDarkLight}
           query={networkCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => <NetworkCards
+          render={({ props }) => (
+            <NetworkCards
               data={props}
               selectAll={selectAll}
               paginationOptions={paginationOptions}
@@ -234,10 +217,10 @@ class Network extends Component {
               onLabelClick={this.handleAddFilter.bind(this)}
               onToggleEntity={this.handleToggleSelectEntity.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          }
+              />
+          )}
         />
-      </ListCards>
+      </CyioListCards>
     );
   }
 
@@ -290,7 +273,7 @@ class Network extends Component {
       },
     };
     return (
-      <ListLines
+      <CyioListLines
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -306,11 +289,6 @@ class Network extends Component {
         selectedElements={selectedElements}
         selectAll={selectAll}
         OperationsComponent={<NetworkDeletion />}
-        CreateItemComponent={
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <NetworkCreation />
-          </Security>
-        }
         openExports={openExports}
         exportEntityType="Network"
         keyword={searchTerm}
@@ -325,7 +303,9 @@ class Network extends Component {
           'createdBy',
         ]}
       >
-        {/* <QueryRenderer
+        {/* <QueryRenderer */}
+        <QR
+          environment={QueryRendererDarkLight}
           query={networkLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
@@ -341,25 +321,8 @@ class Network extends Component {
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
-        /> */}
-        <QR
-          environment={QueryRendererDarkLight}
-          query={networkLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => <NetworkLines
-              data={props}
-              selectAll={selectAll}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              selectedElements={selectedElements}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          }
         />
-      </ListLines>
+      </CyioListLines>
     );
   }
 

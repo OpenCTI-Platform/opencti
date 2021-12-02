@@ -70,7 +70,7 @@ const deviceMutationFieldPatch = graphql`
     threatActorEdit(id: $id) {
       fieldPatch(input: $input, commitMessage: $commitMessage) {
         ...DeviceCreationDetails_device
-        ...Device_device
+        # ...Device_device
       }
     }
   }

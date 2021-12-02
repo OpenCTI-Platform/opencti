@@ -37,20 +37,20 @@ const styles = (theme) => ({
   },
 });
 
-const deviceMutationFieldPatch = graphql`
-  mutation DeviceEditionDetailsFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-    $commitMessage: String
-  ) {
-    threatActorEdit(id: $id) {
-      fieldPatch(input: $input, commitMessage: $commitMessage) {
-        # ...DeviceEditionDetails_device
-        ...Device_device
-      }
-    }
-  }
-`;
+// const deviceMutationFieldPatch = graphql`
+//   mutation DeviceEditionDetailsFieldPatchMutation(
+//     $id: ID!
+//     $input: [EditInput]!
+//     $commitMessage: String
+//   ) {
+//     threatActorEdit(id: $id) {
+//       fieldPatch(input: $input, commitMessage: $commitMessage) {
+//         # ...DeviceEditionDetails_device
+//         ...Device_device
+//       }
+//     }
+//   }
+// `;
 
 const deviceEditionDetailsFocus = graphql`
   mutation DeviceEditionDetailsFocusMutation(
