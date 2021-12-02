@@ -53,7 +53,7 @@ const networkMutationFieldPatch = graphql`
     intrusionSetEdit(id: $id) {
       fieldPatch(input: $input, commitMessage: $commitMessage) {
         ...NetworkEditionOverview_network
-        ...Network_network
+        # ...Network_network
       }
     }
   }

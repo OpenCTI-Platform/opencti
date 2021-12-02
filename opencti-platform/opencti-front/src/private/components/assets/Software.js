@@ -13,15 +13,13 @@ import {
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
-import ListCards from '../../../components/list_cards/ListCards';
-import ListLines from '../../../components/list_lines/ListLines';
+import CyioListCards from '../../../components/list_cards/CyioListCards';
+import CyioListLines from '../../../components/list_lines/CyioListLines';
 import SoftwareCards, {
   softwareCardsQuery,
-  // softwareCardsdarkLightRootQuery,
 } from './software/SoftwareCards';
 import SoftwareLines, {
   softwareLinesQuery,
-  // softwareLinesdarkLightRootQuery,
 } from './software/SoftwareLines';
 import SoftwareCreation from './software/SoftwareCreation';
 import SoftwareDeletion from './software/SoftwareDeletion';
@@ -180,7 +178,7 @@ class Software extends Component {
       },
     };
     return (
-      <ListCards
+      <CyioListCards
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -195,7 +193,6 @@ class Software extends Component {
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<SoftwareCreation />}
         OperationsComponent={<SoftwareDeletion />}
         openExports={openExports}
         exportEntityType="Software"
@@ -211,7 +208,9 @@ class Software extends Component {
           'createdBy',
         ]}
       >
-        {/* <QueryRenderer
+        {/* <QueryRenderer */}
+        <QR
+          environment={QueryRendererDarkLight}
           query={softwareCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
@@ -226,28 +225,8 @@ class Software extends Component {
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
-        /> */}
-        <QR
-          environment={QueryRendererDarkLight}
-          query={softwareCardsQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => {
-            console.log(`DarkLightSoftwareCards Error ${error} OR Props ${JSON.stringify(props)}`);
-            return (
-              <SoftwareCards
-                data={props}
-                selectAll={selectAll}
-                paginationOptions={paginationOptions}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-            );
-          }}
         />
-      </ListCards>
+      </CyioListCards>
     );
   }
 
@@ -315,7 +294,7 @@ class Software extends Component {
       },
     };
     return (
-      <ListLines
+      <CyioListLines
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -330,7 +309,6 @@ class Software extends Component {
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<SoftwareCreation />}
         OperationsComponent={<SoftwareDeletion />}
         openExports={openExports}
         exportEntityType="Software"
@@ -346,7 +324,9 @@ class Software extends Component {
           'createdBy',
         ]}
       >
-        {/* <QueryRenderer
+        {/* <QueryRenderer */}
+        <QR
+          environment={QueryRendererDarkLight}
           query={softwareLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
@@ -362,29 +342,8 @@ class Software extends Component {
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
-        /> */}
-        <QR
-          environment={QueryRendererDarkLight}
-          query={softwareLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => {
-            console.log(`DarkLightSoftwareLines Error ${error} OR Props ${JSON.stringify(props)}`);
-            return (
-              <SoftwareLines
-                data={props}
-                selectAll={selectAll}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                paginationOptions={paginationOptions}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-            );
-          }}
         />
-      </ListLines>
+      </CyioListLines>
     );
   }
 
