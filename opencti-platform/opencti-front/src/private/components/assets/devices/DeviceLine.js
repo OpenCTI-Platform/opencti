@@ -190,6 +190,7 @@ const DeviceLineFragment = createFragmentContainer(
         }
         installed_operating_system{
           name
+          vendor_name
         }
         fqdn
         network_id

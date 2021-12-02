@@ -13,12 +13,12 @@ import NetworkEdition from './NetworkEdition';
 import NetworkPopover from './NetworkPopover';
 import NetworkDeletion from './NetworkDeletion';
 import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
-import StixDomainObjectAssetHeader from '../../common/stix_domain_objects/StixDomainObjectAssetHeader';
+import CyioDomainObjectHeader from '../../common/stix_domain_objects/CyioDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import StixDomainObjectAssetOverview from '../../common/stix_domain_objects/StixDomainObjectAssetOverview';
-import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import CyioDomainObjectAssetOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetOverview';
+import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
+import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 
 const styles = () => ({
@@ -60,8 +60,8 @@ class NetworkComponent extends Component {
       <>
         {!this.state.displayEdit && !location.openEdit ? (
           <div className={classes.container}>
-            <StixDomainObjectAssetHeader
-              stixDomainObject={network}
+            <CyioDomainObjectHeader
+              cyioDomainObject={network}
               history={history}
               PopoverComponent={<NetworkPopover />}
               handleDisplayEdit={this.handleDisplayEdit.bind(this)}
@@ -75,7 +75,7 @@ class NetworkComponent extends Component {
             >
               <>
                 <Grid item={true} xs={6}>
-                  <StixDomainObjectAssetOverview stixDomainObject={network} />
+                  <CyioDomainObjectAssetOverview cyioDomainObject={network} />
                 </Grid>
                 <Grid item={true} xs={6}>
                   <NetworkDetails network={network} />
@@ -89,16 +89,16 @@ class NetworkComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                {/* <StixCoreObjectExternalReferences
-              stixCoreObjectId={network.id}
-            /> */}
+                {/* <CyioCoreObjectExternalReferences
+                  cyioCoreObjectId={network.id}
+                /> */}
               </Grid>
               <Grid item={true} xs={6}>
-                <StixCoreObjectLatestHistory stixCoreObjectId={network.id} />
+                <CyioCoreObjectLatestHistory cyioCoreObjectId={network.id} />
               </Grid>
             </Grid>
-            <StixCoreObjectOrStixCoreRelationshipNotes
-              stixCoreObjectOrStixCoreRelationshipId={network.id}
+            <CyioCoreObjectOrCyioCoreRelationshipNotes
+              cyioCoreObjectOrCyioCoreRelationshipId={network.id}
             />
             {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <NetworkEdition networkId={network.id} />
@@ -126,48 +126,24 @@ NetworkComponent.propTypes = {
 
 const Network = createFragmentContainer(NetworkComponent, {
   network: graphql`
-    fragment Network_network on IntrusionSet {
+    fragment Network_network on NetworkAsset {
       id
-      standard_id
-      x_opencti_stix_ids
-      spec_version
-      revoked
-      confidence
-      created
-      modified
-      created_at
-      updated_at
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-        }
-      }
-      creator {
-        id
-        name
-      }
-      objectMarking {
-        edges {
-          node {
-            id
-            definition
-            x_opencti_color
-          }
-        }
-      }
-      objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
+      asset_tag
+      asset_type
+      asset_id
+      locations {
+        description
       }
       name
-      aliases
+      asset_id
+      serial_number
+      labels
+      description
+      release_date
+      vendor_name
+      # operational_status
+      version
+      ...NetworkDetails_network
     }
   `,
 });

@@ -54,7 +54,7 @@ const loc = window.location;
 let { host } = loc;
 if (process.env.REACT_APP_GRAPHQL_HOST !== undefined) {
   const hostUrl = new URL(process.env.REACT_APP_GRAPHQL_HOST);
-  console.log(`GraphQL host -> ${host}`);
+  // console.log(`GraphQL host -> ${host}`);
   host = hostUrl.host;
 }
 // eslint-disable-next-line no-console

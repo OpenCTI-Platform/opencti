@@ -2,9 +2,7 @@
 /* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { QueryRenderer as QR } from 'react-relay';
 import Typography from '@material-ui/core/Typography';
-import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectHistoryLines, {
   stixCoreObjectHistoryLinesQuery,
@@ -19,8 +17,7 @@ class StixCoreObjectLatestHistory extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Most recent history')}
         </Typography>
-        <QR
-          environment={QueryRendererDarkLight}
+        <QueryRenderer
           query={stixCoreObjectHistoryLinesQuery}
           variables={{
             filters: [

@@ -8,19 +8,13 @@ import { createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import {
-  Card,
-  Typography,
-  Grid,
-  Checkbox,
-} from '@material-ui/core';
+import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import IconButton from '@material-ui/core/IconButton';
 import Avatar from '@material-ui/core/Avatar';
 import { StarBorderOutlined } from '@material-ui/icons';
-import ComputerIcon from '@material-ui/icons/Devices';
 import Skeleton from '@material-ui/lab/Skeleton';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -34,12 +28,12 @@ import {
 const styles = (theme) => ({
   card: {
     width: '100%',
-    height: '100%',
+    height: 170,
     borderRadius: 6,
   },
   cardDummy: {
     width: '100%',
-    height: '100%',
+    height: 170,
     color: theme.palette.grey[700],
     borderRadius: 6,
   },
@@ -54,18 +48,16 @@ const styles = (theme) => ({
     height: '100%',
   },
   header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginBottom: '13px',
-  },
-  body: {
-    marginBottom: '13px',
+    height: 55,
+    paddingBottom: 0,
+    marginBottom: 0,
   },
   content: {
     width: '100%',
+    paddingTop: 0,
   },
   description: {
-    height: 170,
+    height: 70,
     overflow: 'hidden',
   },
   objectLabel: {
@@ -107,7 +99,7 @@ class ThreatActorCardComponent extends Component {
           component={Link}
           to={`/dashboard/threats/threat_actors/${node.id}`}
         >
-          {/* <CardHeader
+          <CardHeader
             classes={{ root: classes.header }}
             avatar={
               <Avatar className={classes.avatar}>{node.name.charAt(0)}</Avatar>
@@ -128,17 +120,8 @@ class ThreatActorCardComponent extends Component {
                 <StarBorderOutlined />
               </IconButton>
             }
-          /> */}
+          />
           <CardContent className={classes.content}>
-            {/* <div>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-              >
-                {t('Type')}
-              </Typography>
-              <ComputerIcon />
-            </div>
             <div className={classes.description}>
               <Markdown
                 remarkPlugins={[remarkGfm, remarkParse]}
@@ -148,79 +131,7 @@ class ThreatActorCardComponent extends Component {
               >
                 {node.description}
               </Markdown>
-            </div> */}
-            <Grid item={true} className={classes.header}>
-              <div>
-                <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                    >
-                      {t('Type')}
-                    </Typography>
-                <ComputerIcon size='small' />
-              </div>
-              <div style={{ marginRight: 'auto', marginLeft: '12px' }}>
-                <Typography variant="h3" gutterBottom ={true}>
-                    {t('Name')}
-                </Typography>
-                <Typography>
-                    {t('KK-HWELL-011')}
-                </Typography>
-              </div>
-              <div>
-                <Checkbox
-                  size="small"
-                  onClick={
-                  bookmarksIds.includes(node.id)
-                    ? deleteBookMark.bind(this, node.id, 'Threat-Actor')
-                    : addBookmark.bind(this, node.id, 'Threat-Actor')
-                }
-                color={bookmarksIds.includes(node.id) ? 'secondary' : 'primary'}
-                />
-              </div>
-            </Grid>
-            <Grid xs={12} container={true} >
-              <Grid item={true} xs={6} className={classes.body}>
-                <Typography variant="h3" gutterBottom ={true}>
-                  {t('Asset ID')}
-                </Typography>
-                <Typography>
-                    {t('KK-HWELL-011')}
-                </Typography>
-                <div className="clearfix" />
-                <Typography variant="h3" style={{ marginTop: '13px' }} gutterBottom ={true}>
-                  {t('IP FQDN')}
-                </Typography>
-                <Typography>
-                    {t('Lorem Ipsum')}
-                </Typography>
-              </Grid>
-              <Grid xs={6} item={true} className={classes.body}>
-                      <Typography variant="h3" gutterBottom ={true}>
-                        {t('IP Address')}
-                      </Typography>
-                      <Typography>
-                          {t('00:50:56:A3:59:4D')}
-                      </Typography>
-                  <div className="clearfix" />
-                        <Typography variant="h3" style={{ marginTop: '13px' }} gutterBottom ={true}>
-                          {t('Network ID')}
-                        </Typography>
-                        <Typography>
-                            {t('Lorem Ipsum')}
-                        </Typography>
-              </Grid>
-              <Grid>
-                  <div>
-                        <Typography variant="h3" gutterBottom ={true}>
-                          {t('Operating System')}
-                        </Typography>
-                        <Typography>
-                            {t('Microsoft Windows Server 2016')}
-                        </Typography>
-                  </div>
-              </Grid>
-            </Grid>
+            </div>
             <div className={classes.objectLabel}>
               <StixCoreObjectLabels
                 labels={node.objectLabel}
