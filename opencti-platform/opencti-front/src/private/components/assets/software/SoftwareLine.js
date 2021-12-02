@@ -95,21 +95,21 @@ class SoftwareLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.type.width }}
+                style={{ width: dataColumns.asset_type.width }}
               >
                 {/* <AppleIcon /> */}
                 {node.asset_type && <ItemIcon type={node.asset_type} />}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.assetId.width }}
+                style={{ width: dataColumns.asset_id.width }}
               >
                 {/* Lorem Ipsum Lorem Ipsum */}
                 {node.asset_id && node.asset_id}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.vendorName.width }}
+                style={{ width: dataColumns.vendor_name.width }}
               >
                 {node.vendor_name && node.vendor_name}
               </div>
@@ -123,7 +123,7 @@ class SoftwareLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.patchLevel.width }}
+                style={{ width: dataColumns.patch_level.width }}
               >
                 {node.patch_level && node.patch_level}
               </div>
@@ -145,7 +145,7 @@ class SoftwareLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
+                style={{ width: dataColumns.labels.width }}
               >
                 <StixCoreObjectLabels
                   variant="inList"
@@ -275,7 +275,7 @@ class SoftwareDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.type.width }}
+                style={{ width: dataColumns.asset_type.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -286,7 +286,7 @@ class SoftwareDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.assetId.width }}
+                style={{ width: dataColumns.asset_id.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -297,7 +297,7 @@ class SoftwareDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.vendorName.width }}
+                style={{ width: dataColumns.vendor_name.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -319,7 +319,7 @@ class SoftwareDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.patchLevel.width }}
+                style={{ width: dataColumns.patch_level.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -352,7 +352,7 @@ class SoftwareDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
+                style={{ width: dataColumns.labels.width }}
               >
                 <Skeleton
                   animation="wave"

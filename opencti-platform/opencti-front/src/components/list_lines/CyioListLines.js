@@ -10,8 +10,14 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
+import InputLabel from '@material-ui/core/InputLabel';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 import {
   Edit,
+  ArrowDownward,
+  ArrowUpward,
   ArrowDropDown,
   ArrowDropUp,
   AppsOutlined,
@@ -87,6 +93,18 @@ const styles = (theme) => ({
     paddingLeft: 10,
     // textTransform: 'uppercase',
   },
+  sortField: {
+    float: 'left',
+  },
+  sortFieldLabel: {
+    margin: '10px 15px 0 0',
+    fontSize: 14,
+    float: 'left',
+  },
+  sortArrowButton: {
+    float: 'left',
+    margin: '-5px 0 0 15px',
+  },
   sortIcon: {
     position: 'absolute',
     margin: '0 0 0 5px',
@@ -127,6 +145,14 @@ class CyioListLines extends Component {
     this.props.handleSort(field, !this.props.orderAsc);
   }
 
+  sortBy(event) {
+    this.props.handleSort(event.target.value, this.props.orderAsc);
+  }
+
+  reverse() {
+    this.props.handleSort(this.props.sortBy, !this.props.orderAsc);
+  }
+
   renderHeaderElement(field, label, width, isSortable) {
     const {
       classes, t, sortBy, orderAsc, handleToggleSelectAll,
@@ -165,6 +191,8 @@ class CyioListLines extends Component {
   render() {
     const {
       t,
+      sortBy,
+      orderAsc,
       classes,
       handleSearch,
       handleChangeView,
@@ -229,6 +257,39 @@ class CyioListLines extends Component {
                 <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>
               </div>
             )}
+            <InputLabel
+              classes={{ root: classes.sortFieldLabel }}
+              style={{
+                marginLeft:
+                  availableFilterKeys && availableFilterKeys.length > 0 ? 10 : 0,
+              }}
+            >
+              {t('Sort by')}
+            </InputLabel>
+            <FormControl classes={{ root: classes.sortField }}>
+              <Select
+                name="sort-by"
+                value={sortBy}
+                onChange={this.sortBy.bind(this)}
+                inputProps={{
+                  name: 'sort-by',
+                  id: 'sort-by',
+                }}
+              >
+                {toPairs(dataColumns).map((dataColumn) => (
+                  dataColumn[1]?.isSortable && <MenuItem key={dataColumn[0]} value={dataColumn[0]}>
+                    {t(dataColumn[1].label)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <IconButton
+              aria-label="Sort by"
+              onClick={this.reverse.bind(this)}
+              classes={{ root: classes.sortArrowButton }}
+            >
+              {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
+            </IconButton>
             {(!availableFilterKeys || availableFilterKeys.length === 0)
               && !noHeaders && <div style={{ height: 38 }}> &nbsp; </div>}
             <div className={classes.filters}>
