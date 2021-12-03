@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
@@ -35,20 +37,20 @@ const styles = (theme) => ({
   },
 });
 
-const deviceMutationFieldPatch = graphql`
-  mutation DeviceEditionDetailsFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-    $commitMessage: String
-  ) {
-    threatActorEdit(id: $id) {
-      fieldPatch(input: $input, commitMessage: $commitMessage) {
-        # ...DeviceEditionDetails_device
-        ...Device_device
-      }
-    }
-  }
-`;
+// const deviceMutationFieldPatch = graphql`
+//   mutation DeviceEditionDetailsFieldPatchMutation(
+//     $id: ID!
+//     $input: [EditInput]!
+//     $commitMessage: String
+//   ) {
+//     threatActorEdit(id: $id) {
+//       fieldPatch(input: $input, commitMessage: $commitMessage) {
+//         # ...DeviceEditionDetails_device
+//         ...Device_device
+//       }
+//     }
+//   }
+// `;
 
 const deviceEditionDetailsFocus = graphql`
   mutation DeviceEditionDetailsFocusMutation(

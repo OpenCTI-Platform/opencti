@@ -8,14 +8,14 @@ import {
   removeFromInventoryQuery,
   QueryMode, updateSoftwareQuery
 } from './sparql-query.js';
-import { compareValues } from '../../utils.js';
-
+import {compareValues} from '../../utils.js';
 
 const softwareResolvers = {
   Query: {
     softwareAssetList: async ( _, args, context, info ) => {
-      var sparqlQuery = getSelectSparqlQuery('SOFTWARE');
-      var reducer = getReducer('SOFTWARE');
+      const selectionList =  context.selectMap.getNode("node");
+      const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList);
+      const reducer = getReducer('SOFTWARE');
       const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
         sparqlQuery,
@@ -29,14 +29,9 @@ const softwareResolvers = {
         const edges = [];
         let limit = (args.first === undefined ? response.length : args.first) ;
         let offset = (args.offset === undefined ? 0 : args.offset) ;
-        let assetList ;
-        if (args.orderedBy !== undefined ) {
-          assetList = response.sort(compareValues(args.orderedBy, args.orderMode ));
-        } else {
-          assetList = response;
-        }
+        const assetList = (args.orderedBy !== undefined) ? response.sort(compareValues(args.orderedBy, args.orderMode)) : response;
 
-        for (let asset of assetList) {
+        for (const asset of assetList) {
           // skip down past the offset
           if ( offset ) {
             offset--
@@ -44,7 +39,7 @@ const softwareResolvers = {
           }
 
           if ( limit ) {
-            let edge = {
+            const edge = {
               cursor: asset.iri,
               node: reducer( asset ),
             }
@@ -66,11 +61,11 @@ const softwareResolvers = {
           edges: edges,
         }
       } else {
-        return ;
+        return null;
       }
     },
     softwareAsset: async ( _, args, context, info ) => {
-      var sparqlQuery = getSelectSparqlQuery('SOFTWARE', args.id, );
+      var sparqlQuery = getSelectSparqlQuery('SOFTWARE', context.selectMap.getNode("softwareAsset"), args.id);
       var reducer = getReducer('SOFTWARE');
       const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema, )
       if (response === undefined ) return null;

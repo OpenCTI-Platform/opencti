@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -10,8 +12,6 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
 import Skeleton from '@material-ui/lab/Skeleton';
-import { QueryRenderer as QR } from 'react-relay';
-import DarkLightEnvironment from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreObjectExternalReferencesLines, {
@@ -46,72 +46,7 @@ class StixCoreObjectExternalReferences extends Component {
   render() {
     const { t, classes, stixCoreObjectId } = this.props;
     return (
-      <>
-       <QR
-          environment={DarkLightEnvironment}
-          query={stixCoreObjectExternalReferencesLinesQuery}
-          variables={{ id: stixCoreObjectId, count: 200 }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <StixCoreObjectExternalReferencesLines
-                  stixCoreObjectId={stixCoreObjectId}
-                  data={props}
-                />
-              );
-            }
-            return (
-              <div style={{ height: '100%' }}>
-                <Typography
-                  variant="h4"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginBottom: 15 }}
-                >
-                  {t('External references')}
-                </Typography>
-                <div className="clearfix" />
-                <Paper classes={{ root: classes.paper }} elevation={2}>
-                  <List>
-                    {Array.from(Array(5), (e, i) => (
-                      <ListItem
-                        key={i}
-                        dense={true}
-                        divider={true}
-                        button={false}
-                      >
-                        {/* <ListItemIcon>
-                          <Avatar classes={{ root: classes.avatarDisabled }}>
-                            {i}
-                          </Avatar>
-                        </ListItemIcon> */}
-                        <ListItemText
-                          primary={
-                            <Skeleton
-                              animation="wave"
-                              variant="rect"
-                              width="90%"
-                              height={15}
-                              style={{ marginBottom: 10 }}
-                            />
-                          }
-                          secondary={
-                            <Skeleton
-                              animation="wave"
-                              variant="rect"
-                              width="90%"
-                              height={15}
-                            />
-                          }
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Paper>
-              </div>
-            );
-          }}
-        />
-        {/* <QueryRenderer
+      <QueryRenderer
         query={stixCoreObjectExternalReferencesLinesQuery}
         variables={{ id: stixCoreObjectId, count: 200 }}
         render={({ props }) => {
@@ -173,8 +108,7 @@ class StixCoreObjectExternalReferences extends Component {
             </div>
           );
         }}
-      /> */}
-      </>
+      />
     );
   }
 }

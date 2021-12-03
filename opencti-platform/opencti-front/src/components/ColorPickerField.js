@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* Refactor */
 import React from 'react';
 import MuiTextField from '@material-ui/core/TextField';
 import { SketchPicker } from 'react-color';

@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -196,18 +198,18 @@ const NetworkLineFragment = createFragmentContainer(
         asset_type
         network_name
         network_id
-        network_address_range {
-          ending_ip_address{
-            ... on IpV4Address {
-              ip_address_value
-            }
-          }
-          starting_ip_address{
-            ... on IpV4Address {
-              ip_address_value
-            }
-          }
-        }
+        # network_address_range {
+        #   ending_ip_address{
+        #     ... on IpV4Address {
+        #       ip_address_value
+        #     }
+        #   }
+        #   starting_ip_address{
+        #     ... on IpV4Address {
+        #       ip_address_value
+        #     }
+        #   }
+        # }
         labels
         # created
         # modified

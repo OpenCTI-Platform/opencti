@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
@@ -49,7 +51,8 @@ const softwareMutationFieldPatch = graphql`
   ) {
     campaignEdit(id: $id) {
       fieldPatch(input: $input, commitMessage: $commitMessage) {
-        ...Software_software
+        id
+        # ...Software_software
       }
     }
   }

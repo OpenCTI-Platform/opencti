@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -188,6 +190,7 @@ const DeviceLineFragment = createFragmentContainer(
         }
         installed_operating_system{
           name
+          vendor_name
         }
         fqdn
         network_id

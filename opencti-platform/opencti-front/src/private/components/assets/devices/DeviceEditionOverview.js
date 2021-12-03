@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -27,7 +29,7 @@ import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
+import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObjectLabelsView';
 
 const styles = (theme) => ({
   paper: {
@@ -48,7 +50,7 @@ const deviceMutationFieldPatch = graphql`
     threatActorEdit(id: $id) {
       fieldPatch(input: $input, commitMessage: $commitMessage) {
         ...DeviceEditionOverview_device
-        ...Device_device
+        # ...Device_device
       }
     }
   }
@@ -539,7 +541,7 @@ class DeviceEditionOverviewComponent extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <StixCoreObjectLabelsView
+                        <CyioCoreObjectLabelsView
                           labels={objectLabel}
                           marginTop={20}
                           id={device.id}

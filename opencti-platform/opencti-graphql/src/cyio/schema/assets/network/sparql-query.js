@@ -42,7 +42,7 @@ export function getReducer( type ) {
 
 
 const selectClause = `
-SELECT DISTINCT ?iri ?rdf_type ?id
+SELECT DISTINCT ?iri ?id
   ?asset_id ?name ?description ?locations ?responsible_party 
   ?asset_type ?asset_tag ?serial_number ?vendor_name ?version ?release_date
   ?network_id ?network_name ?network_address_range 
@@ -56,7 +56,6 @@ const byIdClause = `?iri <http://darklight.ai/ns/common#id> "{id}" .`;
 
 const predicates = `
 ?iri <http://darklight.ai/ns/common#id> ?id .
-?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type .
 # OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id } .
 OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_id> ?asset_id } .
 OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#name> ?name } .
@@ -86,12 +85,11 @@ const inventoryConstraint = `
     }
 ` ;
 
-const ipAddrRange = `SELECT DISTINCT ?rdf_type ?id ?object_type ?starting_ip_address ?ending_ip_address 
+const ipAddrRange = `SELECT DISTINCT ?id ?object_type ?starting_ip_address ?ending_ip_address 
 FROM <tag:stardog:api:context:named>
 WHERE {
     <{iri}> a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> ;
         <http://darklight.ai/ns/common#id> ?id  ;
-        <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type  ;
         <http://scap.nist.gov/ns/asset-identification#starting_ip_address> ?starting_ip_address ;
         <http://scap.nist.gov/ns/asset-identification#ending_ip_address> ?ending_ip_address .
     OPTIONAL { <{iri}> <http://darklight.ai/ns/common#object_type> ?object_type } .

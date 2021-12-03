@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { useContext, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import {
@@ -22,16 +24,13 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
-import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import Slide from '@material-ui/core/Slide';
 import { Add, CancelOutlined } from '@material-ui/icons';
-import Tooltip from '@material-ui/core/Tooltip';
-import { Label, Information } from 'mdi-material-ui';
+import { Label } from 'mdi-material-ui';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
-import SelectField from '../../../../components/SelectField';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import LabelCreation from '../../settings/labels/LabelCreation';
 import Security, {
@@ -41,6 +40,11 @@ import Security, {
   UserContext,
 } from '../../../../utils/Security';
 import { hexToRGB } from '../../../../utils/Colors';
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 
 const styles = () => ({
   labels: {
@@ -195,72 +199,44 @@ const StixCoreObjectLabelsView = (props) => {
       <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
         {t('Labels')}
       </Typography>
-      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-        <Tooltip
-          title={t(
-            'Label',
-          )}
-        >
-          <Information fontSize="inherit" color="disabled" />
-        </Tooltip>
-      </div>
-      {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <IconButton
           color="secondary"
           aria-label="Label"
-          size="small"
           onClick={handleOpenAdd}
-          style={{ float: 'left', margin: '-8px 0 0 -2px' }}
+          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
         >
           <Add fontSize="small" />
         </IconButton>
-      {/* </Security> */}
+      </Security>
       <div className="clearfix" />
-      {labels ? (
-        <div className={classes.objectLabel}>
-          {map(
-            (label) => (
-              <Chip
-                key={label.id}
-                variant="outlined"
-                classes={{ root: classes.label }}
-                label={label.value}
-                style={{
-                  color: label.color,
-                  borderColor: label.color,
-                  backgroundColor: hexToRGB(label.color),
-                }}
-                onDelete={() => handleRemoveLabel(label.id)}
-                deleteIcon={
-                  <CancelOutlined
-                    className={classes.deleteIcon}
-                    style={{
-                      color: label.color,
-                    }}
-                  />
-                }
-              />
-            ),
-            labelsNodes,
-          )}
-        </div>
-      ) : (
-        <Field
-          component={SelectField}
-          variant='outlined'
-          size='small'
-          name="labels"
-          fullWidth={true}
-          containerstyle={{ width: '50%' }}
-        >
-          <MenuItem key="activist" value="activist">
-            {t('activist')}
-          </MenuItem>
-          <MenuItem key="competitor" value="competitor">
-            {t('competitor')}
-          </MenuItem>
-        </Field>
-      )}
+      <div className={classes.objectLabel}>
+        {map(
+          (label) => (
+            <Chip
+              key={label.id}
+              variant="outlined"
+              classes={{ root: classes.label }}
+              label={label.value}
+              style={{
+                color: label.color,
+                borderColor: label.color,
+                backgroundColor: hexToRGB(label.color),
+              }}
+              onDelete={() => handleRemoveLabel(label.id)}
+              deleteIcon={
+                <CancelOutlined
+                  className={classes.deleteIcon}
+                  style={{
+                    color: label.color,
+                  }}
+                />
+              }
+            />
+          ),
+          labelsNodes,
+        )}
+      </div>
       <Formik
         initialValues={{ new_labels: [] }}
         onSubmit={onSubmit}
@@ -271,59 +247,56 @@ const StixCoreObjectLabelsView = (props) => {
         }) => (
           <Dialog
             open={openAdd}
+            TransitionComponent={Transition}
             onClose={handleCloseAdd}
             fullWidth={true}
           >
-            <DialogTitle>{t('Add Labels')}</DialogTitle>
-            <div style={{ display: 'flex', padding: '20px 20px 20px 0' }}>
-                <DialogContent style={{ overflowY: 'hidden', width: '70%', paddingTop: '0' }}>
-                  <Form>
-                    <Field
-                      component={AutocompleteField}
-                      name="new_labels"
-                      multiple={true}
-                      textfieldprops={{
-                        label: t('Labels'),
-                        onFocus: searchLabels,
-                      }}
-                      noOptionsText={t('No available options')}
-                      options={stateLabels}
-                      onInputChange={searchLabels}
-                      openCreate={isLabelManager ? handleOpenCreate : null}
-                      renderOption={(option) => (
-                        <React.Fragment>
-                          <div
-                            className={classes.icon}
-                            style={{ color: option.color }}
-                          >
-                            <Label />
-                          </div>
-                          <div className={classes.text}>{option.label}</div>
-                        </React.Fragment>
-                      )}
-                      classes={{ clearIndicator: classes.autoCompleteIndicator }}
-                    />
-                  </Form>
-                </DialogContent>
-                <DialogActions style={{ width: '30%', padding: '0' }}>
-                  <Button
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    color="primary"
-                    variant= 'outlined'
-                  >
-                    {t('Close')}
-                  </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    color="primary"
-                    variant="contained"
-                  >
-                    {t('Add')}
-                  </Button>
-                </DialogActions>
-            </div>
+            <DialogTitle>{t('Add new labels')}</DialogTitle>
+            <DialogContent style={{ overflowY: 'hidden' }}>
+              <Form>
+                <Field
+                  component={AutocompleteField}
+                  name="new_labels"
+                  multiple={true}
+                  textfieldprops={{
+                    label: t('Labels'),
+                    onFocus: searchLabels,
+                  }}
+                  noOptionsText={t('No available options')}
+                  options={stateLabels}
+                  onInputChange={searchLabels}
+                  openCreate={isLabelManager ? handleOpenCreate : null}
+                  renderOption={(option) => (
+                    <React.Fragment>
+                      <div
+                        className={classes.icon}
+                        style={{ color: option.color }}
+                      >
+                        <Label />
+                      </div>
+                      <div className={classes.text}>{option.label}</div>
+                    </React.Fragment>
+                  )}
+                  classes={{ clearIndicator: classes.autoCompleteIndicator }}
+                />
+              </Form>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={handleReset}
+                disabled={isSubmitting}
+                color="primary"
+              >
+                {t('Close')}
+              </Button>
+              <Button
+                onClick={submitForm}
+                disabled={isSubmitting}
+                color="primary"
+              >
+                {t('Add')}
+              </Button>
+            </DialogActions>
             <LabelCreation
               contextual={true}
               open={openCreate}

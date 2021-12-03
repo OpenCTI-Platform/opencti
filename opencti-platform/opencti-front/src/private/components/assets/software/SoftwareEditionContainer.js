@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
@@ -23,10 +25,10 @@ import TextField from '../../../../components/TextField';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import SoftwareEditionOverview from './SoftwareEditionOverview';
 import SoftwareEditionDetails from './SoftwareEditionDetails';
-import StixDomainObjectAssetEditionOverview from '../../common/stix_domain_objects/StixDomainObjectAssetEditionOverview';
-import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import CyioDomainObjectAssetEditionOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetEditionOverview';
+import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
+import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 
 const styles = (theme) => ({
   container: {
@@ -297,8 +299,8 @@ class SoftwareEditionContainer extends Component {
                 // context={editContext}
                 handleClose={handleClose.bind(this)}
               /> */}
-                    <StixDomainObjectAssetEditionOverview
-                      stixDomainObject={software}
+                    <CyioDomainObjectAssetEditionOverview
+                      cyioDomainObject={software}
                       // enableReferences={this.props.enableReferences}
                       // context={editContext}
                       handleClose={handleClose.bind(this)}
@@ -321,14 +323,14 @@ class SoftwareEditionContainer extends Component {
                 style={{ marginTop: 25 }}
               >
                 <Grid item={true} xs={6}>
-                  {/* <StixCoreObjectExternalReferences stixCoreObjectId={software.id} /> */}
+                  {/* <CyioCoreObjectExternalReferences cyioCoreObjectId={software.id} /> */}
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <StixCoreObjectLatestHistory stixCoreObjectId={software.id} />
+                  <CyioCoreObjectLatestHistory cyioCoreObjectId={software.id} />
                 </Grid>
               </Grid>
-              <StixCoreObjectOrStixCoreRelationshipNotes
-                stixCoreObjectOrStixCoreRelationshipId={software.id}
+              <CyioCoreObjectOrCyioCoreRelationshipNotes
+                cyioCoreObjectOrCyioCoreRelationshipId={software.id}
               />
             </>
           )}

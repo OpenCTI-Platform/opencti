@@ -51,7 +51,12 @@ const contextPath = isEmptyPath || window.BASE_PATH === '/' ? '' : window.BASE_P
 export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
 // Subscription
 const loc = window.location;
-const host = process.env.REACT_APP_GRAPHQL_HOST || loc.host;
+let { host } = loc;
+if (process.env.REACT_APP_GRAPHQL_HOST !== undefined) {
+  const hostUrl = new URL(process.env.REACT_APP_GRAPHQL_HOST);
+  // console.log(`GraphQL host -> ${host}`);
+  host = hostUrl.host;
+}
 // eslint-disable-next-line no-console
 const isSecure = loc.protocol === 'https:' ? 's' : '';
 const subscriptionClient = new SubscriptionClient(

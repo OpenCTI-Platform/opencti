@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -58,18 +60,18 @@ const styles = (theme) => ({
   },
 });
 
-class StixDomainObjectAssetOverview extends Component {
+class CyioDomainObjectAssetOverview extends Component {
   render() {
     const {
-      t, fldt, classes, stixDomainObject, withoutMarking, withPattern,
+      t, fldt, classes, cyioDomainObject, withoutMarking, withPattern,
     } = this.props;
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
-    const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
+    const otherCyioIds = cyioDomainObject.x_opencti_cyio_ids || [];
     const stixIds = R.filter(
-      (n) => n !== stixDomainObject.standard_id,
-      otherStixIds,
+      (n) => n !== cyioDomainObject.standard_id,
+      otherCyioIds,
     );
-    console.log('stixDomainObjectData', stixDomainObject);
+    console.log('cyioDomainObjectData', cyioDomainObject);
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -93,7 +95,7 @@ class StixDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {stixDomainObject.id && t(stixDomainObject.id)}
+                {cyioDomainObject.id && t(cyioDomainObject.id)}
               </div>
               <div>
                 <Typography
@@ -110,7 +112,7 @@ class StixDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {stixDomainObject.asset_id && t(stixDomainObject.asset_id)}
+                {cyioDomainObject.asset_id && t(cyioDomainObject.asset_id)}
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -132,13 +134,13 @@ class StixDomainObjectAssetOverview extends Component {
                 </div>
                 <div className="clearfix" />
                 <Chip
-                  avatar={stixDomainObject.asset_type
-                    && <ItemIcon type={stixDomainObject.asset_type} fontSize='5px' />}
+                  avatar={cyioDomainObject.asset_type
+                    && <ItemIcon type={cyioDomainObject.asset_type} fontSize='5px' />}
                   classes={{ root: classes.chip }}
-                  label={stixDomainObject.asset_type && t(stixDomainObject.asset_type)}
+                  label={cyioDomainObject.asset_type && t(cyioDomainObject.asset_type)}
                   color="primary"
                 />
-                {/* <ItemCreator creator={stixDomainObject.creator} /> */}
+                {/* <ItemCreator creator={cyioDomainObject.creator} /> */}
               </div>
               <div>
                 <Typography
@@ -155,7 +157,7 @@ class StixDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {stixDomainObject.asset_tag && t(stixDomainObject.asset_tag)}
+                {cyioDomainObject.asset_tag && t(cyioDomainObject.asset_tag)}
               </div>
             </Grid>
           </Grid>
@@ -179,7 +181,7 @@ class StixDomainObjectAssetOverview extends Component {
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
-                      {stixDomainObject.description && t(stixDomainObject.description)}
+                      {cyioDomainObject.description && t(cyioDomainObject.description)}
                     </div>
                   </div>
                 </div>
@@ -207,7 +209,7 @@ class StixDomainObjectAssetOverview extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              <pre style={{ margin: 0 }}>{stixDomainObject.standard_id}</pre>
+              <pre style={{ margin: 0 }}>{cyioDomainObject.standard_id}</pre>
             </Grid>
             <Grid item={true} xs={12}>
               <Typography
@@ -248,7 +250,7 @@ class StixDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {stixDomainObject.version && t(stixDomainObject.version)}
+                {cyioDomainObject.version && t(cyioDomainObject.version)}
               </div>
               <div>
                 <Typography
@@ -265,8 +267,8 @@ class StixDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {stixDomainObject.serial_number && t(stixDomainObject.serial_number)}
-                {/* <ItemCreator creator={stixDomainObject.creator} /> */}
+                {cyioDomainObject.serial_number && t(cyioDomainObject.serial_number)}
+                {/* <ItemCreator creator={cyioDomainObject.creator} /> */}
               </div>
               <div>
                 <Typography
@@ -313,10 +315,10 @@ class StixDomainObjectAssetOverview extends Component {
                   color="textSecondary" gutterBottom={true}>
                     {t('Pattern type')}
                   </Typography>
-                  <ItemPatternType label={stixDomainObject.pattern_type} />
+                  <ItemPatternType label={cyioDomainObject.pattern_type} />
                 </div>
               )}
-              {!withoutMarking && stixDomainObject.objectMarking && (
+              {!withoutMarking && cyioDomainObject.objectMarking && (
                 <div>
                   <Typography
                     variant="h3"
@@ -330,7 +332,7 @@ class StixDomainObjectAssetOverview extends Component {
                     markingDefinitions={R.pathOr(
                       [],
                       ['objectMarking', 'edges'],
-                      stixDomainObject,
+                      cyioDomainObject,
                     )}
                     limit={10}
                   />
@@ -343,7 +345,7 @@ class StixDomainObjectAssetOverview extends Component {
                 style={{
                   marginTop:
                     withPattern
-                    || (!withoutMarking && stixDomainObject.objectMarking)
+                    || (!withoutMarking && cyioDomainObject.objectMarking)
                       ? 20
                       : 0,
                 }}
@@ -351,10 +353,10 @@ class StixDomainObjectAssetOverview extends Component {
                 {t('Author')}
               </Typography>
               <ItemAuthor
-                createdBy={R.propOr(null, 'createdBy', stixDomainObject)}
+                createdBy={R.propOr(null, 'createdBy', cyioDomainObject)}
               />
               <StixCoreObjectOpinions
-                stixCoreObjectId={stixDomainObject.id}
+                stixCoreObjectId={cyioDomainObject.id}
                 variant="inEntity"
                 height={160}
                 marginTop={20}
@@ -367,7 +369,7 @@ class StixDomainObjectAssetOverview extends Component {
               >
                 {t('Creation date')}
               </Typography>
-              {fldt(stixDomainObject.created)}
+              {fldt(cyioDomainObject.created)}
               <Typography
                 variant="h3"
                 color="textSecondary"
@@ -376,7 +378,7 @@ class StixDomainObjectAssetOverview extends Component {
               >
                 {t('Modification date')}
               </Typography>
-              {fldt(stixDomainObject.modified)} */}
+              {fldt(cyioDomainObject.modified)} */}
             </Grid>
             <Grid item={true} xs={6}>
               <div>
@@ -394,7 +396,7 @@ class StixDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {stixDomainObject.vendor_name && t(stixDomainObject.vendor_name)}
+                {cyioDomainObject.vendor_name && t(cyioDomainObject.vendor_name)}
               </div>
               <div>
                 <Typography
@@ -411,7 +413,7 @@ class StixDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {stixDomainObject.release_date && fldt(stixDomainObject.release_date)}
+                {cyioDomainObject.release_date && fldt(cyioDomainObject.release_date)}
               </div>
               <div>
                 <Typography
@@ -428,7 +430,7 @@ class StixDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {stixDomainObject.operational_status && t(stixDomainObject.operational_status)}
+                {cyioDomainObject.operational_status && t(cyioDomainObject.operational_status)}
               </div>
               {/* <Typography
                 variant="h3"
@@ -438,7 +440,7 @@ class StixDomainObjectAssetOverview extends Component {
               >
                 {t('Confidence level')}
               </Typography>
-              <ItemConfidence confidence={stixDomainObject.confidence} />
+              <ItemConfidence confidence={cyioDomainObject.confidence} />
               <Typography
                 variant="h3"
                 color="textSecondary"
@@ -447,7 +449,7 @@ class StixDomainObjectAssetOverview extends Component {
               >
                 {t('Creation date (in this platform)')}
               </Typography>
-              {fldt(stixDomainObject.created_at)}
+              {fldt(cyioDomainObject.created_at)}
               <Typography
                 variant="h3"
                 color="textSecondary"
@@ -456,7 +458,7 @@ class StixDomainObjectAssetOverview extends Component {
               >
                 {t('Creator')}
               </Typography>
-              <ItemCreator creator={stixDomainObject.creator} /> */}
+              <ItemCreator creator={cyioDomainObject.creator} /> */}
             </Grid>
           </Grid>
         </Paper>
@@ -465,8 +467,8 @@ class StixDomainObjectAssetOverview extends Component {
   }
 }
 
-StixDomainObjectAssetOverview.propTypes = {
-  stixDomainObject: PropTypes.object,
+CyioDomainObjectAssetOverview.propTypes = {
+  cyioDomainObject: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fldt: PropTypes.func,
@@ -476,4 +478,4 @@ StixDomainObjectAssetOverview.propTypes = {
 export default R.compose(
   inject18n,
   withStyles(styles),
-)(StixDomainObjectAssetOverview);
+)(CyioDomainObjectAssetOverview);

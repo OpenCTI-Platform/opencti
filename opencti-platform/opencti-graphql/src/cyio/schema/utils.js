@@ -54,6 +54,13 @@ export const UpdateOps = {
 
 export const byIdClause = (id) => `?iri <http://darklight.ai/ns/common#id> "${id}" .`;
 
-export const optionalizePredicate = (predicate) => `OPTIONAL { ${predicate} } .`;
+export const optionalizePredicate = (predicate) => `OPTIONAL { ${predicate} . } `;
 
-export const parameterizePredicate = (iri, value, predicate, binding) => (`${iri || "?iri"} ${predicate} ` + ((value === undefined || value == null) ? `?${binding}` : value )) + ' .'
+export const parameterizePredicate = (iri, value, predicate, binding) => (`${iri || "?iri"} ${predicate} ` + ((value === undefined || value == null) ? `?${binding}` : value ))
+
+export const buildSelectVariables = (predicateMap, selects) => {
+  const predicateMatches = selects.filter((s) => predicateMap.hasOwnProperty(s));
+  const selectionClause = predicateMatches.map((s) => `?${s}`).join(" ")
+  const predicates = predicateMatches.map((s) => predicateMap[s]?.optional()).join(" \n")
+  return {selectionClause, predicates}
+}

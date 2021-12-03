@@ -51,7 +51,7 @@ const softwareMutationFieldPatch = graphql`
     campaignEdit(id: $id) {
       fieldPatch(input: $input, commitMessage: $commitMessage) {
         ...SoftwareEditionOverview_software
-        ...Software_software
+        # ...Software_software
       }
     }
   }

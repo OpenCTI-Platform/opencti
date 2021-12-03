@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
@@ -54,7 +56,7 @@ const networkMutationFieldPatch = graphql`
     intrusionSetEdit(id: $id) {
       fieldPatch(input: $input, commitMessage: $commitMessage) {
         ...NetworkEditionDetails_network
-        ...Network_network
+        # ...Network_network
       }
     }
   }

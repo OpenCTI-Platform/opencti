@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
@@ -11,17 +13,12 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import {
-  Edit,
-  Delete,
   ArrowDropDown,
   ArrowDropUp,
   DashboardOutlined,
   TableChartOutlined,
-  AppsOutlined,
-  AddCircleOutline,
 } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
-import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
 import Checkbox from '@material-ui/core/Checkbox';
@@ -29,11 +26,10 @@ import Alert from '@material-ui/lab/Alert';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
-import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
+import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
 import StixCyberObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
 import { truncate } from '../../utils/String';
-import TopBarMenu from '../../private/components/nav/TopBarMenu';
 
 const styles = (theme) => ({
   container: {
@@ -58,28 +54,12 @@ const styles = (theme) => ({
     }),
     padding: '0 310px 50px 0',
   },
-  toolBar: {
-    marginLeft: -24,
-    marginRight: -24,
-    marginTop: -20,
-    height: '64px',
-    color: theme.palette.header.text,
-    boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
-  },
   parameters: {
     float: 'left',
-    padding: '18px',
+    marginTop: -10,
   },
   views: {
     float: 'right',
-    marginTop: '5px',
-    padding: '10px',
-  },
-  iconButton: {
-    float: 'left',
-    minWidth: '0px',
-    marginRight: 15,
-    padding: '7px',
   },
   linesContainer: {
     margin: '10px 0 0 0',
@@ -91,7 +71,7 @@ const styles = (theme) => ({
   },
   item: {
     paddingLeft: 10,
-    // textTransform: 'uppercase',
+    textTransform: 'uppercase',
   },
   sortIcon: {
     position: 'absolute',
@@ -100,14 +80,12 @@ const styles = (theme) => ({
   },
   headerItem: {
     float: 'left',
-    paddingLeft: 25,
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '700',
   },
   sortableHeaderItem: {
     float: 'left',
-    paddingLeft: 24,
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '700',
     cursor: 'pointer',
   },
@@ -172,7 +150,6 @@ class ListLines extends Component {
     const {
       t,
       classes,
-      disablePopover,
       handleSearch,
       handleChangeView,
       disableCards,
@@ -180,7 +157,6 @@ class ListLines extends Component {
       handleAddFilter,
       handleRemoveFilter,
       handleToggleExports,
-      selectedElements,
       handleToggleSelectAll,
       selectAll,
       openExports,
@@ -195,15 +171,11 @@ class ListLines extends Component {
       children,
       exportEntityType,
       exportContext,
-      handleDisplayEdit,
       numberOfElements,
       availableFilterKeys,
-      handleNewCreation,
       noHeaders,
       iconExtension,
       searchVariant,
-      OperationsComponent,
-      CreateItemComponent,
       message,
     } = this.props;
     let className = classes.container;
@@ -213,267 +185,230 @@ class ListLines extends Component {
       className = classes.containerOpenExports;
     }
     return (
-      <>
-        <div
-          className={classes.toolBar}
-          elevation={1}
-          style={{ backgroundColor: '#075AD333' }}
-        >
-          <div className={classes.parameters}>
-            {typeof handleSearch === 'function' && (
-              <div style={{ float: 'left', marginRight: 20 }}>
-                <SearchInput
-                  variant={searchVariant || 'small'}
-                  onSubmit={handleSearch.bind(this)}
-                  keyword={keyword}
-                />
-              </div>
-            )}
-            {availableFilterKeys && availableFilterKeys.length > 0 && (
-              <Filters
-                availableFilterKeys={availableFilterKeys}
-                handleAddFilter={handleAddFilter}
-                currentFilters={filters}
+      <div className={className}>
+        <div className={classes.parameters}>
+          {typeof handleSearch === 'function' && (
+            <div style={{ float: 'left', marginRight: 20 }}>
+              <SearchInput
+                variant={searchVariant || 'small'}
+                onSubmit={handleSearch.bind(this)}
+                keyword={keyword}
               />
-            )}
+            </div>
+          )}
+          {availableFilterKeys && availableFilterKeys.length > 0 && (
+            <Filters
+              availableFilterKeys={availableFilterKeys}
+              handleAddFilter={handleAddFilter}
+              currentFilters={filters}
+            />
+          )}
+          {(!availableFilterKeys || availableFilterKeys.length === 0)
+            && !noHeaders && <div style={{ height: 38 }}> &nbsp; </div>}
+          <div className={classes.filters}>
+            {map((currentFilter) => {
+              const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
+              const values = (
+                <span>
+                  {map(
+                    (n) => (
+                      <span key={n.value}>
+                        {n.value && n.value.length > 0
+                          ? truncate(n.value, 15)
+                          : t('No label')}{' '}
+                        {last(currentFilter[1]).value !== n.value && (
+                          <code>OR</code>
+                        )}
+                      </span>
+                    ),
+                    currentFilter[1],
+                  )}
+                </span>
+              );
+              return (
+                <span>
+                  <Chip
+                    key={currentFilter[0]}
+                    classes={{ root: classes.filter }}
+                    label={
+                      <div>
+                        <strong>{label}</strong>: {values}
+                      </div>
+                    }
+                    onDelete={handleRemoveFilter.bind(this, currentFilter[0])}
+                  />
+                  {last(toPairs(filters))[0] !== currentFilter[0] && (
+                    <Chip
+                      classes={{ root: classes.operator }}
+                      label={t('AND')}
+                    />
+                  )}
+                </span>
+              );
+            }, toPairs(filters))}
+          </div>
+        </div>
+        <div className={classes.views}>
+          <div style={{ float: 'right', marginTop: -20 }}>
             {numberOfElements && (
-              <div style={{ float: 'left', padding: '5px' }}>
-                {t('Count:')}{' '}
-                <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>
+              <div style={{ float: 'left', padding: '15px 5px 0 0' }}>
+                <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
+                {t('entitie(s)')}
               </div>
             )}
-            {(!availableFilterKeys || availableFilterKeys.length === 0)
-              && !noHeaders && <div style={{ height: 38 }}> &nbsp; </div>}
-            <div className={classes.filters}>
-              {map((currentFilter) => {
-                const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
-                const values = (
-                  <span>
-                    {map(
-                      (n) => (
-                        <span key={n.value}>
-                          {n.value && n.value.length > 0
-                            ? truncate(n.value, 15)
-                            : t('No label')}{' '}
-                          {last(currentFilter[1]).value !== n.value && (
-                            <code>OR</code>
-                          )}
-                        </span>
-                      ),
-                      currentFilter[1],
-                    )}
-                  </span>
-                );
-                return (
-                  <span>
-                    <Chip
-                      key={currentFilter[0]}
-                      classes={{ root: classes.filter }}
-                      label={
-                        <div>
-                          <strong>{label}</strong>: {values}
-                        </div>
-                      }
-                      onDelete={handleRemoveFilter.bind(this, currentFilter[0])}
-                    />
-                    {last(toPairs(filters))[0] !== currentFilter[0] && (
-                      <Chip
-                        classes={{ root: classes.operator }}
-                        label={t('AND')}
-                      />
-                    )}
-                  </span>
-                );
-              }, toPairs(filters))}
-            </div>
-          </div>
-          <div className={classes.views}>
-            <div style={{ float: 'right' }}>
-              {typeof handleChangeView === 'function' && (
-                // <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <>
-                  <Tooltip title={t('Edit')}>
-                    <Button
-                      variant="contained"
-                      onClick={handleDisplayEdit && handleDisplayEdit.bind(this, selectedElements)}
-                      className={classes.iconButton}
-                      disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)}
-                      color="primary"
-                      size="large"
-                    >
-                      <Edit fontSize="inherit" />
-                    </Button>
-                  </Tooltip>
-                  <div style={{ display: 'inline-block' }}>
-                    {OperationsComponent && React.cloneElement(OperationsComponent, {
-                      id: Object.entries(selectedElements || {}).length !== 0
-                        && Object.entries(selectedElements)[0][0],
-                      isAllselected: selectAll,
-                    })}
-                  </div>
-                  <Tooltip title={t('Create New')}>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      startIcon={<AddCircleOutline />}
-                      onClick={handleNewCreation && handleNewCreation.bind(this)}
-                      color='primary'
-                      style={{ marginTop: '-23px' }}
-                    >
-                      {t('New')}
-                    </Button>
-                  </Tooltip>
-                </>
-                // </Security>
-              )}
-              {/* {typeof handleChangeView === 'function' && enableDuplicates && (
-                <Tooltip title={t('Detect duplicates')}>
-                  <IconButton
-                    color="secondary"
-                    onClick={handleChangeView.bind(this, 'duplicates')}
-                  >
-                    <TableChartOutlined />
-                  </IconButton>
-                </Tooltip>
-              )} */}
-              {/* <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-                {typeof handleToggleExports === 'function' && (
-                  <Tooltip title={t('Exports panel')}>
-                    <IconButton
-                      color={openExports ? 'secondary' : 'primary'}
-                      onClick={handleToggleExports.bind(this)}
-                    >
-                      <FileExportOutline />
-                    </IconButton>
-                  </Tooltip>
-                )}
-              </Security> */}
-              {typeof handleChangeView === 'function' && !disableCards && (
-                <Tooltip title={t('Cards view')}>
-                  <IconButton
-                    color="primary"
-                    onClick={handleChangeView.bind(this, 'cards')}
-                    style={{ marginTop: '-23px' }}
-                  >
-                    <AppsOutlined />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className={className}>
-          <div className="clearfix" />
-          <TopBarMenu />
-          {message && (
-            <div style={{ width: '100%' }}>
-              <Alert
-                severity="info"
-                variant="outlined"
-                style={{ padding: '0px 10px 0px 10px' }}
-                classes={{ message: classes.info }}
-              >
-                {message}
-              </Alert>
-            </div>
-          )}
-          <List
-            classes={{
-              root: bottomNav
-                ? classes.linesContainerBottomNav
-                : classes.linesContainer,
-            }}
-          >
-            {!noHeaders ? (
-              <ListItem
-                classes={{ root: classes.item }}
-                divider={true}
-                style={{ paddingTop: 0 }}
-              >
-                <ListItemIcon
-                  style={{
-                    minWidth:
-                      typeof handleToggleSelectAll === 'function' ? 38 : 56,
-                  }}
+            {typeof handleChangeView === 'function' && !disableCards && (
+              <Tooltip title={t('Cards view')}>
+                <IconButton
+                  color="primary"
+                  onClick={handleChangeView.bind(this, 'cards')}
                 >
-                  {typeof handleToggleSelectAll === 'function' ? (
-                    <Checkbox
-                      edge="start"
-                      checked={selectAll}
-                      disableRipple={true}
-                      onChange={handleToggleSelectAll.bind(this)}
-                    />
-                  ) : (
-                    <span
-                      style={{
-                        padding: '0 8px 0 8px',
-                        fontWeight: 700,
-                        fontSize: 12,
-                      }}
-                    >
-                      &nbsp;
-                    </span>
-                  )}
-                </ListItemIcon>
-                {iconExtension && (
-                  <ListItemIcon>
-                    <span
-                      style={{
-                        padding: '0 8px 0 8px',
-                        fontWeight: 700,
-                        fontSize: 12,
-                      }}
-                    >
-                      &nbsp;
-                    </span>
-                  </ListItemIcon>
-                )}
-                <ListItemText
-                  primary={
-                    <div>
-                      {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
-                        dataColumn[0],
-                        dataColumn[1].label,
-                        dataColumn[1].width,
-                        dataColumn[1].isSortable,
-                      ))}
-                    </div>
-                  }
-                />
-                {secondaryAction && (
-                  <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
-                )}
-              </ListItem>
-            ) : (
-              ''
+                  <DashboardOutlined />
+                </IconButton>
+              </Tooltip>
             )}
-            {children}
-          </List>
-          {typeof handleToggleExports === 'function'
-            && exportEntityType !== 'Stix-Cyber-Observable' && (
-              <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-                <StixDomainObjectsExports
-                  open={openExports}
-                  handleToggle={handleToggleExports.bind(this)}
-                  paginationOptions={paginationOptions}
-                  exportEntityType={exportEntityType}
-                  context={exportContext}
-                />
-              </Security>
-          )}
-          {typeof handleToggleExports === 'function'
-            && exportEntityType === 'Stix-Cyber-Observable' && (
-              <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-                <StixCyberObservablesExports
-                  open={openExports}
-                  handleToggle={handleToggleExports.bind(this)}
-                  paginationOptions={paginationOptions}
-                  context={exportContext}
-                />
-              </Security>
-          )}
+            {typeof handleChangeView === 'function' && (
+              <Tooltip title={t('Lines view')}>
+                <IconButton
+                  color="secondary"
+                  onClick={handleChangeView.bind(this, 'lines')}
+                >
+                  <TableChartOutlined />
+                </IconButton>
+              </Tooltip>
+            )}
+            {typeof handleChangeView === 'function' && enableDuplicates && (
+              <Tooltip title={t('Detect duplicates')}>
+                <IconButton
+                  color="secondary"
+                  onClick={handleChangeView.bind(this, 'duplicates')}
+                >
+                  <TableChartOutlined />
+                </IconButton>
+              </Tooltip>
+            )}
+            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+              {typeof handleToggleExports === 'function' && (
+                <Tooltip title={t('Exports panel')}>
+                  <IconButton
+                    color={openExports ? 'secondary' : 'primary'}
+                    onClick={handleToggleExports.bind(this)}
+                  >
+                    <FileExportOutline />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Security>
+          </div>
         </div>
-      </>
+        <div className="clearfix" />
+        {message && (
+          <div style={{ width: '100%' }}>
+            <Alert
+              severity="info"
+              variant="outlined"
+              style={{ padding: '0px 10px 0px 10px' }}
+              classes={{ message: classes.info }}
+            >
+              {message}
+            </Alert>
+          </div>
+        )}
+        <List
+          classes={{
+            root: bottomNav
+              ? classes.linesContainerBottomNav
+              : classes.linesContainer,
+          }}
+        >
+          {!noHeaders ? (
+            <ListItem
+              classes={{ root: classes.item }}
+              divider={false}
+              style={{ paddingTop: 0 }}
+            >
+              <ListItemIcon
+                style={{
+                  minWidth:
+                    typeof handleToggleSelectAll === 'function' ? 38 : 56,
+                }}
+              >
+                {typeof handleToggleSelectAll === 'function' ? (
+                  <Checkbox
+                    edge="start"
+                    checked={selectAll}
+                    disableRipple={true}
+                    onChange={handleToggleSelectAll.bind(this)}
+                  />
+                ) : (
+                  <span
+                    style={{
+                      padding: '0 8px 0 8px',
+                      fontWeight: 700,
+                      fontSize: 12,
+                    }}
+                  >
+                    &nbsp;
+                  </span>
+                )}
+              </ListItemIcon>
+              {iconExtension && (
+                <ListItemIcon>
+                  <span
+                    style={{
+                      padding: '0 8px 0 8px',
+                      fontWeight: 700,
+                      fontSize: 12,
+                    }}
+                  >
+                    &nbsp;
+                  </span>
+                </ListItemIcon>
+              )}
+              <ListItemText
+                primary={
+                  <div>
+                    {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
+                      dataColumn[0],
+                      dataColumn[1].label,
+                      dataColumn[1].width,
+                      dataColumn[1].isSortable,
+                    ))}
+                  </div>
+                }
+              />
+              {secondaryAction && (
+                <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
+              )}
+            </ListItem>
+          ) : (
+            ''
+          )}
+          {children}
+        </List>
+        {typeof handleToggleExports === 'function'
+          && exportEntityType !== 'Stix-Cyber-Observable' && (
+            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+              <StixDomainObjectsExports
+                open={openExports}
+                handleToggle={handleToggleExports.bind(this)}
+                paginationOptions={paginationOptions}
+                exportEntityType={exportEntityType}
+                context={exportContext}
+              />
+            </Security>
+        )}
+        {typeof handleToggleExports === 'function'
+          && exportEntityType === 'Stix-Cyber-Observable' && (
+            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+              <StixCyberObservablesExports
+                open={openExports}
+                handleToggle={handleToggleExports.bind(this)}
+                paginationOptions={paginationOptions}
+                context={exportContext}
+              />
+            </Security>
+        )}
+      </div>
     );
   }
 }
@@ -481,8 +416,6 @@ class ListLines extends Component {
 ListLines.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
-  selectedElements: PropTypes.object,
-  disablePopover: PropTypes.bool,
   children: PropTypes.object,
   handleSearch: PropTypes.func,
   handleSort: PropTypes.func,

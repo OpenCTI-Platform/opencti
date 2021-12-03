@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
@@ -28,7 +30,7 @@ const subscription = graphql`
   subscription RootSoftwareSubscription($id: ID!) {
     stixDomainObject(id: $id) {
       ... on Campaign {
-        ...Software_software
+        # ...Software_software
         ...SoftwareEditionContainer_software
       }
       ...FileImportViewer_entity
@@ -39,46 +41,11 @@ const subscription = graphql`
 `;
 
 const softwareQuery = graphql`
-  query RootSoftwareQuery($id: String!) {
-    campaign(id: $id) {
-      id
-      standard_id
-      name
-      aliases
-      x_opencti_graph_data
-      ...Software_software
-      ...SoftwareKnowledge_software
-      ...FileImportViewer_entity
-      ...FileExportViewer_entity
-      ...FileExternalReferencesViewer_entity
-    }
-    connectorsForExport {
-      ...FileManager_connectorsExport
-    }
-  }
-`;
-
-const softwareDarkLightQuery = graphql`
-  query RootSoftwareDarkLightQuery($id: ID!) {
+  query RootSoftwareQuery($id: ID!) {
     softwareAsset(id: $id) {
       id
       name
-      asset_id
-      labels
-      description
-      locations {
-        city
-        country
-        description
-      }
-      version
-      vendor_name
-      asset_tag
-      asset_type
-      serial_number
-      release_date
-      # operational_status
-      ...SoftwareDetails_software
+      ...Software_software
     }
   }
 `;
@@ -129,9 +96,10 @@ class RootSoftware extends Component {
             ]}
           />
         </Route>
+        {/* <QueryRenderer */}
         <QR
           environment={QueryRendererDarkLight}
-          query={softwareDarkLightQuery}
+          query={softwareQuery}
           variables={{ id: softwareId }}
           render={({ error, props }) => {
             if (props) {
@@ -153,128 +121,6 @@ class RootSoftware extends Component {
             return <Loader />;
           }}
         />
-        {/* <QueryRenderer
-          query={softwareQuery}
-          variables={{ id: softwareId }}
-          render={({ props }) => {
-            if (props) {
-              if (props.software) {
-                return (
-                  <Switch>
-                    <Route
-                      exact
-                      path="/dashboard/assets/software/:softwareId"
-                      render={(routeProps) => (
-                        <Software {...routeProps} software={props.software} />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/software/:softwareId/knowledge"
-                      render={() => (
-                        <Redirect
-                          to={`/dashboard/assets/software/${softwareId}/knowledge/overview`}
-                        />
-                      )}
-                    />
-                    <Route
-                      path="/dashboard/assets/software/:softwareId/knowledge"
-                      render={(routeProps) => (
-                        <SoftwareKnowledge
-                          {...routeProps}
-                          software={props.software}
-                        />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/software/:softwareId/analysis"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            stixDomainObject={props.software}
-                            PopoverComponent={<SoftwarePopover />}
-                          />
-                          <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
-                            stixDomainObjectOrStixCoreRelationship={
-                              props.software
-                            }
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/software/:softwareId/indicators"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            stixDomainObject={props.software}
-                            PopoverComponent={<SoftwarePopover />}
-                            variant="noaliases"
-                          />
-                          <StixDomainObjectIndicators
-                            {...routeProps}
-                            stixDomainObjectId={softwareId}
-                        stixDomainObjectLink={`/dashboard/assets/software/${softwareId}/indicators`}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/software/:softwareId/indicators/relations/:relationId"
-                      render={(routeProps) => (
-                        <StixCoreRelationship
-                          entityId={softwareId}
-                          {...routeProps}
-                        />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/software/:softwareId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            stixDomainObject={props.software}
-                            PopoverComponent={<SoftwarePopover />}
-                          />
-                          <FileManager
-                            {...routeProps}
-                            id={softwareId}
-                            connectorsImport={[]}
-                            connectorsExport={props.connectorsForExport}
-                            entity={props.software}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/software/:softwareId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            stixDomainObject={props.software}
-                            PopoverComponent={<SoftwarePopover />}
-                          />
-                          <StixCoreObjectHistory
-                            {...routeProps}
-                            stixCoreObjectId={softwareId}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                  </Switch>
-                );
-              }
-              return <ErrorNotFound />;
-            }
-            return <Loader />;
-          }}
-        /> */}
       </div>
     );
   }

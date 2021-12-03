@@ -1,9 +1,11 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
-import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
+import CyioListCardsContent from '../../../../components/list_cards/CyioListCardsContent';
 import { DeviceCard, DeviceCardDummy } from './DeviceCard';
 import { setNumberOfElements } from '../../../../utils/Number';
 import StixDomainObjectBookmarks, {
@@ -53,7 +55,7 @@ class DevicesCards extends Component {
     //         onLabelClick={onLabelClick.bind(this)}
     //         setBookmarkList={this.handleSetBookmarkList.bind(this)}
     //       />
-            <ListCardsContent
+            <CyioListCardsContent
               initialLoading={initialLoading}
               loadMore={relay.loadMore.bind(this)}
               hasMore={relay.hasMore.bind(this)}

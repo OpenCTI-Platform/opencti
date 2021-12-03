@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr } from 'ramda';
@@ -45,9 +47,9 @@ class StixCoreObjectHistoryLinesComponent extends Component {
                 textAlign: 'center',
               }}
             >
-              {/* {isRelationLog
+              {isRelationLog
                 ? t('No relations history about this entity.')
-                : t('No history about this entity.')} */}
+                : t('No history about this entity.')}
             </span>
           </div>
         )}
