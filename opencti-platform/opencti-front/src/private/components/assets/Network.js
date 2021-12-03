@@ -195,11 +195,11 @@ class Network extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'labelledBy',
-          'markedBy',
+          'name_m',
+          'asset_type_or',
           'created_start_date',
           'created_end_date',
-          'createdBy',
+          'labelledBy',
         ]}
       >
         {/* <QueryRenderer */}
@@ -296,11 +296,11 @@ class Network extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'labelledBy',
-          'markedBy',
+          'name_m',
+          'asset_type_or',
           'created_start_date',
           'created_end_date',
-          'createdBy',
+          'labelledBy',
         ]}
       >
         {/* <QueryRenderer */}
