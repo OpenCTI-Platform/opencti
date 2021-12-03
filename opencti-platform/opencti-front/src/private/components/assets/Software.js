@@ -201,11 +201,12 @@ class Software extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'labelledBy',
-          'markedBy',
+          'name_m',
+          'asset_type_or',
           'created_start_date',
           'created_end_date',
-          'createdBy',
+          'vendor_name_or',
+          'labelledBy',
         ]}
       >
         {/* <QueryRenderer */}
@@ -317,11 +318,12 @@ class Software extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'labelledBy',
-          'markedBy',
+          'name_m',
+          'asset_type_or',
           'created_start_date',
           'created_end_date',
-          'createdBy',
+          'vendor_name_or',
+          'labelledBy',
         ]}
       >
         {/* <QueryRenderer */}

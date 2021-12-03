@@ -149,24 +149,24 @@ class Filters extends Component {
             });
           });
         break;
-      case 'operation_status':
+      case 'vendor_name_or':
         fetchDarklightQuery(itAssetListQuery)
           .toPromise()
           .then((data) => {
-            const operationStatusEntities = R.pipe(
+            const vendorEntities = R.pipe(
               R.pathOr([], ['itAssetList', 'edges']),
               R.map((n) => ({
-                label: n.node.operational_status,
-                value: n.node.operational_status,
-                // type: n.node.asset_type,
+                label: t(n.node.vendor_name),
+                value: n.node.vendor_name,
+                type: n.node.vendor_name,
               })),
             )(data);
             this.setState({
               entities: {
                 ...this.state.entities,
-                operationStatus: R.union(
-                  operationStatusEntities,
-                  this.state.entities.operationStatus,
+                vendor_name_or: R.union(
+                  vendorEntities,
+                  this.state.entities.vendor_name_or,
                 ),
               },
             });
