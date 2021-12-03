@@ -1,8 +1,10 @@
 import { assetSingularizeSchema as singularizeSchema, objectTypeMapping } from '../asset-mappings.js';
-import { getSelectSparqlQuery, getReducer } from './sparql-query.js';
+import {getSelectSparqlQuery, getReducer, insertQuery} from './sparql-query.js';
 import { getSelectSparqlQuery as getSoftwareQuery, 
          getReducer as getSoftwareReducer } from '../software/sparql-query.js';
 import { compareValues } from '../../utils.js';
+import {addToInventoryQuery, deleteQuery, removeFromInventoryQuery, updateAssetQuery} from "../assetUtil";
+import {insertIPQuery, insertIPRelationship, insertPortRelationships, insertPortsQuery} from "../assetQueries";
 
 const computingDeviceResolvers = {
   Query: {
@@ -72,11 +74,58 @@ const computingDeviceResolvers = {
     },
   },
   Mutation: {
-    createComputingDeviceAsset: ( parent, args, context, info ) => {
+    createComputingDeviceAsset: async ( _, {input}, context ) => {
+      const dbName = context.dbName;
+      let ports, ipv4, ipv6;
+      if(input.ports !== undefined) {
+        ports = input.ports
+        delete input.ports;
+      }
+      if(input.ipv4_address !== undefined) {
+        ipv4 = input.ipv4_address;
+        delete input.ipv4_address;
+      }
+      if(input.ipv6_address !== undefined) {
+        ipv6 = input.ipv6_address;
+        delete input.ipv6_address;
+      }
+      const {iri, id, query} = insertQuery(input);
+      await context.dataSources.Stardog.create(dbName, query);
+      const connectQuery = addToInventoryQuery(iri);
+      await context.dataSources.Stardog.create(dbName, connectQuery);
+      if(ports !== null){
+        const {iris: portIris, query: portsQuery} = insertPortsQuery(ports);
+        await context.dataSources.Stardog.create(dbName, portsQuery);
+        const relationshipQuery = insertPortRelationships(iri, portIris);
+        await context.dataSources.Stardog.create(dbName, relationshipQuery);
+      }
+      if(ipv4 !== null) {
+        const {ipIris, query} = insertIPQuery(ipv4, 4);
+        await context.dataSources.Stardog.create(dbName, query);
+        const relationshipQuery = insertIPRelationship(iri, ipIris);
+        await context.dataSources.Stardog.create(dbName, relationshipQuery);
+      }
+      if(ipv6 !== null) {
+        const {ipIris, query} = insertIPQuery(ipv6, 6);
+        await context.dataSources.Stardog.create(dbName, query);
+        const relationshipQuery = insertIPRelationship(iri, ipIris);
+        await context.dataSources.Stardog.create(dbName, relationshipQuery);
+      }
+      return {id};
     },
-    deleteComputingDeviceAsset: ( parent, args, context, info ) => {
+    deleteComputingDeviceAsset: async ( _, {id}, context ) => {
+      const dbName = context.dbName;
+      const relationshipQuery = removeFromInventoryQuery(id)
+      await context.dataSources.Stardog.delete(dbName, relationshipQuery)
+      const query = deleteQuery(id)
+      await context.dataSources.Stardog.delete(dbName, query)
+      return {id};
     },
-    editComputingDeviceAsset: ( parent, args, context, info ) => {
+    editComputingDeviceAsset: async ( _, {input}, context ) => {
+      const dbName = context.dbName;
+      const updateQuery = updateAssetQuery(`<http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}>`, input)
+      await context.dataSources.Stardog.edit(dbName, updateQuery);
+      return {id}
     },
   },
   // Map enum GraphQL values to data model required values
