@@ -79,6 +79,7 @@ const directFilters = [
   'toSightingId',
 ];
 const uniqFilters = [
+  'name_m',
   'revoked',
   'x_opencti_detection',
   'x_opencti_base_score_gt',
@@ -90,8 +91,7 @@ const uniqFilters = [
 ];
 export const isUniqFilter = (key) => uniqFilters.includes(key)
   || key.endsWith('start_date')
-  || key.endsWith('end_date')
-  || key.endsWith('date');
+  || key.endsWith('end_date');
 
 class Filters extends Component {
   constructor(props) {
@@ -126,14 +126,14 @@ class Filters extends Component {
       });
     }
     switch (filterKey) {
-      case 'assetTypeBy':
+      case 'asset_type_or':
         fetchDarklightQuery(itAssetListQuery)
           .toPromise()
           .then((data) => {
-            const assetTypeByEntities = R.pipe(
+            const assetTypeEntities = R.pipe(
               R.pathOr([], ['itAssetList', 'edges']),
               R.map((n) => ({
-                label: n.node.asset_type,
+                label: t(n.node.asset_type),
                 value: n.node.asset_type,
                 type: n.node.asset_type,
               })),
@@ -141,32 +141,32 @@ class Filters extends Component {
             this.setState({
               entities: {
                 ...this.state.entities,
-                assetTypeBy: R.union(
-                  assetTypeByEntities,
-                  this.state.entities.assetTypeById,
+                asset_type_or: R.union(
+                  assetTypeEntities,
+                  this.state.entities.asset_type,
                 ),
               },
             });
           });
         break;
-      case 'operation_status':
+      case 'name_m':
         fetchDarklightQuery(itAssetListQuery)
           .toPromise()
           .then((data) => {
-            const operationStatusEntities = R.pipe(
+            const nameEntities = R.pipe(
               R.pathOr([], ['itAssetList', 'edges']),
               R.map((n) => ({
-                label: n.node.operational_status,
-                value: n.node.operational_status,
-                // type: n.node.asset_type,
+                label: n.node.name,
+                value: n.node.name,
+                type: 'attribute',
               })),
             )(data);
             this.setState({
               entities: {
                 ...this.state.entities,
-                operationStatus: R.union(
-                  operationStatusEntities,
-                  this.state.entities.operationStatus,
+                name_m: R.union(
+                  nameEntities,
+                  this.state.entities.name,
                 ),
               },
             });
@@ -753,7 +753,6 @@ class Filters extends Component {
           if (
             filterKey.endsWith('start_date')
             || filterKey.endsWith('end_date')
-            || filterKey.endsWith('date')
           ) {
             return (
               <Grid key={filterKey} item={true} xs={6}>

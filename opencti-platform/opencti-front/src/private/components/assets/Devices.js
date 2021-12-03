@@ -201,16 +201,11 @@ class Devices extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'assetTypeBy',
-          'labelledBy',
-          'release_date',
-          // 'markedBy',
-          // 'created_start_date',
-          'operation_status',
-          'operation_System',
-          // 'created_end_date',
-          // 'createdBy',
-          'labelledBy',
+          'name_m',
+          'asset_type_or',
+          'created_start_date',
+          'created_end_date',
+          'labelledby',
         ]}
       >
         {/* <QueryRenderer */}
@@ -320,16 +315,11 @@ class Devices extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'assetTypeBy',
-          'labelledBy',
-          'release_date',
-          // 'markedBy',
-          // 'created_start_date',
-          'operation_status',
-          'operation_System',
-          // 'created_end_date',
-          // 'createdBy',
-          'labelledBy',
+          'name_m',
+          'asset_type_or',
+          'created_start_date',
+          'created_end_date',
+          'labelledby',
         ]}
       >
         {/* <QueryRenderer */}
@@ -374,6 +364,7 @@ class Devices extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
     };
+    console.log('finalFiltersData', finalFilters)
     const { location } = this.props;
     return (
       <div>

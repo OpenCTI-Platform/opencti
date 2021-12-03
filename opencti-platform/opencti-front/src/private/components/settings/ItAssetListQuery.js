@@ -6,8 +6,9 @@ export const itAssetListQuery = graphql`
       itAssetList {
         edges {
           node {
+            id
+            name
             asset_type
-            operational_status
           }
         }
       }
