@@ -1,4 +1,16 @@
 import {buildSelectVariables, optionalizePredicate, parameterizePredicate} from "../../utils";
+import {v4 as uuid4} from "uuid";
+
+const inventoryConstraint = `
+{
+    SELECT DISTINCT ?iri
+    WHERE {
+        GRAPH ?g {
+          ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
+                <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+        }
+    }
+}`;
 
 export function getSelectSparqlQuery(type, select, id, filter, ) {
   var sparqlQuery;
@@ -30,7 +42,8 @@ export function getSelectSparqlQuery(type, select, id, filter, ) {
       WHERE {
         GRAPH ${iri} {
             ?iri a <http://scap.nist.gov/ns/asset-identification#Network> ;
-            ${predicates} .
+            ${predicates} 
+            ${inventoryConstraint} .
             ${filterStr}
         }
       }

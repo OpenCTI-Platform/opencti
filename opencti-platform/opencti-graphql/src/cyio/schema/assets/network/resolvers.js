@@ -15,7 +15,7 @@ import {
   selectIPAddressRange
 } from "../assetQueries";
 import {UserInputError} from "apollo-server-express";
-import {updateAssetQuery} from "../assetUtil";
+import {addToInventoryQuery, updateAssetQuery} from "../assetUtil";
 import {predicateMap} from "./sparql-query";
 
 const networkResolvers = {
@@ -123,13 +123,15 @@ const networkResolvers = {
         await context.dataSources.Stardog.create(dbName, relQuery);
       }
 
+      const connectQuery = addToInventoryQuery(iri);
+      await context.dataSources.Stardog.create(dbName, connectQuery);
       return {id}
     },
     deleteNetworkAsset: async ( _, args, context, info ) => {
       const dbName = context.dbName;
       const sparqlQuery = getSelectSparqlQuery("NETWORK", ["id", "network_address_range"], args.id);
       const response = await context.dataSources.Stardog.queryById(dbName, sparqlQuery, singularizeSchema);
-      if(response.length === 0) throw new UserInputError(`Entity does not exists with ID ${id}`);
+      if(response.length === 0) throw new UserInputError(`Entity does not exists with ID ${args.id}`);
       const reducer = getReducer("NETWORK");
       const asset = reducer(response[0]);
       if(asset.netaddr_range_iri){
@@ -148,7 +150,7 @@ const networkResolvers = {
       }
       const deleteQuery = deleteNetworkAssetQuery(args.id);
       await context.dataSources.Stardog.delete(dbName, deleteQuery);
-      return {id: args.id};
+      return id
     },
     editNetworkAsset: async ( _, {id, input}, context ) => {
       const dbName = context.dbName;
