@@ -15,8 +15,7 @@ import {
 } from 'react-relay';
 
 const store = new Store(new RecordSource());
-const hostUrl = new URL(process.env.REACT_APP_GRAPHQL_HOST);
-
+const hostUrl = process.env.REACT_APP_GRAPHQL_HOST;
 
 const network = Network.create((operation, variables) => (
   fetch(`${hostUrl}/graphql`, {
