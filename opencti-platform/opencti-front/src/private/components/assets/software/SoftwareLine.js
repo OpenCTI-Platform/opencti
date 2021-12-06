@@ -97,8 +97,7 @@ class SoftwareLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.asset_type.width }}
               >
-                {/* <AppleIcon /> */}
-                {node.asset_type && <ItemIcon type={node.asset_type} />}
+                {node.vendor_name && <ItemIcon type={node.vendor_name === 'apple' || node.vendor_name === 'microsoft' || node.vendor_name === 'linux' ? node.vendor_name : 'other'} />}
               </div>
               <div
                 className={classes.bodyItem}
