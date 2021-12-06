@@ -5,6 +5,7 @@ import {
   parse as uuidParse } from 'uuid';
 
 export const DARKLIGHT_NS = 'd85ba5b6-609e-58bf-a973-ca109f868e86';
+export const OASIS_SCO_NS = '00abedb4-aa42-466c-9c01-fed23315a9b7';
 
 // Generates a deterministic ID value based on a JSON structure and a namespace
 export function generateId( materials, namespace ) {
