@@ -170,11 +170,17 @@ class Software extends Component {
       name: {
         label: 'Name',
       },
-      created: {
-        label: 'Creation date',
+      asset_type: {
+        label: 'Type',
       },
-      modified: {
-        label: 'Modification date',
+      asset_id: {
+        label: 'Asset ID',
+      },
+      vendor_name: {
+        label: 'Vendor',
+      },
+      labels: {
+        label: 'Labels',
       },
     };
     return (
@@ -252,17 +258,17 @@ class Software extends Component {
         width: '10%',
         isSortable: true,
       },
-      type: {
+      asset_type: {
         label: 'Type',
         width: '5%',
         isSortable: true,
       },
-      assetId: {
+      asset_id: {
         label: 'Asset ID',
         width: '10%',
         isSortable: true,
       },
-      vendorName: {
+      vendor_name: {
         label: 'Vendor',
         width: '10%',
         isSortable: true,
@@ -270,27 +276,27 @@ class Software extends Component {
       version: {
         label: 'Version',
         width: '10%',
-        isSortable: true,
+        isSortable: false,
       },
-      patchLevel: {
+      patch_level: {
         label: 'Patch Level',
         width: '10%',
-        isSortable: true,
+        isSortable: false,
       },
       cpeId: {
         label: 'CPE ID',
         width: '10%',
-        isSortable: true,
+        isSortable: false,
       },
       swId: {
         label: 'SWID',
         width: '10%',
-        isSortable: true,
+        isSortable: false,
       },
-      objectLabel: {
+      labels: {
         label: 'Labels',
         width: '25%',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (
@@ -359,7 +365,7 @@ class Software extends Component {
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
-      orderBy: sortBy,
+      orderedBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
     };

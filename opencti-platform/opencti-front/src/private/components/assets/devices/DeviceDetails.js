@@ -29,6 +29,7 @@ const styles = (theme) => ({
     borderRadius: 6,
   },
   link: {
+    textAlign: 'left',
     fontSize: '16px',
     font: 'DIN Next LT Pro',
   },
@@ -125,22 +126,22 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {/* {device.sophistication && t(device.sophistication)} */}
                 {device.installed_software
                   && device.installed_software.map((software, key) => (
                     <div key={key}>
                       <div className="clearfix" />
-                      <Link
-                        key={key}
-                        component="button"
-                        variant="body2"
-                        className={classes.link}
-                        onClick={() => (
-                          software.id && history.push(`/dashboard/assets/software/${software.id}`)
-                        )}
-                      >
-                        <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{software.name && t(software.name)}
-                      </Link>
+                      {software.name
+                        && <Link
+                          key={key}
+                          component="button"
+                          variant="body2"
+                          className={classes.link}
+                          onClick={() => (
+                            software.id && history.push(`/dashboard/assets/software/${software.id}`)
+                          )}
+                        >
+                          <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(software.name)}
+                        </Link>}
                     </div>
                   ))}
               </div>
