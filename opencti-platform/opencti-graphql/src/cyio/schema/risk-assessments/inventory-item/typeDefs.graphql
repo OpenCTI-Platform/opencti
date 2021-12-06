@@ -20,7 +20,7 @@
   }
 
 
-#####   Inventory Item Component 
+#####   Inventory Item 
 ##
   "Defines identifying information about a single managed inventory item within the system."
   interface InventoryItem {
@@ -56,51 +56,53 @@
       search: String 
     ): OscalRelationshipConnection
     # Inventory Item
-    "Indicates the asset's function, such as Router, Storage Array, DNS Server."
+    "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
     asset_type: AssetType!
-    "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
+    "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
     asset_id: String
-    "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
+    "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible invenotry item."
     asset_tag: String
-    "Indicates the serial number for the asset."
+    "Indicates the serial number for the inventory item."
     serial_number: String
-    "Identifies a description of the component, including information about its function."
-    description: String!
-    "Identifies the  model of the component."
+    "Identifies the name of the inventory item."
+    name: String!
+    "Identifies a description of the Inventory Item, including information about its function."
+    description: String
+    "Identifies the model of the Inventory Item."
     model: String
-    "Identifies the name of the company or organization"
+    "Identifies the name of the company or organization that manufactured the inventory item"
     vendor_name: String
-    "Identifies whether the asset can be check with an authenticated scan"
+    "Identifies whether the inventory item can be check with an authenticated scan"
     allows_authenticated_scans: Boolean
-    "Identifies whether the asset is publicly accessible"
+    "Identifies whether the inventory item is publicly accessible"
     is_publicly_accessible: Boolean
-    "Indicates if the asset is subjected to network scans"
+    "Indicates if the inventory item is subjected to network scans"
     is_scanned: Boolean
-    "Identifies whether the asset is virtualized"
+    "Identifies whether the inventory item is virtualized"
     is_virtual: Boolean
-    "Indicates the Internet Protocol v4 Addresses of the asset"
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
     ipv4_address: [IpV4Address]
-    "Indicates the Internet Protocol v4 Addresses of the asset"
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
     ipv6_address: [IpV6Address]
-    "Indicates the media access control (MAC) address for the asset."
+    "Indicates the media access control (MAC) address for the inventory item."
     mac_address: [MAC]
-    "Indicates the full-qualified domain name (FQDN) of the asset."
+    "Indicates the full-qualified domain name (FQDN) of the inventory item."
     fqdn: String
-    "Indicates the NetBIOS name for the asset."
+    "Indicates the NetBIOS name for the inventory item."
     netbios_name: String
-    "Indicates the Uniform Resource Identifier (URI) for the asset."
+    "Indicates the Uniform Resource Identifier (URI) for the inventory item."
     uri: URL
-    "Identifies the network identifier of the asset."
+    "Identifies the network identifier of the inventory item."
     network_id: String
-    "Identifies the Virtual LAN identifier of the asset."
+    "Identifies the Virtual LAN identifier of the inventory item."
     vlan_id: String
-    "Identifies The name of the baseline configuration for the asset."
+    "Identifies The name of the baseline configuration for the inventory item."
     baseline_configuration_name: String
-    "Identifies the function provided by the asset for the system."
+    "Identifies the function provided by the inventory item for the system."
     function: String
     "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
     responsible_parties: [OscalResponsibleParty]
-    "Indicates the physical location of the asset's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
+    "Indicates the physical location of the inventory item's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
     physical_location: [OscalLocation]
     "Identifies the set of components that are implemented in a given system inventory item."
     implemented_components: [Component]
@@ -111,47 +113,49 @@
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # Inventory Item
-    "Indicates the asset's function, such as Router, Storage Array, DNS Server."
+    "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
     asset_type: AssetType!
-    "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
+    "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the inventory item."
     asset_id: String
-    "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
+    "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible inventory item."
     asset_tag: String
-    "Indicates the serial number for the asset."
+    "Indicates the serial number for the invenotry item."
     serial_number: String
-    "Identifies a description of the component, including information about its function."
+    "Identifies the name of the inventory item."
+    name: String!
+    "Identifies a description of the inventory item, including information about its function."
     description: String!
-    "Identifies the  model of the component."
+    "Identifies the  model of the inventory item."
     model: String
-    "Identifies the name of the company or organization"
+    "Identifies the name of the company or organization that manufactured the inventory item."
     vendor_name: String
-    "Identifies whether the asset can be check with an authenticated scan"
+    "Identifies whether the inventory item can be check with an authenticated scan"
     allows_authenticated_scans: Boolean
-    "Identifies whether the asset is publicly accessible"
+    "Identifies whether the inventory item is publicly accessible"
     is_publicly_accessible: Boolean
-    "Indicates if the asset is subjected to network scans"
+    "Indicates if the inventory item is subjected to network scans"
     is_scanned: Boolean
-    "Identifies whether the asset is virtualized"
+    "Identifies whether the inventory item is virtualized"
     is_virtual: Boolean
-    "Indicates the Internet Protocol v4 Addresses of the asset"
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
     ipv4_address: [IpV4AddressAddInput]
-    "Indicates the Internet Protocol v4 Addresses of the asset"
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
     ipv6_address: [IpV6AddressAddInput]
-    "Indicates the media access control (MAC) address for the asset."
+    "Indicates the media access control (MAC) address for the inventory item."
     mac_address: [MAC]
-    "Indicates the full-qualified domain name (FQDN) of the asset."
+    "Indicates the full-qualified domain name (FQDN) of the inventory item."
     fqdn: String
-    "Indicates the NetBIOS name for the asset."
+    "Indicates the NetBIOS name for the inventory item."
     netbios_name: String
-    "Indicates the Uniform Resource Identifier (URI) for the asset."
+    "Indicates the Uniform Resource Identifier (URI) for the inventory item."
     uri: URL
-    "Identifies the network identifier of the asset."
+    "Identifies the network identifier of the inventory item."
     network_id: String
-    "Identifies the Virtual LAN identifier of the asset."
+    "Identifies the Virtual LAN identifier of the inventory item."
     vlan_id: String
-    "Identifies The name of the baseline configuration for the asset."
+    "Identifies The name of the baseline configuration for the inventory item."
     baseline_configuration_name: String
-    "Identifies the function provided by the asset for the system."
+    "Identifies the function provided by the inventory item for the system."
     function: String
   }
 
@@ -188,4 +192,622 @@
     labels
   }
 
-  # union InventoryItemTypes = 
+#####   Appliance
+##
+  "Defines identifying information about an Appliance"
+  type Appliance implements BasicObject & LifecycleObject & CoreObject & OscalObject & InventoryItem {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # CoreObject
+    "Indicates the date and time at which the object was originally created."
+    created: DateTime
+    "Indicates the date and time that this particular version of the object was last modified."
+    modified: DateTime
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [String]
+    # OscalObject
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
+    "Identifies one or more references to additional commentary on the Model."
+    notes( first: Int ): CyioNoteConnection
+    "Identifies one or more relationships to other entities."
+    relationships(
+      first: Int
+      offset: Int
+      orderedBy: OscalRelationshipsOrdering
+      orderMode: OrderingMode
+      filters: [OscalRelationshipsFiltering]
+      filterMode: FilterMode
+      search: String 
+    ): OscalRelationshipConnection
+    # Inventory Item
+    "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
+    asset_type: AssetType!
+    "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
+    asset_id: String
+    "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible invenotry item."
+    asset_tag: String
+    "Indicates the serial number for the inventory item."
+    serial_number: String
+    "Identifies the name of the inventory item."
+    name: String!
+    "Identifies a description of the Inventory Item, including information about its function."
+    description: String
+    "Identifies the model of the Inventory Item."
+    model: String
+    "Identifies the name of the company or organization that manufactured the inventory item"
+    vendor_name: String
+    "Identifies whether the inventory item can be check with an authenticated scan"
+    allows_authenticated_scans: Boolean
+    "Identifies whether the inventory item is publicly accessible"
+    is_publicly_accessible: Boolean
+    "Indicates if the inventory item is subjected to network scans"
+    is_scanned: Boolean
+    "Identifies whether the inventory item is virtualized"
+    is_virtual: Boolean
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
+    ipv4_address: [IpV4Address]
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
+    ipv6_address: [IpV6Address]
+    "Indicates the media access control (MAC) address for the inventory item."
+    mac_address: [MAC]
+    "Indicates the full-qualified domain name (FQDN) of the inventory item."
+    fqdn: String
+    "Indicates the NetBIOS name for the inventory item."
+    netbios_name: String
+    "Indicates the Uniform Resource Identifier (URI) for the inventory item."
+    uri: URL
+    "Identifies the network identifier of the inventory item."
+    network_id: String
+    "Identifies the Virtual LAN identifier of the inventory item."
+    vlan_id: String
+    "Identifies The name of the baseline configuration for the inventory item."
+    baseline_configuration_name: String
+    "Identifies the function provided by the inventory item for the system."
+    function: String
+    "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
+    responsible_parties: [OscalResponsibleParty]
+    "Indicates the physical location of the inventory item's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
+    physical_location: [OscalLocation]
+    "Identifies the set of components that are implemented in a given system inventory item."
+    implemented_components: [Component]
+  }
+
+#####   Computing Device
+##
+  "Defines identifying information about an Computing Device"
+  type ComputingDevice implements BasicObject & LifecycleObject & CoreObject & OscalObject & InventoryItem {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # CoreObject
+    "Indicates the date and time at which the object was originally created."
+    created: DateTime
+    "Indicates the date and time that this particular version of the object was last modified."
+    modified: DateTime
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [String]
+    # OscalObject
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
+    "Identifies one or more references to additional commentary on the Model."
+    notes( first: Int ): CyioNoteConnection
+    "Identifies one or more relationships to other entities."
+    relationships(
+      first: Int
+      offset: Int
+      orderedBy: OscalRelationshipsOrdering
+      orderMode: OrderingMode
+      filters: [OscalRelationshipsFiltering]
+      filterMode: FilterMode
+      search: String 
+    ): OscalRelationshipConnection
+    # Inventory Item
+    "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
+    asset_type: AssetType!
+    "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
+    asset_id: String
+    "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible invenotry item."
+    asset_tag: String
+    "Indicates the serial number for the inventory item."
+    serial_number: String
+    "Identifies the name of the inventory item."
+    name: String!
+    "Identifies a description of the Inventory Item, including information about its function."
+    description: String
+    "Identifies the model of the Inventory Item."
+    model: String
+    "Identifies the name of the company or organization that manufactured the inventory item"
+    vendor_name: String
+    "Identifies whether the inventory item can be check with an authenticated scan"
+    allows_authenticated_scans: Boolean
+    "Identifies whether the inventory item is publicly accessible"
+    is_publicly_accessible: Boolean
+    "Indicates if the inventory item is subjected to network scans"
+    is_scanned: Boolean
+    "Identifies whether the inventory item is virtualized"
+    is_virtual: Boolean
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
+    ipv4_address: [IpV4Address]
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
+    ipv6_address: [IpV6Address]
+    "Indicates the media access control (MAC) address for the inventory item."
+    mac_address: [MAC]
+    "Indicates the full-qualified domain name (FQDN) of the inventory item."
+    fqdn: String
+    "Indicates the NetBIOS name for the inventory item."
+    netbios_name: String
+    "Indicates the Uniform Resource Identifier (URI) for the inventory item."
+    uri: URL
+    "Identifies the network identifier of the inventory item."
+    network_id: String
+    "Identifies the Virtual LAN identifier of the inventory item."
+    vlan_id: String
+    "Identifies The name of the baseline configuration for the inventory item."
+    baseline_configuration_name: String
+    "Identifies the function provided by the inventory item for the system."
+    function: String
+    "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
+    responsible_parties: [OscalResponsibleParty]
+    "Indicates the physical location of the inventory item's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
+    physical_location: [OscalLocation]
+    "Identifies the set of components that are implemented in a given system inventory item."
+    implemented_components: [Component]
+  }
+
+#####   Firewall
+##
+  "Defines identifying information about an Firewall"
+  type Firewall implements BasicObject & LifecycleObject & CoreObject & OscalObject & InventoryItem {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # CoreObject
+    "Indicates the date and time at which the object was originally created."
+    created: DateTime
+    "Indicates the date and time that this particular version of the object was last modified."
+    modified: DateTime
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [String]
+    # OscalObject
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
+    "Identifies one or more references to additional commentary on the Model."
+    notes( first: Int ): CyioNoteConnection
+    "Identifies one or more relationships to other entities."
+    relationships(
+      first: Int
+      offset: Int
+      orderedBy: OscalRelationshipsOrdering
+      orderMode: OrderingMode
+      filters: [OscalRelationshipsFiltering]
+      filterMode: FilterMode
+      search: String 
+    ): OscalRelationshipConnection
+    # Inventory Item
+    "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
+    asset_type: AssetType!
+    "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
+    asset_id: String
+    "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible invenotry item."
+    asset_tag: String
+    "Indicates the serial number for the inventory item."
+    serial_number: String
+    "Identifies the name of the inventory item."
+    name: String!
+    "Identifies a description of the Inventory Item, including information about its function."
+    description: String
+    "Identifies the model of the Inventory Item."
+    model: String
+    "Identifies the name of the company or organization that manufactured the inventory item"
+    vendor_name: String
+    "Identifies whether the inventory item can be check with an authenticated scan"
+    allows_authenticated_scans: Boolean
+    "Identifies whether the inventory item is publicly accessible"
+    is_publicly_accessible: Boolean
+    "Indicates if the inventory item is subjected to network scans"
+    is_scanned: Boolean
+    "Identifies whether the inventory item is virtualized"
+    is_virtual: Boolean
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
+    ipv4_address: [IpV4Address]
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
+    ipv6_address: [IpV6Address]
+    "Indicates the media access control (MAC) address for the inventory item."
+    mac_address: [MAC]
+    "Indicates the full-qualified domain name (FQDN) of the inventory item."
+    fqdn: String
+    "Indicates the NetBIOS name for the inventory item."
+    netbios_name: String
+    "Indicates the Uniform Resource Identifier (URI) for the inventory item."
+    uri: URL
+    "Identifies the network identifier of the inventory item."
+    network_id: String
+    "Identifies the Virtual LAN identifier of the inventory item."
+    vlan_id: String
+    "Identifies The name of the baseline configuration for the inventory item."
+    baseline_configuration_name: String
+    "Identifies the function provided by the inventory item for the system."
+    function: String
+    "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
+    responsible_parties: [OscalResponsibleParty]
+    "Indicates the physical location of the inventory item's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
+    physical_location: [OscalLocation]
+    "Identifies the set of components that are implemented in a given system inventory item."
+    implemented_components: [Component]
+  }
+
+#####   Hardware
+##
+  "Defines identifying information about an Hardware"
+  type Hardware implements BasicObject & LifecycleObject & CoreObject & OscalObject & InventoryItem {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # CoreObject
+    "Indicates the date and time at which the object was originally created."
+    created: DateTime
+    "Indicates the date and time that this particular version of the object was last modified."
+    modified: DateTime
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [String]
+    # OscalObject
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
+    "Identifies one or more references to additional commentary on the Model."
+    notes( first: Int ): CyioNoteConnection
+    "Identifies one or more relationships to other entities."
+    relationships(
+      first: Int
+      offset: Int
+      orderedBy: OscalRelationshipsOrdering
+      orderMode: OrderingMode
+      filters: [OscalRelationshipsFiltering]
+      filterMode: FilterMode
+      search: String 
+    ): OscalRelationshipConnection
+    # Inventory Item
+    "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
+    asset_type: AssetType!
+    "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
+    asset_id: String
+    "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible invenotry item."
+    asset_tag: String
+    "Indicates the serial number for the inventory item."
+    serial_number: String
+    "Identifies the name of the inventory item."
+    name: String!
+    "Identifies a description of the Inventory Item, including information about its function."
+    description: String
+    "Identifies the model of the Inventory Item."
+    model: String
+    "Identifies the name of the company or organization that manufactured the inventory item"
+    vendor_name: String
+    "Identifies whether the inventory item can be check with an authenticated scan"
+    allows_authenticated_scans: Boolean
+    "Identifies whether the inventory item is publicly accessible"
+    is_publicly_accessible: Boolean
+    "Indicates if the inventory item is subjected to network scans"
+    is_scanned: Boolean
+    "Identifies whether the inventory item is virtualized"
+    is_virtual: Boolean
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
+    ipv4_address: [IpV4Address]
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
+    ipv6_address: [IpV6Address]
+    "Indicates the media access control (MAC) address for the inventory item."
+    mac_address: [MAC]
+    "Indicates the full-qualified domain name (FQDN) of the inventory item."
+    fqdn: String
+    "Indicates the NetBIOS name for the inventory item."
+    netbios_name: String
+    "Indicates the Uniform Resource Identifier (URI) for the inventory item."
+    uri: URL
+    "Identifies the network identifier of the inventory item."
+    network_id: String
+    "Identifies the Virtual LAN identifier of the inventory item."
+    vlan_id: String
+    "Identifies The name of the baseline configuration for the inventory item."
+    baseline_configuration_name: String
+    "Identifies the function provided by the inventory item for the system."
+    function: String
+    "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
+    responsible_parties: [OscalResponsibleParty]
+    "Indicates the physical location of the inventory item's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
+    physical_location: [OscalLocation]
+    "Identifies the set of components that are implemented in a given system inventory item."
+    implemented_components: [Component]
+  }
+
+#####   Network Device
+##
+  "Defines identifying information about an Network Device"
+  type NetworkDevice implements BasicObject & LifecycleObject & CoreObject & OscalObject & InventoryItem {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # CoreObject
+    "Indicates the date and time at which the object was originally created."
+    created: DateTime
+    "Indicates the date and time that this particular version of the object was last modified."
+    modified: DateTime
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [String]
+    # OscalObject
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
+    "Identifies one or more references to additional commentary on the Model."
+    notes( first: Int ): CyioNoteConnection
+    "Identifies one or more relationships to other entities."
+    relationships(
+      first: Int
+      offset: Int
+      orderedBy: OscalRelationshipsOrdering
+      orderMode: OrderingMode
+      filters: [OscalRelationshipsFiltering]
+      filterMode: FilterMode
+      search: String 
+    ): OscalRelationshipConnection
+    # Inventory Item
+    "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
+    asset_type: AssetType!
+    "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
+    asset_id: String
+    "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible invenotry item."
+    asset_tag: String
+    "Indicates the serial number for the inventory item."
+    serial_number: String
+    "Identifies the name of the inventory item."
+    name: String!
+    "Identifies a description of the Inventory Item, including information about its function."
+    description: String
+    "Identifies the model of the Inventory Item."
+    model: String
+    "Identifies the name of the company or organization that manufactured the inventory item"
+    vendor_name: String
+    "Identifies whether the inventory item can be check with an authenticated scan"
+    allows_authenticated_scans: Boolean
+    "Identifies whether the inventory item is publicly accessible"
+    is_publicly_accessible: Boolean
+    "Indicates if the inventory item is subjected to network scans"
+    is_scanned: Boolean
+    "Identifies whether the inventory item is virtualized"
+    is_virtual: Boolean
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
+    ipv4_address: [IpV4Address]
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
+    ipv6_address: [IpV6Address]
+    "Indicates the media access control (MAC) address for the inventory item."
+    mac_address: [MAC]
+    "Indicates the full-qualified domain name (FQDN) of the inventory item."
+    fqdn: String
+    "Indicates the NetBIOS name for the inventory item."
+    netbios_name: String
+    "Indicates the Uniform Resource Identifier (URI) for the inventory item."
+    uri: URL
+    "Identifies the network identifier of the inventory item."
+    network_id: String
+    "Identifies the Virtual LAN identifier of the inventory item."
+    vlan_id: String
+    "Identifies The name of the baseline configuration for the inventory item."
+    baseline_configuration_name: String
+    "Identifies the function provided by the inventory item for the system."
+    function: String
+    "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
+    responsible_parties: [OscalResponsibleParty]
+    "Indicates the physical location of the inventory item's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
+    physical_location: [OscalLocation]
+    "Identifies the set of components that are implemented in a given system inventory item."
+    implemented_components: [Component]
+  }
+
+#####   Router
+##
+  "Defines identifying information about an Router"
+  type Router implements BasicObject & LifecycleObject & CoreObject & OscalObject & InventoryItem {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # CoreObject
+    "Indicates the date and time at which the object was originally created."
+    created: DateTime
+    "Indicates the date and time that this particular version of the object was last modified."
+    modified: DateTime
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [String]
+    # OscalObject
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
+    "Identifies one or more references to additional commentary on the Model."
+    notes( first: Int ): CyioNoteConnection
+    "Identifies one or more relationships to other entities."
+    relationships(
+      first: Int
+      offset: Int
+      orderedBy: OscalRelationshipsOrdering
+      orderMode: OrderingMode
+      filters: [OscalRelationshipsFiltering]
+      filterMode: FilterMode
+      search: String 
+    ): OscalRelationshipConnection
+    # Inventory Item
+    "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
+    asset_type: AssetType!
+    "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
+    asset_id: String
+    "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible invenotry item."
+    asset_tag: String
+    "Indicates the serial number for the inventory item."
+    serial_number: String
+    "Identifies the name of the inventory item."
+    name: String!
+    "Identifies a description of the Inventory Item, including information about its function."
+    description: String
+    "Identifies the model of the Inventory Item."
+    model: String
+    "Identifies the name of the company or organization that manufactured the inventory item"
+    vendor_name: String
+    "Identifies whether the inventory item can be check with an authenticated scan"
+    allows_authenticated_scans: Boolean
+    "Identifies whether the inventory item is publicly accessible"
+    is_publicly_accessible: Boolean
+    "Indicates if the inventory item is subjected to network scans"
+    is_scanned: Boolean
+    "Identifies whether the inventory item is virtualized"
+    is_virtual: Boolean
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
+    ipv4_address: [IpV4Address]
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
+    ipv6_address: [IpV6Address]
+    "Indicates the media access control (MAC) address for the inventory item."
+    mac_address: [MAC]
+    "Indicates the full-qualified domain name (FQDN) of the inventory item."
+    fqdn: String
+    "Indicates the NetBIOS name for the inventory item."
+    netbios_name: String
+    "Indicates the Uniform Resource Identifier (URI) for the inventory item."
+    uri: URL
+    "Identifies the network identifier of the inventory item."
+    network_id: String
+    "Identifies the Virtual LAN identifier of the inventory item."
+    vlan_id: String
+    "Identifies The name of the baseline configuration for the inventory item."
+    baseline_configuration_name: String
+    "Identifies the function provided by the inventory item for the system."
+    function: String
+    "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
+    responsible_parties: [OscalResponsibleParty]
+    "Indicates the physical location of the inventory item's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
+    physical_location: [OscalLocation]
+    "Identifies the set of components that are implemented in a given system inventory item."
+    implemented_components: [Component]
+  }
+
+#####   Switch
+##
+  "Defines identifying information about an Switch"
+  type Switch implements BasicObject & LifecycleObject & CoreObject & OscalObject & InventoryItem {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # CoreObject
+    "Indicates the date and time at which the object was originally created."
+    created: DateTime
+    "Indicates the date and time that this particular version of the object was last modified."
+    modified: DateTime
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [String]
+    # OscalObject
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references( first: Int ): CyioExternalReferenceConnection
+    "Identifies one or more references to additional commentary on the Model."
+    notes( first: Int ): CyioNoteConnection
+    "Identifies one or more relationships to other entities."
+    relationships(
+      first: Int
+      offset: Int
+      orderedBy: OscalRelationshipsOrdering
+      orderMode: OrderingMode
+      filters: [OscalRelationshipsFiltering]
+      filterMode: FilterMode
+      search: String 
+    ): OscalRelationshipConnection
+    # Inventory Item
+    "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
+    asset_type: AssetType!
+    "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
+    asset_id: String
+    "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible invenotry item."
+    asset_tag: String
+    "Indicates the serial number for the inventory item."
+    serial_number: String
+    "Identifies the name of the inventory item."
+    name: String!
+    "Identifies a description of the Inventory Item, including information about its function."
+    description: String
+    "Identifies the model of the Inventory Item."
+    model: String
+    "Identifies the name of the company or organization that manufactured the inventory item"
+    vendor_name: String
+    "Identifies whether the inventory item can be check with an authenticated scan"
+    allows_authenticated_scans: Boolean
+    "Identifies whether the inventory item is publicly accessible"
+    is_publicly_accessible: Boolean
+    "Indicates if the inventory item is subjected to network scans"
+    is_scanned: Boolean
+    "Identifies whether the inventory item is virtualized"
+    is_virtual: Boolean
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
+    ipv4_address: [IpV4Address]
+    "Indicates the Internet Protocol v4 Addresses of the inventory item"
+    ipv6_address: [IpV6Address]
+    "Indicates the media access control (MAC) address for the inventory item."
+    mac_address: [MAC]
+    "Indicates the full-qualified domain name (FQDN) of the inventory item."
+    fqdn: String
+    "Indicates the NetBIOS name for the inventory item."
+    netbios_name: String
+    "Indicates the Uniform Resource Identifier (URI) for the inventory item."
+    uri: URL
+    "Identifies the network identifier of the inventory item."
+    network_id: String
+    "Identifies the Virtual LAN identifier of the inventory item."
+    vlan_id: String
+    "Identifies The name of the baseline configuration for the inventory item."
+    baseline_configuration_name: String
+    "Identifies the function provided by the inventory item for the system."
+    function: String
+    "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
+    responsible_parties: [OscalResponsibleParty]
+    "Indicates the physical location of the inventory item's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
+    physical_location: [OscalLocation]
+    "Identifies the set of components that are implemented in a given system inventory item."
+    implemented_components: [Component]
+  }
+
+  union InventoryItemTypes = Hardware 
+          | ComputingDevice | Appliance
+          | NetworkDevice | Firewall | Router | Switch
