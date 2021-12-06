@@ -2,6 +2,7 @@ import {v4 as uuid4} from 'uuid';
 import {buildSelectVariables, optionalizePredicate, parameterizePredicate} from "../../utils";
 
 export function getSelectSparqlQuery( type, id, filter, ) {
+  // TODO: [DL] Need to convert this to the utils.buildSelectVariables() method. No more string replacement strategy
   var sparqlQuery;
   let re = /{iri}/g;  // using regex with 'g' switch to replace all instances of a marker
   switch( type ) {
@@ -75,7 +76,7 @@ const bindIRIClause = `\tBIND(<{iri}> AS ?iri)\n`;
 const typeConstraint = `\t?iri a <http://scap.nist.gov/ns/asset-identification#ComputingDevice> .\n`;
 const byIdClause = `\t?iri <http://darklight.ai/ns/common#id> "{id}" .`;
 
-const predicateMap = {
+export const predicateMap = {
   id: {
     predicate: "<http://darklight.ai/ns/common#id>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id")},

@@ -1,5 +1,5 @@
 import { assetSingularizeSchema as singularizeSchema, objectTypeMapping } from '../asset-mappings.js';
-import {getSelectSparqlQuery, getReducer, insertQuery} from './sparql-query.js';
+import {getSelectSparqlQuery, getReducer, insertQuery, predicateMap} from './sparql-query.js';
 import { getSelectSparqlQuery as getSoftwareQuery, 
          getReducer as getSoftwareReducer } from '../software/sparql-query.js';
 import {compareValues} from '../../utils.js';
@@ -12,6 +12,7 @@ import {
   insertPortRelationships,
   insertPortsQuery
 } from "../assetQueries";
+import {UserInputError} from "apollo-server-express";
 
 const computingDeviceResolvers = {
   Query: {
@@ -125,15 +126,15 @@ const computingDeviceResolvers = {
       const sparqlQuery = getSelectSparqlQuery('COMPUTING-DEVICE', id);
       const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
       const reducer = getReducer('COMPUTING-DEVICE');
+      if(response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
       const asset = (reducer(response[0]));
-      if(!asset) return null
       for(const portIri of asset.ports_iri) {
         const portQuery = deletePortQuery(portIri);
         await context.dataSources.Stardog.delete(dbName, portQuery);
       }
       for(const ipId of asset.ip_addr_iri) {
         const ipQuery = deleteIpQuery(ipId);
-        await context.dataSources.Stardog.delete(dbName, ipQuery)
+        await context.dataSources.Stardog.delete(dbName, ipQuery);
       }
       const relationshipQuery = removeFromInventoryQuery(id);
       await context.dataSources.Stardog.delete(dbName, relationshipQuery)
@@ -141,11 +142,11 @@ const computingDeviceResolvers = {
       await context.dataSources.Stardog.delete(dbName, query)
       return {id};
     },
-    editComputingDeviceAsset: async ( _, {input}, context ) => {
+    editComputingDeviceAsset: async ( _, {id, input}, context ) => {
       const dbName = context.dbName;
-      const updateQuery = updateAssetQuery(`<http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}>`, input)
+      const updateQuery = updateAssetQuery(`<http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}>`, input, predicateMap)
       await context.dataSources.Stardog.edit(dbName, updateQuery);
-      return {id}
+      return {id};
     },
   },
   // Map enum GraphQL values to data model required values

@@ -1,7 +1,7 @@
 import {v4 as uuid4} from 'uuid';
 import {UpdateOps, byIdClause, optionalizePredicate, parameterizePredicate, buildSelectVariables} from "../../utils.js";
 
-const predicateMap = {
+export const predicateMap = {
   id: {
     predicate: "<http://darklight.ai/ns/common#id>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "id");},
