@@ -37,7 +37,6 @@ import ObjectMarkingField from '../form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../form/ConfidenceField';
-import AssetTaglist from '../form/AssetTaglist';
 import AssetType from '../form/AssetType';
 // import Ports from '../form/Ports';
 import CommitMessage from '../form/CommitMessage';
@@ -221,16 +220,14 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                    <AssetTaglist
-                      component={SelectField}
+                    <Field
+                      component={TextField}
                       variant='outlined'
-                      name="asset_tag"
                       size='small'
+                      name="asset_tag"
                       fullWidth={true}
-                      style={{ height: '38.09px' }}
                       containerstyle={{ width: '100%' }}
-                    >
-                    </AssetTaglist>
+                    />
                   </div>
                 </Grid>
             </Grid>

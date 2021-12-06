@@ -95,7 +95,7 @@ class NetworkLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.type.width }}
+                style={{ width: dataColumns.asset_type.width }}
               >
                 {node.asset_type && <ItemIcon type={node.asset_type}/>}
               </div>
@@ -122,7 +122,7 @@ class NetworkLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
+                style={{ width: dataColumns.labels.width }}
               >
                 <StixCoreObjectLabels
                   variant="inList"
@@ -264,7 +264,7 @@ class NetworkLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.type.width }}
+                style={{ width: dataColumns.asset_type.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -308,7 +308,7 @@ class NetworkLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
+                style={{ width: dataColumns.labels.width }}
               >
                 <Skeleton
                   animation="wave"

@@ -26,7 +26,7 @@ import {
   Whatshot,
   Work,
   Phone,
-  Devices,
+  Apple,
   PhoneLocked,
   ViewColumn,
   Wifi,
@@ -34,6 +34,7 @@ import {
   Router,
 } from '@material-ui/icons';
 import {
+  MicrosoftWindows,
   Biohazard,
   DiamondOutline,
   ChessKnight,
@@ -50,6 +51,8 @@ import {
 } from 'mdi-material-ui';
 import networkIcon from '../resources/images/assets/networkIcon.svg';
 import softwareIcon from '../resources/images/assets/softwareIcon.svg';
+import deviceIcon from '../resources/images/assets/deviceIcon.svg';
+import linuxIcon from '../resources/images/assets/linuxIcon.svg';
 
 const iconSelector = (type, variant, fontSize, color) => {
   let style = {};
@@ -80,8 +83,14 @@ const iconSelector = (type, variant, fontSize, color) => {
           role="img"
         />
       );
-    case 'physical_device':
-      return <Devices style={style} fontSize={fontSize} role="img" />;
+    case 'apple':
+      return <Apple style={style} fontSize={fontSize} role="img" />;
+    case 'microsoft':
+      return <MicrosoftWindows style={style} fontSize={fontSize} role="img" />;
+    case 'linux':
+      return <img src={linuxIcon} style={{ height: '20px' }} alt="linux-icon" />;
+    case 'other':
+      return <img src={deviceIcon} style={{ height: '20px' }} alt="device-icon" />;
     case 'router':
       return <Router style={style} fontSize={fontSize} role="img" />;
     case 'firewall':

@@ -68,6 +68,7 @@ const buildSelection = (node) => {
   const select = [];
   const children = {};
   for(const child of node.selectionSet?.selections || []){
+    if(child.kind == 'InlineFragment') continue;
     if(child.selectionSet){ // Indicates an object node
       const { select: childSelect, children: childChildren } = buildSelection(child);
       const childMap = {};
