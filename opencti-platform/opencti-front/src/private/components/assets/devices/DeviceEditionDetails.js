@@ -26,6 +26,8 @@ import { dateFormat, parse } from '../../../../utils/Time';
 import DatePickerField from '../../../../components/DatePickerField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import InstalledAsset from '../../common/form/InstalledAsset';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   paper: {
@@ -82,6 +84,7 @@ class DeviceEditionDetailsComponent extends Component {
     const {
       t, classes, device, context, enableReferences,
     } = this.props;
+    console.log('devicedfsdfsdgs', device);
     return (
       <div>
         <div style={{ height: '100%' }}>
@@ -107,18 +110,27 @@ class DeviceEditionDetailsComponent extends Component {
                     <AddIcon fontSize="small" color="primary" />
                   </div>
                   <Field
-                    component={TextField}
+                    component={SelectField}
                     variant='outlined'
-                    name="installed_operating_system"
                     size='small'
+                    name='installed_operating_system'
+                    style={{ height: '38.09px' }}
                     fullWidth={true}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="installed_operating_system"
-                  //   />
-                  // }
-                  />
+                    containerstyle={{ width: '100%' }}
+                  >
+                    <MenuItem key="microsoft" value="microsoft">
+                      <ItemIcon variant='inline' type='microsoft' />&nbsp;{t('Windows')}
+                    </MenuItem>
+                    <MenuItem key="appliance" value="appliance">
+                      <ItemIcon variant='inline' type='apple' />&nbsp;{t('Apple')}
+                    </MenuItem>
+                    <MenuItem key="linux" value="linux">
+                      <ItemIcon variant='inline' type='linux' />&nbsp;{t('Linux')}
+                    </MenuItem>
+                    <MenuItem key="other" value="other">
+                      <ItemIcon variant='inline' type='other' />&nbsp;{t('Other')}
+                    </MenuItem>
+                  </Field>
                 </div>
                 <div>
                   <Typography
@@ -135,21 +147,33 @@ class DeviceEditionDetailsComponent extends Component {
                     </Tooltip>
                     <AddIcon fontSize="small" color="primary" style={{ marginTop: 2 }} />
                   </div>
-                  <Field
+                  <InstalledAsset
+                    component={SelectField}
+                    variant='outlined'
+                    type='software'
+                    multiple={true}
+                    name="installed_software"
+                    // disabled={true}
+                    fullWidth={true}
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
+                    helperText={t('Select device')}
+                  />
+                  {/* <Field
                     component={SelectField}
                     style={{ height: '38.09px' }}
                     variant='outlined'
                     name="installed_software"
                     size='small'
                     fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                  // helperText={
+                    containerstyle={{ width: '100%' }} */}
+                  {/* // helperText={
                   //   <SubscriptionFocus
                   //   context={context}
                   //   fieldName="installed_software"
                   //   />
-                  // }
-                  />
+                  // } */}
+                  {/* /> */}
                 </div>
                 <div>
                   <Typography
@@ -479,7 +503,19 @@ class DeviceEditionDetailsComponent extends Component {
                     <AddIcon fontSize="small" color="primary" />
                   </div>
                   <div className="clearfix" />
-                  <Field
+                  <InstalledAsset
+                    component={SelectField}
+                    variant='outlined'
+                    type='hardware'
+                    multiple={true}
+                    name="installed_hardware"
+                    // disabled={true}
+                    fullWidth={true}
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
+                    helperText={t('Select device')}
+                  />
+                  {/* <Field
                     component={SelectField}
                     style={{ height: '38.09px' }}
                     variant='outlined'
@@ -493,32 +529,32 @@ class DeviceEditionDetailsComponent extends Component {
                   //   fieldName="installed_hardware"
                   //   />
                   // }
-                  />
+                  /> */}
                 </div>
                 <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 15 }}
-                >
-                  {t('Location')}
-                </Typography>
-                <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
-                  <Tooltip title={t('Location')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Field
-                  component={TextField}
-                  name="Description"
-                  fullWidth={true}
-                  multiline={true}
-                  rows="3"
-                  variant='outlined'
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 15 }}
+                  >
+                    {t('Location')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
+                    <Tooltip title={t('Location')}>
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <Field
+                    component={TextField}
+                    name="Description"
+                    fullWidth={true}
+                    multiline={true}
+                    rows="3"
+                    variant='outlined'
                   />
-              </div>
+                </div>
                 <div>
                   <Typography
                     variant="h3"

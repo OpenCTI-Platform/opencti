@@ -50,6 +50,7 @@ export const deviceEditionDarkLightQuery = graphql`
       id
       name
       installed_operating_system {
+        id
         name
       }
       asset_id
@@ -66,6 +67,7 @@ export const deviceEditionDarkLightQuery = graphql`
       release_date
       # operational_status
       installed_software {
+        id
         name
       }
       connected_to_network {
@@ -86,6 +88,7 @@ export const deviceEditionDarkLightQuery = graphql`
       is_virtual
       is_publicly_accessible
       installed_hardware {
+        id
         name
         uri
       }

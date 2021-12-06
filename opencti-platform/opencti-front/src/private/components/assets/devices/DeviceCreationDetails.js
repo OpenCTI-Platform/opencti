@@ -26,6 +26,8 @@ import { dateFormat, parse } from '../../../../utils/Time';
 import DatePickerField from '../../../../components/DatePickerField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import ItemIcon from '../../../../components/ItemIcon';
+import InstalledAsset from '../../common/form/InstalledAsset';
 // import Ports from '../../common/form/Ports';
 // import Protocols from '../../common/form/Protocols';
 
@@ -136,12 +138,27 @@ class DeviceCreationDetailsComponent extends Component {
                     <AddIcon fontSize="small" color="disabled" />
                   </div>
                   <Field
-                    component={TextField}
+                    component={SelectField}
                     variant='outlined'
-                    name="installed_operating_system"
                     size='small'
+                    name='installed_operating_system'
+                    style={{ height: '38.09px' }}
                     fullWidth={true}
-                  />
+                    containerstyle={{ width: '100%' }}
+                  >
+                    <MenuItem key="microsoft" value="microsoft">
+                      <ItemIcon variant='inline' type='microsoft' />&nbsp;{t('Windows')}
+                    </MenuItem>
+                    <MenuItem key="appliance" value="appliance">
+                      <ItemIcon variant='inline' type='apple' />&nbsp;{t('Apple')}
+                    </MenuItem>
+                    <MenuItem key="linux" value="linux">
+                      <ItemIcon variant='inline' type='linux' />&nbsp;{t('Linux')}
+                    </MenuItem>
+                    <MenuItem key="other" value="other">
+                      <ItemIcon variant='inline' type='other' />&nbsp;{t('Other')}
+                    </MenuItem>
+                  </Field>
                 </div>
                 <div>
                   <Typography
@@ -158,14 +175,17 @@ class DeviceCreationDetailsComponent extends Component {
                     </Tooltip>
                     <AddIcon fontSize="small" color="disabled" style={{ marginTop: 2 }} />
                   </div>
-                  <Field
+                  <InstalledAsset
                     component={SelectField}
-                    style={{ height: '38.09px' }}
                     variant='outlined'
+                    type='software'
+                    multiple={true}
                     name="installed_software"
-                    size='small'
+                    // disabled={true}
                     fullWidth={true}
+                    style={{ height: '38.09px' }}
                     containerstyle={{ width: '100%' }}
+                    helperText={t('Select device')}
                   />
                 </div>
                 <div>
@@ -435,14 +455,17 @@ class DeviceCreationDetailsComponent extends Component {
                     <AddIcon fontSize="small" color="disabled" />
                   </div>
                   <div className="clearfix" />
-                  <Field
+                  <InstalledAsset
                     component={SelectField}
-                    style={{ height: '38.09px' }}
                     variant='outlined'
+                    type='hardware'
+                    multiple={true}
                     name="installed_hardware"
-                    size='small'
+                    // disabled={true}
                     fullWidth={true}
-                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
+                    helperText={t('Select device')}
                   />
                 </div>
                 <div>

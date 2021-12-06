@@ -213,7 +213,14 @@ class DeviceEditionContainer extends Component {
     const {
       t, classes, handleClose, device,
     } = this.props;
-    console.log('DeviceEditionPropsData', device);
+    const installedHardwares = R.pipe(
+      R.pathOr([], ['installed_hardware']),
+      R.map((n) => (n.id)),
+    )(device);
+    const installedSoftware = R.pipe(
+      R.pathOr([], ['installed_software']),
+      R.map((n) => (n.id)),
+    )(device);
     const initialValues = R.pipe(
       R.assoc('id', device.id),
       R.assoc('asset_id', device.asset_id),
@@ -226,9 +233,12 @@ class DeviceEditionContainer extends Component {
       R.assoc('vendor_name', device.vendor_name),
       R.assoc('serial_number', device.serial_number),
       R.assoc('release_date', device.release_date),
+      R.assoc('installed_hardware', installedHardwares),
+      R.assoc('installed_software', installedSoftware),
       R.assoc('operational_status', device.operational_status),
       R.assoc('installation_id', device.installation_id || ''),
       R.assoc('bios_id', device.bios_id || ''),
+      R.assoc('installed_operating_system', device?.installed_operating_system?.name || ''),
       // R.assoc('connected_to_network', device.connected_to_network.name || ''),
       R.assoc('netbios_name', device.netbios_name || ''),
       R.assoc('baseline_configuration_name', device.baseline_configuration_name || ''),
@@ -253,14 +263,17 @@ class DeviceEditionContainer extends Component {
         'vendor_name',
         'serial_number',
         'release_date',
+        'installed_operating_system',
         'operational_status',
         'installation_id',
         'connected_to_network',
         'bios_id',
+        'installed_software',
         'netbios_name',
         'baseline_configuration_name',
         'mac_address',
         'model',
+        'installed_hardware',
         'hostname',
         'default_gateway',
         'motherboard_id',
