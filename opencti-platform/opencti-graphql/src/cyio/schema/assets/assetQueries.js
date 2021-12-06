@@ -183,3 +183,18 @@ WHERE {
   }
 }`
 }
+
+export const deleteIpAddressRange = (iri) => {
+    return `
+    DELETE {
+        GRAPH ${iri} {
+            ${iri} ?p ?o
+        }
+    } WHERE {
+        GRAPH ${iri} {
+            ${iri} a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> .
+            ${iri} ?p ?o
+        }
+    }
+    `
+}

@@ -4,21 +4,24 @@ import {
   getReducer,
   insertQuery,
   getSelectNetworkAssetQuery,
-  getSelectNetworkAssetByIdQuery
+  getSelectNetworkAssetByIdQuery, deleteNetworkAssetQuery
 } from './sparql-query.js';
 import {compareValues, generateId, DARKLIGHT_NS, buildSelectVariables} from '../../utils.js';
 import {
+  deleteIpAddressRange,
+  deleteIpQuery,
   insertIPAddressRangeQuery,
   insertIPAddressRangeRelationship,
   insertIPQuery,
   selectIPAddressRange
 } from "../assetQueries";
 import querySelectMap from "../../querySelectMap";
+import {UserInputError} from "apollo-server-express";
 
 const networkResolvers = {
   Query: {
     networkAssetList: async ( _, args, context, info ) => {
-      var sparqlQuery = getSelectSparqlQuery('NETWORK', );
+      var sparqlQuery = getSelectSparqlQuery('NETWORK');
       var reducer = getReducer('NETWORK')
       const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
@@ -122,9 +125,32 @@ const networkResolvers = {
 
       return {id}
     },
-    deleteNetworkAsset: ( parent, args, context, info ) => {
+    deleteNetworkAsset: async ( _, args, context, info ) => {
+      const dbName = context.dbName;
+      const sparqlQuery = getSelectSparqlQuery("NETWORK", ["id", "network_address_range"], args.id);
+      const response = await context.dataSources.Stardog.queryById(dbName, sparqlQuery, singularizeSchema);
+      if(response.length === 0) throw new UserInputError(`Entity does not exists with ID ${id}`);
+      const reducer = getReducer("NETWORK");
+      const asset = reducer(response[0]);
+      if(asset.netaddr_range_iri){
+        const ipRangeQuery = selectIPAddressRange(`<${asset.netaddr_range_iri}>`);
+        const ipRange = await context.dataSources.Stardog.queryAll(dbName, ipRangeQuery);
+        if(ipRange.length === 1){
+          const start = ipRange[0].starting_ip_address;
+          const end = ipRange[0].ending_ip_address;
+          let ipQuery = deleteIpQuery(`<${start}>`);
+          await context.dataSources.Stardog.delete(dbName, ipQuery);
+          ipQuery = deleteIpQuery(`<${end}>`);
+          await context.dataSources.Stardog.delete(dbName, ipQuery);
+        }
+        const deleteIpRange = deleteIpAddressRange(`<http://scap.nist.gov/ns/asset-identification#IpAddressRange-${args.id}>`);
+        await context.dataSources.Stardog.delete(dbName, deleteIpRange);
+      }
+      const deleteQuery = deleteNetworkAssetQuery(args.id);
+      await context.dataSources.Stardog.delete(dbName, deleteQuery);
+      return {id: args.id};
     },
-    editNetworkAsset: ( parent, args, context, info ) => {
+    editNetworkAsset: ( _, args, context, info ) => {
     },
   },
   // Map enum GraphQL values to data model required values
