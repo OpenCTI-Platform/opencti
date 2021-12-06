@@ -13,15 +13,13 @@ import {
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
-import ListCards from '../../../components/list_cards/ListCards';
-import ListLines from '../../../components/list_lines/ListLines';
+import CyioListCards from '../../../components/list_cards/CyioListCards';
+import CyioListLines from '../../../components/list_lines/CyioListLines';
 import SoftwareCards, {
   softwareCardsQuery,
-  // softwareCardsdarkLightRootQuery,
 } from './software/SoftwareCards';
 import SoftwareLines, {
   softwareLinesQuery,
-  // softwareLinesdarkLightRootQuery,
 } from './software/SoftwareLines';
 import SoftwareCreation from './software/SoftwareCreation';
 import SoftwareDeletion from './software/SoftwareDeletion';
@@ -172,15 +170,21 @@ class Software extends Component {
       name: {
         label: 'Name',
       },
-      created: {
-        label: 'Creation date',
+      asset_type: {
+        label: 'Type',
       },
-      modified: {
-        label: 'Modification date',
+      asset_id: {
+        label: 'Asset ID',
+      },
+      vendor_name: {
+        label: 'Vendor',
+      },
+      labels: {
+        label: 'Labels',
       },
     };
     return (
-      <ListCards
+      <CyioListCards
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -195,7 +199,6 @@ class Software extends Component {
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<SoftwareCreation />}
         OperationsComponent={<SoftwareDeletion />}
         openExports={openExports}
         exportEntityType="Software"
@@ -211,7 +214,9 @@ class Software extends Component {
           'createdBy',
         ]}
       >
-        {/* <QueryRenderer
+        {/* <QueryRenderer */}
+        <QR
+          environment={QueryRendererDarkLight}
           query={softwareCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
@@ -226,28 +231,8 @@ class Software extends Component {
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
-        /> */}
-        <QR
-          environment={QueryRendererDarkLight}
-          query={softwareCardsQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => {
-            console.log(`DarkLightSoftwareCards Error ${error} OR Props ${JSON.stringify(props)}`);
-            return (
-              <SoftwareCards
-                data={props}
-                selectAll={selectAll}
-                paginationOptions={paginationOptions}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-            );
-          }}
         />
-      </ListCards>
+      </CyioListCards>
     );
   }
 
@@ -273,17 +258,17 @@ class Software extends Component {
         width: '10%',
         isSortable: true,
       },
-      type: {
+      asset_type: {
         label: 'Type',
         width: '5%',
         isSortable: true,
       },
-      assetId: {
+      asset_id: {
         label: 'Asset ID',
         width: '10%',
         isSortable: true,
       },
-      vendorName: {
+      vendor_name: {
         label: 'Vendor',
         width: '10%',
         isSortable: true,
@@ -291,31 +276,31 @@ class Software extends Component {
       version: {
         label: 'Version',
         width: '10%',
-        isSortable: true,
+        isSortable: false,
       },
-      patchLevel: {
+      patch_level: {
         label: 'Patch Level',
         width: '10%',
-        isSortable: true,
+        isSortable: false,
       },
       cpeId: {
         label: 'CPE ID',
         width: '10%',
-        isSortable: true,
+        isSortable: false,
       },
       swId: {
         label: 'SWID',
         width: '10%',
-        isSortable: true,
+        isSortable: false,
       },
-      objectLabel: {
+      labels: {
         label: 'Labels',
         width: '25%',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (
-      <ListLines
+      <CyioListLines
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -330,7 +315,6 @@ class Software extends Component {
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<SoftwareCreation />}
         OperationsComponent={<SoftwareDeletion />}
         openExports={openExports}
         exportEntityType="Software"
@@ -346,7 +330,9 @@ class Software extends Component {
           'createdBy',
         ]}
       >
-        {/* <QueryRenderer
+        {/* <QueryRenderer */}
+        <QR
+          environment={QueryRendererDarkLight}
           query={softwareLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
@@ -362,29 +348,8 @@ class Software extends Component {
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
-        /> */}
-        <QR
-          environment={QueryRendererDarkLight}
-          query={softwareLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => {
-            console.log(`DarkLightSoftwareLines Error ${error} OR Props ${JSON.stringify(props)}`);
-            return (
-              <SoftwareLines
-                data={props}
-                selectAll={selectAll}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                paginationOptions={paginationOptions}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-            );
-          }}
         />
-      </ListLines>
+      </CyioListLines>
     );
   }
 
@@ -400,7 +365,7 @@ class Software extends Component {
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
-      orderBy: sortBy,
+      orderedBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
     };

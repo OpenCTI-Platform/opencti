@@ -5,23 +5,21 @@ import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import { QueryRenderer as QR } from 'react-relay';
-import { QueryRenderer } from '../../../relay/environment';
 import QueryRendererDarkLight from '../../../relay/environmentDarkLight';
+import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
-import ListCards from '../../../components/list_cards/ListCards';
-import ListLines from '../../../components/list_lines/ListLines';
+import CyioListCards from '../../../components/list_cards/CyioListCards';
+import CyioListLines from '../../../components/list_lines/CyioListLines';
 import DevicesCards, {
   devicesCardsQuery,
-  // devicesCardsdarkLightRootQuery,
 } from './devices/DevicesCards';
 import DevicesLines, {
   devicesLinesQuery,
-  devicesLinesdarkLightRootQuery,
 } from './devices/DevicesLines';
 import DeviceCreation from './devices/DeviceCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
@@ -172,16 +170,27 @@ class Devices extends Component {
       name: {
         label: 'Name',
       },
-
-      created: {
-        label: 'Creation date',
+      asset_type: {
+        label: 'Type',
       },
-      modified: {
-        label: 'Modification date',
+      asset_id: {
+        label: 'Asset ID',
+      },
+      ip_address: {
+        label: 'IP Address',
+      },
+      installed_operating_system: {
+        label: 'OS',
+      },
+      network_id: {
+        label: 'Network ID',
+      },
+      labels: {
+        label: 'Label',
       },
     };
     return (
-      <ListCards
+      <CyioListCards
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -195,7 +204,6 @@ class Devices extends Component {
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<DeviceCreation />}
         OperationsComponent={<DeviceDeletion />}
         openExports={openExports}
         exportEntityType="Device"
@@ -216,24 +224,9 @@ class Devices extends Component {
           'labelledBy',
         ]}
       >
+        {/* <QueryRenderer */}
         <QR
           environment={QueryRendererDarkLight}
-          query={devicesCardsQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => <DevicesCards
-              data={props}
-              extra={props}
-              selectAll={selectAll}
-              paginationOptions={paginationOptions}
-              initialLoading={props === null}
-              selectedElements={selectedElements}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-            />
-          }
-        />
-        {/* <QueryRenderer
           query={devicesCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
@@ -252,8 +245,8 @@ class Devices extends Component {
               />
             );
           }}
-        /> */}
-      </ListCards>
+        />
+      </CyioListCards>
     );
   }
 
@@ -278,17 +271,17 @@ class Devices extends Component {
         width: '12%',
         isSortable: true,
       },
-      type: {
+      asset_type: {
         label: 'Type',
         width: '8%',
-        isSortable: false,
+        isSortable: true,
       },
-      assetId: {
+      asset_id: {
         label: 'Asset ID',
         width: '12%',
         isSortable: true,
       },
-      ipAddress: {
+      ip_address: {
         label: 'IP Address',
         width: '12%',
         isSortable: true,
@@ -296,26 +289,26 @@ class Devices extends Component {
       fqdn: {
         label: 'FQDN',
         width: '12%',
-        isSortable: true,
-      },
-      os: {
-        label: 'OS',
-        width: '8%',
         isSortable: false,
       },
-      networkId: {
+      installed_operating_system: {
+        label: 'OS',
+        width: '8%',
+        isSortable: true,
+      },
+      network_id: {
         label: 'Network ID',
         width: '12%',
         isSortable: true,
       },
-      objectLabel: {
+      labels: {
         label: 'Label',
         width: '20%',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (
-      <ListLines
+      <CyioListLines
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -329,7 +322,6 @@ class Devices extends Component {
         handleNewCreation={this.handleDeviceCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
-        CreateItemComponent={<DeviceCreation />}
         OperationsComponent={<DeviceDeletion />}
         openExports={openExports}
         selectAll={selectAll}
@@ -351,24 +343,9 @@ class Devices extends Component {
           'labelledBy',
         ]}
       >
+        {/* <QueryRenderer */}
         <QR
           environment={QueryRendererDarkLight}
-          query={devicesLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ error, props }) => <DevicesLines
-                data={props}
-                selectAll={selectAll}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                paginationOptions={paginationOptions}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-          }
-        />
-        {/* <QueryRenderer
           query={devicesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
@@ -387,8 +364,8 @@ class Devices extends Component {
               />
             );
           }}
-        /> */}
-      </ListLines>
+        />
+      </CyioListLines>
     );
   }
 
@@ -404,7 +381,7 @@ class Devices extends Component {
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
-      orderBy: sortBy,
+      orderedBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
     };

@@ -43,7 +43,7 @@ import {
 } from '../../../../components/Subscription';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
-import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
+import CyioCoreObjectLabelsView from '../stix_core_objects/CyioCoreObjectLabelsView';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -77,7 +77,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixDomainObjectAssetEditionOverviewComponent extends Component {
+class CyioDomainObjectAssetEditionOverviewComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -90,14 +90,14 @@ class StixDomainObjectAssetEditionOverviewComponent extends Component {
     const {
       t,
       classes,
-      stixDomainObject,
+      cyioDomainObject,
       context,
       values,
       onSubmit,
       setFieldValue,
       enableReferences,
     } = this.props;
-    const { editContext } = stixDomainObject;
+    const { editContext } = cyioDomainObject;
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <div style={{ height: '100%' }}>
@@ -352,10 +352,10 @@ class StixDomainObjectAssetEditionOverviewComponent extends Component {
                 // }
                 />
               </div>
-              <StixCoreObjectLabelsView
+              <CyioCoreObjectLabelsView
                 labels={objectLabel}
                 marginTop={20}
-                id={stixDomainObject.id}
+                id={cyioDomainObject.id}
               />
             </Grid>
             <Grid item={true} xs={6}>
@@ -448,10 +448,10 @@ class StixDomainObjectAssetEditionOverviewComponent extends Component {
   }
 }
 
-StixDomainObjectAssetEditionOverviewComponent.propTypes = {
+CyioDomainObjectAssetEditionOverviewComponent.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
-  stixDomainObject: PropTypes.object,
+  cyioDomainObject: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -459,4 +459,4 @@ StixDomainObjectAssetEditionOverviewComponent.propTypes = {
 export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(StixDomainObjectAssetEditionOverviewComponent);
+)(CyioDomainObjectAssetEditionOverviewComponent);

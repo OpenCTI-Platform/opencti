@@ -29,6 +29,7 @@ const styles = (theme) => ({
     borderRadius: 6,
   },
   link: {
+    textAlign: 'left',
     fontSize: '16px',
     font: 'DIN Next LT Pro',
   },
@@ -125,24 +126,24 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {/* {device.sophistication && t(device.sophistication)} */}
                 {device.installed_software
-                && device.installed_software.map((software, key) => (
-                  <div key={key}>
-                    <div className="clearfix" />
-                    <Link
-                      key={key}
-                      component="button"
-                      variant="body2"
-                      className={classes.link}
-                      onClick={() => (
-                        software.id && history.push(`/dashboard/assets/software/${software.id}`)
-                      )}
-                    >
-                      <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{software.name && t(software.name)}
-                    </Link>
-                  </div>
-                ))}
+                  && device.installed_software.map((software, key) => (
+                    <div key={key}>
+                      <div className="clearfix" />
+                      {software.name
+                        && <Link
+                          key={key}
+                          component="button"
+                          variant="body2"
+                          className={classes.link}
+                          onClick={() => (
+                            software.id && history.push(`/dashboard/assets/software/${software.id}`)
+                          )}
+                        >
+                          <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(software.name)}
+                        </Link>}
+                    </div>
+                  ))}
               </div>
               <div>
                 <Typography
@@ -176,7 +177,7 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {device.ports.length !== 0 && device.ports.map((port, key) => (
+                {device.ports && device.ports.map((port, key) => (
                   port.protocols && port.protocols.map((protocol) => (
                     <Chip key={key} classes={{ root: classes.chip }} label={`${port.port_number && t(port.port_number)} ${protocol && t(protocol)}`} color="primary" />
                   ))
@@ -359,17 +360,17 @@ class DeviceDetailsComponent extends Component {
                 {device.installed_hardware && device.installed_hardware.map((data, key) => (
                   <div key={key}>
                     <div className="clearfix" />
-                      <Link
-                        key={key}
-                        component="button"
-                        variant="body2"
-                        className={classes.link}
-                        onClick={() => (
-                          data.id && history.push(`/dashboard/assets/devices/${data.id}`)
-                        )}
-                      >
-                        <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{data.name && t(data.name)}
-                      </Link>
+                    <Link
+                      key={key}
+                      component="button"
+                      variant="body2"
+                      className={classes.link}
+                      onClick={() => (
+                        data.id && history.push(`/dashboard/assets/devices/${data.id}`)
+                      )}
+                    >
+                      <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{data.name && t(data.name)}
+                    </Link>
                   </div>
                 ))}
               </div>
@@ -389,15 +390,15 @@ class DeviceDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <div className={classes.scrollBg}>
-                    <div className={classes.scrollDiv}>
-                      <div className={classes.scrollObj}>
-                        {device.locations && device.locations.map((location, key) => (
-                          <div key={key}>
-                            {`${location.street_address && t(location.street_address)}, `}
-                            {`${location.city && t(location.city)}, `}
-                            {`${location.country && t(location.country)}, ${location.postal_code && t(location.postal_code)}`}
-                          </div>
-                        ))}
+                  <div className={classes.scrollDiv}>
+                    <div className={classes.scrollObj}>
+                      {device.locations && device.locations.map((location, key) => (
+                        <div key={key}>
+                          {`${location.street_address && t(location.street_address)}, `}
+                          {`${location.city && t(location.city)}, `}
+                          {`${location.country && t(location.country)}, ${location.postal_code && t(location.postal_code)}`}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>

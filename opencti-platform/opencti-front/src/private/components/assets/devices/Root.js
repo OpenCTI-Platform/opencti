@@ -30,7 +30,7 @@ const subscription = graphql`
   subscription RootDeviceSubscription($id: ID!) {
     stixDomainObject(id: $id) {
       ... on ThreatActor {
-        ...Device_device
+        # ...Device_device
         ...DeviceEditionContainer_device
       }
       ...FileImportViewer_entity
@@ -41,43 +41,11 @@ const subscription = graphql`
 `;
 
 const deviceQuery = graphql`
-  query RootDeviceQuery($id: String!) {
-    threatActor(id: $id) {
-      id
-      standard_id
-      name
-      aliases
-      x_opencti_graph_data
-      ...Device_device
-      ...DeviceKnowledge_device
-      ...FileImportViewer_entity
-      ...FileExportViewer_entity
-      ...FileExternalReferencesViewer_entity
-    }
-    connectorsForExport {
-      ...FileManager_connectorsExport
-    }
-  }
-`;
-
-const deviceDarkLightQuery = graphql`
-  query RootDeviceDarkLightQuery($id: ID!) {
+  query RootDeviceQuery($id: ID!) {
     computingDeviceAsset(id: $id) {
       id
       name
-      asset_id
-      asset_type
-      asset_tag
-      description
-      version
-      vendor_name
-      serial_number
-      release_date
-      # responsible_parties
-      # operational_status
-      labels
-      # ...DeviceOverview_device
-      ...DeviceDetails_device  
+      ...Device_device
     }
   }
 `;
@@ -130,9 +98,10 @@ class RootDevice extends Component {
             ]}
           />
         </Route>
+        {/* <QueryRenderer */}
         <QR
           environment={QueryRendererDarkLight}
-          query={deviceDarkLightQuery}
+          query={deviceQuery}
           variables={{ id: deviceId }}
           render={({ error, props }) => {
             if (props) {
@@ -157,131 +126,6 @@ class RootDevice extends Component {
             return <Loader />;
           }}
         />
-        {/* <QueryRenderer
-          query={deviceQuery}
-          variables={{ id: deviceId }}
-          render={({ props }) => {
-            if (props) {
-              if (props.threatActor) {
-                return (
-                  <Switch>
-                    <Route
-                      exact
-                      path="/dashboard/assets/devices/:deviceId"
-                      render={(routeProps) => (
-                        <Device
-                          {...routeProps}
-                          device={props.threatActor}
-                        />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/devices/:deviceId/knowledge"
-                      render={() => (
-                        <Redirect
-                          to={`/dashboard/assets/devices/${deviceId}/knowledge/overview`}
-                        />
-                      )}
-                    />
-                    <Route
-                      path="/dashboard/assets/devices/:deviceId/knowledge"
-                      render={(routeProps) => (
-                        <DeviceKnowledge
-                          {...routeProps}
-                          device={props.threatActor}
-                        />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/devices/:deviceId/analysis"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            stixDomainObject={props.threatActor}
-                            PopoverComponent={<DevicePopover />}
-                          />
-                          <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
-                            stixDomainObjectOrStixCoreRelationship={
-                              props.threatActor
-                            }
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/devices/:deviceId/indicators"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            stixDomainObject={props.threatActor}
-                            PopoverComponent={<DevicePopover />}
-                            variant="noaliases"
-                          />
-                          <StixDomainObjectIndicators
-                            {...routeProps}
-                            stixDomainObjectId={deviceId}
-    stixDomainObjectLink={`/dashboard/assets/devices/${deviceId}/indicators`}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/devices/:deviceId/indicators/relations/:relationId"
-                      render={(routeProps) => (
-                        <StixCoreRelationship
-                          entityId={deviceId}
-                          {...routeProps}
-                        />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/devices/:deviceId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            stixDomainObject={props.threatActor}
-                            PopoverComponent={<DevicePopover />}
-                          />
-                          <FileManager
-                            {...routeProps}
-                            id={deviceId}
-                            connectorsImport={[]}
-                            connectorsExport={props.connectorsForExport}
-                            entity={props.threatActor}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/devices/:deviceId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            stixDomainObject={props.threatActor}
-                            PopoverComponent={<DevicePopover />}
-                          />
-                          <StixCoreObjectHistory
-                            {...routeProps}
-                            stixCoreObjectId={deviceId}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                  </Switch>
-                );
-              }
-              return <ErrorNotFound />;
-            }
-            return <Loader />;
-          }}
-        /> */}
       </div>
     );
   }

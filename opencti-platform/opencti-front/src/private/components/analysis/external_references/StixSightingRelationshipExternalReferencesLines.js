@@ -67,11 +67,11 @@ const styles = (theme) => ({
     bottom: 2,
     width: '100%',
     height: 25,
-    backgroundColor: theme.palette.background.chip,
+    backgroundColor: 'rgba(255, 255, 255, .2)',
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
     '&:hover': {
-      backgroundColor: theme.palette.text.secondary,
+      backgroundColor: 'rgba(255, 255, 255, .5)',
     },
   },
 });
