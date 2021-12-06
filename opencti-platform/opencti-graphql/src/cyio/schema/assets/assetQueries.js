@@ -105,3 +105,41 @@ INSERT DATA {
 }
     `
 }
+
+export const deletePortQuery = (iri) => {
+    return `
+    DELETE {
+        GRAPH <${iri}> {
+            <${iri}> ?p ?o
+        }
+    } WHERE {
+        GRAPH <${iri}> {
+            <${iri}> a <http://scap.nist.gov/ns/asset-identification#Port> .
+            <${iri}> ?p ?o
+        }
+    }
+    `
+}
+
+export const deleteIpQuery = (iri) => {
+    let rdfType
+    if(iri.includes("IpV4")){
+        rdfType = "<http://scap.nist.gov/ns/asset-identification#IpV4Address>";
+    } else if (iri.includes("IpV6")){
+        rdfType = "<http://scap.nist.gov/ns/asset-identification#IpV6Address>";
+    } else {
+        throw new Error(`Cannot determine IP version from IRI ${iri}`);
+    }
+    return `
+    DELETE {
+        GRAPH ${iri} {
+            ${iri} ?p ?o
+        }
+    } WHERE {
+        GRAPH ${iri} {
+            ${iri} a ${rdfType} .
+            ${iri} ?p ?o
+        }
+    }
+    `
+}

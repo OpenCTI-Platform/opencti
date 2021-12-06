@@ -2,9 +2,16 @@ import { assetSingularizeSchema as singularizeSchema, objectTypeMapping } from '
 import {getSelectSparqlQuery, getReducer, insertQuery} from './sparql-query.js';
 import { getSelectSparqlQuery as getSoftwareQuery, 
          getReducer as getSoftwareReducer } from '../software/sparql-query.js';
-import { compareValues } from '../../utils.js';
+import {compareValues} from '../../utils.js';
 import {addToInventoryQuery, deleteQuery, removeFromInventoryQuery, updateAssetQuery} from "../assetUtil";
-import {insertIPQuery, insertIPRelationship, insertPortRelationships, insertPortsQuery} from "../assetQueries";
+import {
+  deleteIpQuery,
+  deletePortQuery,
+  insertIPQuery,
+  insertIPRelationship,
+  insertPortRelationships,
+  insertPortsQuery
+} from "../assetQueries";
 
 const computingDeviceResolvers = {
   Query: {
@@ -113,9 +120,22 @@ const computingDeviceResolvers = {
       }
       return {id};
     },
-    deleteComputingDeviceAsset: async ( _, {id}, context ) => {
+    deleteComputingDeviceAsset: async ( _, {id}, context, input ) => {
       const dbName = context.dbName;
-      const relationshipQuery = removeFromInventoryQuery(id)
+      const sparqlQuery = getSelectSparqlQuery('COMPUTING-DEVICE', id);
+      const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
+      const reducer = getReducer('COMPUTING-DEVICE');
+      const asset = (reducer(response[0]));
+      if(!asset) return null
+      for(const portIri of asset.ports_iri) {
+        const portQuery = deletePortQuery(portIri);
+        await context.dataSources.Stardog.delete(dbName, portQuery);
+      }
+      for(const ipId of asset.ip_addr_iri) {
+        const ipQuery = deleteIpQuery(ipId);
+        await context.dataSources.Stardog.delete(dbName, ipQuery)
+      }
+      const relationshipQuery = removeFromInventoryQuery(id);
       await context.dataSources.Stardog.delete(dbName, relationshipQuery)
       const query = deleteQuery(id)
       await context.dataSources.Stardog.delete(dbName, query)
@@ -193,7 +213,13 @@ const computingDeviceResolvers = {
 
           // query for the IP address based on its IRI
           var sparqlQuery = getSelectSparqlQuery('IPV4-ADDR', ipAddr);
-          const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
+          let response;
+          try {
+            response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
+          }catch(e) {
+            console.log(e)
+            throw e
+          }
           if (response === undefined ) return [];
           if (response && response.length > 0) {
             results.push(reducer( response[0] ))
@@ -244,7 +270,13 @@ const computingDeviceResolvers = {
 
           // query for the MAC address based on its IRI
           var sparqlQuery = getSelectSparqlQuery('MAC-ADDR', addr);
-          const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
+          let response;
+          try {
+            response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
+          }catch(e) {
+            console.log(e)
+            throw e
+          }
           if (response === undefined ) return [];
           if (response.length > 0) {
             results.push(reducer( response[0] ) )      // TODO: revent back when data is returned as objects, not strings

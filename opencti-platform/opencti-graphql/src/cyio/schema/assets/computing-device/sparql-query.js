@@ -1,5 +1,5 @@
 import {v4 as uuid4} from 'uuid';
-import {optionalizePredicate, parameterizePredicate} from "../../utils";
+import {buildSelectVariables, optionalizePredicate, parameterizePredicate} from "../../utils";
 
 export function getSelectSparqlQuery( type, id, filter, ) {
   var sparqlQuery;
@@ -348,6 +348,19 @@ WHERE {
       OPTIONAL { <{iri}> <http://darklight.ai/ns/common#object_type> ?object_type } .
     }
 }`;
+
+export const selectObjectRefsQuery = (id, properties) => {
+  const { selectClause ,predicates } = buildSelectVariables(predicateMap, ["ports", "ip_address"])
+  const iri = `<http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}>`
+  return `
+  SELECT ${selectClause} WHERE {
+    GRAPH ${iri} {
+       ${iri} a <http://scap.nist.gov/ns/asset-identification#ComputingDevice> .
+       ${predicates} 
+    }
+  }
+  `
+}
 
 function computingDeviceAssetReducer( item ) {
   // this code is to work around an issue in the data where we sometimes get multiple operatings
