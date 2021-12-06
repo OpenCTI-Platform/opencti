@@ -59,7 +59,7 @@ export function getReducer( type ) {
 }
 
 
-const predicateMap = {
+export const predicateMap = {
   id: {
     predicate: "<http://darklight.ai/ns/common#id>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id")},

@@ -3,10 +3,9 @@ import {
   getSelectSparqlQuery,
   getReducer,
   insertQuery,
-  getSelectNetworkAssetQuery,
-  getSelectNetworkAssetByIdQuery, deleteNetworkAssetQuery
+  deleteNetworkAssetQuery
 } from './sparql-query.js';
-import {compareValues, generateId, DARKLIGHT_NS, buildSelectVariables} from '../../utils.js';
+import {compareValues, generateId, DARKLIGHT_NS} from '../../utils.js';
 import {
   deleteIpAddressRange,
   deleteIpQuery,
@@ -15,8 +14,9 @@ import {
   insertIPQuery,
   selectIPAddressRange
 } from "../assetQueries";
-import querySelectMap from "../../querySelectMap";
 import {UserInputError} from "apollo-server-express";
+import {updateAssetQuery} from "../assetUtil";
+import {predicateMap} from "./sparql-query";
 
 const networkResolvers = {
   Query: {
@@ -150,7 +150,11 @@ const networkResolvers = {
       await context.dataSources.Stardog.delete(dbName, deleteQuery);
       return {id: args.id};
     },
-    editNetworkAsset: ( _, args, context, info ) => {
+    editNetworkAsset: async ( _, {id, input}, context ) => {
+      const dbName = context.dbName;
+      const updateQuery = updateAssetQuery(`<http://scap.nist.gov/ns/asset-identification#Network-${id}>`, input, predicateMap)
+      await context.dataSources.Stardog.edit(dbName, updateQuery);
+      return {id}
     },
   },
   // Map enum GraphQL values to data model required values

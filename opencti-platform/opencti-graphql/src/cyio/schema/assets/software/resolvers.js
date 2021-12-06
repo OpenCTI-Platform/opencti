@@ -2,7 +2,7 @@ import { assetSingularizeSchema as singularizeSchema, objectTypeMapping } from '
 import {
   getSelectSparqlQuery,
   getReducer,
-  insertQuery,
+  insertQuery, predicateMap,
 } from './sparql-query.js';
 import {compareValues} from '../../utils.js';
 import {addToInventoryQuery, deleteQuery, removeFromInventoryQuery, updateAssetQuery} from "../assetUtil";
@@ -90,7 +90,7 @@ const softwareResolvers = {
     },
     editSoftwareAsset: async ( _, {id, input}, context,  ) => {
       const dbName = context.dbName;
-      const updateQuery = updateAssetQuery(`<http://scap.nist.gov/ns/asset-identification#Software-${id}>`, input)
+      const updateQuery = updateAssetQuery(`<http://scap.nist.gov/ns/asset-identification#Software-${id}>`, input, predicateMap);
       await context.dataSources.Stardog.edit(dbName, updateQuery);
       return {id};
     },
