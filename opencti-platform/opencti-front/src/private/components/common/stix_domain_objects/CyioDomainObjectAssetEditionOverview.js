@@ -32,7 +32,6 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import AssetType from '../form/AssetType';
-import AssetTaglist from '../form/AssetTaglist';
 import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -202,16 +201,14 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <AssetTaglist
-                  component={SelectField}
+                <Field
+                  component={TextField}
                   variant='outlined'
-                  name="asset_tag"
                   size='small'
+                  name="asset_tag"
                   fullWidth={true}
-                  style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%' }}
-                >
-                </AssetTaglist>
+                />
               </div>
             </Grid>
           </Grid>

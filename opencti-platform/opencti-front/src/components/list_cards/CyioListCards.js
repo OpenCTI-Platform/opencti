@@ -6,8 +6,14 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
+import InputLabel from '@material-ui/core/InputLabel';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 import {
   Edit,
+  ArrowDownward,
+  ArrowUpward,
   AddCircleOutline,
   FormatListBulleted,
 } from '@material-ui/icons';
@@ -108,15 +114,15 @@ class CyioListCards extends Component {
       handleAddFilter,
       handleRemoveFilter,
       openExports,
-      // dataColumns,
+      dataColumns,
       OperationsComponent,
       handleDisplayEdit,
       selectedElements,
       keyword,
       filters,
       selectAll,
-      // sortBy,
-      // orderAsc,
+      sortBy,
+      orderAsc,
       children,
       handleNewCreation,
       numberOfElements,
@@ -158,6 +164,39 @@ class CyioListCards extends Component {
             ) : (
               ''
             )}
+            <InputLabel
+              classes={{ root: classes.sortFieldLabel }}
+              style={{
+                marginLeft:
+                  availableFilterKeys && availableFilterKeys.length > 0 ? 10 : 0,
+              }}
+            >
+              {t('Sort by')}
+            </InputLabel>
+            <FormControl classes={{ root: classes.sortField }}>
+              <Select
+                name="sort-by"
+                value={sortBy}
+                onChange={this.sortBy.bind(this)}
+                inputProps={{
+                  name: 'sort-by',
+                  id: 'sort-by',
+                }}
+              >
+                {toPairs(dataColumns).map((dataColumn) => (
+                  <MenuItem key={dataColumn[0]} value={dataColumn[0]}>
+                    {t(dataColumn[1].label)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <IconButton
+              aria-label="Sort by"
+              onClick={this.reverse.bind(this)}
+              classes={{ root: classes.sortIcon }}
+            >
+              {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
+            </IconButton>
             <div className={classes.filters}>
               {map((currentFilter) => {
                 const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
