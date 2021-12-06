@@ -285,10 +285,11 @@ class CyioDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {/* {[1, 2].map((data, key) => (
-                  <Chip key={key} classes={{ root: classes.chip }}
-                  label={t('Lorem Ipsum Lorem Ipsum')} color="primary" />
-                ))} */}
+                {cyioDomainObject.responsible_parties
+                  && cyioDomainObject?.responsible_parties.map((data, key) => (
+                    <Chip key={key} classes={{ root: classes.chip }}
+                      label={t(data)} color="primary" />
+                  ))}
               </div>
               <div>
                 <Typography

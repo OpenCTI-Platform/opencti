@@ -337,7 +337,6 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   variant='outlined'
                   name="responsible_parties"
                   size='small'
-                  disabled={true}
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
