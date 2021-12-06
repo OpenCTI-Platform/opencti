@@ -235,7 +235,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                 <div className="clearfix" />
                 <Field
                   component={TextField}
-                  name="Description"
+                  name="description"
                   fullWidth={true}
                   multiline={true}
                   rows="3"
@@ -327,11 +327,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   {t('Responsible Parties')}
                 </Typography>
                 <div style={{ float: 'left', margin: '17px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Responsible Parties',
-                    )}
-                  >
+                  <Tooltip title={t('Responsible Parties')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -339,17 +335,12 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                 <Field
                   component={SelectField}
                   variant='outlined'
-                  name="ports"
+                  name="responsible_parties"
+                  disabled={true}
                   size='small'
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                // helperText={
-                //   <SubscriptionFocus
-                //   context={context}
-                //   fieldName="ports"
-                //   />
-                // }
                 />
               </div>
               <CyioCoreObjectLabelsView

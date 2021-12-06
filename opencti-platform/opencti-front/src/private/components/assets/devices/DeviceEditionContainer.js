@@ -92,6 +92,7 @@ const deviceEditionMutation = graphql`
 
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  uri: Yup.string().url(t('The value must be an URL')),
   // asset_type: Yup.array().required(t('This field is required')),
   // implementation_point: Yup.string().required(t('This field is required')),
   // operational_status: Yup.string().required(t('This field is required')),
@@ -221,7 +222,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('name', device.name),
       R.assoc('asset_tag', device.asset_tag),
       R.assoc('asset_type', device.asset_type),
-      R.assoc('location', device.locations && device.locations.map((index) => [index.description]).join('\n')),
+      R.assoc('location', device?.locations.map((location) => [location.street_address, location.city, location.country, location.postal_code]).join('\n')),
       R.assoc('version', device.version),
       R.assoc('vendor_name', device.vendor_name),
       R.assoc('serial_number', device.serial_number),
@@ -229,7 +230,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('operational_status', device.operational_status),
       R.assoc('installation_id', device.installation_id || ''),
       R.assoc('bios_id', device.bios_id || ''),
-      // R.assoc('connected_to_network', device.connected_to_network.name || ''),
+      R.assoc('connected_to_network', device?.connected_to_network?.name || ''),
       R.assoc('netbios_name', device.netbios_name || ''),
       R.assoc('baseline_configuration_name', device.baseline_configuration_name || ''),
       R.assoc('mac_address', (device.mac_address || []).join()),
@@ -241,10 +242,14 @@ class DeviceEditionContainer extends Component {
       R.assoc('is_virtual', device.is_virtual || ''),
       R.assoc('is_publicly_accessible', device.is_publicly_accessible || ''),
       R.assoc('uri', device.uri || ''),
+      R.assoc('fqdn', device.fqdn || ''),
+      R.assoc('ipv4_address', device?.ipv4_address?.ip_address_value || ''),
+      R.assoc('ipv6_address', device?.ipv6_address?.ip_address_value || ''),
       R.pick([
         'id',
         'asset_id',
         'name',
+        'fqdn',
         'description',
         'asset_tag',
         'asset_type',
@@ -253,6 +258,8 @@ class DeviceEditionContainer extends Component {
         'vendor_name',
         'serial_number',
         'release_date',
+        'ipv4_address',
+        'ipv6_address',
         'operational_status',
         'installation_id',
         'connected_to_network',
@@ -437,14 +444,64 @@ const DeviceEditionFragment = createFragmentContainer(
   DeviceEditionContainer,
   {
     device: graphql`
-      fragment DeviceEditionContainer_device on ThreatActor {
+      fragment DeviceEditionContainer_device on ComputingDeviceAsset {
         id
-        ...DeviceEditionOverview_device
+        # ...DeviceEditionOverview_device
         # ...DeviceEditionDetails_device
-        editContext {
+        name
+        installed_operating_system {
           name
-          focusOn
         }
+        asset_id
+        network_id
+        description
+        locations {
+          city
+          country
+          postal_code
+          street_address
+        }
+        ipv4_address {
+          ip_address_value
+        }
+        ipv6_address {
+          ip_address_value
+        }
+        version
+        vendor_name
+        asset_tag
+        asset_type
+        serial_number
+        release_date
+        operational_status
+        installed_software {
+          name
+        }
+        connected_to_network {
+          name
+        }
+        uri
+        model
+        mac_address
+        fqdn
+        baseline_configuration_name
+        bios_id
+        is_scanned
+        hostname
+        default_gateway
+        motherboard_id
+        installation_id
+        netbios_name
+        is_virtual
+        is_publicly_accessible
+        installed_hardware {
+          name
+          uri
+        }
+        # editContext {
+        #   name
+        #   focusOn
+        # }
       }
     `,
   },

@@ -578,6 +578,7 @@ const DeviceDetails = createFragmentContainer(
   {
     device: graphql`
       fragment DeviceDetails_device on ComputingDeviceAsset {
+        id
         installed_software {
           id
           name

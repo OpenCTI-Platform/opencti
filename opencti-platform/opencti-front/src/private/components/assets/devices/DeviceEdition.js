@@ -37,58 +37,9 @@ const styles = (theme) => ({
 });
 
 export const deviceEditionQuery = graphql`
-  query DeviceEditionContainerQuery($id: String!) {
-    threatActor(id: $id) {
-      ...DeviceEditionContainer_device
-    }
-  }
-`;
-
-export const deviceEditionDarkLightQuery = graphql`
-  query DeviceEditionContainerDarkLightQuery($id: ID!) {
+  query DeviceEditionContainerQuery($id: ID!) {
     computingDeviceAsset(id: $id) {
-      id
-      name
-      installed_operating_system {
-        name
-      }
-      asset_id
-      network_id
-      description
-      locations {
-        description
-      }
-      version
-      vendor_name
-      asset_tag
-      asset_type
-      serial_number
-      release_date
-      # operational_status
-      installed_software {
-        name
-      }
-      connected_to_network {
-        name
-      }
-      uri
-      model
-      mac_address
-      fqdn
-      baseline_configuration_name
-      bios_id
-      is_scanned
-      hostname
-      default_gateway
-      motherboard_id
-      installation_id
-      netbios_name
-      is_virtual
-      is_publicly_accessible
-      installed_hardware {
-        name
-        uri
-      }
+      ...DeviceEditionContainer_device
     }
   }
 `;
@@ -140,7 +91,7 @@ class DeviceEdition extends Component {
         <div>
         <QR
           environment={environmentDarkLight}
-          query={deviceEditionDarkLightQuery}
+          query={deviceEditionQuery}
           variables={{ id: deviceId }}
           render={({ error, props }) => {
             console.log(`DeviceEditionDarkLightQuery Error ${error} OR Props ${JSON.stringify(props)}`);
