@@ -71,7 +71,7 @@ const styles = (theme) => ({
 
 const directFilters = [
   'report_types',
-  'x_opencti_detection',
+  'revoked',
   'sightedBy',
   'container_type',
   'toSightingId',

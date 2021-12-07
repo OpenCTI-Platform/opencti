@@ -298,6 +298,7 @@ class Indicators extends Component {
                 'x_opencti_detection',
                 'sightedBy',
                 'basedOn',
+                'revoked',
               ]}
             >
               <QueryRenderer
