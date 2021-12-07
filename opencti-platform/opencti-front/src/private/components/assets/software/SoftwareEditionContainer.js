@@ -51,7 +51,7 @@ const styles = (theme) => ({
     padding: '8px 16px 8px 8px',
   },
   title: {
-    textTransform: 'uppercase',
+    float: 'left',
   },
   rightContainer: {
     float: 'right',
@@ -249,7 +249,7 @@ class SoftwareEditionContainer extends Component {
                     classes={{ root: classes.title }}
                     style={{ float: 'left', marginTop: 10, marginRight: 5 }}
                   >
-                    {t('Edit: ')}
+                    {t('EDIT: ')}
                   </Typography>
                   <Field
                     component={TextField}
