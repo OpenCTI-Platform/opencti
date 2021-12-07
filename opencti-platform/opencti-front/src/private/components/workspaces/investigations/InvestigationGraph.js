@@ -1764,6 +1764,7 @@ const InvestigationGraph = createFragmentContainer(
         manifest
         graph_data
         tags
+        type
         owner {
           id
           name

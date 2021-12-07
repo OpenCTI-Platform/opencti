@@ -24,6 +24,7 @@ const investigationQuery = graphql`
     workspace(id: $id) {
       id
       name
+      type
       ...Investigation_workspace
     }
   }

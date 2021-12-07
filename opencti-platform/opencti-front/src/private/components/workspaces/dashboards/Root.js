@@ -24,6 +24,7 @@ const dashboardQuery = graphql`
     workspace(id: $id) {
       id
       name
+      type
       ...Dashboard_workspace
     }
   }
