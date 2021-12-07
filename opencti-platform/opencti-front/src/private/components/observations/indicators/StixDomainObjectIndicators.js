@@ -243,13 +243,6 @@ class StixDomainObjectIndicators extends Component {
         finalFilters,
       );
     }
-
-    const exportPaginationOptions = {
-      filters: [{ key: 'indicates', values: [stixDomainObjectId] }],
-      orderBy: sortBy,
-      orderMode: orderAsc ? 'asc' : 'desc',
-      search: searchTerm,
-    };
     return (
       <UserContext.Consumer>
         {({ helper }) => (
@@ -267,7 +260,7 @@ class StixDomainObjectIndicators extends Component {
               handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
               selectAll={selectAll}
               noPadding={typeof this.props.onChangeOpenExports === 'function'}
-              paginationOptions={exportPaginationOptions}
+              paginationOptions={paginationOptions}
               exportEntityType="Indicator"
               filters={filters}
               exportContext={`of-entity-${stixDomainObjectId}`}
@@ -275,7 +268,21 @@ class StixDomainObjectIndicators extends Component {
               secondaryAction={true}
               iconExtension={true}
               numberOfElements={numberOfElements}
-              availableFilterKeys={['created_start_date', 'created_end_date']}
+              availableFilterKeys={[
+                'labelledBy',
+                'markedBy',
+                'created_start_date',
+                'created_end_date',
+                'valid_from_start_date',
+                'valid_until_end_date',
+                'x_opencti_score_gt',
+                'x_opencti_score_lte',
+                'createdBy',
+                'x_opencti_detection',
+                'sightedBy',
+                'basedOn',
+                'revoked',
+              ]}
             >
               <QueryRenderer
                 query={stixDomainObjectIndicatorsLinesQuery}

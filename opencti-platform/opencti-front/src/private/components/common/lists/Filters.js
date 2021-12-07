@@ -71,7 +71,6 @@ const styles = (theme) => ({
 
 const directFilters = [
   'report_types',
-  'revoked',
   'sightedBy',
   'container_type',
   'toSightingId',
