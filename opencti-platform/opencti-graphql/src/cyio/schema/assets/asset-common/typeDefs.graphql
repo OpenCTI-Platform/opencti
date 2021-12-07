@@ -531,7 +531,7 @@
   }
 
   input PortInfoAddInput {
-      port_number: Port
+      port_number: Port!
       protocols: [NetworkAssetProtocol]
   }
 
