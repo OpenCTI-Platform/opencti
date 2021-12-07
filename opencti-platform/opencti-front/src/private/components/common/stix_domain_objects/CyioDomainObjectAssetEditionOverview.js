@@ -178,13 +178,11 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   variant='outlined'
                   name="asset_type"
                   size='small'
-                  disabled={true}
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%' }}
                   helperText={t('Select Asset Type')}
-                >
-                </AssetType>
+                />
               </div>
               <div>
                 <Typography
