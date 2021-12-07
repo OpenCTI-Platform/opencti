@@ -3,6 +3,7 @@ import { Client } from '@elastic/elasticsearch';
 import { Promise } from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
+import { readFileSync } from 'fs';
 import {
   buildPagination,
   cursorToOffset,
@@ -115,7 +116,7 @@ export const el = new Client({
   requestTimeout: conf.get('elasticsearch:request_timeout') || 30000,
   sniffOnStart: booleanConf('elasticsearch:sniff_on_start', false),
   ssl: {
-    ca: conf.get('elasticsearch:ssl:ca') || null,
+    ca: conf.get('elasticsearch:ssl:ca') ? readFileSync(conf.get('elasticsearch:ssl:ca')) : null,
     rejectUnauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
   },
 });
