@@ -368,6 +368,7 @@ class AttackPattern:
                         external_reference["source_name"] == "mitre-attack"
                         or external_reference["source_name"] == "mitre-pre-attack"
                         or external_reference["source_name"] == "mitre-mobile-attack"
+                        or external_reference["source_name"] == "mitre-ics-attack"
                         or external_reference["source_name"] == "amitt-attack"
                     ):
                         x_mitre_id = (
