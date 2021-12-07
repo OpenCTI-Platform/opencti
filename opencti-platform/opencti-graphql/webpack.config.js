@@ -51,10 +51,11 @@ module.exports = (env, argv) => {
         }),
       ],
     },
-    stats: !isDev && {
+    stats: {
       children: false,
       entrypoints: false,
       modules: false,
+      logging: true
     },
     node: {
       __dirname: true,

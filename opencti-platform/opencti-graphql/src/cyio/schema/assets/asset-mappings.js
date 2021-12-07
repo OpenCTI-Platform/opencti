@@ -109,7 +109,7 @@ const assetSingularizeSchema = { singularizeVariables: {
     "": false, // so there is an object as the root instead of an array
     "id": true,
     "iri": true,
-    "entity_type": true,
+    "object_type": true,
     "asset_id": true,
     "asset_tag": true,
     "asset_type": true,
