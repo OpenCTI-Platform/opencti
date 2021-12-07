@@ -213,16 +213,17 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Link
-                  component="button"
-                  variant="body2"
-                  className={classes.link}
-                  onClick={() => (
-                    device.connected_to_network.id && history.push(`/dashboard/assets/network/${device.connected_to_network.id}`)
-                  )}
-                >
-                  <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{device.connected_to_network && device.connected_to_network.name && t(device.connected_to_network.name)}
-                </Link>
+                {device?.connected_to_network?.name
+                  && <Link
+                    component="button"
+                    variant="body2"
+                    className={classes.link}
+                    onClick={() => (
+                      device.connected_to_network.id && history.push(`/dashboard/assets/network/${device.connected_to_network.id}`)
+                    )}
+                  >
+                    <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.connected_to_network.name)}
+                  </Link>}
               </div>
               <div>
                 <Typography
@@ -473,18 +474,14 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Link
-                  component="button"
-                  variant="body2"
-                  className={classes.link}
-                  onClick={() => {
-                    console.info("I'm a button.");
-                  }}
-                >
-                  <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{device.uri && t(device.uri)}
-                </Link>
-                {/* {device.primary_motivation
-                  && t(device.primary_motivation)} */}
+                {device?.uri
+                  && <Link
+                    href={device?.uri}
+                    variant="body2"
+                    className={classes.link}
+                  >
+                    <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.uri)}
+                  </Link>}
               </div>
               <div>
                 <Typography
