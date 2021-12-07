@@ -636,6 +636,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         entities_types = kwargs.get("entities_types", None)
         update = kwargs.get("update", False)
         event_version = kwargs.get("event_version", None)
+        bypass_split = kwargs.get("bypass_split", False)
         bypass_validation = kwargs.get("bypass_validation", False)
         file_name = kwargs.get("file_name", work_id + ".json")
         entity_id = kwargs.get("entity_id", None)
@@ -650,8 +651,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             return []
         if entities_types is None:
             entities_types = []
-        stix2_splitter = OpenCTIStix2Splitter()
-        bundles = stix2_splitter.split_bundle(bundle, True, event_version)
+        if bypass_split:
+            bundles = [bundle]
+        else:
+            stix2_splitter = OpenCTIStix2Splitter()
+            bundles = stix2_splitter.split_bundle(bundle, True, event_version)
         if len(bundles) == 0:
             raise ValueError("Nothing to import")
         if work_id is not None:
