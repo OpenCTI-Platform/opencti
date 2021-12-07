@@ -52,7 +52,7 @@ const observedDataResolvers = {
     },
   },
   ObservedData: {
-    name: (observedData, _, { user }) => resolveName(user, observedData.id),
+    name: (observedData, _, { user }) => resolveName(user, observedData),
   },
   ObservedDatasFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),

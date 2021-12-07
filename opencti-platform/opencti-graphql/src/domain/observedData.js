@@ -27,17 +27,20 @@ export const findAll = async (user, args) => {
   return listEntities(user, [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args);
 };
 
-export const resolveName = async (user, observedDataId) => {
-  const observedDataObjects = await objects(user, observedDataId, {
+export const resolveName = async (user, observedData) => {
+  const observedDataObjects = await objects(user, observedData.id, {
     first: 1,
     types: [ABSTRACT_STIX_CORE_OBJECT],
     connectionFormat: false,
   });
-  const firstObject = R.head(observedDataObjects);
-  if (isStixDomainObject(firstObject.entity_type)) {
-    return firstObject.name;
+  if (observedDataObjects.length > 0) {
+    const firstObject = R.head(observedDataObjects);
+    if (isStixDomainObject(firstObject.entity_type)) {
+      return firstObject.name;
+    }
+    return observableValue(firstObject);
   }
-  return observableValue(firstObject);
+  return observedData.last_observed;
 };
 
 // All entities
