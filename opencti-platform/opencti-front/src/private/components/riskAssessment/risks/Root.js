@@ -31,10 +31,10 @@ import RemediationContainer from './remediation/RemediationContainer';
 const subscription = graphql`
   subscription RootRiskSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on ThreatActor {
-       # ...Risk_risk
-        ...RiskEditionContainer_risk
-      }
+      # ... on ThreatActor {
+      #   ...Risk_risk
+      #   ...RiskEditionContainer_risk
+      # }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -44,7 +44,7 @@ const subscription = graphql`
 
 const riskQuery = graphql`
   query RootRiskQuery($id: ID!) {
-    risk(id: $id) {
+    poamItem(id: $id) {
       id
       name
       standard_id
@@ -106,9 +106,10 @@ class RootRisk extends Component {
           query={riskQuery}
           variables={{ id: riskId }}
           render={({ error, props }) => {
+            console.log('riskError', error);
             if (props) {
               console.log('RiskData', props);
-              if (props.risk) {
+              if (props.poamItem) {
                 return (
                   <Switch>
                     <Route
@@ -117,7 +118,7 @@ class RootRisk extends Component {
                       render={(routeProps) => (
                         <Risk
                           {...routeProps}
-                          risk={props.risk}
+                          risk={props.poamItem}
                         />
                       )}
                     />
@@ -127,7 +128,7 @@ class RootRisk extends Component {
                       render={(routeProps) => (
                           <RiskAnalysisContainer
                             {...routeProps}
-                            risk={props.risk}
+                            risk={props.poamItem}
                           />
                       )}
                     />
@@ -147,7 +148,7 @@ class RootRisk extends Component {
                       render={(routeProps) => (
                         <Remediation
                             {...routeProps}
-                            risk={props.risk}
+                            remediation={props.poamItem}
                         />
                       )}
                     />
@@ -157,7 +158,7 @@ class RootRisk extends Component {
                       render={(routeProps) => (
                         <RemediationContainer
                             {...routeProps}
-                            risk={props.risk}
+                            risk={props.poamItem}
                         />
                       )}
                     />
@@ -167,7 +168,7 @@ class RootRisk extends Component {
                       render={(routeProps) => (
                           <RiskTracking
                             {...routeProps}
-                            risk={props.risk}
+                            risk={props.poamItem}
                           />
                       )}
                     />

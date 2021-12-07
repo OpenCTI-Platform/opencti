@@ -31,7 +31,7 @@ import { commitMutation, QueryRenderer } from '../../../../../relay/environment'
 import CyioExternalReferenceEdition from '../../../analysis/external_references/CyioExternalReferenceEdition';
 import Loader from '../../../../../components/Loader';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
-import CyioCoreObjectOrCyioCoreRelationshipNoteCard from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNoteCard';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 
 const styles = (theme) => ({
   container: {
@@ -491,8 +491,8 @@ class RelatedTaskPopover extends Component {
                   <Grid style={{ marginTop: '20px' }} container={true}>
                     <CyioCoreObjectExternalReferences />
                   </Grid>
-                  <Grid style={{ marginTop: '20px' }} container={true}>
-                    <CyioCoreObjectOrCyioCoreRelationshipNoteCard
+                  <Grid container={true}>
+                    <CyioCoreObjectOrCyioCoreRelationshipNotes
                       cyioCoreObjectId={remediationId}
                     // data={props}
                     // marginTop={marginTop}

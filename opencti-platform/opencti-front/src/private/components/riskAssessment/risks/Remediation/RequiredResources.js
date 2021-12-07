@@ -14,9 +14,9 @@ import { QueryRenderer as QR } from 'react-relay';
 import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import inject18n from '../../../../../components/i18n';
 import { QueryRenderer } from '../../../../../relay/environment';
-import RequiredAssetsLines, {
-  requiredAssetsLinesQuery,
-} from './RequiredAssetsLines';
+import RequiredResourcesLines, {
+  requiredResourcesLinesQuery,
+} from './RequiredResourcesLines';
 
 const styles = (theme) => ({
   paper: {
@@ -42,19 +42,19 @@ const styles = (theme) => ({
   },
 });
 
-class RequiredAssets extends Component {
+class RequiredResources extends Component {
   render() {
     const { t, classes, remediationId } = this.props;
     return (
       // <QueryRenderer
       <QR
         environment={QueryRendererDarkLight}
-        query={requiredAssetsLinesQuery}
+        query={requiredResourcesLinesQuery}
         variables={{ id: '4b5f8565-55d3-5496-a366-345bd9f17e72', count: 200 }}
         render={({ props }) => {
           if (props) {
             return (
-              <RequiredAssetsLines
+              <RequiredResourcesLines
                 remediationId={remediationId}
                 data={props}
               />
@@ -67,7 +67,7 @@ class RequiredAssets extends Component {
                 gutterBottom={true}
                 style={{ float: 'left', marginBottom: 15 }}
               >
-                {t('Required Assets')}
+                {t('Required Resources')}
               </Typography>
               <div className="clearfix" />
               <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -115,7 +115,7 @@ class RequiredAssets extends Component {
   }
 }
 
-RequiredAssets.propTypes = {
+RequiredResources.propTypes = {
   remediationId: PropTypes.string,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -126,4 +126,4 @@ RequiredAssets.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(RequiredAssets);
+)(RequiredResources);

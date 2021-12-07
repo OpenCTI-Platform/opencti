@@ -28,7 +28,7 @@ import SelectField from '../../../../../components/SelectField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import { insertNode } from '../../../../../utils/Store';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
-import CyioCoreObjectOrCyioCoreRelationshipNoteCard from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNoteCard';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -566,14 +566,14 @@ class RelatedTaskCreation extends Component {
                     </Grid>
                   </Grid>
                   <Grid style={{ marginTop: '20px' }} container={true}>
-                      <CyioCoreObjectExternalReferences />
+                    <CyioCoreObjectExternalReferences />
                   </Grid>
                   <Grid style={{ marginTop: '20px' }} container={true}>
-                      <CyioCoreObjectOrCyioCoreRelationshipNoteCard
-                        cyioCoreObjectId={remediationId}
+                    <CyioCoreObjectOrCyioCoreRelationshipNotes
+                      cyioCoreObjectId={remediationId}
                       // data={props}
                       // marginTop={marginTop}
-                      />
+                    />
                   </Grid>
                 </DialogContent>
                 <DialogActions style={{ float: 'left', marginLeft: '15px', marginBottom: '20px' }}>

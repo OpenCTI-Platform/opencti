@@ -28,7 +28,7 @@ import MarkDownField from '../../../../../components/MarkDownField';
 import SelectField from '../../../../../components/SelectField';
 import { insertNode } from '../../../../../utils/Store';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
-import CyioCoreObjectOrCyioCoreRelationshipNoteCard from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNoteCard';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -99,8 +99,8 @@ const styles = (theme) => ({
   },
 });
 
-const RequiredAssetCreationMutation = graphql`
-  mutation RequiredAssetCreationMutation(
+const RequiredResourceCreationMutation = graphql`
+  mutation RequiredResourceCreationMutation(
     $input: ExternalReferenceAddInput!
   ) {
     externalReferenceAdd(input: $input) {
@@ -114,14 +114,14 @@ const RequiredAssetCreationMutation = graphql`
   }
 `;
 
-const RequiredAssetValidation = (t) => Yup.object().shape({
+const RequiredResourceValidation = (t) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
   external_id: Yup.string(),
   url: Yup.string().url(t('The value must be an URL')),
   description: Yup.string(),
 });
 
-class RequiredAssetCreation extends Component {
+class RequiredResourceCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -151,7 +151,7 @@ class RequiredAssetCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     CM(environmentDarkLight, {
-      mutation: RequiredAssetCreationMutation,
+      mutation: RequiredResourceCreationMutation,
       variables: {
         input: values,
       },
@@ -173,7 +173,7 @@ class RequiredAssetCreation extends Component {
       onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
     });
     // commitMutation({
-    //   mutation: RequiredAssetCreationMutation,
+    //   mutation: RequiredResourceCreationMutation,
     //   variables: {
     //     input: values,
     //   },
@@ -241,7 +241,7 @@ class RequiredAssetCreation extends Component {
                 url: '',
                 description: '',
               }}
-              validationSchema={RequiredAssetValidation(t)}
+              validationSchema={RequiredResourceValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
             >
@@ -333,7 +333,7 @@ class RequiredAssetCreation extends Component {
               url: '',
               description: '',
             }}
-            validationSchema={RequiredAssetValidation(t)}
+            validationSchema={RequiredResourceValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
           >
@@ -475,10 +475,10 @@ class RequiredAssetCreation extends Component {
                       <CyioCoreObjectExternalReferences />
                   </Grid>
                   <Grid style={{ marginTop: '20px' }} container={true}>
-                      <CyioCoreObjectOrCyioCoreRelationshipNoteCard
-                        cyioCoreObjectId={remediationId}
+                      <CyioCoreObjectOrCyioCoreRelationshipNotes
+                      cyioCoreObjectId={remediationId}
                       // data={props}
-                      // marginTop={marginTop}
+                      marginTop='0px'
                       />
                   </Grid>
                 </DialogContent>
@@ -557,7 +557,7 @@ class RequiredAssetCreation extends Component {
   }
 }
 
-RequiredAssetCreation.propTypes = {
+RequiredResourceCreation.propTypes = {
   remediationId: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -572,4 +572,4 @@ RequiredAssetCreation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(RequiredAssetCreation);
+)(RequiredResourceCreation);

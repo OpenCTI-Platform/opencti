@@ -30,7 +30,7 @@ import StixCoreObjectLatestHistory from '../../../common/stix_core_objects/StixC
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import { SubscriptionAvatars } from '../../../../../components/Subscription';
 import RemediationEditionGeneral from './RemediationEditionGeneral';
-import RequiredAssets from './RequiredAssets';
+import RequiredResources from './RequiredResources';
 import RelatedTasks from './RelatedTasks';
 // import RiskEditionOverview from '../RiskEditionOverview';
 // import RiskEditionDetails from '../RiskEditionDetails';
@@ -359,6 +359,7 @@ class RemediationEditionContainer extends Component {
                     /> */}
                     <CyioCoreObjectOrCyioCoreRelationshipNotes
                       cyioCoreObjectOrCyioCoreRelationshipId={risk.id}
+                      marginTop='0px'
                     />
                   </Grid>
                 </Grid>
@@ -374,7 +375,7 @@ class RemediationEditionContainer extends Component {
                       stixCoreObjectId={remediation.id}
                     /> */}
                   {/* <CyioCoreObjectAssetCreationExternalReferences /> */}
-                  <RequiredAssets />
+                  <RequiredResources />
                 </Grid>
                 <Grid item={true} xs={6}>
                   {/* <CyioCoreObjectLatestHistory /> */}

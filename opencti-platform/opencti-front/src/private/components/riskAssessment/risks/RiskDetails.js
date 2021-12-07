@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
+import * as R from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -71,6 +72,8 @@ class RiskDetailsComponent extends Component {
       fd,
       history,
     } = this.props;
+    // const details = R.pathOr('', ['poamItem', 'edges'], risk);
+    // console.log('detailsSection', details);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -101,59 +104,59 @@ class RiskDetailsComponent extends Component {
                 {risk.name && t(risk.name)}
               </div>
               <div>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left', marginTop: 20 }}
-                      >
-                        {t('Description')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                        <Tooltip
-                          title={t(
-                            'Description',
-                          )}
-                        >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <div className={classes.scrollBg}>
-                          <div className={classes.scrollDiv}>
-                            <div className={classes.scrollObj}>
-                            {risk.description && t(risk.description)}
-                            </div>
-                          </div>
-                      </div>
-                </div>
-                  <div style={{ marginTop: '15px' }}>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 5 }}
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Description')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'Description',
+                    )}
                   >
-                    {t('Risk Status')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '6px 0 0 5px' }}>
-                    <Tooltip
-                      title={t(
-                        'Risk Status',
-                      )}
-                    >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <div className={classes.scrollBg}>
+                  <div className={classes.scrollDiv}>
+                    <div className={classes.scrollObj}>
+                      {risk.description && t(risk.description)}
+                    </div>
                   </div>
-                  <div className="clearfix" />
-                  <Button
+                </div>
+              </div>
+              <div style={{ marginTop: '15px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 5 }}
+                >
+                  {t('Risk Status')}
+                </Typography>
+                <div style={{ float: 'left', margin: '6px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'Risk Status',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Button
                   variant="outlined"
                   size="small"
                   style={{ cursor: 'default' }}
-                  >
-                    {risk.risk_status && t(risk.risk_status)}
-                  </Button>
-                </div>
+                >
+                  {risk.risk_status && t(risk.risk_status)}
+                </Button>
+              </div>
               <div>
                 <Typography
                   variant="h3"
@@ -174,11 +177,11 @@ class RiskDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <div className={classes.scrollBg}>
-                    <div className={classes.scrollDiv}>
-                      <div className={classes.scrollObj}>
-                        {t('Description')}
-                      </div>
+                  <div className={classes.scrollDiv}>
+                    <div className={classes.scrollObj}>
+                      {t('Description')}
                     </div>
+                  </div>
                 </div>
               </div>
               <div>
@@ -220,14 +223,14 @@ class RiskDetailsComponent extends Component {
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
-              <div className="clearfix" />
+                <div className="clearfix" />
                 <Button
                   variant="outlined"
                   size="small"
                   style={{ cursor: 'default' }}
-                  >
-                    {risk.false_positive && t(risk.false_positive)}
-                  </Button>
+                >
+                  {risk.false_positive && t(risk.false_positive)}
+                </Button>
               </div>
               <div>
                 <Typography
@@ -248,13 +251,13 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                  <Button
+                <Button
                   variant="outlined"
                   size="small"
                   style={{ cursor: 'default' }}
-                  >
-                    {risk.risk_adjusted && t(risk.risk_adjusted)}
-                  </Button>
+                >
+                  {risk.risk_adjusted && t(risk.risk_adjusted)}
+                </Button>
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -328,11 +331,11 @@ class RiskDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <div className={classes.scrollBg}>
-                    <div className={classes.scrollDiv}>
-                      <div className={classes.scrollObj}>
-                        {t('Description')}
-                      </div>
+                  <div className={classes.scrollDiv}>
+                    <div className={classes.scrollObj}>
+                      {t('Description')}
                     </div>
+                  </div>
                 </div>
               </div>
               <div>
@@ -379,9 +382,9 @@ class RiskDetailsComponent extends Component {
                   variant="outlined"
                   size="small"
                   style={{ cursor: 'default' }}
-                  >
-                    {t('Approved')}
-                  </Button>
+                >
+                  {risk.risk_adjusted && fd(risk.risk_adjusted)}
+                </Button>
               </div>
               <div>
                 <Typography
@@ -402,13 +405,13 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                  <Button
+                <Button
                   variant="outlined"
                   size="small"
                   style={{ cursor: 'default' }}
-                  >
-                    {risk.vendor_dependency && t(risk.vendor_dependency)}
-                  </Button>
+                >
+                  {risk.vendor_dependency && t(risk.vendor_dependency)}
+                </Button>
               </div>
             </Grid>
           </Grid>
@@ -429,16 +432,87 @@ const RiskDetails = createFragmentContainer(
   RiskDetailsComponent,
   {
     risk: graphql`
-      fragment RiskDetails_risk on Risk {
+      fragment RiskDetails_risk on POAMItem {
         id
+        # poam_id
         name
         description
-        statement
-        risk_status
-        deadline
-        false_positive
-        vendor_dependency
-        risk_adjusted
+        labels
+        # related_risks {
+        #   edges {
+        #     node {
+        #       id
+        #       name
+        #       description
+        #       statement
+        #       risk_status
+        #       deadline
+        #       priority
+        #       accepted
+        #       false_positive
+        #       risk_adjusted
+        #       vendor_dependency
+        #       characterizations {
+        #         id
+        #         ... on GenericCharacterization {
+        #           origins {
+        #             id
+        #             origin_actors {
+        #               actor_type
+        #               actor {
+        #                 ... on OscalPerson {
+        #                   id
+        #                   name
+        #                 }
+        #               }
+        #             }
+        #           }
+        #         }
+        #       }
+        #     }
+        #   }
+        # }
+        # related_observations {
+        #   edges {
+        #     node {
+        #       id
+        #       name
+        #       subjects {
+        #         subject {
+        #           ... on HardwareComponent {
+        #             id
+        #             name
+        #           }
+        #         }
+        #       }
+        #     }
+        #   }
+        # }
+        # external_references {
+        #   edges {
+        #     node {
+        #       id
+        #       created
+        #       modified
+        #       external_id
+        #       source_name
+        #       description
+        #       url
+        #       media_type
+        #     }
+        #   }
+        # }
+        # notes {
+        #   edges {
+        #     node {
+        #       id
+        #       abstract
+        #       content
+        #       authors
+        #       labels
+        #     }
+        #   }
+        # }
       }
     `,
   },

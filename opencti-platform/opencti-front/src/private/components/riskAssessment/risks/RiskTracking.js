@@ -11,8 +11,12 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
 import Skeleton from '@material-ui/lab/Skeleton';
+import RiskEdition from './RiskEdition';
+import RiskPopover from './RiskPopover';
+import RiskDeletion from './RiskDeletion';
 import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
+import CyioDomainObjectHeader from '../../common/stix_domain_objects/CyioDomainObjectHeader';
 import { QueryRenderer } from '../../../../relay/environment';
 import RiskTrackingLines, {
   RiskTrackingLinesQuery,
@@ -43,75 +47,96 @@ const styles = (theme) => ({
 });
 
 class RiskTracking extends Component {
+  handleOpenNewCreation() {
+    this.props.history.push({
+      pathname: '/dashboard/risk-assessment/risks',
+      openNewCreation: true,
+    });
+  }
+
   render() {
-    const { t, classes, risk } = this.props;
+    const {
+      t,
+      classes,
+      risk,
+      history,
+    } = this.props;
     return (
-      // <QueryRenderer
-      <QR
-        environment={QueryRendererDarkLight}
-        query={RiskTrackingLinesQuery}
-        variables={{ id: '4733f0b3-7eb7-5e68-bd75-b32ecc80254a', count: 200 }}
-        render={({ props }) => {
-          console.log('RiskTrackingProps', props);
-          if (props) {
+      <>
+        <CyioDomainObjectHeader
+          cyioDomainObject={risk}
+          history={history}
+          PopoverComponent={<RiskPopover />}
+          // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
+          OperationsComponent={<RiskDeletion />}
+        />
+        <QR
+          environment={QueryRendererDarkLight}
+          query={RiskTrackingLinesQuery}
+          variables={{ id: '4733f0b3-7eb7-5e68-bd75-b32ecc80254a', count: 200 }}
+          render={({ props }) => {
+            console.log('RiskTrackingProps', props);
+            if (props) {
+              return (
+                <RiskTrackingLines
+                  risk={risk}
+                  data={props}
+                />
+              );
+            }
             return (
-              <RiskTrackingLines
-                risk={risk}
-                data={props}
-              />
+              <div style={{ height: '100%' }}>
+                <Typography
+                  variant="h4"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginBottom: 15 }}
+                >
+                  {t('Risk Log')}
+                </Typography>
+                <div className="clearfix" />
+                <Paper classes={{ root: classes.paper }} elevation={2}>
+                  <List>
+                    {Array.from(Array(5), (e, i) => (
+                      <ListItem
+                        key={i}
+                        dense={true}
+                        divider={true}
+                        button={false}
+                      >
+                        <ListItemIcon>
+                          <Avatar classes={{ root: classes.avatarDisabled }}>
+                            {i}
+                          </Avatar>
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <Skeleton
+                              animation="wave"
+                              variant="rect"
+                              width="90%"
+                              height={15}
+                              style={{ marginBottom: 10 }}
+                            />
+                          }
+                          secondary={
+                            <Skeleton
+                              animation="wave"
+                              variant="rect"
+                              width="90%"
+                              height={15}
+                            />
+                          }
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Paper>
+              </div>
             );
-          }
-          return (
-            <div style={{ height: '100%' }}>
-              <Typography
-                variant="h4"
-                gutterBottom={true}
-                style={{ float: 'left', marginBottom: 15 }}
-              >
-                {t('Risk Log')}
-              </Typography>
-              <div className="clearfix" />
-              <Paper classes={{ root: classes.paper }} elevation={2}>
-                <List>
-                  {Array.from(Array(5), (e, i) => (
-                    <ListItem
-                      key={i}
-                      dense={true}
-                      divider={true}
-                      button={false}
-                    >
-                      <ListItemIcon>
-                        <Avatar classes={{ root: classes.avatarDisabled }}>
-                          {i}
-                        </Avatar>
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <Skeleton
-                            animation="wave"
-                            variant="rect"
-                            width="90%"
-                            height={15}
-                            style={{ marginBottom: 10 }}
-                          />
-                        }
-                        secondary={
-                          <Skeleton
-                            animation="wave"
-                            variant="rect"
-                            width="90%"
-                            height={15}
-                          />
-                        }
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-            </div>
-          );
-        }}
-      />
+          }}
+        />
+      </>
     );
   }
 }

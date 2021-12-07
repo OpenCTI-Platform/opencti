@@ -104,13 +104,14 @@ class RiskLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.priority.width }}
               >
-                {node.priority && node.priority}
+                {/* {node.priority && node.priority} */}
+                {t('High')}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.risk.width }}
               >
-                {node.name && t(node.name)}
+                {node.risk && t(node.risk)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -121,7 +122,7 @@ class RiskLineComponent extends Component {
                   size="small"
                   style={{ cursor: 'default' }}
                 >
-                  {node.risk_status && t(node.risk_status)}
+                  {node.risk_state && t(node.risk_state)}
                 </Button>
               </div>
               <div
@@ -143,7 +144,7 @@ class RiskLineComponent extends Component {
                 style={{ width: dataColumns.component.width }}
               >
                 Lorem
-                {/* {node.fqdn && node.fqdn} */}
+                {node.component_type && node.component_type}
               </div>
               <div
                 className={classes.bodyItem}
@@ -158,7 +159,8 @@ class RiskLineComponent extends Component {
               >
                 {/* {fd(node.modified)} */}
                 {/* Lorem Ipsum Lorem Ipsum */}
-                {node.deadline && fd(node.deadline)}
+                {/* {node.deadline && fd(node.deadline)} */}
+                {t('Lorem Ipsum')}
               </div>
               {/* <div
                 className={classes.bodyItem}
@@ -194,33 +196,10 @@ const RiskLineFragment = createFragmentContainer(
   RiskLineComponent,
   {
     node: graphql`
-      fragment RiskLine_node on Risk {
+      fragment RiskLine_node on POAMItem {
         id
-        priority
-        deadline
-        risk_status
-        impacted_control_id
         name
-        risk_log {
-          edges {
-            node {
-              related_responses {
-                edges {
-                  node {
-                    lifecycle
-                  }
-                }
-              }
-            }
-          }
-        }
-        remediations {
-          edges {
-            node {
-              response_type
-            }
-          }
-        }
+        description
       }
     `,
   },
@@ -301,7 +280,7 @@ class RiskLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.lifecycle.width }}
               >
-               <Skeleton animation="wave" variant="circle" width={30} height={30} />
+                <Skeleton animation="wave" variant="circle" width={30} height={30} />
               </div>
               <div
                 className={classes.bodyItem}

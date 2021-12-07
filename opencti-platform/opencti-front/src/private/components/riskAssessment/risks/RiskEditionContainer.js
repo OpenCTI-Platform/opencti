@@ -369,6 +369,7 @@ class RiskEditionContainer extends Component {
                   {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk?.id} /> */}
                   <CyioCoreObjectOrCyioCoreRelationshipNotes
                     cyioCoreObjectOrCyioCoreRelationshipId={risk?.id}
+                    marginTop='0px'
                   />
                 </Grid>
               </Grid>
@@ -434,14 +435,14 @@ const RiskEditionFragment = createFragmentContainer(
   RiskEditionContainer,
   {
     risk: graphql`
-      fragment RiskEditionContainer_risk on ThreatActor {
+      fragment RiskEditionContainer_risk on POAMItem {
         id
-        # ...RiskEditionOverview_risk
-        # ...RiskEditionDetails_risk
-        editContext {
-          name
-          focusOn
-        }
+        ...RiskEditionOverview_risk
+        ...RiskEditionDetails_risk
+        # editContext {
+        #   name
+        #   focusOn
+        # }
       }
     `,
   },

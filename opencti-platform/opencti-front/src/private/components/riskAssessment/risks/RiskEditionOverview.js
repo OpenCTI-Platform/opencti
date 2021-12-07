@@ -768,23 +768,23 @@ const RiskEditionOverview = createFragmentContainer(
   RiskEditionOverviewComponent,
   {
     risk: graphql`
-      fragment RiskEditionOverview_risk on Risk {
+      fragment RiskEditionOverview_risk on POAMItem {
         id
-        description
-        characterizations {
-          edges {
-            node {
-              ... on RiskCharacterization {
-                impact
-                likelihood
-              }
-            }
-          }
-        }
-        impacted_control_id
-        deadline
-        priority
-        labels
+        # description
+        # characterizations {
+        #   edges {
+        #     node {
+        #       ... on RiskCharacterization {
+        #         impact
+        #         likelihood
+        #       }
+        #     }
+        #   }
+        # }
+        # impacted_control_id
+        # deadline
+        # priority
+        # labels
       }
     `,
   },

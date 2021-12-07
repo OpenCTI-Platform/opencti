@@ -31,7 +31,7 @@ import SelectField from '../../../../../components/SelectField';
 // import CyioExternalReferenceEdition from './CyioExternalReferenceEdition';
 import Loader from '../../../../../components/Loader';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
-import CyioCoreObjectOrCyioCoreRelationshipNoteCard from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNoteCard';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 
 const styles = (theme) => ({
   container: {
@@ -76,23 +76,23 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const requiredAssetPopoverDeletionMutation = graphql`
-  mutation RequiredAssetPopoverDeletionMutation($id: ID!) {
+const requiredResourcePopoverDeletionMutation = graphql`
+  mutation RequiredResourcePopoverDeletionMutation($id: ID!) {
     externalReferenceEdit(id: $id) {
       delete
     }
   }
 `;
 
-const cyioRequiredAssetEditionQuery = graphql`
-  query RequiredAssetPopoverEditionQuery($id: String!) {
+const cyioRequiredResourceEditionQuery = graphql`
+  query RequiredResourcePopoverEditionQuery($id: String!) {
     externalReference(id: $id) {
       ...CyioExternalReferenceEdition_externalReference
     }
   }
 `;
 
-class RequiredAssetPopover extends Component {
+class RequiredResourcePopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -132,7 +132,7 @@ class RequiredAssetPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
-      mutation: requiredAssetPopoverDeletionMutation,
+      mutation: requiredResourcePopoverDeletionMutation,
       variables: {
         id: this.props.externalReferenceId,
       },
@@ -143,7 +143,7 @@ class RequiredAssetPopover extends Component {
       onError: (err) => console.log('ExtRefDeletionDarkLightMutationError', err),
     });
     // commitMutation({
-    //   mutation: requiredAssetPopoverDeletionMutation,
+    //   mutation: requiredResourcePopoverDeletionMutation,
     //   variables: {
     //     id: this.props.externalReferenceId,
     //   },
@@ -216,7 +216,7 @@ class RequiredAssetPopover extends Component {
         >
           {/* <QR
             environment={environmentDarkLight}
-            query={cyioRequiredAssetEditionQuery}
+            query={cyioRequiredResourceEditionQuery}
             variables={{ id: externalReferenceId }}
             render={({ props }) => {
               if (props) {
@@ -232,7 +232,7 @@ class RequiredAssetPopover extends Component {
             }}
           /> */}
           {/* <QueryRenderer
-            query={cyioRequiredAssetEditionQuery}
+            query={cyioRequiredResourceEditionQuery}
             variables={{ id: externalReferenceId }}
             render={({ props }) => {
               if (props) {
@@ -396,9 +396,10 @@ class RequiredAssetPopover extends Component {
                   <Grid style={{ marginTop: '20px' }} container={true}>
                       <CyioCoreObjectExternalReferences />
                   </Grid>
-                  <Grid style={{ marginTop: '20px' }} container={true}>
-                      <CyioCoreObjectOrCyioCoreRelationshipNoteCard
+                  <Grid container={true}>
+                      <CyioCoreObjectOrCyioCoreRelationshipNotes
                         cyioCoreObjectId={remediationId}
+                        marginTop='0px'
                       // data={props}
                       // marginTop={marginTop}
                       />
@@ -469,7 +470,7 @@ class RequiredAssetPopover extends Component {
   }
 }
 
-RequiredAssetPopover.propTypes = {
+RequiredResourcePopover.propTypes = {
   remediationId: PropTypes.string,
   externalReferenceId: PropTypes.string,
   paginationOptions: PropTypes.object,
@@ -478,4 +479,4 @@ RequiredAssetPopover.propTypes = {
   handleRemove: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(RequiredAssetPopover);
+export default compose(inject18n, withStyles(styles))(RequiredResourcePopover);

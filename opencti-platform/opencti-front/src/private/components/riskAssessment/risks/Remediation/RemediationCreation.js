@@ -34,7 +34,7 @@ import inject18n from '../../../../../components/i18n';
 import StixDomainObjectHeader from '../../../common/stix_domain_objects/StixDomainObjectHeader';
 import RemediationCreationGeneral from './RemediationCreationGeneral';
 import RelatedTasks from './RelatedTasks';
-import RequiredAssets from './RequiredAssets';
+import RequiredResources from './RequiredResources';
 import CyioCoreObjectLatestHistory from '../../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectAssetCreationExternalReferences from '../../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
@@ -327,7 +327,7 @@ class RemediationCreation extends Component {
                   </Grid>
                   <Grid item={true} xs={6}>
                     {/* <RemediationCreationDetails setFieldValue={setFieldValue} /> */}
-                    <CyioCoreObjectOrCyioCoreRelationshipNotes marginTop='-25px' />
+                    <CyioCoreObjectOrCyioCoreRelationshipNotes />
                   </Grid>
                 </Grid>
               </Form>
@@ -342,7 +342,7 @@ class RemediationCreation extends Component {
                       stixCoreObjectId={remediation.id}
                     /> */}
                   {/* <CyioCoreObjectAssetCreationExternalReferences /> */}
-                  <RequiredAssets />
+                  <RequiredResources />
                 </Grid>
                 <Grid item={true} xs={6}>
                   {/* <CyioCoreObjectLatestHistory /> */}

@@ -181,7 +181,8 @@ class RiskCardComponent extends Component {
                     {t('Priority')}
                   </Typography>
                   <Typography>
-                    {node.priority && t(node.priority)}
+                    {/* {node.priority && t(node.priority)} */}
+                    {t('Priority')}
                   </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -193,7 +194,7 @@ class RiskCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {t('Medium')}
-                  {/* {nodem.risk && t(node.risk)} */}
+                  {node.risk && t(node.risk)}
                 </Typography>
               </Grid>
             </Grid>
@@ -239,7 +240,7 @@ class RiskCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {t('Lorem Ipsum')}
-                  {/* {node.fqdn && t(node.fqdn)} */}
+                  {node.component_type && t(node.component_type)}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -308,31 +309,10 @@ const RiskCardFragment = createFragmentContainer(
   RiskCardComponent,
   {
     node: graphql`
-      fragment RiskCard_node on Risk {
+      fragment RiskCard_node on POAMItem {
         id
-        priority
-        risk_status
-        impacted_control_id
-        risk_log {
-          edges {
-            node {
-              related_responses {
-                edges {
-                  node {
-                    lifecycle
-                  }
-                }
-              }
-            }
-          }
-        }
-        remediations {
-          edges {
-            node {
-              response_type
-            }
-          }
-        }
+        name
+        description
       }
     `,
   },

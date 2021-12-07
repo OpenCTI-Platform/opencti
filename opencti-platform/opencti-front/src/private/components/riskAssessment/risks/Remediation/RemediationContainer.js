@@ -21,7 +21,7 @@ import RemediationGeneralOverview from './RemediationGeneralOverview';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
-import RequiredAssets from './RequiredAssets';
+import RequiredResources from './RequiredResources';
 import RelatedTasks from './RelatedTasks';
 
 const styles = () => ({
@@ -82,6 +82,7 @@ class RemediationContainerComponent extends Component {
               <Grid item={true} xs={6}>
               <CyioCoreObjectOrCyioCoreRelationshipNotes
                 stixCoreObjectOrStixCoreRelationshipId={risk.id}
+                marginTop='0px'
               />
               </Grid>
             </Grid>
@@ -92,7 +93,7 @@ class RemediationContainerComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                <RequiredAssets remediationId={risk.id}/>
+                <RequiredResources remediationId={risk.id}/>
               </Grid>
               <Grid item={true} xs={6}>
                 <RelatedTasks remediationId={risk.id}/>

@@ -290,7 +290,9 @@ class RiskCreation extends Component {
                   <CyioCoreObjectLatestHistory />
                 </Grid>
               </Grid>
-              <CyioCoreObjectOrCyioCoreRelationshipNotes />
+              <CyioCoreObjectOrCyioCoreRelationshipNotes
+                marginTop='0px'
+              />
             </>
           )}
         </Formik>

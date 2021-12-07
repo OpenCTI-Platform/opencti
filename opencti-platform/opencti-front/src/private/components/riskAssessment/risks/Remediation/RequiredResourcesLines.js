@@ -35,7 +35,7 @@ import { interval } from 'rxjs';
 import inject18n from '../../../../../components/i18n';
 import { truncate } from '../../../../../utils/String';
 import { commitMutation } from '../../../../../relay/environment';
-import RequiredAssetCreation from './RequiredAssetCreation';
+import RequiredResourceCreation from './RequiredResourceCreation';
 // import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
 import Security, {
   KNOWLEDGE_KNENRICHMENT,
@@ -46,9 +46,9 @@ import Security, {
 import FileLine from '../../../common/files/FileLine';
 import { FIVE_SECONDS } from '../../../../../utils/Time';
 import FileUploader from '../../../common/files/FileUploader';
-import RequiredAssetPopover from './RequiredAssetPopover';
+import RequiredResourcePopover from './RequiredResourcePopover';
 import CyioCoreobjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
-import CyioCoreObjectOrCyioCoreRelationshipNoteCard from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNoteCard';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -118,7 +118,7 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-class RequiredAssetsLinesContainer extends Component {
+class RequiredResourcesLinesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -213,7 +213,7 @@ class RequiredAssetsLinesContainer extends Component {
     const {
       t, classes, remediationId, data,
     } = this.props;
-    console.log('RequiredAssetsLinesData', data);
+    console.log('RequiredResourcesLinesData', data);
     const { expanded } = this.state;
     const externalReferencesEdges = data.itAsset.external_references.edges;
     const expandable = externalReferencesEdges.length > 7;
@@ -221,13 +221,13 @@ class RequiredAssetsLinesContainer extends Component {
       <div style={{ height: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-            {t('Required Assets')}
+            {t('Required Resources')}
           </Typography>
           {/* <Security
           needs={[KNOWLEDGE_KNUPDATE]}
           placeholder={<div style={{ height: 28 }} />}
         > */}
-          <RequiredAssetCreation
+          <RequiredResourceCreation
             remediationId={remediationId}
             display={true}
             contextual={true}
@@ -297,7 +297,7 @@ class RequiredAssetsLinesContainer extends Component {
                   </Grid>
 
                 </Grid>
-                <Grid container={true}>
+                <Grid container={true} spacing={3}>
                   <Grid item={true} xs={12}>
                     <Typography
                       color="textSecondary"
@@ -330,20 +330,23 @@ class RequiredAssetsLinesContainer extends Component {
                     </div>
                   </Grid>
                 </Grid>
-                <Grid style={{ marginTop: '20px' }} container={true}>
-                  <CyioCoreobjectExternalReferences />
-                </Grid>
-                <Grid style={{ marginTop: '20px' }} container={true}>
-                  <CyioCoreObjectOrCyioCoreRelationshipNoteCard
-                    cyioCoreObjectId={remediationId}
-                  // data={props}
-                  // marginTop={marginTop}
-                  />
+                <Grid container={true} spacing={3}>
+                  <Grid style={{ marginTop: '20px' }} item={true}>
+                    <CyioCoreobjectExternalReferences />
+                  </Grid>
+                  <Grid style={{ marginTop: '40px' }} item={true}>
+                    <CyioCoreObjectOrCyioCoreRelationshipNotes
+                      cyioCoreObjectId={remediationId}
+                      marginTop='0px'
+                    // data={props}
+                    // marginTop={marginTop}
+                    />
+                  </Grid>
                 </Grid>
               </AccordionDetails>
             </Accordion>
             <div style={{ marginTop: '30px' }}>
-              <RequiredAssetPopover remediationId={remediationId} />
+              <RequiredResourcePopover remediationId={remediationId} />
             </div>
           </div>
         </Paper>
@@ -403,7 +406,7 @@ class RequiredAssetsLinesContainer extends Component {
   }
 }
 
-RequiredAssetsLinesContainer.propTypes = {
+RequiredResourcesLinesContainer.propTypes = {
   remediationId: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
@@ -413,18 +416,18 @@ RequiredAssetsLinesContainer.propTypes = {
   relay: PropTypes.object,
 };
 
-export const requiredAssetsLinesQuery = graphql`
-  query RequiredAssetsLinesQuery($count: Int!, $id: ID!) {
-    ...RequiredAssetsLines_data
+export const requiredResourcesLinesQuery = graphql`
+  query RequiredResourcesLinesQuery($count: Int!, $id: ID!) {
+    ...RequiredResourcesLines_data
       @arguments(count: $count, id: $id)
   }
 `;
 
-const RequiredAssetsLines = createPaginationContainer(
-  RequiredAssetsLinesContainer,
+const RequiredResourcesLines = createPaginationContainer(
+  RequiredResourcesLinesContainer,
   {
     data: graphql`
-      fragment RequiredAssetsLines_data on Query
+      fragment RequiredResourcesLines_data on Query
       @argumentDefinitions(
         count: { type: "Int", defaultValue: 25 }
         id: { type: "ID!" }
@@ -467,11 +470,11 @@ const RequiredAssetsLines = createPaginationContainer(
         id: fragmentVariables.id,
       };
     },
-    query: requiredAssetsLinesQuery,
+    query: requiredResourcesLinesQuery,
   },
 );
 
 export default R.compose(
   inject18n,
   withStyles(styles),
-)(RequiredAssetsLines);
+)(RequiredResourcesLines);

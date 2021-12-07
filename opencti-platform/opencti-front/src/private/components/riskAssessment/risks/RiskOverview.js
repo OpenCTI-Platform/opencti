@@ -62,6 +62,7 @@ class RiskOverviewComponent extends Component {
     const {
       t, fldt, classes, risk,
     } = this.props;
+    console.log('RiskOverview', risk);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <div style={{ height: '100%' }} className="break">
@@ -219,7 +220,7 @@ class RiskOverviewComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {t('Lorem Ipsum')}
-                {/* {risk.weakness && t(risk.weakness)} */}
+                {risk.name && t(risk.name)}
               </div>
               <div>
                 <Typography
@@ -434,22 +435,87 @@ const RiskOverview = createFragmentContainer(
   RiskOverviewComponent,
   {
     risk: graphql`
-      fragment RiskOverview_risk on Risk {
+      fragment RiskOverview_risk on POAMItem {
         id
+        # poam_id
+        name
         description
-        characterizations {
-          edges {
-            node {
-              ... on RiskCharacterization {
-                impact
-                likelihood
-              }
-            }
-          }
-        }
-        impacted_control_id
-        priority
         labels
+        # related_risks {
+        #   edges {
+        #     node {
+        #       id
+        #       name
+        #       description
+        #       statement
+        #       risk_status
+        #       deadline
+        #       priority
+        #       accepted
+        #       false_positive
+        #       risk_adjusted
+        #       vendor_dependency
+        #       characterizations {
+        #         id
+        #         ... on GenericCharacterization {
+        #           origins {
+        #             id
+        #             origin_actors {
+        #               actor_type
+        #               actor {
+        #                 ... on OscalPerson {
+        #                   id
+        #                   name
+        #                 }
+        #               }
+        #             }
+        #           }
+        #         }
+        #       }
+        #     }
+        #   }
+        # }
+        # related_observations {
+        #   edges {
+        #     node {
+        #       id
+        #       name
+        #       subjects {
+        #         subject {
+        #           ... on HardwareComponent {
+        #             id
+        #             name
+        #           }
+        #         }
+        #       }
+        #     }
+        #   }
+        # }
+        # external_references {
+        #   edges {
+        #     node {
+        #       id
+        #       created
+        #       modified
+        #       external_id
+        #       source_name
+        #       description
+        #       url
+        #       media_type
+        #     }
+        #   }
+        # }
+        # notes {
+        #   edges {
+        #     node {
+        #       id
+        #       abstract
+        #       content
+        #       authors
+        #       labels
+        #     }
+        #   }
+        # }
       }
     `,
   },

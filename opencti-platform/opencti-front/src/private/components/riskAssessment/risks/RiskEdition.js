@@ -35,20 +35,10 @@ const styles = (theme) => ({
 });
 
 export const riskEditionQuery = graphql`
-  query RiskEditionContainerQuery($id: String!) {
-    threatActor(id: $id) {
-      ...RiskEditionContainer_risk
-    }
-  }
-`;
-
-export const riskEditionDarkLightQuery = graphql`
-  query RiskEditionContainerDarkLightQuery($id: ID!) {
-    risk(id: $id) {
+  query RiskEditionContainerQuery($id: ID!) {
+    poamItem(id: $id) {
       id
-      name
-      ...RiskEditionOverview_risk
-      ...RiskEditionDetails_risk
+      ...RiskEditionContainer_risk
     }
   }
 `;
@@ -100,10 +90,10 @@ class RiskEdition extends Component {
         <div>
         <QR
           environment={environmentDarkLight}
-          query={riskEditionDarkLightQuery}
+          query={riskEditionQuery}
           variables={{ id: riskId }}
           render={({ error, props }) => {
-            console.log(`RiskEditionDarkLightQuery Error ${error} OR Props ${JSON.stringify(props)}`);
+            console.log(`riskEditionQuery Error ${error} OR Props ${JSON.stringify(props)}`);
             if (props) {
               return (
                 <RiskEditionContainer

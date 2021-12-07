@@ -485,7 +485,7 @@ class RiskTrackingPopover extends Component {
                 <Button
                   variant="outlined"
                   classes={{ root: classes.buttonPopover }}
-                // onClick={handleReset}
+                  onClick={this.handleCloseUpdate.bind(this)}
                 // disabled={isSubmitting}
                 >
                   {t('Cancel')}

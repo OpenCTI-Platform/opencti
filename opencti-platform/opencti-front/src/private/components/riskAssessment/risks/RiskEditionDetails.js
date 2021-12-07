@@ -736,17 +736,17 @@ const RiskEditionDetails = createFragmentContainer(
   RiskEditionDetailsComponent,
   {
     risk: graphql`
-      fragment RiskEditionDetails_risk on Risk {
+      fragment RiskEditionDetails_risk on POAMItem {
         id
-        name
-        description
-        statement
-        risk_status
-        deadline
-        impacted_control_id
-        false_positive
-        vendor_dependency
-        risk_adjusted
+        # name
+        # description
+        # statement
+        # risk_status
+        # deadline
+        # impacted_control_id
+        # false_positive
+        # vendor_dependency
+        # risk_adjusted
       }
     `,
   },

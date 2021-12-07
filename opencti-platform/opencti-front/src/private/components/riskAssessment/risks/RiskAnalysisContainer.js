@@ -95,7 +95,7 @@ class RiskAnalysisContainerComponent extends Component {
               <Grid item={true} xs={6}>
                 {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk.id} /> */}
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
-                  stixCoreObjectOrStixCoreRelationshipId={risk.id}
+                  cyioCoreObjectId={risk.id}
                   marginTop='0px'
                 />
               </Grid>

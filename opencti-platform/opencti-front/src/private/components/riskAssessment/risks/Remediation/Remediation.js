@@ -32,10 +32,15 @@ const styles = () => ({
 });
 
 const Remediation = (props) => {
-  const { t, risk, classes } = props;
+  const {
+    t,
+    remediation,
+    classes,
+    history,
+  } = props;
   const [openCreation, setOpenCreation] = React.useState(false);
   const paginationOptions = {
-    elementId: risk.id,
+    elementId: remediation.id,
     orderBy: 'created_at',
     orderMode: 'desc',
   };
@@ -46,19 +51,19 @@ const Remediation = (props) => {
   };
 
   const handleOpenNewCreation = () => {
-    this.props.history.push({
+    props.history.push({
       pathname: '/dashboard/risk-assessment/risks',
       openNewCreation: true,
     });
   };
   return (
     <div className={classes.container}>
-      {console.log('remediationData', risk)}
+      {console.log('remediationData', remediation)}
       {!openCreation ? (
         <>
           <CyioDomainObjectHeader
-            cyioDomainObject={risk}
-            // history={history}
+            cyioDomainObject={remediation}
+            history={history}
             // PopoverComponent={<DevicePopover />}
             // handleDisplayEdit={handleDisplayEdit.bind(this)}
             handleOpenNewCreation={handleOpenNewCreation.bind(this)}
@@ -82,7 +87,7 @@ const Remediation = (props) => {
             </IconButton>
             {/* </Security> */}
             <RemediationEntities
-              entityId={risk.id}
+              entityId={remediation.id}
             />
           </Grid>
         </>) : (
@@ -108,7 +113,7 @@ const Remediation = (props) => {
 // );
 
 Remediation.propTypes = {
-  risk: PropTypes.object,
+  remediation: PropTypes.object,
 };
 
 export default compose(

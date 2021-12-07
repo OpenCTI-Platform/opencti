@@ -23,7 +23,7 @@ class RisksCards extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'computingDeviceAssetList',
+      'poamItems',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -58,10 +58,10 @@ class RisksCards extends Component {
               loadMore={relay.loadMore.bind(this)}
               hasMore={relay.hasMore.bind(this)}
               isLoading={relay.isLoading.bind(this)}
-              dataList={pathOr([], ['riskList', 'edges'], this.props.data)}
+              dataList={pathOr([], ['poamItems', 'edges'], this.props.data)}
               globalCount={pathOr(
                 nbOfCardsToLoad,
-                ['riskList', 'pageInfo', 'globalCount'],
+                ['poamItems', 'pageInfo', 'globalCount'],
                 this.props.data,
               )}
               CardComponent={<RiskCard />}
@@ -95,9 +95,9 @@ export const risksCardsQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderedBy: RisksOrdering
+    $orderedBy: POAMItemsOrdering
     $orderMode: OrderingMode
-    $filters: [RisksFiltering]
+    $filters: [POAMItemsFiltering]
   ) {
     ...RisksCards_data
       @arguments(
@@ -120,23 +120,80 @@ export default createPaginationContainer(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        orderedBy: { type: "RisksOrdering", defaultValue: name }
+        orderedBy: { type: "POAMItemsOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[RisksFiltering]" }
+        filters: { type: "[POAMItemsFiltering]" }
       ) {
-        riskList(
+        poamItems(
           search: $search
           first: $count
           # after: $cursor
           orderedBy: $orderedBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_riskList") {
+        ) @connection(key: "Pagination_poamItems") {
           edges {
             node {
               id
               name
               description
+              # related_risks {
+              #   edges {
+              #     node {
+              #       characterizations {
+              #         ... on VulnerabilityCharacterization {
+              #           id
+              #           vulnerability_id
+              #           facets {
+              #             id
+              #             name
+              #             value
+              #           }
+              #         }
+              #         ... on RiskCharacterization {
+              #           id
+              #           risk
+              #           risk_state
+              #           likelihood
+              #           impact
+              #           facets {
+              #             id
+              #             name
+              #             value
+              #           }
+              #         }
+              #         ... on GenericCharacterization {
+              #           id
+              #           facets {
+              #             id
+              #             name
+              #             value
+              #           }
+              #         }
+              #       }
+              #     }
+              #   }
+              # }
+              # related_observations {
+              #   edges {
+              #     node {
+              #       name
+              #       subjects {
+              #         subject_type
+              #         subject {
+              #           ... on OscalParty {
+              #             name
+              #             party_type
+              #           }
+              #           ... on Component {
+              #             name
+              #             component_type
+              #           }
+              #         }
+              #       }
+              #     }
+              #   }
+              # }
               ...RiskCard_node
             }
           }
@@ -152,7 +209,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.riskList;
+      return props.data && props.data.poamItems;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

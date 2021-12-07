@@ -127,7 +127,7 @@ class CyioDomainObjectAssetHeader extends Component {
             <Tooltip title={t('Edit')}>
               <Button
                 variant="contained"
-                onClick={handleDisplayEdit.bind(this)}
+                onClick={handleDisplayEdit?.bind(this)}
                 className={classes.iconButton}
                 disabled={Boolean(!cyioDomainObject.id)}
                 color="primary"

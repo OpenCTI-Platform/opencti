@@ -48,7 +48,7 @@ import { FIVE_SECONDS } from '../../../../../utils/Time';
 import FileUploader from '../../../common/files/FileUploader';
 import RelatedTaskPopover from './RelatedTaskPopover';
 import CyioCoreobjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
-import CyioCoreObjectOrCyioCoreRelationshipNoteCard from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNoteCard';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -389,15 +389,18 @@ class RelatedTasksLinesContainer extends Component {
                     </div>
                   </Grid>
                 </Grid>
-                <Grid style={{ marginTop: '20px' }} container={true}>
-                  <CyioCoreobjectExternalReferences />
-                </Grid>
-                <Grid style={{ marginTop: '20px' }} container={true}>
-                  <CyioCoreObjectOrCyioCoreRelationshipNoteCard
-                    cyioCoreObjectId={remediationId}
-                  // data={props}
-                  // marginTop={marginTop}
-                  />
+                <Grid container={true} spacing={3}>
+                  <Grid style={{ marginTop: '20px' }} item={true}>
+                    <CyioCoreobjectExternalReferences />
+                  </Grid>
+                  <Grid style={{ marginTop: '40px' }} item={true}>
+                    <CyioCoreObjectOrCyioCoreRelationshipNotes
+                      cyioCoreObjectId={remediationId}
+                      marginTop='0px'
+                    // data={props}
+                    // marginTop={marginTop}
+                    />
+                  </Grid>
                 </Grid>
               </AccordionDetails>
             </Accordion>

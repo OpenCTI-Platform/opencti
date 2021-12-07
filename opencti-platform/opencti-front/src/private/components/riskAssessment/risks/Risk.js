@@ -96,6 +96,7 @@ class RiskComponent extends Component {
                 {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk.id} /> */}
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
                   cyioCoreObjectOrCyioCoreRelationshipId={risk.id}
+                  marginTop='0px'
                 />
               </Grid>
             </Grid>
@@ -125,7 +126,7 @@ RiskComponent.propTypes = {
 
 const Risk = createFragmentContainer(RiskComponent, {
   risk: graphql`
-    fragment Risk_risk on Risk {
+    fragment Risk_risk on POAMItem {
       id
       ...RiskOverview_risk
       ...RiskDetails_risk
