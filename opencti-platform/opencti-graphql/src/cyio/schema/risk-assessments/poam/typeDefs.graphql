@@ -142,7 +142,7 @@
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    "Identifies a list of external references, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
     notes( first: Int ): CyioNoteConnection
@@ -167,11 +167,14 @@
     # target: FindingTarget
     # "Identifies a reference to the implementation statement in the SSP to which this finding is related."
     # implementation_statement: ImplementationStatement
-    "Relates the finding to a set of referenced observations that were used to determine the finding."
+    "Relates the item to a set of referenced observations that were used to determine the finding."
     related_observations( first: Int ): ObservationConnection
-    "Relates the finding to a set of referenced risks that were used to determine the finding."
+    "Relates the item to a set of referenced risks that were used to determine the finding."
     related_risks( first: Int ): RiskConnection
     # POAM Item
+    "Indicates a CSP-assigned unique POA&M ID to allow for compliance with FedRAMP."
+    poam_id: String
+    # DarkLight extension to optimize ability to check to see if a specific risk has been accepted
     "Indicates the risk has been excepted"
     accepted_risk: Boolean
   }
@@ -184,7 +187,10 @@
     "Identifies a human-readable description of the POA&M item."
     description: String!
     # POAM Item
-    "Indicates the risk has been excepted"
+    "Indicates a CSP-assigned unique POA&M ID to allow for compliance with FedRAMP."
+    poam_id: String
+    # DarkLight extension to optimize ability to check to see if a specific risk has been accepted
+    "Indicates the risk has been accepted"
     accepted_risk: Boolean
   }
 
