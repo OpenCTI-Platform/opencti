@@ -2,8 +2,8 @@ import { assetSingularizeSchema as singularizeSchema, objectTypeMapping } from '
 import {getSelectSparqlQuery, getReducer, insertQuery, predicateMap} from './sparql-query.js';
 import { getSelectSparqlQuery as getSoftwareQuery, 
          getReducer as getSoftwareReducer } from '../software/sparql-query.js';
-import {compareValues} from '../../utils.js';
-import {addToInventoryQuery, deleteQuery, removeFromInventoryQuery, updateAssetQuery} from "../assetUtil";
+import {compareValues, updateQuery} from '../../utils.js';
+import {addToInventoryQuery, deleteQuery, removeFromInventoryQuery} from "../assetUtil";
 import {
   deleteIpQuery,
   deletePortQuery,
@@ -144,8 +144,13 @@ const computingDeviceResolvers = {
     },
     editComputingDeviceAsset: async ( _, {id, input}, context ) => {
       const dbName = context.dbName;
-      const updateQuery = updateAssetQuery(`<http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}>`, input, predicateMap)
-      await context.dataSources.Stardog.edit(dbName, updateQuery);
+      const query = updateQuery(
+          `http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}`,
+          "http://scap.nist.gov/ns/asset-identification#ComputingDevice",
+          input,
+          predicateMap
+      )
+      await context.dataSources.Stardog.edit(dbName, query);
       return {id};
     },
   },

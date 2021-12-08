@@ -5,7 +5,7 @@ import {
   insertQuery,
   deleteNetworkAssetQuery
 } from './sparql-query.js';
-import {compareValues, generateId, DARKLIGHT_NS} from '../../utils.js';
+import {compareValues, generateId, DARKLIGHT_NS, updateQuery} from '../../utils.js';
 import {
   deleteIpAddressRange,
   deleteIpQuery,
@@ -15,7 +15,7 @@ import {
   selectIPAddressRange
 } from "../assetQueries";
 import {UserInputError} from "apollo-server-express";
-import {addToInventoryQuery, updateAssetQuery} from "../assetUtil";
+import {addToInventoryQuery} from "../assetUtil";
 import {predicateMap} from "./sparql-query";
 
 const networkResolvers = {
@@ -154,8 +154,13 @@ const networkResolvers = {
     },
     editNetworkAsset: async ( _, {id, input}, context ) => {
       const dbName = context.dbName;
-      const updateQuery = updateAssetQuery(`<http://scap.nist.gov/ns/asset-identification#Network-${id}>`, input, predicateMap)
-      await context.dataSources.Stardog.edit(dbName, updateQuery);
+      const query = updateQuery(
+          `http://scap.nist.gov/ns/asset-identification#Network-${id}`,
+          "http://scap.nist.gov/ns/asset-identification#Network",
+          input,
+          predicateMap
+      )
+      await context.dataSources.Stardog.edit(dbName, query);
       return {id}
     },
   },
