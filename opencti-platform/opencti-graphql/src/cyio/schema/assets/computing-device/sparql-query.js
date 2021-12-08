@@ -1,4 +1,8 @@
+import {v4 as uuid4} from 'uuid';
+import {buildSelectVariables, optionalizePredicate, parameterizePredicate} from "../../utils";
+
 export function getSelectSparqlQuery( type, id, filter, ) {
+  // TODO: [DL] Need to convert this to the utils.buildSelectVariables() method. No more string replacement strategy
   var sparqlQuery;
   let re = /{iri}/g;  // using regex with 'g' switch to replace all instances of a marker
   switch( type ) {
@@ -72,8 +76,176 @@ const bindIRIClause = `\tBIND(<{iri}> AS ?iri)\n`;
 const typeConstraint = `\t?iri a <http://scap.nist.gov/ns/asset-identification#ComputingDevice> .\n`;
 const byIdClause = `\t?iri <http://darklight.ai/ns/common#id> "{id}" .`;
 
+export const predicateMap = {
+  id: {
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  asset_id: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#asset_id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "asset_id")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  name: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "name")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  description: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "description")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  locations: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#locations>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "locations")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  asset_type: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#asset_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "asset_type")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  asset_tag: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#asset_tag>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "asset_tag")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  serial_number: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#serial_number>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "serial_number")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  vendor_name: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#vendor_name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "vendor_name")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  version: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#version>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "version")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  release_date: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#release_date>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:datetime`: null, this.predicate, "release_date")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  function: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#function>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "function")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  cpe_identifier: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#cpe_identifier>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "cpe_identifier")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  model: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#model>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "model")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  motherboard_id: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#motherboard_id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "motherboard_id")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  installation_id: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#installation_id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "installation_id")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  installed_hardware: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#installed_hardware>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "installed_hardware")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  installed_operating_system: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#installed_operating_system>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "installed_operating_system")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  is_publicly_accessible: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#is_publicly_accessible>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}^^xsd:boolean"`: null, this.predicate, "is_publicly_accessible")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  is_scanned: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#is_scanned>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}^^xsd:boolean"`: null, this.predicate, "is_scanned")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  is_virtual: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#is_virtual>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}^^xsd:boolean"`: null, this.predicate, "is_virtual")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  bios_id: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#bios_id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "bios_id")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  fqdn: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#fqdn>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "fqdn")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  hostname: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#hostname>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "hostname")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  netbios_name: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#netbios_name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "netbios_name")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  network_id: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#network_id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "network_id")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  default_gateway: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#default_gateway>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "default_gateway")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  vlan_id: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#vlan_id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "vlan_id")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  uri: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#uri>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "uri")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  installed_software: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#installed_software>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "installed_software")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  ip_address: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#ip_address>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "ip_address")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  mac_address: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#mac_address>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "mac_address")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  ports: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#ports>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "ports")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  }
+}
+
 const predicates = `
-?iri <http://darklight.ai/ns/common#id> ?id .
+  ?iri <http://darklight.ai/ns/common#id> ?id .
   OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_id> ?asset_id } .
   OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#name> ?name } .
   OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#description> ?description } .
@@ -85,7 +257,7 @@ const predicates = `
   OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#serial_number> ?serial_number } .
   OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#vendor_name> ?vendor_name }.
   OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#version> ?version } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#release_date> ?release_date } .
+  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#installation_id> ?installed_operating_system } .
   # Hardware - ComputingDevice - NetworkDevice
   OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#function> ?function } .
   OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#cpe_identifier> ?cpe_identifier } .
@@ -112,6 +284,29 @@ const predicates = `
   OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#ports> ?ports } .
 `;
 
+export const insertQuery = (propValues) => {
+  const id = uuid4();
+  const iri = `<http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}>`;
+  const insertPredicates = Object.entries(propValues)
+    .filter((propPair) => predicateMap.hasOwnProperty(propPair[0]))
+    .map((propPair) => predicateMap[propPair[0]].binding(iri, propPair[1]))
+    .join('.\n      ')
+  const query = `
+  INSERT DATA {
+    GRAPH ${iri} {
+      ${iri} a <http://scap.nist.gov/ns/asset-identification#ComputingDevice> .
+      ${iri} a <http://scap.nist.gov/ns/asset-identification#Hardware> .
+      ${iri} a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
+      ${iri} a <http://scap.nist.gov/ns/asset-identification#Asset> .
+      ${iri} a <http://darklight.ai/ns/common#Object> .
+      ${iri} <http://darklight.ai/ns/common#id> "${id}".
+      ${insertPredicates}
+    }
+  }
+  `
+  return {iri, id, query}
+}
+
 const inventoryConstraint = `
   {
       SELECT DISTINCT ?iri
@@ -122,35 +317,51 @@ const inventoryConstraint = `
   }` ;
 
 const ipAddr = `SELECT DISTINCT ?id ?object_type ?ip_address_value ?defanged ?stix_value
-FROM <tag:stardog:api:context:named>
 WHERE {
-    <{iri}> a <http://scap.nist.gov/ns/asset-identification#{ipAddrType}> ;
-        <http://darklight.ai/ns/common#id> ?id  ;
-        <http://scap.nist.gov/ns/asset-identification#ip_address_value> ?ip_address_value .
-    OPTIONAL { <{iri}> <http://darklight.ai/ns/common#object_type> ?object_type } .
-    OPTIONAL { <{iri}> <http://docs.oasis-open.org/ns/cti/stix#defanged> ?defanged } .
-    OPTIONAL { <{iri}> <http://docs.oasis-open.org/ns/cti/stix/ip-address#value> ?stix_value } .
+    GRAPH <{iri}> {
+      <{iri}> a <http://scap.nist.gov/ns/asset-identification#{ipAddrType}> ;
+          <http://darklight.ai/ns/common#id> ?id  ;
+          <http://scap.nist.gov/ns/asset-identification#ip_address_value> ?ip_address_value .
+      OPTIONAL { <{iri}> <http://darklight.ai/ns/common#object_type> ?object_type } .
+      OPTIONAL { <{iri}> <http://docs.oasis-open.org/ns/cti/stix#defanged> ?defanged } .
+      OPTIONAL { <{iri}> <http://docs.oasis-open.org/ns/cti/stix/ip-address#value> ?stix_value } .
+    }
 }`;
 const macAddr = `SELECT DISTINCT ?id ?object_type ?mac_address_value ?is_virtual ?stix_value
-FROM <tag:stardog:api:context:named>
 WHERE {
-    <{iri}> a <http://scap.nist.gov/ns/asset-identification#MACAddress> ;
-        <http://darklight.ai/ns/common#id> ?id  ;
-        <http://scap.nist.gov/ns/asset-identification#mac_address_value> ?mac_address_value .
-    OPTIONAL { <{iri}> <http://scap.nist.gov/ns/asset-identification#is_virtual> ?is_virtual } .
-    OPTIONAL { <{iri}> <http://darklight.ai/ns/common#object_type> ?object_type } .
-    OPTIONAL { <{iri}> <http://docs.oasis-open.org/ns/cti/stix/ip-address#value> ?stix_value } .
+    GRAPH <{iri}> {
+      <{iri}> a <http://scap.nist.gov/ns/asset-identification#MACAddress> ;
+          <http://darklight.ai/ns/common#id> ?id  ;
+          <http://scap.nist.gov/ns/asset-identification#mac_address_value> ?mac_address_value .
+      OPTIONAL { <{iri}> <http://scap.nist.gov/ns/asset-identification#is_virtual> ?is_virtual } .
+      OPTIONAL { <{iri}> <http://darklight.ai/ns/common#object_type> ?object_type } .
+      OPTIONAL { <{iri}> <http://docs.oasis-open.org/ns/cti/stix/ip-address#value> ?stix_value } .
+    }
 }`;
 
 const portInfo = `SELECT DISTINCT ?id ?object_type ?port_number ?protocols 
-FROM <tag:stardog:api:context:named>
 WHERE {
-    {iri} a <http://scap.nist.gov/ns/asset-identification#Port> ;
-        <http://darklight.ai/ns/common#id> ?id  ;
-        <http://scap.nist.gov/ns/asset-identification#port_number> ?port_number ;
-        <http://scap.nist.gov/ns/asset-identification#protocols> ?protocols .
-    OPTIONAL { {iri} <http://darklight.ai/ns/common#object_type> ?object_type } .
+    GRAPH <{iri}> {
+      <{iri}> a <http://scap.nist.gov/ns/asset-identification#Port> ;
+          <http://darklight.ai/ns/common#id> ?id  ;
+          <http://scap.nist.gov/ns/asset-identification#port_number> ?port_number ;
+          <http://scap.nist.gov/ns/asset-identification#protocols> ?protocols .
+      OPTIONAL { <{iri}> <http://darklight.ai/ns/common#object_type> ?object_type } .
+    }
 }`;
+
+export const selectObjectRefsQuery = (id, properties) => {
+  const { selectClause ,predicates } = buildSelectVariables(predicateMap, ["ports", "ip_address"])
+  const iri = `<http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}>`
+  return `
+  SELECT ${selectClause} WHERE {
+    GRAPH ${iri} {
+       ${iri} a <http://scap.nist.gov/ns/asset-identification#ComputingDevice> .
+       ${predicates} 
+    }
+  }
+  `
+}
 
 function computingDeviceAssetReducer( item ) {
   // this code is to work around an issue in the data where we sometimes get multiple operatings
@@ -240,7 +451,7 @@ function portReducer( item ) {
   return {
     id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
-    ...(item.port_number && {port_number: item.port_number}),
+    ...(item.port_number && {port_number: item.port_number[0]}),
     ...(item.protocols && {protocols: item.protocols}),
   }
 }
