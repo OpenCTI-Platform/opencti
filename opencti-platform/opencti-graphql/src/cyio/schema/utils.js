@@ -65,3 +65,42 @@ export const buildSelectVariables = (predicateMap, selects) => {
   const predicates = predicateMatches.map((s) => predicateMap[s]?.optional()).join(" \n")
   return {selectionClause, predicates}
 }
+
+export const updateQuery = (iri, type, input, predicateMap) => {
+  let deletePredicates = [], insertPredicates = [], replaceBindingPredicates = [];
+  for(const {key, value, operation} of input) {
+    if(!predicateMap.hasOwnProperty(key)) continue;
+    for(const itr of value) {
+      const predicate = predicateMap[key].binding(iri, itr);
+      switch (operation) {
+        case UpdateOps.ADD:
+          insertPredicates.push(predicate);
+          break;
+        case UpdateOps.REPLACE:
+          insertPredicates.push(predicate);
+          replaceBindingPredicates.push(predicateMap[key].binding(iri))
+          break;
+        case UpdateOps.REMOVE:
+          deletePredicates.push(predicate);
+          break;
+      }
+    }
+  }
+  return `
+DELETE {
+  GRAPH ?g {
+    ${deletePredicates.join('\n      ')}
+    ${replaceBindingPredicates.join('\n      ')}
+  }
+} INSERT {
+  GRAPH ?g {
+    ${insertPredicates.join('\n      ')}
+  }
+} WHERE {
+  GRAPH ?g {
+    <${iri}> a <${type}> .
+    ${replaceBindingPredicates.join('\n      ')}
+  }
+}
+  `;
+}

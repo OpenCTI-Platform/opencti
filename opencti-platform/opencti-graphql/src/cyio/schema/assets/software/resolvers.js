@@ -4,8 +4,8 @@ import {
   getReducer,
   insertQuery, predicateMap,
 } from './sparql-query.js';
-import {compareValues} from '../../utils.js';
-import {addToInventoryQuery, deleteQuery, removeFromInventoryQuery, updateAssetQuery} from "../assetUtil";
+import {compareValues, updateQuery} from '../../utils.js';
+import {addToInventoryQuery, deleteQuery, removeFromInventoryQuery} from "../assetUtil";
 
 const softwareResolvers = {
   Query: {
@@ -90,8 +90,13 @@ const softwareResolvers = {
     },
     editSoftwareAsset: async ( _, {id, input}, context,  ) => {
       const dbName = context.dbName;
-      const updateQuery = updateAssetQuery(`<http://scap.nist.gov/ns/asset-identification#Software-${id}>`, input, predicateMap);
-      await context.dataSources.Stardog.edit(dbName, updateQuery);
+      const query = updateQuery(
+          `http://scap.nist.gov/ns/asset-identification#Software-${id}`,
+          "http://scap.nist.gov/ns/asset-identification#Software",
+          input,
+          predicateMap
+      );
+      await context.dataSources.Stardog.edit(dbName, query);
       return {id};
     },
   },
