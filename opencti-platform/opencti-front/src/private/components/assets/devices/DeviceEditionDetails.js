@@ -121,7 +121,7 @@ class DeviceEditionDetailsComponent extends Component {
                     <MenuItem key="microsoft" value="microsoft">
                       <ItemIcon variant='inline' type='microsoft' />&nbsp;{t('Windows')}
                     </MenuItem>
-                    <MenuItem key="appliance" value="appliance">
+                    <MenuItem key="apple" value="apple">
                       <ItemIcon variant='inline' type='apple' />&nbsp;{t('Apple')}
                     </MenuItem>
                     <MenuItem key="linux" value="linux">
