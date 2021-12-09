@@ -143,3 +143,58 @@ export const deleteIpQuery = (iri) => {
     }
     `
 }
+
+export const insertIPAddressRangeQuery = (startingIri, endingIri) => {
+    const id = uuid4();
+    const iri = `<http://scap.nist.gov/ns/asset-identification#IpAddressRange-${id}>`;
+    const query = `
+    INSERT DATA {
+        GRAPH ${iri} {
+            ${iri} a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> ;
+                <http://darklight.ai/ns/common#id> "${id}";
+                <http://scap.nist.gov/ns/asset-identification#starting_ip_address> ${startingIri} ;
+                <http://scap.nist.gov/ns/asset-identification#ending_ip_address> ${endingIri} .
+        }
+    }
+    `
+    return {iri, query};
+}
+
+export const insertIPAddressRangeRelationship = (parentIri, rangeIri) => {
+    return `
+    INSERT DATA {
+        GRAPH ${parentIri} {
+            ${parentIri} <http://scap.nist.gov/ns/asset-identification#network_address_range> ${rangeIri} .
+        }
+    }
+    `
+}
+
+export const selectIPAddressRange = (iri) => {
+    return `
+SELECT DISTINCT ?id ?object_type ?starting_ip_address ?ending_ip_address 
+WHERE {
+  GRAPH ${iri} {
+    ${iri} a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> ;
+        <http://darklight.ai/ns/common#id> ?id  ;
+        <http://scap.nist.gov/ns/asset-identification#starting_ip_address> ?starting_ip_address ;
+        <http://scap.nist.gov/ns/asset-identification#ending_ip_address> ?ending_ip_address .
+    OPTIONAL { ${iri} <http://darklight.ai/ns/common#object_type> ?object_type } .
+  }
+}`
+}
+
+export const deleteIpAddressRange = (iri) => {
+    return `
+    DELETE {
+        GRAPH ${iri} {
+            ${iri} ?p ?o
+        }
+    } WHERE {
+        GRAPH ${iri} {
+            ${iri} a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> .
+            ${iri} ?p ?o
+        }
+    }
+    `
+}
