@@ -98,21 +98,21 @@ class DeviceLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.type.width }}
+                style={{ width: dataColumns.asset_type.width }}
               >
                 {node.asset_type
                 && <ItemIcon type={node.asset_type}/>}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.assetId.width }}
+                style={{ width: dataColumns.asset_id.width }}
               >
                 {/* Lorem Ipsum Lorem Ipsum */}
                 {node.asset_id && node.asset_id}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.ipAddress.width }}
+                style={{ width: dataColumns.ip_address.width }}
               >
                 {node.ipv4_address
                   && node.ipv4_address.map((ipv4Address) => (
@@ -132,14 +132,14 @@ class DeviceLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.os.width }}
+                style={{ width: dataColumns.installed_operating_system.width }}
               >
                 {node?.installed_operating_system?.vendor_name
                 && <ItemIcon variant='inline' type={node.installed_operating_system.vendor_name === 'microsoft' || node.installed_operating_system.vendor_name === 'apple' || node.installed_operating_system.vendor_name === 'linux' ? node.installed_operating_system.vendor_name : 'other'}/>}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.networkId.width }}
+                style={{ width: dataColumns.network_id.width }}
               >
                 {/* {fd(node.modified)} */}
                 {/* Lorem Ipsum Lorem Ipsum */}
@@ -147,7 +147,7 @@ class DeviceLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
+                style={{ width: dataColumns.labels.width }}
               >
                 <StixCoreObjectLabels
                   variant="inList"
@@ -245,7 +245,7 @@ class DeviceLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.type.width }}
+                style={{ width: dataColumns.asset_type.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -256,7 +256,7 @@ class DeviceLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.assetId.width }}
+                style={{ width: dataColumns.asset_id.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -267,7 +267,7 @@ class DeviceLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.ipAddress.width }}
+                style={{ width: dataColumns.ip_address.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -289,13 +289,13 @@ class DeviceLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.os.width }}
+                style={{ width: dataColumns.installed_operating_system.width }}
               >
                <Skeleton animation="wave" variant="circle" width={30} height={30} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.networkId.width }}
+                style={{ width: dataColumns.network_id.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -306,7 +306,7 @@ class DeviceLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
+                style={{ width: dataColumns.labels.width }}
               >
                 <Skeleton
                   animation="wave"

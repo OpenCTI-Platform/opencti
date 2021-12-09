@@ -32,7 +32,6 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import AssetType from '../form/AssetType';
-import AssetTaglist from '../form/AssetTaglist';
 import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -179,13 +178,11 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   variant='outlined'
                   name="asset_type"
                   size='small'
-                  disabled={true}
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%' }}
                   helperText={t('Select Asset Type')}
-                >
-                </AssetType>
+                />
               </div>
               <div>
                 <Typography
@@ -202,16 +199,14 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <AssetTaglist
-                  component={SelectField}
+                <Field
+                  component={TextField}
                   variant='outlined'
-                  name="asset_tag"
                   size='small'
+                  name="asset_tag"
                   fullWidth={true}
-                  style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%' }}
-                >
-                </AssetTaglist>
+                />
               </div>
             </Grid>
           </Grid>
@@ -327,11 +322,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   {t('Responsible Parties')}
                 </Typography>
                 <div style={{ float: 'left', margin: '17px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Responsible Parties',
-                    )}
-                  >
+                  <Tooltip title={t('Responsible Parties')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -339,17 +330,11 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                 <Field
                   component={SelectField}
                   variant='outlined'
-                  name="ports"
+                  name="responsible_parties"
                   size='small'
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                // helperText={
-                //   <SubscriptionFocus
-                //   context={context}
-                //   fieldName="ports"
-                //   />
-                // }
                 />
               </div>
               <CyioCoreObjectLabelsView

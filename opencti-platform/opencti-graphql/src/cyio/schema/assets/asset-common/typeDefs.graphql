@@ -158,7 +158,7 @@
     street_address: String
     city: String
     administrative_area: String
-    country: String
+    country_code: String
     postal_code: PostalCode
   }
   
@@ -170,7 +170,7 @@
     street_address: String
     city: String
     administrative_area: String
-    country: String
+    country_code: String
     postal_code: PostalCode
   }
 
@@ -531,7 +531,7 @@
   }
 
   input PortInfoAddInput {
-      port_number: Port
+      port_number: Port!
       protocols: [NetworkAssetProtocol]
   }
 

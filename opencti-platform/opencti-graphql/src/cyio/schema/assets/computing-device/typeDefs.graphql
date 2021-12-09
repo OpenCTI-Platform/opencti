@@ -244,6 +244,18 @@
     is_virtual: Boolean
   }
 
+  # Pagination Types
+  type ComputingDeviceAssetConnection {
+    pageInfo: PageInfo!
+    edges: [ComputingDeviceAssetEdge]
+  }
+
+  type ComputingDeviceAssetEdge {
+    cursor: String!
+    node: ComputingDeviceAsset!
+  }
+
+  # Slicing Types
   enum ComputingDeviceAssetOrdering {
     name
     asset_type
@@ -254,6 +266,15 @@
     labels
   }
 
+  # Filtering Types
+  input ComputingDeviceAssetFiltering {
+    key: ComputingDeviceAssetFilter!
+    values: [String]
+    operator: String            # match, wildcard, gt, lt, gte, lte, eq, ne
+    filterMode: FilterMode      # unused
+  }
+
+  "Defines the list of fields that can be filtered upon for Device Assets."
   enum ComputingDeviceAssetFilter {
     created       # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
     modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
@@ -265,22 +286,31 @@
     network_id
   }
 
-  input ComputingDeviceAssetFiltering {
-    key: ComputingDeviceAssetFilter!
-    values: [String]
-    operator: String            # match, wildcard, gt, lt, gte, lte, eq, ne
-    filterMode: FilterMode      # unused
-  }
-
-  # Pagination Types
-  type ComputingDeviceAssetConnection {
-    pageInfo: PageInfo!
-    edges: [ComputingDeviceAssetEdge]
-  }
-
-  type ComputingDeviceAssetEdge {
-    cursor: String!
-    node: ComputingDeviceAsset!
+  # this is used to restrict the set of asset_types values that are allowed in a filter
+  "Defines the list of Device assets types that can be used in filtering"
+  enum DeviceAssetTypes {
+    "Computing Device"
+    computing_device
+    "Appliance"
+    appliance
+    "Workstation"
+    workstation
+    "Network Device"
+    network_device
+    "Load Balancer"
+    load_balancer
+    "Router"
+    router
+    "Switch"
+    switch
+    "Printer"
+    printer
+    "Storage Array"
+    storage_array
+    "VoIP Device"
+    voip_device
+    "Physical Device"
+    physical_device
   }
 
   union ComputingDeviceKind = ComputingDeviceAsset | ServerAsset | WorkstationAsset 
