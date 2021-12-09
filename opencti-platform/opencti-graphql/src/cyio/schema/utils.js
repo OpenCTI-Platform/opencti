@@ -6,6 +6,7 @@ import {
 
 export const DARKLIGHT_NS = 'd85ba5b6-609e-58bf-a973-ca109f868e86';
 export const OASIS_SCO_NS = '00abedb4-aa42-466c-9c01-fed23315a9b7';
+export const OASIS_NS = 'ba6cce09-c787-5a25-a707-f52be5734460';
 
 // Generates a deterministic ID value based on a JSON structure and a namespace
 export function generateId( materials, namespace ) {

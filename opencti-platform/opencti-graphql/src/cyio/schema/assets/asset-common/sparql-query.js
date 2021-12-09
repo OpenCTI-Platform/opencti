@@ -307,9 +307,9 @@ export const locationPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "city");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  country_code: {
+  country: {
     predicate: "<http://darklight.ai/ns/common#country_code>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "country_code");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "country");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   description: {
@@ -354,18 +354,18 @@ const assetLocationReducer = (item) => {
 
   return {
     id: item.id,
-    ...(item.object_type && {entity_type: item.object_type}),
-    ...(item.created && {created: item.created}),
-    ...(item.modified && {modified: item.modified}),
-    ...(item.labels && {labels: item.labels}),
-    ...(item.name && { name: item.name} ),
-    ...(item.description && { description: item.description}),
+    ...(item.object_type && {"entity_type": item.object_type}),
+    ...(item.created && {"created": item.created}),
+    ...(item.modified && {"modified": item.modified}),
+    ...(item.labels && {"labels": item.labels}),
+    ...(item.name && {"name": item.name} ),
+    ...(item.description && {"description": item.description}),
     // Location
-    ...(item.administrative_area && {administrative_area: item.administrative_area}),
-    ...(item.city && {city: item.city}),
-    ...(item.country_code && {country_code: item.country_code}),
-    ...(item.postal_code && {postal_code: item.postal_code}),
-    ...(item.street_address && {street_address: item.street_address})
+    ...(item.administrative_area && {"administrative_area": item.administrative_area}),
+    ...(item.city && {"city": item.city}),
+    ...(item.country_code && {"country": item.country_code}),
+    ...(item.postal_code && {"postal_code": item.postal_code}),
+    ...(item.street_address && {"street_address": item.street_address})
   }
 }
 
