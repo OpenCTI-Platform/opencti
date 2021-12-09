@@ -88,7 +88,7 @@ services:
 - name: redis
   image: redis:6.2.6
 - name: elastic
-  image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
+  image: docker.elastic.co/elasticsearch/elasticsearch:7.16.0
   environment:
     discovery.type: single-node
     ES_JAVA_OPTS: -Xms2g -Xmx2g
