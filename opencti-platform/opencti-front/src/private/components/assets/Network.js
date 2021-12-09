@@ -165,11 +165,17 @@ class Network extends Component {
       name: {
         label: 'Name',
       },
-      created: {
-        label: 'Creation date',
+      asset_type: {
+        label: 'Type',
       },
-      modified: {
-        label: 'Modification date',
+      asset_id: {
+        label: 'Asset ID',
+      },
+      network_id: {
+        label: 'Network ID',
+      },
+      labels: {
+        label: 'Labels',
       },
     };
     return (
@@ -246,7 +252,7 @@ class Network extends Component {
         width: '15%',
         isSortable: true,
       },
-      type: {
+      asset_type: {
         label: 'Type',
         width: '5%',
         isSortable: true,
@@ -264,12 +270,12 @@ class Network extends Component {
       network_range: {
         label: 'Network Range',
         width: '15%',
-        isSortable: true,
+        isSortable: false,
       },
-      objectLabel: {
+      labels: {
         label: 'Labels',
         width: '25%',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (
@@ -338,7 +344,7 @@ class Network extends Component {
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
-      orderBy: sortBy,
+      orderedBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
     };

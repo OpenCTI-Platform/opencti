@@ -5,6 +5,7 @@ import {
   parse as uuidParse } from 'uuid';
 
 export const DARKLIGHT_NS = 'd85ba5b6-609e-58bf-a973-ca109f868e86';
+export const OASIS_SCO_NS = '00abedb4-aa42-466c-9c01-fed23315a9b7';
 
 // Generates a deterministic ID value based on a JSON structure and a namespace
 export function generateId( materials, namespace ) {
@@ -63,4 +64,43 @@ export const buildSelectVariables = (predicateMap, selects) => {
   const selectionClause = predicateMatches.map((s) => `?${s}`).join(" ")
   const predicates = predicateMatches.map((s) => predicateMap[s]?.optional()).join(" \n")
   return {selectionClause, predicates}
+}
+
+export const updateQuery = (iri, type, input, predicateMap) => {
+  let deletePredicates = [], insertPredicates = [], replaceBindingPredicates = [];
+  for(const {key, value, operation} of input) {
+    if(!predicateMap.hasOwnProperty(key)) continue;
+    for(const itr of value) {
+      const predicate = predicateMap[key].binding(iri, itr);
+      switch (operation) {
+        case UpdateOps.ADD:
+          insertPredicates.push(predicate);
+          break;
+        case UpdateOps.REPLACE:
+          insertPredicates.push(predicate);
+          replaceBindingPredicates.push(predicateMap[key].binding(iri))
+          break;
+        case UpdateOps.REMOVE:
+          deletePredicates.push(predicate);
+          break;
+      }
+    }
+  }
+  return `
+DELETE {
+  GRAPH ?g {
+    ${deletePredicates.join('\n      ')}
+    ${replaceBindingPredicates.join('\n      ')}
+  }
+} INSERT {
+  GRAPH ?g {
+    ${insertPredicates.join('\n      ')}
+  }
+} WHERE {
+  GRAPH ?g {
+    <${iri}> a <${type}> .
+    ${replaceBindingPredicates.join('\n      ')}
+  }
+}
+  `;
 }

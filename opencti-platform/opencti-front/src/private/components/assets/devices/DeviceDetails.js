@@ -29,6 +29,7 @@ const styles = (theme) => ({
     borderRadius: 6,
   },
   link: {
+    textAlign: 'left',
     fontSize: '16px',
     font: 'DIN Next LT Pro',
   },
@@ -95,20 +96,18 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Link
-                  component="button"
-                  variant="body2"
-                  className={classes.link}
-                  onClick={() => {
-                    console.info("I'm a button.");
-                  }}
-                >
-                  <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{device.installed_operating_system && t(device.installed_operating_system.name)}
-                </Link>
-                {/* <ExpandableMarkdown
-                  source={device.description}
-                  limit={400}
-                /> */}
+                {device?.installed_operating_system?.name
+                  && <Link
+                    component="button"
+                    variant="body2"
+                    className={classes.link}
+                    onClick={() => (
+                      device?.installed_operating_system?.id
+                      && history.push(`/dashboard/assets/software/${device.installed_operating_system.id}`)
+                    )}
+                  >
+                    <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.installed_operating_system.name)}
+                  </Link>}
               </div>
               <div style={{ marginBottom: '10px' }}>
                 <Typography
@@ -125,24 +124,24 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {/* {device.sophistication && t(device.sophistication)} */}
                 {device.installed_software
-                && device.installed_software.map((software, key) => (
-                  <div key={key}>
-                    <div className="clearfix" />
-                    <Link
-                      key={key}
-                      component="button"
-                      variant="body2"
-                      className={classes.link}
-                      onClick={() => (
-                        software.id && history.push(`/dashboard/assets/software/${software.id}`)
-                      )}
-                    >
-                      <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{software.name && t(software.name)}
-                    </Link>
-                  </div>
-                ))}
+                  && device.installed_software.map((software, key) => (
+                    <div key={key}>
+                      <div className="clearfix" />
+                      {software.name
+                        && <Link
+                          key={key}
+                          component="button"
+                          variant="body2"
+                          className={classes.link}
+                          onClick={() => (
+                            software.id && history.push(`/dashboard/assets/software/${software.id}`)
+                          )}
+                        >
+                          <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(software.name)}
+                        </Link>}
+                    </div>
+                  ))}
               </div>
               <div>
                 <Typography
@@ -214,16 +213,17 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Link
-                  component="button"
-                  variant="body2"
-                  className={classes.link}
-                  onClick={() => (
-                    device.connected_to_network.id && history.push(`/dashboard/assets/network/${device.connected_to_network.id}`)
-                  )}
-                >
-                  <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{device.connected_to_network && device.connected_to_network.name && t(device.connected_to_network.name)}
-                </Link>
+                {device?.connected_to_network?.name
+                  && <Link
+                    component="button"
+                    variant="body2"
+                    className={classes.link}
+                    onClick={() => (
+                      device.connected_to_network.id && history.push(`/dashboard/assets/network/${device.connected_to_network.id}`)
+                    )}
+                  >
+                    <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.connected_to_network.name)}
+                  </Link>}
               </div>
               <div>
                 <Typography
@@ -359,17 +359,17 @@ class DeviceDetailsComponent extends Component {
                 {device.installed_hardware && device.installed_hardware.map((data, key) => (
                   <div key={key}>
                     <div className="clearfix" />
-                      <Link
-                        key={key}
-                        component="button"
-                        variant="body2"
-                        className={classes.link}
-                        onClick={() => (
-                          data.id && history.push(`/dashboard/assets/devices/${data.id}`)
-                        )}
-                      >
-                        <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{data.name && t(data.name)}
-                      </Link>
+                    <Link
+                      key={key}
+                      component="button"
+                      variant="body2"
+                      className={classes.link}
+                      onClick={() => (
+                        data.id && history.push(`/dashboard/assets/devices/${data.id}`)
+                      )}
+                    >
+                      <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{data.name && t(data.name)}
+                    </Link>
                   </div>
                 ))}
               </div>
@@ -389,15 +389,15 @@ class DeviceDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <div className={classes.scrollBg}>
-                    <div className={classes.scrollDiv}>
-                      <div className={classes.scrollObj}>
-                        {device.locations && device.locations.map((location, key) => (
-                          <div key={key}>
-                            {`${location.street_address && t(location.street_address)}, `}
-                            {`${location.city && t(location.city)}, `}
-                            {`${location.country && t(location.country)}, ${location.postal_code && t(location.postal_code)}`}
-                          </div>
-                        ))}
+                  <div className={classes.scrollDiv}>
+                    <div className={classes.scrollObj}>
+                      {device.locations && device.locations.map((location, key) => (
+                        <div key={key}>
+                          {`${location.street_address && t(location.street_address)}, `}
+                          {`${location.city && t(location.city)}, `}
+                          {`${location.country && t(location.country)}, ${location.postal_code && t(location.postal_code)}`}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -474,18 +474,14 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Link
-                  component="button"
-                  variant="body2"
-                  className={classes.link}
-                  onClick={() => {
-                    console.info("I'm a button.");
-                  }}
-                >
-                  <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{device.uri && t(device.uri)}
-                </Link>
-                {/* {device.primary_motivation
-                  && t(device.primary_motivation)} */}
+                {device?.uri
+                  && <Link
+                    href={device?.uri}
+                    variant="body2"
+                    className={classes.link}
+                  >
+                    <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.uri)}
+                  </Link>}
               </div>
               <div>
                 <Typography
