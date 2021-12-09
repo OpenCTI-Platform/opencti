@@ -170,12 +170,23 @@ class Devices extends Component {
       name: {
         label: 'Name',
       },
-
-      created: {
-        label: 'Creation date',
+      asset_type: {
+        label: 'Type',
       },
-      modified: {
-        label: 'Modification date',
+      asset_id: {
+        label: 'Asset ID',
+      },
+      ip_address: {
+        label: 'IP Address',
+      },
+      installed_operating_system: {
+        label: 'OS',
+      },
+      network_id: {
+        label: 'Network ID',
+      },
+      labels: {
+        label: 'Label',
       },
     };
     return (
@@ -219,7 +230,6 @@ class Devices extends Component {
           query={devicesCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
-            console.log(`DarkLightDevicesCards Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
               <DevicesCards
                 data={props}
@@ -260,17 +270,17 @@ class Devices extends Component {
         width: '12%',
         isSortable: true,
       },
-      type: {
+      asset_type: {
         label: 'Type',
         width: '8%',
-        isSortable: false,
+        isSortable: true,
       },
-      assetId: {
+      asset_id: {
         label: 'Asset ID',
         width: '12%',
         isSortable: true,
       },
-      ipAddress: {
+      ip_address: {
         label: 'IP Address',
         width: '12%',
         isSortable: true,
@@ -278,22 +288,22 @@ class Devices extends Component {
       fqdn: {
         label: 'FQDN',
         width: '12%',
-        isSortable: true,
-      },
-      os: {
-        label: 'OS',
-        width: '8%',
         isSortable: false,
       },
-      networkId: {
+      installed_operating_system: {
+        label: 'OS',
+        width: '8%',
+        isSortable: true,
+      },
+      network_id: {
         label: 'Network ID',
         width: '12%',
         isSortable: true,
       },
-      objectLabel: {
+      labels: {
         label: 'Label',
         width: '20%',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (
@@ -338,7 +348,6 @@ class Devices extends Component {
           query={devicesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
-            console.log(`DarkLight Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
               <DevicesLines
                 data={props}
@@ -370,7 +379,7 @@ class Devices extends Component {
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
-      orderBy: sortBy,
+      orderedBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
     };
