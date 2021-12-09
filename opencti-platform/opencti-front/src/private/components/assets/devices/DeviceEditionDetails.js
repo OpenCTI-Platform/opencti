@@ -70,7 +70,7 @@ class DeviceEditionDetailsComponent extends Component {
     commitMutation({
       mutation: deviceEditionDetailsFocus,
       variables: {
-        id: this.props.device.id,
+        id: this.props.device?.id,
         input: {
           focusOn: name,
         },
@@ -80,7 +80,7 @@ class DeviceEditionDetailsComponent extends Component {
 
   render() {
     const {
-      t, classes, device, context, enableReferences,
+      t, classes, device, enableReferences,
     } = this.props;
     return (
       <div>
@@ -308,7 +308,7 @@ class DeviceEditionDetailsComponent extends Component {
                     <Field
                       component={Switch}
                       name="is_virtual"
-                      defaultChecked={device.is_virtual}
+                      defaultChecked={device?.is_virtual}
                       inputProps={{ 'aria-label': 'ant design' }}
                     />
                     <Typography>Yes</Typography>
@@ -334,7 +334,7 @@ class DeviceEditionDetailsComponent extends Component {
                     <Field
                       component={Switch}
                       name="is_publicly_accessible"
-                      defaultChecked={device.is_publicly_accessible}
+                      defaultChecked={device?.is_publicly_accessible}
                       inputProps={{ 'aria-label': 'ant design' }}
                     />
                     <Typography>Yes</Typography>
@@ -594,7 +594,7 @@ class DeviceEditionDetailsComponent extends Component {
                     <Field
                       component={Switch}
                       name="is_scanned"
-                      defaultChecked={device.is_scanned}
+                      defaultChecked={device?.is_scanned}
                       inputProps={{ 'aria-label': 'ant design' }}
                     />
                     <Typography>Yes</Typography>

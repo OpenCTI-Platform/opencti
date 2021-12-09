@@ -154,7 +154,7 @@ class DeviceEditionContainer extends Component {
       //   values,
       // );
       variables: {
-        id: this.props.device.id,
+        id: this.props.device?.id,
         input: [
           { key: 'name', value: 'Hello' },
           { key: 'asset_id', value: values.asset_id },
@@ -216,33 +216,33 @@ class DeviceEditionContainer extends Component {
     } = this.props;
     console.log('DeviceEditionPropsData', device);
     const initialValues = R.pipe(
-      R.assoc('id', device.id),
-      R.assoc('asset_id', device.asset_id),
-      R.assoc('description', device.description),
-      R.assoc('name', device.name),
-      R.assoc('asset_tag', device.asset_tag || ''),
-      R.assoc('asset_type', device.asset_type),
-      R.assoc('location', device?.locations.map((location) => [location.street_address, location.city, location.country, location.postal_code]).join('\n')),
-      R.assoc('version', device.version),
-      R.assoc('vendor_name', device.vendor_name),
-      R.assoc('serial_number', device.serial_number),
-      R.assoc('release_date', device.release_date),
-      R.assoc('operational_status', device.operational_status),
-      R.assoc('installation_id', device.installation_id || ''),
-      R.assoc('bios_id', device.bios_id || ''),
+      R.assoc('id', device?.id),
+      R.assoc('asset_id', device?.asset_id),
+      R.assoc('description', device?.description),
+      R.assoc('name', device?.name),
+      R.assoc('asset_tag', device?.asset_tag || ''),
+      R.assoc('asset_type', device?.asset_type),
+      R.assoc('location', device?.locations && device?.locations.map((location) => [location.street_address, location.city, location.country, location.postal_code]).join('\n')),
+      R.assoc('version', device?.version),
+      R.assoc('vendor_name', device?.vendor_name),
+      R.assoc('serial_number', device?.serial_number),
+      R.assoc('release_date', device?.release_date),
+      R.assoc('operational_status', device?.operational_status),
+      R.assoc('installation_id', device?.installation_id || ''),
+      R.assoc('bios_id', device?.bios_id || ''),
       R.assoc('connected_to_network', device?.connected_to_network?.name || ''),
-      R.assoc('netbios_name', device.netbios_name || ''),
-      R.assoc('baseline_configuration_name', device.baseline_configuration_name || ''),
-      R.assoc('mac_address', (device.mac_address || []).join()),
-      R.assoc('model', device.model || ''),
-      R.assoc('hostname', device.hostname || ''),
-      R.assoc('default_gateway', device.default_gateway || ''),
-      R.assoc('motherboard_id', device.motherboard_id || ''),
-      R.assoc('is_scanned', device.is_scanned || ''),
-      R.assoc('is_virtual', device.is_virtual || ''),
-      R.assoc('is_publicly_accessible', device.is_publicly_accessible || ''),
-      R.assoc('uri', device.uri || ''),
-      R.assoc('fqdn', device.fqdn || ''),
+      R.assoc('netbios_name', device?.netbios_name || ''),
+      R.assoc('baseline_configuration_name', device?.baseline_configuration_name || ''),
+      R.assoc('mac_address', (device?.mac_address || []).join()),
+      R.assoc('model', device?.model || ''),
+      R.assoc('hostname', device?.hostname || ''),
+      R.assoc('default_gateway', device?.default_gateway || ''),
+      R.assoc('motherboard_id', device?.motherboard_id || ''),
+      R.assoc('is_scanned', device?.is_scanned || false),
+      R.assoc('is_virtual', device?.is_virtual || false),
+      R.assoc('is_publicly_accessible', device?.is_publicly_accessible || false),
+      R.assoc('uri', device?.uri || ''),
+      R.assoc('fqdn', device?.fqdn || ''),
       R.assoc('ipv4_address', device?.ipv4_address?.ip_address_value || ''),
       R.assoc('ipv6_address', device?.ipv6_address?.ip_address_value || ''),
       R.pick([
@@ -277,7 +277,7 @@ class DeviceEditionContainer extends Component {
         'uri',
       ]),
     )(device);
-    const { editContext } = device;
+    // const { editContext } = device;
     return (
       <div className={classes.container}>
         <Formik
@@ -399,7 +399,7 @@ class DeviceEditionContainer extends Component {
                     <DeviceEditionDetails
                       device={device}
                       // enableReferences={this.props.enableReferences}
-                      context={editContext}
+                      // context={editContext}
                       handleClose={handleClose.bind(this)}
                     />
                   </Grid>
@@ -413,15 +413,15 @@ class DeviceEditionContainer extends Component {
               >
                 <Grid item={true} xs={6}>
                   {/* <CyioCoreObjectExternalReferences
-                    cyioCoreObjectId={device.id}
+                    cyioCoreObjectId={device?.id}
                   /> */}
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <CyioCoreObjectLatestHistory cyioCoreObjectId={device.id} />
+                  <CyioCoreObjectLatestHistory cyioCoreObjectId={device?.id} />
                 </Grid>
               </Grid>
               <CyioCoreObjectOrCyioCoreRelationshipNotes
-                cyioCoreObjectOrCyioCoreRelationshipId={device.id}
+                cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
               />
             </>
           )}

@@ -66,11 +66,11 @@ class CyioDomainObjectAssetOverview extends Component {
       t, fldt, classes, cyioDomainObject, withoutMarking, withPattern,
     } = this.props;
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
-    const otherCyioIds = cyioDomainObject.x_opencti_cyio_ids || [];
-    const stixIds = R.filter(
-      (n) => n !== cyioDomainObject.standard_id,
-      otherCyioIds,
-    );
+    // const otherCyioIds = cyioDomainObject?.x_opencti_cyio_ids || [];
+    // const stixIds = R.filter(
+    //   (n) => n !== cyioDomainObject?.standard_id,
+    //   otherCyioIds,
+    // );
     console.log('cyioDomainObjectData', cyioDomainObject);
     return (
       <div style={{ height: '100%' }} className="break">
@@ -95,7 +95,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject.id && t(cyioDomainObject.id)}
+                {cyioDomainObject?.id && t(cyioDomainObject?.id)}
               </div>
               <div>
                 <Typography
@@ -112,7 +112,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject.asset_id && t(cyioDomainObject.asset_id)}
+                {cyioDomainObject?.asset_id && t(cyioDomainObject?.asset_id)}
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -134,13 +134,13 @@ class CyioDomainObjectAssetOverview extends Component {
                 </div>
                 <div className="clearfix" />
                 <Chip
-                  avatar={cyioDomainObject.asset_type
-                    && <ItemIcon type={cyioDomainObject.asset_type} fontSize='5px' />}
+                  avatar={cyioDomainObject?.asset_type
+                    && <ItemIcon type={cyioDomainObject?.asset_type} fontSize='5px' />}
                   classes={{ root: classes.chip }}
-                  label={cyioDomainObject.asset_type && t(cyioDomainObject.asset_type)}
+                  label={cyioDomainObject?.asset_type && t(cyioDomainObject?.asset_type)}
                   color="primary"
                 />
-                {/* <ItemCreator creator={cyioDomainObject.creator} /> */}
+                {/* <ItemCreator creator={cyioDomainObject?.creator} /> */}
               </div>
               <div>
                 <Typography
@@ -157,7 +157,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject.asset_tag && t(cyioDomainObject.asset_tag)}
+                {cyioDomainObject?.asset_tag && t(cyioDomainObject?.asset_tag)}
               </div>
             </Grid>
           </Grid>
@@ -181,7 +181,7 @@ class CyioDomainObjectAssetOverview extends Component {
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
-                      {cyioDomainObject.description && t(cyioDomainObject.description)}
+                      {cyioDomainObject?.description && t(cyioDomainObject?.description)}
                     </div>
                   </div>
                 </div>
@@ -209,7 +209,7 @@ class CyioDomainObjectAssetOverview extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              <pre style={{ margin: 0 }}>{cyioDomainObject.standard_id}</pre>
+              <pre style={{ margin: 0 }}>{cyioDomainObject?.standard_id}</pre>
             </Grid>
             <Grid item={true} xs={12}>
               <Typography
@@ -250,7 +250,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject.version && t(cyioDomainObject.version)}
+                {cyioDomainObject?.version && t(cyioDomainObject?.version)}
               </div>
               <div>
                 <Typography
@@ -267,8 +267,8 @@ class CyioDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject.serial_number && t(cyioDomainObject.serial_number)}
-                {/* <ItemCreator creator={cyioDomainObject.creator} /> */}
+                {cyioDomainObject?.serial_number && t(cyioDomainObject?.serial_number)}
+                {/* <ItemCreator creator={cyioDomainObject?.creator} /> */}
               </div>
               <div>
                 <Typography
@@ -285,7 +285,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject.responsible_parties
+                {cyioDomainObject?.responsible_parties
                   && cyioDomainObject?.responsible_parties.map((data, key) => (
                     <Chip key={key} classes={{ root: classes.chip }}
                       label={t(data)} color="primary" />
@@ -317,10 +317,10 @@ class CyioDomainObjectAssetOverview extends Component {
                   color="textSecondary" gutterBottom={true}>
                     {t('Pattern type')}
                   </Typography>
-                  <ItemPatternType label={cyioDomainObject.pattern_type} />
+                  <ItemPatternType label={cyioDomainObject?.pattern_type} />
                 </div>
               )}
-              {!withoutMarking && cyioDomainObject.objectMarking && (
+              {!withoutMarking && cyioDomainObject?.objectMarking && (
                 <div>
                   <Typography
                     variant="h3"
@@ -347,7 +347,7 @@ class CyioDomainObjectAssetOverview extends Component {
                 style={{
                   marginTop:
                     withPattern
-                    || (!withoutMarking && cyioDomainObject.objectMarking)
+                    || (!withoutMarking && cyioDomainObject?.objectMarking)
                       ? 20
                       : 0,
                 }}
@@ -358,7 +358,7 @@ class CyioDomainObjectAssetOverview extends Component {
                 createdBy={R.propOr(null, 'createdBy', cyioDomainObject)}
               />
               <StixCoreObjectOpinions
-                stixCoreObjectId={cyioDomainObject.id}
+                stixCoreObjectId={cyioDomainObject?.id}
                 variant="inEntity"
                 height={160}
                 marginTop={20}
@@ -371,7 +371,7 @@ class CyioDomainObjectAssetOverview extends Component {
               >
                 {t('Creation date')}
               </Typography>
-              {fldt(cyioDomainObject.created)}
+              {fldt(cyioDomainObject?.created)}
               <Typography
                 variant="h3"
                 color="textSecondary"
@@ -380,7 +380,7 @@ class CyioDomainObjectAssetOverview extends Component {
               >
                 {t('Modification date')}
               </Typography>
-              {fldt(cyioDomainObject.modified)} */}
+              {fldt(cyioDomainObject?.modified)} */}
             </Grid>
             <Grid item={true} xs={6}>
               <div>
@@ -398,7 +398,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject.vendor_name && t(cyioDomainObject.vendor_name)}
+                {cyioDomainObject?.vendor_name && t(cyioDomainObject?.vendor_name)}
               </div>
               <div>
                 <Typography
@@ -415,7 +415,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject.release_date && fldt(cyioDomainObject.release_date)}
+                {cyioDomainObject?.release_date && fldt(cyioDomainObject?.release_date)}
               </div>
               <div>
                 <Typography
@@ -432,7 +432,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject.operational_status && t(cyioDomainObject.operational_status)}
+                {cyioDomainObject?.operational_status && t(cyioDomainObject?.operational_status)}
               </div>
               {/* <Typography
                 variant="h3"
@@ -442,7 +442,7 @@ class CyioDomainObjectAssetOverview extends Component {
               >
                 {t('Confidence level')}
               </Typography>
-              <ItemConfidence confidence={cyioDomainObject.confidence} />
+              <ItemConfidence confidence={cyioDomainObject?.confidence} />
               <Typography
                 variant="h3"
                 color="textSecondary"
@@ -451,7 +451,7 @@ class CyioDomainObjectAssetOverview extends Component {
               >
                 {t('Creation date (in this platform)')}
               </Typography>
-              {fldt(cyioDomainObject.created_at)}
+              {fldt(cyioDomainObject?.created_at)}
               <Typography
                 variant="h3"
                 color="textSecondary"
@@ -460,7 +460,7 @@ class CyioDomainObjectAssetOverview extends Component {
               >
                 {t('Creator')}
               </Typography>
-              <ItemCreator creator={cyioDomainObject.creator} /> */}
+              <ItemCreator creator={cyioDomainObject?.creator} /> */}
             </Grid>
           </Grid>
         </Paper>
