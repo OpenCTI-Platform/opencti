@@ -117,7 +117,7 @@ const assetSingularizeSchema = { singularizeVariables: {
     "baseline_configuration_name": true,
     "bios_id": true,
     "city": true,
-    "country_code": true,
+    "country": true,
     "cpe_identifier": true,
     "default_gateway": true,
     "description": true,
