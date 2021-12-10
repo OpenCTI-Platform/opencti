@@ -22,7 +22,12 @@ import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { identityCreationIdentitiesSearchQuery } from '../identities/IdentityCreation';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
-import { itAssetListQuery } from '../../settings/ItAssetListQuery';
+import {
+  itAssetFiltersAssetTypeFieldQuery,
+  itAssetFiltersDeviceFieldsQuery,
+  itAssetFiltersNetworkFieldsQuery,
+  itAssetFiltersSoftwareFieldsQuery,
+} from '../../settings/ItAssetFilters';
 import { attributesSearchQuery } from '../../settings/AttributesQuery';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -127,15 +132,17 @@ class Filters extends Component {
     }
     switch (filterKey) {
       case 'asset_type_or':
-        fetchDarklightQuery(itAssetListQuery)
+        fetchDarklightQuery(itAssetFiltersAssetTypeFieldQuery, {
+          type: `${this.props.filterEntityType}AssetTypes`,
+        })
           .toPromise()
           .then((data) => {
             const assetTypeEntities = R.pipe(
-              R.pathOr([], ['itAssetList', 'edges']),
+              R.pathOr([], ['__type', 'enumValues']),
               R.map((n) => ({
-                label: t(n.node.asset_type),
-                value: n.node.asset_type,
-                type: n.node.asset_type,
+                label: t(n.description),
+                value: n.name,
+                type: n.name,
               })),
             )(data);
             this.setState({
@@ -150,11 +157,27 @@ class Filters extends Component {
           });
         break;
       case 'name_m':
-        fetchDarklightQuery(itAssetListQuery)
+        // eslint-disable-next-line no-case-declarations
+        let nameQuery = '';
+        // eslint-disable-next-line no-case-declarations
+        let namePath = [];
+        if (this.props.filterEntityType === 'Device') {
+          nameQuery = itAssetFiltersDeviceFieldsQuery;
+          namePath = ['computingDeviceAssetList', 'edges'];
+        }
+        if (this.props.filterEntityType === 'Network') {
+          nameQuery = itAssetFiltersNetworkFieldsQuery;
+          namePath = ['networkAssetList', 'edges'];
+        }
+        if (this.props.filterEntityType === 'Software') {
+          nameQuery = itAssetFiltersSoftwareFieldsQuery;
+          namePath = ['softwareAssetList', 'edges'];
+        }
+        fetchDarklightQuery(nameQuery)
           .toPromise()
           .then((data) => {
             const nameEntities = R.pipe(
-              R.pathOr([], ['itAssetList', 'edges']),
+              R.pathOr([], namePath),
               R.map((n) => ({
                 label: n.node.name,
                 value: n.node.name,
@@ -166,7 +189,47 @@ class Filters extends Component {
                 ...this.state.entities,
                 name_m: R.union(
                   nameEntities,
-                  this.state.entities.name,
+                  this.state.entities.name_m,
+                ),
+              },
+            });
+          });
+        break;
+      case 'labels_or':
+        // eslint-disable-next-line no-case-declarations
+        let cyioLabelsQuery = '';
+        // eslint-disable-next-line no-case-declarations
+        let cyioLabelsPath = [];
+        if (this.props.filterEntityType === 'Device') {
+          cyioLabelsQuery = itAssetFiltersDeviceFieldsQuery;
+          cyioLabelsPath = ['computingDeviceAssetList', 'edges'];
+        }
+        if (this.props.filterEntityType === 'Network') {
+          cyioLabelsQuery = itAssetFiltersNetworkFieldsQuery;
+          cyioLabelsPath = ['networkAssetList', 'edges'];
+        }
+        if (this.props.filterEntityType === 'Software') {
+          cyioLabelsQuery = itAssetFiltersSoftwareFieldsQuery;
+          cyioLabelsPath = ['softwareAssetList', 'edges'];
+        }
+        fetchDarklightQuery(cyioLabelsQuery)
+          .toPromise()
+          .then((data) => {
+            const cyioLabelEntities = R.pipe(
+              R.pathOr([], cyioLabelsPath),
+              R.map((n) => ({
+                label: t(n.node.labels[0]),
+                value: n.node.labels[0],
+                type: 'Label',
+                color: n.node.labels[0],
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                labels_or: R.union(
+                  cyioLabelEntities,
+                  this.state.entities.labels_or,
                 ),
               },
             });

@@ -206,7 +206,7 @@ class Devices extends Component {
         selectAll={selectAll}
         OperationsComponent={<DeviceDeletion />}
         openExports={openExports}
-        exportEntityType="Device"
+        filterEntityType="Device"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -216,7 +216,7 @@ class Devices extends Component {
           'asset_type_or',
           'created_start_date',
           'created_end_date',
-          'labelledby',
+          'labels_or',
         ]}
       >
         {/* <QueryRenderer */}
@@ -319,7 +319,7 @@ class Devices extends Component {
         OperationsComponent={<DeviceDeletion />}
         openExports={openExports}
         selectAll={selectAll}
-        exportEntityType="Device"
+        filterEntityType="Device"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -329,7 +329,7 @@ class Devices extends Component {
           'asset_type_or',
           'created_start_date',
           'created_end_date',
-          'labelledby',
+          'labels_or',
         ]}
       >
         {/* <QueryRenderer */}
