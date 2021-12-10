@@ -1,23 +1,25 @@
-import {buildSelectVariables, optionalizePredicate, parameterizePredicate} from "../../utils";
-import {v4 as uuid4} from "uuid";
+import {buildSelectVariables, optionalizePredicate, parameterizePredicate, generateId, OASIS_SCO_NS} from "../../utils.js";
 
 const inventoryConstraint = `
 {
-    SELECT DISTINCT ?iri
-    WHERE {
-        GRAPH ?g {
-          ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
-                <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
-        }
-    }
+  SELECT DISTINCT ?iri
+  WHERE {
+    ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
+          <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+  }
 }`;
+// {
+//     SELECT DISTINCT ?iri
+//     WHERE {
+//         GRAPH ?g {
+//           ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
+//                 <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+//         }
+//     }
+// }`;
 
 export function getSelectSparqlQuery(type, select, id, filter, ) {
   var sparqlQuery;
-  if(select.includes("id")){
-    select = select.filter((s) => s !== "id");
-    select.unshift("id");
-  }
   let { selectionClause, predicates } = buildSelectVariables(predicateMap, select);
   selectionClause = `SELECT ${select.includes("id") ? "DISTINCT" : ""} ${selectionClause}`;
   let iri;
@@ -26,28 +28,44 @@ export function getSelectSparqlQuery(type, select, id, filter, ) {
       iri = id == null ? "?iri" : `<http://scap.nist.gov/ns/asset-identification#IpAddressRange-${id}>`
       sparqlQuery = `
       ${selectionClause}
+      FROM <tag:stardog:api:context:named>
       WHERE {
-        GRAPH ${iri} {
-          ${iri} a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> ;
-          ${predicates}
-        }
+        ${iri} a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> ;
+        ${predicates}
       }
       `
+      // ${selectionClause}
+      // WHERE {
+      //   GRAPH ${iri} {
+      //       ${iri} a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> ;
+      //       ${predicates}
+      //   }
+      // }
+      // `
       break;
     case 'NETWORK':
       iri = id == null ? "?iri" : `<http://scap.nist.gov/ns/asset-identification#Network-${id}>`
       let filterStr = '';
       sparqlQuery = `
       ${selectionClause}
+      FROM <tag:stardog:api:context:named>
       WHERE {
-        GRAPH ${iri} {
-            ?iri a <http://scap.nist.gov/ns/asset-identification#Network> ;
-            ${predicates} 
-            ${inventoryConstraint} .
-            ${filterStr}
-        }
+        ?iri a <http://scap.nist.gov/ns/asset-identification#Network> ;
+        ${predicates} 
+        ${inventoryConstraint} .
+        ${filterStr}
       }
       `
+      // ${selectionClause}
+      // WHERE {
+      //   GRAPH ${iri} {
+      //       ?iri a <http://scap.nist.gov/ns/asset-identification#Network> ;
+      //       ${predicates} 
+      //       ${inventoryConstraint} .
+      //       ${filterStr}
+      //   }
+      // }
+      // `
       break;
     default:
       throw new Error(`Unsupported query type ' ${type}'`)
@@ -60,22 +78,33 @@ export function getReducer( type ) {
   var reducer ;
   switch( type ) {
     case 'NETWORK':
-      reducer = networkAssetReducer ;
-      break ;
+      return networkAssetReducer ;
     case 'NETADDR-RANGE':
-      reducer = ipAddrRangeReducer;
-      break
+      return ipAddrRangeReducer;
     default:
       throw new Error(`Unsupported reducer type ' ${type}'`)
   }
-  return reducer ;
 }
-
 
 export const predicateMap = {
   id: {
     predicate: "<http://darklight.ai/ns/common#id>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  created: {
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "created")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  modified: {
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "modified")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  labels: {
+    predicate: "<http://darklight.ai/ns/common#labels>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   asset_id: {
@@ -96,6 +125,11 @@ export const predicateMap = {
   locations: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#locations>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "locations")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  asset_type: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#asset_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "asset_type")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   asset_tag: {
@@ -120,7 +154,17 @@ export const predicateMap = {
   },
   release_date: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#release_date>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:datetime`: null, this.predicate, "release_date")},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "release_date")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  implementation_point: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#implementation_point>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "implementation_point")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  operational_status: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#operational_status>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "operational_status")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   network_id: {
@@ -138,23 +182,46 @@ export const predicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "network_address_range")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
+  is_publicly_accessible: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#is_publicly_accessible>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean`: null, this.predicate, "is_publicly_accessible")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  is_scanned: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#is_scanned>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean`: null, this.predicate, "is_scanned")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  last_scanned: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#last_scanned>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "last_scanned");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  }
 }
 
 export const insertQuery = (propValues) => {
-  const id = uuid4();
+  const id_material = {
+    ...(propValues.network_name && { "network_name": propValues.network_name}),
+    ...(propValues.network_id && {"network_id": propValues.network_id}),
+  } ;
+  const id = generateId( id_material, OASIS_SCO_NS );
+  const timestamp = new Date().toISOString()
   const iri = `<http://scap.nist.gov/ns/asset-identification#Network-${id}>`;
   const insertPredicates = Object.entries(propValues)
-      .filter((propPair) => predicateMap.hasOwnProperty(propPair[0]))
-      .map((propPair) => predicateMap[propPair[0]].binding(iri, propPair[1]))
-      .join('.\n      ')
+    .filter((propPair) => predicateMap.hasOwnProperty(propPair[0]))
+    .map((propPair) => predicateMap[propPair[0]].binding(iri, propPair[1]))
+    .join('.\n      ')
   const query = `
   INSERT DATA {
     GRAPH ${iri} {
       ${iri} a <http://scap.nist.gov/ns/asset-identification#Network> .
       ${iri} a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
       ${iri} a <http://scap.nist.gov/ns/asset-identification#Asset> .
-      ${iri} a <http://darklight.ai/ns/common#Object> .
+      ${iri} a <http://darklight.ai/ns/common#Object> . 
       ${iri} <http://darklight.ai/ns/common#id> "${id}".
+      ${iri} <http://darklight.ai/ns/common#object_type> "network" . 
+      ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
+      ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
       ${insertPredicates}
     }
   }
@@ -205,6 +272,9 @@ function networkAssetReducer( item ) {
     // Network
     ...(item.network_id && {network_id: item.network_id}),
     ...(item.network_name && {network_name: item.network_name}),
+    ...(item.is_publicly_accessible !== undefined && {is_publicly_accessible: item.is_publicly_accessible}),
+    ...(item.is_scanned !== undefined && {is_scanned: item.is_scanned}),
+    ...(item.last_scanned && {last_scanned: item.last_scanned}),
     // Hints
     ...(item.iri && {parent_iri: item.iri}),
     ...(item.locations && {locations_iri: item.locations}),
@@ -216,7 +286,7 @@ function networkAssetReducer( item ) {
 
 function ipAddrRangeReducer ( item ) {
   if ( typeof item.starting_ip_address == 'string' ) {
-    console.log(`[ERROR] Value not compliant: starting_ip_address is a string not object`);
+    console.log(`[NON-CONFORMANT] starting_ip_address is NOT an object`);
   }
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined && item.asset_type !== undefined ) {

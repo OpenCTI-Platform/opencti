@@ -1,0 +1,25 @@
+query NetworkFilter {
+  networkAssetList {
+    edges {
+      node {
+        id
+        asset_type
+        name
+        is_publicly_accessible
+        is_scanned
+        network_address_range {
+          starting_ip_address {
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+          ending_ip_address {
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,7 +1,4 @@
-import {UpdateOps, byIdClause, optionalizePredicate, parameterizePredicate, buildSelectVariables} from "../../utils.js";
-import {predicateMap} from "../software/sparql-query";
-import {v4 as uuid4} from "uuid";
-
+import {byIdClause, optionalizePredicate, parameterizePredicate, buildSelectVariables, generateId, OASIS_NS} from "../../utils.js";
 
 
 const selectClause = `
@@ -89,10 +86,12 @@ const inventoryConstraint = `
 ` ;
 
 
-export function getSelectSparqlQuery( type, id, filter, ) {
-  var sparqlQuery;
+export function getSelectSparqlQuery( type, select, id, filter, ) {
   var filterStr = ''
   var byId = '';
+  let sparqlQuery;
+  // const { selectionClause, predicates } = buildSelectVariables(predicateMap, select)
+
   switch( type ) {
     case 'ASSET':
       if (id !== undefined) {
@@ -254,9 +253,9 @@ function itAssetReducer( item ) {
     ...(item.hostname && {hostname: item.hostname}),
     ...(item.netbios_name && {netbios_name: item.netbios_name}),
     ...(item.uri && {uri: item.uri}),
-    ...(item.is_publicly_accessible && {is_publicly_accessible: item.is_publicly_accessible}),
-    ...(item.is_scanned && {is_scanned: item.is_scanned}),
-    ...(item.is_virtual && {is_virtual: item.is_virtual}),
+    ...(item.is_publicly_accessible !== undefined & {is_publicly_accessible: item.is_publicly_accessible}),
+    ...(item.is_scanned !== undefined && {is_scanned: item.is_scanned}),
+    ...(item.is_virtual !== undefined && {is_virtual: item.is_virtual}),
     // Network Device - Appliance - Firewall - Router - StorageArray - Switch - VoIPHandset - VoIPRouter
     // Network
     ...(item.network_id && {network_id: item.network_id}),
@@ -370,7 +369,15 @@ const assetLocationReducer = (item) => {
 }
 
 export const insertLocationQuery = (propValues) => {
-  const id = uuid4();
+  const id_material = {
+    ...(propValues.administrative_area && {"administrative_area": propValues.administrative_area}),
+    ...(propValues.city && {"city": propValues.city}),
+    ...(propValues.country_code && {"country": propValues.country_code}),
+    ...(propValues.postal_code && {"postal_code": propValues.postal_code}),
+    ...(propValues.street_address && {"street_address": propValues.street_address})
+  } ;
+  const id = generateId( id_material, OASIS_NS );
+  const timestamp = new Date().toISOString()
   const iri = `<http://darklight.ai/ns/common#CivicLocation-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => locationPredicateMap.hasOwnProperty(propPair[0]))
@@ -383,6 +390,9 @@ export const insertLocationQuery = (propValues) => {
       ${iri} a <http://darklight.ai/ns/common#Location> .
       ${iri} a <http://darklight.ai/ns/common#Object> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}".
+      ${iri} <http://darklight.ai/ns/common#object_type> "location" . 
+      ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
+      ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
       ${insertPredicates}
     }
   }
@@ -400,13 +410,20 @@ export const selectLocationByIriQuery = (iri, select) => {
   const { selectionClause, predicates } = buildSelectVariables(locationPredicateMap, select);
   return `
   SELECT ${selectionClause}
+  FROM <tag:stardog:api:context:named>
   WHERE {
-    GRAPH <${iri}> {
-        ?iri a <http://darklight.ai/ns/common#CivicLocation> .
-        ${predicates}
-    }
+    ?iri a <http://darklight.ai/ns/common#CivicLocation> .
+    ${predicates}
   }
   `
+//   SELECT ${selectionClause}
+//   WHERE {
+//     GRAPH <${iri}> {
+//         ?iri a <http://darklight.ai/ns/common#CivicLocation> .
+//         ${predicates}
+//     }
+//   }
+//   `
 }
 
 export const selectAllLocations = (select) => {
@@ -414,13 +431,20 @@ export const selectAllLocations = (select) => {
   const { selectionClause, predicates } = buildSelectVariables(locationPredicateMap, select);
   return `
   SELECT ${selectionClause} 
+  FROM <tag:stardog:api:context:named>
   WHERE {
-    GRAPH ?iri {
-      ?iri a <http://darklight.ai/ns/common#CivicLocation> . 
-      ${predicates}
-    }
+    ?iri a <http://darklight.ai/ns/common#CivicLocation> . 
+    ${predicates}
   }
   `
+  // SELECT ${selectionClause} 
+  // WHERE {
+  // #  GRAPH ?iri {
+  //     ?iri a <http://darklight.ai/ns/common#CivicLocation> . 
+  //     ${predicates}
+  // #  }
+  // }
+  // `
 }
 
 export const deleteLocationQuery = (id) => {

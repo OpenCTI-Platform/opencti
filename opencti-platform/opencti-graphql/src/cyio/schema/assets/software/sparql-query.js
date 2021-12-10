@@ -1,10 +1,24 @@
-import {v4 as uuid4} from 'uuid';
-import {UpdateOps, byIdClause, optionalizePredicate, parameterizePredicate, buildSelectVariables} from "../../utils.js";
+import {UpdateOps, byIdClause, optionalizePredicate, parameterizePredicate, buildSelectVariables, generateId, OASIS_SCO_NS} from "../../utils.js";
 
 export const predicateMap = {
   id: {
     predicate: "<http://darklight.ai/ns/common#id>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  created: {
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null,  this.predicate, "created");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  modified: {
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null,  this.predicate, "modified");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  labels: {
+    predicate: "<http://darklight.ai/ns/common#labels>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null,  this.predicate, "labels");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   asset_id: {
@@ -54,7 +68,17 @@ export const predicateMap = {
   },
   release_date: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#release_date>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:datetime`: null,  this.predicate, "release_date");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null,  this.predicate, "release_date");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  implementation_point: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#implementation_point>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "implementation_point");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  operational_status: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#operational_status>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "operational_status");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   function: {
@@ -86,7 +110,22 @@ export const predicateMap = {
     predicate: "<http://scap.nist.gov/ns/asset-identification#license_key>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "license_key");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
-  }
+  },
+  is_publicly_accessible: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#is_publicly_accessible>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean`: null, this.predicate, "is_publicly_accessible")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  is_scanned: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#is_scanned>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean`: null, this.predicate, "is_scanned")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  last_scanned: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#last_scanned>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "last_scanned");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
 }
 
 const predicateBody = `
@@ -125,7 +164,15 @@ const inventoryConstraint = `
 }`;
 
 export const insertQuery = (propValues) => {
-  const id = uuid4();
+  const id_material = {
+    ...(propValues.name && { "name": propValues.name}),
+    ...(propValues.cpe_identifier && {"cpe": propValues.cpe_identifier}),
+    ...(propValues.software_identifier && {"swid": propValues.software_identifier}),
+    ...(propValues.vendor_name && {"vendor": propValues.vendor_name}),
+    ...(propValues.version && {"version": propValues.version})
+  } ;
+  const id = generateId( id_material, OASIS_SCO_NS );
+  const timestamp = new Date().toISOString()
   const iri = `<http://scap.nist.gov/ns/asset-identification#Software-${id}>`;
   const insertPredicates = Object.entries(propValues)
     .filter((propPair) => predicateMap.hasOwnProperty(propPair[0]))
@@ -137,8 +184,11 @@ export const insertQuery = (propValues) => {
       ${iri} a <http://scap.nist.gov/ns/asset-identification#Software> .
       ${iri} a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
       ${iri} a <http://scap.nist.gov/ns/asset-identification#Asset> .
-      ${iri} a <http://darklight.ai/ns/common#Object> .
+      ${iri} a <http://darklight.ai/ns/common#Object> . 
       ${iri} <http://darklight.ai/ns/common#id> "${id}".
+      ${iri} <http://darklight.ai/ns/common#object_type> "software" . 
+      ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
+      ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
       ${insertPredicates}
     }
   }
@@ -155,12 +205,11 @@ export function getSelectSparqlQuery(type, select, id, filter) {
   let sparqlQuery;
   const { selectionClause, predicates } = buildSelectVariables(predicateMap, select)
   const selectPortion = `
-SELECT DISTINCT ${selectionClause}
-FROM <tag:stardog:api:context:named>
-WHERE {
-  `;
-  let re = /{iri}/g;  // using regex with 'g' switch to replace all instances of a marker
-  switch( type ) {
+  SELECT DISTINCT ${selectionClause}
+  FROM <tag:stardog:api:context:named>
+  WHERE {
+    `;
+    switch( type ) {
     case 'SOFTWARE':
       let byId = '';
       if (id !== undefined) {
@@ -170,7 +219,7 @@ WHERE {
       let filterStr = ''
       sparqlQuery = selectPortion +
           typeConstraint.replace('{softwareType}', 'Software') + 
-          byId +
+          byId + 
           predicates +
           inventoryConstraint + 
           filterStr + '}';
@@ -241,6 +290,9 @@ function softwareAssetReducer( item ) {
     ...(item.patch_level && {patch_level: item.patch_level}),
     ...(item.installation_id && {installation_id: item.installation_id}),
     ...(item.license_key && {license_key: item.license_key}),
+    ...(item.is_publicly_accessible !== undefined && {is_publicly_accessible: item.is_publicly_accessible}),
+    ...(item.is_scanned !== undefined && {is_scanned: item.is_scanned}),
+    ...(item.last_scanned && {last_scanned: item.last_scanned}),
     // Hints
     ...(item.iri && {parent_iri: item.iri}),
     ...(item.locations && {locations_iri: item.locations}),

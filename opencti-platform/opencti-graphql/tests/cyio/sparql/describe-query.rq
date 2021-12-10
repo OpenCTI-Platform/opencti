@@ -1,0 +1,15 @@
+describe ?iri where { 
+    SELECT DISTINCT ?iri 
+    WHERE { 
+        ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ; 
+            <http://csrc.nist.gov/ns/oscal/common#assets> ?iri . 
+    } 
+}
+
+
+
+
+
+describe ?iri where { SELECT DISTINCT ?iri WHERE { ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ; <http://csrc.nist.gov/ns/oscal/common#assets> ?iri . } }
+
+DESCRIBE ?iri ?graph WHERE { SELECT DISTINCT ?iri WHERE { GRAPH ?g { ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ; <http://csrc.nist.gov/ns/oscal/common#assets> ?iri . ?iri ?p ?graph . FILTER(isIRI(?graph)) } GRAPH ?graph { ?graph ?y ?z } } }
