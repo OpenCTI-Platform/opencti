@@ -11,12 +11,14 @@ export default function querySelectMap(info) {
       for(const nodeName in this){
         const node = this[nodeName];
         if(nodeName === name) return node.select;
+        if(node.children === undefined) return null;
         const found = this._getNode(node.children, name);
         if(found) return found.select;
       }
       return null;
     },
     _getNode: function (children, name) {
+      if(children === undefined) return null;
       if(name in children) {
         return children[name];
       }

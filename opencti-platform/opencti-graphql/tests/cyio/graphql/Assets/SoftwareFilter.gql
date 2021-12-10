@@ -1,0 +1,20 @@
+query SoftwareFilter {
+  softwareAssetList(filters: [
+    {key: asset_type, values: ["operating-system"]},
+    {key: vendor_name, values: ["debian", "linux"], filterMode: or}
+    ], filterMode: and ) 
+    {
+    edges {
+      node {
+        id
+        created
+        modified
+        asset_id
+        asset_type
+        name
+        labels
+        vendor_name
+      }
+    }
+  }
+}

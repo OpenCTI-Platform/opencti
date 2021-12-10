@@ -1,6 +1,6 @@
 import { assetSingularizeSchema as singularizeSchema, objectTypeMapping } from '../asset-mappings.js';
-import {compareValues, updateQuery} from '../../utils.js';
-import {
+import {compareValues, filterValues, updateQuery} from '../../utils.js';
+import { 
   getSelectSparqlQuery,
   getReducer,
   deleteMultipleAssetsQuery,
@@ -17,7 +17,7 @@ import {
 const assetCommonResolvers = {
   Query: {
     assetList: async ( _, args, context, info  ) => { 
-      var sparqlQuery = getSelectSparqlQuery('ASSET', );
+      var sparqlQuery = getSelectSparqlQuery('ASSET', context.selectMap.getNode("node") );
       var reducer = getReducer('ASSET');
       const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
@@ -47,6 +47,13 @@ const assetCommonResolvers = {
             continue
           }
 
+          // filter out non-matching entries if a filter is to be applied
+          if ('filters' in args && args.filters.length > 0) {
+            if (!filterValues(asset, args.filters, args.filterMode) ) {
+              continue
+            }
+          }
+
           // if haven't reached limit to be returned
           if ( limit ) {
             let edge = {
@@ -59,10 +66,10 @@ const assetCommonResolvers = {
         }
         return {
           pageInfo: {
-            startCursor: assetList[0].iri,
-            endCursor: assetList[assetList.length -1 ].iri,
-            hasNextPage: (args.first > assetList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            startCursor: edges[0].cursor,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (args.first > assetList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: assetList.length,
           },
           edges: edges,
@@ -72,7 +79,7 @@ const assetCommonResolvers = {
       }
     },
     asset: async ( _, args, context, info ) => {
-      var sparqlQuery = getSelectSparqlQuery('ASSET', args.id);
+      var sparqlQuery = getSelectSparqlQuery('ASSET', context.selectMap.getNode('asset'),args.id);
       var reducer = getReducer('ASSET');
       const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
       if (response === undefined ) return null;
@@ -81,7 +88,7 @@ const assetCommonResolvers = {
       return( reducer( first ) );
     },
     itAssetList: async ( _, args, context, info  ) => { 
-      var sparqlQuery = getSelectSparqlQuery('IT-ASSET', );
+      var sparqlQuery = getSelectSparqlQuery('IT-ASSET', context.selectMap.getNode("node") );
       var reducer = getReducer('IT-ASSET');
       const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
@@ -111,6 +118,13 @@ const assetCommonResolvers = {
             continue
           }
 
+          // filter out non-matching entries if a filter is to be applied
+          if ('filters' in args && args.filters.length > 0) {
+            if (!filterValues(asset, args.filters, args.filterMode) ) {
+              continue
+            }
+          }
+
           // if haven't reached limit to be returned
           if ( limit ) {
             let edge = {
@@ -123,8 +137,8 @@ const assetCommonResolvers = {
         }
         return {
           pageInfo: {
-            startCursor: assetList[0].iri,
-            endCursor: assetList[assetList.length -1 ].iri,
+            startCursor: edges[0].cursor,
+            endCursor: edges[edges.length-1].cursor,
             hasNextPage: (args.first > assetList.length),
             hasPreviousPage: (args.offset > 0),
             globalCount: assetList.length,
@@ -136,7 +150,7 @@ const assetCommonResolvers = {
       }
     },
     itAsset: async ( _, args, context, info ) => {
-      var sparqlQuery = getSelectSparqlQuery('IT-ASSET', args.id);
+      var sparqlQuery = getSelectSparqlQuery('IT-ASSET', context.selectMap.getNode('itAsset'),args.id);
       var reducer = getReducer('IT-ASSET');
       const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
       if (response === undefined ) return null;
@@ -168,6 +182,13 @@ const assetCommonResolvers = {
             continue
           }
 
+          // filter out non-matching entries if a filter is to be applied
+          if ('filters' in args && args.filters.length > 0) {
+            if (!filterValues(location, args.filters, args.filterMode) ) {
+              continue
+            }
+          }
+
           // if haven't reached limit to be returned
           if (limit) {
             let edge = {
@@ -180,8 +201,8 @@ const assetCommonResolvers = {
         }
         return {
           pageInfo: {
-            startCursor: locationList[0].iri,
-            endCursor: locationList[locationList.length - 1].iri,
+            startCursor: edges[0].cursor,
+            endCursor: edges[edges.length-1].cursor,
             hasNextPage: (args.first > locationList.length),
             hasPreviousPage: (args.offset > 0),
             globalCount: locationList.length,
