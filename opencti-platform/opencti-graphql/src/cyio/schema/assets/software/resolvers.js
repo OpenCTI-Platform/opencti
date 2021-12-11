@@ -36,7 +36,7 @@ const softwareResolvers = {
           }
 
           // filter out non-matching entries if a filter is to be applied
-          if ('filters' in args && args.filters.length > 0) {
+          if ('filters' in args && args.filters != null && args.filters.length > 0) {
             if (!filterValues(asset, args.filters, args.filterMode) ) {
               continue
             }
