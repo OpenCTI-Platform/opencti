@@ -1,4 +1,3 @@
-import {UpdateOps} from "../utils";
 
 export const addToInventoryQuery = (assetIri) => {
   return `

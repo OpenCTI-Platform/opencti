@@ -1,0 +1,71 @@
+query NetworkList {
+  networkAssetList {
+    edges {
+      node {
+        id
+        entity_type
+        created
+        modified
+        labels
+        asset_id
+        asset_tag
+        asset_type
+        name
+        description
+        serial_number
+        vendor_name
+        version
+        release_date
+        implementation_point
+        operational_status
+        network_id
+        network_name
+        network_address_range {
+          starting_ip_address {
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+          ending_ip_address {
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+        }
+        is_publicly_accessible
+        is_scanned
+        last_scanned
+        locations {
+          id
+          name
+          description
+        }
+        external_references {
+          edges {
+            node {
+              id
+              modified
+              source_name
+              description
+              external_id
+              url
+              reference_purpose
+              media_type
+            }
+          }
+        }
+        notes {
+          edges {
+            node {
+              id
+              modified
+              abstract
+              content
+              authors
+            }
+          }
+        }
+      }
+    }
+  }
+}

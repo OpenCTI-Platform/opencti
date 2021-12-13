@@ -1,11 +1,9 @@
 import canonicalize  from '../../utils/canonicalize.js';
-import { 
-  v5 as uuid5,
-  v4 as uuid4, 
-  parse as uuidParse } from 'uuid';
+import {v5 as uuid5, v4 as uuid4} from 'uuid';
 
 export const DARKLIGHT_NS = 'd85ba5b6-609e-58bf-a973-ca109f868e86';
 export const OASIS_SCO_NS = '00abedb4-aa42-466c-9c01-fed23315a9b7';
+export const OASIS_NS = 'ba6cce09-c787-5a25-a707-f52be5734460';
 
 // Generates a deterministic ID value based on a JSON structure and a namespace
 export function generateId( materials, namespace ) {
@@ -47,6 +45,82 @@ export function compareValues( key, order = 'asc') {
   };
 }
 
+// determines if object matches filters
+export function filterValues( item, filters, filterMode = 'or') {
+  let filterMatch = false ;
+  for (let filter of filters ) {
+    if (!item.hasOwnProperty(filter.key)) {
+      continue
+    }
+
+    let match = false ;
+    for ( let value of filter.values ) {
+      if (match && filter.filterMode == 'or')
+        continue ;
+
+      switch( filter.operator ) {
+        case FilterOps.MATCH:
+          if (item[filter.key] === value) {
+            match = true
+          }
+          break;
+        case FilterOps.NE:
+          if (item[filter.key] != value) {
+            match = true
+          }
+          break;
+        case FilterOps.LT:
+          if (item[filter.key] < value) {
+            match = true
+          }
+          break;
+        case FilterOps.LTE:
+          if (item[filter.key] <= value) {
+            match = true
+          }
+          break;
+        case FilterOps.GT:
+          if (item[filter.key] > value) {
+            match = true
+          }
+          break;
+        case FilterOps.GTE:
+          if (item[filter.key] >= value) {
+            match = true
+          }
+          break;
+        case FilterOps.WILDCARD:
+        case FilterOps.EQ:
+        default:
+            if (item[filter.key] == value) {
+            match = true
+          }
+          break;
+      }
+    }
+
+    if (match && filterMode == 'or') {
+      filterMatch = match ;
+      break;
+    }
+    if (match && filterMode == 'and') filterMatch = match;
+    if (!match && filterMode == 'and') return match ;
+  }
+
+  return filterMatch
+}
+
+export const FilterOps = {
+  MATCH: 'match',
+  WILDCARD: 'wildcard',
+  GT: 'gt',
+  LT: 'lt',
+  GTE: 'gte',
+  LTE: 'lte',
+  EQ: 'eq',
+  NE: 'ne'
+}
+
 export const UpdateOps = {
   ADD: 'add',
   REPLACE: 'replace',
@@ -54,9 +128,7 @@ export const UpdateOps = {
 }
 
 export const byIdClause = (id) => `?iri <http://darklight.ai/ns/common#id> "${id}" .`;
-
 export const optionalizePredicate = (predicate) => `OPTIONAL { ${predicate} . } `;
-
 export const parameterizePredicate = (iri, value, predicate, binding) => (`${iri || "?iri"} ${predicate} ` + ((value === undefined || value == null) ? `?${binding}` : value ))
 
 export const buildSelectVariables = (predicateMap, selects) => {
