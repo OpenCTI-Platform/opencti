@@ -195,7 +195,7 @@ class Network extends Component {
         selectedElements={selectedElements}
         selectAll={selectAll}
         openExports={openExports}
-        exportEntityType="Network"
+        filterEntityType="Network"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -205,7 +205,7 @@ class Network extends Component {
           'asset_type_or',
           'created_start_date',
           'created_end_date',
-          'labelledBy',
+          'labels_or',
         ]}
       >
         {/* <QueryRenderer */}
@@ -296,7 +296,7 @@ class Network extends Component {
         selectAll={selectAll}
         OperationsComponent={<NetworkDeletion />}
         openExports={openExports}
-        exportEntityType="Network"
+        filterEntityType="Network"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -306,7 +306,7 @@ class Network extends Component {
           'asset_type_or',
           'created_start_date',
           'created_end_date',
-          'labelledBy',
+          'labels_or',
         ]}
       >
         {/* <QueryRenderer */}
