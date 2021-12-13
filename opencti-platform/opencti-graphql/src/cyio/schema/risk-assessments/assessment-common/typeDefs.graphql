@@ -1,27 +1,11 @@
   # declares the query entry-points for this type
   extend type Query {
-    # Characterization
+    # Characterizations
     characterization(id: ID!): Characterization
-    characterizationList( 
-      first: Int
-      offset: Int
-      orderedBy: CharacterizationsOrdering
-      orderMode: OrderingMode
-      filters: [CharacterizationsFiltering]
-      filterMode: FilterMode
-      search: String
-    ): CharacterizationConnection
+    riskCharacterization(id: ID!): RiskCharacterization
+    vulnerabilityCharacterization(id: ID!): VulnerabilityCharacterization
     # Facet
     facet(id: ID!): Facet
-    facetList( 
-      first: Int
-      offset: Int
-      orderedBy: FacetsOrdering
-      orderMode: OrderingMode
-      filters: [FacetsFiltering]
-      filterMode: FilterMode
-      search: String
-    ): FacetConnection
     # Log Entry
     logEntry(id: ID!): LogEntry
     logEntryList( 
@@ -46,15 +30,6 @@
     ): ObservationConnection
     # Origin
     origin(id: ID!): Origin
-    originList( 
-      first: Int
-      offset: Int
-      orderedBy: OriginsOrdering
-      orderMode: OrderingMode
-      filters: [OriginsFiltering]
-      filterMode: FilterMode
-      search: String
-    ): OriginConnection
     # Remediation Task
     remediationTask(id: ID!): RemediationTask
     remediationTaskList( 
@@ -88,16 +63,6 @@
       filterMode: FilterMode
       search: String
     ): RiskConnection
-    riskCharacterization(id: ID!): RiskCharacterization
-    riskCharacterizationList( 
-      first: Int
-      offset: Int
-      orderedBy: RiskCharacterizationsOrdering
-      orderMode: OrderingMode
-      filters: [RiskCharacterizationsFiltering]
-      filterMode: FilterMode
-      search: String
-    ): RiskCharacterizationConnection
     # Risk Response
     riskResponse(id: ID!): RiskResponse
     riskResponseList( 
@@ -111,15 +76,6 @@
     ): RiskResponseConnection
     # Subject
     subject(id: ID!): Subject
-    subjectList( 
-      first: Int
-      offset: Int
-      orderedBy: SubjectsOrdering
-      orderMode: OrderingMode
-      filters: [SubjectsFiltering]
-      filterMode: FilterMode
-      search: String
-    ): SubjectConnection
   }
 
   # declares the mutation entry-points for this type
@@ -266,9 +222,9 @@
     "Indicates to include all subjects."
     include_all: Boolean!
     "Identifies a set of assessment subjects to include"
-    include_subjects: SubjectConnection
+    include_subjects: [Subject]
     "Identifies a set of assessment subjects to exclude"
-    exclude_subjects: SubjectConnection
+    exclude_subjects: [Subject]
   }
 
 ## AssociatedActivity
@@ -301,9 +257,9 @@
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies a reference to tool that performed the detection."
-    origins(first: Int): OriginConnection
+    origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
-    facets(first: Int): FacetConnection
+    facets: [Facet]
   }
 
   # Pagination Types
@@ -397,17 +353,6 @@
     value: String!    
   }
 
-  # Pagination Types
-  type FacetConnection {
-    pageInfo: PageInfo!
-    edges: [FacetEdge]
-  }
-
-  type FacetEdge {
-    cursor: String!
-    node: Facet!
-  }
-
   # Filtering Types
   input FacetsFiltering {
     key: FacetsFilter!
@@ -468,9 +413,9 @@
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies a reference to tool that performed the detection."
-    origins(first: Int): OriginConnection
+    origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
-    facets(first: Int): FacetConnection!
+    facets: [Facet]
   }
 
   input GenericCharacterizationAddInput {
@@ -529,7 +474,7 @@
     "Identifies a change in risk status made resulting from the task described by this risk log entry. This allows the risk's status history to be captured as a sequence of risk log entries."
     status_change: RiskStatus
     "Identifies an individual risk response that this log entry is for."
-    related_responses(first: Int): RiskResponseConnection
+    related_responses: [RiskResponse]
   }
 
   "Defines identifying information about a risk log entry of all risk-related tasks taken."
@@ -628,7 +573,7 @@
     "Identifies a human-readable description of this mitigating factor."
     description: String
     "Identifies a reference to one or more subjects of the observations.  The subject indicates what was observed, who was interviewed, or what was tested or inspected."
-    subjects: SubjectConnection
+    subjects: [Subject]
   }
 
 ## Observation
@@ -676,9 +621,9 @@
     "Identifies the nature of the observation. More than one may be used to further qualify and enable filtering."
     observation_types: [ObservationType]
     "Identifies one or more sources of the finding, such as a tool, interviewed person, or activity."
-    origins(first: Int): OriginConnection
+    origins: [Origin]
     "Identifies a reference to one or more subjects of the observations.  The subject indicates what was observed, who was interviewed, or what was tested or inspected."
-    subjects: SubjectConnection
+    subjects: [Subject]
     "Identifies relevant evidence collected as part of this observation."
     relevant_evidence: [Evidence]
     "Identifies a Date/time stamp identifying when the finding information was collected."
@@ -756,16 +701,6 @@
     labels: [String]
   }
 
-  # Pagination Types
-  type OriginConnection {
-    pageInfo: PageInfo!
-    edges: [OriginEdge]
-  }
-
-  type OriginEdge {
-    cursor: String!
-    node: Origin!
-  }
   # Filtering Types
   input OriginsFiltering {
     key: OriginsFilter!
@@ -937,7 +872,7 @@
     ): OscalRelationshipConnection
     # Required Asset
     "Identifies a reference to one or more subjects, in the form of a party or tool required to achieve the remediation."
-    subjects: SubjectConnection
+    subjects: [Subject]
     "Identifies the name of the required asset."
     name: String!
     "Identifies a human-readable description of the required asset."
@@ -987,7 +922,7 @@
     name
   }
 
-  # "Defines identifying information about a Risk"
+  "Defines identifying information about a Risk"
   type Risk implements BasicObject & LifecycleObject & CoreObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
@@ -1026,21 +961,21 @@
     "Identifies a human-readable summary of the identified risk, to include a statement of how the risk impacts the system."
     description: String!
     "Identifies a summary of impact for how the risk affects the system."
-    statement: String!
+    statement: String
     "Identifies the status of the associated risk."
     risk_status: RiskStatus!
     "Identifies one or more sources of the finding, such as a tool, interviewed person, or activity."
-    origins(first: Int): OriginConnection
+    origins: [Origin]
     "Identifies a reference to one or more externally-defined threats."
     threats: [ThreatReference]
     "Identifies a collection of descriptive data about the containing object from a specific origin."
-    characterizations(first: Int): CharacterizationConnection
+    characterizations: [Characterization]
     "Identifies one or more existing mitigating factors that may affect the overall determination of the risk, with an optional link to an implementation statement in the SSP."
     mitigating_factors: [MitigatingFactor]
     "Identifies the date/time by which the risk must be resolved."
     deadline: DateTime
     "Identifies either recommended or an actual plan for addressing the risk."
-    remediations(first: Int): RiskResponseConnection
+    remediations: [RiskResponse]
     "log of all risk-related tasks taken."
     risk_log(first: Int): LogEntryConnection
     "Relates the finding to a set of referenced observations that were used to determine the risk.  This would be the Component in which the risk exists and the InventoryItem(s) in which theComponent is installed"
@@ -1135,9 +1070,9 @@
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies a reference to tool that performed the detection."
-    origins(first: Int): OriginConnection
+    origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
-    facets( first: Int ): FacetConnection
+    facets: [Facet]
     # RiskCharacterization based on the OSCAL Facet
     "Indicates the state of the risk."
     risk_state: RiskState!
@@ -1186,17 +1121,6 @@
     deadline
   }
 
-  # Pagination Types
-  type RiskCharacterizationConnection {
-    pageInfo: PageInfo!
-    edges: [RiskCharacterizationEdge]
-  }
-
-  type RiskCharacterizationEdge {
-    cursor: String!
-    node: RiskCharacterization!
-  }
-
 ## Risk Response
 #
   "Defines identifying information about a response to a risk."
@@ -1242,7 +1166,7 @@
     "Identifies a human-readable description of the response plan."
     description: String!
     "Identifies one or more sources of individuals and/or tools that generated this recommended or planned response."
-    origins(first: Int): OriginConnection
+    origins: [Origin]
     "Identifies an asset required to achieve remediation."
     required_assets(first: Int): RequiredAssetConnection
     "Identifies one or more scheduled events or milestones, which may be associated with a series of assessment actions."
@@ -1320,17 +1244,6 @@
     name: String!
   }
 
-  # Pagination Types
-  type SubjectConnection {
-    pageInfo: PageInfo!
-    edges: [SubjectEdge]
-  }
-
-  type SubjectEdge {
-    cursor: String!
-    node: Subject!
-  }
-
   # Filtering Types
   input SubjectsFiltering {
     key: SubjectFilter!
@@ -1374,9 +1287,9 @@
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies a reference to tool that performed the detection."
-    origins(first: Int): OriginConnection
+    origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
-    facets( first: Int ): FacetConnection
+    facets: [Facet]
     #VulnerabilityCharacterization
     "Indicates the state of the characterization."
     risk_state: RiskState
@@ -1449,7 +1362,7 @@
   union PartyOrComponent = OscalPerson | OscalOrganization 
           | HardwareComponent | NetworkComponent | ServiceComponent | SoftwareComponent | SystemComponent
   union SubjectTarget = HardwareComponent | NetworkComponent | ServiceComponent | SoftwareComponent | SystemComponent  
-  #       | InventoryItem
+          | Hardware | ComputingDevice | Appliance | NetworkDevice | Firewall | Router | Switch
           | OscalLocation | OscalPerson | OscalOrganization 
           | OscalUser | OscalResource
 

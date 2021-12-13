@@ -37,7 +37,6 @@ import ObjectMarkingField from '../form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../form/ConfidenceField';
-import AssetTaglist from '../form/AssetTaglist';
 import AssetType from '../form/AssetType';
 // import Ports from '../form/Ports';
 import CommitMessage from '../form/CommitMessage';
@@ -200,7 +199,6 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                       variant='outlined'
                       name="asset_type"
                       size='small'
-                      disabled={true}
                       fullWidth={true}
                       style={{ height: '38.09px' }}
                       containerstyle={{ width: '100%' }}
@@ -222,16 +220,14 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                    <AssetTaglist
-                      component={SelectField}
+                    <Field
+                      component={TextField}
                       variant='outlined'
-                      name="asset_tag"
                       size='small'
+                      name="asset_tag"
                       fullWidth={true}
-                      style={{ height: '38.09px' }}
                       containerstyle={{ width: '100%' }}
-                    >
-                    </AssetTaglist>
+                    />
                   </div>
                 </Grid>
             </Grid>
@@ -327,7 +323,8 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                   <Field
                     component={SelectField}
                     variant='outlined'
-                    name="ports"
+                    disabled={true}
+                    name="responsible_parties"
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px' }}
@@ -336,7 +333,8 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                   <Field
                     component={SelectField}
                     variant='outlined'
-                    name="ports"
+                    disabled={true}
+                    name="responsible_parties"
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px' }}

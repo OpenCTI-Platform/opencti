@@ -1,11 +1,27 @@
 import { assetSingularizeSchema as singularizeSchema } from '../asset-mappings.js';
-import { getSelectSparqlQuery, getReducer } from './sparql-query.js';
-import { compareValues, generateId, DARKLIGHT_NS } from '../../utils.js';
+import { 
+  getSelectSparqlQuery, 
+  getReducer,
+  insertQuery,
+  deleteNetworkAssetQuery
+} from './sparql-query.js';
+import {compareValues, filterValues, generateId, DARKLIGHT_NS, updateQuery} from '../../utils.js';
+import {
+  deleteIpAddressRange,
+  deleteIpQuery,
+  insertIPAddressRangeQuery,
+  insertIPAddressRangeRelationship,
+  insertIPQuery,
+  selectIPAddressRange
+} from "../assetQueries.js";
+import {UserInputError} from "apollo-server-express";
+import {addToInventoryQuery} from "../assetUtil.js";
+import {predicateMap} from "./sparql-query.js";
 
 const networkResolvers = {
   Query: {
-    networkAssetList: async ( _, args, context, info ) => {
-      var sparqlQuery = getSelectSparqlQuery('NETWORK', );
+    networkAssetList: async ( _, args, context, ) => {
+      var sparqlQuery = getSelectSparqlQuery('NETWORK', context.selectMap.getNode('node') );
       var reducer = getReducer('NETWORK')
       const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
@@ -19,17 +35,20 @@ const networkResolvers = {
         const edges = [];
         let limit = (args.first === undefined ? response.length : args.first) ;
         let offset = (args.offset === undefined ? 0 : args.offset) ;
-        let assetList ;
-        if (args.orderedBy !== undefined ) {
-          assetList = response.sort(compareValues(args.orderedBy, args.orderMode ));
-        } else {
-          assetList = response;
-        }
+        const assetList = (args.orderedBy !== undefined) ? response.sort(compareValues(args.orderedBy, args.orderMode)) : response;
+
         for (let asset of assetList) {
           // skip down past the offset
           if ( offset ) {
             offset--
             continue
+          }
+
+          // filter out non-matching entries if a filter is to be applied
+          if ('filters' in args && args.filters != null && args.filters.length > 0) {
+            if (!filterValues(asset, args.filters, args.filterMode) ) {
+              continue
+            }
           }
 
           if ( limit ) {
@@ -43,10 +62,10 @@ const networkResolvers = {
         }
         return {
           pageInfo: {
-            startCursor: assetList[0].iri,
-            endCursor: assetList[assetList.length -1 ].iri,
-            hasNextPage: (args.first > assetList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            startCursor: edges[0].cursor,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (args.first < assetList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: assetList.length,
           },
           edges: edges,
@@ -56,7 +75,7 @@ const networkResolvers = {
       }
     },
     networkAsset: async (_, args, context, info ) => {
-      var sparqlQuery = getSelectSparqlQuery('NETWORK', args.id, );
+      var sparqlQuery = getSelectSparqlQuery('NETWORK', context.selectMap.getNode('networkAsset'), args.id);
       var reducer = getReducer('NETWORK')
       const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
       if (response === undefined ) return null;
@@ -66,25 +85,98 @@ const networkResolvers = {
     }
   },
   Mutation: {
-    createNetworkAsset: ( parent, args, context, info ) => {
+    createNetworkAsset: async ( _, {input}, context) => {
+      const dbName = context.dbName;
+      let ipv4RelIri = null, ipv6RelIri = null;
+      if(input.network_ipv4_address_range !== undefined) {
+        const ipv4Range = input.network_ipv4_address_range;
+        delete input.network_ipv4_address_range;
+        const {ipIris: startIris, query: startQuery } = insertIPQuery([ipv4Range.starting_ip_address], 4);
+        const {ipIris: endIris, query: endQuery } = insertIPQuery([ipv4Range.ending_ip_address], 4);
+        const startIri = startIris[0], endIri = endIris[0];
+        await context.dataSources.Stardog.create(dbName, startQuery);
+        await context.dataSources.Stardog.create(dbName, endQuery);
+        const {iri, query} = insertIPAddressRangeQuery(startIri, endIri);
+        ipv4RelIri = iri;
+        await context.dataSources.Stardog.create(dbName, query);
+      }
+      if(input.network_ipv6_address_range !== undefined){
+        const ipv6Range = input.network_ipv6_address_range;
+        delete input.network_ipv6_address_range;
+        const {ipIris: startIris, query: startQuery } = insertIPQuery([ipv6Range.starting_ip_address], 6);
+        const {ipIris: endIris, query: endQuery } = insertIPQuery([ipv6Range.ending_ip_address], 6);
+        const startIri = startIris[0], endIri = endIris[0];
+        await context.dataSources.Stardog.create(dbName, startQuery);
+        await context.dataSources.Stardog.create(dbName, endQuery);
+        const {iri, query} = insertIPAddressRangeQuery(startIri, endIri);
+        ipv6RelIri = iri;
+        await context.dataSources.Stardog.create(dbName, query);
+      }
+
+      const {iri, id, query} = insertQuery(input);
+      await context.dataSources.Stardog.create(dbName, query);
+
+      if (ipv4RelIri !== null) {
+        const relQuery = insertIPAddressRangeRelationship(iri, ipv4RelIri);
+        await context.dataSources.Stardog.create(dbName, relQuery);
+      }
+      if (ipv6RelIri !== null){
+        const relQuery = insertIPAddressRangeRelationship(iri, ipv6RelIri);
+        await context.dataSources.Stardog.create(dbName, relQuery);
+      }
+
+      const connectQuery = addToInventoryQuery(iri);
+      await context.dataSources.Stardog.create(dbName, connectQuery);
+      return {id}
     },
-    deleteNetworkAsset: ( parent, args, context, info ) => {
+    deleteNetworkAsset: async ( _, args, context, info ) => {
+      const dbName = context.dbName;
+      const sparqlQuery = getSelectSparqlQuery("NETWORK", ["id", "network_address_range"], args.id);
+      const response = await context.dataSources.Stardog.queryById(dbName, sparqlQuery, singularizeSchema);
+      if(response.length === 0) throw new UserInputError(`Entity does not exists with ID ${args.id}`);
+      const reducer = getReducer("NETWORK");
+      const asset = reducer(response[0]);
+      if(asset.netaddr_range_iri){
+        const ipRangeQuery = selectIPAddressRange(`<${asset.netaddr_range_iri}>`);
+        const ipRange = await context.dataSources.Stardog.queryAll(dbName, ipRangeQuery);
+        if(ipRange.length === 1){
+          const start = ipRange[0].starting_ip_address;
+          const end = ipRange[0].ending_ip_address;
+          let ipQuery = deleteIpQuery(`<${start}>`);
+          await context.dataSources.Stardog.delete(dbName, ipQuery);
+          ipQuery = deleteIpQuery(`<${end}>`);
+          await context.dataSources.Stardog.delete(dbName, ipQuery);
+        }
+        const deleteIpRange = deleteIpAddressRange(`<http://scap.nist.gov/ns/asset-identification#IpAddressRange-${args.id}>`);
+        await context.dataSources.Stardog.delete(dbName, deleteIpRange);
+      }
+      const deleteQuery = deleteNetworkAssetQuery(args.id);
+      await context.dataSources.Stardog.delete(dbName, deleteQuery);
+      return id
     },
-    editNetworkAsset: ( parent, args, context, info ) => {
+    editNetworkAsset: async ( _, {id, input}, context ) => {
+      const dbName = context.dbName;
+      const query = updateQuery(
+          `http://scap.nist.gov/ns/asset-identification#Network-${id}`,
+          "http://scap.nist.gov/ns/asset-identification#Network",
+          input,
+          predicateMap
+      )
+      await context.dataSources.Stardog.edit(dbName, query);
+      return {id}
     },
   },
   // Map enum GraphQL values to data model required values
   NetworkAsset: {
     network_address_range: async (parent, args, context,  ) => {
       let item = parent.netaddr_range_iri;
-      var sparqlQuery = getSelectSparqlQuery('NETADDR-RANGE', item);
+      var sparqlQuery = selectIPAddressRange(`<${item}>`)
       var reducer = getReducer('NETADDR-RANGE');
       const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
       if (response && response.length > 0) {
         // console.log( response[0] );
         // let results = ipAddrRangeReducer( response[0] )    TODO: revert when data is passed as objects, instead of string
         let results = reducer( response[0] )
-        let x = generateId( {"value": results.start_addr_iri}, DARKLIGHT_NS)
         return {
           id: results.id,
           starting_ip_address: {

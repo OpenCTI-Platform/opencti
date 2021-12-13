@@ -1,5 +1,4 @@
-import {UpdateOps, byIdClause, optionalizePredicate, parameterizePredicate} from "../../utils.js";
-
+import {byIdClause, optionalizePredicate, parameterizePredicate, buildSelectVariables, generateId, OASIS_NS} from "../../utils.js";
 
 
 const selectClause = `
@@ -87,10 +86,12 @@ const inventoryConstraint = `
 ` ;
 
 
-export function getSelectSparqlQuery( type, id, filter, ) {
-  var sparqlQuery;
+export function getSelectSparqlQuery( type, select, id, filter, ) {
   var filterStr = ''
   var byId = '';
+  let sparqlQuery;
+  // const { selectionClause, predicates } = buildSelectVariables(predicateMap, select)
+
   switch( type ) {
     case 'ASSET':
       if (id !== undefined) {
@@ -124,16 +125,15 @@ export function getSelectSparqlQuery( type, id, filter, ) {
 }
 
 export function getReducer( type ) {
-  var reducer ;
   switch( type ) {
     case 'ASSET':
     case 'IT-ASSET':
-      reducer = itAssetReducer;
-      break;
+      return itAssetReducer;
+    case 'ASSET-LOCATION':
+      return assetLocationReducer;
     default:
       throw new Error(`Unsupported reducer type ' ${type}'`)
   }
-  return reducer ;
 }
 
 export const removeMultipleAssetsFromInventoryQuery = (ids) => {
@@ -253,9 +253,9 @@ function itAssetReducer( item ) {
     ...(item.hostname && {hostname: item.hostname}),
     ...(item.netbios_name && {netbios_name: item.netbios_name}),
     ...(item.uri && {uri: item.uri}),
-    ...(item.is_publicly_accessible && {is_publicly_accessible: item.is_publicly_accessible}),
-    ...(item.is_scanned && {is_scanned: item.is_scanned}),
-    ...(item.is_virtual && {is_virtual: item.is_virtual}),
+    ...(item.is_publicly_accessible !== undefined & {is_publicly_accessible: item.is_publicly_accessible}),
+    ...(item.is_scanned !== undefined && {is_scanned: item.is_scanned}),
+    ...(item.is_virtual !== undefined && {is_virtual: item.is_virtual}),
     // Network Device - Appliance - Firewall - Router - StorageArray - Switch - VoIPHandset - VoIPRouter
     // Network
     ...(item.network_id && {network_id: item.network_id}),
@@ -284,4 +284,181 @@ function itAssetReducer( item ) {
     ...(item.service_software && {svc_sw_iri: item.service_software}),
   }
 }
-  
+
+export const locationPredicateMap = {
+  id: {
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  object_type: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  administrative_area: {
+    predicate: "<http://darklight.ai/ns/common#administrative_area>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "administrative_area");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  city: {
+    predicate: "<http://darklight.ai/ns/common#city>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "city");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  country: {
+    predicate: "<http://darklight.ai/ns/common#country_code>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "country");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  description: {
+    predicate: "<http://darklight.ai/ns/common#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  name: {
+    predicate: "<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  postal_code: {
+    predicate: "<http://darklight.ai/ns/common#postal_code>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "postal_code");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  street_address: {
+    predicate: "<http://darklight.ai/ns/common#street_address>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "street_address");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  created: {
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}^^xsd:dateTime"` : null,  this.predicate, "created");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  modified: {
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}^^xsd:dateTime"` : null,  this.predicate, "modified");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  }
+}
+
+const assetLocationReducer = (item) => {
+  // if no object type was returned, compute the type from the IRI
+  if ( item.object_type === undefined && item.asset_type !== undefined ) {
+    item.object_type = item.asset_type
+  } else {
+    item.object_type = 'asset-location';
+  }
+
+  return {
+    id: item.id,
+    ...(item.object_type && {"entity_type": item.object_type}),
+    ...(item.created && {"created": item.created}),
+    ...(item.modified && {"modified": item.modified}),
+    ...(item.labels && {"labels": item.labels}),
+    ...(item.name && {"name": item.name} ),
+    ...(item.description && {"description": item.description}),
+    // Location
+    ...(item.administrative_area && {"administrative_area": item.administrative_area}),
+    ...(item.city && {"city": item.city}),
+    ...(item.country_code && {"country": item.country_code}),
+    ...(item.postal_code && {"postal_code": item.postal_code}),
+    ...(item.street_address && {"street_address": item.street_address})
+  }
+}
+
+export const insertLocationQuery = (propValues) => {
+  const id_material = {
+    ...(propValues.administrative_area && {"administrative_area": propValues.administrative_area}),
+    ...(propValues.city && {"city": propValues.city}),
+    ...(propValues.country_code && {"country": propValues.country_code}),
+    ...(propValues.postal_code && {"postal_code": propValues.postal_code}),
+    ...(propValues.street_address && {"street_address": propValues.street_address})
+  } ;
+  const id = generateId( id_material, OASIS_NS );
+  const timestamp = new Date().toISOString()
+  const iri = `<http://darklight.ai/ns/common#CivicLocation-${id}>`;
+  const insertPredicates = Object.entries(propValues)
+      .filter((propPair) => locationPredicateMap.hasOwnProperty(propPair[0]))
+      .map((propPair) => locationPredicateMap[propPair[0]].binding(iri, propPair[1]))
+      .join('. \n      ');
+  const query = `
+  INSERT DATA {
+    GRAPH ${iri} {
+      ${iri} a <http://darklight.ai/ns/common#CivicLocation> .
+      ${iri} a <http://darklight.ai/ns/common#Location> .
+      ${iri} a <http://darklight.ai/ns/common#Object> .
+      ${iri} <http://darklight.ai/ns/common#id> "${id}".
+      ${iri} <http://darklight.ai/ns/common#object_type> "location" . 
+      ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
+      ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
+      ${insertPredicates}
+    }
+  }
+  `;
+  return {iri, id, query}
+}
+
+export const selectLocationQuery = (id, select) => {
+  return selectLocationByIriQuery(`http://darklight.ai/ns/common#CivicLocation-${id}`, select);
+}
+
+// IRI is expected to not include < or >
+export const selectLocationByIriQuery = (iri, select) => {
+  if(select === null) select = Object.keys(locationPredicateMap);
+  const { selectionClause, predicates } = buildSelectVariables(locationPredicateMap, select);
+  return `
+  SELECT ${selectionClause}
+  FROM <tag:stardog:api:context:named>
+  WHERE {
+    ?iri a <http://darklight.ai/ns/common#CivicLocation> .
+    ${predicates}
+  }
+  `
+//   SELECT ${selectionClause}
+//   WHERE {
+//     GRAPH <${iri}> {
+//         ?iri a <http://darklight.ai/ns/common#CivicLocation> .
+//         ${predicates}
+//     }
+//   }
+//   `
+}
+
+export const selectAllLocations = (select) => {
+  if(select === null) select =Object.keys(locationPredicateMap);
+  const { selectionClause, predicates } = buildSelectVariables(locationPredicateMap, select);
+  return `
+  SELECT ${selectionClause} 
+  FROM <tag:stardog:api:context:named>
+  WHERE {
+    ?iri a <http://darklight.ai/ns/common#CivicLocation> . 
+    ${predicates}
+  }
+  `
+  // SELECT ${selectionClause} 
+  // WHERE {
+  // #  GRAPH ?iri {
+  //     ?iri a <http://darklight.ai/ns/common#CivicLocation> . 
+  //     ${predicates}
+  // #  }
+  // }
+  // `
+}
+
+export const deleteLocationQuery = (id) => {
+  const iri = `<http://darklight.ai/ns/common#CivicLocation-${id}>`;
+  return `
+  DELETE {
+    GRAPH ${iri}{
+      ?iri ?p ?o
+    }
+  } WHERE {
+    GRAPH ${iri}{
+      ?iri a <http://darklight.ai/ns/common#CivicLocation> .
+      ?iri ?p ?o
+    }
+  }
+  `
+}
