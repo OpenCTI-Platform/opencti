@@ -91,34 +91,6 @@ export const networkLinesQuery = graphql`
   }
 `;
 
-// export const networkLinesdarkLightRootQuery = graphql`
-//   query NetworkLinesDarkLightQuery {
-//     networkAssetList {
-//       edges {
-//         node {
-//           id
-//           name
-//           labels
-//           asset_id
-//           network_id
-//           network_address_range {
-//             ending_ip_address{
-//               ... on IpV4Address {
-//                 ip_address_value
-//               }
-//             }
-//             starting_ip_address{
-//               ... on IpV4Address {
-//                 ip_address_value
-//               }
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-// `;
-
 export default createPaginationContainer(
   NetworkLines,
   {
