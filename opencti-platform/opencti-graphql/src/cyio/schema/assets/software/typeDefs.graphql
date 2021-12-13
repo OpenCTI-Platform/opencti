@@ -65,7 +65,10 @@
     patch_level: String
     installation_id: String
     license_key: String
-  }
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    last_scanned: DateTime
+}
 
   "Defines identifying information about an instance of operating system software."
   type OperatingSystemAsset implements BasicObject & LifecycleObject & CoreObject & Asset & ItAsset {
@@ -106,6 +109,9 @@
     patch_level: String
     installation_id: String
     license_key: String
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    last_scanned: DateTime
     # Operating SystemAsset
     family: FamilyType
   }
@@ -149,7 +155,10 @@
     patch_level: String
     installation_id: String
     license_key: String
-  }
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    last_scanned: DateTime
+}
 
   # Mutation Types
   input SoftwareAssetAddInput {
@@ -175,6 +184,9 @@
     patch_level: String
     installation_id: String
     license_key: String
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    last_scanned: DateTime
   }
 
   input OperatingSystemAssetAddInput {
@@ -200,6 +212,9 @@
     patch_level: String
     installation_id: String
     license_key: String
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    last_scanned: DateTime
     # Operating SystemAsset
     family: FamilyType
   }
@@ -227,6 +242,9 @@
     patch_level: String
     installation_id: String
     license_key: String
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    last_scanned: DateTime
   }
 
   enum FamilyType {

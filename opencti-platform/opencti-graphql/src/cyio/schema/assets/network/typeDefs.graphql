@@ -57,6 +57,7 @@
     network_address_range: IpAddressRange
     is_publicly_accessible: Boolean
     is_scanned: Boolean
+    last_scanned: DateTime
   }
 
   # Mutation Types
@@ -82,6 +83,7 @@
     network_ipv6_address_range: IpV6AddressRangeAddInput
     is_publicly_accessible: Boolean
     is_scanned: Boolean
+    last_scanned: DateTime
   }
 
   input NetworkAssetFiltering {

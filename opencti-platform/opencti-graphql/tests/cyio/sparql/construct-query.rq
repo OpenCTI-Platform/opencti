@@ -1,0 +1,22 @@
+CONSTRUCT WHERE {     ?iri a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id } .
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?object_type } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_id> ?asset_id } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_tag> ?asset_tag } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_type> ?asset_type } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#name> ?name } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#description> ?description } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#ip_address>/<http://scap.nist.gov/ns/asset-identification#ip_address_value> ?ipAddress } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#installed_operating_system>/<http://scap.nist.gov/ns/asset-identification#name> ?installedOS } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#installed_software>/<http://scap.nist.gov/ns/asset-identification#name> ?installedSoftware } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#cpe_identifier> ?cpe }
+ }
+
+
+
+construct where { GRAPH <tag:stardog:api:context:local> { ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://scap.nist.gov/ns/asset-identification#ItAsset> . ?iri ?p ?o . ?iri ?p ?graph FILTER (isIRI(?graph)) } . { GRAPH ?graph { ?x ?y ?z} } }
+
+construct { ?iri ?p ?o } where { GRAPH <tag:stardog:api:context:local> { ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://scap.nist.gov/ns/asset-identification#ItAsset> . ?iri ?p ?o } . }
+
+construct { ?iri ?p ?o . ?x ?y ?z } where { GRAPH <tag:stardog:api:context:local> { ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://scap.nist.gov/ns/asset-identification#ItAsset> . ?iri ?p ?o . ?iri ?p ?graph FILTER (isIRI(?graph)) } . { GRAPH ?graph { ?x ?y ?z} } }
+
