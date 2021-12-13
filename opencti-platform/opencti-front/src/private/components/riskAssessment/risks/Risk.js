@@ -57,6 +57,7 @@ class RiskComponent extends Component {
       history,
       location,
     } = this.props;
+    console.log('RiskMainContainer', risk);
     return (
       <>
         {!this.state.displayEdit && !location.openEdit ? (
@@ -128,6 +129,7 @@ const Risk = createFragmentContainer(RiskComponent, {
   risk: graphql`
     fragment Risk_risk on POAMItem {
       id
+      name
       ...RiskOverview_risk
       ...RiskDetails_risk
     }

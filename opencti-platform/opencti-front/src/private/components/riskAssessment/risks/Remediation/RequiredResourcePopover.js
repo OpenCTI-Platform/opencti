@@ -255,13 +255,13 @@ class RequiredResourcePopover extends Component {
               url: '',
               description: '',
             }}
-            // validationSchema={RequiredAssetValidation(t)}
-            // onSubmit={this.onSubmit.bind(this)}
-            // onReset={this.onResetContextual.bind(this)}
+          // validationSchema={RequiredAssetValidation(t)}
+          // onSubmit={this.onSubmit.bind(this)}
+          // onReset={this.onResetContextual.bind(this)}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                <DialogTitle>{t('Required Asset')}</DialogTitle>
+                <DialogTitle>{t('Required Resource')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
@@ -392,17 +392,17 @@ class RequiredResourcePopover extends Component {
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                  </Grid>
-                  <Grid style={{ marginTop: '20px' }} container={true}>
+                    <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences />
-                  </Grid>
-                  <Grid container={true}>
+                    </Grid>
+                    <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
                         cyioCoreObjectId={remediationId}
                         marginTop='0px'
                       // data={props}
                       // marginTop={marginTop}
                       />
+                    </Grid>
                   </Grid>
                 </DialogContent>
                 <DialogActions style={{ float: 'left', marginLeft: '15px' }}>

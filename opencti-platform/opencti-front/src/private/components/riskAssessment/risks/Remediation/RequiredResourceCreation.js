@@ -339,7 +339,7 @@ class RequiredResourceCreation extends Component {
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                <DialogTitle>{t('Required Asset')}</DialogTitle>
+                <DialogTitle>{t('Required Resource')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
@@ -470,16 +470,16 @@ class RequiredResourceCreation extends Component {
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                  </Grid>
-                  <Grid style={{ marginTop: '20px' }} container={true}>
+                    <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences />
-                  </Grid>
-                  <Grid style={{ marginTop: '20px' }} container={true}>
+                    </Grid>
+                    <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
-                      cyioCoreObjectId={remediationId}
-                      // data={props}
-                      marginTop='0px'
+                        cyioCoreObjectId={remediationId}
+                        // data={props}
+                        marginTop='0px'
                       />
+                    </Grid>
                   </Grid>
                 </DialogContent>
                 <DialogActions style={{ float: 'left', marginLeft: '15px' }}>

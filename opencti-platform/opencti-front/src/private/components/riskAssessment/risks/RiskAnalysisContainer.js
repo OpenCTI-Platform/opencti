@@ -126,7 +126,7 @@ RiskAnalysisContainerComponent.propTypes = {
 
 const RiskAnalysisContainer = createFragmentContainer(RiskAnalysisContainerComponent, {
   risk: graphql`
-    fragment RiskAnalysisContainer_risk on ThreatActor {
+    fragment RiskAnalysisContainer_risk on Risk {
       id
       name
     }

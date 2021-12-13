@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { createPaginationContainer } from 'react-relay';
+import { createFragmentContainer, createPaginationContainer } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -137,6 +137,7 @@ class RiskTrackingLinesContainer extends Component {
       removeExternalReference: null,
       removing: false,
       expanded: false,
+      search: '',
     };
   }
 
@@ -217,11 +218,16 @@ class RiskTrackingLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, risk, data,
+      t, classes, riskId, data,
     } = this.props;
+    const riskLogEdges = R.pathOr([], ['risk', 'risk_log', 'edges'], data);
     const { expanded, displayUpdate } = this.state;
-    const externalReferencesEdges = data.itAsset.external_references.edges;
-    const expandable = externalReferencesEdges.length > 7;
+    console.log('riskTrackingData', data);
+    // const riskLogEdges = data.risk.risk_log.edges;
+    const expandable = riskLogEdges.length > 7;
+    const paginationOptions = {
+      search: this.state.search,
+    };
     return (
       <div style={{ height: '100%' }}>
         <div className={classes.cardContent}>
@@ -235,18 +241,25 @@ class RiskTrackingLinesContainer extends Component {
           <RiskLogCreation
             display={true}
             contextual={true}
-          // stixCoreObjectOrStixCoreRelationshipId={remediationId}
-          //     stixCoreObjectOrStixCoreRelationshipReferences={
-          //       data.itAsset.external_references.edges
-          //     }
+            inputValue={this.state.search}
+            paginationOptions={paginationOptions}
+            riskId={riskId}
+          // stixCoreObjectOrStixCoreRelationshipReferences={
+          //   data.risk.risk_log.edges
+          // }
           />
           {/* </Security> */}
         </div>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          {(externalReferencesEdges.length > 0 ? (externalReferencesEdges.map((v, i) => (
-            <RiskTrackingLine data={data} key={i} />
-          )))
+          {(riskLogEdges.length > 0 ? (riskLogEdges.map((riskTrackingEdge, key) => {
+            const riskLogItem = riskTrackingEdge.node;
+            return <RiskTrackingLine
+              node={riskLogItem}
+              key={riskLogItem.id}
+              riskId={riskId}
+            />;
+          }))
             : <>
               {t('No Record Found')}
             </>
@@ -258,7 +271,7 @@ class RiskTrackingLinesContainer extends Component {
 }
 
 RiskTrackingLinesContainer.propTypes = {
-  risk: PropTypes.string,
+  riskId: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -283,20 +296,16 @@ const RiskTrackingLines = createPaginationContainer(
         count: { type: "Int", defaultValue: 25 }
         id: { type: "ID!" }
       ) {
-        itAsset(id: $id) {
+        risk(id: $id) {
           id
-          external_references(first: $count)
-            @connection(key: "Pagination_external_references") {
+          created
+          modified
+          risk_log(first: 5) 
+          @connection(key: "Pagination_risk_log") {
             edges {
               node {
                 id
-                source_name
-                description
-                url
-                hashes {
-                  value
-                }
-                external_id
+                ...RiskTrackingLine_node
               }
             }
           }
@@ -307,7 +316,7 @@ const RiskTrackingLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.itAsset.external_reference;
+      return props.data && props.data.risk.external_reference;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

@@ -65,7 +65,7 @@ class RiskLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    console.log('node', node);
+    console.log('RiskLineNode', node);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <ListItem
@@ -111,7 +111,8 @@ class RiskLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.risk.width }}
               >
-                {node.risk && t(node.risk)}
+                {/* {node.risk && t(node.risk)} */}
+                {t('Low')}
               </div>
               <div
                 className={classes.bodyItem}
@@ -122,6 +123,7 @@ class RiskLineComponent extends Component {
                   size="small"
                   style={{ cursor: 'default' }}
                 >
+                  {t('Lorem Ipsum')}
                   {node.risk_state && t(node.risk_state)}
                 </Button>
               </div>
@@ -129,14 +131,14 @@ class RiskLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.response.width }}
               >
-                Avoid
+                {t('Avoid')}
                 {/* {node.response_type && t(node.response_type)} */}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.lifecycle.width }}
               >
-                Lorem
+                {t('Lorem')}
                 {/* {node.lifecycle && node.lifecycle} */}
               </div>
               <div
@@ -150,7 +152,7 @@ class RiskLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.asset.width }}
               >
-                <LayersIcon /> Lorem
+                <LayersIcon /> {t('Lorem')}
                 {/* {node.network_id && node.network_id} */}
               </div>
               <div
@@ -200,6 +202,63 @@ const RiskLineFragment = createFragmentContainer(
         id
         name
         description
+        related_risks {
+          edges {
+            node {
+              characterizations {
+                ... on VulnerabilityCharacterization {
+                  id
+                  vulnerability_id
+                  facets {
+                    id
+                    name
+                    value
+                  }
+                }
+                ... on RiskCharacterization {
+                  id
+                  risk
+                  risk_state
+                  likelihood
+                  impact
+                  facets {
+                    id
+                    name
+                    value
+                  }
+                }
+                ... on GenericCharacterization {
+                  id
+                  facets {
+                    id
+                    name
+                    value
+                  }
+                }
+              }
+            }
+          }
+        }
+        related_observations {
+          edges {
+            node {
+              name
+              subjects {
+                subject_type
+                subject {
+                  ... on OscalParty {
+                    name
+                    party_type
+                  }
+                  ... on Component {
+                    name
+                    component_type
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     `,
   },

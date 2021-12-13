@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { interval } from 'rxjs';
 import { pathOr } from 'ramda';
-import { createPaginationContainer } from 'react-relay';
+import { createPaginationContainer, createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
 import {
@@ -16,15 +16,15 @@ const interval$ = interval(TEN_SECONDS);
 const nbOfRowsToLoad = 50;
 
 class RemediationEntitiesLines extends Component {
-  componentDidMount() {
-    this.subscription = interval$.subscribe(() => {
-      this.props.relay.refetchConnection(25);
-    });
-  }
+  // componentDidMount() {
+  //   this.subscription = interval$.subscribe(() => {
+  //     this.props.relay.refetchConnection(25);
+  //   });
+  // }
 
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
-  }
+  // componentWillUnmount() {
+  //   this.subscription.unsubscribe();
+  // }
 
   render() {
     const {
@@ -36,7 +36,7 @@ class RemediationEntitiesLines extends Component {
       displayRelation,
       entityId,
     } = this.props;
-    console.log('RemediationEntitiesLinesData', this.props.data);
+    console.log('remediationEntitiesLinesData', this.props.data);
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -88,84 +88,115 @@ RemediationEntitiesLines.propTypes = {
 };
 
 export const remediationEntitiesLinesQuery = graphql`
-  query RemediationEntitiesLinesQuery($count: Int!, $id: ID!) {
-    ...RemediationEntitiesLines_data
-      @arguments(count: $count, id: $id)
+  query RemediationEntitiesLinesQuery($id: ID!) {
+    # ...RemediationEntitiesLines_data
+    # @arguments(count: $count, id: $id)
+    risk(id: $id) {
+      id
+      #  remediations {
+      #    id
+      #    name
+      #    lifecycle
+      #    response_type
+      #    tasks(first: 1) {
+      #      edges {
+      #        node {
+      #          timing {
+      #            ... on DateRangeTiming {
+      #              start_date
+      #              end_date
+      #            }
+      #          }
+      #        }
+      #      }
+      #    }
+      #    relationships {
+      #      edges {
+      #        node {
+      #          source
+      #        }
+      #      }
+      #    }
+      #    external_references {
+      #      edges {
+      #        node {
+      #          source_name
+      #        }
+      #      }
+      #    }
+      #  }
+    }
   }
 `;
 
-export default createPaginationContainer(
-  RemediationEntitiesLines,
-  {
-    data: graphql`
-      fragment RemediationEntitiesLines_data on Query
-      @argumentDefinitions(
-        count: { type: "Int", defaultValue: 25 }
-        id: { type: "ID!" }
-      ) {
-        risk(id: $id) {
-          id
-          remediations(first: $count)
-            @connection(key: "Pagination_remediations") {
-            edges {
-              node {
-                id
-                name
-                lifecycle
-                response_type
-                tasks(first: 1) {
-                  edges {
-                    node {
-                      timing {
-                        ... on DateRangeTiming {
-                          start_date
-                          end_date
-                        }
-                      }
-                    }
-                  }
-                }
-                relationships {
-                  edges {
-                    node {
-                      source
-                    }
-                  }
-                }
-                external_references {
-                  edges {
-                    node {
-                      source_name
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.risk.remediations;
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
-    },
-    getVariables(props, { count }, fragmentVariables) {
-      return {
-        count,
-        id: fragmentVariables.id,
-      };
-    },
-    query: remediationEntitiesLinesQuery,
-  },
-);
+export default RemediationEntitiesLines;
+// export default createFragmentContainer(
+//   RemediationEntitiesLines,
+//   {
+//     data: graphql`
+//       fragment RemediationEntitiesLines_data on Query
+//       @argumentDefinitions(
+//         count: { type: "Int", defaultValue: 25 }
+//         id: { type: "ID!" }
+//       ) {
+//         risk(id: $id) {
+//           id
+//           # remediations {
+//           #   id
+//           #   name
+//           #   lifecycle
+//           #   response_type
+//           #   tasks(first: 1) {
+//           #     edges {
+//           #       node {
+//           #         timing {
+//           #           ... on DateRangeTiming {
+//           #             start_date
+//           #             end_date
+//           #           }
+//           #         }
+//           #       }
+//           #     }
+//           #   }
+//           #   relationships {
+//           #     edges {
+//           #       node {
+//           #         source
+//           #       }
+//           #     }
+//           #   }
+//           #   external_references {
+//           #     edges {
+//           #       node {
+//           #         source_name
+//           #       }
+//           #     }
+//           #   }
+//           # }
+//         }
+//       }
+//     `,
+//   },
+// {
+//   direction: 'forward',
+//   getConnectionFromProps(props) {
+//     return props.data && props.data.risk.remediations;
+//   },
+//   getFragmentVariables(prevVars, totalCount) {
+//     return {
+//       ...prevVars,
+//       count: totalCount,
+//     };
+//   },
+//   getVariables(props, { count }, fragmentVariables) {
+//     return {
+//       count,
+//       id: fragmentVariables.id,
+//     };
+//   },
+//   query: remediationEntitiesLinesQuery,
+// },
+// );
 
 // export const RemediationEntitiesLinesQuery = graphql`
 //   query RemediationEntitiesLinesQuery(

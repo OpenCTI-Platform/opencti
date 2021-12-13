@@ -564,16 +564,16 @@ class RelatedTaskCreation extends Component {
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                  </Grid>
-                  <Grid style={{ marginTop: '20px' }} container={true}>
-                    <CyioCoreObjectExternalReferences />
-                  </Grid>
-                  <Grid style={{ marginTop: '20px' }} container={true}>
-                    <CyioCoreObjectOrCyioCoreRelationshipNotes
-                      cyioCoreObjectId={remediationId}
+                    <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
+                      <CyioCoreObjectExternalReferences />
+                    </Grid>
+                    <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
+                      <CyioCoreObjectOrCyioCoreRelationshipNotes
+                        cyioCoreObjectId={remediationId}
                       // data={props}
                       // marginTop={marginTop}
-                    />
+                      />
+                    </Grid>
                   </Grid>
                 </DialogContent>
                 <DialogActions style={{ float: 'left', marginLeft: '15px', marginBottom: '20px' }}>

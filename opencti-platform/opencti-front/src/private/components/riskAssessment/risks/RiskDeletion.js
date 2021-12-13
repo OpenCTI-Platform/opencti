@@ -22,7 +22,7 @@ import inject18n from '../../../../components/i18n';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import RiskEditionContainer from './RiskEditionContainer';
-import { riskEditionQuery, riskEditionDarkLightQuery } from './RiskEdition';
+import { riskEditionQuery } from './RiskEdition';
 import Loader from '../../../../components/Loader';
 import Security, {
   KNOWLEDGE_KNUPDATE,

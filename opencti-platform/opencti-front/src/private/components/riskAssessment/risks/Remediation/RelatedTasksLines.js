@@ -216,10 +216,20 @@ class RelatedTasksLinesContainer extends Component {
     const {
       t, classes, remediationId, data,
     } = this.props;
-    console.log('ReleatedTasksLinesData', data);
     const { expanded } = this.state;
-    const externalReferencesEdges = data.itAsset.external_references.edges;
-    const expandable = externalReferencesEdges.length > 7;
+    // const externalReferencesEdges = data.riskResponse.external_references.edges;
+    // const expandable = externalReferencesEdges.length > 7;
+    console.log('RelatedTasksData', data);
+    const relatedTasksEdges = R.pipe(
+      R.pathOr([], ['tasks', 'edges']),
+      R.map((value) => ({
+        name: value.node.name,
+        description: value.node.description,
+        id: value.node.id,
+        task_type: value.node.task_type,
+      })),
+    )(data.riskResponse);
+    console.log('relatedTasksEdges', relatedTasksEdges);
     return (
       <div style={{ height: '100%' }}>
         <div className={classes.cardContent}>
@@ -236,7 +246,7 @@ class RelatedTasksLinesContainer extends Component {
               contextual={true}
             // stixCoreObjectOrStixCoreRelationshipId={remediationId}
             // stixCoreObjectOrStixCoreRelationshipReferences={
-            //   data.itAsset.external_references.edges
+            //   data.riskResponse.external_references.edges
             // }
             />
           </div>
@@ -274,7 +284,15 @@ class RelatedTasksLinesContainer extends Component {
                     }}>
                       <div style={{ marginLeft: '10px' }}>
                         <Typography align="left" color="textSecondary" variant="h3">{t('Name')}</Typography>
-                        <Typography align="left" variant="subtitle1">{t('Lorem Ipsum')}</Typography>
+                        <Typography align="left" variant="subtitle1">
+                          {/* {t('Lorem Ipsum')} */}
+                          {relatedTasksEdges?.length > 0 && relatedTasksEdges.map((value, key) => (
+                            <>
+                              <div className="clearfix" />
+                              {value.name}
+                            </>
+                          ))}
+                        </Typography>
                       </div>
                     </Grid>
                   </Grid>
@@ -287,7 +305,15 @@ class RelatedTasksLinesContainer extends Component {
                     }}>
                       <div style={{ marginLeft: '10px' }}>
                         <Typography align="left" color="textSecondary" variant="h3">{t('ID')}</Typography>
-                        <Typography align="left" variant="subtitle1">{t('Lorem Ipsum')}</Typography>
+                        <Typography align="left" variant="subtitle1">
+                          {/* {t('Lorem Ipsum')} */}
+                          {relatedTasksEdges?.length > 0 && relatedTasksEdges.map((value, key) => (
+                            <>
+                              <div className="clearfix" />
+                              {value.id}
+                            </>
+                          ))}
+                        </Typography>
                       </div>
                     </Grid>
                   </Grid>
@@ -300,7 +326,13 @@ class RelatedTasksLinesContainer extends Component {
                         <div className={classes.cardContent}>
                           <FlagIcon fontSize='large' color="disabled" />
                           <Typography style={{ marginLeft: '10px' }} align="center" variant="subtitle1">
-                            {t('Lorem Ipsum')}
+                            {/* {t('Lorem Ipsum')} */}
+                          {relatedTasksEdges?.length > 0 && relatedTasksEdges.map((value, key) => (
+                            <>
+                              <div className="clearfix" />
+                              {value.task_type}
+                            </>
+                          ))}
                           </Typography>
                         </div>
                       </div>
@@ -383,17 +415,21 @@ class RelatedTasksLinesContainer extends Component {
   {`${location.country && t(location.country)}, ${location.postal_code && t(location.postal_code)}`}
                           </div>
                         ))} */}
-                          {t('Description')}
+                          {/* {t('Description')} */}
+                          {relatedTasksEdges?.length > 0 && relatedTasksEdges.map((value, key) => (
+                            <>
+                              <div className="clearfix" />
+                              {value.description}
+                            </>
+                          ))}
                         </div>
                       </div>
                     </div>
                   </Grid>
-                </Grid>
-                <Grid container={true} spacing={3}>
-                  <Grid style={{ marginTop: '20px' }} item={true}>
+                  <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
                     <CyioCoreobjectExternalReferences />
                   </Grid>
-                  <Grid style={{ marginTop: '40px' }} item={true}>
+                  <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
                     <CyioCoreObjectOrCyioCoreRelationshipNotes
                       cyioCoreObjectId={remediationId}
                       marginTop='0px'
@@ -491,20 +527,49 @@ const RelatedTasksLines = createPaginationContainer(
         count: { type: "Int", defaultValue: 25 }
         id: { type: "ID!" }
       ) {
-        itAsset(id: $id) {
+        riskResponse(id: $id) {
           id
-          external_references(first: $count)
-            @connection(key: "Pagination_external_references") {
+          tasks(first: $count)
+            @connection(key: "Pagination_related_tasks") {
             edges {
               node {
                 id
-                source_name
+                created
+                modified
+                labels
+                task_type
+                name
                 description
-                url
-                hashes {
-                  value
+                timing {
+                  ... on DateRangeTiming {
+                    start_date          # Start Date
+                    end_date            # End Date
+                  }
+                  ... on OnDateTiming {
+                    on_date             # Start Date
+                  }
                 }
-                external_id
+                task_dependencies(first: 5) {
+                  edges {
+                    node {
+                      id
+                      name
+                    }
+                  }
+                }
+                responsible_roles {
+                  id
+                  created
+                  modified
+                  labels
+                  role {
+                    id
+                    created
+                    modified
+                    role_identifier
+                    name
+                  }
+                }
               }
             }
           }
@@ -515,7 +580,7 @@ const RelatedTasksLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.itAsset.external_references;
+      return props.data && props.data.riskResponse.external_references;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

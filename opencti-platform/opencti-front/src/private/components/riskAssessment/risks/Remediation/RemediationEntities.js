@@ -4,6 +4,7 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
+import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR } from 'react-relay';
 import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import { QueryRenderer } from '../../../../../relay/environment';
@@ -25,6 +26,15 @@ const styles = () => ({
     borderRadius: 6,
   },
 });
+
+const remediationEntitiesQuery = graphql`
+  query RemediationEntitiesQuery($id: ID!) {
+    risk(id: $id) {
+      id
+      name
+    }
+  }
+`;
 
 class RemediationEntities extends Component {
   constructor(props) {
@@ -104,8 +114,8 @@ class RemediationEntities extends Component {
         {/* <QueryRenderer */}
         <QR
           environment={QueryRendererDarkLight}
-          query={remediationEntitiesLinesQuery}
-          variables={{ id: entityId, count: 200 }}
+          query={remediationEntitiesQuery}
+          variables={{ id: 'ac5a1fdb-23fd-4e43-9b8d-7a7897ba91a8' }}
           render={({ props }) => {
             console.log('RemediationEntitiesData', props);
             return (<RemediationEntitiesLines

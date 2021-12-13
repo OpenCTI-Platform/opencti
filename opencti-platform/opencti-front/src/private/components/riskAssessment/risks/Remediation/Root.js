@@ -27,10 +27,10 @@ import StixCoreObjectKnowledgeBar from '../../../common/stix_core_objects/StixCo
 const subscription = graphql`
   subscription RootRemediationSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on ThreatActor {
-        # ...Device_device
-        ...DeviceEditionContainer_device
-      }
+      # ... on ThreatActor {
+      #   ...Device_device
+      #   ...DeviceEditionContainer_device
+      # }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -40,10 +40,10 @@ const subscription = graphql`
 
 const remediationQuery = graphql`
   query RootRemediationQuery($id: ID!) {
-    computingDeviceAsset(id: $id) {
+    riskResponse(id: $id) {
       id
       name
-     # ...Remediation_remediation
+      ...Remediation_remediation
     }
   }
 `;
@@ -96,12 +96,15 @@ class RootRemediation extends Component {
             ]}
           />
         </Route>
-        <QueryRenderer
+        {/* <QueryRenderer */}
+        <QR
+          environment={QueryRendererDarkLight}
           query={remediationQuery}
           variables={{ id: riskId }}
           render={({ error, props }) => {
+            console.log('RemediationRootQuery', props);
             if (props) {
-              if (props.computingDeviceAsset) {
+              if (props.riskResponse) {
                 return (
                   <Switch>
                     <Route
@@ -110,11 +113,12 @@ class RootRemediation extends Component {
                       render={(routeProps) => (
                         <Remediation
                           {...routeProps}
-                          remediation={props.computingDeviceAsset}
+                          riskId={riskId}
+                          remediation={props.riskResponse}
                         />
                       )}
                     />
-                </Switch>
+                  </Switch>
                 );
               }
               return <ErrorNotFound />;

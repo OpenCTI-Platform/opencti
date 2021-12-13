@@ -20,13 +20,13 @@ import RiskPopover from './RiskPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
-import Remediation from './remediation/Remediation';
+import Remediations from './Remediations';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import RiskAnalysisContainer from './RiskAnalysisContainer';
 import RiskTracking from './RiskTracking';
-import RemediationContainer from './remediation/RemediationContainer';
+import RemediationRoot from './remediation/Root';
 
 const subscription = graphql`
   subscription RootRiskSubscription($id: ID!) {
@@ -136,7 +136,7 @@ class RootRisk extends Component {
                       exact
                       path="/dashboard/risk-assessment/risks/:riskId/remediation"
                       render={(routeProps) => (
-                          <Remediation
+                          <Remediations
                             {...routeProps}
                             risk={props.risk}
                           />
@@ -146,7 +146,7 @@ class RootRisk extends Component {
                       exact
                       path="/dashboard/risk-assessment/risks/:riskId/remediation"
                       render={(routeProps) => (
-                        <Remediation
+                        <Remediations
                             {...routeProps}
                             remediation={props.poamItem}
                         />
@@ -156,7 +156,7 @@ class RootRisk extends Component {
                       exact
                       path="/dashboard/risk-assessment/risks/:riskId/remediation/:remediationId"
                       render={(routeProps) => (
-                        <RemediationContainer
+                        <RemediationRoot
                             {...routeProps}
                             risk={props.poamItem}
                         />
@@ -169,6 +169,7 @@ class RootRisk extends Component {
                           <RiskTracking
                             {...routeProps}
                             risk={props.poamItem}
+                            riskId={riskId}
                           />
                       )}
                     />

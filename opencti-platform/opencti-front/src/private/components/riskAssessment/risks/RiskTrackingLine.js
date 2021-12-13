@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { createPaginationContainer } from 'react-relay';
+import { createPaginationContainer, createFragmentContainer } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -118,6 +118,9 @@ const styles = (theme) => ({
     padding: '0px',
     textAlign: 'left',
   },
+  span: {
+    color: theme.palette.background.nav,
+  },
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -139,15 +142,15 @@ class RiskTrackingLineContainer extends Component {
     };
   }
 
-  componentDidMount() {
-    this.subscription = interval$.subscribe(() => {
-      this.props.relay.refetchConnection(200);
-    });
-  }
+  // componentDidMount() {
+  //   this.subscription = interval$.subscribe(() => {
+  //     this.props.relay.refetchConnection(200);
+  //   });
+  // }
 
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
-  }
+  // componentWillUnmount() {
+  //   this.subscription.unsubscribe();
+  // }
 
   handleToggleExpand() {
     this.setState({ expanded: !this.state.expanded });
@@ -223,155 +226,162 @@ class RiskTrackingLineContainer extends Component {
 
   render() {
     const {
-      t, classes, risk, data,
+      t,
+      fd,
+      classes,
+      riskId,
+      node,
     } = this.props;
     const { expanded, displayUpdate } = this.state;
-    const externalReferencesEdges = data.itAsset.external_references.edges;
-    const expandable = externalReferencesEdges.length > 7;
+    console.log('riskTrackingNode', node);
+    // console.log('riskTrackingRiskId', riskId);
     return (
       <>
-            <ListItem classes={{ root: classes.listItem }} disablePadding={true} disableGutters={true} alignItems='flex-start' divider={true} style={{ display: 'grid', gridTemplateColumns: '95% 5%' }}>
-              <Accordion style={{ borderBottom: '0', boxShadow: 'none' }}>
-                <AccordionSummary
-                  onClick={this.handleClick.bind(this)}
-                  classes={{ root: classes.accordionSummary }}
-                  expandIcon={<ExpandLessIcon />}
-                  aria-controls="panel1a-content"
-                  id="panel1a-header"
-                >
-                  <div style={{ display: 'flex', textAlign: 'left' }}>
-                    {this.state.value ? '' : (
-                      <div className={classes.cardContent}>
-                        <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                        <div style={{ marginLeft: '16px', paddingTop: '10px' }}>
-                          <Typography>
-                            {t('Risk Log Entry Title')}
-                          </Typography>
-                          <Typography color="textSecondary" variant="h3">
-                            {t('Logged By')} <span style={{ color: 'blue' }}>{t('Start End')}</span>
-                          </Typography>
-                        </div>
-                      </div>
-                    )}
+        <ListItem classes={{ root: classes.listItem }} disablePadding={true} disableGutters={true} alignItems='flex-start' divider={true} style={{ display: 'grid', gridTemplateColumns: '95% 5%' }}>
+          <Accordion style={{ borderBottom: '0', boxShadow: 'none' }}>
+            <AccordionSummary
+              onClick={this.handleClick.bind(this)}
+              classes={{ root: classes.accordionSummary }}
+              expandIcon={<ExpandLessIcon />}
+              aria-controls="panel1a-content"
+              id="panel1a-header"
+            >
+              <div style={{ display: 'flex', textAlign: 'left' }}>
+                {this.state.value ? '' : (
+                  <div className={classes.cardContent}>
+                    <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                    <div style={{ marginLeft: '16px', paddingTop: '10px' }}>
+                      <Typography>
+                        {t('Risk Log Entry Title')}
+                      </Typography>
+                      <Typography color="textSecondary" variant="h3">
+                        {t('Logged By')} <span className={classes.span}>{t('Start End')}</span>
+                      </Typography>
+                    </div>
                   </div>
-                </AccordionSummary>
-                <AccordionDetails classes={{ root: classes.accordionDetails }}>
-                  {/* {displayUpdate ? (
+                )}
+              </div>
+            </AccordionSummary>
+            <AccordionDetails classes={{ root: classes.accordionDetails }}>
+              {/* {displayUpdate ? (
                   <RiskTrackingLogEdition />
                 ) : ( */}
-                  <>
-                    <Grid container={true}>
-                      <Grid item={true} xs={4}>
-                        <div style={{ marginBottom: '15px' }}>
-                          <Typography align="left" variant="h3" color="textSecondary">
-                            {t('Entry Type')}
-                          </Typography>
-                          <div className={classes.cardContent}>
-                            <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                            <Typography style={{ marginLeft: '10px' }} align="left">
-                              {t('Lorem Ipsum')}
-                            </Typography>
-                          </div>
-                        </div>
-                        <div>
-                          <Typography align="left" variant="h3" color="textSecondary">
-                            {t('Start Date')}
-                          </Typography>
-                          <Typography align="left" variant="subtitle2">
-                            {t('June 11, 2021, 9 : 14 AM')}
-                          </Typography>
-                        </div>
-                      </Grid>
-                      <Grid item={true} xs={4}>
-                        <div style={{ marginBottom: '27px' }}>
-                          <Typography align="left" variant="h3" color="textSecondary">
-                            {t('Title')}
-                          </Typography>
-                          <Typography align="left" variant="subtitle2">
-                            {t('Lorem Ipsum Dolor Sit Amet')}
-                          </Typography>
-                        </div>
-                        <div style={{ marginBottom: '30px' }}>
-                          <Typography align="left" variant="h3" color="textSecondary">
-                            {t(' End Date')}
-                          </Typography>
-                          <Typography align="left" variant="subtitle2">
-                            {t('June 11, 2021, 9 : 41 AM')}
-                          </Typography>
-                        </div>
-                      </Grid>
-                      <Grid item={true} xs={4} >
-                        <Typography
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Description')}
+              <>
+                <Grid container={true}>
+                  <Grid item={true} xs={4}>
+                    <div style={{ marginBottom: '15px' }}>
+                      <Typography align="left" variant="h3" color="textSecondary">
+                        {t('Entry Type')}
+                      </Typography>
+                      <div className={classes.cardContent}>
+                        <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                        <Typography style={{ marginLeft: '10px' }} align="left">
+                          {/* {t('Lorem Ipsum')} */}
+                          {node.entry_type && t(node.entry_type)}
                         </Typography>
-                        <div className="clearfix" />
-                        <div className={classes.scrollBg}>
-                          <div className={classes.scrollDiv}>
-                            <div className={classes.scrollObj}>
-                              {/* {device.locations && device.locations.map((location, key) => (
+                      </div>
+                    </div>
+                    <div>
+                      <Typography align="left" variant="h3" color="textSecondary">
+                        {t('Start Date')}
+                      </Typography>
+                      <Typography align="left" variant="subtitle2">
+                        {node.event_start && fd(node.event_start)}
+                      </Typography>
+                    </div>
+                  </Grid>
+                  <Grid item={true} xs={4}>
+                    <div style={{ marginBottom: '27px' }}>
+                      <Typography align="left" variant="h3" color="textSecondary">
+                        {t('Title')}
+                      </Typography>
+                      <Typography align="left" variant="subtitle2">
+                        {node.name && t(node.name)}
+                      </Typography>
+                    </div>
+                    <div style={{ marginBottom: '30px' }}>
+                      <Typography align="left" variant="h3" color="textSecondary">
+                        {t(' End Date')}
+                      </Typography>
+                      <Typography align="left" variant="subtitle2">
+                        {node.event_end && fd(node.event_end)}
+                      </Typography>
+                    </div>
+                  </Grid>
+                  <Grid item={true} xs={4} >
+                    <Typography
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ float: 'left' }}
+                    >
+                      {t('Description')}
+                    </Typography>
+                    <div className="clearfix" />
+                    <div className={classes.scrollBg}>
+                      <div className={classes.scrollDiv}>
+                        <div className={classes.scrollObj}>
+                          {/* {device.locations && device.locations.map((location, key) => (
                           <div key={key}>
                             {`${location.street_address && t(location.street_address)}, `}
                             {`${location.city && t(location.city)}, `}
   {`${location.country && t(location.country)}, ${location.postal_code && t(location.postal_code)}`}
                           </div>
                         ))} */}
-                              {t('Description')}
-                            </div>
-                          </div>
+                          {node.description && t(node.description)}
                         </div>
-                      </Grid>
-                    </Grid>
-                    <Grid container={true}>
-                      <Grid item={true} xs={3}>
-                        <div>
-                          <Typography align="left" variant="h3" color="textSecondary">
-                            {t('Logged By')}
-                          </Typography>
-                          <div className={classes.cardContent}>
-                            <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                            <div style={{ textAlign: 'left', marginLeft: '10px' }}>
-                              <Typography variant="subtitle2">
-                                {t('Lorem Ipsum')}
-                              </Typography>
-                              <Typography variant="h3" color="textSecondary">
-                                {t('Lorem Ipsum Dolor Ist')}
-                              </Typography>
-                            </div>
-                          </div>
-                        </div>
-                      </Grid>
-                      <Grid item={true} xs={5}>
-                        <div style={{ textAlign: 'left', marginLeft: '90px' }}>
-                          <Typography align="left" variant="h3" color="textSecondary">
-                            {t('Status Change')}
-                          </Typography>
-                          <Button color="primary" variant="outlined">Open</Button>
-                        </div>
-                      </Grid>
-                      <Grid item={true} xs={4}>
-                        <Typography align="left" variant="h3" color="textSecondary">
-                          {t('Related Response')}
-                        </Typography>
-                        <Typography align="left" variant="subtitle2">
-                          <span className={classes.cardContent}>
-                            <LaunchIcon style={{ marginRight: '5px' }} fontSize="small" />
+                      </div>
+                    </div>
+                  </Grid>
+                </Grid>
+                <Grid container={true}>
+                  <Grid item={true} xs={3}>
+                    <div>
+                      <Typography align="left" variant="h3" color="textSecondary">
+                        {t('Logged By')}
+                      </Typography>
+                      <div className={classes.cardContent}>
+                        <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                        <div style={{ textAlign: 'left', marginLeft: '10px' }}>
+                          <Typography variant="subtitle2">
                             {t('Lorem Ipsum')}
-                          </span>
-                        </Typography>
-                      </Grid>
-                    </Grid>
-                  </>
-                  {/* )} */}
-                </AccordionDetails>
-              </Accordion>
-              <div>
-                <RiskTrackingPopover handleOpenUpdate={this.handleOpenUpdate.bind(this)} />
-              </div>
-            </ListItem>
+                          </Typography>
+                          <Typography variant="h3" color="textSecondary">
+                            {t('Lorem Ipsum Dolor Ist')}
+                          </Typography>
+                        </div>
+                      </div>
+                    </div>
+                  </Grid>
+                  <Grid item={true} xs={5}>
+                    <div style={{ textAlign: 'left', marginLeft: '90px' }}>
+                      <Typography align="left" variant="h3" color="textSecondary">
+                        {t('Status Change')}
+                      </Typography>
+                      <Button color="primary" variant="outlined">
+                        {node.status_change && t(node.status_change)}
+                      </Button>
+                    </div>
+                  </Grid>
+                  <Grid item={true} xs={4}>
+                    <Typography align="left" variant="h3" color="textSecondary">
+                      {t('Related Response')}
+                    </Typography>
+                    <Typography align="left" variant="subtitle2">
+                      <span className={classes.cardContent}>
+                        <LaunchIcon style={{ marginRight: '5px' }} fontSize="small" />
+                        {t('Lorem Ipsum')}
+                      </span>
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </>
+              {/* )} */}
+            </AccordionDetails>
+          </Accordion>
+          <div>
+            <RiskTrackingPopover handleOpenUpdate={this.handleOpenUpdate.bind(this)} />
+          </div>
+        </ListItem>
         <Dialog
           open={this.state.displayDialog}
           keepMounted={true}
@@ -429,8 +439,8 @@ class RiskTrackingLineContainer extends Component {
 }
 
 RiskTrackingLineContainer.propTypes = {
-  risk: PropTypes.string,
-  data: PropTypes.object,
+  riskId: PropTypes.string,
+  node: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -438,65 +448,40 @@ RiskTrackingLineContainer.propTypes = {
   relay: PropTypes.object,
 };
 
-export const RiskTrackingLineQuery = graphql`
-  query RiskTrackingLineQuery($count: Int!, $id: ID!) {
-    ...RiskTrackingLine_data
-      @arguments(count: $count, id: $id)
-  }
-`;
-
-const RiskTrackingLine = createPaginationContainer(
+const RiskTrackingLineFragment = createFragmentContainer(
   RiskTrackingLineContainer,
   {
-    data: graphql`
-      fragment RiskTrackingLine_data on Query
-      @argumentDefinitions(
-        count: { type: "Int", defaultValue: 25 }
-        id: { type: "ID!" }
-      ) {
-        itAsset(id: $id) {
+    node: graphql`
+    fragment RiskTrackingLine_node on LogEntry{
+      id
+      created
+      modified
+      entry_type        # Entry Type
+      name              # Title
+      description       # Description
+      event_start       # Start Date
+      event_end         # End Date
+      status_change     # Status Change
+      logged_by {
+        ... on OscalPerson {
           id
-          external_references(first: $count)
-            @connection(key: "Pagination_external_references") {
-            edges {
-              node {
-                id
-                source_name
-                description
-                url
-                hashes {
-                  value
-                }
-                external_id
-              }
-            }
-          }
+          name
+        }
+        ... on OscalOrganization {
+          id
+          name
         }
       }
+      related_responses {
+        id
+        name
+      }
+    }
     `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.itAsset.external_reference;
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
-    },
-    getVariables(props, { count }, fragmentVariables) {
-      return {
-        count,
-        id: fragmentVariables.id,
-      };
-    },
-    query: RiskTrackingLineQuery,
   },
 );
 
 export default R.compose(
   inject18n,
   withStyles(styles),
-)(RiskTrackingLine);
+)(RiskTrackingLineFragment);

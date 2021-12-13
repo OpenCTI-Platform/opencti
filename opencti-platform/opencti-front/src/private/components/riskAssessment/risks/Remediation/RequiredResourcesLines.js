@@ -213,10 +213,11 @@ class RequiredResourcesLinesContainer extends Component {
     const {
       t, classes, remediationId, data,
     } = this.props;
-    console.log('RequiredResourcesLinesData', data);
     const { expanded } = this.state;
-    const externalReferencesEdges = data.itAsset.external_references.edges;
-    const expandable = externalReferencesEdges.length > 7;
+    const requiredResourceData = data.riskResponse;
+    const requiredAssetsEdges = R.pathOr([], ['required_assets', 'edges'], requiredResourceData);
+    // console.log('requiredResourcesLines', requiredAssetsEdges);
+    // const expandable = externalReferencesEdges.length > 7;
     return (
       <div style={{ height: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -233,7 +234,7 @@ class RequiredResourcesLinesContainer extends Component {
             contextual={true}
           // stixCoreObjectOrStixCoreRelationshipId={remediationId}
           // stixCoreObjectOrStixCoreRelationshipReferences={
-          //   data.itAsset.external_references.edges
+          //   data.riskResponse.external_references.edges
           // }
           />
           {/* </Security> */}
@@ -266,7 +267,10 @@ class RequiredResourcesLinesContainer extends Component {
                     <Grid style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
                       <div style={{ marginLeft: '10px' }}>
                         <Typography align="left" color="textSecondary" variant="h3">{t('Name')}</Typography>
-                        <Typography align="left" variant="subtitle1">{t('Lorem Ipsum')}</Typography>
+                        <Typography align="left" variant="subtitle1">
+                          {/* {t('Lorem Ipsum')} */}
+                          {requiredResourceData.name && t(requiredResourceData.name)}
+                        </Typography>
                       </div>
                     </Grid>
                     <Grid style={{ display: 'flex', alignItems: 'center' }}>
@@ -285,7 +289,10 @@ class RequiredResourcesLinesContainer extends Component {
                     <Grid style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
                       <div style={{ marginLeft: '10px' }}>
                         <Typography align="left" color="textSecondary" variant="h3">{t('ID')}</Typography>
-                        <Typography align="left" variant="subtitle1">{t('Lorem Ipsum')}</Typography>
+                        <Typography align="left" variant="subtitle1">
+                        {/* {t('Lorem Ipsum')} */}
+                        {requiredResourceData.id && t(requiredResourceData.id)}
+                        </Typography>
                       </div>
                     </Grid>
                     <Grid style={{ display: 'flex', alignItems: 'center' }}>
@@ -329,12 +336,10 @@ class RequiredResourcesLinesContainer extends Component {
                       </div>
                     </div>
                   </Grid>
-                </Grid>
-                <Grid container={true} spacing={3}>
-                  <Grid style={{ marginTop: '20px' }} item={true}>
+                  <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
                     <CyioCoreobjectExternalReferences />
                   </Grid>
-                  <Grid style={{ marginTop: '40px' }} item={true}>
+                  <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
                     <CyioCoreObjectOrCyioCoreRelationshipNotes
                       cyioCoreObjectId={remediationId}
                       marginTop='0px'
@@ -432,20 +437,20 @@ const RequiredResourcesLines = createPaginationContainer(
         count: { type: "Int", defaultValue: 25 }
         id: { type: "ID!" }
       ) {
-        itAsset(id: $id) {
+        riskResponse(id: $id) {
           id
-          external_references(first: $count)
-            @connection(key: "Pagination_external_references") {
+          name
+          description
+          required_assets(first: $count)
+            @connection(key: "Pagination_required_assets") {
             edges {
               node {
                 id
-                source_name
-                description
-                url
-                hashes {
-                  value
+                subjects {
+                    id
+                    name
+                    subject_type
                 }
-                external_id
               }
             }
           }
@@ -456,7 +461,7 @@ const RequiredResourcesLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.itAsset.external_references;
+      return props.data && props.data.riskResponse.external_references;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

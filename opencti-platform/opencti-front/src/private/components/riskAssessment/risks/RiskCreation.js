@@ -18,8 +18,13 @@ import {
   CheckCircleOutline,
 } from '@material-ui/icons';
 import Typography from '@material-ui/core/Typography';
+import Dialog from '@material-ui/core/Dialog';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import Slide from '@material-ui/core/Slide';
+import DialogActions from '@material-ui/core/DialogActions';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
@@ -60,6 +65,10 @@ const styles = (theme) => ({
   rightContainer: {
     float: 'right',
     marginTop: '-10px',
+  },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
   },
   editButton: {
     position: 'fixed',
@@ -113,14 +122,26 @@ const riskValidation = (t) => Yup.object().shape({
   // personal_motivations: Yup.array().nullable(),
   // goals: Yup.string().nullable(),
 });
-
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 class RiskCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
       open: false,
       onSubmit: false,
+      displayCancel: false,
     };
+  }
+
+  handleCancelButton() {
+    this.setState({ displayCancel: false });
+  }
+
+  handleOpenCancelButton() {
+    this.setState({ displayCancel: true });
   }
 
   handleOpen() {
@@ -236,7 +257,8 @@ class RiskCreation extends Component {
                       size="small"
                       startIcon={<Close />}
                       color='primary'
-                      onClick={() => history.goBack()}
+                      // onClick={() => history.goBack()}
+                      onClick={this.handleOpenCancelButton.bind(this)}
                       className={classes.iconButton}
                     >
                       {t('Cancel')}
@@ -296,6 +318,47 @@ class RiskCreation extends Component {
             </>
           )}
         </Formik>
+        <Dialog
+          open={this.state.displayCancel}
+          TransitionComponent={Transition}
+          onClose={this.handleCancelButton.bind(this)}
+        >
+          <DialogContent>
+            <Typography style={{
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: 'white',
+            }} >
+              {t('Are you sure you’d like to cancel?')}
+            </Typography>
+            <DialogContentText>
+              {t('Your progress will not be saved')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions className={classes.dialogActions}>
+            <Button
+              // onClick={this.handleCloseDelete.bind(this)}
+              // disabled={this.state.deleting}
+              onClick={this.handleCancelButton.bind(this)}
+              classes={{ root: classes.buttonPopover }}
+              variant="outlined"
+              size="small"
+            >
+              {t('Go Back')}
+            </Button>
+            <Button
+              // onClick={this.submitDelete.bind(this)}
+              // disabled={this.state.deleting}
+              onClick={() => this.props.history.goBack()}
+              color="primary"
+              classes={{ root: classes.buttonPopover }}
+              variant="contained"
+              size="small"
+            >
+              {t('Yes Cancel')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }

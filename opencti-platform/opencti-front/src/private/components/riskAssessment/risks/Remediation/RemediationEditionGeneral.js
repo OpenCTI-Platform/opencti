@@ -36,7 +36,7 @@ import ObjectMarkingField from '../../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import SelectField from '../../../../../components/SelectField';
 import ConfidenceField from '../../../common/form/ConfidenceField';
-import AssetTaglist from '../../../common/form/AssetTaglist';
+// import AssetTaglist from '../../../common/form/AssetTaglist';
 import AssetType from '../../../common/form/AssetType';
 // import Ports from '../../../common/form/Ports';
 import CommitMessage from '../../../common/form/CommitMessage';

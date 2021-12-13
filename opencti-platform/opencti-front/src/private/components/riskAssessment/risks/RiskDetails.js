@@ -72,8 +72,27 @@ class RiskDetailsComponent extends Component {
       fd,
       history,
     } = this.props;
-    // const details = R.pathOr('', ['poamItem', 'edges'], risk);
-    // console.log('detailsSection', details);
+    const relatedRisksEdges = R.pipe(
+      R.pathOr([], ['related_risks', 'edges']),
+      R.map((value) => ({
+        name: value.node.name,
+        description: value.node.description,
+        statement: value.node.statement,
+        risk_status: value.node.risk_status,
+        deadline: value.node.deadline,
+        false_positive: value.node.false_positive,
+        risk_adjusted: value.node.risk_adjusted,
+        vendor_dependency: value.node.vendor_dependency,
+      })),
+    )(risk);
+    const relatedObservationsEdges = R.pipe(
+      R.pathOr([], ['related_observations', 'edges']),
+      R.map((value) => ({
+        impacted_component: value.node.impacted_component,
+        impacted_asset: value.node.subjects,
+      })),
+    )(risk);
+    console.log('RiskDetailsMain', relatedObservationsEdges);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -101,7 +120,13 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {risk.name && t(risk.name)}
+                {/* {risk.name && t(risk.name)} */}
+                {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
+                  <>
+                    <div className="clearfix" />
+                    {value.name}
+                  </>
+                ))}
               </div>
               <div>
                 <Typography
@@ -125,7 +150,13 @@ class RiskDetailsComponent extends Component {
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
-                      {risk.description && t(risk.description)}
+                      {/* {risk.description && t(risk.description)} */}
+                      {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
+                        <>
+                          <div className="clearfix" />
+                          {value.description}
+                        </>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -149,13 +180,19 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Button
-                  variant="outlined"
-                  size="small"
-                  style={{ cursor: 'default' }}
-                >
-                  {risk.risk_status && t(risk.risk_status)}
-                </Button>
+                {/* {risk.risk_status && t(risk.risk_status)} */}
+                {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
+                  <>
+                    <div className="clearfix" />
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      style={{ cursor: 'default', marginBottom: '5px' }}
+                      key={key}>
+                      {value.risk_status}
+                    </Button>
+                  </>
+                ))}
               </div>
               <div>
                 <Typography
@@ -179,7 +216,13 @@ class RiskDetailsComponent extends Component {
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
-                      {t('Description')}
+                      {/* {t('Description')} */}
+                      {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
+                        <>
+                          <div className="clearfix" />
+                          {value.impacted_component}
+                        </>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -224,13 +267,18 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Button
-                  variant="outlined"
-                  size="small"
-                  style={{ cursor: 'default' }}
-                >
-                  {risk.false_positive && t(risk.false_positive)}
-                </Button>
+                {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
+                  <>
+                    <div className="clearfix" />
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      style={{ cursor: 'default', marginBottom: '5px' }}
+                      key={key}>
+                      {value.false_positive}
+                    </Button>
+                  </>
+                ))}
               </div>
               <div>
                 <Typography
@@ -251,13 +299,18 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Button
-                  variant="outlined"
-                  size="small"
-                  style={{ cursor: 'default' }}
-                >
-                  {risk.risk_adjusted && t(risk.risk_adjusted)}
-                </Button>
+                {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
+                  <>
+                    <div className="clearfix" />
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      style={{ cursor: 'default', marginBottom: '5px' }}
+                      key={key}>
+                      {value.risk_adjusted}
+                    </Button>
+                  </>
+                ))}
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -284,7 +337,12 @@ class RiskDetailsComponent extends Component {
                   <div className={classes.scrollBg}>
                     <div className={classes.scrollDiv}>
                       <div className={classes.scrollObj}>
-                        {risk.statement && t(risk.statement)}
+                        {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
+                          <>
+                            <div className="clearfix" />
+                            {value.statement}
+                          </>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -309,7 +367,13 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {risk.deadline && fd(risk.deadline)}
+                {/* {risk.deadline && fd(risk.deadline)} */}
+                {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
+                  <>
+                  <div className="clearfix" />
+                  {fd(value.deadline)}
+                  </>
+                ))}
               </div>
               <div>
                 <Typography
@@ -378,13 +442,18 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Button
-                  variant="outlined"
-                  size="small"
-                  style={{ cursor: 'default' }}
-                >
-                  {risk.risk_adjusted && fd(risk.risk_adjusted)}
-                </Button>
+                {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
+                  <>
+                    <div className="clearfix" />
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      style={{ cursor: 'default', marginBottom: '5px' }}
+                      key={key}>
+                      {value.risk_adjusted}
+                    </Button>
+                  </>
+                ))}
               </div>
               <div>
                 <Typography
@@ -405,13 +474,18 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Button
-                  variant="outlined"
-                  size="small"
-                  style={{ cursor: 'default' }}
-                >
-                  {risk.vendor_dependency && t(risk.vendor_dependency)}
-                </Button>
+                {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
+                  <>
+                    <div className="clearfix" />
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      style={{ cursor: 'default', marginBottom: '5px' }}
+                      key={key}>
+                      {value.vendor_dependency}
+                    </Button>
+                  </>
+                ))}
               </div>
             </Grid>
           </Grid>
@@ -434,85 +508,85 @@ const RiskDetails = createFragmentContainer(
     risk: graphql`
       fragment RiskDetails_risk on POAMItem {
         id
-        # poam_id
-        name
+        poam_id   #Item Id
+        name      #Weakness
         description
         labels
-        # related_risks {
-        #   edges {
-        #     node {
-        #       id
-        #       name
-        #       description
-        #       statement
-        #       risk_status
-        #       deadline
-        #       priority
-        #       accepted
-        #       false_positive
-        #       risk_adjusted
-        #       vendor_dependency
-        #       characterizations {
-        #         id
-        #         ... on GenericCharacterization {
-        #           origins {
-        #             id
-        #             origin_actors {
-        #               actor_type
-        #               actor {
-        #                 ... on OscalPerson {
-        #                   id
-        #                   name
-        #                 }
-        #               }
-        #             }
-        #           }
-        #         }
-        #       }
-        #     }
-        #   }
-        # }
-        # related_observations {
-        #   edges {
-        #     node {
-        #       id
-        #       name
-        #       subjects {
-        #         subject {
-        #           ... on HardwareComponent {
-        #             id
-        #             name
-        #           }
-        #         }
-        #       }
-        #     }
-        #   }
-        # }
-        # external_references {
-        #   edges {
-        #     node {
-        #       id
-        #       created
-        #       modified
-        #       external_id
-        #       source_name
-        #       description
-        #       url
-        #       media_type
-        #     }
-        #   }
-        # }
-        # notes {
-        #   edges {
-        #     node {
-        #       id
-        #       abstract
-        #       content
-        #       authors
-        #       labels
-        #     }
-        #   }
-        # }
+        related_risks {
+          edges {
+            node {
+              id
+              name
+              description
+              statement
+              risk_status         #Risk Status
+              deadline
+              priority
+              accepted
+              false_positive      #False-Positive
+              risk_adjusted       #Operational Required
+              vendor_dependency   #Vendor Dependency
+              characterizations {
+                id
+                ... on GenericCharacterization {
+                  origins {
+                    id
+                    origin_actors {
+                      actor_type
+                      actor {
+                        ... on OscalPerson {
+                          id
+                          name    #Detection Source
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        related_observations {
+          edges {
+            node {
+              id
+              name              #Impacted Component
+              subjects {
+                subject {
+                  ... on HardwareComponent {
+                    id
+                    name        #Impacted Asset
+                  }
+                }
+              }
+            }
+          }
+        }
+        external_references {
+          edges {
+            node {
+              id
+              created
+              modified
+              external_id     #external id
+              source_name     #Title
+              description     #description
+              url             #URL
+              media_type      #media Type
+            }
+          }
+        }
+        notes {
+          edges {
+            node {
+              id
+              abstract
+              content
+              authors
+              labels
+            }
+          }
+        }
       }
     `,
   },

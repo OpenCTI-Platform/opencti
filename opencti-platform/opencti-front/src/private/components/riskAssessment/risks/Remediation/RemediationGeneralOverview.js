@@ -60,18 +60,23 @@ const styles = (theme) => ({
 class RemediationGeneralOverviewComponent extends Component {
   render() {
     const {
-      t, fldt, classes, risk,
+      t,
+      fd,
+      fldt,
+      classes,
+      remediation,
     } = this.props;
+    console.log('remediationGenreal', remediation);
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
-          {t('Remediation Item')}
+          {t('General')}
         </Typography>
         {/*  <Paper classes={{ root: classes.paper }} elevation={2}>
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {risk.objectMarking.edges.length > 0 ? (
+          {remediation.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -80,7 +85,7 @@ class RemediationGeneralOverviewComponent extends Component {
                   color={markingDefinition.node.x_opencti_color}
                 />
               ),
-              risk.objectMarking.edges,
+              remediation.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />
@@ -92,7 +97,7 @@ class RemediationGeneralOverviewComponent extends Component {
           >
             {t('Creation date')}
           </Typography>
-          {fldt(risk.created)}
+          {fldt(remediation.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -100,7 +105,7 @@ class RemediationGeneralOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fldt(risk.modified)}
+          {fldt(remediation.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -108,7 +113,7 @@ class RemediationGeneralOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor createdBy={propOr(null, 'createdBy', risk)} />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', remediation)} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -118,7 +123,7 @@ class RemediationGeneralOverviewComponent extends Component {
           </Typography>
           <ExpandableMarkdown
             className="markdown"
-            source={risk.description}
+            source={remediation.description}
             limit={250}
           />
         </Paper> */}
@@ -135,7 +140,8 @@ class RemediationGeneralOverviewComponent extends Component {
                   {t('Title')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum Dolor Sit Amet')}
+                {/* {t('Lorem Ipsum Dolor Sit Amet')} */}
+                {remediation.name && t(remediation.name)}
               </div>
               <div style={{ marginBottom: '33px' }}>
                 <Typography
@@ -147,7 +153,9 @@ class RemediationGeneralOverviewComponent extends Component {
                   {t('ID')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum Dolor Sit Amet')}
+                {/* {t('Lorem Ipsum Dolor Sit Amet')} */}
+                {remediation.id && t(remediation.id)}
+
               </div>
               <div style={{ marginBottom: '26px' }}>
                 <Typography
@@ -159,7 +167,8 @@ class RemediationGeneralOverviewComponent extends Component {
                   {t('Created')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum Dolor Sit Amet')}
+                {/* {t('Lorem Ipsum Dolor Sit Amet')} */}
+                {remediation.created && fd(remediation.created)}
               </div>
               <div>
                 <Typography
@@ -171,7 +180,9 @@ class RemediationGeneralOverviewComponent extends Component {
                   {t('Response Type')}
                 </Typography>
                 <div className="clearfix" />
-                <Button variant="outlined" color="success" >Deviation Approved</Button>
+                <Button variant="outlined" color="success" >
+                  {remediation.response_type && t(remediation.response_type)}
+                </Button>
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -197,9 +208,9 @@ class RemediationGeneralOverviewComponent extends Component {
                   </Badge>
                   <div style={{ marginLeft: '20px' }}>
                     <Typography variant="subtitle1">
-                      {t('21 June 2021')}
+                      {t('Lorem Ipsum')}
                     </Typography>
-                    Lorem Ipsum Dolor Ist
+                    {t('Lorem Ipsum Dolor Ist')}
                   </div>
                 </div>
               </div>
@@ -241,7 +252,8 @@ class RemediationGeneralOverviewComponent extends Component {
                   {t('Last Modified')}
                 </Typography>
                 <div className="clearfix" />
-                {t('June 11 2021')}
+                {/* {t('June 11 2021')} */}
+                {remediation.modified && fd(remediation.modified)}
               </div>
               <div>
                 <Typography
@@ -253,7 +265,9 @@ class RemediationGeneralOverviewComponent extends Component {
                   {t('Lifecycle')}
                 </Typography>
                 <div className="clearfix" />
-                <Button variant="outlined" color="primary" >Recommended</Button>
+                <Button variant="outlined" color="primary" >
+                  {remediation.lifecycle && t(remediation.lifecycle)}
+                </Button>
               </div>
             </Grid>
           </Grid>
@@ -277,7 +291,8 @@ class RemediationGeneralOverviewComponent extends Component {
   {`${location.country && t(location.country)}, ${location.postal_code && t(location.postal_code)}`}
                     </div>
                   ))} */}
-                  {t('Description')}
+                  {/* {t('Description')} */}
+                  {remediation.description && t(remediation.description)}
                 </div>
               </div>
             </div>
@@ -289,7 +304,7 @@ class RemediationGeneralOverviewComponent extends Component {
 }
 
 RemediationGeneralOverviewComponent.propTypes = {
-  risk: PropTypes.object,
+  remediation: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fldt: PropTypes.func,
@@ -298,20 +313,27 @@ RemediationGeneralOverviewComponent.propTypes = {
 const RemediationGeneralOverview = createFragmentContainer(
   RemediationGeneralOverviewComponent,
   {
-    risk: graphql`
-      fragment RemediationGeneralOverview_risk on ComputingDeviceAsset {
+    remediation: graphql`
+      fragment RemediationGeneralOverview_remediation on RiskResponse {
         id
-        asset_id
-        asset_type
-        asset_tag
-        description
-        version
-        vendor_name
-        serial_number
-        release_date
-        # responsible_parties
-        operational_status
-        labels
+        name                # Title
+        description         # Description
+        created             # Created
+        modified            # Last Modified
+        lifecycle           # Lifecycle
+        response_type       # Response Type
+        origins{
+          id
+          origin_actors {
+            actor_type
+            actor {
+              ... on OscalPerson {
+                id
+                name        #Source
+              }
+            }
+          }
+        }
       }
     `,
   },

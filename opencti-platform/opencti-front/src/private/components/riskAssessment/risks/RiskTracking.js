@@ -59,8 +59,10 @@ class RiskTracking extends Component {
       t,
       classes,
       risk,
+      riskId,
       history,
     } = this.props;
+    console.log('RiskTrackingItems', risk);
     return (
       <>
         <CyioDomainObjectHeader
@@ -74,13 +76,13 @@ class RiskTracking extends Component {
         <QR
           environment={QueryRendererDarkLight}
           query={RiskTrackingLinesQuery}
-          variables={{ id: '4733f0b3-7eb7-5e68-bd75-b32ecc80254a', count: 200 }}
+          variables={{ id: riskId, count: 200 }}
           render={({ props }) => {
             console.log('RiskTrackingProps', props);
             if (props) {
               return (
                 <RiskTrackingLines
-                  risk={risk}
+                  riskId={riskId}
                   data={props}
                 />
               );
@@ -143,6 +145,7 @@ class RiskTracking extends Component {
 
 RiskTracking.propTypes = {
   risk: PropTypes.string,
+  riskId: PropTypes.string,
   limit: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,

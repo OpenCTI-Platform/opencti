@@ -15,7 +15,7 @@ import Cancel from '@material-ui/icons/Cancel';
 import Button from '@material-ui/core/Button';
 import MenuItem from '@material-ui/core/MenuItem';
 import AddIcon from '@material-ui/icons/Add';
-import AssetTaglist from '../../common/form/AssetTaglist';
+// import AssetTaglist from '../../common/form/AssetTaglist';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -536,21 +536,37 @@ const RiskTrackingLogEdition = createFragmentContainer(
     risk: graphql`
       fragment RiskTrackingLogEdition_risk on Risk {
         id
-        description
-        characterizations {
+        created
+        modified
+        risk_log(first: 5) {
           edges {
             node {
-              ... on RiskCharacterization {
-                impact
-                likelihood
+              id
+              created
+              modified
+              entry_type        # Entry Type
+              name              # Title
+              description       # Description
+              event_start       # Start Date
+              event_end         # End Date
+              status_change     # Status Change
+              logged_by {
+                ... on OscalPerson {
+                  id
+                  name
+                }
+                ... on OscalOrganization {
+                  id
+                  name
+                }
+              }
+              related_responses {
+                id
+                name
               }
             }
           }
         }
-        impacted_control_id
-        deadline
-        priority
-        labels
       }
     `,
   },

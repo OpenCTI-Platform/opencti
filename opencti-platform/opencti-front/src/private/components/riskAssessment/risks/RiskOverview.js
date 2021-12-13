@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr, map } from 'ramda';
+import * as R from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -62,7 +62,14 @@ class RiskOverviewComponent extends Component {
     const {
       t, fldt, classes, risk,
     } = this.props;
-    console.log('RiskOverview', risk);
+    // console.log('RiskOverview', risk);
+    const riskEdges = R.pipe(
+      R.pathOr([], ['related_risks', 'edges']),
+      R.map((value) => ({
+        priority: value.node.priority,
+      })),
+    )(risk);
+    console.log('RiskOverview', riskEdges);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <div style={{ height: '100%' }} className="break">
@@ -166,7 +173,7 @@ class RiskOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {risk.id && t(risk.id)}
+              {risk.poam_id && t(risk.poam_id)}
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
@@ -348,7 +355,8 @@ class RiskOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                 {risk.priority && t(risk.priority)}
+                 {/* {risk.priority && t(risk.priority)} */}
+    {riskEdges.map((value) => value.priority) && t(riskEdges.map((value) => value.priority))}
               </div>
               <div style={{ marginBottom: '40px', marginTop: '25px' }}>
                 <Typography
@@ -437,88 +445,88 @@ const RiskOverview = createFragmentContainer(
     risk: graphql`
       fragment RiskOverview_risk on POAMItem {
         id
-        # poam_id
-        name
+        poam_id   #Item Id
+        name      #Weakness
         description
         labels
-        # related_risks {
-        #   edges {
-        #     node {
-        #       id
-        #       name
-        #       description
-        #       statement
-        #       risk_status
-        #       deadline
-        #       priority
-        #       accepted
-        #       false_positive
-        #       risk_adjusted
-        #       vendor_dependency
-        #       characterizations {
-        #         id
-        #         ... on GenericCharacterization {
-        #           origins {
-        #             id
-        #             origin_actors {
-        #               actor_type
-        #               actor {
-        #                 ... on OscalPerson {
-        #                   id
-        #                   name
-        #                 }
-        #               }
-        #             }
-        #           }
-        #         }
-        #       }
-        #     }
-        #   }
-        # }
-        # related_observations {
-        #   edges {
-        #     node {
-        #       id
-        #       name
-        #       subjects {
-        #         subject {
-        #           ... on HardwareComponent {
-        #             id
-        #             name
-        #           }
-        #         }
-        #       }
-        #     }
-        #   }
-        # }
-        # external_references {
-        #   edges {
-        #     node {
-        #       id
-        #       created
-        #       modified
-        #       external_id
-        #       source_name
-        #       description
-        #       url
-        #       media_type
-        #     }
-        #   }
-        # }
-        # notes {
-        #   edges {
-        #     node {
-        #       id
-        #       abstract
-        #       content
-        #       authors
-        #       labels
-        #     }
-        #   }
-        # }
+        related_risks {
+          edges {
+            node {
+              id
+              name
+              description
+              statement
+              risk_status         #Risk Status
+              deadline
+              priority
+              accepted
+              false_positive      #False-Positive
+              risk_adjusted       #Operational Required
+              vendor_dependency   #Vendor Dependency
+              characterizations {
+                id
+                ... on GenericCharacterization {
+                  origins {
+                    id
+                    origin_actors {
+                      actor_type
+                      actor {
+                        ... on OscalPerson {
+                          id
+                          name    #Detection Source
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        related_observations {
+          edges {
+            node {
+              id
+              name              #Impacted Component
+              subjects {
+                subject {
+                  ... on HardwareComponent {
+                    id
+                    name        #Impacted Asset
+                  }
+                }
+              }
+            }
+          }
+        }
+        external_references {
+          edges {
+            node {
+              id
+              created
+              modified
+              external_id     #external id
+              source_name     #Title
+              description     #description
+              url             #URL
+              media_type      #media Type
+            }
+          }
+        }
+        notes {
+          edges {
+            node {
+              id
+              abstract
+              content
+              authors
+              labels
+            }
+          }
+        }
       }
     `,
   },
 );
 
-export default compose(inject18n, withStyles(styles))(RiskOverview);
+export default R.compose(inject18n, withStyles(styles))(RiskOverview);
