@@ -49,6 +49,11 @@ const assetCommonResolvers = {
             continue
           }
 
+          if (asset.id === undefined || asset.id == null ) {
+            console.log(`[DATA-ERROR] object ${asset.iri} is missing required properties; skipping object.`);
+            continue;
+          }
+
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {
             if (!filterValues(asset, args.filters, args.filterMode) ) {
@@ -122,6 +127,11 @@ const assetCommonResolvers = {
             continue
           }
 
+          if (asset.id === undefined || asset.id == null ) {
+            console.log(`[DATA-ERROR] object ${asset.iri} is missing required properties; skipping object.`);
+            continue;
+          }
+
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {
             if (!filterValues(asset, args.filters, args.filterMode) ) {
@@ -186,6 +196,11 @@ const assetCommonResolvers = {
           if (offset) {
             offset--
             continue
+          }
+
+          if (location.id === undefined || location.id == null ) {
+            console.log(`[DATA-ERROR] object ${location.iri} is missing required properties; skipping object.`);
+            continue;
           }
 
           // filter out non-matching entries if a filter is to be applied
