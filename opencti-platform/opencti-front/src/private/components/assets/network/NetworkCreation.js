@@ -128,7 +128,6 @@ class NetworkCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('Network Created Successfully! InputData: ', values);
     // const finalValues = pipe(
     //   assoc('createdBy', values.createdBy?.value),
     //   assoc('objectMarking', pluck('value', values.objectMarking)),
@@ -153,7 +152,6 @@ class NetworkCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        console.log('NetworkCreationDarkLightMutationData', data);
         this.props.history.push('/dashboard/assets/network');
       },
       onError: (err) => console.log('NetworkCreationDarkLightMutationError', err),

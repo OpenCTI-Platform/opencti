@@ -137,7 +137,6 @@ class NetworkEdition extends Component {
             query={networkEditionDarkLightQuery}
             variables={{ id: networkId }}
             render={({ props }) => {
-              console.log(`NetworkEditionDarkLightQuery Props ${JSON.stringify(props)}`);
               if (props) {
                 return (
                   <NetworkEditionContainer

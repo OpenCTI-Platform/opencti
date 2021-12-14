@@ -183,7 +183,6 @@ class DevicePopover extends Component {
             query={deviceEditionQuery}
             variables={{ id }}
             render={({ props }) => {
-              console.log('DeviceEditionContainer', props);
               if (props) {
                 return (
                   <DeviceEditionContainer
