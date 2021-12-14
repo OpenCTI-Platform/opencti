@@ -88,17 +88,17 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'microsoft':
       return <MicrosoftWindows style={style} fontSize={fontSize} role="img" />;
     case 'linux':
-      return <img src={linuxIcon} style={{ height: '20px' }} alt="linux-icon" />;
+      return <img src={linuxIcon} style={style} alt="linux-icon" />;
     case 'other':
-      return <img src={deviceIcon} style={{ height: '20px' }} alt="device-icon" />;
+      return <img src={deviceIcon} style={style} alt="device-icon" />;
     case 'router':
       return <Router style={style} fontSize={fontSize} role="img" />;
     case 'firewall':
       return <Whatshot style={style} fontSize={fontSize} role="img" />;
     case 'network':
-      return <img src={networkIcon} style={{ height: '20px' }} alt="network-icon" />;
+      return <img src={networkIcon} style={style} alt="network-icon" />;
     case 'software':
-      return <img src={softwareIcon} style={{ height: '20px' }} alt="software-icon" />;
+      return <img src={softwareIcon} style={style} alt="software-icon" />;
     case 'switch':
       return <Scanner style={style} fontSize={fontSize} role="img" />;
     case 'storage_array':
