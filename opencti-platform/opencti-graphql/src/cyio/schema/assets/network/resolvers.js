@@ -1,11 +1,11 @@
 import { assetSingularizeSchema as singularizeSchema } from '../asset-mappings.js';
-import {
-  getSelectSparqlQuery,
+import { 
+  getSelectSparqlQuery, 
   getReducer,
   insertQuery,
   deleteNetworkAssetQuery
 } from './sparql-query.js';
-import {compareValues, generateId, DARKLIGHT_NS} from '../../utils.js';
+import {compareValues, filterValues, generateId, DARKLIGHT_NS, updateQuery} from '../../utils.js';
 import {
   deleteIpAddressRange,
   deleteIpQuery,
@@ -13,15 +13,15 @@ import {
   insertIPAddressRangeRelationship,
   insertIPQuery,
   selectIPAddressRange
-} from "../assetQueries";
+} from "../assetQueries.js";
 import {UserInputError} from "apollo-server-express";
-import {addToInventoryQuery, updateAssetQuery} from "../assetUtil";
-import {predicateMap} from "./sparql-query";
+import {addToInventoryQuery} from "../assetUtil.js";
+import {predicateMap} from "./sparql-query.js";
 
 const networkResolvers = {
   Query: {
-    networkAssetList: async ( _, args, context, info ) => {
-      var sparqlQuery = getSelectSparqlQuery('NETWORK');
+    networkAssetList: async ( _, args, context, ) => {
+      var sparqlQuery = getSelectSparqlQuery('NETWORK', context.selectMap.getNode('node') );
       var reducer = getReducer('NETWORK')
       const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
@@ -35,17 +35,27 @@ const networkResolvers = {
         const edges = [];
         let limit = (args.first === undefined ? response.length : args.first) ;
         let offset = (args.offset === undefined ? 0 : args.offset) ;
-        let assetList ;
-        if (args.orderedBy !== undefined ) {
-          assetList = response.sort(compareValues(args.orderedBy, args.orderMode ));
-        } else {
-          assetList = response;
-        }
+        const assetList = (args.orderedBy !== undefined) ? response.sort(compareValues(args.orderedBy, args.orderMode)) : response;
+
+        if (offset > assetList.length) return
+
         for (let asset of assetList) {
           // skip down past the offset
           if ( offset ) {
             offset--
             continue
+          }
+
+          if (asset.id === undefined || asset.id == null ) {
+            console.log(`[DATA-ERROR] object ${asset.iri} is missing required properties; skipping object.`);
+            continue;
+          }
+
+          // filter out non-matching entries if a filter is to be applied
+          if ('filters' in args && args.filters != null && args.filters.length > 0) {
+            if (!filterValues(asset, args.filters, args.filterMode) ) {
+              continue
+            }
           }
 
           if ( limit ) {
@@ -59,10 +69,10 @@ const networkResolvers = {
         }
         return {
           pageInfo: {
-            startCursor: assetList[0].iri,
-            endCursor: assetList[assetList.length -1 ].iri,
-            hasNextPage: (args.first > assetList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            startCursor: edges[0].cursor,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (args.first < assetList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: assetList.length,
           },
           edges: edges,
@@ -72,14 +82,13 @@ const networkResolvers = {
       }
     },
     networkAsset: async (_, args, context, info ) => {
-      var sparqlQuery = getSelectSparqlQuery("NETWORK",context.selectMap.getNode("networkAsset"), args.id);
+      var sparqlQuery = getSelectSparqlQuery('NETWORK', context.selectMap.getNode('networkAsset'), args.id);
       var reducer = getReducer('NETWORK')
       const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
       if (response === undefined ) return null;
       const first = response[0];
       if (first === undefined) return null;
-      const res = reducer( first );
-      return res;
+      return( reducer( first ) );
     }
   },
   Mutation: {
@@ -154,14 +163,19 @@ const networkResolvers = {
     },
     editNetworkAsset: async ( _, {id, input}, context ) => {
       const dbName = context.dbName;
-      const updateQuery = updateAssetQuery(`<http://scap.nist.gov/ns/asset-identification#Network-${id}>`, input, predicateMap)
-      await context.dataSources.Stardog.edit(dbName, updateQuery);
+      const query = updateQuery(
+          `http://scap.nist.gov/ns/asset-identification#Network-${id}`,
+          "http://scap.nist.gov/ns/asset-identification#Network",
+          input,
+          predicateMap
+      )
+      await context.dataSources.Stardog.edit(dbName, query);
       return {id}
     },
   },
   // Map enum GraphQL values to data model required values
   NetworkAsset: {
-    network_address_range: async (parent, args, context, info) => {
+    network_address_range: async (parent, args, context,  ) => {
       let item = parent.netaddr_range_iri;
       var sparqlQuery = selectIPAddressRange(`<${item}>`)
       var reducer = getReducer('NETADDR-RANGE');
@@ -170,7 +184,6 @@ const networkResolvers = {
         // console.log( response[0] );
         // let results = ipAddrRangeReducer( response[0] )    TODO: revert when data is passed as objects, instead of string
         let results = reducer( response[0] )
-        let x = generateId( {"value": results.start_addr_iri}, DARKLIGHT_NS)
         return {
           id: results.id,
           starting_ip_address: {

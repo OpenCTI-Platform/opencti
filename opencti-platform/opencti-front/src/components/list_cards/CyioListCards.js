@@ -119,6 +119,7 @@ class CyioListCards extends Component {
       handleDisplayEdit,
       selectedElements,
       keyword,
+      filterEntityType,
       filters,
       selectAll,
       sortBy,
@@ -152,6 +153,7 @@ class CyioListCards extends Component {
                 availableFilterKeys={availableFilterKeys}
                 handleAddFilter={handleAddFilter}
                 currentFilters={filters}
+                filterEntityType={filterEntityType}
               />
             ) : (
               ''
@@ -313,7 +315,7 @@ CyioListCards.propTypes = {
   handleToggleExports: PropTypes.func,
   openExports: PropTypes.bool,
   views: PropTypes.array,
-  exportEntityType: PropTypes.string,
+  filterEntityType: PropTypes.string,
   exportContext: PropTypes.string,
   keyword: PropTypes.string,
   filters: PropTypes.object,

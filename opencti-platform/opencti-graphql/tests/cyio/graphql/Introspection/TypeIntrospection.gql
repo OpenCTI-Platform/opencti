@@ -1,0 +1,10 @@
+query RiskIntrospection {
+  __type(name: "Risk") {
+    name
+    description
+    fields {
+      name
+      description
+    }
+  }
+}

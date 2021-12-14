@@ -1,0 +1,23 @@
+SELECT DISTINCT ?id ?object_type ?starting_ip_address ?ending_ip_address
+FROM <tag:stardog:api:context:named>
+WHERE {
+    # GRAPH ?g {
+    BIND(<http://scap.nist.gov/ns/asset-identification#IpAddressRange-74af7b58-35c1-556e-a9b4-e8f985bcfee3> AS ?iri)
+    ?iri a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> ;
+        <http://darklight.ai/ns/common#id> ?id  ;
+        <http://scap.nist.gov/ns/asset-identification#starting_ip_address> ?starting_ip_address ;
+        <http://scap.nist.gov/ns/asset-identification#ending_ip_address> ?ending_ip_address .
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?object_type } .
+    # }
+}
+
+# SELECT DISTINCT ?id ?object_type ?starting_ip_address ?ending_ip_address
+# WHERE {
+#     GRAPH <http://scap.nist.gov/ns/asset-identification#IpAddressRange-74af7b58-35c1-556e-a9b4-e8f985bcfee3> {
+#         <http://scap.nist.gov/ns/asset-identification#IpAddressRange-74af7b58-35c1-556e-a9b4-e8f985bcfee3> a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> ;
+#             <http://darklight.ai/ns/common#id> ?id  ;
+#             <http://scap.nist.gov/ns/asset-identification#starting_ip_address> ?starting_ip_address ;
+#             <http://scap.nist.gov/ns/asset-identification#ending_ip_address> ?ending_ip_address .
+#         OPTIONAL { <http://scap.nist.gov/ns/asset-identification#IpAddressRange-74af7b58-35c1-556e-a9b4-e8f985bcfee3> <http://darklight.ai/ns/common#object_type> ?object_type } .
+#     }
+# }

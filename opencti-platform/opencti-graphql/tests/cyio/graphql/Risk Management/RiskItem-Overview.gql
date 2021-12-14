@@ -1,0 +1,94 @@
+query RiskItemOverview {
+  poamItem(id: "59e5ebe3-edc6-4d39-b0c5-7ab63da99145") {
+    id
+    poam_id     # Item ID
+    name        # Weakness
+    description
+    labels
+    related_risks {
+      edges {
+        node{
+          id
+          name
+          description
+          statement
+          risk_status       # Risk Status
+          deadline
+          priority
+          accepted
+          false_positive    # False-Positive
+          risk_adjusted     # Operational Required
+          vendor_dependency # Vendor Dependency
+          characterizations {
+            id
+            origins {
+              id
+              origin_actors {
+                actor_type
+                actor {
+                  ... on Component {
+                    id
+                    component_type
+                    name          # Detection Source
+                  }
+                  ... on OscalParty {
+                  id
+                  party_type
+                  name            # Detection Source
+                  }
+                }
+              }          
+            }
+          }          
+        }
+      }
+    }
+    related_observations {
+      edges {
+        node {
+          id
+          name          # Impacted Component
+          subjects {
+            subject {
+              ... on InventoryItem {
+                id
+                asset_type
+                name   # Impacted Asset
+              }
+              ... on Component{
+                id
+                component_type
+                name    # Impacted Asset
+              }
+            }
+          }
+        }
+      }
+    }
+    external_references(first: 5) {
+      edges {
+        node {
+          id
+          created
+          modified
+          external_id     # external id
+          source_name     # Title
+          description     # description
+          url             # URL
+          media_type      # Media Type
+        }
+      }
+    }
+    notes( first: 5) {
+      edges {
+        node {
+          id
+          abstract
+          content
+          authors
+          labels
+        }
+      }
+    }
+  }
+}

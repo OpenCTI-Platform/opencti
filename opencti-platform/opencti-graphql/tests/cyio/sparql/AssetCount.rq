@@ -1,0 +1,5 @@
+SELECT DISTINCT (COUNT(?asset) AS ?count)
+WHERE {
+        ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
+            <http://csrc.nist.gov/ns/oscal/common#assets> ?asset 
+}
