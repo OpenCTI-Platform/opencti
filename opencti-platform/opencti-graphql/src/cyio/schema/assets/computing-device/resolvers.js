@@ -13,6 +13,7 @@ import {
   insertPortsQuery
 } from "../assetQueries.js";
 import {UserInputError} from "apollo-server-express";
+import { assertEnumType } from 'graphql';
 
 const computingDeviceResolvers = {
   Query: {
@@ -34,12 +35,19 @@ const computingDeviceResolvers = {
         let offset = (args.offset === undefined ? 0 : args.offset) ;
         const assetList = (args.orderedBy !== undefined) ? response.sort(compareValues(args.orderedBy, args.orderMode)) : response;
 
+        if (offset > assetList.length) return
+
         // for each asset in the result set
         for (let asset of assetList) {
           // skip down past the offset
           if ( offset ) {
             offset--
             continue
+          }
+
+          if (asset.id === undefined || asset.id == null ) {
+            console.log(`[DATA-ERROR] object ${asset.iri} is missing required properties; skipping object.`);
+            continue;
           }
 
           // filter out non-matching entries if a filter is to be applied

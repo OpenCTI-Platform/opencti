@@ -22,7 +22,12 @@ import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { identityCreationIdentitiesSearchQuery } from '../identities/IdentityCreation';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
-import { itAssetListQuery } from '../../settings/ItAssetListQuery';
+import {
+  itAssetFiltersAssetTypeFieldQuery,
+  itAssetFiltersDeviceFieldsQuery,
+  itAssetFiltersNetworkFieldsQuery,
+  itAssetFiltersSoftwareFieldsQuery,
+} from '../../settings/ItAssetFilters';
 import { attributesSearchQuery } from '../../settings/AttributesQuery';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -79,6 +84,7 @@ const directFilters = [
   'toSightingId',
 ];
 const uniqFilters = [
+  'name_m',
   'revoked',
   'x_opencti_detection',
   'x_opencti_base_score_gt',
@@ -90,8 +96,7 @@ const uniqFilters = [
 ];
 export const isUniqFilter = (key) => uniqFilters.includes(key)
   || key.endsWith('start_date')
-  || key.endsWith('end_date')
-  || key.endsWith('date');
+  || key.endsWith('end_date');
 
 class Filters extends Component {
   constructor(props) {
@@ -126,31 +131,72 @@ class Filters extends Component {
       });
     }
     switch (filterKey) {
-      case 'assetTypeBy':
-        fetchDarklightQuery(itAssetListQuery)
+      case 'asset_type_or':
+        fetchDarklightQuery(itAssetFiltersAssetTypeFieldQuery, {
+          type: `${this.props.filterEntityType}AssetTypes`,
+        })
           .toPromise()
           .then((data) => {
-            const assetTypeByEntities = R.pipe(
-              R.pathOr([], ['itAssetList', 'edges']),
+            const assetTypeEntities = R.pipe(
+              R.pathOr([], ['__type', 'enumValues']),
               R.map((n) => ({
-                label: n.node.asset_type,
-                value: n.node.asset_type,
-                type: n.node.asset_type,
+                label: t(n.description),
+                value: n.name,
+                type: n.name,
               })),
             )(data);
             this.setState({
               entities: {
                 ...this.state.entities,
-                assetTypeBy: R.union(
-                  assetTypeByEntities,
-                  this.state.entities.assetTypeById,
+                asset_type_or: R.union(
+                  assetTypeEntities,
+                  this.state.entities.asset_type,
+                ),
+              },
+            });
+          });
+        break;
+      case 'name_m':
+        // eslint-disable-next-line no-case-declarations
+        let nameQuery = '';
+        // eslint-disable-next-line no-case-declarations
+        let namePath = [];
+        if (this.props.filterEntityType === 'Device') {
+          nameQuery = itAssetFiltersDeviceFieldsQuery;
+          namePath = ['computingDeviceAssetList', 'edges'];
+        }
+        if (this.props.filterEntityType === 'Network') {
+          nameQuery = itAssetFiltersNetworkFieldsQuery;
+          namePath = ['networkAssetList', 'edges'];
+        }
+        if (this.props.filterEntityType === 'Software') {
+          nameQuery = itAssetFiltersSoftwareFieldsQuery;
+          namePath = ['softwareAssetList', 'edges'];
+        }
+        fetchDarklightQuery(nameQuery)
+          .toPromise()
+          .then((data) => {
+            const nameEntities = R.pipe(
+              R.pathOr([], namePath),
+              R.map((n) => ({
+                label: n.node.name,
+                value: n.node.name,
+                type: 'attribute',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                name_m: R.union(
+                  nameEntities,
+                  this.state.entities.name_m,
                 ),
               },
             });
           });
         break;
       case 'vendor_name_or':
-        fetchDarklightQuery(itAssetListQuery)
+        fetchDarklightQuery(itAssetFiltersSoftwareFieldsQuery)
           .toPromise()
           .then((data) => {
             const vendorEntities = R.pipe(
@@ -167,6 +213,46 @@ class Filters extends Component {
                 vendor_name_or: R.union(
                   vendorEntities,
                   this.state.entities.vendor_name_or,
+                ),
+              },
+            });
+          });
+        break;
+      case 'labels_or':
+        // eslint-disable-next-line no-case-declarations
+        let cyioLabelsQuery = '';
+        // eslint-disable-next-line no-case-declarations
+        let cyioLabelsPath = [];
+        if (this.props.filterEntityType === 'Device') {
+          cyioLabelsQuery = itAssetFiltersDeviceFieldsQuery;
+          cyioLabelsPath = ['computingDeviceAssetList', 'edges'];
+        }
+        if (this.props.filterEntityType === 'Network') {
+          cyioLabelsQuery = itAssetFiltersNetworkFieldsQuery;
+          cyioLabelsPath = ['networkAssetList', 'edges'];
+        }
+        if (this.props.filterEntityType === 'Software') {
+          cyioLabelsQuery = itAssetFiltersSoftwareFieldsQuery;
+          cyioLabelsPath = ['softwareAssetList', 'edges'];
+        }
+        fetchDarklightQuery(cyioLabelsQuery)
+          .toPromise()
+          .then((data) => {
+            const cyioLabelEntities = R.pipe(
+              R.pathOr([], cyioLabelsPath),
+              R.map((n) => ({
+                label: t(n.node.labels[0]),
+                value: n.node.labels[0],
+                type: 'Label',
+                color: n.node.labels[0],
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                labels_or: R.union(
+                  cyioLabelEntities,
+                  this.state.entities.labels_or,
                 ),
               },
             });
@@ -753,7 +839,6 @@ class Filters extends Component {
           if (
             filterKey.endsWith('start_date')
             || filterKey.endsWith('end_date')
-            || filterKey.endsWith('date')
           ) {
             return (
               <Grid key={filterKey} item={true} xs={6}>
