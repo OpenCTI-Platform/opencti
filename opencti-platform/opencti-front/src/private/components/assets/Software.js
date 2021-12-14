@@ -201,7 +201,7 @@ class Software extends Component {
         selectAll={selectAll}
         OperationsComponent={<SoftwareDeletion />}
         openExports={openExports}
-        exportEntityType="Software"
+        filterEntityType="Software"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -212,7 +212,7 @@ class Software extends Component {
           'created_start_date',
           'created_end_date',
           'vendor_name_or',
-          'labelledBy',
+          'labels_or',
         ]}
       >
         {/* <QueryRenderer */}
@@ -318,7 +318,7 @@ class Software extends Component {
         selectAll={selectAll}
         OperationsComponent={<SoftwareDeletion />}
         openExports={openExports}
-        exportEntityType="Software"
+        filterEntityType="Software"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -329,7 +329,7 @@ class Software extends Component {
           'created_start_date',
           'created_end_date',
           'vendor_name_or',
-          'labelledBy',
+          'labels_or',
         ]}
       >
         {/* <QueryRenderer */}

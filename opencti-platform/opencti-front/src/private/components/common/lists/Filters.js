@@ -200,11 +200,11 @@ class Filters extends Component {
           .toPromise()
           .then((data) => {
             const vendorEntities = R.pipe(
-              R.pathOr([], ['itAssetList', 'edges']),
+              R.pathOr([], ['softwareAssetList', 'edges']),
               R.map((n) => ({
                 label: t(n.node.vendor_name),
                 value: n.node.vendor_name,
-                type: n.node.vendor_name,
+                type: n.node.vendor_name === 'apple' || n.node.vendor_name === 'microsoft' || n.node.vendor_name === 'linux' ? n.node.vendor_name : 'other',
               })),
             )(data);
             this.setState({
