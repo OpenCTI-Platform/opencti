@@ -203,9 +203,10 @@ export const QueryMode = {
 
 export function getSelectSparqlQuery(type, select, id, filter) {
   let sparqlQuery;
-  const { selectionClause, predicates } = buildSelectVariables(predicateMap, select)
+  let { selectionClause, predicates } = buildSelectVariables(predicateMap, select)
+  selectionClause = `SELECT ${select.includes("id") ? "DISTINCT ?iri" : "?iri"} ${selectionClause}`;
   const selectPortion = `
-  SELECT DISTINCT ${selectionClause}
+  ${selectionClause}
   FROM <tag:stardog:api:context:named>
   WHERE {
     `;

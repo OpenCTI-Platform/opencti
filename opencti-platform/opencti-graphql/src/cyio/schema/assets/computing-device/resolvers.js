@@ -34,6 +34,8 @@ const computingDeviceResolvers = {
         let offset = (args.offset === undefined ? 0 : args.offset) ;
         const assetList = (args.orderedBy !== undefined) ? response.sort(compareValues(args.orderedBy, args.orderMode)) : response;
 
+        if (offset > assetList.length) return
+
         // for each asset in the result set
         for (let asset of assetList) {
           // skip down past the offset

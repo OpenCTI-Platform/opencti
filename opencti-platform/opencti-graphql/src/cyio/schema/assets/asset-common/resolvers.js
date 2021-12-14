@@ -39,6 +39,8 @@ const assetCommonResolvers = {
           assetList = response;
         }
 
+        if (offset > assetList.length) return
+
         // for each asset in the result set
         for (let asset of assetList) {
           // skip down past the offset
@@ -110,6 +112,8 @@ const assetCommonResolvers = {
           assetList = response;
         }
 
+        if (offset > assetList.length) return
+
         // for each asset in the result set
         for (let asset of assetList) {
           // skip down past the offset
@@ -173,6 +177,8 @@ const assetCommonResolvers = {
         } else {
           locationList = response;
         }
+
+        if (offset > locationList.length) return
 
         // for each asset in the result set
         for (let location of locationList) {

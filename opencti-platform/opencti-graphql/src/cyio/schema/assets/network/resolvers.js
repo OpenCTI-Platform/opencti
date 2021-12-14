@@ -37,6 +37,8 @@ const networkResolvers = {
         let offset = (args.offset === undefined ? 0 : args.offset) ;
         const assetList = (args.orderedBy !== undefined) ? response.sort(compareValues(args.orderedBy, args.orderMode)) : response;
 
+        if (offset > assetList.length) return
+
         for (let asset of assetList) {
           // skip down past the offset
           if ( offset ) {
