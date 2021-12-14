@@ -18,8 +18,9 @@ import { assertEnumType } from 'graphql';
 const computingDeviceResolvers = {
   Query: {
     computingDeviceAssetList: async ( _, args, context, info  ) => { 
-      var sparqlQuery = getSelectSparqlQuery('COMPUTING-DEVICE', context.selectMap.getNode("node") );
-      var reducer = getReducer('COMPUTING-DEVICE');
+      const selectList = context.selectMap.getNode("node")
+      const sparqlQuery = getSelectSparqlQuery('COMPUTING-DEVICE', selectList );
+      const reducer = getReducer('COMPUTING-DEVICE');
       const response = await context.dataSources.Stardog.queryAll( 
         context.dbName, 
         sparqlQuery,
