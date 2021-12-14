@@ -4,9 +4,9 @@ export function getSelectSparqlQuery( type, select, id, filter, ) {
   // TODO: [DL] Need to convert this to the utils.buildSelectVariables() method. No more string replacement strategy
   var sparqlQuery;
   let { selectionClause, predicates } = buildSelectVariables(predicateMap, select);
-  // selectionClause = `SELECT ${select.includes("id") ? "DISTINCT" : ""} ${selectionClause}`;
+  selectionClause = `SELECT ${select.includes("id") ? "DISTINCT ?iri" : "?iri"} ${selectionClause}`;
   const selectPortion = `
-SELECT DISTINCT ${selectionClause}
+${selectionClause}
 FROM <tag:stardog:api:context:named>
 WHERE {
   `;
@@ -31,12 +31,12 @@ WHERE {
         byId = byIdClause.replace("{id}", id);
       }
       sparqlQuery = selectPortion + typeConstraint + byId + predicates + inventoryConstraint + filterStr + '}';
-      sparqlQuery = selectClause + 
-          typeConstraint + 
-          byId + 
-          predicateBody + 
-          inventoryConstraint + 
-          filterStr + '}';
+      // sparqlQuery = selectClause + 
+      //     typeConstraint + 
+      //     byId + 
+      //     predicateBody + 
+      //     inventoryConstraint + 
+      //     filterStr + '}';
       break;
     default:
       throw new Error(`Unsupported query type ' ${type}'`)

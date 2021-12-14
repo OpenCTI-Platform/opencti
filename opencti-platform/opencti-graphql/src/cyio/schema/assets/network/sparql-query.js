@@ -21,7 +21,7 @@ const inventoryConstraint = `
 export function getSelectSparqlQuery(type, select, id, filter, ) {
   var sparqlQuery;
   let { selectionClause, predicates } = buildSelectVariables(predicateMap, select);
-  selectionClause = `SELECT ${select.includes("id") ? "DISTINCT" : ""} ${selectionClause}`;
+  selectionClause = `SELECT ${select.includes("id") ? "DISTINCT ?iri" : "?iri"} ${selectionClause}`;
   let iri;
   switch( type ) {
     case 'NETADDR-RANGE':

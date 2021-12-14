@@ -202,6 +202,7 @@ class CyioListLines extends Component {
       handleRemoveFilter,
       selectedElements,
       handleToggleSelectAll,
+      filterEntityType,
       selectAll,
       openExports,
       noPadding,
@@ -250,6 +251,7 @@ class CyioListLines extends Component {
                 availableFilterKeys={availableFilterKeys}
                 handleAddFilter={handleAddFilter}
                 currentFilters={filters}
+                filterEntityType={filterEntityType}
               />
             )}
             {numberOfElements && (
