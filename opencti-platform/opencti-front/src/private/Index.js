@@ -27,7 +27,7 @@ import { getAccount } from '../services/account.service';
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    minWidth: 1280,
+    minWidth: '100%',
     height: '100%',
   },
   content: {

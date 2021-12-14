@@ -47,22 +47,29 @@ const styles = (theme) => ({
     marginRight: -24,
     marginTop: -20,
     height: '64px',
+    '@media (max-width: 1063.5px)': {
+      height: '100%',
+    },
+    display: 'flex',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    alignItems: 'center',
     color: theme.palette.header.text,
     boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
   },
   parameters: {
-    float: 'left',
+    // float: 'left',
     padding: '18px',
   },
   views: {
-    display: 'flex',
+    // display: 'flex',
     float: 'right',
     marginTop: '5px',
     padding: '10px',
   },
   cardsContainer: {
     marginTop: 10,
-    paddingTop: 0,
+    paddingTop: '0px 16px 16px 16px',
   },
   iconButton: {
     float: 'left',

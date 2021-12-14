@@ -63,15 +63,22 @@ const styles = (theme) => ({
     marginRight: -24,
     marginTop: -20,
     height: '64px',
+    '@media (max-width: 1063.5px)': {
+      height: '100%',
+    },
+    display: 'flex',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    alignItems: 'center',
     color: theme.palette.header.text,
     boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
   },
   parameters: {
-    float: 'left',
+    // float: 'left',
     padding: '18px',
   },
   views: {
-    float: 'right',
+    // float: 'right',
     marginTop: '5px',
     padding: '10px',
   },
@@ -82,8 +89,8 @@ const styles = (theme) => ({
     padding: '7px',
   },
   linesContainer: {
-    margin: '10px 0 0 0',
-    padding: 0,
+    marginTop: '10px',
+    padding: '0px 16px 16px 16px',
   },
   linesContainerBottomNav: {
     margin: '10px 0 90px 0',
