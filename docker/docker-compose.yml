@@ -86,7 +86,6 @@ services:
       # - ./darklight.crt:/opt/opencti/certs/darklight.crt
       # - ./darklight.key:/opt/opencti/certs/darklight.key
     profiles:
-      - opencti
       - frontend
 
 volumes:
