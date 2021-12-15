@@ -1,0 +1,103 @@
+query DeviceList {
+  computingDeviceAssetList {
+    pageInfo {
+      globalCount
+    }
+    edges {
+      node {
+        id
+        # entity_type
+        created
+        modified
+        labels
+        asset_id
+        asset_type
+        asset_tag
+        name
+        description
+        locations {
+          id
+          name
+          description
+        }
+        external_references {
+          edges {
+            node {
+              id
+              modified
+              source_name
+              description
+              external_id
+              url
+              reference_purpose
+              media_type
+            }
+          }
+        }
+        notes {
+          edges {
+            node {
+              id
+              modified
+              abstract
+              content
+              authors
+            }
+          }
+        }
+        serial_number
+        vendor_name
+        version
+        release_date
+        implementation_point
+        operational_status
+        cpe_identifier
+        installation_id
+        model
+        motherboard_id
+        baseline_configuration_name
+        function
+        bios_id
+        default_gateway
+        fqdn
+        hostname
+        netbios_name
+        mac_address
+        network_id
+        vlan_id
+        uri
+        ports {
+          port_number
+          protocols
+        }
+        is_publicly_accessible
+        is_scanned
+        is_virtual
+        last_scanned
+        connected_to_network {
+          id
+        }
+        installed_hardware {
+          id
+        }
+        installed_operating_system {
+          id
+          name
+          family
+        }
+        installed_software {
+          id
+          name
+          vendor_name
+          version
+        }
+        ipv4_address {
+          ip_address_value
+        }
+        ipv6_address {
+          ip_address_value
+        }
+      }
+    }
+  }
+}

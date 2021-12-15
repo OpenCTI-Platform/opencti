@@ -1,0 +1,17 @@
+SELECT DISTINCT ?iri ?id ?object_type ?asset_id ?asset_type ?name ?description
+FROM <tag:stardog:api:context:named>
+WHERE {
+    ?iri a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
+    ?iri <http://darklight.ai/ns/common#id> ?id .
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?object_type } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_type> ?asset_type } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#name> ?name } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#description> ?description } .
+    {
+        SELECT DISTINCT ?iri
+        WHERE {
+            ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
+                 <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+        }
+    }
+}

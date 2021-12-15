@@ -1,0 +1,27 @@
+query softwarePagination {
+  softwareAssetList(first:25, offset: 25, orderedBy: name, orderMode: desc) {
+    pageInfo {
+      globalCount
+    }
+    edges {
+      node {
+        id
+        name
+        description
+        ... SoftwareLine_node
+      }
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+      globalCount
+    }
+  }
+}
+fragment SoftwareLine_node on SoftwareAsset {
+  id
+  name
+  created
+  modified
+  labels
+}

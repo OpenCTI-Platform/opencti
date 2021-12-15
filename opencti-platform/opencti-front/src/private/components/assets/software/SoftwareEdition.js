@@ -122,7 +122,6 @@ class SoftwareEdition extends Component {
             query={softwareEditionDarkLightQuery}
             variables={{ id: softwareId }}
             render={({ props }) => {
-              console.log(`SoftwareEditionDarkLightQuery OR Props ${JSON.stringify(props)}`);
               if (props) {
                 return (
                   <SoftwareEditionContainer

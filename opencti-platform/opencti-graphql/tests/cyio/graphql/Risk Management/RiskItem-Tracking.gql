@@ -1,0 +1,36 @@
+query RiskItemTracking {
+  risk(id: "d67ba9c2-9421-4e3e-ba6c-8a3ab382dc3a") {
+    id
+    created
+    modified
+    risk_log(first: 5) {
+      edges {
+        node {
+          id
+          created
+          modified
+          entry_type        # Entry Type
+          name              # Title
+          description       # Description
+          event_start       # Start Date
+          event_end         # End Date
+          status_change     # Status Change
+          logged_by {
+            ... on OscalPerson {
+              id
+              name
+            }
+            ... on OscalOrganization {
+              id
+              name
+            }
+          }
+          related_responses {
+            id
+            name
+          }
+        }
+      }
+    }
+  }
+}

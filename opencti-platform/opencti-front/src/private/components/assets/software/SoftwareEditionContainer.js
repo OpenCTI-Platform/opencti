@@ -51,7 +51,7 @@ const styles = (theme) => ({
     padding: '8px 16px 8px 8px',
   },
   title: {
-    textTransform: 'uppercase',
+    float: 'left',
   },
   rightContainer: {
     float: 'right',
@@ -115,7 +115,6 @@ class SoftwareEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('Software Created Successfully! InputData: ', values);
     // const finalValues = pipe(
     //   assoc('createdBy', values.createdBy?.value),
     //   assoc('objectMarking', pluck('value', values.objectMarking)),
@@ -141,7 +140,6 @@ class SoftwareEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        console.log('SoftwareEditionDarkLightMutationData', data);
         this.props.history.push('/dashboard/assets/software');
       },
       onError: (err) => console.log('SoftwareEditionDarkLightMutationError', err),
@@ -184,7 +182,6 @@ class SoftwareEditionContainer extends Component {
       t, classes, handleClose, software,
     } = this.props;
     const { editContext } = software;
-    console.log('SoftwareEditionContainerData', software);
     const initialValues = R.pipe(
       R.assoc('id', software.id),
       R.assoc('asset_id', software.asset_id),
@@ -249,7 +246,7 @@ class SoftwareEditionContainer extends Component {
                     classes={{ root: classes.title }}
                     style={{ float: 'left', marginTop: 10, marginRight: 5 }}
                   >
-                    {t('Edit: ')}
+                    {t('EDIT: ')}
                   </Typography>
                   <Field
                     component={TextField}

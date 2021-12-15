@@ -922,7 +922,7 @@
     name
   }
 
-  # "Defines identifying information about a Risk"
+  "Defines identifying information about a Risk"
   type Risk implements BasicObject & LifecycleObject & CoreObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
