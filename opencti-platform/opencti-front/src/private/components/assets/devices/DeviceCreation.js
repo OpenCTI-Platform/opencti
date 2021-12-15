@@ -99,6 +99,7 @@ const deviceCreationMutation = graphql`
 
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  uri: Yup.string().url(t('The value must be an URL')),
   // asset_type: Yup.array().required(t('This field is required')),
   // implementation_point: Yup.string().required(t('This field is required')),
   // operational_status: Yup.string().required(t('This field is required')),
@@ -210,6 +211,9 @@ class DeviceCreation extends Component {
             ports: [],
             asset_type: 'physical-devices',
             mac_address: [],
+            installed_operating_system: '',
+            installed_hardware: [],
+            installed_software: [],
           }}
           validationSchema={deviceValidation(t)}
           onSubmit={this.onSubmit.bind(this)}

@@ -215,6 +215,7 @@ class NetworkEditionContainer extends Component {
         'network_id',
         'implementation_point',
         'starting_address',
+        'ending_address',
       ]),
     )(network);
     return (
@@ -315,9 +316,9 @@ class NetworkEditionContainer extends Component {
                 style={{ marginTop: 25 }}
               >
                 <Grid item={true} xs={6}>
-                  {/* <CyioCoreObjectExternalReferences
+                  <CyioCoreObjectExternalReferences
                     cyioCoreObjectId={network.id}
-                  /> */}
+                  />
                 </Grid>
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectLatestHistory cyioCoreObjectId={network.id} />
@@ -346,14 +347,45 @@ const NetworkEditionFragment = createFragmentContainer(
   NetworkEditionContainer,
   {
     network: graphql`
-      fragment NetworkEditionContainer_network on IntrusionSet {
+      fragment NetworkEditionContainer_network on NetworkAsset {
         id
-        ...NetworkEditionOverview_network
-        ...NetworkEditionDetails_network
-        editContext {
-          name
-          focusOn
+        name
+        asset_id
+        network_id
+        description
+        locations {
+          description
         }
+        version
+        labels
+        vendor_name
+        asset_tag
+        asset_type
+        serial_number
+        release_date
+        operational_status
+        network_name
+        network_id
+        is_scanned
+        implementation_point
+        network_address_range {
+          ending_ip_address{
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+          starting_ip_address{
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+        }
+        # ...NetworkEditionOverview_network
+        # ...NetworkEditionDetails_network
+        # editContext {
+        #   name
+        #   focusOn
+        # }
       }
     `,
   },

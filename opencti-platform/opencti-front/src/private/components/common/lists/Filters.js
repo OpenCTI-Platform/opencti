@@ -39,7 +39,7 @@ import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 const styles = (theme) => ({
   filters: {
     float: 'left',
-    margin: '-8px 0 0 -5px',
+    margin: '-10px 0 0 -5px',
   },
   filtersDialog: {
     margin: '0 0 20px 0',
@@ -190,6 +190,29 @@ class Filters extends Component {
                 name_m: R.union(
                   nameEntities,
                   this.state.entities.name_m,
+                ),
+              },
+            });
+          });
+        break;
+      case 'vendor_name_or':
+        fetchDarklightQuery(itAssetFiltersSoftwareFieldsQuery)
+          .toPromise()
+          .then((data) => {
+            const vendorEntities = R.pipe(
+              R.pathOr([], ['softwareAssetList', 'edges']),
+              R.map((n) => ({
+                label: t(n.node.vendor_name),
+                value: n.node.vendor_name,
+                type: n.node.vendor_name === 'apple' || n.node.vendor_name === 'microsoft' || n.node.vendor_name === 'linux' ? n.node.vendor_name : 'other',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                vendor_name_or: R.union(
+                  vendorEntities,
+                  this.state.entities.vendor_name_or,
                 ),
               },
             });

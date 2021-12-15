@@ -320,7 +320,7 @@ class SoftwareEditionContainer extends Component {
                 style={{ marginTop: 25 }}
               >
                 <Grid item={true} xs={6}>
-                  {/* <CyioCoreObjectExternalReferences cyioCoreObjectId={software.id} /> */}
+                  <CyioCoreObjectExternalReferences cyioCoreObjectId={software.id} />
                 </Grid>
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectLatestHistory cyioCoreObjectId={software.id} />
@@ -349,13 +349,30 @@ const SoftwareEditionFragment = createFragmentContainer(
   SoftwareEditionContainer,
   {
     software: graphql`
-      fragment SoftwareEditionContainer_software on Campaign {
+      fragment SoftwareEditionContainer_software on SoftwareAsset {
         id
-        ...SoftwareEditionOverview_software
-        editContext {
-          name
-          focusOn
-        }
+        name
+        asset_id
+        description
+        version
+        vendor_name
+        asset_tag
+        labels
+        asset_type
+        serial_number
+        release_date
+        operational_status
+        software_identifier
+        license_key
+        cpe_identifier
+        patch_level
+        installation_id
+        implementation_point
+        # ...SoftwareEditionOverview_software
+        # editContext {
+        #   name
+        #   focusOn
+        # }
       }
     `,
   },

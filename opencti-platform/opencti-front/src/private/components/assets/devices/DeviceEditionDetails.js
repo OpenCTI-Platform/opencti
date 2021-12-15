@@ -26,6 +26,8 @@ import { dateFormat, parse } from '../../../../utils/Time';
 import DatePickerField from '../../../../components/DatePickerField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import InstalledAsset from '../../common/form/InstalledAsset';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   paper: {
@@ -70,7 +72,7 @@ class DeviceEditionDetailsComponent extends Component {
     commitMutation({
       mutation: deviceEditionDetailsFocus,
       variables: {
-        id: this.props.device.id,
+        id: this.props.device?.id,
         input: {
           focusOn: name,
         },
@@ -80,8 +82,9 @@ class DeviceEditionDetailsComponent extends Component {
 
   render() {
     const {
-      t, classes, device, context, enableReferences,
+      t, classes, device, enableReferences,
     } = this.props;
+    console.log('devicedfsdfsdgs', device);
     return (
       <div>
         <div style={{ height: '100%' }}>
@@ -107,18 +110,27 @@ class DeviceEditionDetailsComponent extends Component {
                     <AddIcon fontSize="small" color="primary" />
                   </div>
                   <Field
-                    component={TextField}
+                    component={SelectField}
                     variant='outlined'
-                    name="installed_operating_system"
                     size='small'
+                    name='installed_operating_system'
+                    style={{ height: '38.09px' }}
                     fullWidth={true}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="installed_operating_system"
-                  //   />
-                  // }
-                  />
+                    containerstyle={{ width: '100%' }}
+                  >
+                    <MenuItem key="microsoft" value="microsoft">
+                      <ItemIcon variant='inline' type='microsoft' />&nbsp;{t('Windows')}
+                    </MenuItem>
+                    <MenuItem key="apple" value="apple">
+                      <ItemIcon variant='inline' type='apple' />&nbsp;{t('Apple')}
+                    </MenuItem>
+                    <MenuItem key="linux" value="linux">
+                      <ItemIcon variant='inline' type='linux' />&nbsp;{t('Linux')}
+                    </MenuItem>
+                    <MenuItem key="other" value="other">
+                      <ItemIcon variant='inline' type='other' />&nbsp;{t('Other')}
+                    </MenuItem>
+                  </Field>
                 </div>
                 <div>
                   <Typography
@@ -135,20 +147,16 @@ class DeviceEditionDetailsComponent extends Component {
                     </Tooltip>
                     <AddIcon fontSize="small" color="primary" style={{ marginTop: 2 }} />
                   </div>
-                  <Field
+                  <InstalledAsset
                     component={SelectField}
-                    style={{ height: '38.09px' }}
                     variant='outlined'
+                    type='software'
+                    multiple={true}
                     name="installed_software"
-                    size='small'
+                    // disabled={true}
                     fullWidth={true}
+                    style={{ height: '38.09px' }}
                     containerstyle={{ width: '100%' }}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="installed_software"
-                  //   />
-                  // }
                   />
                 </div>
                 <div>
@@ -172,12 +180,6 @@ class DeviceEditionDetailsComponent extends Component {
                     name="motherboard_id"
                     size='small'
                     fullWidth={true}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="motherboard_id"
-                  //   />
-                  // }
                   />
                 </div>
                 <div>
@@ -204,12 +206,6 @@ class DeviceEditionDetailsComponent extends Component {
                     size='small'
                     fullWidth={true}
                     containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="ports"
-                  //   />
-                  // }
                   />
                   <Field
                     component={SelectField}
@@ -219,12 +215,6 @@ class DeviceEditionDetailsComponent extends Component {
                     size='small'
                     fullWidth={true}
                     containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="ports"
-                  //   />
-                  // }
                   />
                   <Field
                     component={SelectField}
@@ -234,12 +224,6 @@ class DeviceEditionDetailsComponent extends Component {
                     size='small'
                     fullWidth={true}
                     containerstyle={{ width: '50%' }}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="ports"
-                  //   />
-                  // }
                   />
                   <Field
                     component={SelectField}
@@ -249,12 +233,6 @@ class DeviceEditionDetailsComponent extends Component {
                     size='small'
                     fullWidth={true}
                     containerstyle={{ width: '50%' }}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="ports"
-                  //   />
-                  // }
                   />
                 </div>
                 <div>
@@ -293,18 +271,13 @@ class DeviceEditionDetailsComponent extends Component {
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
+                  <div className="clearfix" />
                   <Field
                     component={TextField}
                     name="connected_to_network"
                     size='small'
                     variant='outlined'
                     fullWidth={true}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="connect_to_network"
-                  //   />
-                  // }
                   />
                 </div>
                 <div>
@@ -327,12 +300,6 @@ class DeviceEditionDetailsComponent extends Component {
                     name="netbios_name"
                     size='small'
                     fullWidth={true}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="netbios_name"
-                  //   />
-                  // }
                   />
                 </div>
                 <div>
@@ -355,7 +322,7 @@ class DeviceEditionDetailsComponent extends Component {
                     <Field
                       component={Switch}
                       name="is_virtual"
-                      defaultChecked={device.is_virtual}
+                      defaultChecked={device?.is_virtual}
                       inputProps={{ 'aria-label': 'ant design' }}
                     />
                     <Typography>Yes</Typography>
@@ -381,7 +348,7 @@ class DeviceEditionDetailsComponent extends Component {
                     <Field
                       component={Switch}
                       name="is_publicly_accessible"
-                      defaultChecked={device.is_publicly_accessible}
+                      defaultChecked={device?.is_publicly_accessible}
                       inputProps={{ 'aria-label': 'ant design' }}
                     />
                     <Typography>Yes</Typography>
@@ -407,12 +374,6 @@ class DeviceEditionDetailsComponent extends Component {
                     name="fqdn"
                     size='small'
                     fullWidth={true}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="fqdn"
-                  //   />
-                  // }
                   />
                 </div>
                 <div>
@@ -432,7 +393,7 @@ class DeviceEditionDetailsComponent extends Component {
                   <Field
                     component={TextField}
                     variant='outlined'
-                    name="fqdn"
+                    name="ipv4_address"
                     size='small'
                     multiline={true}
                     fullWidth={true}
@@ -455,7 +416,7 @@ class DeviceEditionDetailsComponent extends Component {
                   <Field
                     component={TextField}
                     variant='outlined'
-                    name="fqdn"
+                    name="ipv6_address"
                     size='small'
                     multiline={true}
                     fullWidth={true}
@@ -479,20 +440,16 @@ class DeviceEditionDetailsComponent extends Component {
                     <AddIcon fontSize="small" color="primary" />
                   </div>
                   <div className="clearfix" />
-                  <Field
+                  <InstalledAsset
                     component={SelectField}
-                    style={{ height: '38.09px' }}
                     variant='outlined'
+                    type='hardware'
+                    multiple={true}
                     name="installed_hardware"
-                    size='small'
+                    // disabled={true}
                     fullWidth={true}
-                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="installed_hardware"
-                  //   />
-                  // }
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
                   />
                 </div>
                 <div>
@@ -512,13 +469,13 @@ class DeviceEditionDetailsComponent extends Component {
                 <div className="clearfix" />
                 <Field
                   component={TextField}
-                  name="Description"
+                  name="location"
                   fullWidth={true}
                   multiline={true}
                   rows="3"
                   variant='outlined'
                   />
-              </div>
+                </div>
                 <div>
                   <Typography
                     variant="h3"
@@ -539,12 +496,6 @@ class DeviceEditionDetailsComponent extends Component {
                     name="model"
                     size='small'
                     fullWidth={true}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="model"
-                  //   />
-                  // }
                   />
                 </div>
                 <div>
@@ -571,12 +522,6 @@ class DeviceEditionDetailsComponent extends Component {
                     name="mac_address"
                     size='small'
                     fullWidth={true}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="mac_addres"
-                  //   />
-                  // }
                   />
                 </div>
                 <div>
@@ -599,12 +544,6 @@ class DeviceEditionDetailsComponent extends Component {
                     name="baseline_configuration_name"
                     size='small'
                     fullWidth={true}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="baseline_configuration_name"
-                  //   />
-                  // }
                   />
                 </div>
                 <div>
@@ -627,12 +566,6 @@ class DeviceEditionDetailsComponent extends Component {
                     name="uri"
                     size='small'
                     fullWidth={true}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="uri"
-                  //   />
-                  // }
                   />
                 </div>
                 <div>
@@ -655,12 +588,6 @@ class DeviceEditionDetailsComponent extends Component {
                     name="bios_id"
                     size='small'
                     fullWidth={true}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="bios_id"
-                  //   />
-                  // }
                   />
                 </div>
                 <div>
@@ -683,7 +610,7 @@ class DeviceEditionDetailsComponent extends Component {
                     <Field
                       component={Switch}
                       name="is_scanned"
-                      defaultChecked={device.is_scanned}
+                      defaultChecked={device?.is_scanned}
                       inputProps={{ 'aria-label': 'ant design' }}
                     />
                     <Typography>Yes</Typography>
@@ -709,12 +636,6 @@ class DeviceEditionDetailsComponent extends Component {
                     name="hostname"
                     size='small'
                     fullWidth={true}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="host_name"
-                  //   />
-                  // }
                   />
                 </div>
                 <div>
@@ -737,248 +658,12 @@ class DeviceEditionDetailsComponent extends Component {
                     name="default_gateway"
                     size='small'
                     fullWidth={true}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   context={context}
-                  //   fieldName="default_gateway"
-                  //   />
-                  // }
                   />
                 </div>
               </Grid>
             </Grid>
           </Paper>
         </div>
-        {/* <Grid item={true} xs={6}>
-            <div style={{ display: 'grid', gridTemplateColumns: '50% 50%', marginTop: '20px' }}>
-            <div style={{ marginRight: '20px' }}>
-              <Form>
-                <Grid style={{ marginBottom: '80px' }}>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left' }}
-                  >
-                    {t('Installed Operating System')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Installed Operating System')} >
-                      <Information fontSize="small" color="primary" />
- <Information fontSize="inherit"color="disabled" />                     </Tooltip>
-                    <AddIcon fontSize="small" color="primary" />
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant= 'outlined'
-                    name="installed_operating_system"
-                    label={t('Installed Operating System')}
-                    size= 'small'
-                    fullWidth={true}
-                    helperText={
-                      <SubscriptionFocus
-                      context={context}
-                      fieldName="installed_operating_system"
-                      />
-                    }
-                  />
-                </Grid>
-                <Grid style={{ marginBottom: '15px' }}>
-                </Grid>
-                <Grid style={{ marginBottom: '15px' }}>
-                </Grid>
-                  <Grid style={{ marginBottom: '15px' }}>
-                  </Grid>
-                  <Grid style={{ marginBottom: '15px' }}>
-                  </Grid>
-                    <Grid style={{ marginBottom: '15px' }}>
-                  </Grid>
-                    <Grid style={{ marginBottom: '15px' }}>
-                  </Grid>
-                    <Grid style={{ marginBottom: '15px' }}>
-                  </Grid>
-                    <Grid style={{ marginBottom: '15px' }}>
-                  </Grid>
-                    <Grid style={{ marginBottom: '15px' }}>
-                  </Grid>
-              </Form>
-            </div>
-            <div>
-            <Form>
-            <Grid style={{ marginBottom: '15px' }}>
-            </Grid>
-                      <Grid style={{ marginBottom: '15px' }}>
-                    </Grid>
-                    <Grid style={{ marginBottom: '15px' }}>
-                  </Grid>
-                    <Grid style={{ marginBottom: '15px' }}>
-                  </Grid>
-                    <Grid style={{ marginBottom: '15px' }}>
-                  </Grid>
-                    <Grid style={{ marginBottom: '15px' }}>
-                  </Grid>
-                    <Grid style={{ marginBottom: '15px' }}>
-                  </Grid>
-                    <Grid style={{ marginBottom: '15px' }}>
-                  </Grid>
-                      <Grid style={{ marginBottom: '15px' }}>
-                    </Grid>
-                    <Grid style={{ marginBottom: '15px' }}>
-                  </Grid>
-              </Form>
-            </div>
-            </div> */}
-        {/* <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={deviceValidation(t)}
-          onSubmit={this.onSubmit.bind(this)}
-        >
-          {({ submitForm, isSubmitting, validateForm }) => (
-            <div>
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={DatePickerField}
-                  name="first_seen"
-                  label={t('First seen')}
-                  invalidDateMessage={t(
-                    'The value must be a date (YYYY-MM-DD)',
-                  )}
-                  fullWidth={true}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="first_seen"
-                    />
-                  }
-                />
-                <Field
-                  component={DatePickerField}
-                  name="last_seen"
-                  label={t('Last seen')}
-                  invalidDateMessage={t(
-                    'The value must be a date (YYYY-MM-DD)',
-                  )}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="last_seen"
-                    />
-                  }
-                />
-                <Field
-                  component={SelectField}
-                  style={{ height: '38.09px' }}
-                  name="sophistication"
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  label={t('Sophistication')}
-                  fullWidth={true}
-                  containerstyle={{ width: '100%', marginTop: 20 }}
-                  helpertext={
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="sophistication"
-                    />
-                  }
-                >
-                  <MenuItem key="none" value="none">
-                    {t('sophistication_none')}
-                  </MenuItem>
-                  <MenuItem key="minimal" value="minimal">
-                    {t('sophistication_minimal')}
-                  </MenuItem>
-                  <MenuItem key="intermediate" value="intermediate">
-                    {t('sophistication_intermediate')}
-                  </MenuItem>
-                  <MenuItem key="advanced" value="advanced">
-                    {t('sophistication_advanced')}
-                  </MenuItem>
-                  <MenuItem key="expert" value="expert">
-                    {t('sophistication_expert')}
-                  </MenuItem>
-                  <MenuItem key="innovator" value="innovator">
-                    {t('sophistication_innovator')}
-                  </MenuItem>
-                  <MenuItem key="strategic" value="strategic">
-                    {t('sophistication_strategic')}
-                  </MenuItem>
-                </Field>
-                <OpenVocabField
-                  label={t('Resource level')}
-                  type="attack-resource-level-ov"
-                  name="resource_level"
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  containerstyle={{ marginTop: 20, width: '100%' }}
-                  variant="edit"
-                  multiple={false}
-                  editContext={context}
-                />
-                <OpenVocabField
-                  label={t('Primary motivation')}
-                  type="attack-motivation-ov"
-                  name="primary_motivation"
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  containerstyle={{ marginTop: 20, width: '100%' }}
-                  variant="edit"
-                  multiple={false}
-                  editContext={context}
-                />
-                <OpenVocabField
-                  label={t('Secondary motivations')}
-                  type="attack-motivation-ov"
-                  name="secondary_motivations"
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  containerstyle={{ marginTop: 20, width: '100%' }}
-                  variant="edit"
-                  multiple={true}
-                  editContext={context}
-                />
-                <OpenVocabField
-                  label={t('Personal motivations')}
-                  type="attack-motivation-ov"
-                  name="personal_motivations"
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  containerstyle={{ marginTop: 20, width: '100%' }}
-                  variant="edit"
-                  multiple={true}
-                  editContext={context}
-                />
-                <Field
-                  component={TextField}
-                  name="goals"
-                  label={t('Goals (1 / line)')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                  style={{ marginTop: 20 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus context={context} fieldName="goals" />
-                  }
-                />
-                {enableReferences && (
-                  <CommitMessage
-                    submitForm={submitForm}
-                    disabled={isSubmitting}
-                    validateForm={validateForm}
-                  />
-                )}
-              </Form>
-            </div>
-          )}
-        </Formik> */}
       </div>
     );
   }
@@ -994,25 +679,6 @@ DeviceEditionDetailsComponent.propTypes = {
   handleClose: PropTypes.func,
 };
 
-// const DeviceEditionDetails = createFragmentContainer(
-//   DeviceEditionDetailsComponent,
-//   {
-//     device: graphql`
-//       fragment DeviceEditionDetails_device on ThreatActor {
-//         id
-//         first_seen
-//         last_seen
-//         sophistication
-//         resource_level
-//         primary_motivation
-//         secondary_motivations
-//         personal_motivations
-//         goals
-//       }
-//     `,
-//   },
-// );
-
 const DeviceEditionDetails = createFragmentContainer(
   DeviceEditionDetailsComponent,
   {
@@ -1025,12 +691,20 @@ const DeviceEditionDetails = createFragmentContainer(
           name
         }
         installed_operating_system {
+          id
           name
+          vendor_name
         }
         locations {
           city
           country
           description
+        }
+        ipv4_address {
+          ip_address_value
+        }
+        ipv6_address {
+          ip_address_value
         }
         uri
         model

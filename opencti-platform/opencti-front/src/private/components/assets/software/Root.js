@@ -29,10 +29,10 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 const subscription = graphql`
   subscription RootSoftwareSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on Campaign {
-        # ...Software_software
-        ...SoftwareEditionContainer_software
-      }
+      # ... on Campaign {
+      #   # ...Software_software
+      #   ...SoftwareEditionContainer_software
+      # }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
