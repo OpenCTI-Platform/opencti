@@ -1,0 +1,26 @@
+query DevicesLinesDarkLightQuery {
+  computingDeviceAssetList(
+    search: null
+    first: 25
+    offset: null
+    orderedBy: name
+    orderMode: asc
+    filters: null
+    filterMode: null
+  ) {
+    edges {
+      node {
+        id
+        name
+        installed_operating_system {
+          name
+        }
+        asset_id
+        fqdn
+        network_id
+        created
+        modified
+      }
+    }
+  }
+}

@@ -147,7 +147,6 @@ class NetworkDeletion extends Component {
       },
       onCompleted: (data) => {
         this.setState({ deleting: false });
-        console.log('NetworkDeletionDarkLightMutationData', data);
         this.handleClose();
         this.props.history.push('/dashboard/assets/network');
       },

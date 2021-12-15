@@ -132,7 +132,7 @@ export default createPaginationContainer(
           search: $search
           first: $count
           # after: $cursor
-          offset: $count
+          # offset: $count
           orderedBy: $orderedBy
           orderMode: $orderMode
           filters: $filters

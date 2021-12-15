@@ -171,7 +171,6 @@ class DeviceEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        console.log('DeviceEditionDarkLightMutationData', data);
         this.props.history.push('/dashboard/assets/devices');
       },
       onError: (err) => console.log('DeviceEditionDarkLightMutationError', err),
@@ -213,7 +212,6 @@ class DeviceEditionContainer extends Component {
     const {
       t, classes, handleClose, device,
     } = this.props;
-    console.log('DeviceEditionPropsData', device);
     const initialValues = R.pipe(
       R.assoc('id', device?.id),
       R.assoc('asset_id', device?.asset_id),

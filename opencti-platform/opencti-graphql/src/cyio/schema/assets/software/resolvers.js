@@ -2,15 +2,15 @@ import { assetSingularizeSchema as singularizeSchema, objectTypeMapping } from '
 import {
   getSelectSparqlQuery,
   getReducer,
-  insertQuery, predicateMap,
+  insertQuery, predicateMap
 } from './sparql-query.js';
-import {compareValues, updateQuery} from '../../utils.js';
-import {addToInventoryQuery, deleteQuery, removeFromInventoryQuery} from "../assetUtil";
+import {compareValues, updateQuery, filterValues} from '../../utils.js';
+import {addToInventoryQuery, deleteQuery, removeFromInventoryQuery} from "../assetUtil.js";
 
 const softwareResolvers = {
   Query: {
     softwareAssetList: async ( _, args, context, info ) => {
-      const selectionList =  context.selectMap.getNode("node");
+      const selectionList = context.selectMap.getNode("node");
       const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList);
       const reducer = getReducer('SOFTWARE');
       const response = await context.dataSources.Stardog.queryAll( 
@@ -28,6 +28,8 @@ const softwareResolvers = {
         let offset = (args.offset === undefined ? 0 : args.offset) ;
         const assetList = (args.orderedBy !== undefined) ? response.sort(compareValues(args.orderedBy, args.orderMode)) : response;
 
+        if (offset > assetList.length) return
+
         for (const asset of assetList) {
           // skip down past the offset
           if ( offset ) {
@@ -35,6 +37,19 @@ const softwareResolvers = {
             continue
           }
 
+          if (asset.id === undefined || asset.id == null ) {
+            console.log(`[DATA-ERROR] object ${asset.iri} is missing required properties; skipping object.`);
+            continue;
+          }
+
+          // filter out non-matching entries if a filter is to be applied
+          if ('filters' in args && args.filters != null && args.filters.length > 0) {
+            if (!filterValues(asset, args.filters, args.filterMode) ) {
+              continue
+            }
+          }
+
+          // check to make sure not to return more than requested
           if ( limit ) {
             const edge = {
               cursor: asset.iri,
@@ -47,11 +62,12 @@ const softwareResolvers = {
             limit-- ;
           }
         }
+        if (edges.length == 0) return []
         return {
           pageInfo: {
-            startCursor: assetList[0].iri,
-            endCursor: assetList[assetList.length -1 ].iri,
-            hasNextPage: (args.first > assetList.length ? true : false),
+            startCursor: edges[0].cursor,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (args.first < assetList.length ? true : false),
             hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: assetList.length,
           },
@@ -62,8 +78,9 @@ const softwareResolvers = {
       }
     },
     softwareAsset: async ( _, args, context, info ) => {
-      var sparqlQuery = getSelectSparqlQuery('SOFTWARE', context.selectMap.getNode("softwareAsset"), args.id);
-      var reducer = getReducer('SOFTWARE');
+      const selectionList = context.selectMap.getNode("softwareAsset");
+      const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList, args.id);
+      const reducer = getReducer('SOFTWARE');
       const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema, )
       if (response === undefined ) return null;
       const first = response[0];
@@ -91,13 +108,13 @@ const softwareResolvers = {
     editSoftwareAsset: async ( _, {id, input}, context,  ) => {
       const dbName = context.dbName;
       const query = updateQuery(
-          `http://scap.nist.gov/ns/asset-identification#Software-${id}`,
-          "http://scap.nist.gov/ns/asset-identification#Software",
-          input,
-          predicateMap
-      );
-      await context.dataSources.Stardog.edit(dbName, query);
-      return {id};
+        `http://scap.nist.gov/ns/asset-identification#Software-${id}`,
+        "http://scap.nist.gov/ns/asset-identification#Software",
+        input,
+        predicateMap
+    );
+    await context.dataSources.Stardog.edit(dbName, query);
+    return {id};
     },
   },
   // Map enum GraphQL values to data model required values
