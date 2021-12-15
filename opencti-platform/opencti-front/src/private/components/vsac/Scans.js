@@ -718,11 +718,10 @@ class Scans extends Component {
                               Explore Results
                             </MenuItem>
                             <MenuItem
-                              component={Link}
-                              to="/dashboard/vsac/scans/viewcharts"
-                              selected={location.pathname.includes(
-                                "/dashboard/vsac/scans/viewcharts"
-                              )}
+                              onClick={() => 
+                                handleLinkClink('/dashboard/vsac/scans/viewcharts',
+                                { analysises: this.state.analysises,
+                                })} 
                             >
                               <ListItemIcon>
                                 <ShowChartIcon fontSize="small" />
