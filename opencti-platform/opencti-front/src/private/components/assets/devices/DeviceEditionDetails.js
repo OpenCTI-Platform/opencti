@@ -448,7 +448,8 @@ class DeviceEditionDetailsComponent extends Component {
                     name="installed_hardware"
                     // disabled={true}
                     fullWidth={true}
-                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
                   />
                 </div>
                 <div>

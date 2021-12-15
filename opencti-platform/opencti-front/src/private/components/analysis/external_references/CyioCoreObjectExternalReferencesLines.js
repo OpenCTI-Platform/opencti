@@ -188,7 +188,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
       t, classes, cyioCoreObjectId, data,
     } = this.props;
     const { expanded, displayExternalRefID } = this.state;
-    const externalReferencesEdges = data.itAsset.external_references.edges;
+    const externalReferencesEdges = data?.itAsset?.external_references?.edges || [];
     // const externalReferencesEdges = [data.externalReference];
     const expandable = externalReferencesEdges.length > 7;
     return (
@@ -196,18 +196,18 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('External references')}
         </Typography>
-        <Security
+        {/* <Security
           needs={[KNOWLEDGE_KNUPDATE]}
           placeholder={<div style={{ height: 28 }} />}
-        >
+        > */}
           <CyioAddExternalReferences
             cyioCoreObjectOrCyioCoreRelationshipId={cyioCoreObjectId}
             cyioCoreObjectOrCyioCoreRelationshipReferences={
-              data.itAsset.external_references.edges
+              data?.itAsset?.external_references?.edges
               // data.externalReference
             }
           />
-        </Security>
+        {/* </Security> */}
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {externalReferencesEdges.length > 0 ? (

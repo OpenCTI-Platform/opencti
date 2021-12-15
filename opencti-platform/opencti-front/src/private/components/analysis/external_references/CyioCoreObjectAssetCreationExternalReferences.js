@@ -55,17 +55,17 @@ class CyioCoreObjectAssetCreationExternalReferences extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('External references')}
         </Typography>
-        <Security
+        {/* <Security
           needs={[KNOWLEDGE_KNUPDATE]}
           placeholder={<div style={{ height: 28 }} />}
-        >
+        > */}
           <CyioAddExternalReferences
             // cyioCoreObjectOrCyioCoreRelationshipId={cyioCoreObjectId}
             // cyioCoreObjectOrCyioCoreRelationshipReferences={
             //   data.cyioCoreObject.externalReferences.edges
             // }
           />
-        </Security>
+        {/* </Security> */}
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <ExternalReferencesField

@@ -90,9 +90,9 @@ class DeviceComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                {/* <CyioCoreObjectExternalReferences
+                <CyioCoreObjectExternalReferences
                   cyioCoreObjectId={device?.id}
-                /> */}
+                />
               </Grid>
               <Grid item={true} xs={6}>
                 <CyioCoreObjectLatestHistory cyioCoreObjectId={device?.id} />
