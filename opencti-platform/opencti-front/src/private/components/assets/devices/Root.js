@@ -30,8 +30,8 @@ const subscription = graphql`
   subscription RootDeviceSubscription($id: ID!) {
     stixDomainObject(id: $id) {
       # ... on ThreatActor {
-      #   # ...Device_device
-      #   # ...DeviceEditionContainer_device
+        # ...Device_device
+        # ...DeviceEditionContainer_device
       # }
       ...FileImportViewer_entity
       ...FileExportViewer_entity

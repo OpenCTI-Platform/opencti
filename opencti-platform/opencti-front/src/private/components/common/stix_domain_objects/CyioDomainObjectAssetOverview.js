@@ -66,11 +66,12 @@ class CyioDomainObjectAssetOverview extends Component {
       t, fldt, classes, cyioDomainObject, withoutMarking, withPattern,
     } = this.props;
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
-    const otherCyioIds = cyioDomainObject?.x_opencti_cyio_ids || [];
-    const stixIds = R.filter(
-      (n) => n !== cyioDomainObject?.standard_id,
-      otherCyioIds,
-    );
+    // const otherCyioIds = cyioDomainObject?.x_opencti_cyio_ids || [];
+    // const stixIds = R.filter(
+    //   (n) => n !== cyioDomainObject?.standard_id,
+    //   otherCyioIds,
+    // );
+    console.log('cyioDomainObjectData', cyioDomainObject);
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -139,7 +140,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   label={cyioDomainObject?.asset_type && t(cyioDomainObject.asset_type)}
                   color="primary"
                 />
-                {/* <ItemCreator creator={cyioDomainObject.creator} /> */}
+                {/* <ItemCreator creator={cyioDomainObject?.creator} /> */}
               </div>
               <div>
                 <Typography

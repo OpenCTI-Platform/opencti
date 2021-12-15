@@ -72,7 +72,7 @@ class DeviceEditionDetailsComponent extends Component {
     commitMutation({
       mutation: deviceEditionDetailsFocus,
       variables: {
-        id: this.props.device.id,
+        id: this.props.device?.id,
         input: {
           focusOn: name,
         },
@@ -82,7 +82,7 @@ class DeviceEditionDetailsComponent extends Component {
 
   render() {
     const {
-      t, classes, device, context, enableReferences,
+      t, classes, device, enableReferences,
     } = this.props;
     console.log('devicedfsdfsdgs', device);
     return (
@@ -157,7 +157,6 @@ class DeviceEditionDetailsComponent extends Component {
                     fullWidth={true}
                     style={{ height: '38.09px' }}
                     containerstyle={{ width: '100%' }}
-                    helperText={t('Select device')}
                   />
                 </div>
                 <div>
@@ -272,6 +271,7 @@ class DeviceEditionDetailsComponent extends Component {
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
+                  <div className="clearfix" />
                   <Field
                     component={TextField}
                     name="connected_to_network"
@@ -322,7 +322,7 @@ class DeviceEditionDetailsComponent extends Component {
                     <Field
                       component={Switch}
                       name="is_virtual"
-                      defaultChecked={device.is_virtual}
+                      defaultChecked={device?.is_virtual}
                       inputProps={{ 'aria-label': 'ant design' }}
                     />
                     <Typography>Yes</Typography>
@@ -348,7 +348,7 @@ class DeviceEditionDetailsComponent extends Component {
                     <Field
                       component={Switch}
                       name="is_publicly_accessible"
-                      defaultChecked={device.is_publicly_accessible}
+                      defaultChecked={device?.is_publicly_accessible}
                       inputProps={{ 'aria-label': 'ant design' }}
                     />
                     <Typography>Yes</Typography>
@@ -393,7 +393,7 @@ class DeviceEditionDetailsComponent extends Component {
                   <Field
                     component={TextField}
                     variant='outlined'
-                    name="fqdn"
+                    name="ipv4_address"
                     size='small'
                     multiline={true}
                     fullWidth={true}
@@ -416,7 +416,7 @@ class DeviceEditionDetailsComponent extends Component {
                   <Field
                     component={TextField}
                     variant='outlined'
-                    name="fqdn"
+                    name="ipv6_address"
                     size='small'
                     multiline={true}
                     fullWidth={true}
@@ -448,33 +448,31 @@ class DeviceEditionDetailsComponent extends Component {
                     name="installed_hardware"
                     // disabled={true}
                     fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '100%' }}
-                    helperText={t('Select device')}
+                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                   />
                 </div>
                 <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 15 }}
-                  >
-                    {t('Location')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
-                    <Tooltip title={t('Location')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    name="Description"
-                    fullWidth={true}
-                    multiline={true}
-                    rows="3"
-                    variant='outlined'
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 15 }}
+                >
+                  {t('Location')}
+                </Typography>
+                <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
+                  <Tooltip title={t('Location')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  name="location"
+                  fullWidth={true}
+                  multiline={true}
+                  rows="3"
+                  variant='outlined'
                   />
                 </div>
                 <div>
@@ -611,7 +609,7 @@ class DeviceEditionDetailsComponent extends Component {
                     <Field
                       component={Switch}
                       name="is_scanned"
-                      defaultChecked={device.is_scanned}
+                      defaultChecked={device?.is_scanned}
                       inputProps={{ 'aria-label': 'ant design' }}
                     />
                     <Typography>Yes</Typography>
@@ -700,6 +698,12 @@ const DeviceEditionDetails = createFragmentContainer(
           city
           country
           description
+        }
+        ipv4_address {
+          ip_address_value
+        }
+        ipv6_address {
+          ip_address_value
         }
         uri
         model

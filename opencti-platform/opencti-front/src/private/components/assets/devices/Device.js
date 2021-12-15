@@ -91,25 +91,25 @@ class DeviceComponent extends Component {
             >
               <Grid item={true} xs={6}>
                 {/* <CyioCoreObjectExternalReferences
-                  cyioCoreObjectId={device.id}
+                  cyioCoreObjectId={device?.id}
                 /> */}
               </Grid>
               <Grid item={true} xs={6}>
-                <CyioCoreObjectLatestHistory cyioCoreObjectId={device.id} />
+                <CyioCoreObjectLatestHistory cyioCoreObjectId={device?.id} />
               </Grid>
             </Grid>
             <CyioCoreObjectOrCyioCoreRelationshipNotes
-              cyioCoreObjectOrCyioCoreRelationshipId={device.id}
+              cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
             />
             {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <DeviceEdition deviceId={device.id} />
+                <DeviceEdition deviceId={device?.id} />
               </Security> */}
           </div>
         ) : (
           // <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <DeviceEdition
             open={this.state.openEdit}
-            deviceId={device.id}
+            deviceId={device?.id}
             history={history}
           />
           // </Security>
