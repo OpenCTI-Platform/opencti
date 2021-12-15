@@ -39,7 +39,7 @@ import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 const styles = (theme) => ({
   filters: {
     float: 'left',
-    margin: '-8px 0 0 -5px',
+    margin: '-10px 0 0 -5px',
   },
   filtersDialog: {
     margin: '0 0 20px 0',

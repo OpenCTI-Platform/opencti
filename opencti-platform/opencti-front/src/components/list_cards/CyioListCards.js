@@ -55,10 +55,9 @@ const styles = (theme) => ({
     padding: '18px',
   },
   views: {
-    display: 'flex',
     float: 'right',
     marginTop: '5px',
-    padding: '10px',
+    padding: '14px 18px',
   },
   cardsContainer: {
     marginTop: 10,
@@ -74,17 +73,18 @@ const styles = (theme) => ({
     float: 'left',
   },
   sortFieldLabel: {
-    margin: '10px 15px 0 0',
+    margin: '7px 15px',
     fontSize: 14,
     float: 'left',
+    color: theme.palette.header.text,
   },
   sortIcon: {
     float: 'left',
-    margin: '-5px 0 0 15px',
+    margin: '-9px 0 0 15px',
   },
   filters: {
     float: 'left',
-    margin: '2px 0 0 15px',
+    margin: '2px 0 0 10px',
   },
   filter: {
     marginRight: 10,
@@ -273,7 +273,7 @@ class CyioListCards extends Component {
                       startIcon={<AddCircleOutline />}
                       onClick={handleNewCreation && handleNewCreation.bind(this)}
                       color='primary'
-                      style={{ marginTop: '-23px' }}
+                      style={{ marginTop: '-22px' }}
                     >
                       {t('New')}
                     </Button>

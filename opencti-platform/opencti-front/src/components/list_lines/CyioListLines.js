@@ -73,7 +73,7 @@ const styles = (theme) => ({
   views: {
     float: 'right',
     marginTop: '5px',
-    padding: '10px',
+    padding: '14px 18px',
   },
   iconButton: {
     float: 'left',
@@ -97,13 +97,14 @@ const styles = (theme) => ({
     float: 'left',
   },
   sortFieldLabel: {
-    margin: '10px 15px 0 0',
+    margin: '7px 15px',
     fontSize: 14,
     float: 'left',
+    color: theme.palette.header.text,
   },
   sortArrowButton: {
     float: 'left',
-    margin: '-5px 0 0 15px',
+    margin: '-9px 0 0 15px',
   },
   sortIcon: {
     position: 'absolute',
@@ -368,7 +369,7 @@ class CyioListLines extends Component {
                       startIcon={<AddCircleOutline />}
                       onClick={handleNewCreation && handleNewCreation.bind(this)}
                       color='primary'
-                      style={{ marginTop: '-23px' }}
+                      style={{ marginTop: '-22px' }}
                     >
                       {t('New')}
                     </Button>
