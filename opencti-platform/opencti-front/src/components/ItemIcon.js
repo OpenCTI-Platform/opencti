@@ -27,6 +27,7 @@ import {
   Work,
   Phone,
   Apple,
+  Devices,
   PhoneLocked,
   ViewColumn,
   Wifi,
@@ -91,6 +92,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <img src={linuxIcon} style={style} alt="linux-icon" />;
     case 'other':
       return <img src={deviceIcon} style={style} alt="device-icon" />;
+    case 'physical_device':
+      return <Devices style={style} fontSize={fontSize} role="img" />;
     case 'router':
       return <Router style={style} fontSize={fontSize} role="img" />;
     case 'firewall':

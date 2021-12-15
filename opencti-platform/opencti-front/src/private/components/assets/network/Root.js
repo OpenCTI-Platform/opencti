@@ -29,10 +29,10 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 const subscription = graphql`
   subscription RootNetworkSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on IntrusionSet {
-        # ...Network_network
-        ...NetworkEditionContainer_network
-      }
+      # ... on IntrusionSet {
+      #   # ...Network_network
+      #   ...NetworkEditionContainer_network
+      # }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity

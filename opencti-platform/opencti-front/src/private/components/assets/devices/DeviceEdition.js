@@ -37,59 +37,13 @@ const styles = (theme) => ({
 });
 
 export const deviceEditionQuery = graphql`
-  query DeviceEditionContainerQuery($id: String!) {
-    threatActor(id: $id) {
+  query DeviceEditionContainerQuery($id: ID!) {
+    computingDeviceAsset(id: $id) {
       ...DeviceEditionContainer_device
     }
-  }
-`;
-
-export const deviceEditionDarkLightQuery = graphql`
-  query DeviceEditionContainerDarkLightQuery($id: ID!) {
-    computingDeviceAsset(id: $id) {
-      id
-      name
-      installed_operating_system {
-        name
-      }
-      asset_id
-      network_id
-      description
-      locations {
-        description
-      }
-      version
-      vendor_name
-      asset_tag
-      asset_type
-      serial_number
-      release_date
-      # operational_status
-      installed_software {
-        name
-      }
-      connected_to_network {
-        name
-      }
-      uri
-      model
-      mac_address
-      fqdn
-      baseline_configuration_name
-      bios_id
-      is_scanned
-      hostname
-      default_gateway
-      motherboard_id
-      installation_id
-      netbios_name
-      is_virtual
-      is_publicly_accessible
-      installed_hardware {
-        name
-        uri
-      }
-    }
+    # settings {
+    #   platform_enable_reference
+    # }
   }
 `;
 
@@ -123,24 +77,9 @@ class DeviceEdition extends Component {
     } = this.props;
     return (
       <div>
-        {/* <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Edit"
-          className={classes.editButton}
-        >
-          <Edit />
-        </Fab> */}
-        {/* <Drawer
-          open={this.state.open}
-          anchor="right"
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        > */}
-        <div>
         <QR
           environment={environmentDarkLight}
-          query={deviceEditionDarkLightQuery}
+          query={deviceEditionQuery}
           variables={{ id: deviceId }}
           render={({ error, props }) => {
             if (props) {
@@ -148,8 +87,8 @@ class DeviceEdition extends Component {
                 <DeviceEditionContainer
                   device={props.computingDeviceAsset}
                   // enableReferences={props.settings.platform_enable_reference?.includes(
-                    //   'Device',
-                    // )}
+                  //   'Device',
+                  // )}
                   history={history}
                   handleClose={this.handleClose.bind(this)}
                 />
@@ -158,26 +97,6 @@ class DeviceEdition extends Component {
             return <Loader variant="inElement" />;
           }}
         />
-          {/* <QueryRenderer
-            query={deviceEditionQuery}
-            variables={{ id: deviceId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <DeviceEditionContainer
-                    device={props.threatActor}
-                    // enableReferences={props.settings.platform_enable_reference?.includes(
-                    //   'Device',
-                    // )}
-                    handleClose={this.handleClose.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          /> */}
-        {/* </Drawer> */}
-        </div>
       </div>
     );
   }

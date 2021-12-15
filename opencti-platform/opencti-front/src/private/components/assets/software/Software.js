@@ -128,18 +128,13 @@ const Software = createFragmentContainer(SoftwareComponent, {
       asset_id
       labels
       description
-      locations {
-        city
-        country
-        description
-      }
       version
       vendor_name
       asset_tag
       asset_type
       serial_number
       release_date
-      # operational_status
+      operational_status
       ...SoftwareDetails_software
     }
   `,

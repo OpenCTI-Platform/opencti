@@ -210,6 +210,9 @@ class DeviceCreation extends Component {
             ports: [],
             asset_type: 'physical-devices',
             mac_address: [],
+            installed_operating_system: '',
+            installed_hardware: [],
+            installed_software: [],
           }}
           validationSchema={deviceValidation(t)}
           onSubmit={this.onSubmit.bind(this)}

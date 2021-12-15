@@ -128,20 +128,16 @@ const Network = createFragmentContainer(NetworkComponent, {
   network: graphql`
     fragment Network_network on NetworkAsset {
       id
+      name
       asset_tag
       asset_type
-      asset_id
-      locations {
-        description
-      }
-      name
       asset_id
       serial_number
       labels
       description
       release_date
       vendor_name
-      # operational_status
+      operational_status
       version
       ...NetworkDetails_network
     }

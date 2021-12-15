@@ -211,6 +211,14 @@ class DeviceEditionContainer extends Component {
     const {
       t, classes, handleClose, device,
     } = this.props;
+    const installedHardwares = R.pipe(
+      R.pathOr([], ['installed_hardware']),
+      R.map((n) => (n.id)),
+    )(device);
+    const installedSoftware = R.pipe(
+      R.pathOr([], ['installed_software']),
+      R.map((n) => (n.id)),
+    )(device);
     const initialValues = R.pipe(
       R.assoc('id', device.id),
       R.assoc('asset_id', device.asset_id),
@@ -223,9 +231,12 @@ class DeviceEditionContainer extends Component {
       R.assoc('vendor_name', device.vendor_name),
       R.assoc('serial_number', device.serial_number),
       R.assoc('release_date', device.release_date),
+      R.assoc('installed_hardware', installedHardwares),
+      R.assoc('installed_software', installedSoftware),
       R.assoc('operational_status', device.operational_status),
       R.assoc('installation_id', device.installation_id || ''),
       R.assoc('bios_id', device.bios_id || ''),
+      R.assoc('installed_operating_system', device?.installed_operating_system?.vendor_name || ''),
       // R.assoc('connected_to_network', device.connected_to_network.name || ''),
       R.assoc('netbios_name', device.netbios_name || ''),
       R.assoc('baseline_configuration_name', device.baseline_configuration_name || ''),
@@ -250,14 +261,17 @@ class DeviceEditionContainer extends Component {
         'vendor_name',
         'serial_number',
         'release_date',
+        'installed_operating_system',
         'operational_status',
         'installation_id',
         'connected_to_network',
         'bios_id',
+        'installed_software',
         'netbios_name',
         'baseline_configuration_name',
         'mac_address',
         'model',
+        'installed_hardware',
         'hostname',
         'default_gateway',
         'motherboard_id',
@@ -434,14 +448,54 @@ const DeviceEditionFragment = createFragmentContainer(
   DeviceEditionContainer,
   {
     device: graphql`
-      fragment DeviceEditionContainer_device on ThreatActor {
+      fragment DeviceEditionContainer_device on ComputingDeviceAsset {
         id
-        ...DeviceEditionOverview_device
-        # ...DeviceEditionDetails_device
-        editContext {
+        installed_operating_system {
+          id
           name
-          focusOn
+          vendor_name
         }
+        asset_id
+        network_id
+        description
+        locations {
+          description
+        }
+        version
+        vendor_name
+        asset_tag
+        asset_type
+        serial_number
+        release_date
+        # operational_status
+        installed_software {
+          id
+          name
+        }
+        connected_to_network {
+          name
+        }
+        uri
+        model
+        mac_address
+        fqdn
+        baseline_configuration_name
+        bios_id
+        is_scanned
+        hostname
+        default_gateway
+        motherboard_id
+        installation_id
+        netbios_name
+        is_virtual
+        is_publicly_accessible
+        installed_hardware {
+          id
+          name
+          uri
+        }
+        # ...DeviceEditionOverview_device
+        # ...DeviceEditionDetails_device
       }
     `,
   },
