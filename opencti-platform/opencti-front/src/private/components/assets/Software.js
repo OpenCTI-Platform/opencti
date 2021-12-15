@@ -201,17 +201,18 @@ class Software extends Component {
         selectAll={selectAll}
         OperationsComponent={<SoftwareDeletion />}
         openExports={openExports}
-        exportEntityType="Software"
+        filterEntityType="Software"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'labelledBy',
-          'markedBy',
+          'name_m',
+          'asset_type_or',
           'created_start_date',
           'created_end_date',
-          'createdBy',
+          'vendor_name_or',
+          'labels_or',
         ]}
       >
         {/* <QueryRenderer */}
@@ -317,17 +318,18 @@ class Software extends Component {
         selectAll={selectAll}
         OperationsComponent={<SoftwareDeletion />}
         openExports={openExports}
-        exportEntityType="Software"
+        filterEntityType="Software"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'labelledBy',
-          'markedBy',
+          'name_m',
+          'asset_type_or',
           'created_start_date',
           'created_end_date',
-          'createdBy',
+          'vendor_name_or',
+          'labels_or',
         ]}
       >
         {/* <QueryRenderer */}

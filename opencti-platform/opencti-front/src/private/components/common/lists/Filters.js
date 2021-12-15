@@ -195,6 +195,29 @@ class Filters extends Component {
             });
           });
         break;
+      case 'vendor_name_or':
+        fetchDarklightQuery(itAssetFiltersSoftwareFieldsQuery)
+          .toPromise()
+          .then((data) => {
+            const vendorEntities = R.pipe(
+              R.pathOr([], ['softwareAssetList', 'edges']),
+              R.map((n) => ({
+                label: t(n.node.vendor_name),
+                value: n.node.vendor_name,
+                type: n.node.vendor_name === 'apple' || n.node.vendor_name === 'microsoft' || n.node.vendor_name === 'linux' ? n.node.vendor_name : 'other',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                vendor_name_or: R.union(
+                  vendorEntities,
+                  this.state.entities.vendor_name_or,
+                ),
+              },
+            });
+          });
+        break;
       case 'labels_or':
         // eslint-disable-next-line no-case-declarations
         let cyioLabelsQuery = '';
