@@ -147,7 +147,6 @@ class SoftwareDeletion extends Component {
       },
       onCompleted: (data) => {
         this.setState({ deleting: false });
-        console.log('SoftwareDeletionDarkLightMutationData', data);
         this.handleClose();
         this.props.history.push('/dashboard/assets/software');
       },

@@ -78,8 +78,9 @@ const softwareResolvers = {
       }
     },
     softwareAsset: async ( _, args, context, info ) => {
-      var sparqlQuery = getSelectSparqlQuery('SOFTWARE', context.selectMap.getNode("softwareAsset"), args.id);
-      var reducer = getReducer('SOFTWARE');
+      const selectionList = context.selectMap.getNode("softwareAsset");
+      const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList, args.id);
+      const reducer = getReducer('SOFTWARE');
       const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema, )
       if (response === undefined ) return null;
       const first = response[0];

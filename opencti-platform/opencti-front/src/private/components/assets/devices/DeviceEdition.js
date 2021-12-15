@@ -146,7 +146,6 @@ class DeviceEdition extends Component {
           query={deviceEditionDarkLightQuery}
           variables={{ id: deviceId }}
           render={({ error, props }) => {
-            console.log(`DeviceEditionDarkLightQuery Error ${error} OR Props ${JSON.stringify(props)}`);
             if (props) {
               return (
                 <DeviceEditionContainer

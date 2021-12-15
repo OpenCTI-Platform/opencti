@@ -111,7 +111,6 @@ class NetworkEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('Network Created Successfully! InputData: ', values);
     // const finalValues = pipe(
     //   assoc('createdBy', values.createdBy?.value),
     //   assoc('objectMarking', pluck('value', values.objectMarking)),
@@ -137,7 +136,6 @@ class NetworkEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        console.log('NetworkEditionDarkLightMutationData', data);
         this.props.history.push('/dashboard/assets/network');
       },
       onError: (err) => console.log('NetworkEditionDarkLightMutationError', err),
@@ -179,7 +177,6 @@ class NetworkEditionContainer extends Component {
     const {
       t, classes, handleClose, network,
     } = this.props;
-    console.log('NetworkEditionContainerData', network);
     // const { editContext } = network;
     const initialValues = R.pipe(
       R.assoc('id', network.id),

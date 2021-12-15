@@ -127,7 +127,6 @@ class SoftwareCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('Software Created Successfully! InputData: ', values);
     // const finalValues = pipe(
     //   assoc('createdBy', values.createdBy?.value),
     //   assoc('objectMarking', pluck('value', values.objectMarking)),
@@ -152,7 +151,6 @@ class SoftwareCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        console.log('SoftwareCreationDarkLightMutationData', data);
         this.props.history.push('/dashboard/assets/software');
       },
       onError: (err) => console.log('SoftwareCreationDarkLightMutationError', err),

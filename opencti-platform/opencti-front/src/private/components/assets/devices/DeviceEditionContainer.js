@@ -170,7 +170,6 @@ class DeviceEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        console.log('DeviceEditionDarkLightMutationData', data);
         this.props.history.push('/dashboard/assets/devices');
       },
       onError: (err) => console.log('DeviceEditionDarkLightMutationError', err),
