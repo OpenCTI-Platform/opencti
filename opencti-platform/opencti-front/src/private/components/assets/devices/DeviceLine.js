@@ -134,9 +134,8 @@ class DeviceLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.installed_operating_system.width }}
               >
-                {/* <WindowsIcon /> */}
-                {node.installed_operating_system && node.installed_operating_system.name
-                && <ItemIcon type={node.installed_operating_system.name}/>}
+                {node?.installed_operating_system?.vendor_name
+                && <ItemIcon variant='inline' type={node.installed_operating_system.vendor_name === 'microsoft' || node.installed_operating_system.vendor_name === 'apple' || node.installed_operating_system.vendor_name === 'linux' ? node.installed_operating_system.vendor_name : 'other'}/>}
               </div>
               <div
                 className={classes.bodyItem}

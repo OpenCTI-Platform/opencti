@@ -86,29 +86,6 @@ export const softwareLinesQuery = graphql`
   }
 `;
 
-// export const softwareLinesdarkLightRootQuery = graphql`
-//   query SoftwareLinesDarkLightQuery {
-//     softwareAssetList {
-//       edges {
-//         node {
-//           id
-//           asset_type
-//           name
-//           asset_id
-//           created
-//           modified
-//           vendor_name
-//           version
-//           patch_level
-//           cpe_identifier
-//           software_identifier
-//           labels
-//         }
-//       }
-//     }
-//   }
-// `;
-
 export default createPaginationContainer(
   SoftwareLines,
   {
