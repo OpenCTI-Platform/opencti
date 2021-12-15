@@ -29,10 +29,10 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 const subscription = graphql`
   subscription RootDeviceSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on ThreatActor {
-        # ...Device_device
-        ...DeviceEditionContainer_device
-      }
+      # ... on ThreatActor {
+      #   # ...Device_device
+      #   # ...DeviceEditionContainer_device
+      # }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity

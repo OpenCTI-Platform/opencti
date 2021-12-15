@@ -236,7 +236,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('operational_status', device.operational_status),
       R.assoc('installation_id', device.installation_id || ''),
       R.assoc('bios_id', device.bios_id || ''),
-      R.assoc('installed_operating_system', device?.installed_operating_system?.name || ''),
+      R.assoc('installed_operating_system', device?.installed_operating_system?.vendor_name || ''),
       // R.assoc('connected_to_network', device.connected_to_network.name || ''),
       R.assoc('netbios_name', device.netbios_name || ''),
       R.assoc('baseline_configuration_name', device.baseline_configuration_name || ''),
@@ -448,14 +448,54 @@ const DeviceEditionFragment = createFragmentContainer(
   DeviceEditionContainer,
   {
     device: graphql`
-      fragment DeviceEditionContainer_device on ThreatActor {
+      fragment DeviceEditionContainer_device on ComputingDeviceAsset {
         id
-        ...DeviceEditionOverview_device
-        # ...DeviceEditionDetails_device
-        editContext {
+        installed_operating_system {
+          id
           name
-          focusOn
+          vendor_name
         }
+        asset_id
+        network_id
+        description
+        locations {
+          description
+        }
+        version
+        vendor_name
+        asset_tag
+        asset_type
+        serial_number
+        release_date
+        # operational_status
+        installed_software {
+          id
+          name
+        }
+        connected_to_network {
+          name
+        }
+        uri
+        model
+        mac_address
+        fqdn
+        baseline_configuration_name
+        bios_id
+        is_scanned
+        hostname
+        default_gateway
+        motherboard_id
+        installation_id
+        netbios_name
+        is_virtual
+        is_publicly_accessible
+        installed_hardware {
+          id
+          name
+          uri
+        }
+        # ...DeviceEditionOverview_device
+        # ...DeviceEditionDetails_device
       }
     `,
   },

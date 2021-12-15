@@ -140,7 +140,7 @@ const Device = createFragmentContainer(DeviceComponent, {
       release_date
       labels
       # responsible_parties
-      # operational_status
+      operational_status
       ...DeviceDetails_device
     }
   `,

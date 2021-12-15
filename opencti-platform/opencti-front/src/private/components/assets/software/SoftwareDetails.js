@@ -22,7 +22,7 @@ const styles = () => ({
     height: '100%',
     minHeight: '100%',
     margin: '10px 0 0 0',
-    padding: '15px',
+    padding: '24px 24px 32px 24px',
     borderRadius: 6,
   },
 });
@@ -160,18 +160,6 @@ SoftwareDetailsComponent.propTypes = {
   fld: PropTypes.func,
 };
 
-// const SoftwareDetails = createFragmentContainer(SoftwareDetailsComponent, {
-//   software: graphql`
-//     fragment SoftwareDetails_software on Campaign {
-//       id
-//       description
-//       first_seen
-//       last_seen
-//       objective
-//     }
-//   `,
-// });
-
 const SoftwareDetails = createFragmentContainer(SoftwareDetailsComponent, {
   software: graphql`
     fragment SoftwareDetails_software on SoftwareAsset {
@@ -181,7 +169,7 @@ const SoftwareDetails = createFragmentContainer(SoftwareDetailsComponent, {
       cpe_identifier
       patch_level
       installation_id
-      # implementation_point
+      implementation_point
     }
   `,
 });

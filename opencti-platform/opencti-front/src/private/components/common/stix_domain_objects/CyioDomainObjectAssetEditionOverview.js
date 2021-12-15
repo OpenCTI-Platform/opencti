@@ -340,7 +340,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
               <CyioCoreObjectLabelsView
                 labels={objectLabel}
                 marginTop={20}
-                id={cyioDomainObject.id}
+                id={cyioDomainObject?.id}
               />
             </Grid>
             <Grid item={true} xs={6}>
