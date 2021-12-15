@@ -57,7 +57,6 @@ const styles = (theme) => ({
   },
   title: {
     float: 'left',
-    textTransform: 'uppercase',
   },
   rightContainer: {
     float: 'right',
@@ -171,7 +170,6 @@ class DeviceEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        console.log('DeviceEditionDarkLightMutationData', data);
         this.props.history.push('/dashboard/assets/devices');
       },
       onError: (err) => console.log('DeviceEditionDarkLightMutationError', err),
@@ -213,7 +211,6 @@ class DeviceEditionContainer extends Component {
     const {
       t, classes, handleClose, device,
     } = this.props;
-    console.log('DeviceEditionPropsData', device);
     const initialValues = R.pipe(
       R.assoc('id', device.id),
       R.assoc('asset_id', device.asset_id),
@@ -295,7 +292,7 @@ class DeviceEditionContainer extends Component {
                     classes={{ root: classes.title }}
                     style={{ float: 'left', marginTop: 10, marginRight: 5 }}
                   >
-                    {t('Edit: ')}
+                    {t('EDIT: ')}
                   </Typography>
                   <Field
                     component={TextField}

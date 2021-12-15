@@ -31,7 +31,6 @@ class NetworkLines extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    console.log('NetworkListLineData', this.props.data);
     return (
       <ListLinesContent
         initialLoading={initialLoading}

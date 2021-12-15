@@ -206,22 +206,17 @@ class Devices extends Component {
         selectAll={selectAll}
         OperationsComponent={<DeviceDeletion />}
         openExports={openExports}
-        exportEntityType="Device"
+        filterEntityType="Device"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'assetTypeBy',
-          'labelledBy',
-          'release_date',
-          // 'markedBy',
-          // 'created_start_date',
-          'operation_status',
-          'operation_System',
-          // 'created_end_date',
-          // 'createdBy',
-          'labelledBy',
+          'name_m',
+          'asset_type_or',
+          'created_start_date',
+          'created_end_date',
+          'labels_or',
         ]}
       >
         {/* <QueryRenderer */}
@@ -230,7 +225,6 @@ class Devices extends Component {
           query={devicesCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
-            console.log(`DarkLightDevicesCards Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
               <DevicesCards
                 data={props}
@@ -325,22 +319,17 @@ class Devices extends Component {
         OperationsComponent={<DeviceDeletion />}
         openExports={openExports}
         selectAll={selectAll}
-        exportEntityType="Device"
+        filterEntityType="Device"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'assetTypeBy',
-          'labelledBy',
-          'release_date',
-          // 'markedBy',
-          // 'created_start_date',
-          'operation_status',
-          'operation_System',
-          // 'created_end_date',
-          // 'createdBy',
-          'labelledBy',
+          'name_m',
+          'asset_type_or',
+          'created_start_date',
+          'created_end_date',
+          'labels_or',
         ]}
       >
         {/* <QueryRenderer */}
@@ -349,7 +338,6 @@ class Devices extends Component {
           query={devicesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
-            console.log(`DarkLight Error ${error} OR Props ${JSON.stringify(props)}`);
             return (
               <DevicesLines
                 data={props}
@@ -385,6 +373,7 @@ class Devices extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
     };
+    console.log('finalFiltersData', finalFilters)
     const { location } = this.props;
     return (
       <div>

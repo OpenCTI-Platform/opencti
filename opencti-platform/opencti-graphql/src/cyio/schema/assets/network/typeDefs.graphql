@@ -55,6 +55,9 @@
     network_id: String!
     network_name: String
     network_address_range: IpAddressRange
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    last_scanned: DateTime
   }
 
   # Mutation Types
@@ -78,6 +81,9 @@
     network_name: String!
     network_ipv4_address_range: IpV4AddressRangeAddInput
     network_ipv6_address_range: IpV6AddressRangeAddInput
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    last_scanned: DateTime
   }
 
   input NetworkAssetFiltering {
@@ -100,17 +106,17 @@
 
   enum NetworkAssetOrdering {
     name
-    asset_type
     asset_id
     network_id
     labels
   }
 
+  "Defines the list of fields that can be filtered upon for Network Assets."
   enum NetworkAssetFilter {
     created       # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
-    modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    modified      # Modified before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
     name          # Name (key:name, values: ["name1","name2"], operator: "matches", filterMode: "or")
-    asset_type    # Asset Type (key:asset_type, values: ["type1","type2","type3"], operator: "matches", filterMode: "or")
     labels        # Label (key:labels, values:["label1","label2"], operator: "matches", filterMode: "or")
     network_id
+    is_publicly_accessible
   }

@@ -11,12 +11,14 @@ export default function querySelectMap(info) {
       for(const nodeName in this){
         const node = this[nodeName];
         if(nodeName === name) return node.select;
+        if(node.children === undefined) return null;
         const found = this._getNode(node.children, name);
         if(found) return found.select;
       }
       return null;
     },
     _getNode: function (children, name) {
+      if(children === undefined) return null;
       if(name in children) {
         return children[name];
       }
@@ -34,13 +36,18 @@ export default function querySelectMap(info) {
 
 const expandFragments = (node, fragments) => {
   if(node.select){
-    for(const fragName in fragments) {
-      if(node.select.includes(fragName)){
-        node.select = node.select.filter(i => i !== fragName)
-        const fragment = fragments[fragName]
-        node.select = node.select.concat(fragment.select.filter((i) => node.select.indexOf(i) < 0))
-        node.children = { ...node.children, ...fragment.children }
-      }
+    let exhausted = false;
+    while (!exhausted) {
+      exhausted = true;
+      node.select.forEach(field => {
+        if (field in fragments) {
+          exhausted = false;
+          node.select = node.select.filter(i => i !== field) // take out the fragment's name
+          const fragment = fragments[field]                  // save list of fragment's fields
+          node.select = node.select.concat(fragment.select.filter((i) => node.select.indexOf(i) < 0))   // add fragment's fields to node's select list
+          node.children = { ...node.children, ...fragment.children }
+        }
+      });
     }
   }
   if(node.children){

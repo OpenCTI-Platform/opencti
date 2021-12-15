@@ -77,6 +77,7 @@
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
+    last_scanned: DateTime
   }
 
   "Defines identifying information about infrastructure server device that perform generic computing capabilities."
@@ -138,6 +139,7 @@
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
+    last_scanned: DateTime
   }
 
   "Defines identifying information about a workstation that perform generic computing capabilities."
@@ -199,6 +201,7 @@
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
+    last_scanned: DateTime
   }
 
   # Mutation Types
@@ -242,34 +245,7 @@
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
-  }
-
-  enum ComputingDeviceAssetOrdering {
-    name
-    asset_type
-    asset_id
-    ip_address
-    installed_operating_system
-    network_id
-    labels
-  }
-
-  enum ComputingDeviceAssetFilter {
-    created       # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
-    modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
-    name          # Name (key:name, values: ["name1","name2"], operator: "matches", filterMode: "or")
-    asset_type    # Asset Type (key:asset_type, values: ["type1","type2","type3"], operator: "matches", filterMode: "or")
-    labels        # Label (key:labels, values:["label1","label2"], operator: "matches", filterMode: "or")
-    ip_address
-    installed_operating_system
-    network_id
-  }
-
-  input ComputingDeviceAssetFiltering {
-    key: ComputingDeviceAssetFilter!
-    values: [String]
-    operator: String            # match, wildcard, gt, lt, gte, lte, eq, ne
-    filterMode: FilterMode      # unused
+    last_scanned: DateTime
   }
 
   # Pagination Types
@@ -281,6 +257,64 @@
   type ComputingDeviceAssetEdge {
     cursor: String!
     node: ComputingDeviceAsset!
+  }
+
+  # Slicing Types
+  enum ComputingDeviceAssetOrdering {
+    name
+    asset_type
+    asset_id
+    ip_address
+    installed_operating_system
+    network_id
+    labels
+  }
+
+  # Filtering Types
+  input ComputingDeviceAssetFiltering {
+    key: ComputingDeviceAssetFilter!
+    values: [String]
+    operator: String            # match, wildcard, gt, lt, gte, lte, eq, ne
+    filterMode: FilterMode      # unused
+  }
+
+  "Defines the list of fields that can be filtered upon for Device Assets."
+  enum ComputingDeviceAssetFilter {
+    created       # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    name          # Name (key:name, values: ["name1","name2"], operator: "matches", filterMode: "or")
+    asset_type    # Asset Type (key:asset_type, values: ["type1","type2","type3"], operator: "matches", filterMode: "or")
+    labels        # Label (key:labels, values:["label1","label2"], operator: "matches", filterMode: "or")
+    ip_address
+    installed_operating_system
+    network_id
+  }
+
+  # this is used to restrict the set of asset_types values that are allowed in a filter
+  "Defines the list of Device assets types that can be used in filtering"
+  enum DeviceAssetTypes {
+    "Computing Device"
+    computing_device
+    "Appliance"
+    appliance
+    "Workstation"
+    workstation
+    "Network Device"
+    network_device
+    "Load Balancer"
+    load_balancer
+    "Router"
+    router
+    "Switch"
+    switch
+    "Printer"
+    printer
+    "Storage Array"
+    storage_array
+    "VoIP Device"
+    voip_device
+    "Physical Device"
+    physical_device
   }
 
   union ComputingDeviceKind = ComputingDeviceAsset | ServerAsset | WorkstationAsset 

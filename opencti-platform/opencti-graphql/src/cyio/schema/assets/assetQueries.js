@@ -1,17 +1,21 @@
 import {v4 as uuid4, v5 as uuid5} from "uuid";
-import {OASIS_SCO_NS} from "../utils"
+import {DARKLIGHT_NS, generateId, OASIS_SCO_NS} from "../utils.js"
 
 export const insertPortsQuery = (ports) => {
     let iris = [];
     let graphs = []
     ports.forEach((port) => {
         const id = uuid4();
+        const timestamp = new Date().toISOString()
         const insertPredicates = [];
         const iri = `<http://scap.nist.gov/ns/asset-identification#Port-${id}>`;
         iris.push(iri);
         insertPredicates.push(`${iri} a <http://darklight.ai/ns/common#ComplexDatatype>`);
         insertPredicates.push(`${iri} a <http://scap.nist.gov/ns/asset-identification#Port>`);
         insertPredicates.push(`${iri} <http://darklight.ai/ns/common#id> "${id}"`)
+        insertPredicates.push(`${iri} <http://darklight.ai/ns/common#object_type> "location" .`); 
+        insertPredicates.push(`${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime .`); 
+        insertPredicates.push(`${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . `);
         if(port.protocols !== undefined) {
             port.protocols.forEach((protocol) => insertPredicates.push(`${iri} <http://scap.nist.gov/ns/asset-identification#protocols> "${protocol}"`));
         }
@@ -53,8 +57,8 @@ export const insertIPQuery = (ip, version) => {
     const timestamp = new Date().toISOString();
     ip.forEach((ip) => {
         const insertPredicates = []
-        const idMaterial = {ip};
-        const id = uuid5(JSON.stringify(idMaterial), OASIS_SCO_NS);
+        const idMaterial = {"value": ip.ip_address_value};
+        const id = generateId(idMaterial, DARKLIGHT_NS);
         let type, rdfType, iri;
         if(version === 4){
             type = "ipv4-addr";
@@ -138,6 +142,76 @@ export const deleteIpQuery = (iri) => {
     } WHERE {
         GRAPH ${iri} {
             ${iri} a ${rdfType} .
+            ${iri} ?p ?o
+        }
+    }
+    `
+}
+
+export const insertIPAddressRangeQuery = (startingIri, endingIri) => {
+    const id = uuid4();
+    const timestamp = new Date().toISOString()
+    const iri = `<http://scap.nist.gov/ns/asset-identification#IpAddressRange-${id}>`;
+    const query = `
+    INSERT DATA {
+        GRAPH ${iri} {
+            ${iri} a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> ;
+                <http://darklight.ai/ns/common#id> "${id}";
+                <http://scap.nist.gov/ns/asset-identification#starting_ip_address> ${startingIri} ;
+                <http://scap.nist.gov/ns/asset-identification#ending_ip_address> ${endingIri} .
+                ${iri} <http://darklight.ai/ns/common#object_type> "ip-addr-range" . 
+                ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
+                ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime .           
+            }
+    }
+    `
+    return {iri, query};
+}
+
+export const insertIPAddressRangeRelationship = (parentIri, rangeIri) => {
+    return `
+    INSERT DATA {
+        GRAPH ${parentIri} {
+            ${parentIri} <http://scap.nist.gov/ns/asset-identification#network_address_range> ${rangeIri} .
+        }
+    }
+    `
+}
+
+export const selectIPAddressRange = (iri) => {
+    return `
+SELECT DISTINCT ?id ?object_type ?starting_ip_address ?ending_ip_address 
+FROM <tag:stardog:api:context:named>
+WHERE {
+    ${iri} a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> ;
+        <http://darklight.ai/ns/common#id> ?id  ;
+        <http://scap.nist.gov/ns/asset-identification#starting_ip_address> ?starting_ip_address ;
+        <http://scap.nist.gov/ns/asset-identification#ending_ip_address> ?ending_ip_address .
+    OPTIONAL { ${iri} <http://darklight.ai/ns/common#object_type> ?object_type } .
+}`
+//     return `
+// SELECT DISTINCT ?id ?object_type ?starting_ip_address ?ending_ip_address 
+// FROM <tag:stardog:api:context:named>
+// WHERE {
+// #  GRAPH ${iri} {
+//     ${iri} a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> ;
+//         <http://darklight.ai/ns/common#id> ?id  ;
+//         <http://scap.nist.gov/ns/asset-identification#starting_ip_address> ?starting_ip_address ;
+//         <http://scap.nist.gov/ns/asset-identification#ending_ip_address> ?ending_ip_address .
+//     OPTIONAL { ${iri} <http://darklight.ai/ns/common#object_type> ?object_type } .
+// #  }
+// }`
+}
+
+export const deleteIpAddressRange = (iri) => {
+    return `
+    DELETE {
+        GRAPH ${iri} {
+            ${iri} ?p ?o
+        }
+    } WHERE {
+        GRAPH ${iri} {
+            ${iri} a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> .
             ${iri} ?p ?o
         }
     }
