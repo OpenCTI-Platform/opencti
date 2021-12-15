@@ -718,11 +718,10 @@ class Scans extends Component {
                               Explore Results
                             </MenuItem>
                             <MenuItem
-                              component={Link}
-                              to="/dashboard/vsac/scans/viewcharts"
-                              selected={location.pathname.includes(
-                                "/dashboard/vsac/scans/viewcharts"
-                              )}
+                              onClick={() => 
+                                handleLinkClink('/dashboard/vsac/scans/viewcharts',
+                                { analysises: this.state.analysises,
+                                })} 
                             >
                               <ListItemIcon>
                                 <ShowChartIcon fontSize="small" />
@@ -730,11 +729,11 @@ class Scans extends Component {
                               View Charts
                             </MenuItem>
                             <MenuItem
-                              component={Link}
-                              to="/dashboard/vsac/scans/compare"
-                              selected={location.pathname.includes(
-                                "/dashboard/vsac/scans/compare"
-                              )}
+                              onClick={() => 
+                                handleLinkClink('/dashboard/vsac/scans/compare',
+                                { analysises: this.state.analysises,
+                                  scatterPlotData: this.state.scatterPlotData
+                                })}
                             >
                               <ListItemIcon>
                                 <CompareIcon fontSize="small" />
@@ -828,23 +827,28 @@ class Scans extends Component {
                               type="number"
                               dataKey="x"
                               label="% of Hosts with Weakness"
-                              axisLine="false"
-                              hide="true"
+                              domain={[-200, 200]}
+                              tick={{ fill: '#ffffff' }}
                             />
                             <YAxis
                               type="number"
                               dataKey="y"
-                              label="Weakness Score"
-                              axisLine="false"
-                              hide="true"
+                              label={{
+                                value: 'Weakness Score',
+                                angle: -90,
+                                position: 'insideLeft',
+                                textAnchor: 'middle',
+                              }}
+                              domain={[-200, 200]}
+                              tick={{ fill: '#ffffff' }}
                             />
-                            <ReferenceLine x={50} stroke="white" />
-                            <ReferenceLine y={50} stroke="white" />
+                            <ReferenceLine x={0} stroke="white" />
+                            <ReferenceLine y={0} stroke="white" />
                             { scatterPlotData && (
                             <Scatter
-                              name="A school"
+                              name={analysis.scan.scan_name}
                               data={this.state.scatterPlotData[i]}
-                              fill="#8884d8"
+                              fill={`#${Math.floor(Math.random() * 16777215).toString(16)}`}
                             />
                             )}
                           </ScatterChart>
