@@ -109,7 +109,7 @@ class NetworkDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Switch defaultChecked={false} inputProps={{ 'aria-label': 'ant design' }} />
+                <Switch defaultChecked={network?.is_scanned} inputProps={{ 'aria-label': 'ant design' }} />
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -179,25 +179,6 @@ NetworkDetailsComponent.propTypes = {
   fd: PropTypes.func,
 };
 
-// const NetworkDetails = createFragmentContainer(
-//   NetworkDetailsComponent,
-//   {
-//     network: graphql`
-//       fragment NetworkDetails_network on IntrusionSet {
-//         id
-//         first_seen
-//         last_seen
-//         description
-//         resource_level
-//         primary_motivation
-//         secondary_motivations
-//         goals
-//         ...NetworkLocations_network
-//       }
-//     `,
-//   },
-// );
-
 const NetworkDetails = createFragmentContainer(
   NetworkDetailsComponent,
   {
@@ -205,19 +186,20 @@ const NetworkDetails = createFragmentContainer(
       fragment NetworkDetails_network on NetworkAsset {
         network_name
         network_id
-        # implementation_point
-        # network_address_range {
-        #   ending_ip_address{
-        #     ... on IpV4Address {
-        #       ip_address_value
-        #     }
-        #   }
-        #   starting_ip_address{
-        #     ... on IpV4Address {
-        #       ip_address_value
-        #     }
-        #   }
-        # }
+        is_scanned
+        implementation_point
+        network_address_range {
+          ending_ip_address{
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+          starting_ip_address{
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+        }
       }
     `,
   },

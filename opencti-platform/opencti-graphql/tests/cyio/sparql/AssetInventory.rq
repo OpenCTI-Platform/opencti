@@ -1,0 +1,24 @@
+SELECT DISTINCT ?iri ?id ?object_type ?asset_id ?asset_tag ?asset_type ?name ?description ?cpe ?ipAddress ?installedOS ?installedSoftware ?macAddress
+FROM <tag:stardog:api:context:named>
+WHERE {
+    ?iri a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id } .
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?object_type } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_id> ?asset_id } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_tag> ?asset_tag } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_type> ?asset_type } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#name> ?name } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#description> ?description } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#ip_address> ?ipAddress } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#mac_address> ?macAddress } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#installed_operating_system> ?installedOS } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#installed_software> ?installedSoftware } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#cpe_identifier> ?cpe }
+    {
+        SELECT DISTINCT ?iri
+        WHERE {
+            ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
+                 <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+        }
+    }
+}

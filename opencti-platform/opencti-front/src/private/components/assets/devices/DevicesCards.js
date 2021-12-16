@@ -113,26 +113,6 @@ export const devicesCardsQuery = graphql`
   }
 `;
 
-// export const devicesCardsdarkLightRootQuery = graphql`
-//   query DevicesCardsDarkLightQuery {
-//     computingDeviceAssetList {
-//       edges {
-//         node {
-//           id
-//           name
-//           installed_operating_system {
-//             name
-//           }
-//           asset_type
-//           asset_id
-//           fqdn
-//           network_id
-//         }
-//       }
-//     }
-//   }
-// `;
-
 export default createPaginationContainer(
   DevicesCards,
   {

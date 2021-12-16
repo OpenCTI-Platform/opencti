@@ -1,0 +1,9 @@
+query AssetTypeIntrospection {
+  __type(name: "AssetType") {
+    name
+    enumValues {
+      name
+      description
+    }
+  } 
+}

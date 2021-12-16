@@ -90,26 +90,26 @@ class DeviceComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                {/* <CyioCoreObjectExternalReferences
-                  cyioCoreObjectId={device.id}
-                /> */}
+                <CyioCoreObjectExternalReferences
+                  cyioCoreObjectId={device?.id}
+                />
               </Grid>
               <Grid item={true} xs={6}>
-                <CyioCoreObjectLatestHistory cyioCoreObjectId={device.id} />
+                <CyioCoreObjectLatestHistory cyioCoreObjectId={device?.id} />
               </Grid>
             </Grid>
             <CyioCoreObjectOrCyioCoreRelationshipNotes
-              cyioCoreObjectOrCyioCoreRelationshipId={device.id}
+              cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
             />
             {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <DeviceEdition deviceId={device.id} />
+                <DeviceEdition deviceId={device?.id} />
               </Security> */}
           </div>
         ) : (
           // <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <DeviceEdition
             open={this.state.openEdit}
-            deviceId={device.id}
+            deviceId={device?.id}
             history={history}
           />
           // </Security>
@@ -140,7 +140,7 @@ const Device = createFragmentContainer(DeviceComponent, {
       release_date
       labels
       # responsible_parties
-      # operational_status
+      operational_status
       ...DeviceDetails_device
     }
   `,

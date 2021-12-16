@@ -18,8 +18,9 @@ services:
     volumes:
       - esdata:/usr/share/elasticsearch/data
     environment:
-      - discovery.type=single-node
-      - xpack.ml.enabled=false
+      discovery.type: "single-node"
+      xpack.ml.enabled: "false"
+      ES_JAVA_OPTS: "-Dlog4j2.formatMsgNoLookups=true"
     restart: unless-stopped
     ports:
       - "9200:9200"
@@ -51,42 +52,28 @@ services:
     image: docker.darklight.ai/opencti
     build: ../opencti-platform
     container_name: opencti
+    restart: unless-stopped
     environment:
+      - APP__APP_LOGS__LOGS_LEVEL=info
+      - MOCKS=${MOCKS}
       - NODE_OPTIONS=--max-old-space-size=8096
       - NODE_TLS_REJECT_UNAUTHORIZED=0
-      - MOCKS=${MOCKS}
       - APP__PORT=8080
       - APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}
       - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
       - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN}
-      - APP__APP_LOGS__LOGS_LEVEL=info
       # - REACT_APP_GRAPHQL_HOST=${GRAPHQL_HOST}
       - REACT_APP_API_URL=${REACT_APP_API_URL}
-      - REDIS__HOSTNAME=redis
-      - REDIS__PORT=6379
-      - ELASTICSEARCH__URL=http://elasticsearch:9200
-      - RABBITMQ__HOSTNAME=rabbitmq
-      - RABBITMQ__PORT=5672
-      - RABBITMQ__PORT_MANAGEMENT=15672
-      - RABBITMQ__MANAGEMENT_SSL=false
-      - RABBITMQ__USERNAME=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ__PASSWORD=${RABBITMQ_DEFAULT_PASS}
       - SMTP__HOSTNAME=${SMTP_HOSTNAME}
       - SMTP__PORT=25
       - SUBSCRIPTION_SCHEDULER__ENABLED=false
     ports:
       - "8080:8080"
-    depends_on:
-      - redis
-      - elasticsearch
-      - rabbitmq
-    restart: unless-stopped
     volumes:
       - ./default.json:/opt/opencti/config/default.json
       # - ./darklight.crt:/opt/opencti/certs/darklight.crt
       # - ./darklight.key:/opt/opencti/certs/darklight.key
     profiles:
-      - opencti
       - frontend
 
 volumes:

@@ -79,7 +79,7 @@ export const downloadFile = (id) => {
       return response.Body;
     });
   } catch (err) {
-    logApp.info(`[OPENCTI] Cannot retrieve file on S3`, { error: err });
+    logApp.info(`[CYIO] Cannot retrieve file on S3`, { error: err });
     return null;
   }
 };

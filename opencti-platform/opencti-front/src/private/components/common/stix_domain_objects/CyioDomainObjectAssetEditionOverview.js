@@ -96,7 +96,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
       setFieldValue,
       enableReferences,
     } = this.props;
-    const { editContext } = cyioDomainObject;
+    // const { editContext } = cyioDomainObject;
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <div style={{ height: '100%' }}>
@@ -230,7 +230,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                 <div className="clearfix" />
                 <Field
                   component={TextField}
-                  name="Description"
+                  name="description"
                   fullWidth={true}
                   multiline={true}
                   rows="3"
@@ -340,7 +340,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
               <CyioCoreObjectLabelsView
                 labels={objectLabel}
                 marginTop={20}
-                id={cyioDomainObject.id}
+                id={cyioDomainObject?.id}
               />
             </Grid>
             <Grid item={true} xs={6}>

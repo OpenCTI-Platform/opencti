@@ -37,40 +37,13 @@ const styles = (theme) => ({
 });
 
 export const softwareEditionQuery = graphql`
-  query SoftwareEditionContainerQuery($id: String!) {
-    campaign(id: $id) {
+  query SoftwareEditionContainerQuery($id: ID!) {
+    softwareAsset(id: $id) {
       ...SoftwareEditionContainer_software
     }
-    settings {
-      platform_enable_reference
-    }
-  }
-`;
-
-export const softwareEditionDarkLightQuery = graphql`
-  query SoftwareEditionContainerDarkLightQuery($id: ID!) {
-    softwareAsset(id: $id) {
-      id
-      name
-      asset_id
-      description
-      locations {
-        description
-      }
-      version
-      vendor_name
-      asset_tag
-      asset_type
-      serial_number
-      release_date
-      # operational_status
-      software_identifier
-      license_key
-      cpe_identifier
-      patch_level
-      installation_id
-      # implementation_point
-    }
+    # settings {
+    #   platform_enable_reference
+    # }
   }
 `;
 
@@ -103,60 +76,26 @@ class SoftwareEdition extends Component {
     } = this.props;
     return (
       <div>
-        {/* <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Edit"
-          className={classes.editButton}
-        >
-          <Edit />
-        </Fab>
-        <Drawer
-          open={this.state.open}
-          anchor="right"
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        > */}
-          <QR
-            environment={environmentDarkLight}
-            query={softwareEditionDarkLightQuery}
-            variables={{ id: softwareId }}
-            render={({ props }) => {
-              console.log(`SoftwareEditionDarkLightQuery OR Props ${JSON.stringify(props)}`);
-              if (props) {
-                return (
-                  <SoftwareEditionContainer
-                    software={props.softwareAsset}
-                    // enableReferences={props.settings.platform_enable_reference?.includes(
-                    //   'Software',
-                    // )}
-                    history={history}
-                    handleClose={this.handleClose.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-          {/* <QueryRenderer
-            query={softwareEditionQuery}
-            variables={{ id: softwareId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <SoftwareEditionContainer
-                    software={props.software}
-                    enableReferences={props.settings.platform_enable_reference?.includes(
-                      'Software',
-                    )}
-                    handleClose={this.handleClose.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          /> */}
-        {/* </Drawer> */}
+        <QR
+          environment={environmentDarkLight}
+          query={softwareEditionQuery}
+          variables={{ id: softwareId }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <SoftwareEditionContainer
+                  software={props.softwareAsset}
+                  // enableReferences={props.settings.platform_enable_reference?.includes(
+                  //   'Software',
+                  // )}
+                  history={history}
+                  handleClose={this.handleClose.bind(this)}
+                />
+              );
+            }
+            return <Loader variant="inElement" />;
+          }}
+        />
       </div>
     );
   }

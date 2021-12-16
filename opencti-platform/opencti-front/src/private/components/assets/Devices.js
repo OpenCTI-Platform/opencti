@@ -206,22 +206,17 @@ class Devices extends Component {
         selectAll={selectAll}
         OperationsComponent={<DeviceDeletion />}
         openExports={openExports}
-        exportEntityType="Device"
+        filterEntityType="Device"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'assetTypeBy',
-          'labelledBy',
-          'release_date',
-          // 'markedBy',
-          // 'created_start_date',
-          'operation_status',
-          'operation_System',
-          // 'created_end_date',
-          // 'createdBy',
-          'labelledBy',
+          'name_m',
+          'asset_type_or',
+          'created_start_date',
+          'created_end_date',
+          'labels_or',
         ]}
       >
         {/* <QueryRenderer */}
@@ -324,22 +319,17 @@ class Devices extends Component {
         OperationsComponent={<DeviceDeletion />}
         openExports={openExports}
         selectAll={selectAll}
-        exportEntityType="Device"
+        filterEntityType="Device"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'assetTypeBy',
-          'labelledBy',
-          'release_date',
-          // 'markedBy',
-          // 'created_start_date',
-          'operation_status',
-          'operation_System',
-          // 'created_end_date',
-          // 'createdBy',
-          'labelledBy',
+          'name_m',
+          'asset_type_or',
+          'created_start_date',
+          'created_end_date',
+          'labels_or',
         ]}
       >
         {/* <QueryRenderer */}
