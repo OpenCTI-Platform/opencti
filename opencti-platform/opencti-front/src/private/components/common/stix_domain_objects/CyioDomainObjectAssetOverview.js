@@ -71,7 +71,6 @@ class CyioDomainObjectAssetOverview extends Component {
     //   (n) => n !== cyioDomainObject?.standard_id,
     //   otherCyioIds,
     // );
-    console.log('cyioDomainObjectData', cyioDomainObject);
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>

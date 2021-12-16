@@ -373,7 +373,6 @@ class Devices extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
     };
-    console.log('finalFiltersData', finalFilters)
     const { location } = this.props;
     return (
       <div>

@@ -47,7 +47,7 @@ const listenServer = async () => {
         });
       });
     } catch (e) {
-      logApp.error(`[OPENCTI] API start fail`, { error: e });
+      logApp.error(`[CYIO] API start fail`, { error: e });
       reject(e);
     }
   });

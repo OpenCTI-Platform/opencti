@@ -1,4 +1,3 @@
-
 const assessmentCommonResolvers = {
   // Map enum GraphQL values to data model required values
   ActorType: {
@@ -22,7 +21,7 @@ const assessmentCommonResolvers = {
     this_system: 'this-system',
     validation: 'validation',
   },
-  EntryType:  {
+  EntryType: {
     vendor_check_in: 'vendor-check-in',
     status_update: 'status-update',
     milestone_complete: 'milestone-complete',
@@ -132,7 +131,7 @@ const assessmentCommonResolvers = {
     high: 'high',
     moderate: 'moderate',
     low: 'low',
-    very_low: 'very-low',  
+    very_low: 'very-low',
   },
 };
 
