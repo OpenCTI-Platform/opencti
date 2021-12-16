@@ -78,12 +78,15 @@ const subscribeFn = (request, variables) => {
 
 const buildHeaders = () => {
   const accessToken = localStorage.getItem('token');
+  const headers = {};
   if (accessToken) {
-    return {
-      Authorization: `Bearer ${accessToken}`,
-    };
+    headers.Authorization = `Bearer ${accessToken}`;
   }
-  return {};
+  const clientId = localStorage.getItem('client_id');
+  if (clientId) {
+    headers['X-Cyio-Client'] = clientId;
+  }
+  return headers;
 };
 
 const network = new RelayNetworkLayer(
