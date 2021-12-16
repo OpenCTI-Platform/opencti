@@ -301,7 +301,7 @@ const initSyncManager = () => {
   const processingLoop = async () => {
     let lock;
     try {
-      logApp.debug('[OPENCTI] Running sync manager');
+      logApp.debug('[CYIO] Running sync manager');
       lock = await lockResource([SYNC_MANAGER_KEY]);
       while (syncListening) {
         await processStep();
@@ -309,9 +309,9 @@ const initSyncManager = () => {
       }
     } catch (e) {
       // We dont care about failing to get the lock.
-      logApp.info('[OPENCTI] Sync manager already in progress by another API');
+      logApp.info('[CYIO] Sync manager already in progress by another API');
     } finally {
-      logApp.debug('[OPENCTI] Sync manager done');
+      logApp.debug('[CYIO] Sync manager done');
       if (lock) await lock.unlock();
     }
   };
