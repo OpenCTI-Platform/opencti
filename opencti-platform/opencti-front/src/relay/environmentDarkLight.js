@@ -17,13 +17,23 @@ import {
 const store = new Store(new RecordSource());
 const hostUrl = process.env.REACT_APP_GRAPHQL_HOST;
 
+const buildHeaders = () => {
+    const accessToken = localStorage.getItem('token');
+    const headers = {};
+    if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+    }
+    const clientId = localStorage.getItem('client_id');
+    if (clientId) {
+        headers['X-Cyio-Client'] = clientId;
+    }
+    return headers;
+};
+
 const network = Network.create((operation, variables) => (
   fetch(`${hostUrl}/graphql`, {
     method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
+    headers: buildHeaders(),
     body: JSON.stringify({
       query: operation.text,
       variables,
