@@ -100,7 +100,9 @@ const deviceCreationMutation = graphql`
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   uri: Yup.string().url(t('The value must be an URL')),
-  // asset_type: Yup.array().required(t('This field is required')),
+  port_number: Yup.number().required(t('This field is required')),
+  portocols: Yup.string().url(t('This field is required')),
+  asset_type: Yup.string().required(t('This field is required')),
   // implementation_point: Yup.string().required(t('This field is required')),
   // operational_status: Yup.string().required(t('This field is required')),
   // first_seen: Yup.date()
@@ -136,7 +138,7 @@ class DeviceCreation extends Component {
     //   assoc('objectMarking', pluck('value', values.objectMarking)),
     //   assoc('objectLabel', pluck('value', values.objectLabel)),
     // )(values);
-    CM(environmentDarkLight, {
+    // CM(environmentDarkLight, {
       // mutation: deviceCreationMutation,
       // const adaptedValues = evolve(
       //   {
@@ -147,18 +149,18 @@ class DeviceCreation extends Component {
       //   },
       //   values,
       // );
-      variables: {
-        input: values,
-      },
-      setSubmitting,
-      onCompleted: (data) => {
-        setSubmitting(false);
-        resetForm();
-        this.handleClose();
-        this.props.history.push('/dashboard/assets/devices');
-      },
-      onError: (err) => console.log('DeviceCreationDarkLightMutationError', err),
-    });
+    //   variables: {
+    //     input: values,
+    //   },
+    //   setSubmitting,
+    //   onCompleted: (data) => {
+    //     setSubmitting(false);
+    //     resetForm();
+    //     this.handleClose();
+    //     this.props.history.push('/dashboard/assets/devices');
+    //   },
+    //   onError: (err) => console.log('DeviceCreationDarkLightMutationError', err),
+    // });
     // commitMutation({
     //   mutation: deviceCreationMutation,
     //   variables: {
@@ -208,8 +210,9 @@ class DeviceCreation extends Component {
             implementation_point: 'external',
             ipv4_address: [],
             ipv6_address: [],
-            ports: [],
-            asset_type: 'physical-devices',
+            port_number: '',
+            portocols: '',
+            asset_type: 'physical_device',
             mac_address: [],
             installed_operating_system: '',
             installed_hardware: [],
