@@ -1,5 +1,6 @@
 import {buildSelectVariables, optionalizePredicate, parameterizePredicate, generateId, OASIS_SCO_NS} from "../../utils.js";
 
+const bindIRIClause = `\tBIND(<{iri}> AS ?iri)\n`;
 const inventoryConstraint = `
 {
   SELECT DISTINCT ?iri
@@ -22,6 +23,11 @@ export function getSelectSparqlQuery(type, select, id, filter, ) {
   var sparqlQuery;
   let { selectionClause, predicates } = buildSelectVariables(predicateMap, select);
   selectionClause = `SELECT ${select.includes("id") ? "DISTINCT ?iri" : "?iri"} ${selectionClause}`;
+  const selectPortion = `
+${selectionClause}
+FROM <tag:stardog:api:context:named>
+WHERE {
+  `;
   let iri;
   switch( type ) {
     case 'NETADDR-RANGE':
@@ -67,7 +73,12 @@ export function getSelectSparqlQuery(type, select, id, filter, ) {
       // }
       // `
       break;
-    default:
+      case 'CONN-NET-IRI':
+        sparqlQuery = selectPortion +
+            bindIRIClause.replace('{iri}', id) + 
+            predicates + '}';
+        break
+      default:
       throw new Error(`Unsupported query type ' ${type}'`)
   }
   // console.log(`[INFO] Query = ${sparqlQuery}`)
@@ -245,7 +256,7 @@ export const deleteNetworkAssetQuery = (id) =>  {
   `
 }
 
-function networkAssetReducer( item ) {
+export function networkAssetReducer( item ) {
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined && item.asset_type !== undefined ) {
     item.object_type = item.asset_type

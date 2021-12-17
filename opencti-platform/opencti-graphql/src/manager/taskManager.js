@@ -264,12 +264,12 @@ const executeProcessing = async (user, taskId, processingElements) => {
 };
 
 const taskHandler = async () => {
-  logApp.debug('[OPENCTI] Running Expiration manager');
+  logApp.debug('[CYIO] Running Expiration manager');
   let lock;
   try {
     // Lock the manager
     lock = await lockResource([TASK_MANAGER_KEY]);
-    logApp.debug('[OPENCTI] Task manager lock acquired');
+    logApp.debug('[CYIO] Task manager lock acquired');
     const task = await findTaskToExecute();
     // region Task checking
     if (!task) {
@@ -280,7 +280,7 @@ const taskHandler = async () => {
     const isListTask = task.type === TASK_TYPE_LIST;
     const isRuleTask = task.type === TASK_TYPE_RULE;
     if (!isQueryTask && !isListTask && !isRuleTask) {
-      logApp.error(`[OPENCTI] Task manager can't process ${task.type} type`);
+      logApp.error(`[CYIO] Task manager can't process ${task.type} type`);
       return;
     }
     // endregion
@@ -316,12 +316,12 @@ const taskHandler = async () => {
   } catch (e) {
     // We dont care about failing to get the lock.
     if (e.name === TYPE_LOCK_ERROR) {
-      logApp.debug('[OPENCTI] Task manager already in progress by another API');
+      logApp.debug('[CYIO] Task manager already in progress by another API');
     } else {
-      logApp.error('[OPENCTI] Task manager fail to execute', { error: e });
+      logApp.error('[CYIO] Task manager fail to execute', { error: e });
     }
   } finally {
-    logApp.debug('[OPENCTI] Task manager done');
+    logApp.debug('[CYIO] Task manager done');
     if (lock) await lock.unlock();
   }
 };

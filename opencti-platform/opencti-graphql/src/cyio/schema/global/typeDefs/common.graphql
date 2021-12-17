@@ -174,7 +174,6 @@
     created: DateTime
     modified: DateTime
     labels: [String]
-    external_references( first: Int ): CyioExternalReferenceConnection
     # CyioNote
     abstract: String
     content: String!

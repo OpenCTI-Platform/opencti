@@ -295,6 +295,8 @@
   # this is used to restrict the set of asset_types values that are allowed in a filter
   "Defines the list of Software assets types that can be used in filtering."
   enum SoftwareAssetTypes {
+    "Generic Software"
+    software
     "Application Software"
     application_software
     "Operating System"

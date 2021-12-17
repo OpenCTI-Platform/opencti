@@ -2,6 +2,8 @@ import { assetSingularizeSchema as singularizeSchema, objectTypeMapping } from '
 import {getSelectSparqlQuery, getReducer, insertQuery, predicateMap} from './sparql-query.js';
 import { getSelectSparqlQuery as getSoftwareQuery, 
          getReducer as getSoftwareReducer } from '../software/sparql-query.js';
+import { getSelectSparqlQuery as getNetworkQuery,
+         getReducer as getNetworkReducer } from '../network/sparql-query.js';
 import {compareValues, filterValues, updateQuery} from '../../utils.js';
 import {addToInventoryQuery, deleteQuery, removeFromInventoryQuery} from "../assetUtil.js";
 import {
@@ -300,7 +302,8 @@ const computingDeviceResolvers = {
         const results = [];
         const value_array = [];
         var reducer = getReducer('MAC-ADDR');
-        let selectList = context.selectMap.getNode('mac_address');
+        let selectList = ["id", "created","modified","mac_address_value","is_virtual"];
+        // let selectList = context.selectMap.getNode('mac_address');
         for (let addr of iriArray) {
           // check if this is an MAC address object
           if (!addr.includes('MACAddress')) {
@@ -364,6 +367,32 @@ const computingDeviceResolvers = {
         return [];
       }
     },
+    connected_to_network:  async (parent, args, context, ) => {
+      let iri = parent.conn_network_iri;
+      if (Array.isArray( iri ) && iri.length > 0) {
+        if (iri.length > 1) {
+          console.log(`[WARNING] ${parent.conn_network_iri} has ${iri.length} values: ${parent.conn_network_iri}`);
+          iri = parent.conn_network_iri[0]
+        }
+      } else {
+        iri = parent.conn_network_iri;
+      }
+
+      let selectList = context.selectMap.getNode('connected_to_network');
+      var sparqlQuery = getNetworkQuery('CONN-NET-IRI', selectList, iri);
+      var reducer = getNetworkReducer('NETWORK');
+      let response;
+      try {
+        response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
+      }catch(e) {
+        console.log(e)
+        throw e
+      }
+      if (response === undefined ) return null;
+      if (response && response.length > 0) {
+        return reducer(response[0])
+      }
+    }
   },
   ComputingDeviceKind: {
     __resolveType: ( item ) => {
