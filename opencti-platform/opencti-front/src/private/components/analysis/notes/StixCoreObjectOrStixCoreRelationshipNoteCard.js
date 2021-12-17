@@ -366,7 +366,7 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard = createFragmentContainer(
         content
         created
         modified
-        labels
+        #labels
         abstract
         authors
         # objectLabel {
