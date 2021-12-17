@@ -28,12 +28,12 @@ import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import StixDomainObjectAssetCreationOverview from '../../common/stix_domain_objects/StixDomainObjectAssetCreationOverview';
+import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import CyioDomainObjectAssetCreationOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetCreationOverview';
 import Loader from '../../../../components/Loader';
 import SoftwareCreationDetails from './SoftwareCreationDetails';
-import StixCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/StixCoreObjectAssetCreationExternalReferences';
+import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 
 const styles = (theme) => ({
   container: {
@@ -56,7 +56,6 @@ const styles = (theme) => ({
   },
   title: {
     float: 'left',
-    textTransform: 'uppercase',
   },
   rightContainer: {
     float: 'right',
@@ -128,7 +127,6 @@ class SoftwareCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('Software Created Successfully! InputData: ', values);
     // const finalValues = pipe(
     //   assoc('createdBy', values.createdBy?.value),
     //   assoc('objectMarking', pluck('value', values.objectMarking)),
@@ -153,7 +151,6 @@ class SoftwareCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        console.log('SoftwareCreationDarkLightMutationData', data);
         this.props.history.push('/dashboard/assets/software');
       },
       onError: (err) => console.log('SoftwareCreationDarkLightMutationError', err),
@@ -273,7 +270,7 @@ class SoftwareCreation extends Component {
                   classes={{ container: classes.gridContainer }}
                 >
                   <Grid item={true} xs={6}>
-                    <StixDomainObjectAssetCreationOverview
+                    <CyioDomainObjectAssetCreationOverview
                       setFieldValue={setFieldValue}
                       values={values}
                     />
@@ -293,13 +290,13 @@ class SoftwareCreation extends Component {
                     {/* <StixCoreObjectExternalReferences
                       stixCoreObjectId={software.id}
                     /> */}
-                    <StixCoreObjectAssetCreationExternalReferences />
+                    <CyioCoreObjectAssetCreationExternalReferences />
                   </Grid>
               <Grid item={true} xs={6}>
-                    <StixCoreObjectLatestHistory />
+                    <CyioCoreObjectLatestHistory />
                   </Grid>
                 </Grid>
-                <StixCoreObjectOrStixCoreRelationshipNotes />
+                <CyioCoreObjectOrCyioCoreRelationshipNotes />
             </>
           )}
         </Formik>

@@ -65,7 +65,10 @@
     patch_level: String
     installation_id: String
     license_key: String
-  }
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    last_scanned: DateTime
+}
 
   "Defines identifying information about an instance of operating system software."
   type OperatingSystemAsset implements BasicObject & LifecycleObject & CoreObject & Asset & ItAsset {
@@ -106,6 +109,9 @@
     patch_level: String
     installation_id: String
     license_key: String
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    last_scanned: DateTime
     # Operating SystemAsset
     family: FamilyType
   }
@@ -149,7 +155,10 @@
     patch_level: String
     installation_id: String
     license_key: String
-  }
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    last_scanned: DateTime
+}
 
   # Mutation Types
   input SoftwareAssetAddInput {
@@ -175,6 +184,9 @@
     patch_level: String
     installation_id: String
     license_key: String
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    last_scanned: DateTime
   }
 
   input OperatingSystemAssetAddInput {
@@ -200,6 +212,9 @@
     patch_level: String
     installation_id: String
     license_key: String
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    last_scanned: DateTime
     # Operating SystemAsset
     family: FamilyType
   }
@@ -227,6 +242,9 @@
     patch_level: String
     installation_id: String
     license_key: String
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    last_scanned: DateTime
   }
 
   enum FamilyType {
@@ -247,13 +265,7 @@
     node: SoftwareAsset!
   }
 
-  input SoftwareAssetFiltering {
-    key: SoftwareAssetFilter!
-    values: [String]
-    operator: String
-    filterMode: FilterMode 
-  }
-
+  # Slicing Types
   enum SoftwareAssetOrdering {
     name
     asset_type
@@ -262,6 +274,15 @@
     vendor_name
   }
 
+  # Filtering Types
+  input SoftwareAssetFiltering {
+    key: SoftwareAssetFilter!
+    values: [String]
+    operator: String
+    filterMode: FilterMode 
+  }
+
+  "Defines the list of fields that can be filtered upon for Software Assets."
   enum SoftwareAssetFilter {
     created       # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
     modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
@@ -269,6 +290,17 @@
     asset_type    # Asset Type (key:asset_type, values: ["type1","type2","type3"], operator: "matches", filterMode: "or")
     labels        # Label (key:labels, values:["label1","label2"], operator: "matches", filterMode: "or")
     vendor_name   # Vendor (key:vendor_name, values:["vendor1","vendor2"], operator: "matches", filterMode: "or")
+  }
+
+  # this is used to restrict the set of asset_types values that are allowed in a filter
+  "Defines the list of Software assets types that can be used in filtering."
+  enum SoftwareAssetTypes {
+    "Generic Software"
+    software
+    "Application Software"
+    application_software
+    "Operating System"
+    operating_system
   }
 
   union SoftwareKind = SoftwareAsset | ApplicationSoftwareAsset | OperatingSystemAsset

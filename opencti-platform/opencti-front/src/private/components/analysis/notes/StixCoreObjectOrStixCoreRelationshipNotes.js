@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import Typography from '@material-ui/core/Typography';
-import { QueryRenderer as QR } from 'react-relay';
-import DarkLightEnvironment from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectNotesCards, {
   stixCoreObjectNotesCardsQuery,
@@ -44,7 +42,7 @@ class StixCoreObjectOrStixCoreRelationshipNotes extends Component {
                   gutterBottom={true}
                   style={{ float: 'left' }}
                 >
-                  {t('Notes')}
+                  {t('Notes about this relationship')}
                 </Typography>
               </div>
             );
@@ -53,40 +51,11 @@ class StixCoreObjectOrStixCoreRelationshipNotes extends Component {
       );
     }
     return (
-      <>
-        <QR
-          environment={DarkLightEnvironment}
-          query={stixCoreObjectNotesCardsQuery}
-          variables={{ id: stixCoreObjectOrStixCoreRelationshipId, count: 200 }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <StixCoreObjectNotesCards
-                  stixCoreObjectId={stixCoreObjectOrStixCoreRelationshipId}
-                  data={props}
-                  marginTop={marginTop}
-                />
-              );
-            }
-            return (
-              <div style={{ height: '100%', marginTop: marginTop || 40 }}>
-                <Typography
-                  variant="h4"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t('Notes')}
-                </Typography>
-              </div>
-            );
-          }}
-        />
-       {/* <QueryRenderer
+      <QueryRenderer
         query={stixCoreObjectNotesCardsQuery}
         variables={{ id: stixCoreObjectOrStixCoreRelationshipId, count: 200 }}
         render={({ props }) => {
           if (props) {
-            console.log('StixNotesPropsData', props);
             return (
               <StixCoreObjectNotesCards
                 stixCoreObjectId={stixCoreObjectOrStixCoreRelationshipId}
@@ -107,8 +76,7 @@ class StixCoreObjectOrStixCoreRelationshipNotes extends Component {
             </div>
           );
         }}
-      /> */}
-      </>
+      />
     );
   }
 }

@@ -102,7 +102,7 @@ export const up = async (next) => {
   const concurrentUpdate = async (bulk) => {
     await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;
-    logApp.info(`[OPENCTI] Migrating reports ${currentProcessing} / ${bulkOperations.length}`);
+    logApp.info(`[CYIO] Migrating reports ${currentProcessing} / ${bulkOperations.length}`);
   };
   await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
   logApp.info(`[MIGRATION] Migrating reports done in ${new Date() - start} ms`);

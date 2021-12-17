@@ -5,7 +5,7 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
-import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
+import CyioListCardsContent from '../../../../components/list_cards/CyioListCardsContent';
 import { NetworkCard, NetworkCardDummy } from './NetworkCard';
 import { setNumberOfElements } from '../../../../utils/Number';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -55,7 +55,7 @@ class NetworkCards extends Component {
     //         onLabelClick={onLabelClick.bind(this)}
     //         setBookmarkList={this.handleSetBookmarkList.bind(this)}
     //       />
-            <ListCardsContent
+            <CyioListCardsContent
               initialLoading={initialLoading}
               loadMore={relay.loadMore.bind(this)}
               hasMore={relay.hasMore.bind(this)}
@@ -110,34 +110,6 @@ export const networkCardsQuery = graphql`
       )
   }
 `;
-
-// export const networkCardsdarkLightRootQuery = graphql`
-//   query NetworkCardsDarkLightQuery {
-//     networkAssetList {
-//       edges {
-//         node {
-//           id
-//           name
-//           labels
-//           asset_id
-//           network_id
-//           network_address_range {
-//             ending_ip_address{
-//               ... on IpV4Address {
-//                 ip_address_value
-//               }
-//             }
-//             starting_ip_address{
-//               ... on IpV4Address {
-//                 ip_address_value
-//               }
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-// `;
 
 export default createPaginationContainer(
   NetworkCards,

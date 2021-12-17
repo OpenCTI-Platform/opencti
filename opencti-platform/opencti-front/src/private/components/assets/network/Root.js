@@ -29,57 +29,43 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 const subscription = graphql`
   subscription RootNetworkSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on IntrusionSet {
-        ...Network_network
-        ...NetworkEditionContainer_network
-      }
+      # ... on IntrusionSet {
+      #   # ...Network_network
+      #   ...NetworkEditionContainer_network
+      # }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
     }
   }
 `;
+
+// const networkQuery = graphql`
+//   query RootNetworkQuery($id: String!) {
+//     intrusionSet(id: $id) {
+//       id
+//       standard_id
+//       name
+//       aliases
+//       x_opencti_graph_data
+//       ...Network_network
+//       ...NetworkKnowledge_network
+//       ...FileImportViewer_entity
+//       ...FileExportViewer_entity
+//       ...FileExternalReferencesViewer_entity
+//     }
+//     connectorsForExport {
+//       ...FileManager_connectorsExport
+//     }
+//   }
+// `;
 
 const networkQuery = graphql`
-  query RootNetworkQuery($id: String!) {
-    intrusionSet(id: $id) {
+  query RootNetworkQuery($id: ID!) {
+    networkAsset(id: $id) {
       id
-      standard_id
       name
-      aliases
-      x_opencti_graph_data
       ...Network_network
-      ...NetworkKnowledge_network
-      ...FileImportViewer_entity
-      ...FileExportViewer_entity
-      ...FileExternalReferencesViewer_entity
-    }
-    connectorsForExport {
-      ...FileManager_connectorsExport
-    }
-  }
-`;
-
-const networkDarkLightQuery = graphql`
-  query RootNetworkDarkLightQuery($networkAssetId: ID!) {
-    networkAsset(id: $networkAssetId) {
-      id
-      asset_tag
-      asset_type
-      asset_id
-      locations {
-        description
-      }
-      name
-      asset_id
-      serial_number
-      labels
-      description
-      release_date
-      vendor_name
-      # operational_status
-      version
-      ...NetworkDetails_network
     }
   }
 `;
@@ -132,10 +118,11 @@ class RootNetwork extends Component {
             ]}
           />
         </Route>
+        {/* <QueryRenderer */}
         <QR
           environment={QueryRendererDarkLight}
-          query={networkDarkLightQuery}
-          variables={{ networkAssetId: networkId }}
+          query={networkQuery}
+          variables={{ id: networkId }}
           render={({ error, props }) => {
             if (props) {
               if (props.networkAsset) {
@@ -159,131 +146,6 @@ class RootNetwork extends Component {
             return <Loader />;
           }}
         />
-        {/* <QueryRenderer
-          query={networkQuery}
-          variables={{ id: networkId }}
-          render={({ props }) => {
-            if (props) {
-              if (props.network) {
-                return (
-                  <Switch>
-                    <Route
-                      exact
-                      path="/dashboard/assets/network/:networkId"
-                      render={(routeProps) => (
-                        <Network
-                          {...routeProps}
-                          network={props.network}
-                        />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/network/:networkId/knowledge"
-                      render={() => (
-                        <Redirect
-                          to={`/dashboard/assets/network/${networkId}/knowledge/overview`}
-                        />
-                      )}
-                    />
-                    <Route
-                      path="/dashboard/assets/network/:networkId/knowledge"
-                      render={(routeProps) => (
-                        <NetworkKnowledge
-                          {...routeProps}
-                          network={props.network}
-                        />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/network/:networkId/analysis"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            stixDomainObject={props.network}
-                            PopoverComponent={<NetworkPopover />}
-                          />
-                          <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
-                            stixDomainObjectOrStixCoreRelationship={
-                              props.network
-                            }
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/network/:networkId/indicators"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            stixDomainObject={props.network}
-                            PopoverComponent={<NetworkPopover />}
-                            variant="noaliases"
-                          />
-                          <StixDomainObjectIndicators
-                            {...routeProps}
-                            stixDomainObjectId={networkId}
-                        stixDomainObjectLink={`/dashboard/assets/network/${networkId}/indicators`}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/network/:networkId/indicators/relations/:relationId"
-                      render={(routeProps) => (
-                        <StixCoreRelationship
-                          entityId={networkId}
-                          {...routeProps}
-                        />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/network/:networkId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            stixDomainObject={props.network}
-                            PopoverComponent={<NetworkPopover />}
-                          />
-                          <FileManager
-                            {...routeProps}
-                            id={networkId}
-                            connectorsImport={[]}
-                            connectorsExport={props.connectorsForExport}
-                            entity={props.network}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/assets/network/:networkId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            stixDomainObject={props.network}
-                            PopoverComponent={<NetworkPopover />}
-                          />
-                          <StixCoreObjectHistory
-                            {...routeProps}
-                            stixCoreObjectId={networkId}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                  </Switch>
-                );
-              }
-              return <ErrorNotFound />;
-            }
-            return <Loader />;
-          }}
-        /> */}
       </div>
     );
   }

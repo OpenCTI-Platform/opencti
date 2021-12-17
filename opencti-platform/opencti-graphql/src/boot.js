@@ -4,7 +4,7 @@ import { startModules, shutdownModules } from './modules';
 
 // eslint-disable-next-line import/prefer-default-export
 export const boot = async () => {
-  logApp.info(`[OPENCTI] Starting platform`);
+  logApp.info(`[CYIO] Starting platform`);
   // Init the platform default
   await platformInit();
   // Init the modules
@@ -12,6 +12,6 @@ export const boot = async () => {
 };
 
 process.on('SIGTERM', async () => {
-  logApp.info('[OPENCTI] SIGTERM signal received, stopping OpenCTI');
+  logApp.info('[CYIO] SIGTERM signal received, stopping OpenCTI');
   await shutdownModules();
 });

@@ -16,7 +16,6 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Cancel from '@material-ui/icons/Cancel';
 import Button from '@material-ui/core/Button';
 import MenuItem from '@material-ui/core/MenuItem';
-import AssetTaglist from '../../common/form/AssetTaglist';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -29,7 +28,7 @@ import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
+import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObjectLabelsView';
 
 const styles = (theme) => ({
   paper: {
@@ -50,7 +49,7 @@ const deviceMutationFieldPatch = graphql`
     threatActorEdit(id: $id) {
       fieldPatch(input: $input, commitMessage: $commitMessage) {
         ...DeviceEditionOverview_device
-        ...Device_device
+        # ...Device_device
       }
     }
   }
@@ -541,7 +540,7 @@ class DeviceEditionOverviewComponent extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <StixCoreObjectLabelsView
+                        <CyioCoreObjectLabelsView
                           labels={objectLabel}
                           marginTop={20}
                           id={device.id}
@@ -591,16 +590,14 @@ class DeviceEditionOverviewComponent extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <AssetTaglist
-                          component={SelectField}
+                        <Field
+                          component={TextField}
                           variant='outlined'
                           name="asset_tag"
                           size='small'
                           fullWidth={true}
-                          style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        >
-                        </AssetTaglist>
+                        />
                       </div>
                       <div>
                         <Typography

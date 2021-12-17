@@ -1,0 +1,34 @@
+query RiskItemRemediationList {
+  risk(id: "d67ba9c2-9421-4e3e-ba6c-8a3ab382dc3a") {
+    id
+    created
+    modified
+    remediations {
+      id
+      name                # Title
+      description         # Description
+      created             # Created
+      modified            # Last Modified
+      lifecycle           # Lifecycle
+      response_type       # Response Type
+      origins{
+        id
+        origin_actors {
+          actor_type
+          actor {
+            ... on Component {
+              id
+              component_type
+              name          # Source
+            }
+            ... on OscalParty {
+            id
+            party_type
+            name            # Source
+            }
+          }
+        }
+      }
+    }
+  }
+}

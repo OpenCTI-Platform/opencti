@@ -26,8 +26,6 @@ import { dateFormat, parse } from '../../../../utils/Time';
 import DatePickerField from '../../../../components/DatePickerField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-// import Ports from '../../common/form/Ports';
-// import Protocols from '../../common/form/Protocols';
 
 const styles = (theme) => ({
   drawerPaper: {

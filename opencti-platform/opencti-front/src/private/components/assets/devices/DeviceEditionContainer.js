@@ -27,13 +27,13 @@ import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } fr
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
+import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import DeviceEditionOverview from './DeviceEditionOverview';
 import DeviceEditionDetails from './DeviceEditionDetails';
-import StixDomainObjectAssetEditionOverview from '../../common/stix_domain_objects/StixDomainObjectAssetEditionOverview';
+import CyioDomainObjectAssetEditionOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetEditionOverview';
 
 const styles = (theme) => ({
   container: {
@@ -57,7 +57,6 @@ const styles = (theme) => ({
   },
   title: {
     float: 'left',
-    textTransform: 'uppercase',
   },
   rightContainer: {
     float: 'right',
@@ -92,6 +91,8 @@ const deviceEditionMutation = graphql`
 
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  uri: Yup.string().url(t('The value must be an URL')),
+  port_number: Yup.number(),
   // asset_type: Yup.array().required(t('This field is required')),
   // implementation_point: Yup.string().required(t('This field is required')),
   // operational_status: Yup.string().required(t('This field is required')),
@@ -153,7 +154,7 @@ class DeviceEditionContainer extends Component {
       //   values,
       // );
       variables: {
-        id: this.props.device.id,
+        id: this.props.device?.id,
         input: [
           { key: 'name', value: 'Hello' },
           { key: 'asset_id', value: values.asset_id },
@@ -171,7 +172,6 @@ class DeviceEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        console.log('DeviceEditionDarkLightMutationData', data);
         this.props.history.push('/dashboard/assets/devices');
       },
       onError: (err) => console.log('DeviceEditionDarkLightMutationError', err),
@@ -213,38 +213,62 @@ class DeviceEditionContainer extends Component {
     const {
       t, classes, handleClose, device,
     } = this.props;
-    console.log('DeviceEditionPropsData', device);
+    const installedHardwares = R.pipe(
+      R.pathOr([], ['installed_hardware']),
+      R.map((n) => (n.id)),
+    )(device);
+    const installedSoftware = R.pipe(
+      R.pathOr([], ['installed_software']),
+      R.map((n) => (n.id)),
+    )(device);
+    const port_number = R.pipe(
+      R.pathOr([], ['prots']),
+      R.map((n) => n.port_number),
+    )(device);
+    const protocols = R.pipe(
+      R.pathOr([], ['prots']),
+      R.map((n) => n.protocols),
+    )(device);
     const initialValues = R.pipe(
-      R.assoc('id', device.id),
-      R.assoc('asset_id', device.asset_id),
-      R.assoc('description', device.description),
-      R.assoc('name', device.name),
-      R.assoc('asset_tag', device.asset_tag),
-      R.assoc('asset_type', device.asset_type),
-      R.assoc('location', device.locations && device.locations.map((index) => [index.description]).join('\n')),
-      R.assoc('version', device.version),
-      R.assoc('vendor_name', device.vendor_name),
-      R.assoc('serial_number', device.serial_number),
-      R.assoc('release_date', device.release_date),
-      R.assoc('operational_status', device.operational_status),
-      R.assoc('installation_id', device.installation_id || ''),
-      R.assoc('bios_id', device.bios_id || ''),
-      // R.assoc('connected_to_network', device.connected_to_network.name || ''),
-      R.assoc('netbios_name', device.netbios_name || ''),
-      R.assoc('baseline_configuration_name', device.baseline_configuration_name || ''),
-      R.assoc('mac_address', (device.mac_address || []).join()),
-      R.assoc('model', device.model || ''),
-      R.assoc('hostname', device.hostname || ''),
-      R.assoc('default_gateway', device.default_gateway || ''),
-      R.assoc('motherboard_id', device.motherboard_id || ''),
-      R.assoc('is_scanned', device.is_scanned || ''),
-      R.assoc('is_virtual', device.is_virtual || ''),
-      R.assoc('is_publicly_accessible', device.is_publicly_accessible || ''),
-      R.assoc('uri', device.uri || ''),
+      R.assoc('id', device?.id),
+      R.assoc('asset_id', device?.asset_id),
+      R.assoc('description', device?.description),
+      R.assoc('name', device?.name),
+      R.assoc('asset_tag', device?.asset_tag || ''),
+      R.assoc('asset_type', device?.asset_type),
+      R.assoc('location', device?.locations && device?.locations.map((location) => [location.street_address, location.city, location.country, location.postal_code]).join('\n')),
+      R.assoc('version', device?.version),
+      R.assoc('vendor_name', device?.vendor_name),
+      R.assoc('serial_number', device?.serial_number),
+      R.assoc('release_date', device?.release_date),
+      R.assoc('installed_hardware', installedHardwares),
+      R.assoc('installed_software', installedSoftware),
+      R.assoc('installed_operating_system', device?.installed_operating_system?.vendor_name || ''),
+      R.assoc('operational_status', device?.operational_status),
+      R.assoc('installation_id', device?.installation_id || ''),
+      R.assoc('bios_id', device?.bios_id || ''),
+      R.assoc('connected_to_network', device?.connected_to_network?.name || ''),
+      R.assoc('netbios_name', device?.netbios_name || ''),
+      R.assoc('baseline_configuration_name', device?.baseline_configuration_name || ''),
+      R.assoc('mac_address', (device?.mac_address || []).join()),
+      R.assoc('model', device?.model || ''),
+      R.assoc('port_number', port_number),
+      R.assoc('protocols', protocols),
+      R.assoc('hostname', device?.hostname || ''),
+      R.assoc('default_gateway', device?.default_gateway || ''),
+      R.assoc('motherboard_id', device?.motherboard_id || ''),
+      R.assoc('is_scanned', device?.is_scanned || false),
+      R.assoc('is_virtual', device?.is_virtual || false),
+      R.assoc('is_publicly_accessible', device?.is_publicly_accessible || false),
+      R.assoc('uri', device?.uri || ''),
+      R.assoc('fqdn', device?.fqdn || ''),
+      R.assoc('ipv4_address', device?.ipv4_address?.ip_address_value || ''),
+      R.assoc('ipv6_address', device?.ipv6_address?.ip_address_value || ''),
       R.pick([
         'id',
         'asset_id',
         'name',
+        'fqdn',
         'description',
         'asset_tag',
         'asset_type',
@@ -253,14 +277,21 @@ class DeviceEditionContainer extends Component {
         'vendor_name',
         'serial_number',
         'release_date',
+        'port_number',
+        'protocols',
+        'installed_operating_system',
+        'ipv4_address',
+        'ipv6_address',
         'operational_status',
         'installation_id',
         'connected_to_network',
         'bios_id',
+        'installed_software',
         'netbios_name',
         'baseline_configuration_name',
         'mac_address',
         'model',
+        'installed_hardware',
         'hostname',
         'default_gateway',
         'motherboard_id',
@@ -270,7 +301,7 @@ class DeviceEditionContainer extends Component {
         'uri',
       ]),
     )(device);
-    const { editContext } = device;
+    // const { editContext } = device;
     return (
       <div className={classes.container}>
         <Formik
@@ -295,7 +326,7 @@ class DeviceEditionContainer extends Component {
                     classes={{ root: classes.title }}
                     style={{ float: 'left', marginTop: 10, marginRight: 5 }}
                   >
-                    {t('Edit: ')}
+                    {t('EDIT: ')}
                   </Typography>
                   <Field
                     component={TextField}
@@ -381,8 +412,8 @@ class DeviceEditionContainer extends Component {
                   classes={{ container: classes.gridContainer }}
                 >
                   <Grid item={true} xs={6}>
-                    <StixDomainObjectAssetEditionOverview
-                      stixDomainObject={device}
+                    <CyioDomainObjectAssetEditionOverview
+                      cyioDomainObject={device}
                     // enableReferences={this.props.enableReferences}
                     // context={editContext}
                     // handleClose={handleClose.bind(this)}
@@ -392,7 +423,7 @@ class DeviceEditionContainer extends Component {
                     <DeviceEditionDetails
                       device={device}
                       // enableReferences={this.props.enableReferences}
-                      context={editContext}
+                      // context={editContext}
                       handleClose={handleClose.bind(this)}
                     />
                   </Grid>
@@ -405,16 +436,16 @@ class DeviceEditionContainer extends Component {
                 style={{ marginTop: 25 }}
               >
                 <Grid item={true} xs={6}>
-                  {/* <StixCoreObjectExternalReferences
-                    stixCoreObjectId={device.id}
-                  /> */}
+                  <CyioCoreObjectExternalReferences
+                    cyioCoreObjectId={device?.id}
+                  />
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <StixCoreObjectLatestHistory stixCoreObjectId={device.id} />
+                  <CyioCoreObjectLatestHistory cyioCoreObjectId={device?.id} />
                 </Grid>
               </Grid>
-              <StixCoreObjectOrStixCoreRelationshipNotes
-                stixCoreObjectOrStixCoreRelationshipId={device.id}
+              <CyioCoreObjectOrCyioCoreRelationshipNotes
+                cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
               />
             </>
           )}
@@ -437,14 +468,71 @@ const DeviceEditionFragment = createFragmentContainer(
   DeviceEditionContainer,
   {
     device: graphql`
-      fragment DeviceEditionContainer_device on ThreatActor {
+      fragment DeviceEditionContainer_device on ComputingDeviceAsset {
         id
-        ...DeviceEditionOverview_device
-        # ...DeviceEditionDetails_device
-        editContext {
+        name
+        asset_id
+        network_id
+        description
+        version
+        vendor_name
+        asset_tag
+        asset_type
+        serial_number
+        release_date
+        installed_software {
+          id
           name
-          focusOn
         }
+        installed_hardware {
+          id
+          name
+          uri
+        }
+        installed_operating_system {
+          id
+          name
+          vendor_name
+        }
+        locations {
+          city
+          country
+          postal_code
+          street_address
+        }
+        ipv4_address {
+          ip_address_value
+        }
+        ipv6_address {
+          ip_address_value
+        }
+        operational_status
+        connected_to_network {
+          name
+        }
+        ports {
+          port_number
+          protocols
+        }
+        uri
+        model
+        mac_address
+        fqdn
+        baseline_configuration_name
+        bios_id
+        is_scanned
+        hostname
+        default_gateway
+        motherboard_id
+        installation_id
+        netbios_name
+        is_virtual
+        is_publicly_accessible
+        # ...DeviceEditionOverview_device
+        # ...DeviceEditionDetails_device
+        # editContext {
+        #   name
+        #   focusOn
       }
     `,
   },

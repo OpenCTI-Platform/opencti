@@ -1,0 +1,17 @@
+SELECT DISTINCT ?iri ?id ?object_type ?asset_id ?name ?asset_type ?installed_operating_system ?installed_software ?fqdn ?network_id ?ip_address ?mac_address
+FROM <tag:stardog:api:context:named>
+WHERE {
+    BIND (<http://scap.nist.gov/ns/asset-identification#ComputingDevice-f3f2edc7-6551-5757-bd7d-f10370588be9> as ?iri)
+    ?iri a <http://scap.nist.gov/ns/asset-identification#ComputingDevice> ;
+        <http://darklight.ai/ns/common#id> ?id  .
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?object_type } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_id> ?asset_id } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#name> ?name } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_type> ?asset_type } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#installed_operating_system> ?installed_operating_system } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#installed_software> ?installed_software } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#fqdn> ?fqdn } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#network_id> ?network_id } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#ip_address> ?ip_address } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#mac_address> ?mac_address } .
+}

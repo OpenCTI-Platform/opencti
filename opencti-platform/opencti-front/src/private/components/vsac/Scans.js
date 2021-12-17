@@ -9,6 +9,7 @@ import {
   convertFilters,
   saveViewParameters,
 } from "../../../utils/ListParameters";
+import percentage from "../../../utils/percentage";
 import ListLines from "../../../components/list_lines/ListLines";
 import inject18n from "../../../components/i18n";
 import ToolBar from "../data/ToolBar";
@@ -32,6 +33,7 @@ import ImportExportIcon from "@material-ui/icons/ImportExport";
 import CompareIcon from "@material-ui/icons/Compare";
 import ScannerIcon from "@material-ui/icons/Scanner";
 import PublishIcon from "@material-ui/icons/Publish";
+import Popover from '@material-ui/core/Popover';
 import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
@@ -45,7 +47,6 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import Typography from "@material-ui/core/Typography";
-import Tooltip from "@material-ui/core/Tooltip";
 import CardContent from "@material-ui/core/CardContent";
 import { DescriptionOutlined } from "@material-ui/icons";
 import { makeStyles } from "@material-ui/core/styles";
@@ -70,6 +71,7 @@ import {
   YAxis,
   CartesianGrid,
   ReferenceLine,
+  Tooltip,
   ResponsiveContainer,
 } from "recharts";
 import Chip from "@material-ui/core/Chip";
@@ -215,11 +217,13 @@ class Scans extends Component {
       dialogParams: null,
       vulnerabilityAnchorEl: null,
       sortByAnchorEl: null,
+      popoverAnchorEl: null,
       analysisAnchorEl: null,
       renderScans: null,
       sortByLabel: "Scan Date",
       openDialog: false,
       loadDialog: null,
+      openedPopoverId: null,
     };
   }
 
@@ -259,11 +263,10 @@ class Scans extends Component {
           analysises.forEach(analysis =>{
            getAnalysisSummary(analysis.id,this.state.client_ID)
             .then((response) => {
-              
               let scatterPlot = [];
 
               response.data.forEach((item) => {
-                scatterPlot.push({ x: item.host_percent, y: item.score });
+                scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
               });
 
                scatterPlotData.push(scatterPlot)
@@ -300,14 +303,25 @@ class Scans extends Component {
       openDialog,
       loadDialog,
       dialogParams,
+      popoverAnchorEl,
+      openedPopoverId,
     } = this.state;
+
+    const openPopover = Boolean(popoverAnchorEl);
+
+    const handlePopoverOpen = (event, popoverId) => {
+      this.setState({ popoverAnchorEl: event.currentTarget, openedPopoverId: popoverId });
+    };
+
+    const handlePopoverClose = () => {
+      this.setState({ popoverAnchorEl: null, openedPopoverId: null });
+    };
 
     const handleClick = (event) => {
       this.setState({ vulnerabilityAnchorEl: event.currentTarget });
     };
 
     const handleClose = () => {
-      console.log("closed")
       this.setState({ vulnerabilityAnchorEl: false });
     };
 
@@ -433,9 +447,8 @@ class Scans extends Component {
           .then((response) => {
             
             let scatterPlot = [];
-
             response.data.forEach((item) => {
-              scatterPlot.push({ x: item.host_percent, y: item.score });
+                scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
             });
 
              scatterPlotData.push(scatterPlot)
@@ -508,6 +521,26 @@ class Scans extends Component {
           return "foo";
       }
     };
+
+    const CustomTooltip = ({ active, payload, label }) => {
+      if (active && payload && payload.length) {
+
+        return (
+
+          <div 
+          className="custom-tooltip" 
+          style={{backgroundColor: 'rgba(255, 255, 255, 0.1)', fontSize: 12, borderRadius: 10, border: 1, padding: 10}}>
+            <p className="label" style={{paddingBottom: 5}}>{payload[0].payload.cwe_name}</p>
+            <p className="weakness" style={{paddingBottom: 5}}>{`Weakness Score: ${payload[0].payload.score}`}</p>
+            <p className="host" style={{paddingBottom: 5}}>{`Hosts with Weakness: ${payload[0].payload.host_count_total} (${payload[0].payload.x}%)`}</p>
+          </div>
+        );
+      }
+
+      return null;
+    };
+
+
 
     return (
       <div>
@@ -600,7 +633,11 @@ class Scans extends Component {
                   {!loadingScans ? (
                     renderScans.map((scan, i) => {
                       return (
-                        <ListItem key={scan.id}>
+                        <ListItem 
+                          key={scan.id}
+                          onMouseEnter={(e) => handlePopoverOpen(e, scan.id)}
+                          onMouseLeave={handlePopoverClose}
+                        >
                           <ListItemText primary={scan.scan_name} />
                           <ListItemSecondaryAction>
                             <IconButton
@@ -645,7 +682,52 @@ class Scans extends Component {
                                 </MenuItem>
                               </Menu>
                           </ListItemSecondaryAction>
+                          <Popover
+                            id="mouse-over-popover"
+                            className={classes.popover}
+                            classes={{
+                              paper: classes.paper,
+                            }}
+                            open={openedPopoverId === scan.id}
+                            anchorEl={popoverAnchorEl}
+                            anchorOrigin={{
+                              vertical: 'bottom',
+                              horizontal: 'left',
+                            }}
+                            transformOrigin={{
+                              vertical: 'bottom',
+                              horizontal: 'left',
+                            }}
+                            onClose={handlePopoverClose}
+                            
+                          >
+                           <List>
+                             <ListItem>Report Name: {scan.report_name} </ListItem>
+                             <ListItem>Policy Name: {scan.policy_name} </ListItem>
+                             <ListItem>Scan Date: {scan.upload_date}</ListItem>
+                             <ListItem>Uploaded: {scan.upload_date}</ListItem>
+                             <ListItem>Total Vulnerabilities: {scan.total_cve}</ListItem>
+                             <ListItem>Unique Vulnerabilities: {scan.unique_cve}</ListItem>
+                             <ListItem>Total Records: {scan.record_count_total}</ListItem>
+                             <ListItem>...with vulnerabilities: 
+                                {scan.vulnerability_count}
+                                {scan.record_count_total > 0 &&
+                                  ` (${percentage(
+                                    scan.vulnerability_count,
+                                    scan.record_count_total
+                                  )}%)`}
+                             </ListItem>
+                             <ListItem>Total Hosts: {scan.host_count_total}</ListItem>
+                             <ListItem>...with vulnerabilities: 
+                               {scan.host_count}
+                                {scan.host_count_total > 0 &&
+                                  ` (${percentage(scan.host_count, scan.host_count_total)}%)`}
+                             </ListItem>
+                             <ListItem>Cyio Analysis {scan.analysis_count}</ListItem>
+                           </List>
+                          </Popover>
                         </ListItem>
+                        
                       );
                     })
                   ) : (
@@ -718,11 +800,10 @@ class Scans extends Component {
                               Explore Results
                             </MenuItem>
                             <MenuItem
-                              component={Link}
-                              to="/dashboard/vsac/scans/viewcharts"
-                              selected={location.pathname.includes(
-                                "/dashboard/vsac/scans/viewcharts"
-                              )}
+                              onClick={() => 
+                                handleLinkClink('/dashboard/vsac/scans/viewcharts',
+                                { analysises: this.state.analysises,
+                                })} 
                             >
                               <ListItemIcon>
                                 <ShowChartIcon fontSize="small" />
@@ -730,11 +811,11 @@ class Scans extends Component {
                               View Charts
                             </MenuItem>
                             <MenuItem
-                              component={Link}
-                              to="/dashboard/vsac/scans/compare"
-                              selected={location.pathname.includes(
-                                "/dashboard/vsac/scans/compare"
-                              )}
+                              onClick={() => 
+                                handleLinkClink('/dashboard/vsac/scans/compare',
+                                { analysises: this.state.analysises,
+                                  scatterPlotData: this.state.scatterPlotData
+                                })}
                             >
                               <ListItemIcon>
                                 <CompareIcon fontSize="small" />
@@ -828,23 +909,31 @@ class Scans extends Component {
                               type="number"
                               dataKey="x"
                               label="% of Hosts with Weakness"
-                              axisLine="false"
-                              hide="true"
+                              domain={[-200, 200]}
+                              tick={{ fill: '#ffffff' }}
                             />
                             <YAxis
                               type="number"
                               dataKey="y"
-                              label="Weakness Score"
-                              axisLine="false"
-                              hide="true"
+                              label={{
+                                value: 'Weakness Score',
+                                angle: -90,
+                                position: 'insideLeft',
+                                textAnchor: 'middle',
+                              }}
+                              domain={[-200, 200]}
+                              tick={{ fill: '#ffffff' }}
                             />
                             <ReferenceLine x={50} stroke="white" />
                             <ReferenceLine y={50} stroke="white" />
+                            <Tooltip
+                              content={<CustomTooltip />} 
+                            />
                             { scatterPlotData && (
                             <Scatter
-                              name="A school"
+                              name={analysis.scan.scan_name}
                               data={this.state.scatterPlotData[i]}
-                              fill="#8884d8"
+                              fill={`#${Math.floor(Math.random() * 16777215).toString(16)}`}
                             />
                             )}
                           </ScatterChart>

@@ -15,10 +15,10 @@ import {
 } from 'react-relay';
 
 const store = new Store(new RecordSource());
-const host = process.env.REACT_APP_GRAPHQL_HOST || "http://localhost:4000";
+const hostUrl = process.env.REACT_APP_GRAPHQL_HOST;
 
 const network = Network.create((operation, variables) => (
-  fetch( `${host}/graphql`, {
+  fetch(`${hostUrl}/graphql`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',

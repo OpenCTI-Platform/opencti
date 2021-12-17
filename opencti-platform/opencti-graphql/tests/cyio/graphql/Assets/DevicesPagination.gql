@@ -1,0 +1,22 @@
+query DevicesLinesPagination {
+  computingDeviceAssetList(first:25, offset:25, orderedBy: name, orderMode: desc) {
+    edges {
+      node {
+        id
+        name
+        installed_operating_system {
+          name
+        }
+        installed_hardware {
+           name
+        }
+        asset_id
+        fqdn
+        network_id
+        created
+        modified
+      }
+    }
+  }
+}
+

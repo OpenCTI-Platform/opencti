@@ -36,9 +36,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import AssetTaglist from '../../common/form/AssetTaglist';
 import AssetType from '../../common/form/AssetType';
-// import Ports from '../../common/form/Ports';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 
@@ -268,7 +266,7 @@ class DeviceCreationOverviewComponent extends Component {
                   <Field
                     component={SelectField}
                     variant='outlined'
-                    name="ports"
+                    name="author"
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px' }}
@@ -277,7 +275,7 @@ class DeviceCreationOverviewComponent extends Component {
                   <Field
                     component={SelectField}
                     variant='outlined'
-                    name="ports"
+                    name="author"
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px' }}
@@ -350,16 +348,14 @@ class DeviceCreationOverviewComponent extends Component {
                     </Tooltip>
                   </div>
                   <div className="clearfix" />
-                  <AssetTaglist
-                    component={SelectField}
+                  <Field
+                    component={TextField}
                     variant='outlined'
                     name="asset_tag"
                     size='small'
                     fullWidth={true}
-                    style={{ height: '38.09px' }}
                     containerstyle={{ width: '100%' }}
-                  >
-                  </AssetTaglist>
+                  />
                 </div>
                 <div>
                   <Typography

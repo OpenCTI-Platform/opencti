@@ -30,10 +30,10 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import DeviceCreationOverview from './DeviceCreationOverview';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import StixDomainObjectAssetCreationOverview from '../../common/stix_domain_objects/StixDomainObjectAssetCreationOverview';
-import StixCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/StixCoreObjectAssetCreationExternalReferences';
+import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import CyioDomainObjectAssetCreationOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetCreationOverview';
+import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import Loader from '../../../../components/Loader';
 import DeviceCreationDetails from './DeviceCreationDetails';
 
@@ -58,7 +58,6 @@ const styles = (theme) => ({
   },
   title: {
     float: 'left',
-    textTransform: 'uppercase',
   },
   rightContainer: {
     float: 'right',
@@ -100,7 +99,10 @@ const deviceCreationMutation = graphql`
 
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  // asset_type: Yup.array().required(t('This field is required')),
+  uri: Yup.string().url(t('The value must be an URL')),
+  port_number: Yup.number().required(t('This field is required')),
+  portocols: Yup.string().url(t('This field is required')),
+  asset_type: Yup.string().required(t('This field is required')),
   // implementation_point: Yup.string().required(t('This field is required')),
   // operational_status: Yup.string().required(t('This field is required')),
   // first_seen: Yup.date()
@@ -136,7 +138,7 @@ class DeviceCreation extends Component {
     //   assoc('objectMarking', pluck('value', values.objectMarking)),
     //   assoc('objectLabel', pluck('value', values.objectLabel)),
     // )(values);
-    CM(environmentDarkLight, {
+    // CM(environmentDarkLight, {
       // mutation: deviceCreationMutation,
       // const adaptedValues = evolve(
       //   {
@@ -147,18 +149,18 @@ class DeviceCreation extends Component {
       //   },
       //   values,
       // );
-      variables: {
-        input: values,
-      },
-      setSubmitting,
-      onCompleted: (data) => {
-        setSubmitting(false);
-        resetForm();
-        this.handleClose();
-        this.props.history.push('/dashboard/assets/devices');
-      },
-      onError: (err) => console.log('DeviceCreationDarkLightMutationError', err),
-    });
+    //   variables: {
+    //     input: values,
+    //   },
+    //   setSubmitting,
+    //   onCompleted: (data) => {
+    //     setSubmitting(false);
+    //     resetForm();
+    //     this.handleClose();
+    //     this.props.history.push('/dashboard/assets/devices');
+    //   },
+    //   onError: (err) => console.log('DeviceCreationDarkLightMutationError', err),
+    // });
     // commitMutation({
     //   mutation: deviceCreationMutation,
     //   variables: {
@@ -208,9 +210,13 @@ class DeviceCreation extends Component {
             implementation_point: 'external',
             ipv4_address: [],
             ipv6_address: [],
-            ports: [],
-            asset_type: 'physical-devices',
+            port_number: '',
+            portocols: '',
+            asset_type: 'physical_device',
             mac_address: [],
+            installed_operating_system: '',
+            installed_hardware: [],
+            installed_software: [],
           }}
           validationSchema={deviceValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
@@ -267,7 +273,7 @@ class DeviceCreation extends Component {
                 >
                   <Grid item={true} xs={6}>
                     {/* <DeviceCreationOverview setFieldValue={setFieldValue} values={values} /> */}
-                    <StixDomainObjectAssetCreationOverview
+                    <CyioDomainObjectAssetCreationOverview
                       setFieldValue={setFieldValue}
                       values={values}
                     />
@@ -287,13 +293,13 @@ class DeviceCreation extends Component {
                   {/* <StixCoreObjectExternalReferences
                       stixCoreObjectId={device.id}
                     /> */}
-                  <StixCoreObjectAssetCreationExternalReferences />
+                  <CyioCoreObjectAssetCreationExternalReferences />
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <StixCoreObjectLatestHistory />
+                  <CyioCoreObjectLatestHistory />
                 </Grid>
               </Grid>
-              <StixCoreObjectOrStixCoreRelationshipNotes />
+              <CyioCoreObjectOrCyioCoreRelationshipNotes />
             </>
           )}
         </Formik>

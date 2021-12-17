@@ -262,12 +262,13 @@ class DeviceCardComponent extends Component {
                     {t('Operating System')}
                   </Typography>
                   <div>
- {/* <Avatar style={{ float: 'left' }} className={classes.avatar}>{node.name.charAt(0)}</Avatar> */}
-                    <Typography>
-                      {/* {t('Microsoft Windows Server 2016')} */}
-                      {node.installed_operating_system && node.installed_operating_system.name
-                      && t(node.installed_operating_system.name)}
-                    </Typography>
+                  {node?.installed_operating_system?.name && node?.installed_operating_system?.vendor_name
+                    && <div>
+                      <Typography>
+                        <ItemIcon type={node.installed_operating_system.vendor_name} />&nbsp;&nbsp;
+                        {t(node.installed_operating_system.name)}
+                      </Typography>
+                    </div>}
                   </div>
                 </div>
               </Grid>
@@ -314,55 +315,16 @@ const DeviceCardFragment = createFragmentContainer(
         }
         installed_operating_system {
           name
+          vendor_name
         }
         asset_type
         fqdn
         labels
         network_id
-        # description
-        # created
-        # modified
-        # objectLabel {
-        #   edges {
-        #     node {
-        #       id
-        #       value
-        #       color
-        #     }
-        #   }
-        # }
-        # objectMarking {
-        #   edges {
-        #     node {
-        #       id
-        #       definition
-        #     }
-        #   }
-        # }
       }
     `,
   },
 );
-
-// const DeviceCardFragment = createFragmentContainer(
-//   DeviceCardComponent,
-//   {
-//     node: graphql`
-//       fragment DeviceCard_node on ComputingDeviceAsset {
-//         id
-//         name
-//         asset_id
-//         installed_operating_system {
-//           name
-//         }
-//         asset_type
-//         fqdn
-//         labels
-//         network_id
-//       }
-//     `,
-//   },
-// );
 
 export const DeviceCard = compose(
   inject18n,

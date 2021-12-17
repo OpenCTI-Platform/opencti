@@ -1697,7 +1697,7 @@ export const elDeleteElements = async (user, elements, loaders) => {
   const concurrentRelsFromTo = async (relsToClean) => {
     await elRemoveRelationConnection(user, relsToClean);
     currentRelationsCount += relsToClean.length;
-    logApp.debug(`[OPENCTI] Updating relations for deletion ${currentRelationsCount} / ${relsFromToImpacts.length}`);
+    logApp.debug(`[CYIO] Updating relations for deletion ${currentRelationsCount} / ${relsFromToImpacts.length}`);
   };
   await Promise.map(groupsOfRelsFromTo, concurrentRelsFromTo, opts);
   // Remove all relations
@@ -1706,7 +1706,7 @@ export const elDeleteElements = async (user, elements, loaders) => {
   const concurrentDeletions = async (deletions) => {
     await elDeleteInstanceIds(deletions);
     currentRelationsDelete += deletions.length;
-    logApp.debug(`[OPENCTI] Deleting related relations ${currentRelationsDelete} / ${relations.length}`);
+    logApp.debug(`[CYIO] Deleting related relations ${currentRelationsDelete} / ${relations.length}`);
   };
   await Promise.map(groupsOfDeletions, concurrentDeletions, opts);
   // Remove the elements

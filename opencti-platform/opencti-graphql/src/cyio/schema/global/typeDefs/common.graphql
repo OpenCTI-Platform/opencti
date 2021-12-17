@@ -10,6 +10,15 @@
       filterMode: FilterMode
       search: String
     ): CyioNoteConnection
+    cyioExternalReference(id: ID!): CyioExternalReference
+    cyioExternalReferenceList(
+      limit: Int
+      offset: Int
+      orderedBy: CyioExternalReferencesOrdering
+      orderMode: OrderingMode
+      filters: [CyioExternalReferencesFiltering]
+      filterMode: FilterMode
+    ): CyioExternalReferenceConnection
   }
 
   # declares the mutation entry-points for this type
@@ -19,22 +28,10 @@
     createCyioNote(input: CyioNoteAddInput): CyioNote
     deleteCyioNote(id: ID!): String!
     editCyioNote(id: ID!, input: [EditInput]!, commitMessage: String): CyioNote
+    createCyioExternalReference(input: CyioExternalReferenceAddInput): CyioExternalReference
+    deleteCyioExternalReference(id: ID!): String!
+    editCyioExternalReference(id: ID!, input: [EditInput]!, commitMessage: String): CyioExternalReference
   }
-
-#### Type Definitions
-
-  # "Defines the identifying properties of a Basic object"
-  # interface BasicObject {
-  #   # BasicObject
-  #   "Uniquely identifies this object."
-  #   id: ID!
-  #   "Identifies the identifier defined by the standard."
-  #   standard_id: String!
-  #   "Identifies the type of the Object."
-  #   entity_type: String!
-  #   "Identifies the parent types of this object."
-  #   parent_types: [String]!
-  # }
 
   "Identifies the identifying information about a lifecycle object"
   interface LifecycleObject {
@@ -177,7 +174,6 @@
     created: DateTime
     modified: DateTime
     labels: [String]
-    external_references( first: Int ): CyioExternalReferenceConnection
     # CyioNote
     abstract: String
     content: String!

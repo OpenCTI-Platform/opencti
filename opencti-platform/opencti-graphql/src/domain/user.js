@@ -510,7 +510,7 @@ export const login = async (email, password) => {
 
 export const logout = async (user, req, res) => {
   await delUserContext(user);
-  await patchAttribute(SYSTEM_USER, user.id, ENTITY_TYPE_USER,{access_token: null});
+  await patchAttribute(SYSTEM_USER, user.id, ENTITY_TYPE_USER, { access_token: null });
   res.clearCookie(OPENCTI_SESSION);
   req.session.destroy();
   logAudit.info(user, LOGOUT_ACTION);
@@ -600,7 +600,7 @@ export const authenticateUserFromRequest = async (req) => {
       }
       return user;
     } catch (err) {
-      logApp.error(`[OPENCTI] Authentication error ${tokenUUID}`, { error: err });
+      logApp.error(`[CYIO] Authentication error ${tokenUUID}`, { error: err });
     }
   }
   return undefined;
