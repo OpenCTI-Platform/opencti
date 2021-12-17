@@ -44,7 +44,7 @@ export class ApplicationError extends Error {
     this.data = errors;
   }
 }
- 
+
 // Network
 const isEmptyPath = isNil(window.BASE_PATH) || isEmpty(window.BASE_PATH);
 const contextPath = isEmptyPath || window.BASE_PATH === '/' ? '' : window.BASE_PATH;

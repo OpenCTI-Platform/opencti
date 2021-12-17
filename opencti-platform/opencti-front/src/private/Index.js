@@ -50,15 +50,17 @@ const useStyles = makeStyles((theme) => ({
 const Index = (me) => {
 
   useEffect(() => {
-    getAccount().then((res) => {
-      const account = res.data;
-      if (account) {
-        const clientId = account.clients?.[0].client_id;
-        localStorage.setItem('client_id', clientId);
-      } else {
-        clearToken();
-      }
-    });
+    if(!localStorage.getItem('client_id')){
+      getAccount().then((res) => {
+        const account = res.data;
+        if (account) {
+          const clientId = account.clients?.[0].client_id;
+          localStorage.setItem('client_id', clientId);
+        } else {
+          clearToken();
+        }
+      });
+    }
   });
 
   const clearClientId = () => {

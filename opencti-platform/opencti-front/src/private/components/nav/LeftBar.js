@@ -1,6 +1,6 @@
 /* eslint-disable */
 /* refactor */
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { assoc, compose } from 'ramda';
@@ -39,6 +39,10 @@ import Security, {
   UserContext,
   granted,
 } from '../../../utils/Security';
+import {
+  getAccount
+} from '../../../services/account.service';
+import Dialog from "@material-ui/core/Dialog";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -82,6 +86,7 @@ const LeftBar = ({
   t, location, history, classes,
 }) => {
   const [open, setOpen] = useState({ activities: true, knowledge: true });
+  const [user, setUser] = useState();
   const [userPrefOpen ,setUserPrefOpen] = useState(false);
   const toggle = (key) => setOpen(assoc(key, !open[key], open));
   const { me } = useContext(UserContext);
@@ -94,9 +99,29 @@ const LeftBar = ({
     toData = '/dashboard/data/taxii';
   }
 
-  const handleUserPrefOpen = () => {
+  useEffect(() => {
+    getAccount()
+      .then((res) => {
+        setUser({
+          email: res.data.email,
+          clients: res.data.clients,
+          first_name: me.name,
+          last_name: me.lastname,
+        });
+      }).catch((error) => {
 
+        console.log(error);
+      })
+  },[])
+
+  const handleUserPrefOpen = () => {
+    setUserPrefOpen(true);
   }
+
+  const handleDialogClose = () => {
+    setUserPrefOpen(null);
+  }
+
 
   return (
     <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
@@ -243,7 +268,7 @@ const LeftBar = ({
               <ListItemText primary={t(me.name)} />
             </MenuItem>
             <MenuItem
-              onClick={() => setUserPrefOpen(true) }
+              onClick={ () => handleUserPrefOpen() }
               dense={false}
               classes={{ root: classes.menuItem }}
             >
@@ -254,7 +279,18 @@ const LeftBar = ({
             </MenuItem>
         </MenuList>
       </Security>
-      <UserPreferencesModal isOpen={userPrefOpen}/>
+      <Dialog
+            open={userPrefOpen}
+            onClose={() => handleDialogClose()}
+            maxWidth="md"
+          >
+      <UserPreferencesModal
+       me={me}
+       user={user}
+       isLoading="true"
+
+      />
+      </Dialog>
     </Drawer>
 
   );
