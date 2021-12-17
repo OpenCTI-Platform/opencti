@@ -19,7 +19,10 @@ const hostUrl = process.env.REACT_APP_GRAPHQL_HOST;
 
 const buildHeaders = () => {
     const accessToken = localStorage.getItem('token');
-    const headers = {};
+    const headers = {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+    };
     if (accessToken) {
         headers.Authorization = `Bearer ${accessToken}`;
     }
