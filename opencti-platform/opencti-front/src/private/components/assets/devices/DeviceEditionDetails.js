@@ -28,6 +28,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import InstalledAsset from '../../common/form/InstalledAsset';
 import ItemIcon from '../../../../components/ItemIcon';
+import Protocols from '../../common/form/Protocols';
 
 const styles = (theme) => ({
   paper: {
@@ -199,41 +200,32 @@ class DeviceEditionDetailsComponent extends Component {
                   </div>
                   <div className="clearfix" />
                   <Field
+                    component={TextField}
+                    style={{  width: '50%' }}
+                    type="number"
+                    variant='outlined'
+                    name="port_number"
+                    size='small'
+                    fullWidth={true}
+                  />
+                  <Protocols
                     component={SelectField}
                     style={{ height: '38.09px' }}
                     variant='outlined'
-                    name="ports"
+                    name="protocols"
                     size='small'
                     fullWidth={true}
                     containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
                   />
-                  <Field
+                  {/* <Field
                     component={SelectField}
                     style={{ height: '38.09px' }}
                     variant='outlined'
-                    name="ports"
+                    name="protocals"
                     size='small'
                     fullWidth={true}
                     containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  />
-                  <Field
-                    component={SelectField}
-                    style={{ height: '38.09px' }}
-                    variant='outlined'
-                    name="ports"
-                    size='small'
-                    fullWidth={true}
-                    containerstyle={{ width: '50%' }}
-                  />
-                  <Field
-                    component={SelectField}
-                    style={{ height: '38.09px' }}
-                    variant='outlined'
-                    name="ports"
-                    size='small'
-                    fullWidth={true}
-                    containerstyle={{ width: '50%' }}
-                  />
+                  /> */}
                 </div>
                 <div>
                   <Typography

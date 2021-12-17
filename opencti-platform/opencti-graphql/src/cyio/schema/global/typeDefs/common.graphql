@@ -173,6 +173,7 @@
     # CoreObject
     created: DateTime
     modified: DateTime
+    labels: [String]
     # CyioNote
     abstract: String
     content: String!

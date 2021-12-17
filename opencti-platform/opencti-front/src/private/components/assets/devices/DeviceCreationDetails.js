@@ -28,8 +28,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import InstalledAsset from '../../common/form/InstalledAsset';
-// import Ports from '../../common/form/Ports';
-// import Protocols from '../../common/form/Protocols';
+import Protocols from '../../common/form/Protocols';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -232,14 +231,14 @@ class DeviceCreationDetailsComponent extends Component {
                     <AddIcon fontSize="small" color="disabled" style={{ marginTop: 2 }} />
                   </div>
                   <div className="clearfix" />
-                  {/* <Ports
-                    component={SelectField}
-                    style={{ height: '38.09px' }}
+                  <Field
+                    component={TextField}
+                    style={{  width: '50%' }}
+                    type="number"
                     variant='outlined'
-                    name="ports"
+                    name="port_number"
                     size='small'
                     fullWidth={true}
-                    containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
                   />
                   <Protocols
                     component={SelectField}
@@ -249,7 +248,7 @@ class DeviceCreationDetailsComponent extends Component {
                     size='small'
                     fullWidth={true}
                     containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  /> */}
+                  />
                 </div>
                 <div>
                   <Typography
