@@ -11,6 +11,7 @@ import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
 import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const installedHardwareAssetQuery = graphql`
   query InstalledAssetHardwareQuery {
@@ -27,8 +28,12 @@ const installedHardwareAssetQuery = graphql`
 `;
 
 const installedSoftwareAssetQuery = graphql`
-  query InstalledAssetSoftwareQuery {
-    softwareAssetList {
+  query InstalledAssetSoftwareQuery(
+    $filters: [SoftwareAssetFiltering]
+  ){
+    softwareAssetList(
+      filters: $filters
+    ) {
       edges {
         node {
           id
@@ -39,7 +44,6 @@ const installedSoftwareAssetQuery = graphql`
     }
   }
 `;
-
 
 class InstalledAsset extends Component {
   constructor(props) {
@@ -79,7 +83,9 @@ class InstalledAsset extends Component {
     {
       this.props.type === 'software'
         && (
-          fetchDarklightQuery(installedSoftwareAssetQuery)
+          fetchDarklightQuery(installedSoftwareAssetQuery, {
+            filters: this.props.assetType ? [{ key: 'asset_type', values: [this.props.assetType] }] : [],
+          })
             .toPromise()
             .then((data) => {
               const installedSoftwareEntities = R.pipe(
@@ -87,7 +93,7 @@ class InstalledAsset extends Component {
                 R.map((n) => ({
                   id: n.node.id,
                   name: n.node.name,
-                  type: n.node.asset_type,
+                  type: n.node.vendor_name,
                 })),
               )(data);
               console.log('sdasfdsfas', installedSoftwareEntities);
@@ -171,7 +177,7 @@ class InstalledAsset extends Component {
       ['installedSoftwareEntities'],
       this.state.softwareList,
     );
-    console.log('sfsdvdvdvsdva', softwareList);
+    !this.props.assetType && console.log('sfsdvdvdvsdvaSoftware', softwareList);
     return (
       <Field
         component={SelectField}
@@ -187,8 +193,9 @@ class InstalledAsset extends Component {
         helperText={helperText}
       >
         {softwareList.map((software) => (
-          <MenuItem key={software.id} value={software.id}>
-            {software.name && t(software.name)}
+          software.name
+          && <MenuItem key={software.id} value={software.id}>
+              {t(software.name)}
           </MenuItem>
         ))}
       </Field>
