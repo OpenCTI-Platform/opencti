@@ -1,4 +1,6 @@
-import React, { Component } from 'react';
+/* eslint-disable */
+/* refactor */
+import React, { Component, useContext } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 // import { ConnectionHandler } from 'relay-runtime';
@@ -28,6 +30,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { dayStartDate } from '../../../../utils/Time';
 import DatePickerField from '../../../../components/DatePickerField';
 import TextField from '../../../../components/TextField';
+import { UserContext } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -83,19 +86,19 @@ const styles = (theme) => ({
 });
 
 export const cyioNoteCreationMutation = graphql`
-  mutation CyioNoteCreationMutation($input: NoteAddInput!) {
-    noteAdd(input: $input) {
+  mutation CyioNoteCreationMutation($input: CyioNoteAddInput!) {
+    createCyioNote(input: $input) {
       id
-      ...NoteLine_node
+      # ...NoteLine_node
     }
   }
 `;
 
 const cyioNoteValidation = (t) => Yup.object().shape({
   confidence: Yup.number(),
-  created: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
+  // created: Yup.date()
+  //   .typeError(t('The value must be a date (YYYY-MM-DD)'))
+  //   .required(t('This field is required')),
   attribute_abstract: Yup.string(),
   content: Yup.string().required(t('This field is required')),
 });
@@ -111,10 +114,17 @@ const cyioNoteValidation = (t) => Yup.object().shape({
 // };
 
 class CyioNoteCreation extends Component {
+  static contextType = UserContext;
   constructor(props) {
     super(props);
     this.state = { open: false };
   }
+
+  // componentDidMount() {
+  //   const { me } = this.context
+
+  //   console.log('sdasdasdascdcd', me); // { name: 'Tania', loggedIn: true }
+  // }
 
   handleOpen() {
     this.setState({ open: true });
@@ -125,26 +135,27 @@ class CyioNoteCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const adaptedValues = evolve(
-      {
-        createdBy: path(['value']),
-        objectMarking: pluck('value'),
-        objectLabel: pluck('value'),
-      },
-      values,
-    );
+    // const adaptedValues = evolve(
+    //   {
+    //     createdBy: path(['value']),
+    //     objectMarking: pluck('value'),
+    //     objectLabel: pluck('value'),
+    //   },
+    //   values,
+    // );
     CM(environmentDarkLight, {
       mutation: cyioNoteCreationMutation,
       variables: {
-        input: adaptedValues,
+        input: values,
       },
       setSubmitting,
-      onCompleted: () => {
+      onCompleted: (response) => {
+        console.log('NoteCreationDarkLightMutationResp', response);
         setSubmitting(false);
         resetForm();
         this.handleClose();
       },
-      // onError: (err) => console.log('NoteCreationDarkLightMutationError', err),
+      onError: (err) => console.log('NoteCreationDarkLightMutationError', err),
     });
     // commitMutation({
     //   mutation: cyioNoteCreationMutation,
@@ -307,23 +318,19 @@ class CyioNoteCreation extends Component {
 
   renderContextual() {
     const {
-      t, classes, inputValue, display,
+      t,
+      classes,
+      inputValue,
+      display,
     } = this.props;
+    const { me } = this.context
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        {/* <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButtonContextual}
-        >
-          <Add />
-        </Fab> */}
         <IconButton
           aria-label="Add"
           edge="end"
           onClick={this.handleOpen.bind(this)}
-          color="secondary"
+          color="primary"
           className={classes.createButtonContextual}
         >
           <Add fontSize="small" />
@@ -332,12 +339,9 @@ class CyioNoteCreation extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
-              created: dayStartDate(),
-              attribute_abstract: '',
+              abstract: '',
               content: inputValue,
-              createdBy: '',
-              objectMarking: [],
-              objectLabel: [],
+              authors: me.name || '',
             }}
             validationSchema={cyioNoteValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -369,21 +373,6 @@ class CyioNoteCreation extends Component {
                         multiline={true}
                         rows="4"
                         style={{ marginTop: 20 }}
-                      />
-                    </Grid>
-                    <Grid item={true} xs={4}>
-                      <CreatedByField
-                        name="createdBy"
-                        style={{ marginTop: 20 }}
-                        setFieldValue={setFieldValue}
-                      />
-                    </Grid>
-                    <Grid item={true} xs={4}>
-                      <ObjectLabelField
-                        name="objectLabel"
-                        style={{ marginTop: 20 }}
-                        setFieldValue={setFieldValue}
-                        values={values.objectLabel}
                       />
                     </Grid>
                     <Grid style={{ marginLeft: 'auto' }} item={true} xs={5}>
