@@ -5,6 +5,7 @@ import {
   insertQuery, predicateMap
 } from './sparql-query.js';
 import {compareValues, updateQuery, filterValues} from '../../utils.js';
+import {UserInputError} from "apollo-server-express";
 import {addToInventoryQuery, deleteQuery, removeFromInventoryQuery} from "../assetUtil.js";
 
 const softwareResolvers = {
@@ -13,14 +14,22 @@ const softwareResolvers = {
       const selectionList = context.selectMap.getNode("node");
       const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList);
       const reducer = getReducer('SOFTWARE');
-      const response = await context.dataSources.Stardog.queryAll( 
-        context.dbName, 
-        sparqlQuery,
-        singularizeSchema,
-        // args.first,       // limit
-        // args.offset,      // offset
-        args.filter,      // filter
-      );
+      let response;
+      try {
+        response = await context.dataSources.Stardog.queryAll( 
+          context.dbName, 
+          sparqlQuery,
+          singularizeSchema,
+          // args.first,       // limit
+          // args.offset,      // offset
+          args.filter,      // filter
+        );
+      } catch(e) {
+        console.log(e)
+        throw e
+      }
+
+      if (response === undefined) return;
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
@@ -74,18 +83,44 @@ const softwareResolvers = {
           edges: edges,
         }
       } else {
-        return null;
+        // Handle reporting Stardog Error
+        if ( typeof(response) === 'object' && 'body' in response) { 
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        } else {
+          return ;
+        }
       }
     },
     softwareAsset: async ( _, args, context, info ) => {
       const selectionList = context.selectMap.getNode("softwareAsset");
       const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList, args.id);
       const reducer = getReducer('SOFTWARE');
-      const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema, )
+      let response;
+      try {
+        response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema, )
+      } catch(e) {
+        console.log(e)
+        throw e
+      }
       if (response === undefined ) return null;
-      const first = response[0];
-      if (first === undefined) return null;
-      return( reducer( first ) );
+      if (Array.isArray(response) && response.length > 0) {
+        const first = response[0];
+        if (first === undefined) return null;
+        return( reducer( first ) );
+      } else {
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        } else {
+          return;
+        }
+      }
     }
   },
   Mutation: {
