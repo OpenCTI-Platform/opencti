@@ -298,6 +298,7 @@ class SoftwareEditionContainer extends Component {
               /> */}
                     <CyioDomainObjectAssetEditionOverview
                       cyioDomainObject={software}
+                      assetType="Software"
                       // enableReferences={this.props.enableReferences}
                       // context={editContext}
                       handleClose={handleClose.bind(this)}

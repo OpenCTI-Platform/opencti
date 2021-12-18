@@ -118,6 +118,7 @@ class DeviceEditionDetailsComponent extends Component {
                     fullWidth={true}
                     containerstyle={{ width: '100%' }}
                   >
+                    <MenuItem divider={true} value="">Select Operating System</MenuItem>
                     <MenuItem key="microsoft" value="microsoft">
                       <ItemIcon variant='inline' type='microsoft' />&nbsp;{t('Windows')}
                     </MenuItem>

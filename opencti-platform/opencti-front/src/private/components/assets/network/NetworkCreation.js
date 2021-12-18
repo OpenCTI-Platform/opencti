@@ -279,6 +279,7 @@ class NetworkCreation extends Component {
                     <CyioDomainObjectAssetCreationOverview
                       setFieldValue={setFieldValue}
                       values={values}
+                      assetType="Network"
                     />
                   </Grid>
                   <Grid item={true} xs={6}>

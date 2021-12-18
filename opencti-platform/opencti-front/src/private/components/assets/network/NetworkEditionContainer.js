@@ -294,6 +294,7 @@ class NetworkEditionContainer extends Component {
                 /> */}
                     <CyioDomainObjectAssetEditionOverview
                       cyioDomainObject={network}
+                      assetType="Network"
                     // enableReferences={this.props.enableReferences}
                     // context={editContext}
                     // handleClose={handleClose.bind(this)}

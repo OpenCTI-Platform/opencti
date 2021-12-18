@@ -273,6 +273,7 @@ class SoftwareCreation extends Component {
                     <CyioDomainObjectAssetCreationOverview
                       setFieldValue={setFieldValue}
                       values={values}
+                      assetType="Software"
                     />
                   </Grid>
                   <Grid item={true} xs={6}>
