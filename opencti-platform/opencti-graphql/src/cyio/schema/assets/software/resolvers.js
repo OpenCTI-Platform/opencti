@@ -127,9 +127,11 @@ const softwareResolvers = {
     createSoftwareAsset: async ( _, {input}, context,  ) => {
       const dbName = context.dbName;
       const {iri, id, query} = insertQuery(input);
-      await context.dataSources.Stardog.create(dbName, query);
+      let response = await context.dataSources.Stardog.create(dbName, query);
+      if(response.status && response.status > 299) throw new Error(response.body.message);
       const connectQuery = addToInventoryQuery(iri);
-      await context.dataSources.Stardog.create(dbName, connectQuery);
+      response = await context.dataSources.Stardog.create(dbName, connectQuery);
+      if(response.status && response.status > 299) throw new Error(response.body.message);
       return {...input, id};
     },
     deleteSoftwareAsset: async ( _, {id}, context,  ) => {
