@@ -1,4 +1,4 @@
-import {buildSelectVariables, optionalizePredicate, parameterizePredicate, generateId, OASIS_SCO_NS} from "../../utils.js";
+import {byIdClause, buildSelectVariables, optionalizePredicate, parameterizePredicate, generateId, OASIS_SCO_NS} from "../../utils.js";
 
 const bindIRIClause = `\tBIND(<{iri}> AS ?iri)\n`;
 const typeConstraint = `?iri a <http://scap.nist.gov/ns/asset-identification#Network> . \n`;
@@ -53,15 +53,21 @@ export function getSelectSparqlQuery(type, select, id, filter, ) {
     case 'NETWORK':
       iri = id == null ? "?iri" : `<http://scap.nist.gov/ns/asset-identification#Network-${id}>`
       let filterStr = '';
-      sparqlQuery = `
-      ${selectionClause}
-      FROM <tag:stardog:api:context:named>
-      WHERE {
-        ?iri a <http://scap.nist.gov/ns/asset-identification#Network> ;
-        ${predicates} 
-        ${inventoryConstraint} .
-        ${filterStr}
-      }`
+      let byId = '';
+      if (id !== undefined) {
+        byId = byIdClause(id);
+      }
+      sparqlQuery = selectPortion + typeConstraint + byId + predicates + inventoryConstraint + filterStr + '}';
+
+      // sparqlQuery = `
+      // ${selectionClause}
+      // FROM <tag:stardog:api:context:named>
+      // WHERE {
+      //   ?iri a <http://scap.nist.gov/ns/asset-identification#Network> ;
+      //   ${predicates} 
+      //   ${inventoryConstraint} .
+      //   ${filterStr}
+      // }`
       // ${selectionClause}
       // WHERE {
       //   GRAPH ${iri} {

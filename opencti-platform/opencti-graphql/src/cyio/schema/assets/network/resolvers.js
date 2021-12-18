@@ -98,7 +98,8 @@ const networkResolvers = {
       }
     },
     networkAsset: async (_, args, context, info) => {
-      var sparqlQuery = getSelectSparqlQuery('NETWORK', context.selectMap.getNode('networkAsset'), args.id);
+      const selectList = context.selectMap.getNode("networkAsset")
+      var sparqlQuery = getSelectSparqlQuery('NETWORK', selectList, args.id);
       var reducer = getReducer('NETWORK')
       let response;
       try {
@@ -212,6 +213,7 @@ const networkResolvers = {
   NetworkAsset: {
     network_address_range: async (parent, args, context,) => {
       let item = parent.netaddr_range_iri;
+      if (item === undefined) return null;
       var sparqlQuery = selectIPAddressRange(`<${item}>`)
       var reducer = getReducer('NETADDR-RANGE');
       const response = await context.dataSources.Stardog.queryById(context.dbName, sparqlQuery, singularizeSchema)
