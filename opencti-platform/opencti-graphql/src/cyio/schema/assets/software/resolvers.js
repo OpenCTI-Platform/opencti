@@ -118,7 +118,7 @@ const softwareResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return;
+          return null;
         }
       }
     }
