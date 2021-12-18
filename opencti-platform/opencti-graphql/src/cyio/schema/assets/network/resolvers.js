@@ -235,7 +235,7 @@ const networkResolvers = {
       }
 
       // Handle reporting Stardog Error
-      if (typeof (response) === object && 'body' in response) {
+      if (typeof (response) === 'object' && 'body' in response) {
         throw new UserInputError(response.statusText, {
           error_details: (response.body.message ? response.body.message : response.body),
           error_code: (response.body.code ? response.body.code : 'N/A')
