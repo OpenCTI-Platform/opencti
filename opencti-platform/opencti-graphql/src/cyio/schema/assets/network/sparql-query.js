@@ -1,6 +1,7 @@
 import {buildSelectVariables, optionalizePredicate, parameterizePredicate, generateId, OASIS_SCO_NS} from "../../utils.js";
 
 const bindIRIClause = `\tBIND(<{iri}> AS ?iri)\n`;
+const typeConstraint = `?iri a <http://scap.nist.gov/ns/asset-identification#Network> . \n`;
 const inventoryConstraint = `
 {
   SELECT DISTINCT ?iri
@@ -24,10 +25,10 @@ export function getSelectSparqlQuery(type, select, id, filter, ) {
   let { selectionClause, predicates } = buildSelectVariables(predicateMap, select);
   selectionClause = `SELECT ${select.includes("id") ? "DISTINCT ?iri" : "?iri"} ${selectionClause}`;
   const selectPortion = `
-${selectionClause}
-FROM <tag:stardog:api:context:named>
-WHERE {
-  `;
+  ${selectionClause}
+  FROM <tag:stardog:api:context:named>
+  WHERE {
+      `;
   let iri;
   switch( type ) {
     case 'NETADDR-RANGE':
@@ -60,8 +61,7 @@ WHERE {
         ${predicates} 
         ${inventoryConstraint} .
         ${filterStr}
-      }
-      `
+      }`
       // ${selectionClause}
       // WHERE {
       //   GRAPH ${iri} {
@@ -73,13 +73,14 @@ WHERE {
       // }
       // `
       break;
-      case 'CONN-NET-IRI':
-        sparqlQuery = selectPortion +
-            bindIRIClause.replace('{iri}', id) + 
-            predicates + '}';
-        break
-      default:
-      throw new Error(`Unsupported query type ' ${type}'`)
+    case 'CONN-NET-IRI':
+      sparqlQuery = selectPortion +
+          bindIRIClause.replace('{iri}', id) + 
+          typeConstraint +
+          predicates + '}';
+      break
+    default:
+    throw new Error(`Unsupported query type ' ${type}'`)
   }
   // console.log(`[INFO] Query = ${sparqlQuery}`)
   return sparqlQuery ;
