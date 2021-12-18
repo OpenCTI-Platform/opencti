@@ -13,20 +13,29 @@ import {
   deleteLocationQuery,
   locationPredicateMap
 } from './sparql-query.js';
+import { UserInputError } from "apollo-server-express";
 
 const assetCommonResolvers = {
   Query: {
     assetList: async ( _, args, context, info  ) => { 
       var sparqlQuery = getSelectSparqlQuery('ASSET', context.selectMap.getNode("node") );
       var reducer = getReducer('ASSET');
-      const response = await context.dataSources.Stardog.queryAll( 
-        context.dbName, 
-        sparqlQuery,
-        singularizeSchema,
-        // args.first,       // limit
-        // args.offset,      // offset
-        args.filter       // filter
-      )
+      let response;
+      try {
+        response = await context.dataSources.Stardog.queryAll( 
+          context.dbName, 
+          sparqlQuery,
+          singularizeSchema,
+          // args.first,       // limit
+          // args.offset,      // offset
+          args.filter       // filter
+        )
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+
+      if (response === undefined) return;
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
@@ -82,29 +91,65 @@ const assetCommonResolvers = {
           edges: edges,
         }
       } else {
-        return [];
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        } else {
+          return;
+        }
       }
     },
     asset: async ( _, args, context, info ) => {
       var sparqlQuery = getSelectSparqlQuery('ASSET', context.selectMap.getNode('asset'),args.id);
       var reducer = getReducer('ASSET');
-      const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
-      if (response === undefined ) return null;
-      const first = response[0];
-      if (first === undefined) return null;
-      return( reducer( first ) );
+      let response;
+      try {
+        response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+
+      if (response === undefined) return;
+
+      if (Array.isArray(response) && response.length > 0) {
+        const first = response[0];
+        if (first === undefined) return;
+        return (reducer(first));
+      } else {
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        } else {
+          return;
+        }
+      }
     },
     itAssetList: async ( _, args, context, info  ) => { 
       var sparqlQuery = getSelectSparqlQuery('IT-ASSET', context.selectMap.getNode("node") );
       var reducer = getReducer('IT-ASSET');
-      const response = await context.dataSources.Stardog.queryAll( 
-        context.dbName, 
-        sparqlQuery,
-        singularizeSchema,
-        // args.first,       // limit
-        // args.offset,      // offset
-        args.filter       // filter
-      )
+      let response;
+      try {
+        response = await context.dataSources.Stardog.queryAll( 
+          context.dbName, 
+          sparqlQuery,
+          singularizeSchema,
+          // args.first,       // limit
+          // args.offset,      // offset
+          args.filter       // filter
+        )
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+
+      if (response === undefined) return;
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
@@ -160,22 +205,57 @@ const assetCommonResolvers = {
           edges: edges,
         }
       } else {
-        return [];
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        } else {
+          return;
+        }
       }
     },
     itAsset: async ( _, args, context, info ) => {
       var sparqlQuery = getSelectSparqlQuery('IT-ASSET', context.selectMap.getNode('itAsset'),args.id);
       var reducer = getReducer('IT-ASSET');
-      const response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
+      let response;
+      try {
+        response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+
       if (response === undefined ) return null;
-      const first = response[0];
-      if (first === undefined) return null;
-      return( reducer( first ) );
+      if (Array.isArray(response) && response.length > 0) {
+        const first = response[0];
+        if (first === undefined) return;
+        return (reducer(first));
+      } else {
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        } else {
+          return;
+        }
+      }
     },
     assetLocationList: async (_, args, context) => {
       const { dbName } = context;
       const query = selectAllLocations(context.selectMap.getNode("node"));
-      const response = await context.dataSources.Stardog.queryAll(dbName, query, singularizeSchema, args.filter);
+      let response;
+      try {
+        response = await context.dataSources.Stardog.queryAll(dbName, query, singularizeSchema, args.filter);
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+
+      if (response === undefined) return;
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("ASSET-LOCATION");
@@ -231,16 +311,43 @@ const assetCommonResolvers = {
           edges: edges,
         }
       } else {
-        return [];
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        } else {
+          return;
+        }
       }
     },
     assetLocation: async (_, {id}, context) => {
       const { dbName } = context;
       const query = selectLocationQuery(id, context.selectMap.getNode("assetLocation"));
-      const response = await context.dataSources.Stardog.queryById(dbName, query, singularizeSchema);
-      if(response === undefined || response.length === 0) return null;
-      const reducer = getReducer("ASSET-LOCATION");
-      return reducer(response[0]);
+      let response;
+      try {
+        response = await context.dataSources.Stardog.queryById(dbName, query, singularizeSchema);
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+
+      if (response === undefined) return;
+      if (Array.isArray(response) && response.length > 0) {
+        const reducer = getReducer("ASSET-LOCATION");
+        return reducer(response[0]);  
+      } else {
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        } else {
+          return;
+        }
+      }
     }
   },
   Mutation: {
