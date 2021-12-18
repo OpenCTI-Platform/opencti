@@ -38,7 +38,6 @@ import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../form/ConfidenceField';
 import AssetType from '../form/AssetType';
-// import Ports from '../form/Ports';
 import CommitMessage from '../form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 

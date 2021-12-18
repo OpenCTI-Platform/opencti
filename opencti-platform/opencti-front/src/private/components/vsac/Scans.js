@@ -636,7 +636,7 @@ class Scans extends Component {
                         <ListItem 
                           key={scan.id}
                           onMouseEnter={(e) => handlePopoverOpen(e, scan.id)}
-                          onMouseLeave={handlePopoverClose}
+                          onMouseLeave={(e) => handlePopoverClose()}
                         >
                           <ListItemText primary={scan.scan_name} />
                           <ListItemSecondaryAction>
@@ -688,6 +688,7 @@ class Scans extends Component {
                             classes={{
                               paper: classes.paper,
                             }}
+                            style={{ pointerEvents: 'none'}}
                             open={openedPopoverId === scan.id}
                             anchorEl={popoverAnchorEl}
                             anchorOrigin={{
@@ -699,7 +700,7 @@ class Scans extends Component {
                               horizontal: 'left',
                             }}
                             onClose={handlePopoverClose}
-                            
+                            disableRestoreFocus
                           >
                            <List>
                              <ListItem>Report Name: {scan.report_name} </ListItem>
