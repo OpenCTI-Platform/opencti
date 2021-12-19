@@ -556,7 +556,6 @@ class Scans extends Component {
             >
               <CardContent>
                 <p>
-                local
                   Your software and hardware keep your enterprise running.
                   Software and hardware have weaknesses, and those weaknesses
                   have vulnerabilities. The underlying weaknesses in your system
@@ -754,7 +753,7 @@ class Scans extends Component {
           </Grid>
         </Grid>
         <Typography variant="h4" gutterBottom={true}>
-          Analysises
+          Analyses
           { loadingAnalysises ? <LinearProgress /> : null }
         </Typography>
         <Grid container={true} spacing={3}>
