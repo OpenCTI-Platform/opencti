@@ -170,6 +170,10 @@ const UserPreferencesModal = (props) => {
 
   };
 
+  const handleCancel = () => {
+    props.action();
+  }
+
   useEffect(() => {
     user.clients.forEach((item) => {
           getOrganizationSettings(item.client_id).then((result) => {
@@ -288,7 +292,7 @@ const UserPreferencesModal = (props) => {
             <Button 
               size="small" 
               color="secondary"
-             
+              onClick={() => handleCancel()}
               >
               Cancel
             </Button>
