@@ -87,6 +87,8 @@ const LeftBar = ({
 }) => {
   const [open, setOpen] = useState({ activities: true, knowledge: true });
   const [user, setUser] = useState();
+  const [currentClient_id, setCurrentClient_id] = useState(localStorage.getItem('client_id'));
+  const [currentOrg, setCurrentOrg] = useState();
   const [userPrefOpen ,setUserPrefOpen] = useState(false);
   const toggle = (key) => setOpen(assoc(key, !open[key], open));
   const { me } = useContext(UserContext);
@@ -108,6 +110,9 @@ const LeftBar = ({
           first_name: me.name,
           last_name: me.lastname,
         });
+
+        setCurrentOrg(res.data.clients.find(obj => { return obj.client_id === currentClient_id}).name);
+
       }).catch((error) => {
 
         console.log(error);
@@ -122,7 +127,10 @@ const LeftBar = ({
     setUserPrefOpen(null);
   }
 
-
+ const cancelUserPref = () => {
+   setUserPrefOpen(null);
+ }
+  
   return (
     <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
       <Toolbar />
@@ -275,7 +283,7 @@ const LeftBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <LocationCityIcon />
               </ListItemIcon>
-              <ListItemText primary={t('DarkLight')} />
+              <ListItemText primary={currentOrg} />
             </MenuItem>
         </MenuList>
       </Security>
@@ -288,7 +296,7 @@ const LeftBar = ({
        me={me}
        user={user}
        isLoading="true"
-
+       action={cancelUserPref}
       />
       </Dialog>
     </Drawer>
