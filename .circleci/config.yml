@@ -67,7 +67,7 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - opencti_musl         
+            - opencti_musl   
             
   package_rolling:
     working_directory: ~/opencti
@@ -449,19 +449,19 @@ workflows:
       - build_frontend:
           filters:
             tags:
-              only: /.*/    
+              only: /.*/
       - build_platform:
           filters:
             tags:
               only: /.*/
           requires:
-            - build_frontend                
+            - build_frontend
       - build_platform_musl:
           filters:
             tags:
               only: /.*/      
           requires:
-            - build_frontend                   
+            - build_frontend
       - package_rolling:
           requires:
             - build_platform
@@ -475,7 +475,7 @@ workflows:
           filters:
             branches:
               only:
-                - master                
+                - master
       - deploy_demo:
           requires:
             - build_platform
@@ -513,7 +513,7 @@ workflows:
                 - master                                          
       - docker_build_platform_rolling:
           requires:
-            - build_frontend  
+            - build_frontend
           filters:
             branches:
               only:
