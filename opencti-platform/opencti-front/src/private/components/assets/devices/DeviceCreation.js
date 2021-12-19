@@ -101,7 +101,7 @@ const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   uri: Yup.string().url(t('The value must be an URL')),
   port_number: Yup.number().required(t('This field is required')),
-  portocols: Yup.string().url(t('This field is required')),
+  portocols: Yup.string(),
   asset_type: Yup.string().required(t('This field is required')),
   // implementation_point: Yup.string().required(t('This field is required')),
   // operational_status: Yup.string().required(t('This field is required')),
@@ -133,13 +133,17 @@ class DeviceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // const finalValues = pipe(
-    //   assoc('createdBy', values.createdBy?.value),
-    //   assoc('objectMarking', pluck('value', values.objectMarking)),
-    //   assoc('objectLabel', pluck('value', values.objectLabel)),
-    // )(values);
-    // CM(environmentDarkLight, {
-      // mutation: deviceCreationMutation,
+    const ports = {
+      "port_number": values.port_number,
+      "protocols": values.protocols || 'NetBIOS',
+    }
+    const finalValues = R.pipe(
+      R.assoc('name', values.name),
+      R.assoc('asset_type', values.asset_type),
+      R.assoc('ports', ports ),
+    )(values);
+    CM(environmentDarkLight, {
+      mutation: deviceCreationMutation,
       // const adaptedValues = evolve(
       //   {
       //     published: () => parse(values.published).format(),
@@ -149,18 +153,23 @@ class DeviceCreation extends Component {
       //   },
       //   values,
       // );
-    //   variables: {
-    //     input: values,
-    //   },
-    //   setSubmitting,
-    //   onCompleted: (data) => {
-    //     setSubmitting(false);
-    //     resetForm();
-    //     this.handleClose();
-    //     this.props.history.push('/dashboard/assets/devices');
-    //   },
-    //   onError: (err) => console.log('DeviceCreationDarkLightMutationError', err),
-    // });
+      variables: {
+        input: {
+          name: values.name,
+          asset_type: values.asset_type,
+          ports: ports,
+        },
+      },
+      setSubmitting,
+      onCompleted: (data) => {
+        console.log('sfasfasfasfsfRes', data);
+        setSubmitting(false);
+        resetForm();
+        this.handleClose();
+        this.props.history.push('/dashboard/assets/devices');
+      },
+      onError: (err) => console.log('DeviceCreationDarkLightMutationError', err),
+    });
     // commitMutation({
     //   mutation: deviceCreationMutation,
     //   variables: {
@@ -210,11 +219,10 @@ class DeviceCreation extends Component {
             implementation_point: 'external',
             ipv4_address: [],
             ipv6_address: [],
-            port_number: '',
-            portocols: '',
+            ports: [],
             asset_type: 'physical_device',
             mac_address: [],
-            installed_operating_system: '',
+            installed_operating_system: [],
             installed_hardware: [],
             installed_software: [],
           }}

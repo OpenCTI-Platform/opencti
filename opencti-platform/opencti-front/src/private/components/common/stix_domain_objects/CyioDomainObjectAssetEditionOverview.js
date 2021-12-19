@@ -36,6 +36,7 @@ import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import inject18n from '../../../../components/i18n';
+import DatePickerField from '../../../../components/DatePickerField';
 import {
   SubscriptionAvatars,
   SubscriptionFocus,
@@ -385,19 +386,16 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <Field
-                  component={TextField}
+                  component={DatePickerField}
                   variant='outlined'
                   name="release_date"
                   size='small'
+                  invalidDateMessage={t(
+                    'The value must be a date (YYYY-MM-DD)',
+                  )}
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%' }}
-                // helperText={
-                //   <SubscriptionFocus
-                //   context={context}
-                //   fieldName="ReleaseDate"
-                //   />
-                // }
                 />
               </div>
               <div>

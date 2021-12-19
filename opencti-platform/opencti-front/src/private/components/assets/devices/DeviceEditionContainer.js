@@ -26,6 +26,7 @@ import { Close, CheckCircleOutline } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
+import { dateFormat, parse } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
@@ -92,7 +93,10 @@ const deviceEditionMutation = graphql`
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   uri: Yup.string().url(t('The value must be an URL')),
-  port_number: Yup.number(),
+  port_number: Yup.number().required(t('This field is required')),
+  // release_date: Yup.date()
+  //   .nullable()
+  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
   // asset_type: Yup.array().required(t('This field is required')),
   // implementation_point: Yup.string().required(t('This field is required')),
   // operational_status: Yup.string().required(t('This field is required')),
@@ -163,8 +167,20 @@ class DeviceEditionContainer extends Component {
           { key: 'version', value: values.version },
           { key: 'vendor_name', value: values.vendor_name },
           { key: 'serial_number', value: values.serial_number },
-          { key: 'release_date', value: values.release_date },
+          { key: 'release_date', value: values.release_date ? parse(values.release_date).format() : '' },
           { key: 'operational_status', value: values.operational_status },
+          // { key: 'installed_hardware', value: values.installed_hardware },
+          // { key: 'installed_software', value: values.installed_software },
+          // { key: 'installed_operating_system', value: values.installed_operating_system },
+          // { key: 'baseline_configuration_name', value: values.baseline_configuration_name },
+          // { key: 'default_gateway', value: values.default_gateway },
+          // { key: 'netbios_name', value: values.netbios_name },
+          // { key: 'is_scanned', value: values.is_scanned },
+          // { key: 'motherboard_id', value: values.motherboard_id },
+          // { key: 'is_virtual', value: values.is_virtual },
+          // { key: 'is_publicly_accessible', value: values.is_publicly_accessible },
+          // { key: 'fqdn', value: values.fqdn },
+          // { key: 'uri', value: values.uri },
         ],
       },
       setSubmitting,
@@ -229,22 +245,23 @@ class DeviceEditionContainer extends Component {
       R.pathOr([], ['prots']),
       R.map((n) => n.protocols),
     )(device);
+    console.log('asdsafasfscsaEdition', device);
     const initialValues = R.pipe(
-      R.assoc('id', device?.id),
-      R.assoc('asset_id', device?.asset_id),
-      R.assoc('description', device?.description),
-      R.assoc('name', device?.name),
+      R.assoc('id', device?.id || ''),
+      R.assoc('asset_id', device?.asset_id || ''),
+      R.assoc('description', device?.description || ''),
+      R.assoc('name', device?.name || ''),
       R.assoc('asset_tag', device?.asset_tag || ''),
-      R.assoc('asset_type', device?.asset_type),
+      R.assoc('asset_type', device?.asset_type || ''),
       R.assoc('location', device?.locations && device?.locations.map((location) => [location.street_address, location.city, location.country, location.postal_code]).join('\n')),
-      R.assoc('version', device?.version),
-      R.assoc('vendor_name', device?.vendor_name),
-      R.assoc('serial_number', device?.serial_number),
-      R.assoc('release_date', device?.release_date),
+      R.assoc('version', device?.version || ''),
+      R.assoc('vendor_name', device?.vendor_name || ''),
+      R.assoc('serial_number', device?.serial_number || ''),
+      R.assoc('release_date', dateFormat(device?.release_date)),
       R.assoc('installed_hardware', installedHardwares),
       R.assoc('installed_software', installedSoftware),
       R.assoc('installed_operating_system', device?.installed_operating_system?.vendor_name || ''),
-      R.assoc('operational_status', device?.operational_status),
+      R.assoc('operational_status', device?.operational_status || ''),
       R.assoc('installation_id', device?.installation_id || ''),
       R.assoc('bios_id', device?.bios_id || ''),
       R.assoc('connected_to_network', device?.connected_to_network?.name || ''),
@@ -252,7 +269,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('baseline_configuration_name', device?.baseline_configuration_name || ''),
       R.assoc('mac_address', (device?.mac_address || []).join()),
       R.assoc('model', device?.model || ''),
-      R.assoc('port_number', port_number),
+      R.assoc('port_number', port_number.length > 0 ? port_number : ''),
       R.assoc('protocols', protocols),
       R.assoc('hostname', device?.hostname || ''),
       R.assoc('default_gateway', device?.default_gateway || ''),
