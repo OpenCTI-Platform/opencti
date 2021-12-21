@@ -40,6 +40,14 @@ const styles = (theme) => ({
   },
 });
 
+export const cyioNoteEditionQuery = graphql`
+  query CyioNoteEditionContainerQuery($id: ID!) {
+    cyioNote(id: $id) {
+      ...CyioNoteEditionContainer_note
+    }
+  }
+`;
+
 class CyioNoteEditionContainer extends Component {
   constructor(props) {
     super(props);
@@ -93,13 +101,13 @@ CyioNoteEditionContainer.propTypes = {
 
 const CyioNoteEditionFragment = createFragmentContainer(CyioNoteEditionContainer, {
   note: graphql`
-    fragment CyioNoteEditionContainer_note on Note {
+    fragment CyioNoteEditionContainer_note on CyioNote {
       id
       ...CyioNoteEditionOverview_note
-      editContext {
-        name
-        focusOn
-      }
+      # editContext {
+      #   name
+      #   focusOn
+      # }
     }
   `,
 });

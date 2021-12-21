@@ -362,7 +362,6 @@ const CyioCoreObjectOrCyioCoreRelationshipNoteCard = createFragmentContainer(
         content
         created
         modified
-        #labels
         abstract
         authors
         # objectLabel {
