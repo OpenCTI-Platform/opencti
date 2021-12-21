@@ -92,7 +92,9 @@ const deviceEditionMutation = graphql`
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   uri: Yup.string().url(t('The value must be an URL')),
-  port_number: Yup.number(),
+  // port_number: Yup.number().required(t('This field is required')),
+  portocols: Yup.string().required(t('This field is required')),
+  asset_type: Yup.string().required(t('This field is required')),
   // asset_type: Yup.array().required(t('This field is required')),
   // implementation_point: Yup.string().required(t('This field is required')),
   // operational_status: Yup.string().required(t('This field is required')),
@@ -136,6 +138,7 @@ class DeviceEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    console.log('asdasdasdasdasdasPassedValued', values);
     // const finalValues = pipe(
     //   assoc('createdBy', values.createdBy?.value),
     //   assoc('objectMarking', pluck('value', values.objectMarking)),
@@ -243,7 +246,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('release_date', device?.release_date),
       R.assoc('installed_hardware', installedHardwares),
       R.assoc('installed_software', installedSoftware),
-      R.assoc('installed_operating_system', device?.installed_operating_system?.vendor_name || ''),
+      R.assoc('installed_operating_system', device?.installed_operating_system?.id || ''),
       R.assoc('operational_status', device?.operational_status),
       R.assoc('installation_id', device?.installation_id || ''),
       R.assoc('bios_id', device?.bios_id || ''),
@@ -252,7 +255,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('baseline_configuration_name', device?.baseline_configuration_name || ''),
       R.assoc('mac_address', (device?.mac_address || []).join()),
       R.assoc('model', device?.model || ''),
-      R.assoc('port_number', port_number),
+      R.assoc('port_number', port_number || ''),
       R.assoc('protocols', protocols),
       R.assoc('hostname', device?.hostname || ''),
       R.assoc('default_gateway', device?.default_gateway || ''),

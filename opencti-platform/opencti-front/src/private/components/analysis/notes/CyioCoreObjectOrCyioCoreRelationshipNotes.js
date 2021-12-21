@@ -58,7 +58,7 @@ class CyioCoreObjectOrCyioCoreRelationshipNotes extends Component {
         <QR
           environment={DarkLightEnvironment}
           query={cyioCoreObjectNotesCardsQuery}
-          variables={{ id: cyioCoreObjectOrCyioCoreRelationshipId, count: 200 }}
+          variables={{ id: cyioCoreObjectOrCyioCoreRelationshipId, count: 5 }}
           render={({ props }) => {
             if (props) {
               return (

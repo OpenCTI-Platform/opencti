@@ -19,8 +19,8 @@ import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 // import { QueryRenderer, commitMutation } from '../../../../relay/environment';
-import { noteEditionQuery } from './NoteEdition';
-import CyioNoteEditionContainer from './CyioNoteEditionContainer';
+// import { noteEditionQuery } from './NoteEdition';
+import CyioNoteEditionContainer, { cyioNoteEditionQuery } from './CyioNoteEditionContainer';
 import Loader from '../../../../components/Loader';
 import Security, {
   KNOWLEDGE_KNUPDATE_KNDELETE,
@@ -68,9 +68,7 @@ Transition.displayName = 'TransitionSlide';
 
 const CyioNotePopoverDeletionMutation = graphql`
   mutation CyioNotePopoverDeletionMutation($id: ID!) {
-    noteEdit(id: $id) {
-      delete
-    }
+    deleteCyioNote(id: $id)
   }
 `;
 
@@ -252,7 +250,7 @@ class CyioNotePopover extends Component {
         >
           <QR
             environment={environmentDarkLight}
-            query={noteEditionQuery}
+            query={cyioNoteEditionQuery}
             variables={{ id }}
             render={({ props }) => {
               if (props) {

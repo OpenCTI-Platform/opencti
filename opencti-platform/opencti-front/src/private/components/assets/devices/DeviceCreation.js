@@ -101,7 +101,7 @@ const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   uri: Yup.string().url(t('The value must be an URL')),
   port_number: Yup.number().required(t('This field is required')),
-  portocols: Yup.string().url(t('This field is required')),
+  portocols: Yup.string().required(t('This field is required')),
   asset_type: Yup.string().required(t('This field is required')),
   // implementation_point: Yup.string().required(t('This field is required')),
   // operational_status: Yup.string().required(t('This field is required')),
