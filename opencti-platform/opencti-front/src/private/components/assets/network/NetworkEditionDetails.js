@@ -292,6 +292,7 @@ class NetworkEditionDetailsComponent extends Component {
                     component={TextField}
                     style={{ height: '38.09px' }}
                     variant='outlined'
+                    disabled={true}
                     name="network_id"
                     size='small'
                     fullWidth={true}

@@ -236,6 +236,7 @@ class SoftwareCreationDetailsComponent extends Component {
                   <Field
                     component={TextField}
                     variant='outlined'
+                    disabled={true}
                     name="installation_id"
                     size='small'
                     fullWidth={true}

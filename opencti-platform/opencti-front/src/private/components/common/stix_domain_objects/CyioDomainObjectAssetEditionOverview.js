@@ -124,6 +124,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   component={TextField}
                   variant='outlined'
                   size='small'
+                  disabled={true}
                   name="id"
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
@@ -149,6 +150,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   component={TextField}
                   variant='outlined'
                   size='small'
+                  disabled={true}
                   name="asset_id"
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}

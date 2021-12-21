@@ -289,6 +289,7 @@ class SoftwareEditionDetailsComponent extends Component {
                   </div>
                   <Field
                     component={TextField}
+                    disabled={true}
                     variant='outlined'
                     name="installation_id"
                     size='small'
