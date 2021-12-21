@@ -346,7 +346,6 @@ class DeviceEditionContainer extends Component {
                       size="small"
                       startIcon={<Close />}
                       color='primary'
-                      // onClick={() => this.props.history.goBack()}
                       onClick={this.handleOpenCancelButton.bind(this)}
                       className={classes.iconButton}
                     >
@@ -367,47 +366,6 @@ class DeviceEditionContainer extends Component {
                   </Tooltip>
                 </div>
               </div>
-              <Dialog
-                open={this.state.displayCancel}
-                TransitionComponent={Transition}
-                onClose={this.handleCancelButton.bind(this)}
-              >
-                  <DialogContent>
-                    <Typography style={{
-                      fontSize: '18px',
-                      lineHeight: '24px',
-                      color: 'white',
-                    }} >
-                      {t('Are you sure you’d like to cancel?')}
-                    </Typography>
-                    <DialogContentText>
-                      {t('Your progress will not be saved')}
-                    </DialogContentText>
-                  </DialogContent>
-                <DialogActions className={ classes.dialogActions }>
-                  <Button
-                    // onClick={this.handleCloseDelete.bind(this)}
-                    // disabled={this.state.deleting}
-                    onClick={this.handleCancelButton.bind(this)}
-                    classes={{ root: classes.buttonPopover }}
-                    variant="outlined"
-                    size="small"
-                  >
-                    {t('Go Back')}
-                  </Button>
-                  <Button
-                    // onClick={this.submitDelete.bind(this)}
-                    // disabled={this.state.deleting}
-                    onClick={() => this.props.history.goBack()}
-                    color="primary"
-                    classes={{ root: classes.buttonPopover }}
-                    variant="contained"
-                    size="small"
-                  >
-                    {t('Yes Cancel')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
               <Form>
                 <Grid
                   container={true}
@@ -453,6 +411,43 @@ class DeviceEditionContainer extends Component {
             </>
           )}
         </Formik>
+        <Dialog
+          open={this.state.displayCancel}
+          TransitionComponent={Transition}
+          onClose={this.handleCancelButton.bind(this)}
+        >
+          <DialogContent>
+            <Typography style={{
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: 'white',
+            }} >
+              {t('Are you sure you’d like to cancel?')}
+            </Typography>
+            <DialogContentText>
+              {t('Your progress will not be saved')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions className={classes.dialogActions}>
+            <Button
+              onClick={this.handleCancelButton.bind(this)}
+              classes={{ root: classes.buttonPopover }}
+              variant="outlined"
+              size="small"
+            >
+              {t('Go Back')}
+            </Button>
+            <Button
+              onClick={() => this.props.history.goBack()}
+              color="primary"
+              classes={{ root: classes.buttonPopover }}
+              variant="contained"
+              size="small"
+            >
+              {t('Yes Cancel')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
