@@ -204,7 +204,6 @@ class NetworkCreationDetailsComponent extends Component {
                   <div className="clearfix" />
                   <Field
                     component={TextField}
-                    disabled={true}
                     style={{ height: '38.09px' }}
                     variant='outlined'
                     name="network_id"

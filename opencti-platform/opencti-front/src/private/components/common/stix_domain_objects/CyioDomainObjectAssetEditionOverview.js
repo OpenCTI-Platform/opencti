@@ -40,6 +40,7 @@ import {
   SubscriptionAvatars,
   SubscriptionFocus,
 } from '../../../../components/Subscription';
+import DatePickerField from '../../../../components/DatePickerField';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import CyioCoreObjectLabelsView from '../stix_core_objects/CyioCoreObjectLabelsView';
@@ -150,7 +151,6 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   component={TextField}
                   variant='outlined'
                   size='small'
-                  disabled={true}
                   name="asset_id"
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
@@ -387,10 +387,13 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <Field
-                  component={TextField}
+                  component={DatePickerField}
                   variant='outlined'
                   name="release_date"
                   size='small'
+                  invalidDateMessage={t(
+                    'The value must be a date (YYYY-MM-DD)',
+                  )}
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%' }}

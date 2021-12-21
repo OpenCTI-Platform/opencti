@@ -205,7 +205,6 @@ class DeviceCreationDetailsComponent extends Component {
                   <Field
                     component={TextField}
                     variant='outlined'
-                    disabled={true}
                     name="motherboard_id"
                     size='small'
                     fullWidth={true}
@@ -268,7 +267,6 @@ class DeviceCreationDetailsComponent extends Component {
                   <Field
                     component={TextField}
                     variant='outlined'
-                    disabled={true}
                     name="installation_id"
                     size='small'
                     fullWidth={true}
@@ -597,7 +595,6 @@ class DeviceCreationDetailsComponent extends Component {
                   </div>
                   <Field
                     component={TextField}
-                    disabled={true}
                     variant='outlined'
                     name="bios_id"
                     size='small'

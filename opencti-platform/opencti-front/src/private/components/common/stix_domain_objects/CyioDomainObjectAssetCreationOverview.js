@@ -171,7 +171,6 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                     <Field
                       component={TextField}
                       variant='outlined'
-                      disabled={true}
                       size='small'
                       name="asset_id"
                       fullWidth={true}
