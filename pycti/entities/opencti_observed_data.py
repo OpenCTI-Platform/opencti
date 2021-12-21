@@ -567,9 +567,7 @@ class ObservedData:
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
                 else [],
-                objects=extras["object_ids"]
-                if "object_ids" in extras
-                else [],
+                objects=extras["object_ids"] if "object_ids" in extras else [],
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
                 else [],
