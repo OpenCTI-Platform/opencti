@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { compose } from 'ramda';
+import { compose, evolve } from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -19,6 +19,7 @@ import {
   AddCircleOutline,
   CheckCircleOutline,
 } from '@material-ui/icons';
+import { dayStartDate, parse } from '../../../../utils/Time';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
@@ -83,34 +84,20 @@ const styles = (theme) => ({
 const softwareCreationMutation = graphql`
   mutation SoftwareCreationMutation($input: SoftwareAssetAddInput) {
     createSoftwareAsset (input: $input) {
-      ...SoftwareCard_node
-      operational_status
-      serial_number
-      release_date
-      description
-      version
-      name
+      id
+      # ...SoftwareCard_node
+      # operational_status
+      # serial_number
+      # release_date
+      # description
+      # version
+      # name
     }
   }
 `;
 
 const softwareValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  // asset_type: Yup.array().required(t('This field is required')),
-  // implementation_point: Yup.string().required(t('This field is required')),
-  // operational_status: Yup.string().required(t('This field is required')),
-  // first_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // last_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // sophistication: Yup.string().nullable(),
-  // resource_level: Yup.string().nullable(),
-  // primary_motivation: Yup.string().nullable(),
-  // secondary_motivations: Yup.array().nullable(),
-  // personal_motivations: Yup.array().nullable(),
-  // goals: Yup.string().nullable(),
 });
 
 class SoftwareCreation extends Component {
@@ -127,24 +114,20 @@ class SoftwareCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // const finalValues = pipe(
-    //   assoc('createdBy', values.createdBy?.value),
-    //   assoc('objectMarking', pluck('value', values.objectMarking)),
-    //   assoc('objectLabel', pluck('value', values.objectLabel)),
-    // )(values);
+    const adaptedValues = evolve(
+      {
+        release_date: () => parse(values.release_date).format(),
+      },
+      values,
+    );
+    const finalValues = R.pipe(
+      R.assoc('name', values.name),
+      R.assoc('asset_type', values.asset_type),
+    )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: softwareCreationMutation,
-      // const adaptedValues = evolve(
-      //   {
-      //     published: () => parse(values.published).format(),
-      //     createdBy: path(['value']),
-      //     objectMarking: pluck('value'),
-      //     objectLabel: pluck('value'),
-      //   },
-      //   values,
-      // );
       variables: {
-        input: values,
+        input: finalValues,
       },
       setSubmitting,
       onCompleted: (data) => {
@@ -153,19 +136,18 @@ class SoftwareCreation extends Component {
         this.handleClose();
         this.props.history.push('/dashboard/assets/software');
       },
-      onError: (err) => console.log('SoftwareCreationDarkLightMutationError', err),
     });
     // commitMutation({
-    //   mutation: softwareCreationOverviewMutation,
+    //   mutation: softwareCreationMutation,
     //   variables: {
     //     input: values,
     //   },
-    //   // updater: (store) => insertNode(
-    //   //   store,
-    //   //   'Pagination_threatActors',
-    //   //   this.props.paginationOptions,
-    //   //   'threatActorAdd',
-    //   // ),
+    //   updater: (store) => insertNode(
+    //     store,
+    //     'Pagination_softwareAssetList',
+    //     this.props.paginationOptions,
+    //     'createSoftwareAsset',
+    //   ),
     //   setSubmitting,
     //   onCompleted: () => {
     //     setSubmitting(false);
@@ -201,18 +183,21 @@ class SoftwareCreation extends Component {
         <Formik
           initialValues={{
             name: 'Hello World',
-            // asset_id: '',
-            // version: '',
-            // serial_number: '',
-            // asset_tag: '',
-            // location: '',
-            // vendor_name: '',
-            // release_date: '',
-            // description: '',
+            asset_id: '',
+            version: '',
+            serial_number: '',
+            asset_tag: '',
+            vendor_name: '',
+            release_date: dayStartDate(),
+            software_identifier: '',
+            license_key: '',
+            installation_id: '',
+            patch_level: '',
+            cpe_identifier: '',
+            description: '',
             operational_status: 'other',
             implementation_point: 'external',
-            // Labels: [],
-            // ports: [],
+            labels: [],
             asset_type: 'software',
           }}
           validationSchema={softwareValidation(t)}

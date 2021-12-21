@@ -21,11 +21,14 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
+import { adaptFieldValue } from '../../../../utils/String';
 import IconButton from '@material-ui/core/IconButton';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
+import { commitMutation } from '../../../../relay/environment';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
+import { insertNode } from '../../../../utils/Store';
 import { dateFormat, parse } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
@@ -83,35 +86,14 @@ const deviceEditionMutation = graphql`
     $input: [EditInput]!
   ) {
     editComputingDeviceAsset(id: $id, input: $input) {
-      name
-      asset_type
-      vendor_name
+      id
     }
   }
 `;
 
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  uri: Yup.string().url(t('The value must be an URL')),
   port_number: Yup.number().required(t('This field is required')),
-  // release_date: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // asset_type: Yup.array().required(t('This field is required')),
-  // implementation_point: Yup.string().required(t('This field is required')),
-  // operational_status: Yup.string().required(t('This field is required')),
-  // first_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // last_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // sophistication: Yup.string().nullable(),
-  // resource_level: Yup.string().nullable(),
-  // primary_motivation: Yup.string().nullable(),
-  // secondary_motivations: Yup.array().nullable(),
-  // personal_motivations: Yup.array().nullable(),
-  // goals: Yup.string().nullable(),
 });
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -140,48 +122,36 @@ class DeviceEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // const finalValues = pipe(
-    //   assoc('createdBy', values.createdBy?.value),
-    //   assoc('objectMarking', pluck('value', values.objectMarking)),
-    //   assoc('objectLabel', pluck('value', values.objectLabel)),
-    // )(values);
-    const pair = Object.keys(values).map((key) => [{ key, value: values[key] }]);
+    const ports = {
+      "port_number": values.port_number,
+      "protocols": values.protocols || 'TCP',
+    }
+    const adaptedValues = R.evolve(
+      {
+        release_date: () => parse(values.release_date).format(),
+      },
+      values,
+    );
+    const finalValues = R.pipe(
+      R.dissoc('labels'),
+      R.dissoc('locations'),
+      R.dissoc('is_scanned'),
+      R.dissoc('is_virtual'),
+      R.dissoc('protocols'),
+      R.dissoc('port_number'),
+      R.dissoc('is_publicly_accessible'),
+      R.assoc('ports', ports),
+      R.toPairs,
+      R.map((n) => ({
+        'key': n[0],
+        'value': adaptFieldValue(n[1]),
+      })),
+    )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: deviceEditionMutation,
-      // const adaptedValues = evolve(
-      //   {
-      //     published: () => parse(values.published).format(),
-      //     createdBy: path(['value']),
-      //     objectMarking: pluck('value'),
-      //     objectLabel: pluck('value'),
-      //   },
-      //   values,
-      // );
       variables: {
         id: this.props.device?.id,
-        input: [
-          { key: 'name', value: 'Hello' },
-          { key: 'asset_id', value: values.asset_id },
-          { key: 'asset_tag', value: values.asset_tag },
-          { key: 'description', value: values.description },
-          { key: 'version', value: values.version },
-          { key: 'vendor_name', value: values.vendor_name },
-          { key: 'serial_number', value: values.serial_number },
-          { key: 'release_date', value: values.release_date ? parse(values.release_date).format() : '' },
-          { key: 'operational_status', value: values.operational_status },
-          // { key: 'installed_hardware', value: values.installed_hardware },
-          // { key: 'installed_software', value: values.installed_software },
-          // { key: 'installed_operating_system', value: values.installed_operating_system },
-          // { key: 'baseline_configuration_name', value: values.baseline_configuration_name },
-          // { key: 'default_gateway', value: values.default_gateway },
-          // { key: 'netbios_name', value: values.netbios_name },
-          // { key: 'is_scanned', value: values.is_scanned },
-          // { key: 'motherboard_id', value: values.motherboard_id },
-          // { key: 'is_virtual', value: values.is_virtual },
-          // { key: 'is_publicly_accessible', value: values.is_publicly_accessible },
-          // { key: 'fqdn', value: values.fqdn },
-          // { key: 'uri', value: values.uri },
-        ],
+        input: finalValues,
       },
       setSubmitting,
       onCompleted: (data) => {
@@ -190,19 +160,18 @@ class DeviceEditionContainer extends Component {
         this.handleClose();
         this.props.history.push('/dashboard/assets/devices');
       },
-      onError: (err) => console.log('DeviceEditionDarkLightMutationError', err),
     });
     // commitMutation({
-    //   mutation: deviceCreationOverviewMutation,
+    //   mutation: deviceEditionMutation,
     //   variables: {
-    //     input: values,
+    //     input: finalValues,
     //   },
-    //   // updater: (store) => insertNode(
-    //   //   store,
-    //   //   'Pagination_threatActors',
-    //   //   this.props.paginationOptions,
-    //   //   'threatActorAdd',
-    //   // ),
+    //   updater: (store) => insertNode(
+    //     store,
+    //     'Pagination_computingDeviceAssetList',
+    //     this.props.paginationOptions,
+    //     'editComputingDeviceAsset',
+    //   ),
     //   setSubmitting,
     //   onCompleted: () => {
     //     setSubmitting(false);
@@ -238,14 +207,13 @@ class DeviceEditionContainer extends Component {
       R.map((n) => (n.id)),
     )(device);
     const port_number = R.pipe(
-      R.pathOr([], ['prots']),
+      R.pathOr([], ['ports']),
       R.map((n) => n.port_number),
     )(device);
     const protocols = R.pipe(
-      R.pathOr([], ['prots']),
+      R.pathOr([], ['ports']),
       R.map((n) => n.protocols),
     )(device);
-    console.log('asdsafasfscsaEdition', device);
     const initialValues = R.pipe(
       R.assoc('id', device?.id || ''),
       R.assoc('asset_id', device?.asset_id || ''),
@@ -255,6 +223,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('asset_type', device?.asset_type || ''),
       R.assoc('location', device?.locations && device?.locations.map((location) => [location.street_address, location.city, location.country, location.postal_code]).join('\n')),
       R.assoc('version', device?.version || ''),
+      R.assoc('labels', device?.labels || ''),
       R.assoc('vendor_name', device?.vendor_name || ''),
       R.assoc('serial_number', device?.serial_number || ''),
       R.assoc('release_date', dateFormat(device?.release_date)),
@@ -277,10 +246,10 @@ class DeviceEditionContainer extends Component {
       R.assoc('is_scanned', device?.is_scanned || false),
       R.assoc('is_virtual', device?.is_virtual || false),
       R.assoc('is_publicly_accessible', device?.is_publicly_accessible || false),
-      R.assoc('uri', device?.uri || ''),
+      R.assoc('uri', device?.uri || null),
       R.assoc('fqdn', device?.fqdn || ''),
-      R.assoc('ipv4_address', device?.ipv4_address?.ip_address_value || ''),
-      R.assoc('ipv6_address', device?.ipv6_address?.ip_address_value || ''),
+      R.assoc('ipv4_address', R.pluck('ip_address_value', device?.ipv4_address || [])),
+      R.assoc('ipv6_address', R.pluck('ip_address_value', device?.ipv6_address || [])),
       R.pick([
         'id',
         'asset_id',
@@ -290,6 +259,7 @@ class DeviceEditionContainer extends Component {
         'asset_tag',
         'asset_type',
         'location',
+        'labels',
         'version',
         'vendor_name',
         'serial_number',

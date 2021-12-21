@@ -354,10 +354,10 @@ class DeviceCreationDetailsComponent extends Component {
                     gutterBottom={true}
                     style={{ float: 'left', marginTop: 20 }}
                   >
-                    {t('Publicity Accessible')}
+                    {t('Publicly Accessible')}
                   </Typography>
                   <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Publicity Accessible')} >
+                    <Tooltip title={t('Publicly Accessible')} >
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
