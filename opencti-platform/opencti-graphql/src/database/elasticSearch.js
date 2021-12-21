@@ -1989,42 +1989,39 @@ export const elIndexElements = async (elements) => {
     R.flatten,
     R.groupBy((i) => i.from)
   )(elements);
-  const elementsToUpdate = await Promise.all(
-    // For each from, generate the
-    R.map(async (entityId) => {
-      const entity = cache[entityId];
-      const targets = impactedEntities[entityId];
-      // Build document fields to update ( per relation type )
-      const targetsByRelation = R.groupBy((i) => i.relationshipType, targets);
-      const targetsElements = R.map((relType) => {
-        const data = targetsByRelation[relType];
-        const resolvedData = R.map((d) => {
-          return { id: d.to.internal_id, side: d.side };
-        }, data);
-        return { relation: relType, elements: resolvedData };
-      }, Object.keys(targetsByRelation));
-      // Create params and scripted update
-      const params = { updated_at: now() };
-      const sources = R.map((t) => {
-        const field = buildRefRelationKey(t.relation);
-        let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
-        script += `ctx._source['${field}'].addAll(params['${field}'])`;
-        if (isStixMetaRelationship(t.relation)) {
-          const fromUpdate = R.filter((e) => e.side === 'from', t.elements).length > 0;
-          if (fromUpdate) {
-            script += `; ctx._source['updated_at'] = params.updated_at`;
-          }
+  const elementsToUpdate = Object.keys(impactedEntities).map((entityId) => {
+    const entity = cache[entityId];
+    const targets = impactedEntities[entityId];
+    // Build document fields to update ( per relation type )
+    const targetsByRelation = R.groupBy((i) => i.relationshipType, targets);
+    const targetsElements = R.map((relType) => {
+      const data = targetsByRelation[relType];
+      const resolvedData = R.map((d) => {
+        return { id: d.to.internal_id, side: d.side };
+      }, data);
+      return { relation: relType, elements: resolvedData };
+    }, Object.keys(targetsByRelation));
+    // Create params and scripted update
+    const params = { updated_at: now() };
+    const sources = R.map((t) => {
+      const field = buildRefRelationKey(t.relation);
+      let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
+      script += `ctx._source['${field}'].addAll(params['${field}'])`;
+      if (isStixMetaRelationship(t.relation)) {
+        const fromUpdate = R.filter((e) => e.side === 'from', t.elements).length > 0;
+        if (fromUpdate) {
+          script += `; ctx._source['updated_at'] = params.updated_at`;
         }
-        return script;
-      }, targetsElements);
-      const source = sources.length > 1 ? R.join(';', sources) : `${R.head(sources)};`;
-      for (let index = 0; index < targetsElements.length; index += 1) {
-        const targetElement = targetsElements[index];
-        params[buildRefRelationKey(targetElement.relation)] = targetElement.elements.map((e) => e.id);
       }
-      return { ...entity, id: entityId, data: { script: { source, params } } };
-    }, Object.keys(impactedEntities))
-  );
+      return script;
+    }, targetsElements);
+    const source = sources.length > 1 ? R.join(';', sources) : `${R.head(sources)};`;
+    for (let index = 0; index < targetsElements.length; index += 1) {
+      const targetElement = targetsElements[index];
+      params[buildRefRelationKey(targetElement.relation)] = targetElement.elements.map((e) => e.id);
+    }
+    return { ...entity, id: entityId, data: { script: { source, params } } };
+  });
   const bodyUpdate = elementsToUpdate.flatMap((doc) => [
     { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
     R.dissoc('_index', doc.data),

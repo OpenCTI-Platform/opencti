@@ -198,7 +198,6 @@ import {
   yearFormat,
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
-// eslint-disable-next-line import/no-cycle
 import { deleteAllFiles, rawFilesListing, stixFileConverter } from './minio';
 import { BYPASS, filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
 import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
@@ -2981,6 +2980,21 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
   }
 };
 export const createEntity = async (user, input, type) => {
+  // volumes of objects relationships must be controlled
+  if (input.objects && input.objects.length > MAX_BATCH_SIZE) {
+    const objectSequences = R.splitEvery(MAX_BATCH_SIZE, input.objects);
+    const firstSequence = objectSequences.shift();
+    const subObjectsEntity = R.assoc(INPUT_OBJECTS, firstSequence, input);
+    const created = await createEntityRaw(user, subObjectsEntity, type);
+    // For each subsequences of objects
+    // We need to produce a batch upsert of object that will be upserted.
+    for (let index = 0; index < objectSequences.length; index += 1) {
+      const objectSequence = objectSequences[index];
+      const upsertInput = R.assoc(INPUT_OBJECTS, objectSequence, input);
+      await createEntityRaw(user, upsertInput, type);
+    }
+    return created.element;
+  }
   const data = await createEntityRaw(user, input, type);
   return data.element;
 };
