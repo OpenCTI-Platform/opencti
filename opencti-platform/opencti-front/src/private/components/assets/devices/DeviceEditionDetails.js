@@ -109,28 +109,16 @@ class DeviceEditionDetailsComponent extends Component {
                     </Tooltip>
                     <AddIcon fontSize="small" color="primary" />
                   </div>
-                  <Field
+                  <InstalledAsset
                     component={SelectField}
                     variant='outlined'
-                    size='small'
-                    name='installed_operating_system'
-                    style={{ height: '38.09px' }}
+                    type='software'
+                    assetType="operating-system"
+                    name="installed_operating_system"
                     fullWidth={true}
+                    style={{ height: '38.09px' }}
                     containerstyle={{ width: '100%' }}
-                  >
-                    <MenuItem key="microsoft" value="microsoft">
-                      <ItemIcon variant='inline' type='microsoft' />&nbsp;{t('Windows')}
-                    </MenuItem>
-                    <MenuItem key="apple" value="apple">
-                      <ItemIcon variant='inline' type='apple' />&nbsp;{t('Apple')}
-                    </MenuItem>
-                    <MenuItem key="linux" value="linux">
-                      <ItemIcon variant='inline' type='linux' />&nbsp;{t('Linux')}
-                    </MenuItem>
-                    <MenuItem key="other" value="other">
-                      <ItemIcon variant='inline' type='other' />&nbsp;{t('Other')}
-                    </MenuItem>
-                  </Field>
+                  />
                 </div>
                 <div>
                   <Typography
