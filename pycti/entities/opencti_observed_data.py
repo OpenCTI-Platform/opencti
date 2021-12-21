@@ -358,6 +358,7 @@ class ObservedData:
     def create(self, **kwargs):
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
+        objects = kwargs.get("objects", None)
         object_marking = kwargs.get("objectMarking", None)
         object_label = kwargs.get("objectLabel", None)
         external_references = kwargs.get("externalReferences", None)
@@ -369,7 +370,6 @@ class ObservedData:
         first_observed = kwargs.get("first_observed", None)
         last_observed = kwargs.get("last_observed", None)
         number_observed = kwargs.get("number_observed", None)
-        objects = kwargs.get("objects", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
 
@@ -397,6 +397,7 @@ class ObservedData:
                         "createdBy": created_by,
                         "objectMarking": object_marking,
                         "objectLabel": object_label,
+                        "objects": objects,
                         "externalReferences": external_references,
                         "revoked": revoked,
                         "confidence": confidence,
@@ -406,7 +407,6 @@ class ObservedData:
                         "first_observed": first_observed,
                         "last_observed": last_observed,
                         "number_observed": number_observed,
-                        "objects": objects,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "update": update,
                     }
@@ -567,6 +567,9 @@ class ObservedData:
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
                 else [],
+                objects=extras["object_ids"]
+                if "object_ids" in extras
+                else [],
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
                 else [],
@@ -585,9 +588,6 @@ class ObservedData:
                 else None,
                 number_observed=stix_object["number_observed"]
                 if "number_observed" in stix_object
-                else None,
-                objects=stix_object["object_refs"]
-                if "object_refs" in stix_object
                 else None,
                 x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
                 if "x_opencti_stix_ids" in stix_object

@@ -414,6 +414,7 @@ class Report:
     def create(self, **kwargs):
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
+        objects = kwargs.get("objects", None)
         object_marking = kwargs.get("objectMarking", None)
         object_label = kwargs.get("objectLabel", None)
         external_references = kwargs.get("externalReferences", None)
@@ -449,6 +450,7 @@ class Report:
                         "createdBy": created_by,
                         "objectMarking": object_marking,
                         "objectLabel": object_label,
+                        "objects": objects,
                         "externalReferences": external_references,
                         "revoked": revoked,
                         "confidence": confidence,
@@ -604,6 +606,9 @@ class Report:
                 else None,
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
+                else [],
+                objects=extras["object_ids"]
+                if "object_ids" in extras
                 else [],
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
