@@ -18,7 +18,6 @@ import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
-import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObjectLabelsView';
 // import { SubscriptionFocus } from '../../../../components/Subscription';
 
 const styles = (theme) => ({
@@ -54,11 +53,9 @@ export const cyioNoteMutationFieldPatch = graphql`
     $id: ID!
     $input: [EditInput]!
   ) {
-    noteEdit(id: $id) {
-      fieldPatch(input: $input) {
+    editCyioNote(id: $id, input: $input) {
         ...CyioNoteEditionOverview_note
-        ...Note_note
-      }
+        # ...Note_note
     }
   }
 `;
@@ -170,44 +167,6 @@ class CyioNoteEditionOverviewComponent extends Component {
   //   });
   // }
 
-  // handleChangeObjectMarking(name, values) {
-  //   const { note } = this.props;
-  //   const currentMarkingDefinitions = pipe(
-  //     pathOr([], ['objectMarking', 'edges']),
-  //     map((n) => ({
-  //       label: n.node.definition,
-  //       value: n.node.id,
-  //     })),
-  //   )(note);
-
-  //   const added = difference(values, currentMarkingDefinitions);
-  //   const removed = difference(currentMarkingDefinitions, values);
-
-  //   if (added.length > 0) {
-  //     commitMutation({
-  //       mutation: cyioNoteMutationRelationAdd,
-  //       variables: {
-  //         id: this.props.note.id,
-  //         input: {
-  //           toId: head(added).value,
-  //           relationship_type: 'object-marking',
-  //         },
-  //       },
-  //     });
-  //   }
-
-  //   if (removed.length > 0) {
-  //     commitMutation({
-  //       mutation: cyioNoteMutationRelationDelete,
-  //       variables: {
-  //         id: this.props.note.id,
-  //         toId: head(removed).value,
-  //         relationship_type: 'object-marking',
-  //       },
-  //     });
-  //   }
-  // }
-
   render() {
     const {
       t,
@@ -228,15 +187,12 @@ class CyioNoteEditionOverviewComponent extends Component {
       })),
     )(note);
     const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('objectMarking', objectMarking),
+      assoc('content', createdBy),
+      assoc('authors', objectMarking),
       pick([
-        'attribute_abstract',
-        'created',
+        'abstract',
         'content',
-        'confidence',
-        'createdBy',
-        'objectMarking',
+        'authors',
       ]),
     )(note);
     return (
@@ -254,33 +210,6 @@ class CyioNoteEditionOverviewComponent extends Component {
         }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
-              {/* <Field
-                component={DatePickerField}
-                name="created"
-                label={t('Date')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
-                onFocus={this.handleChangeFocus.bind(this)}
-                onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus context={context} fieldName="created" />
-                }
-              />
-              <Field
-                component={TextField}
-                name="attribute_abstract"
-                label={t('Abstract')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                onFocus={this.handleChangeFocus.bind(this)}
-                onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="attribute_abstract"
-                  />
-                }
-              /> */}
               <Field
                 component={MarkDownField}
                 name="content"
@@ -294,11 +223,6 @@ class CyioNoteEditionOverviewComponent extends Component {
                 // helperText={
                 //   <SubscriptionFocus context={context} fieldName="content" />
                 // }
-              />
-              <CyioCoreObjectLabelsView
-                labels={note.objectLabel}
-                id={note.id}
-                marginTop={20}
               />
               <div style={{
                 float: 'right',
@@ -325,36 +249,6 @@ class CyioNoteEditionOverviewComponent extends Component {
                   {t('Update')}
                 </Button>
               </div>
-              {/* <ConfidenceField
-                name="confidence"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
-                label={t('Confidence')}
-                fullWidth={true}
-                containerstyle={{ width: '100%', marginTop: 20 }}
-                editContext={context}
-                variant="edit"
-              />
-              <CreatedByField
-                name="createdBy"
-                style={{ marginTop: 20, width: '100%' }}
-                setFieldValue={setFieldValue}
-                helpertext={
-                  <SubscriptionFocus context={context} fieldName="createdBy" />
-                }
-                onChange={this.handleChangeCreatedBy.bind(this)}
-              />
-              <ObjectMarkingField
-                name="objectMarking"
-                style={{ marginTop: 20, width: '100%' }}
-                helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldname="objectMarking"
-                  />
-                }
-                onChange={this.handleChangeObjectMarking.bind(this)}
-              /> */}
             </Form>
           </div>
         )}
@@ -375,36 +269,11 @@ const CyioNoteEditionOverview = createFragmentContainer(
   CyioNoteEditionOverviewComponent,
   {
     note: graphql`
-      fragment CyioNoteEditionOverview_note on Note {
+      fragment CyioNoteEditionOverview_note on CyioNote {
         id
-        attribute_abstract
         content
-        confidence
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition
-              definition_type
-            }
-          }
-        }
+        authors
+        abstract
       }
     `,
   },
