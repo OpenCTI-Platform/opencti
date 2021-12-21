@@ -85,7 +85,6 @@ class DeviceEditionDetailsComponent extends Component {
     const {
       t, classes, device, enableReferences,
     } = this.props;
-    console.log('devicedfsdfsdgs', device);
     return (
       <div>
         <div style={{ height: '100%' }}>

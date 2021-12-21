@@ -177,7 +177,7 @@ export const insertQuery = (propValues) => {
   const insertPredicates = Object.entries(propValues)
     .filter((propPair) => predicateMap.hasOwnProperty(propPair[0]))
     .map((propPair) => predicateMap[propPair[0]].binding(iri, propPair[1]))
-    .join('\n      ');
+    .join('.\n      ');
   const query = `
   INSERT DATA {
     GRAPH ${iri} {

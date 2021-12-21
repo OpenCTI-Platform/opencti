@@ -69,7 +69,6 @@ class InstalledAsset extends Component {
                 type: n.node.asset_type,
               })),
             )(data);
-            console.log('sdasfdsfasHSD', installedHardwareEntities);
             this.setState({
               devices: {
                 ...this.state.entities,
@@ -96,7 +95,6 @@ class InstalledAsset extends Component {
                   type: n.node.vendor_name,
                 })),
               )(data);
-              console.log('sdasfdsfas', installedSoftwareEntities);
               this.setState({
                 softwareList: {
                   ...this.state.entities,
@@ -130,7 +128,6 @@ class InstalledAsset extends Component {
       ['installedHardwareEntities'],
       this.state.devices,
     );
-    console.log('sfsdvdvdvsdva', devices);
     return (
       <div>
         <Field
@@ -177,7 +174,6 @@ class InstalledAsset extends Component {
       ['installedSoftwareEntities'],
       this.state.softwareList,
     );
-    !this.props.assetType && console.log('sfsdvdvdvsdvaSoftware', softwareList);
     return (
       <Field
         component={SelectField}
