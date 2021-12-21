@@ -19,6 +19,11 @@ import {
   AddCircleOutline,
   CheckCircleOutline,
 } from '@material-ui/icons';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import Slide from '@material-ui/core/Slide';
+import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
@@ -65,6 +70,13 @@ const styles = (theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
+  },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
+  },
+  buttonPopover: {
+    textTransform: 'capitalize',
   },
   drawerPaper: {
     minHeight: '100vh',
@@ -114,17 +126,30 @@ const deviceValidation = (t) => Yup.object().shape({
   // goals: Yup.string().nullable(),
 });
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 class NetworkCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
       open: false,
       onSubmit: false,
+      displayCancel: false,
     };
   }
 
   handleOpen() {
     this.setState({ open: true });
+  }
+
+  handleCancelButton() {
+    this.setState({ displayCancel: false });
+  }
+
+  handleOpenCancelButton() {
+    this.setState({ displayCancel: true });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -248,8 +273,7 @@ class NetworkCreation extends Component {
                       size="small"
                       startIcon={<Close />}
                       color='primary'
-                      // onClick={handleReset}
-                      onClick={() => history.goBack()}
+                      onClick={this.handleOpenCancelButton.bind(this)}
                       className={classes.iconButton}
                     >
                       {t('Cancel')}
@@ -306,6 +330,43 @@ class NetworkCreation extends Component {
             </>
           )}
         </Formik>
+        <Dialog
+          open={this.state.displayCancel}
+          TransitionComponent={Transition}
+          onClose={this.handleCancelButton.bind(this)}
+        >
+          <DialogContent>
+            <Typography style={{
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: 'white',
+            }} >
+              {t('Are you sure you’d like to cancel?')}
+            </Typography>
+            <DialogContentText>
+              {t('Your progress will not be saved')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions className={classes.dialogActions}>
+            <Button
+              onClick={this.handleCancelButton.bind(this)}
+              classes={{ root: classes.buttonPopover }}
+              variant="outlined"
+              size="small"
+            >
+              {t('Go Back')}
+            </Button>
+            <Button
+              onClick={() => history.goBack()}
+              color="primary"
+              classes={{ root: classes.buttonPopover }}
+              variant="contained"
+              size="small"
+            >
+              {t('Yes Cancel')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
