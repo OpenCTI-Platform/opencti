@@ -216,10 +216,12 @@ export const deleteAssetQuery = (id) => {
 
 function itAssetReducer( item ) {
   // if no object type was returned, compute the type from the IRI
-  if ( item.object_type === undefined && item.asset_type !== undefined ) {
-    item.object_type = item.asset_type
-  } else {
-    item.object_type = 'it-asset';
+  if (item.object_type === undefined || item.object_type == null) {
+    if (item.asset_type !== undefined ) {
+      item.object_type = item.asset_type
+    } else {
+      item.object_type = 'it-asset';
+    }
   }
 
   return {

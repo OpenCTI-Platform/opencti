@@ -1,10 +1,11 @@
 /* eslint-disable */
 /* refactor */
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { assoc, compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
+import UserPreferencesModal from './UserPreferencesModal';
 import Toolbar from '@material-ui/core/Toolbar';
 import graphql from 'babel-plugin-relay/macro';
 import MenuList from '@material-ui/core/MenuList';
@@ -38,6 +39,10 @@ import Security, {
   UserContext,
   granted,
 } from '../../../utils/Security';
+import {
+  getAccount
+} from '../../../services/account.service';
+import Dialog from "@material-ui/core/Dialog";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -81,6 +86,10 @@ const LeftBar = ({
   t, location, history, classes,
 }) => {
   const [open, setOpen] = useState({ activities: true, knowledge: true });
+  const [user, setUser] = useState();
+  const [currentClient_id, setCurrentClient_id] = useState(localStorage.getItem('client_id'));
+  const [currentOrg, setCurrentOrg] = useState();
+  const [userPrefOpen ,setUserPrefOpen] = useState(false);
   const toggle = (key) => setOpen(assoc(key, !open[key], open));
   const { me } = useContext(UserContext);
   let toData;
@@ -92,6 +101,36 @@ const LeftBar = ({
     toData = '/dashboard/data/taxii';
   }
 
+  useEffect(() => {
+    getAccount()
+      .then((res) => {
+        setUser({
+          email: res.data.email,
+          clients: res.data.clients,
+          first_name: me.name,
+          last_name: me.lastname,
+        });
+
+        setCurrentOrg(res.data.clients.find(obj => { return obj.client_id === currentClient_id}).name);
+
+      }).catch((error) => {
+
+        console.log(error);
+      })
+  },[])
+
+  const handleUserPrefOpen = () => {
+    setUserPrefOpen(true);
+  }
+
+  const handleDialogClose = () => {
+    setUserPrefOpen(null);
+  }
+
+ const cancelUserPref = () => {
+   setUserPrefOpen(null);
+ }
+  
   return (
     <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
       <Toolbar />
@@ -237,20 +276,31 @@ const LeftBar = ({
               <ListItemText primary={t(me.name)} />
             </MenuItem>
             <MenuItem
-              component={Link}
-              to={toData}
-              selected={location.pathname.includes('/dashboard/data/dark')}
+              onClick={ () => handleUserPrefOpen() }
               dense={false}
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon style={{ minWidth: 35 }}>
                 <LocationCityIcon />
               </ListItemIcon>
-              <ListItemText primary={t('DarkLight')} />
+              <ListItemText primary={currentOrg} />
             </MenuItem>
         </MenuList>
       </Security>
+      <Dialog
+            open={userPrefOpen}
+            onClose={() => handleDialogClose()}
+            maxWidth="md"
+          >
+      <UserPreferencesModal
+       me={me}
+       user={user}
+       isLoading="true"
+       action={cancelUserPref}
+      />
+      </Dialog>
     </Drawer>
+
   );
 };
 

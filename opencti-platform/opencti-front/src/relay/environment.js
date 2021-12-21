@@ -54,7 +54,6 @@ const loc = window.location;
 let { host } = loc;
 if (process.env.REACT_APP_GRAPHQL_HOST !== undefined) {
   const hostUrl = new URL(process.env.REACT_APP_GRAPHQL_HOST);
-  // console.log(`GraphQL host -> ${host}`);
   host = hostUrl.host;
 }
 // eslint-disable-next-line no-console
@@ -78,12 +77,18 @@ const subscribeFn = (request, variables) => {
 
 const buildHeaders = () => {
   const accessToken = localStorage.getItem('token');
+  const headers = {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  };
   if (accessToken) {
-    return {
-      Authorization: `Bearer ${accessToken}`,
-    };
+    headers.Authorization = `Bearer ${accessToken}`;
   }
-  return {};
+  const clientId = localStorage.getItem('client_id');
+  if (clientId) {
+    headers['X-Cyio-Client'] = clientId;
+  }
+  return headers;
 };
 
 const network = new RelayNetworkLayer(
