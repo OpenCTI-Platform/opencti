@@ -135,11 +135,8 @@ class DeviceEditionContainer extends Component {
     const finalValues = R.pipe(
       R.dissoc('labels'),
       R.dissoc('locations'),
-      R.dissoc('is_scanned'),
-      R.dissoc('is_virtual'),
       R.dissoc('protocols'),
       R.dissoc('port_number'),
-      R.dissoc('is_publicly_accessible'),
       R.assoc('ports', ports),
       R.toPairs,
       R.map((n) => ({

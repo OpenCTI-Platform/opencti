@@ -14,6 +14,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Switch from '@material-ui/core/Switch';
+import SwitchField from '../../../../components/SwitchField';
 import Paper from '@material-ui/core/Paper';
 import { Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -184,14 +185,6 @@ class NetworkEditionDetailsComponent extends Component {
     // )(network);
     return (
       <>
-        {/* // <Formik
-      //   enableReinitialize={true}
-      //   initialValues={initialValues}
-      //   validationSchema={networkValidation(t)}
-      //   onSubmit={this.onSubmit.bind(this)}
-      // >
-      //   {({ submitForm, isSubmitting, validateForm }) => (
-      //     <Form style={{ margin: '20px 0 20px 0' }}> */}
         <div style={{ height: '100%' }}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Details')}
@@ -263,10 +256,11 @@ class NetworkEditionDetailsComponent extends Component {
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Typography>No</Typography>
                     <Field
-                      component={Switch}
+                      component={SwitchField}
+                      type="checkbox"
                       name="is_scanned"
-                      defaultChecked={network.is_scanned}
-                      containerstyle={{ marginTop: 20 }}
+                      containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
+                      inputProps={{ 'aria-label': 'ant design' }}
                     />
                     <Typography>Yes</Typography>
                   </div>
@@ -346,88 +340,6 @@ class NetworkEditionDetailsComponent extends Component {
             </Grid>
           </Paper>
         </div>
-        {/* <Field
-              component={DatePickerField}
-              name="first_seen"
-              label={t('First seen')}
-              invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-              fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              // helperText={
-              //   <SubscriptionFocus context={context} fieldName="first_seen" />
-              // }
-            />
-            <Field
-              component={DatePickerField}
-              name="last_seen"
-              label={t('Last seen')}
-              invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              // helperText={
-              //   <SubscriptionFocus context={context} fieldName="last_seen" />
-              // }
-            />
-            <OpenVocabField
-              label={t('Resource level')}
-              type="attack-resource-level-ov"
-              name="resource_level"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
-              containerstyle={{ marginTop: 20, width: '100%' }}
-              variant="edit"
-              multiple={false}
-              editContext={context}
-            />
-            <OpenVocabField
-              label={t('Primary motivation')}
-              type="attack-motivation-ov"
-              name="primary_motivation"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
-              containerstyle={{ marginTop: 20, width: '100%' }}
-              variant="edit"
-              multiple={false}
-              editContext={context}
-            />
-            <OpenVocabField
-              label={t('Secondary motivations')}
-              type="attack-motivation-ov"
-              name="secondary_motivations"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
-              containerstyle={{ marginTop: 20, width: '100%' }}
-              variant="edit"
-              multiple={true}
-              editContext={context}
-            />
-            <Field
-              component={TextField}
-              name="goals"
-              label={t('Goals (1 / line)')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              // helperText={
-              //   <SubscriptionFocus context={context} fieldName="goals" />
-              // }
-            />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting}
-                validateForm={validateForm}
-              />
-            )} */}
-        {/* </Form>
-        )}
-      </Formik> */}
       </>
     );
   }

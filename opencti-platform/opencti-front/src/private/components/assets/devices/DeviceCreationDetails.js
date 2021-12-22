@@ -16,6 +16,7 @@ import Grid from '@material-ui/core/Grid';
 import { Information } from 'mdi-material-ui';
 import AddIcon from '@material-ui/icons/Add';
 import Tooltip from '@material-ui/core/Tooltip';
+import SwitchField from '../../../../components/SwitchField';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
@@ -331,7 +332,13 @@ class DeviceCreationDetailsComponent extends Component {
                 <div className="clearfix" />
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <Typography>No</Typography>
-                  <Switch color='primary' defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                  <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    name="is_virtual"
+                    containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
+                    inputProps={{ 'aria-label': 'ant design' }}
+                  />
                   <Typography>Yes</Typography>
                 </div>
                 <div>
@@ -351,15 +358,15 @@ class DeviceCreationDetailsComponent extends Component {
                   <div className="clearfix" />
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Typography>No</Typography>
-                    <Switch color='primary' defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                    <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="is_publicly_accessible"
+                      containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
+                      inputProps={{ 'aria-label': 'ant design' }}
+                    />
                     <Typography>Yes</Typography>
                   </div>
-                </div>
-                <div className="clearfix" />
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <Typography>No</Typography>
-                  <Switch color='primary' defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
-                  <Typography>Yes</Typography>
                 </div>
               </div>
               <div>
@@ -612,7 +619,13 @@ class DeviceCreationDetailsComponent extends Component {
                 <div className="clearfix" />
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <Typography>No</Typography>
-                  <Switch color='primary' defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                  <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    name="is_scanned"
+                    containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
+                    inputProps={{ 'aria-label': 'ant design' }}
+                  />
                   <Typography>Yes</Typography>
                 </div>
               </div>
