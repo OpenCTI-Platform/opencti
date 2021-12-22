@@ -472,7 +472,7 @@ class DeviceCreationDetailsComponent extends Component {
                 <div className="clearfix" />
                 <Field
                   component={TextField}
-                  name="Description"
+                  name="locations"
                   fullWidth={true}
                   multiline={true}
                   rows="3"

@@ -85,6 +85,7 @@ class DeviceEditionDetailsComponent extends Component {
     const {
       t, classes, device, enableReferences,
     } = this.props;
+    console.log('deviceEditionLocationPage', device.locations);
     return (
       <div>
         <div style={{ height: '100%' }}>
@@ -448,7 +449,7 @@ class DeviceEditionDetailsComponent extends Component {
                 <div className="clearfix" />
                 <Field
                   component={TextField}
-                  name="location"
+                  name="locations"
                   fullWidth={true}
                   multiline={true}
                   rows="3"

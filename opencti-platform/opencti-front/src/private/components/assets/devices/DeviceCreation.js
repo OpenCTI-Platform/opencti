@@ -236,6 +236,7 @@ class DeviceCreation extends Component {
             ipv4_address: [],
             ipv6_address: [],
             port_number: '',
+            locations: '',
             portocols: '',
             asset_type: 'physical_device',
             mac_address: [],
