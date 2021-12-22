@@ -532,6 +532,7 @@ class ObservedData:
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
+        object_refs = extras["object_ids"] if "object_ids" in extras else []
 
         if "objects" in stix_object:
             stix_observable_results = []
@@ -550,10 +551,8 @@ class ObservedData:
                         else [],
                     )
                 )
-                refs = []
                 for item in stix_observable_results:
-                    refs.append(item["standard_id"])
-                stix_object["object_refs"] = refs
+                    object_refs.append(item["standard_id"])
 
         if stix_object is not None:
             observed_data_result = self.create(
@@ -567,7 +566,7 @@ class ObservedData:
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
                 else [],
-                objects=extras["object_ids"] if "object_ids" in extras else [],
+                objects=object_refs,
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
                 else [],
