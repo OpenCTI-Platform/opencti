@@ -587,6 +587,38 @@ class OpenCTIStix2:
                         id=reports[external_reference_id]["id"],
                         stixObjectOrStixRelationshipId=stix_object_result["id"],
                     )
+            # Handle stix 2.0 inline creation of observable to object refs
+            for object_refs_id in object_refs_ids:
+                if (
+                    object_refs_id in self.mapping_cache
+                    and "observables" in self.mapping_cache[object_refs_id]
+                    and self.mapping_cache[object_refs_id] is not None
+                    and self.mapping_cache[object_refs_id]["observables"] is not None
+                    and len(self.mapping_cache[object_refs_id]["observables"]) > 0
+                ):
+                    for observable_ref in self.mapping_cache[object_refs_id][
+                        "observables"
+                    ]:
+                        try:
+                            if stix_object_result["entity_type"] == "Report":
+                                self.opencti.report.add_stix_object_or_stix_relationship(
+                                    id=stix_object_result["id"],
+                                    stixObjectOrStixRelationshipId=observable_ref["id"],
+                                )
+                            elif stix_object_result["entity_type"] == "Note":
+                                self.opencti.note.add_stix_object_or_stix_relationship(
+                                    id=stix_object_result["id"],
+                                    stixObjectOrStixRelationshipId=observable_ref["id"],
+                                )
+                            elif stix_object_result["entity_type"] == "Opinion":
+                                self.opencti.opinion.add_stix_object_or_stix_relationship(
+                                    id=stix_object_result["id"],
+                                    stixObjectOrStixRelationshipId=observable_ref["id"],
+                                )
+                        except:
+                            self.opencti.log(
+                                "error", "Missing reference " + object_refs_id
+                            )
             # Add files
             if "x_opencti_files" in stix_object:
                 for file in stix_object["x_opencti_files"]:
