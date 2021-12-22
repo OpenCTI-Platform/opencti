@@ -8,6 +8,11 @@ import graphql from 'babel-plugin-relay/macro';
 // import { createFragmentContainer } from 'react-relay';
 import { compose } from 'ramda';
 import { Formik, Form, Field } from 'formik';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import Slide from '@material-ui/core/Slide';
+import DialogActions from '@material-ui/core/DialogActions';
 import AppBar from '@material-ui/core/AppBar';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
@@ -62,6 +67,13 @@ const styles = (theme) => ({
     bottom: 30,
     right: 30,
   },
+  buttonPopover: {
+    textTransform: 'capitalize',
+  },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
+  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -96,6 +108,10 @@ const networkEditionMutation = graphql`
   }
 `;
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 class NetworkEditionContainer extends Component {
   constructor(props) {
     super(props);
@@ -103,6 +119,7 @@ class NetworkEditionContainer extends Component {
       currentTab: 0,
       open: false,
       onSubmit: false,
+      displayCancel: false,
     };
   }
 
@@ -163,6 +180,14 @@ class NetworkEditionContainer extends Component {
 
   handleClose() {
     this.setState({ open: false });
+  }
+
+  handleCancelButton() {
+    this.setState({ displayCancel: false });
+  }
+
+  handleOpenCancelButton() {
+    this.setState({ displayCancel: true });
   }
 
   handleSubmit() {
@@ -259,7 +284,7 @@ class NetworkEditionContainer extends Component {
                       size="small"
                       startIcon={<Close />}
                       color='primary'
-                      onClick={() => this.props.history.goBack()}
+                      onClick={this.handleOpenCancelButton.bind(this)}
                       className={classes.iconButton}
                     >
                       {t('Cancel')}
@@ -331,6 +356,43 @@ class NetworkEditionContainer extends Component {
             </>
           )}
         </Formik>
+        <Dialog
+          open={this.state.displayCancel}
+          TransitionComponent={Transition}
+          onClose={this.handleCancelButton.bind(this)}
+        >
+          <DialogContent>
+            <Typography style={{
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: 'white',
+            }} >
+              {t('Are you sure you’d like to cancel?')}
+            </Typography>
+            <DialogContentText>
+              {t('Your progress will not be saved')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions className={classes.dialogActions}>
+            <Button
+              onClick={this.handleCancelButton.bind(this)}
+              classes={{ root: classes.buttonPopover }}
+              variant="outlined"
+              size="small"
+            >
+              {t('Go Back')}
+            </Button>
+            <Button
+              onClick={() => this.props.history.goBack()}
+              color="primary"
+              classes={{ root: classes.buttonPopover }}
+              variant="contained"
+              size="small"
+            >
+              {t('Yes Cancel')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }

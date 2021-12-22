@@ -144,6 +144,7 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                 </div>
                 <Field
                   component={TextField}
+                  disabled={true}
                   variant='outlined'
                   size='small'
                   name="id"
@@ -195,6 +196,7 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <AssetType
+                  component={SelectField}
                   variant='outlined'
                   name="asset_type"
                   assetType={assetType}
@@ -249,7 +251,7 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
               <div className="clearfix" />
               <Field
                 component={TextField}
-                name="Description"
+                name="description"
                 fullWidth={true}
                 multiline={true}
                 rows="4"
