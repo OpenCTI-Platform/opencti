@@ -1,7 +1,6 @@
 # Common
 */.idea
 */.env
-*/build
 */dist
 */node_modules
 */coverage

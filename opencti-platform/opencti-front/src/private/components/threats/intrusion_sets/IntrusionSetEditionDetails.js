@@ -52,10 +52,10 @@ const intrusionSetEditionDetailsFocus = graphql`
 `;
 
 const intrusionSetValidation = (t) => Yup.object().shape({
-  first_observed: Yup.date()
+  first_seen: Yup.date()
     .nullable()
     .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  last_observed: Yup.date()
+  last_seen: Yup.date()
     .nullable()
     .typeError(t('The value must be a date (YYYY-MM-DD)')),
   resource_level: Yup.string().nullable(),
