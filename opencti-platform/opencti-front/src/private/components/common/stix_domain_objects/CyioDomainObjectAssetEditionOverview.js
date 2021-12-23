@@ -37,11 +37,11 @@ import TextField from '../../../../components/TextField';
 import OperationalStatusField from '../form/OperationalStatusField';
 import MarkDownField from '../../../../components/MarkDownField';
 import inject18n from '../../../../components/i18n';
+import DatePickerField from '../../../../components/DatePickerField';
 import {
   SubscriptionAvatars,
   SubscriptionFocus,
 } from '../../../../components/Subscription';
-import DatePickerField from '../../../../components/DatePickerField';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import CyioCoreObjectLabelsView from '../stix_core_objects/CyioCoreObjectLabelsView';
@@ -398,12 +398,6 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%' }}
-                // helperText={
-                //   <SubscriptionFocus
-                //   context={context}
-                //   fieldName="ReleaseDate"
-                //   />
-                // }
                 />
               </div>
               <div>
