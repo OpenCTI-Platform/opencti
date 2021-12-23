@@ -34,9 +34,8 @@ describe('Raw streams tests', () => {
   it('Should stream correctly formatted', async () => {
       // Read all events from the beginning.
       const events = await fetchStreamEvents('http://localhost:4000/stream', { from: '0' });
-      // const test = R.groupBy((e) => e.data.data.type, events);
       // Check the number of events
-      expect(events.length).toBe(615);
+      expect(events.length).toBe(425);
       // 01 - CHECK CREATE EVENTS
       const createEvents = events.filter((e) => e.type === EVENT_TYPE_CREATE);
       expect(createEvents.length).toBe(293);
@@ -58,9 +57,9 @@ describe('Raw streams tests', () => {
       }
       // 02 - CHECK UPDATE EVENTS
       const updateEvents = events.filter((e) => e.type === EVENT_TYPE_UPDATE);
-      expect(updateEvents.length).toBe(280);
+      expect(updateEvents.length).toBe(90);
       const updateEventsByTypes = R.groupBy((e) => e.data.data.type, updateEvents);
-      expect(updateEventsByTypes.report.length).toBe(182);
+      expect(updateEventsByTypes.report.length).toBe(3);
       for (let updateIndex = 0; updateIndex < updateEvents.length; updateIndex += 1) {
         const { data: insideData, origin, type } = updateEvents[updateIndex];
         expect(origin).toBeDefined();
@@ -148,11 +147,11 @@ describe('Raw streams tests', () => {
       const stixReport = buildStixData(report);
       const events = await fetchStreamEvents('http://localhost:4000/stream', { from: '0' });
       const reportEvents = events.filter((e) => report.standard_id === e.data.data.id);
-      expect(reportEvents.length).toBe(154);
+      expect(reportEvents.length).toBe(1);
       const createEvents = reportEvents.filter((e) => e.type === EVENT_TYPE_CREATE);
       expect(createEvents.length).toBe(1);
       const updateEvents = reportEvents.filter((e) => e.type === EVENT_TYPE_UPDATE);
-      expect(updateEvents.length).toBe(153);
+      expect(updateEvents.length).toBe(0);
       // Rebuild the data
       let stixInstance = R.head(createEvents).data.data;
       for (let index = 0; index < updateEvents.length; index += 1) {

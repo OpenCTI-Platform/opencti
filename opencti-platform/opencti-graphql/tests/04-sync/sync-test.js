@@ -14,6 +14,7 @@ import {
   SYNC_LIVE_START_REMOTE_URI,
   SYNC_RAW_START_REMOTE_URI,
   SYNC_RESTORE_START_REMOTE_URI,
+  SYNC_TEST_REMOTE_URI,
 } from '../utils/testQuery';
 import { elAggregationCount } from '../../src/database/elasticSearch';
 import { execPython3, executePython } from '../../src/python/pythonBridge';
@@ -128,7 +129,7 @@ describe('Database provision', () => {
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
       // Sync
       await startModules();
-      const syncOpts = [API_URI, API_TOKEN, SYNC_RAW_START_REMOTE_URI, API_TOKEN, 615, '0'];
+      const syncOpts = [API_URI, API_TOKEN, SYNC_RAW_START_REMOTE_URI, API_TOKEN, 425, '0'];
       const execution = await execPython3(PYTHON_PATH, 'local_synchronizer.py', syncOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
@@ -172,7 +173,7 @@ describe('Database provision', () => {
       const SYNC_CREATE = {
         input: {
           name: 'SYNC',
-          uri: 'http://api-tests:4000',
+          uri: SYNC_TEST_REMOTE_URI,
           listen_deletion: true,
           stream_id: 'live',
           token: API_TOKEN,
@@ -205,7 +206,7 @@ describe('Database provision', () => {
     await startModules();
     const BACKUP_CONFIG = {
       opencti: {
-        url: 'http://api-tests:4000',
+        url: SYNC_TEST_REMOTE_URI,
         token: API_TOKEN,
       },
       connector: {
@@ -227,7 +228,7 @@ describe('Database provision', () => {
       path.resolve('../../opencti-connectors/stream/backup-files/src'),
       'backup-files.py',
       [backupConf],
-      (message, messageCount) => messageCount === 346
+      (message, messageCount) => messageCount === 240
     );
     await shutdownModules();
   };
