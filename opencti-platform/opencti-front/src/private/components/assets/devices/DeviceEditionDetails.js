@@ -18,6 +18,7 @@ import AddIcon from '@material-ui/icons/Add';
 import Tooltip from '@material-ui/core/Tooltip';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
+import SwitchField from '../../../../components/SwitchField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
@@ -85,7 +86,6 @@ class DeviceEditionDetailsComponent extends Component {
     const {
       t, classes, device, enableReferences,
     } = this.props;
-    console.log('deviceEditionLocationPage', device.locations);
     return (
       <div>
         <div style={{ height: '100%' }}>
@@ -205,15 +205,6 @@ class DeviceEditionDetailsComponent extends Component {
                     fullWidth={true}
                     containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
                   />
-                  {/* <Field
-                    component={SelectField}
-                    style={{ height: '38.09px' }}
-                    variant='outlined'
-                    name="protocals"
-                    size='small'
-                    fullWidth={true}
-                    containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  /> */}
                 </div>
                 <div>
                   <Typography
@@ -300,9 +291,10 @@ class DeviceEditionDetailsComponent extends Component {
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Typography>No</Typography>
                     <Field
-                      component={Switch}
+                      component={SwitchField}
+                      type="checkbox"
                       name="is_virtual"
-                      defaultChecked={device?.is_virtual}
+                      containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
                       inputProps={{ 'aria-label': 'ant design' }}
                     />
                     <Typography>Yes</Typography>
@@ -315,10 +307,10 @@ class DeviceEditionDetailsComponent extends Component {
                     gutterBottom={true}
                     style={{ float: 'left', marginTop: 20 }}
                   >
-                    {t('Publicity Accessible')}
+                    {t('Publicly Accessible')}
                   </Typography>
                   <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Publicity Accessible')} >
+                    <Tooltip title={t('Publicly Accessible')} >
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
@@ -326,9 +318,10 @@ class DeviceEditionDetailsComponent extends Component {
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Typography>No</Typography>
                     <Field
-                      component={Switch}
+                      component={SwitchField}
+                      type="checkbox"
                       name="is_publicly_accessible"
-                      defaultChecked={device?.is_publicly_accessible}
+                      containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
                       inputProps={{ 'aria-label': 'ant design' }}
                     />
                     <Typography>Yes</Typography>
@@ -588,9 +581,10 @@ class DeviceEditionDetailsComponent extends Component {
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Typography>No</Typography>
                     <Field
-                      component={Switch}
+                      component={SwitchField}
+                      type="checkbox"
                       name="is_scanned"
-                      defaultChecked={device?.is_scanned}
+                      containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
                       inputProps={{ 'aria-label': 'ant design' }}
                     />
                     <Typography>Yes</Typography>
