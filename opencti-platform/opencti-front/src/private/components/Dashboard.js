@@ -578,10 +578,6 @@ class Dashboard extends Component {
                       startDate: monthsAgo(3),
                       endDate: now(),
                       limit: 9,
-                      dateAttribute:
-                        timeField === 'functional'
-                          ? 'start_time'
-                          : 'created_at',
                     }}
                     render={({ props }) => {
                       if (
