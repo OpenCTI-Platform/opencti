@@ -228,7 +228,7 @@ describe('Database provision', () => {
       path.resolve('../../opencti-connectors/stream/backup-files/src'),
       'backup-files.py',
       [backupConf],
-      (message, messageCount) => messageCount === 240
+      (message, messageCount) => messageCount === 345
     );
     await shutdownModules();
   };
