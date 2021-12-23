@@ -264,7 +264,7 @@ class DeviceCardComponent extends Component {
                   <div>
                   {node?.installed_operating_system?.name && node?.installed_operating_system?.vendor_name
                     && <div>
-                      <Typography>
+                      <Typography style={{ display: 'flex', alignItems: 'center' }}>
                         <ItemIcon type={node.installed_operating_system.vendor_name} />&nbsp;&nbsp;
                         {t(node.installed_operating_system.name)}
                       </Typography>
