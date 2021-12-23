@@ -718,7 +718,7 @@
     #
     # ServiceComponent
     "Identifies information about the protocol used to provide a service."
-    ports: [PortInfo!]!
+    ports: [PortInfo]
   }
 
   input ServiceComponentAddInput {
@@ -773,7 +773,7 @@
     #
     # ServiceComponent
     "Identifies information about the protocol used to provide a service."
-    ports: [PortInfoAddInput!]!
+    ports: [PortInfoAddInput]
   }
 
   # Pagination Types

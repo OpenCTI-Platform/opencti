@@ -248,9 +248,13 @@
   }
 
   enum FamilyType {
+    "Windows"
     windows
+    "Linux"
     linux
+    "MacOS"
     macos
+    "Other"
     other
   }
 
@@ -267,10 +271,15 @@
 
   # Slicing Types
   enum SoftwareAssetOrdering {
+    "Name"
     name
+    "Asset Type"
     asset_type
+    "Asset ID"
     asset_id
+    "Labels"
     labels
+    "Vendor Name"
     vendor_name
   }
 
@@ -284,18 +293,24 @@
 
   "Defines the list of fields that can be filtered upon for Software Assets."
   enum SoftwareAssetFilter {
+    "Created"
     created       # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    "Modified"
     modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    "Name"
     name          # Name (key:name, values: ["name1","name2"], operator: "matches", filterMode: "or")
+    "Asset Type"
     asset_type    # Asset Type (key:asset_type, values: ["type1","type2","type3"], operator: "matches", filterMode: "or")
+    "Labels"
     labels        # Label (key:labels, values:["label1","label2"], operator: "matches", filterMode: "or")
+    "Vendor Name"
     vendor_name   # Vendor (key:vendor_name, values:["vendor1","vendor2"], operator: "matches", filterMode: "or")
   }
 
   # this is used to restrict the set of asset_types values that are allowed in a filter
   "Defines the list of Software assets types that can be used in filtering."
   enum SoftwareAssetTypes {
-    "Generic Software"
+    "Software"
     software
     "Application Software"
     application_software
