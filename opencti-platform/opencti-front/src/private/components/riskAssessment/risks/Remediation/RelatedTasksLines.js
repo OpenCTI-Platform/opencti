@@ -149,10 +149,10 @@ class RelatedTasksLinesContainer extends Component {
     this.setState({ expanded: !this.state.expanded });
   }
 
-  handleOpenDialog(externalReferenceEdge) {
+  handleOpenDialog(relatedTasksLinesEdge) {
     const openedState = {
       displayDialog: true,
-      removeExternalReference: externalReferenceEdge,
+      removeExternalReference: relatedTasksLinesEdge,
     };
     this.setState(openedState);
   }
@@ -328,10 +328,10 @@ class RelatedTasksLinesContainer extends Component {
                           <Typography style={{ marginLeft: '10px' }} align="center" variant="subtitle1">
                             {/* {t('Lorem Ipsum')} */}
                           {relatedTasksEdges?.length > 0 && relatedTasksEdges.map((value, key) => (
-                            <>
-                              <div className="clearfix" />
-                              {value.task_type}
-                            </>
+                              <>
+                                <div className="clearfix" />
+                                {value.task_type}
+                              </>
                           ))}
                           </Typography>
                         </div>
@@ -441,7 +441,10 @@ class RelatedTasksLinesContainer extends Component {
               </AccordionDetails>
             </Accordion>
             <div style={{ marginTop: '30px' }}>
-              <RelatedTaskPopover remediationId={remediationId} />
+              <RelatedTaskPopover
+                handleRemove={this.handleOpenDialog.bind(this)}
+                remediationId={remediationId}
+              />
             </div>
           </div>
         </Paper>

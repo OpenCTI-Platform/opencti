@@ -146,10 +146,10 @@ class RequiredResourcesLinesContainer extends Component {
     this.setState({ expanded: !this.state.expanded });
   }
 
-  handleOpenDialog(externalReferenceEdge) {
+  handleOpenDialog(requiredResourcesEdge) {
     const openedState = {
       displayDialog: true,
-      removeExternalReference: externalReferenceEdge,
+      removeExternalReference: requiredResourcesEdge,
     };
     this.setState(openedState);
   }
@@ -290,8 +290,8 @@ class RequiredResourcesLinesContainer extends Component {
                       <div style={{ marginLeft: '10px' }}>
                         <Typography align="left" color="textSecondary" variant="h3">{t('ID')}</Typography>
                         <Typography align="left" variant="subtitle1">
-                        {/* {t('Lorem Ipsum')} */}
-                        {requiredResourceData.id && t(requiredResourceData.id)}
+                          {/* {t('Lorem Ipsum')} */}
+                          {requiredResourceData.id && t(requiredResourceData.id)}
                         </Typography>
                       </div>
                     </Grid>
@@ -351,7 +351,10 @@ class RequiredResourcesLinesContainer extends Component {
               </AccordionDetails>
             </Accordion>
             <div style={{ marginTop: '30px' }}>
-              <RequiredResourcePopover remediationId={remediationId} />
+              <RequiredResourcePopover
+                handleRemove={this.handleOpenDialog.bind(this)}
+                remediationId={remediationId}
+              />
             </div>
           </div>
         </Paper>

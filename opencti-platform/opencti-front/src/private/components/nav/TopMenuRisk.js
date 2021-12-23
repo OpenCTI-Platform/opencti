@@ -4,6 +4,7 @@ import { Link, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
+import { ShieldPlus, TextSearch } from 'mdi-material-ui';
 import NoteRoundedIcon from '@material-ui/icons/NoteRounded';
 import ManageSearchIcon from '@material-ui/icons/SearchOutlined';
 import AddModeratorIcon from '@material-ui/icons/AddToQueueRounded';
@@ -26,6 +27,15 @@ const styles = (theme) => ({
   icon: {
     marginRight: theme.spacing(1),
   },
+  riskMenuContainer: {
+    float: 'left',
+    width: '100%',
+    marginBottom: '20px',
+    marginLeft: -20,
+    paddingLeft: '20px',
+    position: 'relative',
+    borderBottom: '1px solid #384057',
+  },
 });
 
 class TopMenuRisk extends Component {
@@ -39,7 +49,7 @@ class TopMenuRisk extends Component {
       classes,
     } = this.props;
     return (
-      <div>
+      <div className={classes.riskMenuContainer}>
         <Button
           component={Link}
           to={`/dashboard/risk-assessment/risks/${riskId}`}
@@ -80,7 +90,8 @@ class TopMenuRisk extends Component {
             }
             classes={{ root: classes.button }}
           >
-            <ManageSearchIcon className={classes.icon} />
+            {/* <ManageSearchIcon className={classes.icon} /> */}
+            <TextSearch className={classes.icon} />
             {t('ANALYSIS')}
           </Button>
         {/* </Security> */}
@@ -102,7 +113,8 @@ class TopMenuRisk extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <AddModeratorIcon className={classes.icon} />
+          {/* <AddModeratorIcon className={classes.icon} /> */}
+          <ShieldPlus className={classes.icon} />
           {t('REMEDIATION')}
         </Button>
         {/* <Button

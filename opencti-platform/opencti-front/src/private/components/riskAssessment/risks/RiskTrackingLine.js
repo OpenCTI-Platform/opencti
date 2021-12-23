@@ -160,10 +160,10 @@ class RiskTrackingLineContainer extends Component {
     this.setState({ displayUpdate: true });
   }
 
-  handleOpenDialog(externalReferenceEdge) {
+  handleOpenDialog(riskTrackingEdge) {
     const openedState = {
       displayDialog: true,
-      removeExternalReference: externalReferenceEdge,
+      removeExternalReference: riskTrackingEdge,
     };
     this.setState(openedState);
   }
@@ -379,7 +379,9 @@ class RiskTrackingLineContainer extends Component {
             </AccordionDetails>
           </Accordion>
           <div>
-            <RiskTrackingPopover handleOpenUpdate={this.handleOpenUpdate.bind(this)} />
+            <RiskTrackingPopover
+              handleRemove={this.handleOpenDialog.bind(this)}
+              handleOpenUpdate={this.handleOpenUpdate.bind(this)} />
           </div>
         </ListItem>
         <Dialog

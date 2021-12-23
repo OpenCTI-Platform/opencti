@@ -21,6 +21,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import DatePickerField from '../../../../components/DatePickerField';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
@@ -281,7 +282,7 @@ class RiskTrackingPopover extends Component {
                       <Field
                         component={SelectField}
                         variant='outlined'
-                        name="ports"
+                        name="entry_type"
                         size='small'
                         fullWidth={true}
                         style={{ height: '38.09px', marginBottom: '3px' }}
@@ -305,11 +306,15 @@ class RiskTrackingPopover extends Component {
                       </div>
                       <div className="clearfix" />
                       <Field
-                        component={TextField}
+                        component={DatePickerField}
                         variant='outlined'
                         size='small'
-                        name="asset_id"
+                        name="start_date"
                         fullWidth={true}
+                        invalidDateMessage={t(
+                          'The value must be a date (YYYY-MM-DD)',
+                        )}
+                        style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
                       />
                     </div>
@@ -332,7 +337,7 @@ class RiskTrackingPopover extends Component {
                       <Field
                         component={SelectField}
                         variant='outlined'
-                        name="ports"
+                        name="logged_by"
                         size='small'
                         fullWidth={true}
                         style={{ height: '38.09px' }}
@@ -341,7 +346,7 @@ class RiskTrackingPopover extends Component {
                       <Field
                         component={SelectField}
                         variant='outlined'
-                        name="ports"
+                        name="logged_by"
                         size='small'
                         fullWidth={true}
                         style={{ height: '38.09px' }}
@@ -368,7 +373,7 @@ class RiskTrackingPopover extends Component {
                         component={TextField}
                         variant='outlined'
                         size='small'
-                        name="asset_id"
+                        name="related_response"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
                       />
@@ -395,7 +400,7 @@ class RiskTrackingPopover extends Component {
                         component={TextField}
                         variant='outlined'
                         size='small'
-                        name="asset_id"
+                        name="title"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
                       />
@@ -417,10 +422,14 @@ class RiskTrackingPopover extends Component {
                       </div>
                       <div className="clearfix" />
                       <Field
-                        component={TextField}
+                        component={DatePickerField}
                         variant='outlined'
                         size='small'
-                        name="asset_id"
+                        name="end_date"
+                        invalidDateMessage={t(
+                          'The value must be a date (YYYY-MM-DD)',
+                        )}
+                        style={{ height: '38.09px' }}
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
                       />
@@ -444,7 +453,7 @@ class RiskTrackingPopover extends Component {
                       <Field
                         component={SelectField}
                         variant='outlined'
-                        name="ports"
+                        name="status_change"
                         size='small'
                         fullWidth={true}
                         style={{ height: '38.09px' }}
@@ -472,7 +481,7 @@ class RiskTrackingPopover extends Component {
                     <div className="clearfix" />
                     <Field
                       component={TextField}
-                      name="Description"
+                      name="description"
                       fullWidth={true}
                       multiline={true}
                       rows="4"

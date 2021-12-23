@@ -17,6 +17,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import RiskDeletion from './RiskDeletion';
 import AddRemediation from './remediation/AddRemediation';
 import RemediationCreation from './remediation/RemediationCreation';
+import TopMenuRisk from '../../nav/TopMenuRisk';
 // import StixCyberObservableLinks, {
 //   riskLinksQuery,
 // } from './StixCyberObservableLinks';
@@ -69,6 +70,7 @@ const Remediations = (props) => {
             handleOpenNewCreation={handleOpenNewCreation.bind(this)}
             OperationsComponent={<RiskDeletion />}
           />
+          <TopMenuRisk />
           <Grid item={true} xs={12}>
             <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
               {t('Remediations')}

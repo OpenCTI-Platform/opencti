@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { compose } from 'ramda';
+import { compose, evolve } from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -90,16 +90,17 @@ const styles = (theme) => ({
 });
 
 const riskCreationMutation = graphql`
-  mutation RiskCreationMutation($input: ComputingDeviceAssetAddInput) {
-    createComputingDeviceAsset (input: $input) {
+  mutation RiskCreationMutation($input: RiskAddInput) {
+    createRisk (input: $input) {
+      id
       # ...RiskCard_node
       # ...RiskDetails_risk
-      operational_status
-      serial_number
-      release_date
-      description
-      version
-      name
+      # operational_status
+      # serial_number
+      # release_date
+      # description
+      # version
+      # name
     }
   }
 `;
@@ -149,24 +150,24 @@ class RiskCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // const finalValues = pipe(
-    //   assoc('createdBy', values.createdBy?.value),
-    //   assoc('objectMarking', pluck('value', values.objectMarking)),
-    //   assoc('objectLabel', pluck('value', values.objectLabel)),
-    // )(values);
+    const adaptedValues = evolve(
+      {
+        deadline: () => parse(values.deadline).format(),
+      },
+      values,
+    );
+    const finalValues = R.pipe(
+      R.dissoc('controls'),
+      R.assoc('name', values.name),
+      // assoc('createdBy', values.createdBy?.value),
+      // assoc('objectMarking', pluck('value', values.objectMarking)),
+      // assoc('objectLabel', pluck('value', values.objectLabel)),
+    )(adaptedValues);
+    console.log('RiskCreationFinal', finalValues);
     CM(environmentDarkLight, {
-      // mutation: riskCreationMutation,
-      // const adaptedValues = evolve(
-      //   {
-      //     published: () => parse(values.published).format(),
-      //     createdBy: path(['value']),
-      //     objectMarking: pluck('value'),
-      //     objectLabel: pluck('value'),
-      //   },
-      //   values,
-      // );
+      mutation: riskCreationMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       setSubmitting,
       onCompleted: (data) => {
@@ -221,14 +222,27 @@ class RiskCreation extends Component {
       <div className={classes.container}>
         <Formik
           initialValues={{
-            name: 'Hello World',
-            operational_status: 'other',
-            implementation_point: 'external',
-            ipv4_address: [],
-            ipv6_address: [],
-            ports: [],
-            asset_type: 'physical-devices',
-            mac_address: [],
+            name: 'Hello world',
+            // item_id: '',
+            description: '',
+            // weakness: '',
+            controls: [],
+            // risk_rating: '',
+            priority: 1,
+            // impact: '',
+            // likelihood: '',
+            labels: [],
+            statement: '',
+            risk_status: 'open',
+            deadline: dayStartDate(),
+            // impacted_component: '',
+            // impacted_assets: '',
+            // detection_source: '',
+            // impacted_control: '',
+            false_positive: 'approved',
+            // operationally_required: '',
+            risk_adjusted: 'pending',
+            vendor_dependency: 'pending',
           }}
           validationSchema={riskValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
@@ -285,7 +299,6 @@ class RiskCreation extends Component {
                   classes={{ container: classes.gridContainer }}
                 >
                   <Grid item={true} xs={6}>
-                    {/* <RiskCreationOverview setFieldValue={setFieldValue} values={values} /> */}
                     <RiskCreationOverview
                       setFieldValue={setFieldValue}
                       values={values}

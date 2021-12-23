@@ -243,10 +243,6 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/threats/campaigns/') && (
             <TopMenuCampaign />
           )}
-          {/* added for risk testing purposes */}
-          {location.pathname.includes('/dashboard/risk-assessment/risks/') && (
-            <TopMenuRisk />
-          )}
           {(location.pathname === '/dashboard/arsenal'
             || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && (
             <TopMenuArsenal />

@@ -21,6 +21,7 @@ import RiskAnalysisCharacterization from './RiskAnalysisCharacterization';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
+import TopMenuRisk from '../../nav/TopMenuRisk';
 
 const styles = () => ({
   container: {
@@ -69,6 +70,7 @@ class RiskAnalysisContainerComponent extends Component {
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
               OperationsComponent={<RiskDeletion />}
             />
+            <TopMenuRisk />
             <Grid
               container={true}
               spacing={3}

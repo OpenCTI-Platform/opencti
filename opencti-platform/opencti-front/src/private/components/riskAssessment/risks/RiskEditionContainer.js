@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as Yup from 'yup';
@@ -23,6 +24,8 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
+import { dateFormat, parse } from '../../../../utils/Time';
+import { adaptFieldValue } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
@@ -79,16 +82,17 @@ const riskEditionMutation = graphql`
     $id: ID!,
     $input: [EditInput]!
   ) {
-    editComputingDeviceAsset(id: $id, input: $input) {
-      name
-      asset_type
-      vendor_name
+    editRisk(id: $id, input: $input) {
+      id
+      # name
+      # asset_type
+      # vendor_name
     }
   }
 `;
 
 const riskValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
+  // name: Yup.string().required(t('This field is required')),
   // asset_type: Yup.array().required(t('This field is required')),
   // implementation_point: Yup.string().required(t('This field is required')),
   // operational_status: Yup.string().required(t('This field is required')),
@@ -132,36 +136,28 @@ class RiskEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // const finalValues = pipe(
-    //   assoc('createdBy', values.createdBy?.value),
-    //   assoc('objectMarking', pluck('value', values.objectMarking)),
-    //   assoc('objectLabel', pluck('value', values.objectLabel)),
-    // )(values);
-    const pair = Object.keys(values).map((key) => [{ key, value: values[key] }]);
+    const adaptedValues = R.evolve(
+      {
+        deadline: () => parse(values.deadline).format(),
+      },
+      values,
+    );
+    const finalValues = R.pipe(
+      R.dissoc('item_id'),
+      R.dissoc('weakness'),
+      R.dissoc('labels'),
+      R.dissoc('controls'),
+      R.map((n) => ({
+        'key': n[0],
+        'value': adaptFieldValue(n[1]),
+      })),
+    )(adaptedValues);
+    // const pair = Object.keys(values).map((key) => [{ key, value: values[key] }]);
     CM(environmentDarkLight, {
       mutation: riskEditionMutation,
-      // const adaptedValues = evolve(
-      //   {
-      //     published: () => parse(values.published).format(),
-      //     createdBy: path(['value']),
-      //     objectMarking: pluck('value'),
-      //     objectLabel: pluck('value'),
-      //   },
-      //   values,
-      // );
       variables: {
         id: this.props.risk?.id,
-        input: [
-          { key: 'name', value: 'Hello' },
-          { key: 'asset_id', value: values.asset_id },
-          { key: 'asset_tag', value: values.asset_tag },
-          { key: 'description', value: values.description },
-          { key: 'version', value: values.version },
-          { key: 'vendor_name', value: values.vendor_name },
-          { key: 'serial_number', value: values.serial_number },
-          { key: 'release_date', value: values.release_date },
-          { key: 'operational_status', value: values.operational_status },
-        ],
+        input: finalValues,
       },
       setSubmitting,
       onCompleted: (data) => {
@@ -212,59 +208,53 @@ class RiskEditionContainer extends Component {
     } = this.props;
     console.log('RiskEditionPropsData', risk);
     const initialValues = R.pipe(
-      R.assoc('id', risk?.id),
-      R.assoc('asset_id', risk?.asset_id),
-      R.assoc('description', risk?.description),
-      R.assoc('name', risk?.name),
-      R.assoc('asset_tag', risk?.asset_tag),
-      R.assoc('asset_type', risk?.asset_type),
-      R.assoc('location', risk?.locations?.map((index) => [index.description]).join('\n')),
-      R.assoc('version', risk?.version),
-      R.assoc('vendor_name', risk?.vendor_name),
-      R.assoc('serial_number', risk?.serial_number),
-      R.assoc('release_date', risk?.release_date),
-      R.assoc('operational_status', risk?.operational_status),
-      R.assoc('installation_id', risk?.installation_id || ''),
-      R.assoc('bios_id', risk?.bios_id || ''),
-      // R.assoc('connected_to_network', risk?.connected_to_network.name || ''),
-      R.assoc('netbios_name', risk?.netbios_name || ''),
-      R.assoc('baseline_configuration_name', risk?.baseline_configuration_name || ''),
-      R.assoc('mac_address', (risk?.mac_address || []).join()),
-      R.assoc('model', risk?.model || ''),
-      R.assoc('hostname', risk?.hostname || ''),
-      R.assoc('default_gateway', risk?.default_gateway || ''),
-      R.assoc('motherboard_id', risk?.motherboard_id || ''),
-      R.assoc('is_scanned', risk?.is_scanned || ''),
-      R.assoc('is_virtual', risk?.is_virtual || ''),
-      R.assoc('is_publicly_accessible', risk?.is_publicly_accessible || ''),
-      R.assoc('uri', risk?.uri || ''),
+      R.assoc('id', risk?.id || ''),
+      R.assoc('item_id', risk?.item_id || ''),
+      R.assoc('description', risk?.description || 'Hello World'),
+      R.assoc('weakness', risk?.weakness || ''),
+      R.assoc('controls', risk?.controls || ''),
+      R.assoc('risk_rating', risk?.risk_rating || ''),
+      R.assoc('priority', risk?.priority || ''),
+      R.assoc('impact', risk?.impact || ''),
+      R.assoc('likelihood', risk?.likelihood || ''),
+      R.assoc('responsible_parties', risk?.responsible_parties || ''),
+      R.assoc('labels', risk?.labels || []),
+      R.assoc('name', risk?.name || ''),
+      R.assoc('statement', risk?.statement || ''),
+      R.assoc('risk_status', risk?.risk_status || ''),
+      R.assoc('deadline', dateFormat(risk?.release_date)),
+      R.assoc('impacted_component', risk?.impacted_component || ''),
+      R.assoc('impacted_assets', risk?.impacted_assets || ''),
+      R.assoc('detection_source', risk?.detection_source || ''),
+      R.assoc('impacted_control', risk?.impacted_control || ''),
+      R.assoc('false_positive', risk?.false_positive || ''),
+      R.assoc('operationally_required', risk?.operationally_required || ''),
+      R.assoc('risk_adjusted', risk?.risk_adjusted || ''),
+      R.assoc('vendor_dependency', risk?.vendor_dependency || ''),
       R.pick([
         'id',
-        'asset_id',
-        'name',
+        // 'item_id',
         'description',
-        'asset_tag',
-        'asset_type',
-        'location',
-        'version',
-        'vendor_name',
-        'serial_number',
-        'release_date',
-        'operational_status',
-        'installation_id',
-        'connected_to_network',
-        'bios_id',
-        'netbios_name',
-        'baseline_configuration_name',
-        'mac_address',
-        'model',
-        'hostname',
-        'default_gateway',
-        'motherboard_id',
-        'is_scanned',
-        'is_virtual',
-        'is_publicly_accessible',
-        'uri',
+        // 'weakness',
+        // 'controls',
+        // 'risk_rating',
+        'priority',
+        // 'impact',
+        // 'likelihood',
+        // 'responsible_parties',
+        'labels',
+        'name',
+        'statement',
+        'risk_status',
+        'deadline',
+        // 'impacted_component',
+        // 'impacted_assets',
+        // 'detection_source',
+        // 'impacted_control',
+        'false_positive',
+        // 'operationally_required',
+        'risk_adjusted',
+        'vendor_dependency',
       ]),
     )(risk);
     // const { editContext } = risk;

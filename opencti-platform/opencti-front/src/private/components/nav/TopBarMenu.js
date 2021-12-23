@@ -155,7 +155,7 @@ const TopBarMenu = ({
     elevation={1}
     style={{ backgroundColor: theme.palette.header.background }}
   >
-    <Toolbar className={classes.toolbar}>
+    <Toolbar style={{ display: location.pathname === '/dashboard/risk-assessment/risks' ? 'none' : 'block' }} className={classes.toolbar}>
         <div className={classes.menuContainer}>
           {(location.pathname === '/dashboard'
             || location.pathname === '/dashboard/import') && <TopMenuDashboard />}

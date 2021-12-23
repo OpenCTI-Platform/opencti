@@ -16,6 +16,7 @@ import Button from '@material-ui/core/Button';
 import MenuItem from '@material-ui/core/MenuItem';
 import AddIcon from '@material-ui/icons/Add';
 // import AssetTaglist from '../../common/form/AssetTaglist';
+import DatePickerField from '../../../../components/DatePickerField';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -308,7 +309,7 @@ class RiskTrackingLogEditionComponent extends Component {
                   <Field
                     component={SelectField}
                     variant='outlined'
-                    name="ports"
+                    name="risk_status"
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px', marginBottom: '3px' }}
@@ -332,11 +333,15 @@ class RiskTrackingLogEditionComponent extends Component {
                   </div>
                   <div className="clearfix" />
                   <Field
-                    component={TextField}
+                    component={DatePickerField}
                     variant='outlined'
                     size='small'
-                    name="asset_id"
+                    name="start_date"
                     fullWidth={true}
+                    invalidDateMessage={t(
+                      'The value must be a date (YYYY-MM-DD)',
+                    )}
+                    style={{ height: '38.09px' }}
                     containerstyle={{ width: '100%' }}
                   />
                 </Grid>
@@ -362,7 +367,7 @@ class RiskTrackingLogEditionComponent extends Component {
                     component={TextField}
                     variant='outlined'
                     size='small'
-                    name="asset_id"
+                    name="title"
                     fullWidth={true}
                     containerstyle={{ width: '100%' }}
                   />
@@ -384,10 +389,14 @@ class RiskTrackingLogEditionComponent extends Component {
                   </div>
                   <div className="clearfix" />
                   <Field
-                    component={TextField}
+                    component={DatePickerField}
                     variant='outlined'
                     size='small'
-                    name="asset_id"
+                    name="end_date"
+                    invalidDateMessage={t(
+                      'The value must be a date (YYYY-MM-DD)',
+                    )}
+                    style={{ height: '38.09px' }}
                     fullWidth={true}
                     containerstyle={{ width: '100%' }}
                   />
@@ -411,7 +420,7 @@ class RiskTrackingLogEditionComponent extends Component {
                 <div className="clearfix" />
                 <Field
                   component={TextField}
-                  name="Description"
+                  name="impacted_component"
                   fullWidth={true}
                   multiline={true}
                   rows="4"
@@ -440,7 +449,7 @@ class RiskTrackingLogEditionComponent extends Component {
                   <Field
                     component={SelectField}
                     variant='outlined'
-                    name="ports"
+                    name="logged_by"
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px' }}
@@ -449,7 +458,7 @@ class RiskTrackingLogEditionComponent extends Component {
                   <Field
                     component={SelectField}
                     variant='outlined'
-                    name="ports"
+                    name="logged_by"
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px' }}
@@ -477,7 +486,7 @@ class RiskTrackingLogEditionComponent extends Component {
                   <Field
                     component={SelectField}
                     variant='outlined'
-                    name="ports"
+                    name="status_change"
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px', marginBottom: '3px' }}
@@ -506,7 +515,7 @@ class RiskTrackingLogEditionComponent extends Component {
                     component={TextField}
                     variant='outlined'
                     size='small'
-                    name="asset_id"
+                    name="related_response"
                     fullWidth={true}
                     containerstyle={{ width: '100%' }}
                   />

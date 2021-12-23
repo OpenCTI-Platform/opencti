@@ -317,7 +317,7 @@ class RiskEditionOverviewComponent extends Component {
                         component={TextField}
                         variant='outlined'
                         size='small'
-                        name="asset_id"
+                        name="id"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
                       />
@@ -347,7 +347,7 @@ class RiskEditionOverviewComponent extends Component {
                         component={TextField}
                         variant='outlined'
                         size='small'
-                        name="asset_id"
+                        name="idem_id"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
                       />
@@ -407,7 +407,7 @@ class RiskEditionOverviewComponent extends Component {
                         component={TextField}
                         variant='outlined'
                         size='small'
-                        name="asset_id"
+                        name="weakness"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
                       />
@@ -435,7 +435,7 @@ class RiskEditionOverviewComponent extends Component {
                         component={TextField}
                         variant='outlined'
                         size='small'
-                        name="asset_id"
+                        name="risk_rating"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
                       />
@@ -463,12 +463,12 @@ class RiskEditionOverviewComponent extends Component {
                         component={TextField}
                         variant='outlined'
                         size='small'
-                        name="asset_id"
+                        name="impact"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                    <Grid style={{ marginBottom: '10px', display: 'flex', flexWrap: 'wrap' }} item={true}>
+                    <Grid style={{ marginBottom: '10px' }} item={true}>
                       <Typography color="textSecondary" variant="h3" gutterBottom={true} style={{ float: 'left' }}>
                         {t('Responsible Parties')}
                       </Typography>
@@ -486,7 +486,7 @@ class RiskEditionOverviewComponent extends Component {
                       <Field
                         component={SelectField}
                         variant='outlined'
-                        name="ports"
+                        name="responsible_parties"
                         size='small'
                         fullWidth={true}
                         style={{ height: '38.09px' }}
@@ -495,7 +495,7 @@ class RiskEditionOverviewComponent extends Component {
                       <Field
                         component={SelectField}
                         variant='outlined'
-                        name="ports"
+                        name="responsible_parties"
                         size='small'
                         fullWidth={true}
                         style={{ height: '38.09px' }}
@@ -566,7 +566,7 @@ class RiskEditionOverviewComponent extends Component {
                         component={TextField}
                         variant='outlined'
                         size='small'
-                        name="asset_id"
+                        name="priority"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
                       />
@@ -594,7 +594,7 @@ class RiskEditionOverviewComponent extends Component {
                         component={TextField}
                         variant='outlined'
                         size='small'
-                        name="asset_id"
+                        name="likelihood"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
                       />

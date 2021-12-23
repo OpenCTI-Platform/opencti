@@ -112,7 +112,7 @@ class RiskEditionDetailsComponent extends Component {
                   component={TextField}
                   variant='outlined'
                   size='small'
-                  name="asset_id"
+                  name="name"
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
                 />
@@ -171,7 +171,7 @@ class RiskEditionDetailsComponent extends Component {
                   <Field
                     component={SelectField}
                     variant='outlined'
-                    name="ports"
+                    name="risk_status"
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px' }}
@@ -199,7 +199,7 @@ class RiskEditionDetailsComponent extends Component {
                   <div className="clearfix" />
                   <Field
                     component={TextField}
-                    name="Description"
+                    name="impacted_component"
                     fullWidth={true}
                     multiline={true}
                     rows="3"
@@ -229,7 +229,7 @@ class RiskEditionDetailsComponent extends Component {
                     component={TextField}
                     variant='outlined'
                     size='small'
-                    name="asset_id"
+                    name="detection_source"
                     fullWidth={true}
                     containerstyle={{ width: '100%' }}
                   />
@@ -256,7 +256,7 @@ class RiskEditionDetailsComponent extends Component {
                   <Field
                     component={SelectField}
                     variant='outlined'
-                    name="ports"
+                    name="false_positive"
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px' }}
@@ -285,7 +285,7 @@ class RiskEditionDetailsComponent extends Component {
                   <Field
                     component={SelectField}
                     variant='outlined'
-                    name="ports"
+                    name="risk_adjusted"
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px' }}
@@ -315,7 +315,7 @@ class RiskEditionDetailsComponent extends Component {
                   <div className="clearfix" />
                   <Field
                     component={TextField}
-                    name="Description"
+                    name="statement"
                     fullWidth={true}
                     multiline={true}
                     rows="3"
@@ -342,11 +342,15 @@ class RiskEditionDetailsComponent extends Component {
                   </div>
                   <div className="clearfix" />
                   <Field
-                    component={TextField}
+                    component={DatePickerField}
                     variant='outlined'
                     size='small'
-                    name="asset_id"
+                    name="deadline"
                     fullWidth={true}
+                    invalidDateMessage={t(
+                      'The value must be a date (YYYY-MM-DD)',
+                    )}
+                    style={{ height: '38.09px' }}
                     containerstyle={{ width: '100%' }}
                   />
                 </Grid>
@@ -371,7 +375,7 @@ class RiskEditionDetailsComponent extends Component {
                   <div className="clearfix" />
                   <Field
                     component={TextField}
-                    name="Description"
+                    name="impacted_assets"
                     fullWidth={true}
                     multiline={true}
                     rows="3"
@@ -401,7 +405,7 @@ class RiskEditionDetailsComponent extends Component {
                     component={TextField}
                     variant='outlined'
                     size='small'
-                    name="asset_id"
+                    name="impacted_control"
                     fullWidth={true}
                     containerstyle={{ width: '100%' }}
                   />
@@ -428,7 +432,7 @@ class RiskEditionDetailsComponent extends Component {
                   <Field
                     component={SelectField}
                     variant='outlined'
-                    name="ports"
+                    name="operationally_required"
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px' }}
@@ -457,7 +461,7 @@ class RiskEditionDetailsComponent extends Component {
                   <Field
                     component={SelectField}
                     variant='outlined'
-                    name="ports"
+                    name="vendor_dependency"
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px' }}

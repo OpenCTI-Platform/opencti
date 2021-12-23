@@ -116,378 +116,383 @@ class RiskCreationDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-        <Grid item={true} xs={12} style={{ marginBottom: '21px' }}>
-                    <Grid item={true}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('Name')}
-                          </Typography>
-                          <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                            <Tooltip
-                              title={t(
-                                'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                              )}
-                            >
-                              <Information fontSize="inherit" color="disabled" />
-                            </Tooltip>
-                          </div>
-                          <div className="clearfix" />
-                          <Field
-                            component={TextField}
-                            variant='outlined'
-                            name="installed_operating_system"
-                            size='small'
-                            fullWidth={true}
-                          />
-                    </Grid>
+          <Grid item={true} xs={12} style={{ marginBottom: '21px' }}>
+            <Grid item={true}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Name')}
+              </Typography>
+              <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                <Tooltip
+                  title={t(
+                    'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                  )}
+                >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              <Field
+                component={TextField}
+                variant='outlined'
+                name="name"
+                size='small'
+                fullWidth={true}
+              />
             </Grid>
+          </Grid>
           <Grid container={true} spacing={3}>
             <Grid xs={6} item={true}>
-                      <Grid style={{ marginBottom: '15px' }} item={true}>
-                                    <Typography
-                                      variant="h3"
-                                      color="textSecondary"
-                                      gutterBottom={true}
-                                      style={{ float: 'left' }}
-                                    >
-                                      {t('Description')}
-                                    </Typography>
-                                    <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                                      <Tooltip
-                                        title={t(
-                                          'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                                        )}
-                                      >
-                                        <Information fontSize="inherit" color="disabled" />
-                                      </Tooltip>
-                                    </div>
-                                    <div className="clearfix" />
-                                    <Field
-                                      component={TextField}
-                                      name="Description"
-                                      fullWidth={true}
-                                      multiline={true}
-                                      rows="3"
-                                      variant='outlined'
-                                    />
-                      </Grid>
-                      <Grid style={{ marginBottom: '15px' }} item={true}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('Risk Status')}
-                          </Typography>
-                          <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                            <Tooltip
-                              title={t(
-                                'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                              )}
-                            >
-                              <Information fontSize="inherit" color="disabled" />
-                            </Tooltip>
-                          </div>
-                          <AddIcon fontSize="small" style={{ margin: '-5px 0 0 0' }} />
-                          <div className="clearfix" />
-                          <Field
-                            component={SelectField}
-                            style={{ height: '38.09px' }}
-                            variant='outlined'
-                            name="installed_software"
-                            size='small'
-                            fullWidth={true}
-                            containerstyle={{ width: '100%' }}
-                          />
-                    </Grid>
-                    <Grid style={{ marginBottom: '15px' }} item={true}>
-                                    <Typography
-                                      variant="h3"
-                                      color="textSecondary"
-                                      gutterBottom={true}
-                                      style={{ float: 'left' }}
-                                    >
-                                      {t('Impacted Component')}
-                                    </Typography>
-                                    <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                                      <Tooltip
-                                        title={t(
-                                          'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                                        )}
-                                      >
-                                        <Information fontSize="inherit" color="disabled" />
-                                      </Tooltip>
-                                    </div>
-                                    <div className="clearfix" />
-                                    <Field
-                                      component={TextField}
-                                      name="Description"
-                                      fullWidth={true}
-                                      multiline={true}
-                                      rows="3"
-                                      variant='outlined'
-                                    />
-                    </Grid>
-                    <Grid style={{ marginBottom: '15px' }} item={true}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('Detection Source')}
-                          </Typography>
-                          <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                            <Tooltip
-                              title={t(
-                                'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                              )}
-                            >
-                              <Information fontSize="inherit" color="disabled" />
-                            </Tooltip>
-                          </div>
-                          <div className="clearfix" />
-                          <Field
-                            component={TextField}
-                            variant='outlined'
-                            name="installed_operating_system"
-                            size='small'
-                            fullWidth={true}
-                          />
-                    </Grid>
-                    <Grid style={{ marginBottom: '15px' }} item={true}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('False-Positive')}
-                          </Typography>
-                          <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                            <Tooltip
-                              title={t(
-                                'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                              )}
-                            >
-                              <Information fontSize="inherit" color="disabled" />
-                            </Tooltip>
-                          </div>
-                          <div className="clearfix" />
-                          <Field
-                            component={SelectField}
-                            style={{ height: '38.09px' }}
-                            variant='outlined'
-                            name="installed_software"
-                            size='small'
-                            fullWidth={true}
-                            containerstyle={{ width: '100%' }}
-                          />
-                    </Grid>
-                    <Grid style={{ marginBottom: '15px' }} item={true}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('Risk Adjusted')}
-                          </Typography>
-                          <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                            <Tooltip
-                              title={t(
-                                'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                              )}
-                            >
-                              <Information fontSize="inherit" color="disabled" />
-                            </Tooltip>
-                          </div>
-                          <div className="clearfix" />
-                          <Field
-                            component={SelectField}
-                            style={{ height: '38.09px' }}
-                            variant='outlined'
-                            name="installed_software"
-                            size='small'
-                            fullWidth={true}
-                            containerstyle={{ width: '100%' }}
-                          />
-                    </Grid>
+              <Grid style={{ marginBottom: '15px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Description')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  name="Description"
+                  fullWidth={true}
+                  multiline={true}
+                  rows="3"
+                  variant='outlined'
+                />
+              </Grid>
+              <Grid style={{ marginBottom: '15px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Risk Status')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <AddIcon fontSize="small" style={{ margin: '-5px 0 0 0' }} />
+                <div className="clearfix" />
+                <Field
+                  component={SelectField}
+                  style={{ height: '38.09px' }}
+                  variant='outlined'
+                  name="risk_status"
+                  size='small'
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                />
+              </Grid>
+              <Grid style={{ marginBottom: '15px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Impacted Component')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  name="impacted_component"
+                  fullWidth={true}
+                  multiline={true}
+                  rows="3"
+                  variant='outlined'
+                />
+              </Grid>
+              <Grid style={{ marginBottom: '15px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Detection Source')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  variant='outlined'
+                  name="detection_source"
+                  size='small'
+                  fullWidth={true}
+                />
+              </Grid>
+              <Grid style={{ marginBottom: '15px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('False-Positive')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={SelectField}
+                  style={{ height: '38.09px' }}
+                  variant='outlined'
+                  name="false_positive"
+                  size='small'
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                />
+              </Grid>
+              <Grid style={{ marginBottom: '15px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Risk Adjusted')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={SelectField}
+                  style={{ height: '38.09px' }}
+                  variant='outlined'
+                  name="risk_adjusted"
+                  size='small'
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                />
+              </Grid>
             </Grid>
             <Grid item={true} xs={6}>
-                      <Grid style={{ marginBottom: '15px' }} item={true}>
-                                    <Typography
-                                      variant="h3"
-                                      color="textSecondary"
-                                      gutterBottom={true}
-                                      style={{ float: 'left' }}
-                                    >
-                                      {t('Statement')}
-                                    </Typography>
-                                    <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                                      <Tooltip
-                                        title={t(
-                                          'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                                        )}
-                                      >
-                                        <Information fontSize="inherit" color="disabled" />
-                                      </Tooltip>
-                                    </div>
-                                    <div className="clearfix" />
-                                    <Field
-                                      component={TextField}
-                                      name="Description"
-                                      fullWidth={true}
-                                      multiline={true}
-                                      rows="3"
-                                      variant='outlined'
-                                    />
-                      </Grid>
-                    <Grid style={{ marginBottom: '20px' }} item={true}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('Deadline')}
-                          </Typography>
-                          <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                            <Tooltip
-                              title={t(
-                                'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                              )}
-                            >
-                              <Information fontSize="inherit" color="disabled" />
-                            </Tooltip>
-                          </div>
-                          <div className="clearfix" />
-                          <Field
-                            component={TextField}
-                            variant='outlined'
-                            name="installed_operating_system"
-                            size='small'
-                            fullWidth={true}
-                          />
-                    </Grid>
-                    <Grid style={{ marginBottom: '15px' }} item={true}>
-                                    <Typography
-                                      variant="h3"
-                                      color="textSecondary"
-                                      gutterBottom={true}
-                                      style={{ float: 'left' }}
-                                    >
-                                      {t('Impacted Assets')}
-                                    </Typography>
-                                    <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                                      <Tooltip
-                                        title={t(
-                                          'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                                        )}
-                                      >
-                                        <Information fontSize="inherit" color="disabled" />
-                                      </Tooltip>
-                                    </div>
-                                    <div className="clearfix" />
-                                    <Field
-                                      component={TextField}
-                                      name="Description"
-                                      fullWidth={true}
-                                      multiline={true}
-                                      rows="3"
-                                      variant='outlined'
-                                    />
-                      </Grid>
-                      <Grid style={{ marginBottom: '15px' }} item={true}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('Impacted Control')}
-                          </Typography>
-                          <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                            <Tooltip
-                              title={t(
-                                'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                              )}
-                            >
-                              <Information fontSize="inherit" color="disabled" />
-                            </Tooltip>
-                          </div>
-                          <div className="clearfix" />
-                          <Field
-                            component={TextField}
-                            variant='outlined'
-                            name="installed_operating_system"
-                            size='small'
-                            fullWidth={true}
-                          />
-                    </Grid>
-                    <Grid style={{ marginBottom: '15px' }} item={true}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('Operationally Required')}
-                          </Typography>
-                          <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                            <Tooltip
-                              title={t(
-                                'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                              )}
-                            >
-                              <Information fontSize="inherit" color="disabled" />
-                            </Tooltip>
-                          </div>
-                          <div className="clearfix" />
-                          <Field
-                            component={SelectField}
-                            style={{ height: '38.09px' }}
-                            variant='outlined'
-                            name="installed_software"
-                            size='small'
-                            fullWidth={true}
-                            containerstyle={{ width: '100%' }}
-                          />
-                    </Grid>
-                    <Grid style={{ marginBottom: '15px' }} item={true}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('Vendor Dependency')}
-                          </Typography>
-                          <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                            <Tooltip
-                              title={t(
-                                'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                              )}
-                            >
-                              <Information fontSize="inherit" color="disabled" />
-                            </Tooltip>
-                          </div>
-                          <div className="clearfix" />
-                          <Field
-                            component={SelectField}
-                            style={{ height: '38.09px' }}
-                            variant='outlined'
-                            name="installed_software"
-                            size='small'
-                            fullWidth={true}
-                            containerstyle={{ width: '100%' }}
-                          />
-                    </Grid>
+              <Grid style={{ marginBottom: '15px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Statement')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  name="statement"
+                  fullWidth={true}
+                  multiline={true}
+                  rows="3"
+                  variant='outlined'
+                />
+              </Grid>
+              <Grid style={{ marginBottom: '20px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Deadline')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={DatePickerField}
+                  variant='outlined'
+                  name="deadline"
+                  size='small'
+                  invalidDateMessage={t(
+                    'The value must be a date (YYYY-MM-DD)',
+                  )}
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '100%' }}
+                />
+              </Grid>
+              <Grid style={{ marginBottom: '15px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Impacted Assets')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  name="impacted_assets"
+                  fullWidth={true}
+                  multiline={true}
+                  rows="3"
+                  variant='outlined'
+                />
+              </Grid>
+              <Grid style={{ marginBottom: '15px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Impacted Control')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  variant='outlined'
+                  name="impacted_control"
+                  size='small'
+                  fullWidth={true}
+                />
+              </Grid>
+              <Grid style={{ marginBottom: '15px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Operationally Required')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={SelectField}
+                  style={{ height: '38.09px' }}
+                  variant='outlined'
+                  name="operationally_required"
+                  size='small'
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                />
+              </Grid>
+              <Grid style={{ marginBottom: '15px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Vendor Dependency')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={SelectField}
+                  style={{ height: '38.09px' }}
+                  variant='outlined'
+                  name="vendor_dependency"
+                  size='small'
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                />
+              </Grid>
             </Grid>
           </Grid>
         </Paper>

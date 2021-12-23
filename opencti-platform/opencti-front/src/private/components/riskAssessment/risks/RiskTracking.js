@@ -21,6 +21,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import RiskTrackingLines, {
   RiskTrackingLinesQuery,
 } from './RiskTrackingLines';
+import TopMenuRisk from '../../nav/TopMenuRisk';
 
 const styles = (theme) => ({
   paper: {
@@ -73,6 +74,7 @@ class RiskTracking extends Component {
           handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
           OperationsComponent={<RiskDeletion />}
         />
+        <TopMenuRisk />
         <QR
           environment={QueryRendererDarkLight}
           query={RiskTrackingLinesQuery}
