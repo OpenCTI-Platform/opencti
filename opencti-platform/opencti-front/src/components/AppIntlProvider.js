@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import * as PropTypes from 'prop-types';
 import { IntlProvider } from 'react-intl';
 import MomentUtils from '@date-io/moment';
-import 'moment/locale/en-gb';
 import 'moment/locale/fr';
 import moment from 'moment';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
@@ -34,7 +33,7 @@ const AppIntlProvider = (props) => {
   if (lang === 'fr') {
     moment.locale('fr');
   } else {
-    moment.locale('en-gb');
+    moment.locale('en-us');
   }
   return (
     <IntlProvider
