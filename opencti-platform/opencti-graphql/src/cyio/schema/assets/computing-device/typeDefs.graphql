@@ -73,7 +73,7 @@
     network_id: String
     vlan_id: String
     uri: URL
-    ports: [PortInfo!]!
+    ports: [PortInfo]
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
@@ -135,7 +135,7 @@
     mac_address: [MAC]
     vlan_id: String
     uri: String
-    ports: [PortInfo!]!
+    ports: [PortInfo]
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
@@ -197,7 +197,7 @@
     mac_address: [MAC]
     vlan_id: String
     uri: String
-    ports: [PortInfo!]!
+    ports: [PortInfo]
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
@@ -241,7 +241,7 @@
     network_id: String
     vlan_id: String
     uri: URL
-    ports: [PortInfoAddInput!]!
+    ports: [PortInfoAddInput]
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
@@ -261,12 +261,19 @@
 
   # Slicing Types
   enum ComputingDeviceAssetOrdering {
+    "Name"
     name
+    "Asset Type"
     asset_type
+    "Asset ID"
     asset_id
+    "IP Address"
     ip_address
+    "Installed Operating System"
     installed_operating_system
+    "Nework ID"
     network_id
+    "Labels"
     labels
   }
 
@@ -280,13 +287,21 @@
 
   "Defines the list of fields that can be filtered upon for Device Assets."
   enum ComputingDeviceAssetFilter {
+    "Created"
     created       # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    "Modified"
     modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    "Name"
     name          # Name (key:name, values: ["name1","name2"], operator: "matches", filterMode: "or")
+    "Asset Type"
     asset_type    # Asset Type (key:asset_type, values: ["type1","type2","type3"], operator: "matches", filterMode: "or")
+    "Labels"
     labels        # Label (key:labels, values:["label1","label2"], operator: "matches", filterMode: "or")
+    "IP Address"
     ip_address
+    "Installed Operating System"
     installed_operating_system
+    "Network ID"
     network_id
   }
 

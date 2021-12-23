@@ -262,7 +262,7 @@ class Devices extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '12%',
+        width: '15%',
         isSortable: true,
       },
       asset_type: {

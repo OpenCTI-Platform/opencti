@@ -86,7 +86,6 @@ class DeviceEditionDetailsComponent extends Component {
     const {
       t, classes, device, enableReferences,
     } = this.props;
-    console.log('DeviceEditionDetailsData', device);
     return (
       <div>
         <div style={{ height: '100%' }}>
@@ -206,15 +205,6 @@ class DeviceEditionDetailsComponent extends Component {
                     fullWidth={true}
                     containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
                   />
-                  {/* <Field
-                    component={SelectField}
-                    style={{ height: '38.09px' }}
-                    variant='outlined'
-                    name="protocals"
-                    size='small'
-                    fullWidth={true}
-                    containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  /> */}
                 </div>
                 <div>
                   <Typography
@@ -452,7 +442,7 @@ class DeviceEditionDetailsComponent extends Component {
                 <div className="clearfix" />
                 <Field
                   component={TextField}
-                  name="location"
+                  name="locations"
                   fullWidth={true}
                   multiline={true}
                   rows="3"
