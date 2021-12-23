@@ -43,9 +43,7 @@ const styles = (theme) => ({
     margin: '0 300px 0 -10px',
   },
   toolBar: {
-    marginLeft: -24,
-    marginRight: -24,
-    marginTop: -20,
+    margin: '-20px -24px 20px -24px',
     height: '64px',
     '@media (max-width: 1063.5px)': {
       height: '100%',
