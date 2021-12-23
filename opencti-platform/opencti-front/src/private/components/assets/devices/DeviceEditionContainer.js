@@ -21,11 +21,15 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
+import { adaptFieldValue } from '../../../../utils/String';
 import IconButton from '@material-ui/core/IconButton';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
+import { commitMutation } from '../../../../relay/environment';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
+import { insertNode } from '../../../../utils/Store';
+import { dateFormat, parse } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
@@ -82,30 +86,14 @@ const deviceEditionMutation = graphql`
     $input: [EditInput]!
   ) {
     editComputingDeviceAsset(id: $id, input: $input) {
-      name
-      asset_type
-      vendor_name
+      id
     }
   }
 `;
 
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  // asset_type: Yup.array().required(t('This field is required')),
-  // implementation_point: Yup.string().required(t('This field is required')),
-  // operational_status: Yup.string().required(t('This field is required')),
-  // first_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // last_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // sophistication: Yup.string().nullable(),
-  // resource_level: Yup.string().nullable(),
-  // primary_motivation: Yup.string().nullable(),
-  // secondary_motivations: Yup.array().nullable(),
-  // personal_motivations: Yup.array().nullable(),
-  // goals: Yup.string().nullable(),
+  port_number: Yup.number().required(t('This field is required')),
 });
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -134,36 +122,33 @@ class DeviceEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // const finalValues = pipe(
-    //   assoc('createdBy', values.createdBy?.value),
-    //   assoc('objectMarking', pluck('value', values.objectMarking)),
-    //   assoc('objectLabel', pluck('value', values.objectLabel)),
-    // )(values);
-    const pair = Object.keys(values).map((key) => [{ key, value: values[key] }]);
+    const ports = {
+      "port_number": values.port_number,
+      "protocols": values.protocols || 'TCP',
+    }
+    const adaptedValues = R.evolve(
+      {
+        release_date: () => parse(values.release_date).format(),
+      },
+      values,
+    );
+    const finalValues = R.pipe(
+      R.dissoc('labels'),
+      R.dissoc('locations'),
+      R.dissoc('protocols'),
+      R.dissoc('port_number'),
+      R.assoc('ports', ports),
+      R.toPairs,
+      R.map((n) => ({
+        'key': n[0],
+        'value': adaptFieldValue(n[1]),
+      })),
+    )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: deviceEditionMutation,
-      // const adaptedValues = evolve(
-      //   {
-      //     published: () => parse(values.published).format(),
-      //     createdBy: path(['value']),
-      //     objectMarking: pluck('value'),
-      //     objectLabel: pluck('value'),
-      //   },
-      //   values,
-      // );
       variables: {
-        id: this.props.device.id,
-        input: [
-          { key: 'name', value: 'Hello' },
-          { key: 'asset_id', value: values.asset_id },
-          { key: 'asset_tag', value: values.asset_tag },
-          { key: 'description', value: values.description },
-          { key: 'version', value: values.version },
-          { key: 'vendor_name', value: values.vendor_name },
-          { key: 'serial_number', value: values.serial_number },
-          { key: 'release_date', value: values.release_date },
-          { key: 'operational_status', value: values.operational_status },
-        ],
+        id: this.props.device?.id,
+        input: finalValues,
       },
       setSubmitting,
       onCompleted: (data) => {
@@ -172,19 +157,18 @@ class DeviceEditionContainer extends Component {
         this.handleClose();
         this.props.history.push('/dashboard/assets/devices');
       },
-      onError: (err) => console.log('DeviceEditionDarkLightMutationError', err),
     });
     // commitMutation({
-    //   mutation: deviceCreationOverviewMutation,
+    //   mutation: deviceEditionMutation,
     //   variables: {
-    //     input: values,
+    //     input: finalValues,
     //   },
-    //   // updater: (store) => insertNode(
-    //   //   store,
-    //   //   'Pagination_threatActors',
-    //   //   this.props.paginationOptions,
-    //   //   'threatActorAdd',
-    //   // ),
+    //   updater: (store) => insertNode(
+    //     store,
+    //     'Pagination_computingDeviceAssetList',
+    //     this.props.paginationOptions,
+    //     'editComputingDeviceAsset',
+    //   ),
     //   setSubmitting,
     //   onCompleted: () => {
     //     setSubmitting(false);
@@ -211,53 +195,87 @@ class DeviceEditionContainer extends Component {
     const {
       t, classes, handleClose, device,
     } = this.props;
+    const installedHardwares = R.pipe(
+      R.pathOr([], ['installed_hardware']),
+      R.map((n) => (n.id)),
+    )(device);
+    const installedSoftware = R.pipe(
+      R.pathOr([], ['installed_software']),
+      R.map((n) => (n.id)),
+    )(device);
+    const port_number = R.pipe(
+      R.pathOr([], ['ports']),
+      R.map((n) => n.port_number),
+    )(device);
+    const protocols = R.pipe(
+      R.pathOr([], ['ports']),
+      R.map((n) => n.protocols),
+    )(device);
     const initialValues = R.pipe(
-      R.assoc('id', device.id),
-      R.assoc('asset_id', device.asset_id),
-      R.assoc('description', device.description),
-      R.assoc('name', device.name),
-      R.assoc('asset_tag', device.asset_tag || ''),
-      R.assoc('asset_type', device.asset_type),
-      R.assoc('location', device.locations && device.locations.map((index) => [index.description]).join('\n')),
-      R.assoc('version', device.version),
-      R.assoc('vendor_name', device.vendor_name),
-      R.assoc('serial_number', device.serial_number),
-      R.assoc('release_date', device.release_date),
-      R.assoc('operational_status', device.operational_status),
-      R.assoc('installation_id', device.installation_id || ''),
-      R.assoc('bios_id', device.bios_id || ''),
-      // R.assoc('connected_to_network', device.connected_to_network.name || ''),
-      R.assoc('netbios_name', device.netbios_name || ''),
-      R.assoc('baseline_configuration_name', device.baseline_configuration_name || ''),
-      R.assoc('mac_address', (device.mac_address || []).join()),
-      R.assoc('model', device.model || ''),
-      R.assoc('hostname', device.hostname || ''),
-      R.assoc('default_gateway', device.default_gateway || ''),
-      R.assoc('motherboard_id', device.motherboard_id || ''),
-      R.assoc('is_scanned', device.is_scanned || ''),
-      R.assoc('is_virtual', device.is_virtual || ''),
-      R.assoc('is_publicly_accessible', device.is_publicly_accessible || ''),
-      R.assoc('uri', device.uri || ''),
+      R.assoc('id', device?.id || ''),
+      R.assoc('asset_id', device?.asset_id || ''),
+      R.assoc('description', device?.description || ''),
+      R.assoc('name', device?.name || ''),
+      R.assoc('asset_tag', device?.asset_tag || ''),
+      R.assoc('asset_type', device?.asset_type || ''),
+      R.assoc('location', device?.locations && device?.locations.map((location) => [location.street_address, location.city, location.country, location.postal_code]).join('\n')),
+      R.assoc('version', device?.version || ''),
+      R.assoc('labels', device?.labels || ''),
+      R.assoc('vendor_name', device?.vendor_name || ''),
+      R.assoc('serial_number', device?.serial_number || ''),
+      R.assoc('release_date', dateFormat(device?.release_date)),
+      R.assoc('installed_hardware', installedHardwares),
+      R.assoc('installed_software', installedSoftware),
+      R.assoc('installed_operating_system', device?.installed_operating_system?.id || ''),
+      R.assoc('operational_status', device?.operational_status),
+      R.assoc('installation_id', device?.installation_id || ''),
+      R.assoc('bios_id', device?.bios_id || ''),
+      R.assoc('connected_to_network', device?.connected_to_network?.name || ''),
+      R.assoc('netbios_name', device?.netbios_name || ''),
+      R.assoc('baseline_configuration_name', device?.baseline_configuration_name || ''),
+      R.assoc('mac_address', (device?.mac_address || []).join()),
+      R.assoc('model', device?.model || ''),
+      R.assoc('port_number', port_number || ''),
+      R.assoc('protocols', protocols),
+      R.assoc('hostname', device?.hostname || ''),
+      R.assoc('default_gateway', device?.default_gateway || ''),
+      R.assoc('motherboard_id', device?.motherboard_id || ''),
+      R.assoc('is_scanned', device?.is_scanned || false),
+      R.assoc('is_virtual', device?.is_virtual || false),
+      R.assoc('is_publicly_accessible', device?.is_publicly_accessible || false),
+      R.assoc('uri', device?.uri || null),
+      R.assoc('fqdn', device?.fqdn || ''),
+      R.assoc('ipv4_address', R.pluck('ip_address_value', device?.ipv4_address || [])),
+      R.assoc('ipv6_address', R.pluck('ip_address_value', device?.ipv6_address || [])),
       R.pick([
         'id',
         'asset_id',
         'name',
+        'fqdn',
         'description',
         'asset_tag',
         'asset_type',
         'location',
+        'labels',
         'version',
         'vendor_name',
         'serial_number',
         'release_date',
+        'port_number',
+        'protocols',
+        'installed_operating_system',
+        'ipv4_address',
+        'ipv6_address',
         'operational_status',
         'installation_id',
         'connected_to_network',
         'bios_id',
+        'installed_software',
         'netbios_name',
         'baseline_configuration_name',
         'mac_address',
         'model',
+        'installed_hardware',
         'hostname',
         'default_gateway',
         'motherboard_id',
@@ -267,7 +285,7 @@ class DeviceEditionContainer extends Component {
         'uri',
       ]),
     )(device);
-    const { editContext } = device;
+    // const { editContext } = device;
     return (
       <div className={classes.container}>
         <Formik
@@ -309,7 +327,6 @@ class DeviceEditionContainer extends Component {
                       size="small"
                       startIcon={<Close />}
                       color='primary'
-                      // onClick={() => this.props.history.goBack()}
                       onClick={this.handleOpenCancelButton.bind(this)}
                       className={classes.iconButton}
                     >
@@ -330,47 +347,6 @@ class DeviceEditionContainer extends Component {
                   </Tooltip>
                 </div>
               </div>
-              <Dialog
-                open={this.state.displayCancel}
-                TransitionComponent={Transition}
-                onClose={this.handleCancelButton.bind(this)}
-              >
-                  <DialogContent>
-                    <Typography style={{
-                      fontSize: '18px',
-                      lineHeight: '24px',
-                      color: 'white',
-                    }} >
-                      {t('Are you sure you’d like to cancel?')}
-                    </Typography>
-                    <DialogContentText>
-                      {t('Your progress will not be saved')}
-                    </DialogContentText>
-                  </DialogContent>
-                <DialogActions className={ classes.dialogActions }>
-                  <Button
-                    // onClick={this.handleCloseDelete.bind(this)}
-                    // disabled={this.state.deleting}
-                    onClick={this.handleCancelButton.bind(this)}
-                    classes={{ root: classes.buttonPopover }}
-                    variant="outlined"
-                    size="small"
-                  >
-                    {t('Go Back')}
-                  </Button>
-                  <Button
-                    // onClick={this.submitDelete.bind(this)}
-                    // disabled={this.state.deleting}
-                    onClick={() => this.props.history.goBack()}
-                    color="primary"
-                    classes={{ root: classes.buttonPopover }}
-                    variant="contained"
-                    size="small"
-                  >
-                    {t('Yes Cancel')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
               <Form>
                 <Grid
                   container={true}
@@ -389,7 +365,7 @@ class DeviceEditionContainer extends Component {
                     <DeviceEditionDetails
                       device={device}
                       // enableReferences={this.props.enableReferences}
-                      context={editContext}
+                      // context={editContext}
                       handleClose={handleClose.bind(this)}
                     />
                   </Grid>
@@ -402,20 +378,57 @@ class DeviceEditionContainer extends Component {
                 style={{ marginTop: 25 }}
               >
                 <Grid item={true} xs={6}>
-                  {/* <CyioCoreObjectExternalReferences
-                    cyioCoreObjectId={device.id}
-                  /> */}
+                  <CyioCoreObjectExternalReferences
+                    cyioCoreObjectId={device?.id}
+                  />
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <CyioCoreObjectLatestHistory cyioCoreObjectId={device.id} />
+                  <CyioCoreObjectLatestHistory cyioCoreObjectId={device?.id} />
                 </Grid>
               </Grid>
               <CyioCoreObjectOrCyioCoreRelationshipNotes
-                cyioCoreObjectOrCyioCoreRelationshipId={device.id}
+                cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
               />
             </>
           )}
         </Formik>
+        <Dialog
+          open={this.state.displayCancel}
+          TransitionComponent={Transition}
+          onClose={this.handleCancelButton.bind(this)}
+        >
+          <DialogContent>
+            <Typography style={{
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: 'white',
+            }} >
+              {t('Are you sure you’d like to cancel?')}
+            </Typography>
+            <DialogContentText>
+              {t('Your progress will not be saved')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions className={classes.dialogActions}>
+            <Button
+              onClick={this.handleCancelButton.bind(this)}
+              classes={{ root: classes.buttonPopover }}
+              variant="outlined"
+              size="small"
+            >
+              {t('Go Back')}
+            </Button>
+            <Button
+              onClick={() => this.props.history.goBack()}
+              color="primary"
+              classes={{ root: classes.buttonPopover }}
+              variant="contained"
+              size="small"
+            >
+              {t('Yes Cancel')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
@@ -434,14 +447,71 @@ const DeviceEditionFragment = createFragmentContainer(
   DeviceEditionContainer,
   {
     device: graphql`
-      fragment DeviceEditionContainer_device on ThreatActor {
+      fragment DeviceEditionContainer_device on ComputingDeviceAsset {
         id
-        ...DeviceEditionOverview_device
-        # ...DeviceEditionDetails_device
-        editContext {
+        name
+        asset_id
+        network_id
+        description
+        version
+        vendor_name
+        asset_tag
+        asset_type
+        serial_number
+        release_date
+        installed_software {
+          id
           name
-          focusOn
         }
+        installed_hardware {
+          id
+          name
+          uri
+        }
+        installed_operating_system {
+          id
+          name
+          vendor_name
+        }
+        locations {
+          city
+          country
+          postal_code
+          street_address
+        }
+        ipv4_address {
+          ip_address_value
+        }
+        ipv6_address {
+          ip_address_value
+        }
+        operational_status
+        connected_to_network {
+          name
+        }
+        ports {
+          port_number
+          protocols
+        }
+        uri
+        model
+        mac_address
+        fqdn
+        baseline_configuration_name
+        bios_id
+        is_scanned
+        hostname
+        default_gateway
+        motherboard_id
+        installation_id
+        netbios_name
+        is_virtual
+        is_publicly_accessible
+        # ...DeviceEditionOverview_device
+        # ...DeviceEditionDetails_device
+        # editContext {
+        #   name
+        #   focusOn
       }
     `,
   },

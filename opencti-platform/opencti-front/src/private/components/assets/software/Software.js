@@ -87,7 +87,7 @@ class SoftwareComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                {/* <CyioCoreObjectExternalReferences cyioCoreObjectId={software.id} /> */}
+                <CyioCoreObjectExternalReferences cyioCoreObjectId={software.id} />
               </Grid>
               <Grid item={true} xs={6}>
                 <CyioCoreObjectLatestHistory cyioCoreObjectId={software.id} />
@@ -128,18 +128,13 @@ const Software = createFragmentContainer(SoftwareComponent, {
       asset_id
       labels
       description
-      locations {
-        city
-        country
-        description
-      }
       version
       vendor_name
       asset_tag
       asset_type
       serial_number
       release_date
-      # operational_status
+      operational_status
       ...SoftwareDetails_software
     }
   `,

@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { compose } from 'ramda';
+import { compose, evolve } from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -19,6 +19,11 @@ import {
   AddCircleOutline,
   CheckCircleOutline,
 } from '@material-ui/icons';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogActions from '@material-ui/core/DialogActions';
+import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
@@ -59,6 +64,9 @@ const styles = (theme) => ({
   title: {
     float: 'left',
   },
+  buttonPopover: {
+    textTransform: 'capitalize',
+  },
   rightContainer: {
     float: 'right',
     marginTop: '-10px',
@@ -67,6 +75,10 @@ const styles = (theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
+  },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
   },
   drawerPaper: {
     minHeight: '100vh',
@@ -85,43 +97,37 @@ const styles = (theme) => ({
 const deviceCreationMutation = graphql`
   mutation DeviceCreationMutation($input: ComputingDeviceAssetAddInput) {
     createComputingDeviceAsset (input: $input) {
-      ...DeviceCard_node
-      ...DeviceDetails_device
-      operational_status
-      serial_number
-      release_date
-      description
-      version
-      name
+      id
+      # ...DeviceCard_node
+      # ...DeviceDetails_device
+      # operational_status
+      # serial_number
+      # release_date
+      # description
+      # version
+      # name
     }
   }
 `;
 
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  // asset_type: Yup.array().required(t('This field is required')),
-  // implementation_point: Yup.string().required(t('This field is required')),
-  // operational_status: Yup.string().required(t('This field is required')),
-  // first_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // last_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // sophistication: Yup.string().nullable(),
-  // resource_level: Yup.string().nullable(),
-  // primary_motivation: Yup.string().nullable(),
-  // secondary_motivations: Yup.array().nullable(),
-  // personal_motivations: Yup.array().nullable(),
-  // goals: Yup.string().nullable(),
+  port_number: Yup.number().required(t('This field is required')),
+  portocols: Yup.string(),
+  asset_type: Yup.string().required(t('This field is required')),
 });
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 class DeviceCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
       open: false,
       onSubmit: false,
+      displayCancel: false,
     };
   }
 
@@ -130,24 +136,32 @@ class DeviceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // const finalValues = pipe(
-    //   assoc('createdBy', values.createdBy?.value),
-    //   assoc('objectMarking', pluck('value', values.objectMarking)),
-    //   assoc('objectLabel', pluck('value', values.objectLabel)),
-    // )(values);
+    const ports = {
+      "port_number": values.port_number,
+      "protocols": values.protocols || 'TCP',
+    }
+    const adaptedValues = evolve(
+      {
+        release_date: () => parse(values.release_date).format(),
+      },
+      values,
+    );
+    const finalValues = R.pipe(
+      R.dissoc('port_number'),
+      R.dissoc('installed_operating_system'),
+      R.dissoc('installed_hardware'),
+      R.dissoc('installed_software'),
+      R.dissoc('locations'),
+      R.dissoc('connected_to_network'),
+      R.dissoc('protocols'),
+      R.assoc('name', values.name),
+      R.assoc('asset_type', values.asset_type),
+      R.assoc('ports', ports),
+    )(adaptedValues);
     CM(environmentDarkLight, {
-      // mutation: deviceCreationMutation,
-      // const adaptedValues = evolve(
-      //   {
-      //     published: () => parse(values.published).format(),
-      //     createdBy: path(['value']),
-      //     objectMarking: pluck('value'),
-      //     objectLabel: pluck('value'),
-      //   },
-      //   values,
-      // );
+      mutation: deviceCreationMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       setSubmitting,
       onCompleted: (data) => {
@@ -156,21 +170,20 @@ class DeviceCreation extends Component {
         this.handleClose();
         this.props.history.push('/dashboard/assets/devices');
       },
-      onError: (err) => console.log('DeviceCreationDarkLightMutationError', err),
     });
     // commitMutation({
     //   mutation: deviceCreationMutation,
     //   variables: {
     //     input: values,
     //   },
-    // //   // updater: (store) => insertNode(
-    // //   //   store,
-    // //   //   'Pagination_threatActors',
-    // //   //   this.props.paginationOptions,
-    // //   //   'threatActorAdd',
-    // //   // ),
+    //   updater: (store) => insertNode(
+    //     store,
+    //     'Pagination_computingDeviceAssetList',
+    //     this.props.paginationOptions,
+    //     'createComputingDeviceAsset',
+    //   ),
     //   setSubmitting,
-    //   onCompleted: () => {
+    //   onCompleted: (data) => {
     //     setSubmitting(false);
     //     resetForm();
     //     this.handleClose();
@@ -184,6 +197,14 @@ class DeviceCreation extends Component {
 
   handleSubmit() {
     this.setState({ onSubmit: true });
+  }
+
+  handleOpenCancelButton() {
+    this.setState({ displayCancel: true });
+  }
+
+  handleCancelButton() {
+    this.setState({ displayCancel: false });
   }
 
   onReset() {
@@ -204,12 +225,39 @@ class DeviceCreation extends Component {
           initialValues={{
             name: 'Hello World',
             operational_status: 'other',
-            implementation_point: 'external',
+            // id: '',
+            asset_id: '',
+            asset_tag: '',
+            description: '',
+            version: '',
+            serial_number: '',
+            vendor_name: '',
+            release_date: dayStartDate(),
             ipv4_address: [],
+            locations: [],
             ipv6_address: [],
-            ports: [],
-            asset_type: 'physical-devices',
+            protocols: '',
+            port_number: '',
+            model: '',
+            uri: null,
+            installation_id: '',
+            motherboard_id: '',
+            connected_to_network: '',
+            netbios_name: '',
+            is_virtual: false,
+            is_publicly_accessible: false,
+            is_scanned: false,
+            baseline_configuration_name: '',
+            bios_id: '',
+            hostname: '',
+            default_gateway: '',
+            labels: [],
+            asset_type: 'physical_device',
             mac_address: [],
+            installed_operating_system: [],
+            installed_hardware: [],
+            installed_software: [],
+            fqdn: '',
           }}
           validationSchema={deviceValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
@@ -238,7 +286,7 @@ class DeviceCreation extends Component {
                       size="small"
                       startIcon={<Close />}
                       color='primary'
-                      onClick={() => history.goBack()}
+                      onClick={this.handleOpenCancelButton.bind(this)}
                       className={classes.iconButton}
                     >
                       {t('Cancel')}
@@ -296,6 +344,43 @@ class DeviceCreation extends Component {
             </>
           )}
         </Formik>
+        <Dialog
+          open={this.state.displayCancel}
+          TransitionComponent={Transition}
+          onClose={this.handleCancelButton.bind(this)}
+        >
+          <DialogContent>
+            <Typography style={{
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: 'white',
+            }} >
+              {t('Are you sure you’d like to cancel?')}
+            </Typography>
+            <DialogContentText>
+              {t('Your progress will not be saved')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions className={classes.dialogActions}>
+            <Button
+              onClick={this.handleCancelButton.bind(this)}
+              classes={{ root: classes.buttonPopover }}
+              variant="outlined"
+              size="small"
+            >
+              {t('Go Back')}
+            </Button>
+            <Button
+              onClick={() => this.props.history.goBack()}
+              color="primary"
+              classes={{ root: classes.buttonPopover }}
+              variant="contained"
+              size="small"
+            >
+              {t('Yes Cancel')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }

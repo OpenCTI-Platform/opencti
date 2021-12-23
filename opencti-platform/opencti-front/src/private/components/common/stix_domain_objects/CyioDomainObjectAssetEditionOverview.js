@@ -36,6 +36,7 @@ import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import inject18n from '../../../../components/i18n';
+import DatePickerField from '../../../../components/DatePickerField';
 import {
   SubscriptionAvatars,
   SubscriptionFocus,
@@ -96,7 +97,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
       setFieldValue,
       enableReferences,
     } = this.props;
-    const { editContext } = cyioDomainObject;
+    // const { editContext } = cyioDomainObject;
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <div style={{ height: '100%' }}>
@@ -124,6 +125,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   component={TextField}
                   variant='outlined'
                   size='small'
+                  disabled={true}
                   name="id"
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
@@ -230,7 +232,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                 <div className="clearfix" />
                 <Field
                   component={TextField}
-                  name="Description"
+                  name="description"
                   fullWidth={true}
                   multiline={true}
                   rows="3"
@@ -340,7 +342,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
               <CyioCoreObjectLabelsView
                 labels={objectLabel}
                 marginTop={20}
-                id={cyioDomainObject.id}
+                id={cyioDomainObject?.id}
               />
             </Grid>
             <Grid item={true} xs={6}>
@@ -385,19 +387,16 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <Field
-                  component={TextField}
+                  component={DatePickerField}
                   variant='outlined'
                   name="release_date"
                   size='small'
+                  invalidDateMessage={t(
+                    'The value must be a date (YYYY-MM-DD)',
+                  )}
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%' }}
-                // helperText={
-                //   <SubscriptionFocus
-                //   context={context}
-                //   fieldName="ReleaseDate"
-                //   />
-                // }
                 />
               </div>
               <div>

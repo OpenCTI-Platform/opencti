@@ -21,15 +21,15 @@ const SUBSCRIPTION_MANAGER_KEY = conf.get('subscription_scheduler:lock_key');
 const defaultCrons = ['5-minutes', '1-hours', '24-hours', '1-weeks'];
 
 const subscriptionHandler = async () => {
-  logApp.debug('[OPENCTI] Running Subscription manager');
+  logApp.debug('[CYIO] Running Subscription manager');
   let lock;
   try {
     // Lock the manager
     lock = await lockResource([SUBSCRIPTION_MANAGER_KEY]);
-    logApp.debug('[OPENCTI] Subscription manager lock acquired');
+    logApp.debug('[CYIO] Subscription manager lock acquired');
     // Execute the cleaning
     const callback = async (elements) => {
-      logApp.info(`[OPENCTI] Subscription manager will send reports for ${elements.length} subscriptions`);
+      logApp.info(`[CYIO] Subscription manager will send reports for ${elements.length} subscriptions`);
       const concurrentSend = async (element) => {
         try {
           const mailContent = await generateDigestForSubscription(element);
@@ -39,7 +39,7 @@ const subscriptionHandler = async () => {
           const patch = { last_run: now() };
           await patchAttribute(SYSTEM_USER, element.id, element.entity_type, patch);
         } catch (e) {
-          logApp.error('[OPENCTI] Subscription manager failed to send', { error: e });
+          logApp.error('[CYIO] Subscription manager failed to send', { error: e });
         }
       };
       await Promise.map(elements, concurrentSend, { concurrency: ES_MAX_CONCURRENCY });
@@ -63,9 +63,9 @@ const subscriptionHandler = async () => {
     }
   } catch (e) {
     // We dont care about failing to get the lock.
-    logApp.info('[OPENCTI] Subscription manager already in progress by another API');
+    logApp.info('[CYIO] Subscription manager already in progress by another API');
   } finally {
-    logApp.debug('[OPENCTI] Subscription manager done');
+    logApp.debug('[CYIO] Subscription manager done');
     if (lock) await lock.unlock();
   }
 };

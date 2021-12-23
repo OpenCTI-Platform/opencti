@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
+import Paper from '@material-ui/core/Paper';
 import { withStyles } from '@material-ui/core/styles';
 import { createPaginationContainer } from 'react-relay';
 import Typography from '@material-ui/core/Typography';
@@ -129,6 +130,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
         />
         {/* </Security> */}
         <div className="clearfix" />
+        <Paper style={{ height: '100px' }} >
         {notes.map((noteEdge) => {
           const note = noteEdge.node;
           return (
@@ -139,7 +141,8 @@ class CyioCoreObjectNotesCardsContainer extends Component {
             />
           );
         })}
-        <div style={{ marginTop: 100 }} />
+        </Paper>
+        {/* <div style={{ marginTop: 100 }} /> */}
         <div ref={this.bottomRef} />
       </div>
     );

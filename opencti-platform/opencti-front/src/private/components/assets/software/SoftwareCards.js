@@ -111,29 +111,6 @@ export const softwareCardsQuery = graphql`
   }
 `;
 
-// export const softwareCardsdarkLightRootQuery = graphql`
-//   query SoftwareCardsDarkLightQuery {
-//     softwareAssetList {
-//       edges {
-//         node {
-//           id
-//           asset_type
-//           name
-//           asset_id
-//           created
-//           modified
-//           vendor_name
-//           version
-//           patch_level
-//           cpe_identifier
-//           software_identifier
-//           labels
-//         }
-//       }
-//     }
-//   }
-// `;
-
 export default createPaginationContainer(
   SoftwareCards,
   {

@@ -44,6 +44,12 @@ export default class Stardog extends DataSource {
         // If terms should be converted to their raw value instead of being represented as RDFJS terms
         materializeRdfJsTerms: true,
       });
+
+      //return SPARQL error response if not successful
+      if (response.status !== 200 ) {
+        return response
+      }
+
       if(sparqlResponse == null) return null;
       // convert the SPARQL results to JavaScript dictionary
       var results = converter.sparqlJsonResultsToTree( sparqlResponse, singularizeSchema );
@@ -69,7 +75,12 @@ export default class Stardog extends DataSource {
         // If terms should be converted to their raw value instead of being represented as RDFJS terms
         materializeRdfJsTerms: true,
       });
-    
+
+      //return SPARQL error response if not successful
+      if (response.status !== 200 ) {
+        return response
+      }
+
       // convert the SPARQL results to JavaScript dictionary
       var results = converter.sparqlJsonResultsToTree( sparqlResponse, singularizeSchema );
       return results;

@@ -119,7 +119,7 @@ class CyioDomainObjectAssetHeader extends Component {
           gutterBottom={true}
           classes={{ root: classes.title }}
         >
-          {cyioDomainObject.name && cyioDomainObject.name}
+          {cyioDomainObject?.name}
         </Typography>
         <div className={classes.aliases}>
           {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
@@ -128,7 +128,7 @@ class CyioDomainObjectAssetHeader extends Component {
                 variant="contained"
                 onClick={handleDisplayEdit?.bind(this)}
                 className={classes.iconButton}
-                disabled={Boolean(!cyioDomainObject.id)}
+                disabled={Boolean(!cyioDomainObject?.id)}
                 color="primary"
                 size="large"
               >
@@ -137,7 +137,7 @@ class CyioDomainObjectAssetHeader extends Component {
             </Tooltip>
             <div style={{ display: 'inline-block' }}>
               {OperationsComponent && React.cloneElement(OperationsComponent, {
-                id: cyioDomainObject.id,
+                id: cyioDomainObject?.id,
                 disabled: disablePopover,
               })}
             </div>

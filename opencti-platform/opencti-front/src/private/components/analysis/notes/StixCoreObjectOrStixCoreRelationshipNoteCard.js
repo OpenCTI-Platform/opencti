@@ -295,6 +295,19 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard = createFragmentContainer(
         content
         created
         modified
+        # labels
+       # abstract
+        authors
+        # objectLabel {
+        #   edges {
+        #     node {
+        #       id
+        #       value
+        #       color
+        #     }
+        #   }
+        # }
+
         createdBy {
           ... on Identity {
             id
@@ -324,7 +337,7 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard = createFragmentContainer(
     `,
   },
 );
-
+ 
 export default compose(
   inject18n,
   withTheme,

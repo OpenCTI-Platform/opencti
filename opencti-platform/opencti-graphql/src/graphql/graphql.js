@@ -31,9 +31,11 @@ const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 const buildContext = (user, req, res) => {
   const workId = req.headers['opencti-work-id'];
   // const kauth = new KeycloakContext({ req }, keycloak);
-  let dbName = req.headers['x-cyio-client'];
-  if ( dbName === undefined )
-    dbName = 'db30f033d4-e90d-44f9-8ce0-36597ff08c93';
+  const clientId = req.headers['x-cyio-client'];
+  let dbName;
+  if(clientId !== undefined){
+    dbName = `db${clientId}`;
+  }
 
   if (user) {
     return { req, res, user: userWithOrigin(req, user), workId, dbName, };

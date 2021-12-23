@@ -19,6 +19,11 @@ import {
   AddCircleOutline,
   CheckCircleOutline,
 } from '@material-ui/icons';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import Slide from '@material-ui/core/Slide';
+import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
@@ -34,6 +39,7 @@ import CyioDomainObjectAssetCreationOverview from '../../common/stix_domain_obje
 import Loader from '../../../../components/Loader';
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import NetworkCreationDetails from './NetworkCreationDetails';
+import { dayStartDate, parse } from '../../../../utils/Time';
 
 const styles = (theme) => ({
   container: {
@@ -66,6 +72,13 @@ const styles = (theme) => ({
     bottom: 30,
     right: 30,
   },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
+  },
+  buttonPopover: {
+    textTransform: 'capitalize',
+  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -97,29 +110,19 @@ const networkCreationMutation = graphql`
 
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  // asset_type: Yup.array().required(t('This field is required')),
-  // implementation_point: Yup.string().required(t('This field is required')),
-  // operational_status: Yup.string().required(t('This field is required')),
-  // first_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // last_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // sophistication: Yup.string().nullable(),
-  // resource_level: Yup.string().nullable(),
-  // primary_motivation: Yup.string().nullable(),
-  // secondary_motivations: Yup.array().nullable(),
-  // personal_motivations: Yup.array().nullable(),
-  // goals: Yup.string().nullable(),
 });
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 class NetworkCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
       open: false,
       onSubmit: false,
+      displayCancel: false,
     };
   }
 
@@ -127,25 +130,38 @@ class NetworkCreation extends Component {
     this.setState({ open: true });
   }
 
+  handleCancelButton() {
+    this.setState({ displayCancel: false });
+  }
+
+  handleOpenCancelButton() {
+    this.setState({ displayCancel: true });
+  }
+
   onSubmit(values, { setSubmitting, resetForm }) {
-    // const finalValues = pipe(
-    //   assoc('createdBy', values.createdBy?.value),
-    //   assoc('objectMarking', pluck('value', values.objectMarking)),
-    //   assoc('objectLabel', pluck('value', values.objectLabel)),
-    // )(values);
+    const network_ipv4_address_range= {
+      starting_ip_address: {
+        ip_address_value: values?.starting_address
+      },
+      ending_ip_address: {
+        ip_address_value: values?.ending_address
+      }
+    }
+    const adaptedValues = R.evolve(
+        {
+          release_date: () => parse(values.release_date).format(),
+        },
+        values,
+      );
+    const finalValues = R.pipe(
+      R.dissoc('starting_address'),
+      R.dissoc('ending_address'),
+      // R.assoc('network_ipv4_address_range', network_ipv4_address_range),
+    )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: networkCreationMutation,
-      // const adaptedValues = evolve(
-      //   {
-      //     published: () => parse(values.published).format(),
-      //     createdBy: path(['value']),
-      //     objectMarking: pluck('value'),
-      //     objectLabel: pluck('value'),
-      //   },
-      //   values,
-      // );
       variables: {
-        input: values,
+        input: finalValues,
       },
       setSubmitting,
       onCompleted: (data) => {
@@ -201,25 +217,23 @@ class NetworkCreation extends Component {
       <div className={classes.container}>
         <Formik
           initialValues={{
-            name: 'Hello World',
-            // asset_id: '',
-            // version: '',
-            // serial_number: '',
-            // asset_tag: '',
-            // location: '',
-            // vendor_name: '',
-            // release_date: '',
-            // description: '',
+            name: 'Hello',
+            asset_id: '',
+            asset_type: 'network',
+            asset_tag: '',
+            description: '',
+            version: '',
+            serial_number: '',
+            vendor_name: '',
+            release_date: dayStartDate(),
             operational_status: 'other',
-            implementation_point: 'external',
+            implementation_point: 'internal',
             network_id: '12345',
             network_name: 'test_net',
-            // Labels: [],
-            // ports: [],
-            asset_type: 'network',
-            // installation_id: '',
-            // fqdn: '',
-            // is_scanned: false,
+            labels: [],
+            starting_address: '',
+            ending_address: '',
+            is_scanned: false,
           }}
           validationSchema={deviceValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
@@ -248,8 +262,7 @@ class NetworkCreation extends Component {
                       size="small"
                       startIcon={<Close />}
                       color='primary'
-                      // onClick={handleReset}
-                      onClick={() => history.goBack()}
+                      onClick={this.handleOpenCancelButton.bind(this)}
                       className={classes.iconButton}
                     >
                       {t('Cancel')}
@@ -306,6 +319,43 @@ class NetworkCreation extends Component {
             </>
           )}
         </Formik>
+        <Dialog
+          open={this.state.displayCancel}
+          TransitionComponent={Transition}
+          onClose={this.handleCancelButton.bind(this)}
+        >
+          <DialogContent>
+            <Typography style={{
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: 'white',
+            }} >
+              {t('Are you sure you’d like to cancel?')}
+            </Typography>
+            <DialogContentText>
+              {t('Your progress will not be saved')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions className={classes.dialogActions}>
+            <Button
+              onClick={this.handleCancelButton.bind(this)}
+              classes={{ root: classes.buttonPopover }}
+              variant="outlined"
+              size="small"
+            >
+              {t('Go Back')}
+            </Button>
+            <Button
+              onClick={() => history.goBack()}
+              color="primary"
+              classes={{ root: classes.buttonPopover }}
+              variant="contained"
+              size="small"
+            >
+              {t('Yes Cancel')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }

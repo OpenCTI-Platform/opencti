@@ -17,6 +17,7 @@ import { Information } from 'mdi-material-ui';
 import AddIcon from '@material-ui/icons/Add';
 import Tooltip from '@material-ui/core/Tooltip';
 import inject18n from '../../../../components/i18n';
+import SwitchField from '../../../../components/SwitchField';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -26,8 +27,6 @@ import { dateFormat, parse } from '../../../../utils/Time';
 import DatePickerField from '../../../../components/DatePickerField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-// import Ports from '../../common/form/Ports';
-// import Protocols from '../../common/form/Protocols';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -183,7 +182,13 @@ class NetworkCreationDetailsComponent extends Component {
                   <div className="clearfix" />
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Typography>No</Typography>
-                    <Switch color='primary' defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                    <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="is_scanned"
+                      containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
+                      inputProps={{ 'aria-label': 'ant design' }}
+                    />
                     <Typography>Yes</Typography>
                   </div>
                 </div>
@@ -253,7 +258,7 @@ class NetworkCreationDetailsComponent extends Component {
                   <Field
                     component={TextField}
                     variant='outlined'
-                    name="model"
+                    name="implementation_point"
                     size='small'
                     fullWidth={true}
                   />

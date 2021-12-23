@@ -3,6 +3,14 @@ import {buildSelectVariables, optionalizePredicate, parameterizePredicate, gener
 export function getSelectSparqlQuery( type, select, id, filter, ) {
   // TODO: [DL] Need to convert this to the utils.buildSelectVariables() method. No more string replacement strategy
   var sparqlQuery;
+  
+  // Adjust select to deal with difference between ontology and GraphQL object definition
+  if (type == 'COMPUTING-DEVICE') {
+    select = select.filter(i => i !== 'ipv4_address')
+    select = select.filter(i => i !== 'ipv6_address')
+    select.push('ip_address')
+  }
+
   let { selectionClause, predicates } = buildSelectVariables(predicateMap, select);
   selectionClause = `SELECT ${select.includes("id") ? "DISTINCT ?iri" : "?iri"} ${selectionClause}`;
   const selectPortion = `
@@ -12,18 +20,6 @@ WHERE {
   `;
   let re = /{iri}/g;  // using regex with 'g' switch to replace all instances of a marker
   switch( type ) {
-    case 'IPV4-ADDR':
-      sparqlQuery = ipAddr.replace("{ipAddrType}", "IpV4Address").replace(re, id);
-      break;
-    case 'IPV6-ADDR':
-      sparqlQuery = ipAddr.replace("{ipAddrType}", "IpV6Address").replace(re, id);
-      break;
-    case 'MAC-ADDR':
-      sparqlQuery = macAddr.replace(re, id)
-      break;
-    case 'PORT-INFO':
-      sparqlQuery = portInfo.replace(re, id)
-      break;
     case 'COMPUTING-DEVICE':
       let byId = '';
       let filterStr = '';
@@ -31,12 +27,20 @@ WHERE {
         byId = byIdClause.replace("{id}", id);
       }
       sparqlQuery = selectPortion + typeConstraint + byId + predicates + inventoryConstraint + filterStr + '}';
-      // sparqlQuery = selectClause + 
-      //     typeConstraint + 
-      //     byId + 
-      //     predicateBody + 
-      //     inventoryConstraint + 
-      //     filterStr + '}';
+      break;
+    case 'IPV4-ADDR':
+      sparqlQuery = ipAddr.replace("{ipAddrType}", "IpV4Address").replace(re, id);
+      break;
+    case 'IPV6-ADDR':
+      sparqlQuery = ipAddr.replace("{ipAddrType}", "IpV6Address").replace(re, id);
+      break;
+    case 'MAC-ADDR':
+      sparqlQuery = selectPortion +
+          bindIRIClause.replace('{iri}', id) + 
+          predicates + '}';
+      break;
+    case 'PORT-INFO':
+      sparqlQuery = portInfo.replace(re, id)
       break;
     default:
       throw new Error(`Unsupported query type ' ${type}'`)
@@ -258,14 +262,24 @@ export const predicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "ip_address");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  // ipv6_address: {
-  //   predicate: "<http://scap.nist.gov/ns/asset-identification#ip_address>",
-  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "ipv6_address");},
-  //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  // },
+  ipv4_address: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#ip_address>", // this should really be ipv4_address in ontology
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "ip4_address");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  ipv6_address: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#ip_address>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "ip6_address");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   mac_address: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#mac_address>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "mac_address");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  mac_address_value: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#mac_address_value>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "mac_address_value");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   ports: {
@@ -392,7 +406,7 @@ WHERE {
 // }`;
 
 const macAddr = `
-SELECT DISTINCT ?id ?object_type ?mac_address_value ?is_virtual ?stix_value
+SELECT DISTINCT ?iri ?id ?object_type ?mac_address_value ?is_virtual ?stix_value
 FROM <tag:stardog:api:context:named>
 WHERE {
   <{iri}> a <http://scap.nist.gov/ns/asset-identification#MACAddress> ;

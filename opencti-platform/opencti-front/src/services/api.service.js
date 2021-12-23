@@ -93,6 +93,7 @@ export const getSeverityPieChartData = (clientID, analysis_ids) => {
       headers,
       params: { analysis_ids },
       data: null,
+      scoring: 'tbc',
     });
     return response;
   } catch (error) {

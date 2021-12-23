@@ -8,7 +8,7 @@ import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/s3';
 import { amqpIsAlive } from './database/amqp';
 import { keycloakAlive } from './service/keycloak';
-import { stardogAlive } from './service/stardog' ;
+import { stardogAlive } from './service/stardog';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
 import { ROLE_DEFAULT, STREAMAPI, TAXIIAPI } from './domain/user';
@@ -407,11 +407,11 @@ const platformInit = async (withMarkings = true) => {
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
-      logApp.error(`[OPENCTI] Platform cant get the lock for initialization`);
+      logApp.error(`[CYIO] Platform cant get the lock for initialization`);
     } else {
       const isApolloError = e instanceof ApolloError;
       const error = isApolloError ? e : { name: 'UnknownError', data: { message: e.message, _stack: e.stack } };
-      logApp.error(`[OPENCTI] Platform initialization fail`, { error });
+      logApp.error(`[CYIO] Platform initialization fail`, { error });
     }
     throw e;
   } finally {

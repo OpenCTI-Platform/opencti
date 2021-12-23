@@ -8,6 +8,11 @@ import graphql from 'babel-plugin-relay/macro';
 // import { createFragmentContainer } from 'react-relay';
 import { compose } from 'ramda';
 import { Formik, Form, Field } from 'formik';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import Slide from '@material-ui/core/Slide';
+import DialogActions from '@material-ui/core/DialogActions';
 import AppBar from '@material-ui/core/AppBar';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
@@ -21,6 +26,8 @@ import { Close, CheckCircleOutline } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
+import { adaptFieldValue } from '../../../../utils/String';
+import { dateFormat, parse } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import NetworkEditionOverview from './NetworkEditionOverview';
@@ -29,6 +36,7 @@ import CyioDomainObjectAssetEditionOverview from '../../common/stix_domain_objec
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import { RelayProfiler } from 'relay-runtime';
 
 const styles = (theme) => ({
   container: {
@@ -61,6 +69,13 @@ const styles = (theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
+  },
+  buttonPopover: {
+    textTransform: 'capitalize',
+  },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
   },
   drawerPaper: {
     minHeight: '100vh',
@@ -96,6 +111,10 @@ const networkEditionMutation = graphql`
   }
 `;
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 class NetworkEditionContainer extends Component {
   constructor(props) {
     super(props);
@@ -103,6 +122,7 @@ class NetworkEditionContainer extends Component {
       currentTab: 0,
       open: false,
       onSubmit: false,
+      displayCancel: false,
     };
   }
 
@@ -111,25 +131,35 @@ class NetworkEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // const finalValues = pipe(
-    //   assoc('createdBy', values.createdBy?.value),
-    //   assoc('objectMarking', pluck('value', values.objectMarking)),
-    //   assoc('objectLabel', pluck('value', values.objectLabel)),
-    // )(values);
+    const network_ipv4_address_range= {
+      starting_ip_address: {
+        ip_address_value: values?.starting_address
+      },
+      ending_ip_address: {
+        ip_address_value: values?.ending_address
+      }
+    }
+    const adaptedValues = R.evolve(
+      {
+        release_date: () => parse(values.release_date).format(),
+      },
+      values,
+    );
+    const finalValues = R.pipe(
+      R.dissoc('starting_address'),
+      R.dissoc('ending_address'),
+      R.assoc('network_ipv4_address_range', network_ipv4_address_range),
+      R.toPairs,
+      R.map((n) => ({
+        'key': n[0],
+        'value': adaptFieldValue(n[1]),
+      })),
+    )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: networkEditionMutation,
-      // const adaptedValues = evolve(
-      //   {
-      //     published: () => parse(values.published).format(),
-      //     createdBy: path(['value']),
-      //     objectMarking: pluck('value'),
-      //     objectLabel: pluck('value'),
-      //   },
-      //   values,
-      // );
       variables: {
         id: this.props.network.id,
-        input: [{ key: 'name', value: 'Hello' }],
+        input: finalValues,
       },
       setSubmitting,
       onCompleted: (data) => {
@@ -165,6 +195,14 @@ class NetworkEditionContainer extends Component {
     this.setState({ open: false });
   }
 
+  handleCancelButton() {
+    this.setState({ displayCancel: false });
+  }
+
+  handleOpenCancelButton() {
+    this.setState({ displayCancel: true });
+  }
+
   handleSubmit() {
     this.setState({ onSubmit: true });
   }
@@ -179,22 +217,22 @@ class NetworkEditionContainer extends Component {
     } = this.props;
     // const { editContext } = network;
     const initialValues = R.pipe(
-      R.assoc('id', network.id),
-      R.assoc('asset_id', network.asset_id),
-      R.assoc('description', network.description),
-      R.assoc('name', network.name),
-      R.assoc('asset_tag', network.asset_tag),
-      R.assoc('asset_type', network.asset_type),
-      R.assoc('location', network.locations && network.locations.map((index) => [index.description]).join('\n')),
-      R.assoc('version', network.version),
-      R.assoc('vendor_name', network.vendor_name),
-      R.assoc('serial_number', network.serial_number),
-      R.assoc('release_date', network.release_date),
-      R.assoc('operational_status', network.operational_status),
-      R.assoc('network_name', network.network_name),
-      R.assoc('network_id', network.network_id),
-      R.assoc('is_scanned', network.is_scanned),
-      R.assoc('implementation_point', network.implementation_point),
+      R.assoc('id', network?.id),
+      R.assoc('asset_id', network?.asset_id),
+      R.assoc('description', network?.description),
+      R.assoc('name', network?.name),
+      R.assoc('asset_tag', network?.asset_tag),
+      R.assoc('asset_type', network?.asset_type),
+      R.assoc('location', network?.locations && network.locations.map((index) => [index.description]).join('\n')),
+      R.assoc('version', network?.version),
+      R.assoc('vendor_name', network?.vendor_name),
+      R.assoc('serial_number', network?.serial_number),
+      R.assoc('release_date', dateFormat(network?.release_date)),
+      R.assoc('operational_status', network?.operational_status),
+      R.assoc('network_name', network?.network_name),
+      R.assoc('network_id', network?.network_id),
+      R.assoc('is_scanned', network?.is_scanned),
+      R.assoc('implementation_point', network?.implementation_point),
       R.assoc('starting_address', network?.network_address_range?.starting_ip_address?.ip_address_value || ''),
       R.assoc('ending_address', network?.network_address_range?.ending_ip_address?.ip_address_value || ''),
       R.pick([
@@ -215,6 +253,7 @@ class NetworkEditionContainer extends Component {
         'network_id',
         'implementation_point',
         'starting_address',
+        'ending_address',
       ]),
     )(network);
     return (
@@ -258,7 +297,7 @@ class NetworkEditionContainer extends Component {
                       size="small"
                       startIcon={<Close />}
                       color='primary'
-                      onClick={() => this.props.history.goBack()}
+                      onClick={this.handleOpenCancelButton.bind(this)}
                       className={classes.iconButton}
                     >
                       {t('Cancel')}
@@ -285,12 +324,6 @@ class NetworkEditionContainer extends Component {
                   classes={{ container: classes.gridContainer }}
                 >
                   <Grid item={true} xs={6}>
-                    {/* <NetworkEditionOverview
-                network={network}
-                // enableReferences={this.props.enableReferences}
-                // context={editContext}
-                handleClose={handleClose.bind(this)}
-                /> */}
                     <CyioDomainObjectAssetEditionOverview
                       cyioDomainObject={network}
                     // enableReferences={this.props.enableReferences}
@@ -315,9 +348,9 @@ class NetworkEditionContainer extends Component {
                 style={{ marginTop: 25 }}
               >
                 <Grid item={true} xs={6}>
-                  {/* <CyioCoreObjectExternalReferences
+                  <CyioCoreObjectExternalReferences
                     cyioCoreObjectId={network.id}
-                  /> */}
+                  />
                 </Grid>
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectLatestHistory cyioCoreObjectId={network.id} />
@@ -329,6 +362,43 @@ class NetworkEditionContainer extends Component {
             </>
           )}
         </Formik>
+        <Dialog
+          open={this.state.displayCancel}
+          TransitionComponent={Transition}
+          onClose={this.handleCancelButton.bind(this)}
+        >
+          <DialogContent>
+            <Typography style={{
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: 'white',
+            }} >
+              {t('Are you sure you’d like to cancel?')}
+            </Typography>
+            <DialogContentText>
+              {t('Your progress will not be saved')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions className={classes.dialogActions}>
+            <Button
+              onClick={this.handleCancelButton.bind(this)}
+              classes={{ root: classes.buttonPopover }}
+              variant="outlined"
+              size="small"
+            >
+              {t('Go Back')}
+            </Button>
+            <Button
+              onClick={() => this.props.history.goBack()}
+              color="primary"
+              classes={{ root: classes.buttonPopover }}
+              variant="contained"
+              size="small"
+            >
+              {t('Yes Cancel')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
@@ -346,14 +416,45 @@ const NetworkEditionFragment = createFragmentContainer(
   NetworkEditionContainer,
   {
     network: graphql`
-      fragment NetworkEditionContainer_network on IntrusionSet {
+      fragment NetworkEditionContainer_network on NetworkAsset {
         id
-        ...NetworkEditionOverview_network
-        ...NetworkEditionDetails_network
-        editContext {
-          name
-          focusOn
+        name
+        asset_id
+        network_id
+        description
+        locations {
+          description
         }
+        version
+        labels
+        vendor_name
+        asset_tag
+        asset_type
+        serial_number
+        release_date
+        operational_status
+        network_name
+        network_id
+        is_scanned
+        implementation_point
+        network_address_range {
+          ending_ip_address{
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+          starting_ip_address{
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+        }
+        # ...NetworkEditionOverview_network
+        # ...NetworkEditionDetails_network
+        # editContext {
+        #   name
+        #   focusOn
+        # }
       }
     `,
   },

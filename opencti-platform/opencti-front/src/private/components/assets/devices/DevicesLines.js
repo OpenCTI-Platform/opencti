@@ -88,33 +88,6 @@ export const devicesLinesQuery = graphql`
   }
 `;
 
-// const deleteComputingDevicesMutation = graphql`
-//   mutation DeleteComputingDeviceAssetMutation($deleteComputingDeviceAssetId: ID!) {
-//     deleteComputingDeviceAsset(id: $deleteComputingDeviceAssetId)
-//   }
-// `;
-
-export const devicesLinesdarkLightRootQuery = graphql`
-  query DevicesLinesDarkLightQuery {
-    computingDeviceAssetList {
-      edges {
-        node {
-          id
-          name
-          installed_operating_system {
-            name
-          }
-          asset_id
-          fqdn
-          network_id
-          created
-          modified
-        }
-      }
-    }
-  }
-`;
-
 export default createPaginationContainer(
   DevicesLines,
   {

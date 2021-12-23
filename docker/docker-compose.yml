@@ -18,8 +18,9 @@ services:
     volumes:
       - esdata:/usr/share/elasticsearch/data
     environment:
-      - discovery.type=single-node
-      - xpack.ml.enabled=false
+      discovery.type: "single-node"
+      xpack.ml.enabled: "false"
+      ES_JAVA_OPTS: "-Dlog4j2.formatMsgNoLookups=true"
     restart: unless-stopped
     ports:
       - "9200:9200"

@@ -37,73 +37,13 @@ const styles = (theme) => ({
 });
 
 export const networkEditionQuery = graphql`
-  query NetworkEditionContainerQuery($id: String!) {
-    intrusionSet(id: $id) {
+  query NetworkEditionContainerQuery($id: ID!) {
+    networkAsset(id: $id) {
       ...NetworkEditionContainer_network
     }
-    settings {
-      platform_enable_reference
-    }
-  }
-`;
-
-// export const networkEditionDarkLightQuery = graphql`
-//   query NetworkEditionContainerDarkLightQuery($id: ID!) {
-//     networkAsset(id: $id) {
-//       id
-//       name
-//       asset_id
-//       fqdn
-//       network_id
-//       description
-//       locations {
-//         description
-//       }
-//       version
-//       vendor_name
-//       asset_tag
-//       asset_type
-//       serial_number
-//       release_date
-//       operational_status
-//     }
-//   }
-// `;
-
-export const networkEditionDarkLightQuery = graphql`
-  query NetworkEditionContainerDarkLightQuery($id: ID!) {
-    networkAsset(id: $id) {
-      id
-      name
-      asset_id
-      network_id
-      description
-      locations {
-        description
-      }
-      version
-      vendor_name
-      asset_tag
-      asset_type
-      serial_number
-      release_date
-      # operational_status
-      network_name
-      network_id
-      # implementation_point
-      # network_address_range {
-      #   ending_ip_address{
-      #     ... on IpV4Address {
-      #       ip_address_value
-      #     }
-      #   }
-      #   starting_ip_address{
-      #     ... on IpV4Address {
-      #       ip_address_value
-      #     }
-      #   }
-      # }
-    }
+    # settings {
+    #   platform_enable_reference
+    # }
   }
 `;
 
@@ -133,58 +73,25 @@ class NetworkEdition extends Component {
     return (
       <div>
         <QR
-            environment={environmentDarkLight}
-            query={networkEditionDarkLightQuery}
-            variables={{ id: networkId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <NetworkEditionContainer
-                    network={props.networkAsset}
-                    // enableReferences={props.settings.platform_enable_reference?.includes(
-                    //   'Network',
-                    // )}
-                    history={history}
-                    handleClose={this.handleClose.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        {/* <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Edit"
-          className={classes.editButton}
-        >
-          <Edit />
-        </Fab>
-        <Drawer
-          open={this.state.open}
-          anchor="right"
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
-          <QueryRenderer
-            query={networkEditionQuery}
-            variables={{ id: networkId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <NetworkEditionContainer
-                    network={props.network}
-                    enableReferences={props.settings.platform_enable_reference?.includes(
-                      'Network',
-                    )}
-                    handleClose={this.handleClose.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Drawer> */}
+          environment={environmentDarkLight}
+          query={networkEditionQuery}
+          variables={{ id: networkId }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <NetworkEditionContainer
+                  network={props.networkAsset}
+                  // enableReferences={props.settings.platform_enable_reference?.includes(
+                  //   'Network',
+                  // )}
+                  history={history}
+                  handleClose={this.handleClose.bind(this)}
+                />
+              );
+            }
+            return <Loader variant="inElement" />;
+          }}
+        />
       </div>
     );
   }
