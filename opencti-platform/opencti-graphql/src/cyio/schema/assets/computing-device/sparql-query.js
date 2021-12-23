@@ -484,7 +484,7 @@ function computingDeviceAssetReducer( item ) {
   if ( item.object_type === undefined && item.asset_type !== undefined ) {
     item.object_type = item.asset_type
   } else {
-    item.object_type = 'computing-device';
+    item.object_type = 'compute-device';
   }
   
   return {
