@@ -312,6 +312,7 @@ export const defaultSecondaryValue = (n) => {
     n.description
     || n.x_opencti_description
     || n.content
+    || n.entity_type
     || dateFormat(n.created_at)
   );
 };

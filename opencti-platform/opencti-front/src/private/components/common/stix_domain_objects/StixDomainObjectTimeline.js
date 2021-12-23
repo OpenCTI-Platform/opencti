@@ -21,6 +21,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import { truncate } from '../../../../utils/String';
+import { defaultSecondaryValue, defaultValue } from '../../../../utils/Graph';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -82,17 +83,16 @@ class StixDomainObjectTimelineComponent extends Component {
                   <TimelineContent>
                     <Paper elevation={3} className={classes.paper}>
                       <Typography variant="h2">
-                        {stixRelationship.targetEntity.name
-                          || stixRelationship.targetEntity.attribute_abstract
-                          || stixRelationship.targetEntity.content}
+                        {defaultValue(stixRelationship.targetEntity)}
                       </Typography>
                       <span style={{ color: '#a8a8a8' }}>
                         {truncate(
                           stixRelationship.description
                             && stixRelationship.description.length > 0
                             ? stixRelationship.description
-                            : stixRelationship.targetEntity.description
-                                || stixRelationship.targetEntity.content,
+                            : defaultSecondaryValue(
+                              stixRelationship.targetEntity,
+                            ),
                           100,
                         )}
                       </span>
@@ -276,6 +276,10 @@ const StixDomainObjectTimeline = createRefetchContainer(
                   name
                   description
                 }
+                ... on StixCyberObservable {
+                  x_opencti_description
+                  observable_value
+                }
               }
               to {
                 ... on BasicObject {
@@ -389,6 +393,10 @@ const StixDomainObjectTimeline = createRefetchContainer(
                 ... on Incident {
                   name
                   description
+                }
+                ... on StixCyberObservable {
+                  x_opencti_description
+                  observable_value
                 }
               }
             }
