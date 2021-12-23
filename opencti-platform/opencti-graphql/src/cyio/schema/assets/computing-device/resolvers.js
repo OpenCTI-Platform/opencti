@@ -12,9 +12,12 @@ import { compareValues, filterValues, updateQuery } from '../../utils.js';
 import { addToInventoryQuery, deleteQuery, removeFromInventoryQuery } from "../assetUtil.js";
 import {
   deleteIpQuery,
+  deleteMacQuery,
   deletePortQuery,
   insertIPQuery,
   insertIPRelationship,
+  insertMACQuery,
+  insertMACRelationship,
   insertPortRelationships,
   insertPortsQuery
 } from "../assetQueries.js";
@@ -131,7 +134,7 @@ const computingDeviceResolvers = {
   Mutation: {
     createComputingDeviceAsset: async (_, { input }, context) => {
       const dbName = context.dbName;
-      let ports, ipv4, ipv6;
+      let ports, ipv4, ipv6, mac;
       if (input.ports !== undefined) {
         ports = input.ports
         delete input.ports;
@@ -144,35 +147,56 @@ const computingDeviceResolvers = {
         ipv6 = input.ipv6_address;
         delete input.ipv6_address;
       }
+      if (input.mac_address !== undefined) {
+        mac = input.mac_address;
+        delete input.mac_address;
+      }
       const { iri, id, query } = insertQuery(input);
-      await context.dataSources.Stardog.create(dbName, query);
+      let response = await context.dataSources.Stardog.create(dbName, query);
+      if(response.status && response.status > 299) throw new Error(response.body.message);
       const connectQuery = addToInventoryQuery(iri);
-      await context.dataSources.Stardog.create(dbName, connectQuery);
-      if (ports !== null) {
+      response = await context.dataSources.Stardog.create(dbName, connectQuery);
+      if(response.status && response.status > 299) throw new Error(response.body.message);
+
+      if (ports !== undefined && ports !== null) {
         const { iris: portIris, query: portsQuery } = insertPortsQuery(ports);
-        await context.dataSources.Stardog.create(dbName, portsQuery);
+        response = await context.dataSources.Stardog.create(dbName, portsQuery);
+        if(response.status && response.status > 299) throw new Error(response.body.message);
         const relationshipQuery = insertPortRelationships(iri, portIris);
-        await context.dataSources.Stardog.create(dbName, relationshipQuery);
+        response = await context.dataSources.Stardog.create(dbName, relationshipQuery);
+        if(response.status && response.status > 299) throw new Error(response.body.message);
       }
-      if (ipv4 !== null) {
+      if (ipv4 !== undefined && ipv4 !== null) {
         const { ipIris, query } = insertIPQuery(ipv4, 4);
-        await context.dataSources.Stardog.create(dbName, query);
+        response = await context.dataSources.Stardog.create(dbName, query);
+        if(response.status && response.status > 299) throw new Error(response.body.message);
         const relationshipQuery = insertIPRelationship(iri, ipIris);
-        await context.dataSources.Stardog.create(dbName, relationshipQuery);
+        response = await context.dataSources.Stardog.create(dbName, relationshipQuery);
+        if(response.status && response.status > 299) throw new Error(response.body.message);
       }
-      if (ipv6 !== null) {
+      if (ipv6 !== undefined && ipv6!== null) {
         const { ipIris, query } = insertIPQuery(ipv6, 6);
-        await context.dataSources.Stardog.create(dbName, query);
+        response = await context.dataSources.Stardog.create(dbName, query);
+        if(response.status && response.status > 299) throw new Error(response.body.message);
         const relationshipQuery = insertIPRelationship(iri, ipIris);
-        await context.dataSources.Stardog.create(dbName, relationshipQuery);
+        response = await context.dataSources.Stardog.create(dbName, relationshipQuery);
+        if(response.status && response.status > 299) throw new Error(response.body.message);
+      }
+      if (mac !== undefined && mac!== null) {
+        const { macIris, query } = insertMACQuery(mac);
+        response = await context.dataSources.Stardog.create(dbName, query);
+        if(response.status && response.status > 299) throw new Error(response.body.message);
+        const relationshipQuery = insertMACRelationship(iri, macIris);
+        response = await context.dataSources.Stardog.create(dbName, relationshipQuery);
+        if(response.status && response.status > 299) throw new Error(response.body.message);
       }
       return { id };
     },
     deleteComputingDeviceAsset: async (_, { id }, context, input) => {
       const dbName = context.dbName;
       const sparqlQuery = getSelectSparqlQuery('COMPUTING-DEVICE', id);
-      const response = await context.dataSources.Stardog.queryById(context.dbName, sparqlQuery, singularizeSchema)
       const reducer = getReducer('COMPUTING-DEVICE');
+      const response = await context.dataSources.Stardog.queryById(context.dbName, sparqlQuery, singularizeSchema)
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
       const asset = (reducer(response[0]));
       for (const portIri of asset.ports_iri) {
@@ -183,6 +207,11 @@ const computingDeviceResolvers = {
         const ipQuery = deleteIpQuery(ipId);
         await context.dataSources.Stardog.delete(dbName, ipQuery);
       }
+      for (const macId of asset.mac_addr_iri) {
+        const macQuery = deleteMacQuery(macId);
+        await context.dataSources.Stardog.delete(dbName, macQuery);
+      }
+
       const relationshipQuery = removeFromInventoryQuery(id);
       await context.dataSources.Stardog.delete(dbName, relationshipQuery)
       const query = deleteQuery(id)
@@ -385,9 +414,15 @@ const computingDeviceResolvers = {
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))      // TODO: revent back when data is returned as objects, not strings
-            // Support for returning MAC address as a string, not a node
-            value_array.push(reducer(response[0]).mac_address_value)
+            for (let macAddr of response ) {
+              results.push(reducer(macAddr))      // TODO: revert back when data is returned as objects, not strings
+              // validate its a mac address
+              if (macAddr.mac_address_value.includes(':')) {
+                // disallow duplicates
+                if( value_array.includes(macAddr.mac_address_value)) continue;
+                value_array.push(macAddr.mac_address_value);
+              }
+            }
           } else {
             // Handle reporting Stardog Error
             if (typeof (response) === 'object' && 'body' in response) {
