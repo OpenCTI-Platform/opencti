@@ -26,6 +26,8 @@ import { Close, CheckCircleOutline } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
+import { adaptFieldValue } from '../../../../utils/String';
+import { dateFormat, parse } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import NetworkEditionOverview from './NetworkEditionOverview';
@@ -34,6 +36,7 @@ import CyioDomainObjectAssetEditionOverview from '../../common/stix_domain_objec
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import { RelayProfiler } from 'relay-runtime';
 
 const styles = (theme) => ({
   container: {
@@ -128,25 +131,35 @@ class NetworkEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // const finalValues = pipe(
-    //   assoc('createdBy', values.createdBy?.value),
-    //   assoc('objectMarking', pluck('value', values.objectMarking)),
-    //   assoc('objectLabel', pluck('value', values.objectLabel)),
-    // )(values);
+    const network_ipv4_address_range= {
+      starting_ip_address: {
+        ip_address_value: values?.starting_address
+      },
+      ending_ip_address: {
+        ip_address_value: values?.ending_address
+      }
+    }
+    const adaptedValues = R.evolve(
+      {
+        release_date: () => parse(values.release_date).format(),
+      },
+      values,
+    );
+    const finalValues = R.pipe(
+      R.dissoc('starting_address'),
+      R.dissoc('ending_address'),
+      R.assoc('network_ipv4_address_range', network_ipv4_address_range),
+      R.toPairs,
+      R.map((n) => ({
+        'key': n[0],
+        'value': adaptFieldValue(n[1]),
+      })),
+    )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: networkEditionMutation,
-      // const adaptedValues = evolve(
-      //   {
-      //     published: () => parse(values.published).format(),
-      //     createdBy: path(['value']),
-      //     objectMarking: pluck('value'),
-      //     objectLabel: pluck('value'),
-      //   },
-      //   values,
-      // );
       variables: {
         id: this.props.network.id,
-        input: [{ key: 'name', value: 'Hello' }],
+        input: finalValues,
       },
       setSubmitting,
       onCompleted: (data) => {
@@ -204,22 +217,22 @@ class NetworkEditionContainer extends Component {
     } = this.props;
     // const { editContext } = network;
     const initialValues = R.pipe(
-      R.assoc('id', network.id),
-      R.assoc('asset_id', network.asset_id),
-      R.assoc('description', network.description),
-      R.assoc('name', network.name),
-      R.assoc('asset_tag', network.asset_tag),
-      R.assoc('asset_type', network.asset_type),
-      R.assoc('location', network.locations && network.locations.map((index) => [index.description]).join('\n')),
-      R.assoc('version', network.version),
-      R.assoc('vendor_name', network.vendor_name),
-      R.assoc('serial_number', network.serial_number),
-      R.assoc('release_date', network.release_date),
-      R.assoc('operational_status', network.operational_status),
-      R.assoc('network_name', network.network_name),
-      R.assoc('network_id', network.network_id),
-      R.assoc('is_scanned', network.is_scanned),
-      R.assoc('implementation_point', network.implementation_point),
+      R.assoc('id', network?.id),
+      R.assoc('asset_id', network?.asset_id),
+      R.assoc('description', network?.description),
+      R.assoc('name', network?.name),
+      R.assoc('asset_tag', network?.asset_tag),
+      R.assoc('asset_type', network?.asset_type),
+      R.assoc('location', network?.locations && network.locations.map((index) => [index.description]).join('\n')),
+      R.assoc('version', network?.version),
+      R.assoc('vendor_name', network?.vendor_name),
+      R.assoc('serial_number', network?.serial_number),
+      R.assoc('release_date', dateFormat(network?.release_date)),
+      R.assoc('operational_status', network?.operational_status),
+      R.assoc('network_name', network?.network_name),
+      R.assoc('network_id', network?.network_id),
+      R.assoc('is_scanned', network?.is_scanned),
+      R.assoc('implementation_point', network?.implementation_point),
       R.assoc('starting_address', network?.network_address_range?.starting_ip_address?.ip_address_value || ''),
       R.assoc('ending_address', network?.network_address_range?.ending_ip_address?.ip_address_value || ''),
       R.pick([
@@ -311,12 +324,6 @@ class NetworkEditionContainer extends Component {
                   classes={{ container: classes.gridContainer }}
                 >
                   <Grid item={true} xs={6}>
-                    {/* <NetworkEditionOverview
-                network={network}
-                // enableReferences={this.props.enableReferences}
-                // context={editContext}
-                handleClose={handleClose.bind(this)}
-                /> */}
                     <CyioDomainObjectAssetEditionOverview
                       cyioDomainObject={network}
                       assetType="Network"

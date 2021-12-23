@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { compose } from 'ramda';
+import { compose, evolve } from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -97,38 +97,24 @@ const styles = (theme) => ({
 const deviceCreationMutation = graphql`
   mutation DeviceCreationMutation($input: ComputingDeviceAssetAddInput) {
     createComputingDeviceAsset (input: $input) {
-      ...DeviceCard_node
-      ...DeviceDetails_device
-      operational_status
-      serial_number
-      release_date
-      description
-      version
-      name
+      id
+      # ...DeviceCard_node
+      # ...DeviceDetails_device
+      # operational_status
+      # serial_number
+      # release_date
+      # description
+      # version
+      # name
     }
   }
 `;
 
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  uri: Yup.string().url(t('The value must be an URL')),
   port_number: Yup.number().required(t('This field is required')),
-  portocols: Yup.string().required(t('This field is required')),
+  portocols: Yup.string(),
   asset_type: Yup.string().required(t('This field is required')),
-  // implementation_point: Yup.string().required(t('This field is required')),
-  // operational_status: Yup.string().required(t('This field is required')),
-  // first_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // last_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // sophistication: Yup.string().nullable(),
-  // resource_level: Yup.string().nullable(),
-  // primary_motivation: Yup.string().nullable(),
-  // secondary_motivations: Yup.array().nullable(),
-  // personal_motivations: Yup.array().nullable(),
-  // goals: Yup.string().nullable(),
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -150,47 +136,54 @@ class DeviceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // const finalValues = pipe(
-    //   assoc('createdBy', values.createdBy?.value),
-    //   assoc('objectMarking', pluck('value', values.objectMarking)),
-    //   assoc('objectLabel', pluck('value', values.objectLabel)),
-    // )(values);
-    // CM(environmentDarkLight, {
-      // mutation: deviceCreationMutation,
-      // const adaptedValues = evolve(
-      //   {
-      //     published: () => parse(values.published).format(),
-      //     createdBy: path(['value']),
-      //     objectMarking: pluck('value'),
-      //     objectLabel: pluck('value'),
-      //   },
-      //   values,
-      // );
-    //   variables: {
-    //     input: values,
-    //   },
-    //   setSubmitting,
-    //   onCompleted: (data) => {
-    //     setSubmitting(false);
-    //     resetForm();
-    //     this.handleClose();
-    //     this.props.history.push('/dashboard/assets/devices');
-    //   },
-    //   onError: (err) => console.log('DeviceCreationDarkLightMutationError', err),
-    // });
+    const ports = {
+      "port_number": values.port_number,
+      "protocols": values.protocols || 'TCP',
+    }
+    const adaptedValues = evolve(
+      {
+        release_date: () => parse(values.release_date).format(),
+      },
+      values,
+    );
+    const finalValues = R.pipe(
+      R.dissoc('port_number'),
+      R.dissoc('installed_operating_system'),
+      R.dissoc('installed_hardware'),
+      R.dissoc('installed_software'),
+      R.dissoc('locations'),
+      R.dissoc('connected_to_network'),
+      R.dissoc('protocols'),
+      R.assoc('name', values.name),
+      R.assoc('asset_type', values.asset_type),
+      R.assoc('ports', ports),
+    )(adaptedValues);
+    CM(environmentDarkLight, {
+      mutation: deviceCreationMutation,
+      variables: {
+        input: finalValues,
+      },
+      setSubmitting,
+      onCompleted: (data) => {
+        setSubmitting(false);
+        resetForm();
+        this.handleClose();
+        this.props.history.push('/dashboard/assets/devices');
+      },
+    });
     // commitMutation({
     //   mutation: deviceCreationMutation,
     //   variables: {
     //     input: values,
     //   },
-    // //   // updater: (store) => insertNode(
-    // //   //   store,
-    // //   //   'Pagination_threatActors',
-    // //   //   this.props.paginationOptions,
-    // //   //   'threatActorAdd',
-    // //   // ),
+    //   updater: (store) => insertNode(
+    //     store,
+    //     'Pagination_computingDeviceAssetList',
+    //     this.props.paginationOptions,
+    //     'createComputingDeviceAsset',
+    //   ),
     //   setSubmitting,
-    //   onCompleted: () => {
+    //   onCompleted: (data) => {
     //     setSubmitting(false);
     //     resetForm();
     //     this.handleClose();
@@ -232,16 +225,39 @@ class DeviceCreation extends Component {
           initialValues={{
             name: 'Hello World',
             operational_status: 'other',
-            implementation_point: 'external',
+            // id: '',
+            asset_id: '',
+            asset_tag: '',
+            description: '',
+            version: '',
+            serial_number: '',
+            vendor_name: '',
+            release_date: dayStartDate(),
             ipv4_address: [],
+            locations: [],
             ipv6_address: [],
+            protocols: '',
             port_number: '',
-            portocols: '',
+            model: '',
+            uri: null,
+            installation_id: '',
+            motherboard_id: '',
+            connected_to_network: '',
+            netbios_name: '',
+            is_virtual: false,
+            is_publicly_accessible: false,
+            is_scanned: false,
+            baseline_configuration_name: '',
+            bios_id: '',
+            hostname: '',
+            default_gateway: '',
+            labels: [],
             asset_type: 'physical_device',
             mac_address: [],
-            installed_operating_system: '',
+            installed_operating_system: [],
             installed_hardware: [],
             installed_software: [],
+            fqdn: '',
           }}
           validationSchema={deviceValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
