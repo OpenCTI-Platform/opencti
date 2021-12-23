@@ -11,6 +11,7 @@ import {
   PYTHON_PATH,
   sleep,
   SYNC_DIRECT_START_REMOTE_URI,
+  SYNC_LIVE_EVENTS_SIZE,
   SYNC_LIVE_START_REMOTE_URI,
   SYNC_RAW_START_REMOTE_URI,
   SYNC_RESTORE_START_REMOTE_URI,
@@ -145,7 +146,15 @@ describe('Database provision', () => {
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
       // Sync
-      const syncOpts = [API_URI, API_TOKEN, SYNC_LIVE_START_REMOTE_URI, API_TOKEN, 239, FROM_START_STR, 'live'];
+      const syncOpts = [
+        API_URI,
+        API_TOKEN,
+        SYNC_LIVE_START_REMOTE_URI,
+        API_TOKEN,
+        SYNC_LIVE_EVENTS_SIZE,
+        FROM_START_STR,
+        'live',
+      ];
       await startModules();
       const execution = await execPython3(PYTHON_PATH, 'local_synchronizer.py', syncOpts);
       expect(execution).not.toBeNull();
@@ -228,7 +237,10 @@ describe('Database provision', () => {
       path.resolve('../../opencti-connectors/stream/backup-files/src'),
       'backup-files.py',
       [backupConf],
-      (message, messageCount) => messageCount === 345
+      (last, messages) => {
+        const eventsMessage = messages.filter((m) => m.includes('processed event'));
+        return eventsMessage.length === SYNC_LIVE_EVENTS_SIZE;
+      }
     );
     await shutdownModules();
   };

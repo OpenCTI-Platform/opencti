@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { shutdownModules, startModules } from '../../../src/modules';
-import { ADMIN_USER, FIVE_MINUTES } from '../../utils/testQuery';
+import { ADMIN_USER, FIVE_MINUTES, SYNC_LIVE_EVENTS_SIZE } from '../../utils/testQuery';
 import { checkInstanceDiff, checkStreamGenericContent, fetchStreamEvents } from '../../utils/testStream';
 import { fullLoadById } from '../../../src/database/middleware';
 import { buildStixData } from '../../../src/database/stix';
@@ -50,7 +50,7 @@ describe('Live streams tests', () => {
       const report = await fullLoadById(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
       const stixReport = buildStixData(report);
       const events = await fetchStreamEvents(`http://localhost:4000/stream/live`);
-      expect(events.length).toBe(239);
+      expect(events.length).toBe(SYNC_LIVE_EVENTS_SIZE);
       await checkResultCounting(events);
       for (let index = 0; index < events.length; index += 1) {
         const { data: insideData, origin, type } = events[index];
