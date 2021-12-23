@@ -254,12 +254,12 @@ class Network extends Component {
       },
       asset_type: {
         label: 'Type',
-        width: '5%',
+        width: '8%',
         isSortable: true,
       },
       asset_id: {
         label: 'Asset ID',
-        width: '15%',
+        width: '19%',
         isSortable: true,
       },
       network_id: {
@@ -269,12 +269,12 @@ class Network extends Component {
       },
       network_range: {
         label: 'Network Range',
-        width: '15%',
+        width: '17%',
         isSortable: false,
       },
       labels: {
         label: 'Labels',
-        width: '25%',
+        width: '23%',
         isSortable: true,
       },
     };
