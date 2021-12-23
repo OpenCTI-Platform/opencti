@@ -213,6 +213,7 @@ import {
   STIX_EMBEDDED_RELATION_TO_FIELD,
 } from '../schema/stixEmbeddedRelationship';
 import { BYPASS_REFERENCE } from '../initialization';
+import { askEnrich } from '../domain/enrichment';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -2996,6 +2997,9 @@ export const createEntity = async (user, input, type) => {
     return created.element;
   }
   const data = await createEntityRaw(user, input, type);
+  if (!data.element.i_upserted) {
+    await askEnrich(user, data.element.id, type);
+  }
   return data.element;
 };
 export const createInferredEntity = async (input, ruleContent, type) => {

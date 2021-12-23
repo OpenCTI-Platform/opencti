@@ -23,7 +23,6 @@ import { elCount } from '../database/elasticSearch';
 import { isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { workToExportFile } from './work';
 import { addIndicator } from './indicator';
-import { askEnrich } from './enrichment';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax } from '../utils/syntax';
@@ -191,11 +190,8 @@ export const addStixCyberObservable = async (user, input) => {
   if (observableSyntaxResult !== true) {
     throw FunctionalError(`Observable of type ${input.type} is not correctly formatted.`, { observableSyntaxResult });
   }
-  // If everything ok, create adapt/create the observable and notify for enrichment
+  // If everything ok, create adapt/create the observable
   const created = await createEntity(user, observableInput, input.type);
-  if (!created.i_upserted) {
-    await askEnrich(user, created.id, input.type);
-  }
   // create the linked indicator if needed
   if (input.createIndicator) {
     await createIndicatorFromObservable(user, input, created);

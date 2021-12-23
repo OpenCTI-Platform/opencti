@@ -21,7 +21,6 @@ import { isStixMetaRelationship, RELATION_EXTERNAL_REFERENCE } from '../schema/s
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-import { askEnrich } from './enrichment';
 import { isEmptyField } from '../database/utils';
 import { stixCoreObjectIdImportPush } from './stixCoreObject';
 import { BYPASS } from '../utils/access';
@@ -76,9 +75,6 @@ export const addExternalReference = async (user, externalReference) => {
   const created = await createEntity(user, externalReference, ENTITY_TYPE_EXTERNAL_REFERENCE);
   if (!isEmptyField(externalReference.file)) {
     await stixCoreObjectIdImportPush(user, created.id, externalReference.file);
-  }
-  if (!created.i_upserted) {
-    await askEnrich(user, created.id, ENTITY_TYPE_EXTERNAL_REFERENCE);
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].ADDED_TOPIC, created, user);
 };
