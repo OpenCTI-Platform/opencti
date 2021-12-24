@@ -19,7 +19,6 @@ const READ_QUERY = gql`
     settings {
       id
       platform_title
-      platform_url
       platform_email
       platform_language
       platform_theme

@@ -66,7 +66,6 @@ export const internalObjectsAttributes = {
     'entity_type',
     'platform_title',
     'platform_email',
-    'platform_url',
     'platform_theme',
     'platform_theme_dark_primary',
     'platform_theme_dark_secondary',

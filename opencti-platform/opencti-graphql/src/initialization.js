@@ -333,7 +333,6 @@ const initializeDefaultValues = async (withMarkings = true) => {
   await addSettings(SYSTEM_USER, {
     platform_title: 'Cyber threat intelligence platform',
     platform_email: 'admin@opencti.io',
-    platform_url: '',
     platform_theme: 'dark',
     platform_language: 'auto',
   });

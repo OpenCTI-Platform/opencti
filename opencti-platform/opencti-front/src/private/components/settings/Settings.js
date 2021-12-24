@@ -63,7 +63,6 @@ const settingsQuery = graphql`
       id
       platform_title
       platform_email
-      platform_url
       platform_theme
       platform_language
       platform_login_message
@@ -99,7 +98,6 @@ const settingsMutationFieldPatch = graphql`
         id
         platform_title
         platform_email
-        platform_url
         platform_theme
         platform_theme_dark_primary
         platform_theme_dark_secondary
@@ -143,7 +141,6 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_email: Yup.string()
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
-  platform_url: Yup.string().url(t('The value must be an URL')).nullable(),
   platform_theme: Yup.string().nullable(),
   platform_theme_dark_primary: Yup.string().nullable(),
   platform_theme_dark_secondary: Yup.string().nullable(),
@@ -215,7 +212,6 @@ class Settings extends Component {
                 [
                   'platform_title',
                   'platform_email',
-                  'platform_url',
                   'platform_theme',
                   'platform_language',
                   'platform_login_message',
@@ -275,27 +271,6 @@ class Settings extends Component {
                                   component={TextField}
                                   name="platform_email"
                                   label={t('Sender email address')}
-                                  fullWidth={true}
-                                  style={{ marginTop: 20 }}
-                                  onFocus={this.handleChangeFocus.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  onSubmit={this.handleSubmitField.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  helperText={
-                                    <SubscriptionFocus
-                                      context={editContext}
-                                      fieldName="platform_email"
-                                    />
-                                  }
-                                />
-                                <Field
-                                  component={TextField}
-                                  name="platform_url"
-                                  label={t('Base URL')}
                                   fullWidth={true}
                                   style={{ marginTop: 20 }}
                                   onFocus={this.handleChangeFocus.bind(

@@ -13,7 +13,7 @@ import {
   updateAttribute,
 } from '../database/middleware';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { BUS_TOPICS } from '../config/conf';
+import { baseUrl, BUS_TOPICS } from '../config/conf';
 import { FROM_START_STR, hoursAgo, minutesAgo, prepareDate } from '../utils/format';
 import { SYSTEM_USER } from '../utils/access';
 import { findAll as findAllStixCoreRelationships } from './stixCoreRelationship';
@@ -49,7 +49,6 @@ import {
   sectionHeader,
   technicalElementToHtml,
 } from '../utils/mailData';
-import { getSettings } from './settings';
 import { getParentTypes } from '../schema/schemaUtils';
 
 // Stream graphQL handlers
@@ -101,8 +100,6 @@ export const userSubscriptionEditContext = async (user, subscriptionId, input) =
 };
 
 export const generateDigestForSubscription = async (subscription) => {
-  const settings = await getSettings();
-  const url = settings.platform_url;
   // Resolve the user
   const rawUser = await resolveUserById(subscription.user_id);
   if (!rawUser) {
@@ -276,7 +273,7 @@ export const generateDigestForSubscription = async (subscription) => {
       ? await Promise.all(subscription.entities_ids.map((n) => internalLoadById(user, n)))
       : [];
   const entitiesNames = entities.map((n) => n.name);
-  htmlData += header(url, entitiesNames);
+  htmlData += header(baseUrl, entitiesNames);
   if (data.containersData.length > 0) {
     const number = data.containersData.length;
     htmlData += sectionHeader('Containers', number);
@@ -291,7 +288,7 @@ export const generateDigestForSubscription = async (subscription) => {
         containerEntry.fromId ? containerEntry.fromId : containerEntry.id,
         containerEntry.fromType ? containerEntry.fromType : containerEntry.entity_type
       );
-      htmlData += containerToHtml(url, fullContainer);
+      htmlData += containerToHtml(baseUrl, fullContainer);
     }
     htmlData += sectionFooter(footerNumber, 'containers');
   }
@@ -305,7 +302,7 @@ export const generateDigestForSubscription = async (subscription) => {
     // eslint-disable-next-line no-restricted-syntax
     for (const relationship of R.take(10, data.knowledgeData)) {
       const fullRelationship = await fullLoadById(user, relationship.id, ABSTRACT_STIX_CORE_RELATIONSHIP);
-      htmlData += relationshipToHtml(url, fullRelationship);
+      htmlData += relationshipToHtml(baseUrl, fullRelationship);
     }
     htmlData += sectionFooter(footerNumber, 'relationships');
   }
@@ -326,7 +323,7 @@ export const generateDigestForSubscription = async (subscription) => {
         technicalRelationship.id,
         ABSTRACT_STIX_CORE_RELATIONSHIP
       );
-      htmlData += technicalElementToHtml(url, fullTechnicalRelationship);
+      htmlData += technicalElementToHtml(baseUrl, fullTechnicalRelationship);
     }
     htmlData += `
          </table>
