@@ -112,9 +112,7 @@ const deviceCreationMutation = graphql`
 
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  port_number: Yup.number().required(t('This field is required')),
-  portocols: Yup.string(),
-  asset_type: Yup.string().required(t('This field is required')),
+  port_number: Yup.number().moreThan(0, 'The port number must be greater than 0'),
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -136,10 +134,11 @@ class DeviceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const ports = {
-      "port_number": values.port_number,
-      "protocols": values.protocols || 'TCP',
-    }
+    const ports = R.append({
+        port_number: values.port_number,
+        protocols: values.protocols,
+      }, values);
+    
     const adaptedValues = evolve(
       {
         release_date: () => parse(values.release_date).format(),
@@ -156,7 +155,7 @@ class DeviceCreation extends Component {
       R.dissoc('protocols'),
       R.assoc('name', values.name),
       R.assoc('asset_type', values.asset_type),
-      R.assoc('ports', ports),
+      R.assoc('ports', values.port_number ? ports : []),
     )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: deviceCreationMutation,
@@ -170,6 +169,7 @@ class DeviceCreation extends Component {
         this.handleClose();
         this.props.history.push('/dashboard/assets/devices');
       },
+      onError: (err => (console.log('DeviceCreation Erro', err))),
     });
     // commitMutation({
     //   mutation: deviceCreationMutation,
@@ -236,7 +236,7 @@ class DeviceCreation extends Component {
             ipv4_address: [],
             locations: [],
             ipv6_address: [],
-            protocols: '',
+            protocols: [],
             port_number: '',
             model: '',
             uri: null,

@@ -93,7 +93,7 @@ const deviceEditionMutation = graphql`
 
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  port_number: Yup.number().required(t('This field is required')),
+  port_number: Yup.number().moreThan(0, 'The port number must be greater than 0'),
 });
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -122,10 +122,10 @@ class DeviceEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const ports = {
-      "port_number": values.port_number,
-      "protocols": values.protocols || 'TCP',
-    }
+    const ports = R.append({
+      port_number: values.port_number,
+      protocols: values.protocols,
+    }, values);
     const adaptedValues = R.evolve(
       {
         release_date: () => parse(values.release_date).format(),
@@ -137,7 +137,7 @@ class DeviceEditionContainer extends Component {
       R.dissoc('locations'),
       R.dissoc('protocols'),
       R.dissoc('port_number'),
-      R.assoc('ports', ports),
+      R.assoc('ports', values.port_number ? ports : []),
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
