@@ -117,9 +117,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
 
   getContainerStixCoreObjectsIds() {
     const { containerStixCoreObjects } = this.props;
-
-    // eslint-disable-next-line no-underscore-dangle
-    return map((n) => n.node.__id, containerStixCoreObjects || []);
+    return map((n) => n.node.id, containerStixCoreObjects || []);
   }
 
   toggleStixCoreObject(stixCoreObject) {
@@ -168,14 +166,6 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
             );
             ConnectionHandler.deleteNode(conn, stixCoreObject.id);
           },
-          onCompleted: () => {
-            this.setState({
-              addedStixCoreObjects: filter(
-                (n) => n !== stixCoreObject.id,
-                this.state.addedStixCoreObjects,
-              ),
-            });
-          },
         });
       }
     } else {
@@ -222,14 +212,6 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
             );
             ConnectionHandler.insertEdgeBefore(conn, newEdge);
           },
-          onCompleted: () => {
-            this.setState({
-              addedStixCoreObjects: append(
-                stixCoreObject.id,
-                this.state.addedStixCoreObjects,
-              ),
-            });
-          },
         });
       }
     }
@@ -264,7 +246,6 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
     const stixCoreObjects = byType(stixCoreObjectsNodes);
     const stixCoreObjectsTypes = keys(stixCoreObjects);
     const containerStixCoreObjectsIds = this.getContainerStixCoreObjectsIds();
-
     return (
       <div className={classes.container}>
         {stixCoreObjectsTypes.length > 0 ? (

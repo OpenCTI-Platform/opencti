@@ -389,7 +389,7 @@ class Settings extends Component {
                                 label={t('Platform login message')}
                                 fullWidth={true}
                                 multiline={true}
-                                rows="4"
+                                rows="3"
                                 style={{ marginTop: 20 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
