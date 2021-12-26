@@ -5,7 +5,7 @@ import { elIndex, elPaginate } from '../database/elasticSearch';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_STIX_INDICES } from '../database/utils';
 import { ENTITY_TYPE_TASK } from '../schema/internalObject';
 import { buildFilters, deleteElementById, listEntities, loadById, patchAttribute } from '../database/middleware';
-import { adaptFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from "../utils/filtering";
+import { adaptFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
 import { ForbiddenAccess } from '../config/errors';
 import { KNOWLEDGE_DELETE } from '../initialization';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
