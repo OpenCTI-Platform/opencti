@@ -91,15 +91,16 @@ export const cyioExternalReferenceLinesMutationRelationAdd = graphql`
 
 export const cyioExternalReferenceMutationRelationDelete = graphql`
   mutation CyioAddExternalReferencesLinesRelationDeleteMutation(
-    $id: ID!
-    $fromId: String!
-    $relationship_type: String!
+    $fieldName: String!
+    $fromId: ID!
+    $toId: ID!
   ) {
-    externalReferenceEdit(id: $id) {
-      relationDelete(fromId: $fromId, relationship_type: $relationship_type) {
-        id
-      }
-    }
+    removeReference(input: {field_name: $fieldName, from_id: $fromId, to_id: $toId})
+    # # externalReferenceEdit(id: $id) {
+    #   relationDelete(fromId: $fromId, relationship_type: $relationship_type) {
+    #     id
+    #   }
+    # }
   }
 `;
 
@@ -260,7 +261,7 @@ export const cyioAddExternalReferencesLinesQuery = graphql`
     $cursor: ID
   ) {
     ...CyioAddExternalReferencesLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+    @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -283,25 +284,6 @@ const CyioAddExternalReferencesLines = createPaginationContainer(
               description
               url
               external_id
-              connectors(onlyAlive: false) {
-                id
-                connector_type
-                name
-                active
-                updated_at
-              }
-              importFiles(first: 1000) {
-                edges {
-                  node {
-                    id
-                    lastModified
-                    ...FileLine_file
-                    metaData {
-                      mimetype
-                    }
-                  }
-                }
-              }
             }
           }
         }

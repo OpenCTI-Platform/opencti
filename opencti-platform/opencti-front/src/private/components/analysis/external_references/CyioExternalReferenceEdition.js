@@ -56,7 +56,8 @@ const styles = (theme) => ({
 const subscription = graphql`
   subscription CyioExternalReferenceEditionSubscription($id: ID!) {
     externalReference(id: $id) {
-      ...CyioExternalReferenceEdition_externalReference
+      id
+      # ...CyioExternalReferenceEdition_externalReference
     }
   }
 `;
@@ -66,10 +67,12 @@ const cyioExternalReferenceMutationFieldPatch = graphql`
     $id: ID!
     $input: [EditInput]!
   ) {
-    externalReferenceEdit(id: $id) {
-      fieldPatch(input: $input) {
+    editCyioExternalReference(
+      id: $id,
+      input: $input
+      ) {
+        id
         ...CyioExternalReferenceEdition_externalReference
-      }
     }
   }
 `;
@@ -172,13 +175,6 @@ class CyioExternalReferenceEditionContainer extends Component {
     return (
       <div>
         <div className={classes.header}>
-          {/* <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-          >
-            <Close fontSize="small" />
-          </IconButton> */}
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('External Reference')}
           </Typography>
@@ -204,14 +200,6 @@ class CyioExternalReferenceEditionContainer extends Component {
                   name="source_name"
                   label={t('Source name')}
                   fullWidth={true}
-                  // onFocus={this.handleChangeFocus.bind(this)}
-                  // onSubmit={this.handleSubmitField.bind(this)}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //     context={editContext}
-                  //     fieldName="source_name"
-                  //   />
-                  // }
                 />
                 <Field
                   component={TextField}
@@ -219,14 +207,6 @@ class CyioExternalReferenceEditionContainer extends Component {
                   label={t('External ID')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
-                  // onFocus={this.handleChangeFocus.bind(this)}
-                  // onSubmit={this.handleSubmitField.bind(this)}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //     context={editContext}
-                  //     fieldName="external_id"
-                  //   />
-                  // }
                 />
                 <Field
                   component={TextField}
@@ -234,11 +214,6 @@ class CyioExternalReferenceEditionContainer extends Component {
                   label={t('URL')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
-                  // onFocus={this.handleChangeFocus.bind(this)}
-                  // onSubmit={this.handleSubmitField.bind(this)}
-                  // helperText={
-                  //   <SubscriptionFocus context={editContext} fieldName="url" />
-                  // }
                 />
                 <Field
                   component={MarkDownField}
@@ -248,14 +223,6 @@ class CyioExternalReferenceEditionContainer extends Component {
                   multiline={true}
                   rows={4}
                   style={{ marginTop: 20 }}
-                  // onFocus={this.handleChangeFocus.bind(this)}
-                  // onSubmit={this.handleSubmitField.bind(this)}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //     context={editContext}
-                  //     fieldName="description"
-                  //   />
-                  // }
                 />
                 <div style={{
                   float: 'left',
@@ -303,16 +270,16 @@ const ExternalReferenceEditionFragment = createFragmentContainer(
   CyioExternalReferenceEditionContainer,
   {
     externalReference: graphql`
-      fragment CyioExternalReferenceEdition_externalReference on ExternalReference {
+      fragment CyioExternalReferenceEdition_externalReference on CyioExternalReference {
         id
         source_name
         url
         external_id
         description
-        editContext {
-          name
-          focusOn
-        }
+        # editContext {
+        #   name
+        #   focusOn
+        # }
       }
     `,
   },
