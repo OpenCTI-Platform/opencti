@@ -9,6 +9,7 @@ import conf, {
   PLATFORM_VERSION,
   ENABLED_SYNC_MANAGER,
   ENABLED_RETENTION_MANAGER,
+  baseUrl,
 } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { elVersion, isRuntimeSortEnable } from '../database/elasticSearch';
@@ -50,7 +51,7 @@ export const getSettings = async () => {
   ];
   return {
     ...platformSettings,
-    platform_url: conf.get('app:base_url'),
+    platform_url: baseUrl,
     platform_enable_reference: conf.get('app:enforce_references'),
     platform_reference_attachment: conf.get('app:reference_attachment'),
     platform_feature_flags: featureFlags,
