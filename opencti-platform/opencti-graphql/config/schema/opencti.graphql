@@ -856,6 +856,7 @@ type Settings implements InternalObject & BasicObject {
   parent_types: [String]!
   # Settings
   platform_title: String
+  platform_url: String
   platform_email: String
   platform_modules: [Module]
   platform_providers: [Provider]
